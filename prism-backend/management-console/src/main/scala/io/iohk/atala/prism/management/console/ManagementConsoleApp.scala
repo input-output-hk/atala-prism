@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console
 
 import cats.effect.{ExitCode, IO, IOApp, Resource}
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.Server
 import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.config.NodeConfig
@@ -32,8 +32,7 @@ import kamon.Kamon
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
-import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext
 
 object ManagementConsoleApp extends IOApp {
 
@@ -43,16 +42,12 @@ object ManagementConsoleApp extends IOApp {
   implicit val ec = ExecutionContext.global
 
   override def run(args: List[String]): IO[ExitCode] = {
-    Kamon.init()
     // Cats resource runs in multiple threads, we have to pass class loader
     // explicit to provide a proper resource directory.
     val classLoader = Thread.currentThread().getContextClassLoader
     app(classLoader).use { grpcServer =>
       logger.info("Starting GRPC server")
       grpcServer.start()
-      sys.addShutdownHook {
-        Await.result(Kamon.stop(), Duration.Inf)
-      }
       IO.never
     }
   }
@@ -64,9 +59,8 @@ object ManagementConsoleApp extends IOApp {
         logger.info("Loading config")
         ConfigFactory.load(classLoader)
       })
+      _ <- startMetrics(globalConfig)
       defaultCredentialTypeConfig = DefaultCredentialTypeConfig(globalConfig)
-      _ = logger.info("Setting-up uptime metrics")
-      _ = Kamon.addReporter("uptime", new UptimeReporter(globalConfig))
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
 
@@ -238,4 +232,11 @@ object ManagementConsoleApp extends IOApp {
       )
     } yield grpcServer
   }
+
+  private def startMetrics(config: Config): Resource[IO, Unit] = Resource.make(IO {
+    logger.info("Setting-up uptime metrics")
+    Kamon.init()
+    Kamon.addReporter("uptime", new UptimeReporter(config))
+    ()
+  })(_ => IO.fromFuture(IO(Kamon.stop())))
 }
