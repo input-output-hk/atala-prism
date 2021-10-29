@@ -20,7 +20,6 @@ object versions {
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
   val mockito = "1.16.46"
-  val monix = "3.4.0"
   val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.2.24"
@@ -69,7 +68,6 @@ object Dependencies {
   val logbackLogstash =
     "net.logstash.logback" % "logstash-logback-encoder" % versions.logbackLogstash
   val jaxb = "javax.xml.bind" % "jaxb-api" % versions.jaxb
-  val monix = "io.monix" %% "monix" % versions.monix
   val osLib = "com.lihaoyi" %% "os-lib" % versions.osLib
   val playJson = "com.typesafe.play" %% "play-json" % versions.playJson
   val postgresql = "org.postgresql" % "postgresql" % versions.postgresql
@@ -78,9 +76,8 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp.client3" %% "core" % versions.sttp
   val sttpCE2 = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
-  // TODO update monix in the project
   val tofu =
-    "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization = "io.monix")
+    "tf.tofu" %% "tofu" % versions.tofu
   val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
   val tofuDerevoTagless =
     "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
