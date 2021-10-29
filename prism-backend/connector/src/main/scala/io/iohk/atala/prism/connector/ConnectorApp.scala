@@ -3,18 +3,13 @@ package io.iohk.atala.prism.connector
 import cats.effect.{ContextShift, IO}
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor, TraceExposeInterceptor}
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
-import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
-  DegreeServiceGrpc,
-  EmploymentServiceGrpc,
-  IDServiceGrpc,
-  InsuranceServiceGrpc
-}
+import io.iohk.atala.prism.intdemo.protos.intdemo_api.{DegreeServiceGrpc, EmploymentServiceGrpc, IDServiceGrpc, InsuranceServiceGrpc}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.connector_api
@@ -187,6 +182,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
+      .intercept(new TraceExposeInterceptor)
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(
         _root_.grpc.health.v1.health.HealthGrpc

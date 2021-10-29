@@ -5,6 +5,7 @@ import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.Transactor
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.atala.prism.auth.grpc.{TraceExposeInterceptor, TraceReadInterceptor}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
@@ -168,6 +169,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     import io.grpc.protobuf.services.ProtoReflectionService
     server = ServerBuilder
       .forPort(NodeApp.port)
+      .intercept(new TraceExposeInterceptor)
+      .intercept(new TraceReadInterceptor)
       .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
       .addService(
         _root_.grpc.health.v1.health.HealthGrpc
