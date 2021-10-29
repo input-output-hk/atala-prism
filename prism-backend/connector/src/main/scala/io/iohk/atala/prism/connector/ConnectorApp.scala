@@ -56,10 +56,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       databaseConfig = TransactorFactory.transactorConfig(globalConfig)
       _ = applyMigrations(databaseConfig)
       tx <- connectToTheDb(databaseConfig)
-      whitelistDid <- loadWhitelistDid(globalConfig)
+      whitelistDid = loadWhitelistDid(globalConfig)
       txTraceIdLifted = tx.mapK(TraceId.liftToIOWithTraceId)
       connectorLogs = Logs.withContext[IO, IOWithTraceIdContext]
-      node <- initNodeClient(globalConfig)
+      node = initNodeClient(globalConfig)
       // connector repositories
       connectionsRepository <- ConnectionsRepository.resource(txTraceIdLifted, connectorLogs)
       messagesRepository <- MessagesRepository.resource(txTraceIdLifted, connectorLogs)
@@ -164,33 +164,31 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     TransactorFactory.transactor[IO](databaseConfig)
   }
 
-  private def loadWhitelistDid(config: Config): Resource[IO, Set[PrismDid]] =
-    Resource.pure[IO, Set[PrismDid]] {
-      logger.info("Loading DID whitelist")
-      val didWhitelist = DidWhitelistLoader.load(config)
-      if (didWhitelist.isEmpty) {
-        logger.warn(
-          s"DID whitelist is empty, which prevents integrating the console backend"
-        )
-      } else {
-        logger.info(
-          s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}"
-        )
-      }
-      didWhitelist
+  private def loadWhitelistDid(config: Config): Set[PrismDid] = {
+    logger.info("Loading DID whitelist")
+    val didWhitelist = DidWhitelistLoader.load(config)
+    if (didWhitelist.isEmpty) {
+      logger.warn(
+        s"DID whitelist is empty, which prevents integrating the console backend"
+      )
+    } else {
+      logger.info(
+        s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}"
+      )
     }
+    didWhitelist
+  }
 
-  private def initNodeClient(config: Config): Resource[IO, NodeServiceGrpc.NodeServiceStub] =
-    Resource.pure[IO, NodeServiceGrpc.NodeServiceStub] {
-      val configLoader = new ConfigLoader
-      val nodeConfig =
-        configLoader.nodeClientConfig(config.getConfig("node"))
-      val nodeChannel = ManagedChannelBuilder
-        .forAddress(nodeConfig.host, nodeConfig.port)
-        .usePlaintext()
-        .build()
-      NodeServiceGrpc.stub(nodeChannel)
-    }
+  private def initNodeClient(config: Config): NodeServiceGrpc.NodeServiceStub = {
+    val configLoader = new ConfigLoader
+    val nodeConfig =
+      configLoader.nodeClientConfig(config.getConfig("node"))
+    val nodeChannel = ManagedChannelBuilder
+      .forAddress(nodeConfig.host, nodeConfig.port)
+      .usePlaintext()
+      .build()
+    NodeServiceGrpc.stub(nodeChannel)
+  }
 
   private def startServer(
       connectorService: ConnectorService,
