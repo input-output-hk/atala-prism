@@ -41,3 +41,5 @@ env-config.js
 src/protos/*
 
 .scannerwork/*
+
+coverage/
