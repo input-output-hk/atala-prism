@@ -196,7 +196,6 @@ object PrismBuild {
         name := "util-keyderivation",
         resolvers += Resolver.sonatypeRepo("snapshots"),
         libraryDependencies ++= Seq(
-          bitcoinLib,
           enumeratum
         )
       )
