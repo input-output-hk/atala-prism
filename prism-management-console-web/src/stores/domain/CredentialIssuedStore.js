@@ -74,6 +74,14 @@ export default class CredentialIssuedStore {
     this.searchResults = defaultValues.searchResults;
   };
 
+  *refreshCredentialsIssued() {
+    const pageSizeIsWithinBoundary = this.credentials.length <= MAX_CREDENTIAL_PAGE_SIZE;
+    const response = pageSizeIsWithinBoundary
+      ? yield this.fetchCredentials({ offset: 0, pageSize: this.credentials.length })
+      : yield this.fetchRecursively();
+    this.credentials = response.credentialsList;
+  }
+
   *fetchCredentialsNextPage() {
     if (!this.hasMoreCredentials && this.isLoadingFirstPage) return;
     const response = yield this.fetchCredentials({ offset: this.credentials.length });
@@ -117,7 +125,7 @@ export default class CredentialIssuedStore {
     }
   };
 
-  fetchRecursively = async (acc = []) => {
+  fetchRecursively = async (acc = [], limit) => {
     const response = await this.fetchCredentials({
       offset: acc.length,
       pageSize: MAX_CREDENTIAL_PAGE_SIZE
@@ -127,12 +135,12 @@ export default class CredentialIssuedStore {
       return {
         credentialsList: updatedAcc
       };
-    return this.fetchRecursively(updatedAcc);
+    return this.fetchRecursively(updatedAcc, limit);
   };
 
   updateHasMoreState = (credentialsList, pageSize) => {
     const { hasFiltersApplied } = this.rootStore.uiState.credentialIssuedUiState;
-    if (credentialsList < pageSize) {
+    if (credentialsList.length < pageSize) {
       if (hasFiltersApplied) this.hasMoreResults = false;
       else this.hasMoreCredentials = false;
     }

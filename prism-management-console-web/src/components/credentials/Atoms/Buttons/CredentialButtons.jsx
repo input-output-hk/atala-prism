@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -14,87 +15,88 @@ import {
 
 import './_style.scss';
 import { credentialTypeShape } from '../../../../helpers/propShapes';
+import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
 
-const CredentialButtons = ({
-  revokeSelectedCredentials,
-  signSelectedCredentials,
-  sendSelectedCredentials,
-  disableRevoke,
-  disableSign,
-  disableSend,
-  filterProps
-}) => {
-  const { t } = useTranslation();
-  const { name, date, credentialType, credentialStatus, contactStatus } = filterProps;
-  const hasFiltersApplied = name || date || credentialType || credentialStatus || contactStatus;
+const CredentialButtons = observer(
+  ({
+    revokeSelectedCredentials,
+    signSelectedCredentials,
+    sendSelectedCredentials,
+    disableRevoke,
+    disableSign,
+    disableSend
+  }) => {
+    const { t } = useTranslation();
+    const { hasFiltersApplied } = useCredentialIssuedUiState();
 
-  const [loadingByKey, setLoadingByKey] = useState(null);
+    const [loadingByKey, setLoadingByKey] = useState(null);
 
-  const handleRevokeSelectedCredentials = async () => {
-    setLoadingByKey(REVOKE_CREDENTIALS);
-    await revokeSelectedCredentials();
-    setLoadingByKey(null);
-  };
+    const handleRevokeSelectedCredentials = async () => {
+      setLoadingByKey(REVOKE_CREDENTIALS);
+      await revokeSelectedCredentials();
+      setLoadingByKey(null);
+    };
 
-  const handleSignSelectedCredentials = async () => {
-    setLoadingByKey(SIGN_CREDENTIALS);
-    await signSelectedCredentials();
-    setLoadingByKey(null);
-  };
+    const handleSignSelectedCredentials = async () => {
+      setLoadingByKey(SIGN_CREDENTIALS);
+      await signSelectedCredentials();
+      setLoadingByKey(null);
+    };
 
-  const handleSendSelectedCredentials = async () => {
-    setLoadingByKey(SEND_CREDENTIALS);
-    await sendSelectedCredentials();
-    setLoadingByKey(null);
-  };
+    const handleSendSelectedCredentials = async () => {
+      setLoadingByKey(SEND_CREDENTIALS);
+      await sendSelectedCredentials();
+      setLoadingByKey(null);
+    };
 
-  const filtersMenu = (
-    <Menu className="FiltersMenuContainer">
-      <CredentialsFilter filterProps={filterProps} isIssued />
-    </Menu>
-  );
+    const filtersMenu = (
+      <Menu className="FiltersMenuContainer">
+        <CredentialsFilter isIssued />
+      </Menu>
+    );
 
-  return (
-    <div className="ControlButtons CredentialsOptions">
-      <CustomButton
-        overrideClassName="BulkActionButton theme-outline"
-        buttonProps={{
-          onClick: handleRevokeSelectedCredentials,
-          disabled: disableRevoke
-        }}
-        loading={loadingByKey === REVOKE_CREDENTIALS}
-        buttonText={t('credentials.actions.revokeSelectedCredentials')}
-      />
-      <CustomButton
-        overrideClassName="BulkActionButton theme-outline"
-        buttonProps={{
-          onClick: handleSignSelectedCredentials,
-          disabled: disableSign
-        }}
-        loading={loadingByKey === SIGN_CREDENTIALS}
-        buttonText={t('credentials.actions.signSelectedCredentials')}
-      />
-      <CustomButton
-        overrideClassName="BulkActionButton theme-outline"
-        buttonProps={{
-          onClick: handleSendSelectedCredentials,
-          disabled: disableSend
-        }}
-        loading={loadingByKey === SEND_CREDENTIALS}
-        buttonText={t('credentials.actions.sendSelectedCredentials')}
-      />
-
-      <Badge dot={hasFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
-        <Dropdown.Button
-          overlay={filtersMenu}
-          trigger={['click']}
-          className="SelectBtn theme-outline"
-          icon={<FilterOutlined />}
+    return (
+      <div className="ControlButtons CredentialsOptions">
+        <CustomButton
+          overrideClassName="BulkActionButton theme-outline"
+          buttonProps={{
+            onClick: handleRevokeSelectedCredentials,
+            disabled: disableRevoke
+          }}
+          loading={loadingByKey === REVOKE_CREDENTIALS}
+          buttonText={t('credentials.actions.revokeSelectedCredentials')}
         />
-      </Badge>
-    </div>
-  );
-};
+        <CustomButton
+          overrideClassName="BulkActionButton theme-outline"
+          buttonProps={{
+            onClick: handleSignSelectedCredentials,
+            disabled: disableSign
+          }}
+          loading={loadingByKey === SIGN_CREDENTIALS}
+          buttonText={t('credentials.actions.signSelectedCredentials')}
+        />
+        <CustomButton
+          overrideClassName="BulkActionButton theme-outline"
+          buttonProps={{
+            onClick: handleSendSelectedCredentials,
+            disabled: disableSend
+          }}
+          loading={loadingByKey === SEND_CREDENTIALS}
+          buttonText={t('credentials.actions.sendSelectedCredentials')}
+        />
+
+        <Badge dot={hasFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
+          <Dropdown.Button
+            overlay={filtersMenu}
+            trigger={['click']}
+            className="SelectBtn theme-outline"
+            icon={<FilterOutlined />}
+          />
+        </Badge>
+      </div>
+    );
+  }
+);
 
 CredentialButtons.defaultProps = {
   disableRevoke: true,

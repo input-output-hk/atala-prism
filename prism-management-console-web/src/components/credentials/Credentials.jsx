@@ -66,7 +66,7 @@ const Credentials = observer(({ tabProps, setActiveTab, loading, verifyCredentia
           </TabPane>
           <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
             <CredentialsReceived
-              {...tabProps[CREDENTIALS_RECEIVED]}
+              // {...tabProps[CREDENTIALS_RECEIVED]}
               showCredentialData={showCredentialData}
               initialLoading={loading.received}
             />

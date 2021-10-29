@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
@@ -14,38 +15,35 @@ import {
   DRAFT_CREDENTIAL_VERIFICATION_RESULT,
   PENDING_CREDENTIAL_VERIFICATION_RESULT
 } from '../../helpers/constants';
-import {
-  useCredentialsIssuedListWithFilters,
-  useCredentialsReceivedListWithFilters
-} from '../../hooks/useCredentials';
+import { useCredentialsReceivedListWithFilters } from '../../hooks/useCredentials';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
-import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
+import {
+  useCredentialIssuedStore,
+  useCredentialIssuedUiState
+} from '../../hooks/useCredentialIssuedStore';
+import { useSelectAll } from '../../hooks/useSelectAll';
 
-const CredentialContainer = ({ api }) => {
+const CredentialContainer = observer(({ api }) => {
   const { t } = useTranslation();
+  const { displayedCredentials: displayedCredentialsIssued } = useCredentialIssuedUiState({
+    reset: true
+  });
+  const {
+    credentials: credentialsIssued,
+    fetchMoreData: fetchMoreCredentialsIssued,
+    refreshCredentialsIssued,
+    isFetching: isFetchingCredentialsIssued,
+    isLoadingFirstPage: isLoadingIssued
+  } = useCredentialIssuedStore({
+    reset: true,
+    fetch: true
+  });
 
-  const [loadingSelection, setLoadingSelection] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
   const { credentialTemplates: credentialTypes } = useTemplateStore();
-
-  const {
-    credentialsIssued,
-    fetchCredentialsIssued,
-    refreshCredentialsIssued,
-    filteredCredentialsIssued,
-    filtersIssued,
-    hasMoreIssued,
-    isLoading: isLoadingIssued,
-    isSearching: isSearchingIssued,
-    fetchAll,
-    sortingBy,
-    setSortingBy,
-    sortDirection,
-    setSortDirection
-  } = useCredentialsIssuedListWithFilters(api.credentialsManager);
 
   const {
     fetchCredentialsReceived,
@@ -73,16 +71,14 @@ const CredentialContainer = ({ api }) => {
     if (activeTab === CREDENTIALS_RECEIVED && hasMoreReceived) fetchCredentialsReceived();
   }, [activeTab, fetchCredentialsReceived, hasMoreReceived]);
 
-  const handleSelectAllCredentials = ev =>
-    handleSelectAll({
-      ev,
-      setSelected: setSelectedCredentials,
-      entities: filteredCredentialsIssued,
-      hasMore: hasMoreIssued,
-      idKey: CREDENTIAL_ID_KEY,
-      fetchAll,
-      setLoading: setLoadingSelection
-    });
+  const selectAllCredentialsIssuedProps = useSelectAll({
+    displayedEntities: displayedCredentialsIssued,
+    entitiesFetcher: fetchMoreCredentialsIssued,
+    entityKey: CREDENTIAL_ID_KEY,
+    selectedEntities: selectedCredentials,
+    setSelectedEntities: setSelectedCredentials,
+    isFetchingCredentialsIssued
+  });
 
   const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
     batchInclusionProof
@@ -95,18 +91,9 @@ const CredentialContainer = ({ api }) => {
         })
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
-  const selectAllProps = {
-    ...getCheckedAndIndeterminateProps(filteredCredentialsIssued, selectedCredentials),
-    disabled: loadingSelection,
-    onChange: handleSelectAllCredentials
-  };
-
   const tabProps = {
     [CREDENTIALS_ISSUED]: {
       tableProps: {
-        credentials: filteredCredentialsIssued,
-        hasMore: hasMoreIssued,
-        searching: isSearchingIssued,
         revokeSingleCredential,
         signSingleCredential,
         sendSingleCredential,
@@ -114,25 +101,17 @@ const CredentialContainer = ({ api }) => {
           selectedRowKeys: selectedCredentials,
           type: 'checkbox',
           onChange: setSelectedCredentials
-        },
-        sortingProps: {
-          sortingBy,
-          setSortingBy,
-          sortDirection,
-          setSortDirection
         }
       },
-      fetchCredentials: fetchCredentialsIssued,
       bulkActionsProps: {
         refreshCredentials: refreshCredentialsIssued,
         revokeSelectedCredentials,
         signSelectedCredentials,
         sendSelectedCredentials,
-        selectAllProps
+        selectedCredentials,
+        selectAllProps: selectAllCredentialsIssuedProps
       },
-      filterProps: filtersIssued,
-      credentialTypes,
-      loadingSelection
+      credentialTypes
     },
     [CREDENTIALS_RECEIVED]: {
       tableProps: {
@@ -169,7 +148,7 @@ const CredentialContainer = ({ api }) => {
       />
     </>
   );
-};
+});
 
 CredentialContainer.propTypes = {
   api: PropTypes.shape({

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
@@ -10,21 +11,33 @@ import {
   CREDENTIAL_STATUSES
 } from '../../../../../helpers/constants';
 import { credentialTypeShape } from '../../../../../helpers/propShapes';
+import { useCredentialIssuedUiState } from '../../../../../hooks/useCredentialIssuedStore';
+import { useTemplateStore } from '../../../../../hooks/useTemplateStore';
 
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
-const CredentialsFilter = ({ filterProps, isIssued }) => {
+const CredentialsFilter = observer(({ isIssued }) => {
   const { t } = useTranslation();
 
-  const CREDENTIALS_TYPES_ENABLED = Object.values(filterProps?.credentialTypes);
+  const {
+    credentialTypeFilter,
+    credentialStatusFilter,
+    contactStatusFilter,
+    setFilterValue
+  } = useCredentialIssuedUiState();
+  const { credentialTemplates: credentialTypes } = useTemplateStore();
+
+  const setFilterByKey = key => value => setFilterValue(key, value);
+
+  const CREDENTIALS_TYPES_ENABLED = Object.values(credentialTypes);
   const renderContactStatusFilter = () => (
     <div>
       <Select
         id="contactStateFilter"
-        value={filterProps.contactStatus}
+        value={contactStatusFilter}
         placeholder={t('credentials.filters.contactStatus')}
         allowClear
-        onChange={filterProps.setContactStatus}
+        onChange={setFilterByKey('contactStatusFilter')}
       >
         {NORMALIZED_CONNECTION_STATUSES.map(aContactState => (
           <Select.Option key={aContactState} value={aContactState}>
@@ -39,10 +52,10 @@ const CredentialsFilter = ({ filterProps, isIssued }) => {
     <div>
       <Select
         id="credentialStatusFilter"
-        value={filterProps.credentialStatus}
+        value={credentialStatusFilter}
         placeholder={t('credentials.filters.credentialStatus')}
         allowClear
-        onChange={filterProps.setCredentialStatus}
+        onChange={setFilterByKey('credentialStatusFilter')}
       >
         {credentialStatuses.map(aCredentialStatus => (
           <Select.Option
@@ -60,10 +73,10 @@ const CredentialsFilter = ({ filterProps, isIssued }) => {
     <div>
       <Select
         id="credentialTypeFilter"
-        value={filterProps.credentialType}
+        value={credentialTypeFilter}
         placeholder={t('credentials.filters.credentialType')}
         allowClear
-        onChange={filterProps.setCredentialType}
+        onChange={setFilterByKey('credentialTypeFilter')}
       >
         {CREDENTIALS_TYPES_ENABLED.map(aCredentialType => (
           <Select.Option key={aCredentialType.id} value={aCredentialType.id}>
@@ -78,7 +91,7 @@ const CredentialsFilter = ({ filterProps, isIssued }) => {
     const datePickerProps = {
       placeholder: t(`credentials.filters.${isIssued ? 'dateSigned' : 'dateReceived'}`),
       suffixIcon: <DownOutlined />,
-      onChange: (_, dateString) => filterProps.setDate(dateString)
+      onChange: (_, dateString) => setFilterValue('dateFilter', dateString)
     };
 
     return (
@@ -109,7 +122,7 @@ const CredentialsFilter = ({ filterProps, isIssued }) => {
   return (
     <div className="FiltersMenu">{isIssued ? renderIssuedFilters() : renderReceivedFilters()}</div>
   );
-};
+});
 
 CredentialsFilter.defaultProps = {
   isIssued: false

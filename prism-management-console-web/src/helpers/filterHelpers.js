@@ -12,7 +12,13 @@ export const filterByInclusion = (filter, field) =>
 
 export const filterByExactMatch = (filter, field) => !filter || filter === field;
 
-export const filterByDateRange = (filter, field) => {
+export const filterByDateRange = (
+  filter,
+  field = {
+    nanos: 0,
+    seconds: 0
+  }
+) => {
   if (!filter?.length) return false;
   const fieldDate = backendDateFormat(field.seconds);
   const fieldDateMoment = moment(fieldDate, DEFAULT_DATE_FORMAT);
