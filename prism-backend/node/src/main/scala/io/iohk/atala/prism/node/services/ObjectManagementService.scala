@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.EitherT
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.traverse._
@@ -255,6 +255,27 @@ object ObjectManagementService {
       )
     }
   }
+
+  def resource[I[_]: Applicative: Functor, F[_]: BracketThrow](
+      atalaOperationsRepository: AtalaOperationsRepository[F],
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
+      keyValuesRepository: KeyValuesRepository[F],
+      protocolVersionsRepository: ProtocolVersionRepository[F],
+      blockProcessing: BlockProcessingService,
+      xa: Transactor[F],
+      logs: Logs[I, F]
+  ): Resource[I, ObjectManagementService[F]] = Resource.eval(
+    ObjectManagementService
+      .make(
+        atalaOperationsRepository,
+        atalaObjectsTransactionsRepository,
+        keyValuesRepository,
+        protocolVersionsRepository,
+        blockProcessing,
+        xa,
+        logs
+      )
+  )
 
   def unsafe[I[_]: Comonad, F[_]: BracketThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],

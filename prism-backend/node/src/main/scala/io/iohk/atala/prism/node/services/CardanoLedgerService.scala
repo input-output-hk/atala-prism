@@ -1,13 +1,14 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{MonadThrow, Timer}
+import cats.effect.Timer
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{MonadThrow, Resource}
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import cats.{Comonad, Functor}
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
@@ -243,6 +244,44 @@ object CardanoLedgerService {
         onAtalaObject
       )
     }
+
+  def resource[F[_]: MonadThrow: Timer: Execute, R[_]: Applicative](
+      config: Config,
+      cardanoClient: CardanoClient[F],
+      keyValueService: KeyValueService[F],
+      onCardanoBlock: CardanoBlockHandler,
+      onAtalaObject: AtalaObjectNotificationHandler,
+      logs: Logs[R, F]
+  )(implicit
+      ec: ExecutionContext,
+      liftToFuture: Lift[F, Future]
+  ): Resource[R, UnderlyingLedger[F]] = {
+    val walletId = WalletId
+      .from(config.walletId)
+      .getOrElse(
+        throw new IllegalArgumentException(
+          s"Wallet ID ${config.walletId} is invalid"
+        )
+      )
+    val walletPassphrase = config.walletPassphrase
+    val paymentAddress = Address(config.paymentAddress)
+
+    Resource.eval(
+      CardanoLedgerService(
+        config.network,
+        walletId,
+        walletPassphrase,
+        paymentAddress,
+        config.blockNumberSyncStart,
+        config.blockConfirmationsToWait,
+        cardanoClient,
+        keyValueService,
+        onCardanoBlock,
+        onAtalaObject,
+        logs
+      )
+    )
+  }
 
   def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
       config: Config,
