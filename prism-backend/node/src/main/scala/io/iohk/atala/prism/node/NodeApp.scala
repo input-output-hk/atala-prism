@@ -79,12 +79,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }.run(TraceId.generateYOLO)
         .unsafeToFuture()
 
-    def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] = {
+    def onAtalaObject(notification: AtalaObjectNotification): Future[Unit] =
       objectManagementServicePromise.future.map { objectManagementService =>
-        objectManagementService.saveObject(notification)
-        ()
-      }
-    }
+        objectManagementService.saveObject(notification).run(TraceId.generateYOLO).unsafeToFuture()
+      }.void
 
     val keyValuesRepository = KeyValuesRepository.unsafe(liftedTransactor, logs)
     val keyValueService = KeyValueService.unsafe(keyValuesRepository, logs)
