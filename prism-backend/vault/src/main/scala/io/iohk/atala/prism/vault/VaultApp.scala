@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.{ContextShift, IO}
-import com.typesafe.config.ConfigFactory
+import cats.effect.{ContextShift, ExitCode, IO, IOApp, Resource}
+import com.typesafe.config.{Config, ConfigFactory}
+import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId
@@ -14,24 +15,23 @@ import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
 import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import kamon.Kamon
+import kamon.module.Module
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.ExecutionContext
 
-object VaultApp {
-  def main(args: Array[String]): Unit = {
-    val server = new VaultApp(ExecutionContext.global)
-    server.start()
-    server.blockUntilShutdown()
-    server.releaseResources()
-  }
+object VaultApp extends IOApp {
 
   private val port = 50054
+
+  override def run(args: List[String]): IO[ExitCode] = {
+    new VaultApp().start().use(_ => IO.never)
+  }
+
 }
 
-class VaultApp(executionContext: ExecutionContext) {
+class VaultApp() {
   self =>
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -39,90 +39,82 @@ class VaultApp(executionContext: ExecutionContext) {
   private val vaultLogs: Logs[IO, IOWithTraceIdContext] =
     Logs.withContext[IO, IOWithTraceIdContext]
 
-  private[this] var server: Server = null
-  private[this] var releaseTransactor: Option[IO[Unit]] = None
+  private def start(): Resource[IO, Server] = {
+    for {
+      config <- loadConfig
+      _ <- startMetrics(config)
+      databaseConfig = TransactorFactory.transactorConfig(config)
+      _ = applyDatabaseMigrations(databaseConfig)
+      transactor <- connectToDB(databaseConfig)
+      transactorWithIOContext = transactor.mapK(TraceId.liftToIOWithTraceId)
+      node = createNodeClient(config)
+      payloadsRepository <- PayloadsRepository.resource(transactorWithIOContext, vaultLogs)
+      requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.resource(transactorWithIOContext, vaultLogs)
+      authenticator = new VaultAuthenticator(
+        requestNoncesRepository,
+        node,
+        GrpcAuthenticationHeaderParser
+      )
+      encryptedDataVaultService <- EncryptedDataVaultService.resource(payloadsRepository, vaultLogs)
+      encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
+        ExecutionContext.global
+      )
+      server <- startServer(encryptedDataVaultGrpcService)
+    } yield server
+  }
 
-  private def start(): Unit = {
-    Kamon.init()
+  private def loadConfig: Resource[IO, Config] = Resource.pure[IO, Config] {
     logger.info("Loading config")
-    val globalConfig = ConfigFactory.load()
-    val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
+    ConfigFactory.load()
+  }
 
+  private def startMetrics(config: Config): Resource[IO, Module.Registration] = Resource.make(IO {
     logger.info("Setting-up uptime metrics")
-    Kamon.addReporter("uptime", new UptimeReporter(globalConfig))
+    Kamon.init()
+    Kamon.addReporter("uptime", new UptimeReporter(config))
+  })(_ => IO.fromFuture(IO(Kamon.stop())))
 
-    logger.info("Applying database migrations")
-    applyDatabaseMigrations(databaseConfig)
-
+  private def connectToDB(dbConfig: TransactorFactory.Config): Resource[IO, HikariTransactor[IO]] = {
     logger.info("Connecting to the database")
-    val (transactor, releaseTransactor) =
-      TransactorFactory.transactor[IO](databaseConfig).allocated.unsafeRunSync()
-    self.releaseTransactor = Some(releaseTransactor)
+    TransactorFactory.transactor[IO](dbConfig)
+  }
 
-    val transactorWithIOContext = transactor.mapK(TraceId.liftToIOWithTraceId)
-
-    // Node client
+  private def createNodeClient(config: Config): NodeServiceGrpc.NodeServiceStub = {
     val nodeChannel = ManagedChannelBuilder
       .forAddress(
-        globalConfig.getConfig("node").getString("host"),
-        globalConfig.getConfig("node").getInt("port")
+        config.getConfig("node").getString("host"),
+        config.getConfig("node").getInt("port")
       )
       .usePlaintext()
       .build()
-    val node = NodeServiceGrpc.stub(nodeChannel)
-
-    // Vault repositories
-    val payloadsRepository = vaultLogs
-      .service[PayloadsRepository[IOWithTraceIdContext]]
-      .map(implicit l => PayloadsRepository.create[IOWithTraceIdContext](transactorWithIOContext))
-      .unsafeRunSync()
-    val requestNoncesRepository = vaultLogs
-      .service[RequestNoncesRepository[IOWithTraceIdContext]]
-      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(transactorWithIOContext))
-      .unsafeRunSync()
-
-    val authenticator = new VaultAuthenticator(
-      requestNoncesRepository,
-      node,
-      GrpcAuthenticationHeaderParser
-    )
-
-    val encryptedDataVaultService = vaultLogs
-      .service[EncryptedDataVaultService[IOWithTraceIdContext]]
-      .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
-      .unsafeRunSync()
-
-    val encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(
-      encryptedDataVaultService,
-      authenticator
-    )(
-      executionContext
-    )
-
-    logger.info("Starting server")
-    server = ServerBuilder
-      .forPort(VaultApp.port)
-      .addService(
-        vault_api.EncryptedDataVaultServiceGrpc
-          .bindService(encryptedDataVaultGrpcService, executionContext)
-      )
-      .build()
-      .start()
+    NodeServiceGrpc.stub(nodeChannel)
   }
 
-  private def blockUntilShutdown(): Unit = {
-    if (server != null) {
-      server.awaitTermination()
-      Await.result(Kamon.stop(), Duration.Inf)
-    }
-  }
-
-  private def releaseResources(): Unit =
-    releaseTransactor.foreach(_.unsafeRunSync())
+  private def startServer(encryptedDataVaultGrpcService: EncryptedDataVaultGrpcService): Resource[IO, Server] =
+    Resource.make(IO {
+      logger.info("Starting server")
+      val server: Server = ServerBuilder
+        .forPort(VaultApp.port)
+        .addService(
+          vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultGrpcService, ExecutionContext.global)
+        )
+        .build()
+        .start()
+      logger.info("Server is up and running")
+      server
+    })(server =>
+      IO {
+        logger.info("Shutting down the server")
+        server.shutdown()
+        server.awaitTermination()
+        logger.info("Server termination completed")
+      }
+    )
 
   private def applyDatabaseMigrations(
       databaseConfig: TransactorFactory.Config
   ): Unit = {
+    logger.info("Applying database migrations")
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
       logger.info("Database up to date")

@@ -8,6 +8,7 @@ import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
 import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
+import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 import tofu.logging.Logs
 
@@ -28,14 +29,8 @@ class VaultRpcSpecBase extends RpcSpecBase {
   private val vaultTestLogs: Logs[IO, IOWithTraceIdContext] =
     Logs.withContext[IO, IOWithTraceIdContext]
 
-  lazy val requestNoncesRepository = vaultTestLogs
-    .service[RequestNoncesRepository[IOWithTraceIdContext]]
-    .map(implicit l => RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO))
-    .unsafeRunSync()
-  lazy val payloadsRepository = vaultTestLogs
-    .service[PayloadsRepository[IOWithTraceIdContext]]
-    .map(implicit l => PayloadsRepository.create(dbLiftedToTraceIdIO))
-    .unsafeRunSync()
+  lazy val requestNoncesRepository = RequestNoncesRepository.PostgresImpl.unsafe(dbLiftedToTraceIdIO, vaultTestLogs)
+  lazy val payloadsRepository = PayloadsRepository.unsafe(dbLiftedToTraceIdIO, vaultTestLogs)
 
   lazy val nodeMock =
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -46,10 +41,7 @@ class VaultRpcSpecBase extends RpcSpecBase {
       GrpcAuthenticationHeaderParser
     )
 
-  lazy val encryptedDataVaultService = vaultTestLogs
-    .service[EncryptedDataVaultService[IOWithTraceIdContext]]
-    .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
-    .unsafeRunSync()
+  lazy val encryptedDataVaultService = EncryptedDataVaultService.unsafe(payloadsRepository, vaultTestLogs)
 
   lazy val vaultGrpcService = new EncryptedDataVaultGrpcService(
     encryptedDataVaultService,

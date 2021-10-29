@@ -1,8 +1,11 @@
 package io.iohk.atala.prism.vault.services
 
-import cats.effect.MonadThrow
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{MonadThrow, Resource}
 import cats.syntax.apply._
+import cats.syntax.comonad._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import cats.syntax.applicativeError._
 import derevo.derive
 import derevo.tagless.applyK
@@ -12,7 +15,7 @@ import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.PayloadsRepository
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import tofu.higherKind.Mid
-import tofu.logging.ServiceLogging
+import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
 
 @derive(applyK)
@@ -31,15 +34,28 @@ trait EncryptedDataVaultService[F[_]] {
 }
 
 object EncryptedDataVaultService {
-  def create[
-      F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]
-  ](
-      payloadsRepository: PayloadsRepository[F]
-  ): EncryptedDataVaultService[F] = {
-    val logging: EncryptedDataVaultService[Mid[F, *]] =
-      new EncyptedDataVaultServiceLogging
-    logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
+  def create[F[_]: MonadThrow, R[_]: Functor](
+      payloadsRepository: PayloadsRepository[F],
+      logs: Logs[R, F]
+  ): R[EncryptedDataVaultService[F]] = {
+    for {
+      serviceLogs <- logs.service[EncryptedDataVaultService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, EncryptedDataVaultService[F]] = serviceLogs
+      val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging
+      logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
+    }
   }
+  def resource[F[_]: MonadThrow, R[_]: Applicative: Functor](
+      payloadsRepository: PayloadsRepository[F],
+      logs: Logs[R, F]
+  ): Resource[R, EncryptedDataVaultService[F]] =
+    Resource.eval(EncryptedDataVaultService.create(payloadsRepository, logs))
+
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      payloadsRepository: PayloadsRepository[F],
+      logs: Logs[R, F]
+  ): EncryptedDataVaultService[F] = EncryptedDataVaultService.create(payloadsRepository, logs).extract
 }
 
 private final class EncyptedDataVaultServiceImpl[F[_]](
