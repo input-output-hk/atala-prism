@@ -49,9 +49,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-  private[this] var server: Server = _
-
-  private def start(): Resource[IO, Unit] = {
+  private def start(): Resource[IO, Server] = {
     for {
       globalConfig <- loadConfig
       _ <- startMetrics(globalConfig)
@@ -131,7 +129,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         intDemoRepository,
         schedulerPeriod = 1.second
       )(executionContext)
-      _ <- startServer(
+      server <- startServer(
         connectorService,
         credentialViewsService,
         idService,
@@ -141,7 +139,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         contactConnectionService,
         executionContext
       )
-    } yield ()
+    } yield server
   }
 
   private def startMetrics(config: Config): Resource[IO, Module.Registration] =
@@ -152,19 +150,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     }) { _ => IO.fromFuture(IO(Kamon.stop())) }
 
   private def loadConfig: Resource[IO, Config] =
-    Resource.eval {
-      IO.delay {
-        logger.info("Loading config")
-        ConfigFactory.load()
-      }
+    Resource.pure[IO, Config] {
+      logger.info("Loading config")
+      ConfigFactory.load()
     }
 
   private def applyMigrations(databaseConfig: TransactorFactory.Config): Resource[IO, Unit] =
-    Resource.eval {
-      IO {
-        logger.info("Applying database migrations")
-        applyDatabaseMigrations(databaseConfig)
-      }
+    Resource.pure[IO, Unit] {
+      logger.info("Applying database migrations")
+      applyDatabaseMigrations(databaseConfig)
     }
 
   private def connectToTheDb(databaseConfig: TransactorFactory.Config): Resource[IO, HikariTransactor[IO]] = {
@@ -209,9 +203,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       insuranceService: InsuranceServiceImpl,
       contactConnectionService: ContactConnectionService,
       executionContext: ExecutionContext
-  ): Resource[IO, Unit] = Resource.make(IO {
+  ): Resource[IO, Server] = Resource.make(IO {
     logger.info("Starting server")
-    server = ServerBuilder
+    val server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
@@ -225,7 +219,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .build()
       .start()
     logger.info("Server started, listening on " + ConnectorApp.port)
-  })(_ =>
+    server
+  })(server =>
     IO {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
       server.shutdown()
