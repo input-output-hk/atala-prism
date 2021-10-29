@@ -301,6 +301,19 @@ object DataPreparation {
     ()
   }
 
+  def revokeCredential(
+      issuerId: ParticipantId,
+      credentialId: GenericCredential.Id,
+      operationId: AtalaOperationId
+  )(implicit
+      database: Transactor[IO]
+  ): Unit = {
+    CredentialsDAO
+      .revokeCredential(issuerId, credentialId, operationId)
+      .transact(database)
+      .unsafeRunSync()
+  }
+
   def publishCredential(
       issuerId: ParticipantId,
       credential: GenericCredential
