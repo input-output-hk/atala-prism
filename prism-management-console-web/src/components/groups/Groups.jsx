@@ -91,7 +91,7 @@ const Groups = observer(
           </div>
           <div className="filterSection">
             <div className="filterContainer">
-              <GroupFilters fullFilters />
+              <GroupFilters showFullFilter />
             </div>
             {accountStatus === CONFIRMED && newGroupButton}
           </div>

@@ -188,7 +188,7 @@ const GroupEditing = ({
         <h3>{t('groupEditing.contacts')}</h3>
         <div className="filterContainer">
           <div className="connectionFilter">
-            <ConnectionsFilter {...filterProps} fullFilters={false} />
+            <ConnectionsFilter {...filterProps} showFullFilter={false} />
           </div>
           <div>
             <Checkbox className="groupsCheckbox" {...selectAllProps}>

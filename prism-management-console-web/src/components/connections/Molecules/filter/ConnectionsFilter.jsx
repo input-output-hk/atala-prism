@@ -15,7 +15,7 @@ import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDateP
 import { useContactUiState } from '../../../../hooks/useContactStore';
 import './_style.scss';
 
-const ConnectionsFilter = observer(({ fullFilters }) => {
+const ConnectionsFilter = observer(({ showFullFilter }) => {
   const { t } = useTranslation();
   const {
     sortingDirection,
@@ -41,7 +41,7 @@ const ConnectionsFilter = observer(({ fullFilters }) => {
           prefix={<SearchOutlined />}
           onChange={({ target: { value } }) => setFilterValue('textFilter', value)}
         />
-        {fullFilters && [
+        {showFullFilter && [
           <Select
             allowClear
             onChange={value => setFilterValue('statusFilter', value)}
@@ -81,13 +81,13 @@ const ConnectionsFilter = observer(({ fullFilters }) => {
 ConnectionsFilter.defaultProps = {
   searchText: undefined,
   setStatus: undefined,
-  fullFilters: true
+  showFullFilter: true
 };
 
 ConnectionsFilter.propTypes = {
   setSearchText: PropTypes.func.isRequired,
   searchText: PropTypes.string,
-  fullFilters: PropTypes.bool,
+  showFullFilter: PropTypes.bool,
   setStatus: PropTypes.func,
   sortingDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
     .isRequired,

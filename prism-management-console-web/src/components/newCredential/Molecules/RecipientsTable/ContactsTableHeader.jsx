@@ -35,7 +35,7 @@ const ContactsTableHeader = observer(
 
     return (
       <div className="RecipientsSelectionTableHeader">
-        <ConnectionsFilter fullFilters={false} />
+        <ConnectionsFilter showFullFilter={false} />
         <SelectAllButton
           loadingSelection={loadingSelection}
           selectedEntities={selectedContacts}

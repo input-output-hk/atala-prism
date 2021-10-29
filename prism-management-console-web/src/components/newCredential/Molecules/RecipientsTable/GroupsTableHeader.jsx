@@ -30,7 +30,7 @@ const GroupsTableHeader = observer(
 
     return (
       <div className="RecipientsSelectionTableHeader">
-        <GroupFilters fullFilters={false} />
+        <GroupFilters showFullFilter={false} />
         <SelectAllButton
           loadingSelection={loadingSelection}
           selectedEntities={selectedGroups}
