@@ -1,38 +1,45 @@
 package io.iohk.atala.prism.node.cardano.dbsync
 
-import cats.effect.{ContextShift, IO, Resource}
+import cats.Comonad
+import cats.effect.{Async, ContextShift, Resource}
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.repositories.TransactorFactory
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient.Result
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
+import tofu.logging.Logs
 
-import scala.concurrent.ExecutionContext
+trait CardanoDbSyncClient[F[_]] {
+  def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]]
+  def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]]
+}
 
-class CardanoDbSyncClient(cardanoBlockRepository: CardanoBlockRepository) {
-  def getFullBlock(blockNo: Int): Result[BlockError.NotFound, Block.Full] = {
+final class CardanoDbSyncClientImpl[F[_]](
+    cardanoBlockRepository: CardanoBlockRepository[F]
+) extends CardanoDbSyncClient[F] {
+  def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] =
     cardanoBlockRepository.getFullBlock(blockNo)
-  }
 
-  def getLatestBlock(): Result[BlockError.NoneAvailable.type, Block.Canonical] = {
-    cardanoBlockRepository.getLatestBlock()
-  }
+  def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] =
+    cardanoBlockRepository.getLatestBlock
 }
 
 object CardanoDbSyncClient {
-  type Result[E, A] = FutureEither[E, A]
-
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-
   case class Config(dbConfig: TransactorFactory.Config)
 
-  def apply(config: Config)(implicit ec: ExecutionContext): Resource[IO, CardanoDbSyncClient] = {
-    TransactorFactory
-      .transactor[IO](config.dbConfig)
-      .map(transactor => {
-        val cardanoBlockRepository = new CardanoBlockRepository(transactor)
+  def apply[F[_]: Async: ContextShift: TimeMeasureMetric, R[_]: Comonad](
+      config: Config,
+      logs: Logs[R, F]
+  ): Resource[F, CardanoDbSyncClient[F]] = {
 
-        new CardanoDbSyncClient(cardanoBlockRepository)
+    /** Custom transactor since CardanoDbSyncClient can use different DB
+      */
+    TransactorFactory
+      .transactor[F](config.dbConfig)
+      .map(transactor => {
+        val cardanoBlockRepository =
+          CardanoBlockRepository.unsafe(transactor, logs)
+
+        new CardanoDbSyncClientImpl(cardanoBlockRepository)
       })
   }
 }

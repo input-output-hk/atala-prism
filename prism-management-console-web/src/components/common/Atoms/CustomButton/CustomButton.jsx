@@ -32,6 +32,7 @@ const CustomButton = ({
 );
 
 CustomButton.defaultProps = {
+  buttonProps: {},
   buttonText: '',
   overrideClassName: '',
   loading: false
@@ -50,8 +51,8 @@ CustomButton.propTypes = {
     ]),
     onClick: PropTypes.func,
     disabled: PropTypes.bool
-  }).isRequired,
-  buttonText: PropTypes.string,
+  }),
+  buttonText: PropTypes.node,
   overrideClassName: PropTypes.string,
   loading: PropTypes.bool
 };

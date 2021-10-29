@@ -1,4 +1,5 @@
 import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { computedFn } from 'mobx-utils';
 import _ from 'lodash';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../helpers/constants';
@@ -12,7 +13,8 @@ const defaultValues = {
   sortDirection: ascending,
   sortingBy: TEMPLATES_SORTING_KEYS.name
 };
-export class TemplateUiState {
+
+export default class TemplateUiState {
   nameFilter = defaultValues.nameFilter;
 
   categoryFilter = defaultValues.categoryFilter;
@@ -47,6 +49,10 @@ export class TemplateUiState {
     return Boolean(this.categoryFilter || this.lastEditedFilter);
   }
 
+  get hasNameFilterApplied() {
+    return Boolean(this.nameFilter);
+  }
+
   get hasFiltersApplied() {
     return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
   }
@@ -54,9 +60,12 @@ export class TemplateUiState {
   get filteredTemplates() {
     const templates = this.rootStore.prismStore.templateStore.credentialTemplates;
     const filteredTemplates = this.applyFilters(templates);
-    const sortedAndFilteredTemplates = this.applySorting(filteredTemplates);
-    return sortedAndFilteredTemplates;
+    return this.applySorting(filteredTemplates);
   }
+
+  filteredTemplatesByCategory = computedFn(category =>
+    this.filteredTemplates.filter(ct => category.id === ct.category)
+  );
 
   applyFilters = templates =>
     templates.filter(item => {

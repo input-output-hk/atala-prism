@@ -1,5 +1,16 @@
 \documentclass[10pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\newcommand{\figref}[1]{Fig. \ref{#1}}
+\newcommand{\tabref}[1]{Table \ref{#1}}
+\newcommand{\lstref}[1]{Listing \ref{#1}}
+\newcommand{\secref}[1]{Section \ref{#1}}
+\newcommand{\appref}[1]{Appendix \ref{#1}}
+\newcommand{\todo}[1]{{\colorbox{red}{\bf TODO:}\textcolor{red}{#1}}}
+
 
 \title{PRISM protocol v0.3} 
 
@@ -179,6 +190,123 @@ Once they receive credentials from issuers, subjects will present them to intere
 \item The verifier now checks the signature and concludes that the credential subject is indeed the person presenting it.
 \end{itemize}
 
+\subsection{Specific Sub-Protocols}
+\label{ssec:subproto}
+
+\subsubsection{End-to-End Encrypted Data Exchange via the Connector}
+\label{sssec:e2eeconnector}
+
+Assuming each participant of the system owns a (set of) DIDs, we want to let
+holders receive new credentials from issuers, in a secure -- yet convenient --
+manner. We describe a protocol for this purpose.  At the moment, we require
+that issuer and prospective holder can perform a one-time physical interaction
+with each other or, alternatively, that they have a secure channel at their
+availability (although possibly cumbersome to use, hence we only require to use
+it once).
+
+In a nutshell, the proposed protocol (see \figref{fig:e2econnector}) is composed
+of two phases. In the first phase, the issuer shares a QR code with the holder.
+This QR code contains the issuer's public key (or, maybe, its DID), a random
+value ($code$, in \figref{fig:e2econnector}), and a session identifier ($token$,
+in \figref{fig:e2econnector}). This exchange takes place through a secure (i.e.,
+confidential and authenticated) channel, such as physical exchange. Probably
+immediately, although also possibly at a later point in time, the prospective
+holder sends back her own public key (or, alternatively, her DID) authenticated
+with a MAC, where we use the random value
+in the QR code as secret key. The issuer uses the session identifier to locate
+the corresponding session and, now that it received in an authenticated manner
+the public key of the holder, can leverage hybrid encryption techniques to
+establish an end-to-end encrypted session, e.g., using ECIES \cite{abr01}.
+Ensuring end-to-end encryption and authentication is important at this point, as
+all the information exchanged between issuer and holder is routed through the
+connector: an entity or set of entities who ensure that asynchronous
+communication can take place between issuer and holder. Thus, ECIES is crucial
+to ensure the secrecy of the information, end-to-end. Since the holder needs to
+have certainty that the data it receives comes from the issuer (and ECIES does
+not authenticate the sender), we have the issuer digitally sign the data it
+sends through the ECIES-secured channel. Note that we could involve the random
+value shared via the QR code for this. But that would force us to re-execute the
+first phase of the protocol even when the QR code is compromised after having
+completed the first phase of the protocol. Digital signatures using the issuer's
+keypair prevent this.
+
+Note that we are combining signature and encryption (plus, the MAC-based
+authentication natively provided by ECIES). This places us in the context put
+forward in \cite{davi01}, that discusses some good practices when combining such
+primitives. In a nutshell, we follow the sign-then-encrypt approach%
+\footnote{What we call here ``sign-then-encrypt'' is called ``Sign \& Encrypt''
+  in \cite{davi01}. However, we find
+  more explicit the naming convention of \cite{kraw01}, which is more consistent
+  when referring to the order in which the primitives are used -- order that, in
+  these cases, is crucial.}, combined with including the public
+keys of both holder and issuer into the signed (and then encrypted) data.
+This intertwines the inner layer (the signature) with the outer layer (the
+encryption), ensuring that any alteration on any of them will be detected.
+We note that there are other options that, a priori, are equally secure -- e.g.,
+encrypt-then-sign, including also the sender's public key in the encrypted data
+(but that would require separately signing a (hash of) the data, to ensure
+non-repudiation). Finally, it is worth noting that ECIES follows the
+encrypt-then-authenticate approach, which is proven to realize secure channels
+in \cite{kraw01}, as long as the underlying encryption scheme is IND-CPA secure,
+and the underlying MAC function is secure -- but this is independent of the
+sign-then-encrypt approach.
+
+While the protocol is simple, and is based on common cryptographic constructions,
+it is easy to get such protocols wrong, as pointed out in numerous occasions
+\cite{davi01, kraw01}. Hence, we have used Tamarin%
+\footnote{https://tamarin-prover.github.io/ (Last access, October 5th, 2021.)}
+to model our protocol\footnote{Source code for the model available here
+  \url{https://github.com/input-output-hk/atala-prism/blob/research-tamarin-connector/prism-backend/research/formalizations/connector.spthy}
+  \todo{Update to final URL.}}, which is schematized in \figref{fig:e2econnector}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.4]{figures/connector.png}
+  \caption{Sequence diagram for the E2EE protocol through the connector.}
+  \label{fig:e2econnector}%
+\end{figure}
+
+The security properties that we prove are as follows (we refer to the actual
+model for the formal definition):
+
+\begin{description}
+\item[Code secrecy.] Codes exchanged via a QR code are always confidential.
+  Note that this is trivial, as it is exchanged via a secure channel, and
+  the holder never sends it back in the clear.
+\item[Code injectivity.] Every QR code that is received by a holder, allegedly
+  sent by an issuer, was sent before by that issuer. Again, this is trivial due
+  to the secure channel used to exchange the QR code.
+\item[Holder's public key authenticity.] Every message received by an issuer
+  in step 3, containing a public key for key-exchange usage, that was
+  allegedly sent by a holder, was indeed previously sent by that holder.
+  This is ensured through the message authentication code (MAC) that
+  leverages the random QR code exchanged via the secure channel, which is
+  only known to the issuer and the holder.
+\item[Holder's public key injectivity.] For every session in which an
+  issuer receives in step 3 a message, allegedly sent by a holder in
+  step 2, containing the holder's public key, it was that holder, in
+  the same session, who sent the public key in step 2.  
+\item[Credential secrecy.] This property has two variants: it ensures
+  secrecy for credentials sent by an honest issuer to a holder that was honest
+  at the moment of sending the credential, and is not compromised afterwards;
+  and it also ensures secrecy for credentials received by an honest holder,
+  allegedly from an honest issuer, if both holder and issuer were honest when
+  the credential is received, and they are not corrupted afterwards. Altogether
+  with the credential authenticity property shown next, it ensures that only
+  (honest) holder and issuer learn the contents of a credential.
+\item[Credential authenticity.] All messages containing a credential, received
+  by a holder at step 5, where indeed sent by an issuer and addressed to that
+  same holder, as long as both issuer and holder keys are not compromised.
+\item[Credential non-injectivity.] All messages containing a credential, received
+  by a holder at step 5, were sent by an issuer and addressed to that holder
+  at step 4. Note, however, that both messages in steps 4 and 5 don't necessarily
+  pertain to the  same ``session'' (in instantiations where parallel sessions
+  may occur). However, our current understanding is that this does not pose a
+  risk, as in any case, the messaged is sent by the issuer, and received by the
+  intended holder. For the sake of future reference, we give an illustrative
+  flow of this ``non-injective'' execution, in \appref{app:non-inj-e2ee}.
+\end{description}
+
 %----------------------------------------------------------------------------------------
 %	PROPERTIES
 %----------------------------------------------------------------------------------------
@@ -273,4 +401,57 @@ Notes:
       associated to their cars, allowing car owners to de-register from a batcher at will.
 \item a priori, we do not see a need to batch credential issuance/revocation events
 \end{itemize}
+
+\appendix
+
+\section{Example of Non-Injective Execution of Connector E2EE Protocol}
+\label{app:non-inj-e2ee}
+
+The diagram in \figref{fig:e2econnector-noninj} depicts an scenario in which a
+non-injective execution between the issuer and the holder takes place.
+
+First, we have to take into account that such execution requires a somehow
+extended setting than what we considered in \secref{sssec:e2eeconnector}. Namely,
+here we assume a (certainly realistic) scenario in which any prospective holder
+has several computing devices -- e.g., a laptop and a smartphone. Similarly,
+the issuer instantiates several concurrent services -- depicted as
+\emph{Instance 1} and \emph{Instance 2} in \figref{fig:e2econnector-noninj}.
+Still, the same user operates both computing devices, which share the same
+private values; and all issuer instances have access to the same database with
+holders' information, and the issuer's private keys.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.32]{figures/connector-noninjective.png}
+  \caption{Sequence diagram of a sample non-injective execution of the E2EE
+    connector protocol}
+  \label{fig:e2econnector-noninj}%
+\end{figure}
+
+In the diagram, the holder requests a QR code once with each device -- for this,
+we envision an extended setting in which the holder can request QR codes
+securely (e.g., through signed email). The smartphone communicates with Instance
+2 of the issuer, while the laptop communicates with Instance 1. Eventually, the
+holder decides to complete the process from her laptop. The connector forwards
+the request to Instance 1, which stores it in the database. Then, it might
+happen that it is Instance 2 the one that takes care of finalizing the request:
+it fetches the necessary data from the shared database, and sends the result to
+the holder's phone (which is the computing device that communicated with
+Instance 2). This lack of correspondence between who initiated a request, and
+who responds it, is what is formally referred to as non-injectivity.
+Theoretically, that might perfectly happen in our proposed protocol, as there is
+nothing preventing such behaviour in a cryptographic manner, as our model shows.
+However, two observations are relevant:
+
+\begin{itemize}
+\item The authenticity and secrecy properties still ensure that only the holder
+  and issuer have access to the data that is sent by the issuer, and that it
+  indeed originates from the issuer.
+\item Such behaviour, if deemed unwanted, could be easily prevented through a
+  proper session handling, at the implementation level.
+\end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{article}
+
 \end{document}

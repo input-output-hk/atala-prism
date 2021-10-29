@@ -1,21 +1,21 @@
-import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
+import { PropTypes } from 'prop-types';
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { templateCategoryShape } from '../../../../helpers/propShapes';
-import { UiStateContext } from '../../../../stores/ui/UiState';
+import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
 const ENABLED_STATE = 1;
 
-const TemplateFilters = observer(({ templateCategories }) => {
+const TemplateFilters = observer(({ showDateFilter }) => {
   const { t } = useTranslation();
   const { Option } = Select;
-  const { templateUiState } = useContext(UiStateContext);
-  const { categoryFilter, lastEditedFilter, setFilterValue } = templateUiState;
+
+  const { templateCategories } = useTemplateStore();
+  const { categoryFilter, lastEditedFilter, setFilterValue } = useTemplateUiState();
 
   const allowedTemplateCategories = templateCategories.filter(
     ({ state }) => state === ENABLED_STATE
@@ -36,20 +36,26 @@ const TemplateFilters = observer(({ templateCategories }) => {
           </Option>
         ))}
       </Select>
-      <CustomInputGroup prefixIcon="calendar">
-        <CustomDatePicker
-          value={lastEditedFilter}
-          placeholder={t('templates.table.columns.lastEdited')}
-          suffixIcon={<DownOutlined />}
-          onChange={value => setFilterValue('lastEditedFilter', value)}
-        />
-      </CustomInputGroup>
+      {showDateFilter && (
+        <CustomInputGroup prefixIcon="calendar">
+          <CustomDatePicker
+            value={lastEditedFilter}
+            placeholder={t('templates.table.columns.lastEdited')}
+            suffixIcon={<DownOutlined />}
+            onChange={value => setFilterValue('lastEditedFilter', value)}
+          />
+        </CustomInputGroup>
+      )}
     </div>
   );
 });
 
+TemplateFilters.defaultProps = {
+  showDateFilter: true
+};
+
 TemplateFilters.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
+  showDateFilter: PropTypes.bool
 };
 
 export default TemplateFilters;

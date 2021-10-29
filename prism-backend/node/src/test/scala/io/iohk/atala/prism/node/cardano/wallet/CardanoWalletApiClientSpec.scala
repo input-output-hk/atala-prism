@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
+import cats.effect.IO
 import cats.scalatest.EitherMatchers._
 import io.circe.Json
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
@@ -7,6 +8,7 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.models.WalletStatus
+import io.iohk.atala.prism.node.services.CatsEffectBase
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures
@@ -16,13 +18,14 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.ExecutionContext
 
-class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
+class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with CatsEffectBase {
 
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))
   implicit def ec: ExecutionContext = ExecutionContext.global
 
-  private val walletId = WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
+  private val walletId =
+    WalletId.from("bf098c001609ad7b76a0239e27f2a6bf9f09fd71").value
 
   "estimateTransactionFee" should {
     val payment = Payment(
@@ -31,36 +34,52 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       ),
       Lovelace(42000000)
     )
-    val metadata = TransactionMetadata(Json.obj("0" -> Json.fromString("0x1234567890abcdef")))
+    val metadata = TransactionMetadata(
+      Json.obj("0" -> Json.fromString("0x1234567890abcdef"))
+    )
     val expectedPath = s"v2/wallets/$walletId/payment-fees"
-    val expectedJsonRequest = readResource("estimateTransactionFee_request.json")
+    val expectedJsonRequest =
+      readResource("estimateTransactionFee_request.json")
 
     "estimate the fee of a transaction" in {
       val client =
-        FakeCardanoWalletApiClient.Success(
+        FakeCardanoWalletApiClient.Success[IO](
           expectedPath,
           expectedJsonRequest,
           readResource("estimateTransactionFee_success_response.json")
         )
 
       val estimatedFee =
-        client.estimateTransactionFee(walletId, List(payment), Some(metadata)).value.futureValue.toOption.value
+        client
+          .estimateTransactionFee(walletId, List(payment), Some(metadata))
+          .unsafeToFuture()
+          .futureValue
+          .toOption
+          .value
 
-      estimatedFee must be(EstimatedFee(min = Lovelace(133713), max = Lovelace(1000000)))
+      estimatedFee must be(
+        EstimatedFee(min = Lovelace(133713), max = Lovelace(1000000))
+      )
     }
 
     "fail on server error" in {
       val client =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IO](
           expectedPath,
           expectedJsonRequest,
           "not_found",
           "Bad request"
         )
 
-      val error = client.estimateTransactionFee(walletId, List(payment), Some(metadata)).value.futureValue.left.value
+      val error =
+        client.estimateTransactionFee(walletId, List(payment), Some(metadata)).unsafeToFuture().futureValue.left.value
 
-      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+      error must be(
+        ErrorResponse(
+          expectedPath,
+          CardanoWalletError("not_found", "Bad request")
+        )
+      )
     }
   }
 
@@ -71,30 +90,36 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       ),
       Lovelace(42000000)
     )
-    val metadata = TransactionMetadata(Json.obj("0" -> Json.fromString("0x1234567890abcdef")))
+    val metadata = TransactionMetadata(
+      Json.obj("0" -> Json.fromString("0x1234567890abcdef"))
+    )
     val passphrase = "Secure Passphrase"
     val expectedPath = s"v2/wallets/$walletId/transactions"
     val expectedJsonRequest = readResource("postTransaction_request.json")
 
     "post a new transaction" in {
       val client =
-        FakeCardanoWalletApiClient.Success(
+        FakeCardanoWalletApiClient.Success[IO](
           expectedPath,
           expectedJsonRequest,
           readResource("postTransaction_success_response.json")
         )
 
       val transaction =
-        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue
+        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).unsafeToFuture().futureValue
 
       transaction must beRight(
-        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+        TransactionId
+          .from(
+            "1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1"
+          )
+          .value
       )
     }
 
     "fail on server error" in {
       val client =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IO](
           expectedPath,
           expectedJsonRequest,
           "not_found",
@@ -102,62 +127,88 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
         )
 
       val error =
-        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue.left.value
+        client
+          .postTransaction(walletId, List(payment), Some(metadata), passphrase)
+          .unsafeToFuture()
+          .futureValue
+          .left
+          .value
 
-      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+      error must be(
+        ErrorResponse(
+          expectedPath,
+          CardanoWalletError("not_found", "Bad request")
+        )
+      )
     }
   }
 
   "getTransaction" should {
-    val transactionId = TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+    val transactionId = TransactionId
+      .from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+      .value
     val expectedPath = s"v2/wallets/$walletId/transactions/$transactionId"
 
     "get transaction details" in {
       val client =
-        FakeCardanoWalletApiClient.Success(expectedPath, "", readResource("getTransaction_success_response.json"))
+        FakeCardanoWalletApiClient.Success[IO](expectedPath, "", readResource("getTransaction_success_response.json"))
 
-      val transactionDetails = client.getTransaction(walletId, transactionId).value.futureValue
+      val transactionDetails = client.getTransaction(walletId, transactionId).unsafeToFuture().futureValue
 
-      transactionDetails must beRight(TransactionDetails(transactionId, TransactionStatus.InLedger))
+      transactionDetails must beRight(
+        TransactionDetails(transactionId, TransactionStatus.InLedger)
+      )
     }
 
     "fail on server error" in {
       val client =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IO](
           expectedPath,
           "",
           "not_found",
           "Bad request"
         )
 
-      val error = client.getTransaction(walletId, transactionId).value.futureValue.left.value
+      val error = client.getTransaction(walletId, transactionId).unsafeToFuture().futureValue.left.value
 
-      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+      error must be(
+        ErrorResponse(
+          expectedPath,
+          CardanoWalletError("not_found", "Bad request")
+        )
+      )
     }
   }
 
   "deleteTransaction" should {
-    val transactionId = TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+    val transactionId = TransactionId
+      .from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1")
+      .value
     val expectedPath = s"v2/wallets/$walletId/transactions/$transactionId"
 
     "delete a transaction" in {
-      val client = FakeCardanoWalletApiClient.Success(expectedPath, "", "")
+      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", "")
 
-      client.deleteTransaction(walletId, transactionId).value.futureValue
+      client.deleteTransaction(walletId, transactionId).unsafeToFuture().futureValue
     }
 
     "fail on server error" in {
       val client =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IO](
           expectedPath,
           "",
           "not_found",
           "Bad request"
         )
 
-      val error = client.deleteTransaction(walletId, transactionId).value.futureValue.left.value
+      val error = client.deleteTransaction(walletId, transactionId).unsafeToFuture().futureValue.left.value
 
-      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+      error must be(
+        ErrorResponse(
+          expectedPath,
+          CardanoWalletError("not_found", "Bad request")
+        )
+      )
     }
   }
 
@@ -165,9 +216,9 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     val expectedPath = s"v2/wallets/$walletId"
 
     "return available funds and state data" in {
-      val client = FakeCardanoWalletApiClient.Success(expectedPath, "", readResource("getWallet.json"))
+      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", readResource("getWallet.json"))
 
-      val result = client.getWallet(walletId).value.futureValue
+      val result = client.getWallet(walletId).unsafeToFuture().futureValue
       result.isRight mustBe true
 
       val Right(data) = result
@@ -177,16 +228,21 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
     "fail on server error" in {
       val client =
-        FakeCardanoWalletApiClient.Fail(
+        FakeCardanoWalletApiClient.Fail[IO](
           expectedPath,
           "",
           "not_found",
           "Bad request"
         )
 
-      val error = client.getWallet(walletId).value.futureValue.left.value
+      val error = client.getWallet(walletId).unsafeToFuture().futureValue.left.value
 
-      error must be(ErrorResponse(expectedPath, CardanoWalletError("not_found", "Bad request")))
+      error must be(
+        ErrorResponse(
+          expectedPath,
+          CardanoWalletError("not_found", "Bad request")
+        )
+      )
     }
 
     "read not_responding status" in {
@@ -202,9 +258,9 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
                        |  }
                        |}""".stripMargin
 
-      val client = FakeCardanoWalletApiClient.Success(expectedPath, "", response)
+      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", response)
 
-      val result = client.getWallet(walletId).value.futureValue
+      val result = client.getWallet(walletId).unsafeToFuture().futureValue
 
       result.isRight mustBe true
 
@@ -218,7 +274,8 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     try {
       scala.io.Source.fromResource(s"cardano/wallet/$resource").mkString
     } catch {
-      case _: Throwable => throw new RuntimeException(s"Resource $resource not found")
+      case _: Throwable =>
+        throw new RuntimeException(s"Resource $resource not found")
     }
   }
 }

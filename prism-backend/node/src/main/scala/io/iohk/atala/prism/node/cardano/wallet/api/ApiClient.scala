@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.node.cardano.wallet.api
 
-import com.softwaremill.sttp._
-import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
+import cats.Functor
+import cats.effect.{Concurrent, ContextShift, Resource}
+import sttp.client3._
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
@@ -23,22 +24,20 @@ import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{
 }
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 import io.iohk.atala.prism.node.models.WalletDetails
-import io.iohk.atala.prism.utils.FutureEither._
+import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import tofu.syntax.monadic._
+import sttp.model.MediaType.ApplicationJson
+import sttp.model.Uri
 
-import scala.concurrent.{ExecutionContext, Future}
-
-/**
-  * Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
+/** Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
   */
-private[wallet] class ApiClient(config: ApiClient.Config)(implicit
-    backend: SttpBackend[Future, Nothing],
-    ec: ExecutionContext
-) extends CardanoWalletApiClient { self =>
+private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend: SttpBackend[F, Any])
+    extends CardanoWalletApiClient[F] {
   override def estimateTransactionFee(
       walletId: WalletId,
       payments: List[Payment],
       metadata: Option[TransactionMetadata]
-  ): Result[EstimatedFee] = {
+  ): F[Result[EstimatedFee]] = {
     EstimateTransactionFee(walletId, payments, metadata).run
   }
 
@@ -47,38 +46,37 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Result[TransactionId] = {
+  ): F[Result[TransactionId]] = {
     PostTransaction(walletId, payments, metadata, passphrase).run(transactionIdFromTransactionDecoder)
   }
 
-  override def getTransaction(walletId: WalletId, transactionId: TransactionId): Result[TransactionDetails] = {
+  override def getTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[TransactionDetails]] = {
     GetTransaction(walletId, transactionId).run
   }
 
-  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Result[Unit] = {
+  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[Unit]] = {
     DeleteTransaction(walletId, transactionId).run
   }
 
-  override def getWallet(walletId: WalletId): Result[WalletDetails] = {
+  override def getWallet(walletId: WalletId): F[Result[WalletDetails]] = {
     GetWallet(walletId).run
   }
 
-  private def call[A: Decoder](method: ApiRequest): Result[A] = {
-    sttp
-      .contentType(MediaTypes.Json)
+  private def call[A: Decoder](method: ApiRequest): F[Result[A]] = {
+    basicRequest
+      .contentType(ApplicationJson)
       .response(asString)
-      .method(method.httpMethod, Uri.apply(config.host, config.port).path(method.path))
+      .method(method.httpMethod, Uri.apply(config.host, config.port).withWholePath(method.path))
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
-      .send()
+      .send(backend)
       .map { response =>
         getResult[A](response).left
           .map(e => ErrorResponse(method.path, e))
       }
-      .toFutureEither
   }
 
   private implicit class ApiRequestExtensions(m: ApiRequest) {
-    def run[A: Decoder]: Result[A] = call[A](m)
+    def run[A: Decoder]: F[Result[A]] = call[A](m)
   }
 }
 
@@ -86,17 +84,19 @@ private[wallet] object ApiClient {
 
   case class Config(host: String, port: Int)
 
-  private[wallet] val DefaultBackend: SttpBackend[Future, Nothing] = AsyncHttpClientFutureBackend()
+  private[wallet] def defaultBackend[F[_]: Concurrent: ContextShift]: Resource[F, SttpBackend[F, Any]] =
+    AsyncHttpClientCatsBackend.resource()
 
-  /**
-    * Try to map a response to a result or an error.
+  /** Try to map a response to a result or an error.
     *
     * <p>If the mapping is not possible, throw an exception.
     *
-    * @tparam A the success type.
-    * @return The success or the error response.
+    * @tparam A
+    *   the success type.
+    * @return
+    *   The success or the error response.
     */
-  private def getResult[A](response: Response[String])(implicit
+  private def getResult[A](response: Response[Either[String, String]])(implicit
       decoder: Decoder[A]
   ): Either[CardanoWalletError, A] = {
     response.body.fold(
@@ -105,8 +105,7 @@ private[wallet] object ApiClient {
     )
   }
 
-  /**
-    * Try to map a string response a Json.
+  /** Try to map a string response a Json.
     */
   private def unsafeToJson(response: String): Json = {
     if (response.isEmpty) {
@@ -124,8 +123,7 @@ private[wallet] object ApiClient {
     }
   }
 
-  /**
-    * Try to map a string response to its error result.
+  /** Try to map a string response to its error result.
     */
   private def unsafeToError(response: String): CardanoWalletError = {
     val json = unsafeToJson(response)
@@ -138,8 +136,7 @@ private[wallet] object ApiClient {
       )
   }
 
-  /**
-    * Try to map a string response to its success result.
+  /** Try to map a string response to its success result.
     */
   private def unsafeToResult[A](response: String)(implicit decoder: Decoder[A]): A = {
     val json = unsafeToJson(response)

@@ -19,7 +19,10 @@ class VaultAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[DID](nodeClient, grpcAuthenticationHeaderParser) {
+) extends SignedRequestsAuthenticatorBase[DID](
+      nodeClient,
+      grpcAuthenticationHeaderParser
+    ) {
 
   override def burnNonce(did: DID, requestNonce: RequestNonce, traceId: TraceId)(implicit
       ec: ExecutionContext

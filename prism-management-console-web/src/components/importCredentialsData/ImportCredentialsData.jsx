@@ -8,7 +8,7 @@ import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
-import { DynamicFormProvider } from '../../providers/DynamicFormProvider';
+import { DynamicFormProvider } from '../providers/DynamicFormProvider';
 
 const ImportCredentialsData = ({
   recipients,
@@ -68,7 +68,7 @@ ImportCredentialsData.defaultProps = {
 ImportCredentialsData.propTypes = {
   recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
   contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
-  credentialType: PropTypes.shape(credentialTypeShape).isRequired,
+  credentialType: credentialTypeShape.isRequired,
   onCancel: PropTypes.func.isRequired,
   onFinish: PropTypes.func.isRequired,
   hasSelectedRecipients: PropTypes.bool

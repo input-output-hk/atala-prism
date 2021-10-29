@@ -16,28 +16,28 @@ import TemplateLayoutImage4 from '../../images/TemplateLayout_4.svg';
 export const templateLayouts = [
   {
     thumb: TemplateLayoutImage0,
-    images: ['userIcon'],
+    images: ['embeddedUserIcon'],
     ...template0
   },
   {
     thumb: TemplateLayoutImage1,
-    images: ['companyIcon'],
+    images: ['embeddedCompanyLogo'],
 
     ...template1
   },
   {
     thumb: TemplateLayoutImage2,
-    images: ['companyIcon'],
+    images: ['embeddedCompanyLogo'],
     ...template2
   },
   {
     thumb: TemplateLayoutImage3,
-    images: ['companyIcon'],
+    images: ['embeddedCompanyLogo'],
     ...template3
   },
   {
     thumb: TemplateLayoutImage4,
-    images: ['companyIcon', 'userIcon'],
+    images: ['embeddedCompanyLogo', 'embeddedUserIcon'],
     ...template4
   }
 ];
@@ -61,15 +61,13 @@ export const configureHtmlTemplate = (templateId, currentConfig) => {
   const htmlTemplate = templateLayouts[templateId];
   const configuredHeader = updateHeader(htmlTemplate, currentConfig);
   const configuredBody = updateBody(htmlTemplate, currentConfig);
-  const mergedHtml = replacePlaceholdersFromObject(
+  return replacePlaceholdersFromObject(
     configuredHeader,
     { attributes: '{{#attributes}}' },
     {
       attributes: configuredBody
     }
   );
-
-  return mergedHtml;
 };
 
 // replaces {{placeholders}} with object value (unless the value is undefined).
@@ -101,32 +99,6 @@ const fillBody = ({ dynamicAttribute, fixedText }, currentSettings) => {
   });
   return bodyParts.reduce((compilation, part) => compilation.concat(part), '');
 };
-
-export const updateImages = async (templateSettings, setImagesOverwrites) => {
-  const { companyIcon, userIcon, embeddedCompanyLogo, embeddedUserIcon } = templateSettings;
-  if (!companyIcon && !userIcon) return;
-  const newEmbeddedCompanyLogo = companyIcon?.length
-    ? await getBase64(companyIcon[0].originFileObj)
-    : embeddedCompanyLogo;
-  const newEmbeddedUserIcon = userIcon?.length
-    ? await getBase64(userIcon[0].originFileObj)
-    : embeddedUserIcon;
-
-  const images = {
-    embeddedCompanyLogo: newEmbeddedCompanyLogo,
-    embeddedUserIcon: newEmbeddedUserIcon
-  };
-
-  setImagesOverwrites(images);
-};
-
-const getBase64 = file =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
 
 export const getContrastColorSettings = ({ themeColor, backgroundColor }) => ({
   contrastThemeColor: getContrastColor(themeColor),

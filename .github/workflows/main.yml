@@ -9,6 +9,7 @@ on:
       - qa*
       - sandbox*
       - package*
+      - 1-*
   pull_request:
     paths:
       - 'prism-backend/**'
@@ -89,6 +90,9 @@ jobs:
           NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
           NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
 
+      - name: Assemble fat JARs
+        run: sbt assembly
+
       - name: Upload SBT remote cache
         uses: actions/upload-artifact@v2
         with:
@@ -123,7 +127,7 @@ jobs:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package')
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package') || startsWith(github.ref, 'refs/heads/1-')
     defaults:
       run:
         working-directory: prism-backend
@@ -159,6 +163,7 @@ jobs:
     name: "Build Prism MC Web"
     if: |
       github.ref == 'refs/heads/master' ||
+      startsWith(github.ref, 'refs/heads/1-') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -199,6 +204,7 @@ jobs:
     needs: [build-prism-management-console-web, build-prism-backend]
     if: |
       github.ref == 'refs/heads/master' ||
+      startsWith(github.ref, 'refs/heads/1-') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/geud-test') ||
@@ -316,6 +322,7 @@ jobs:
     needs: [deploy-ecr-images]
     if: |
       github.ref == 'refs/heads/master' ||
+      startsWith(github.ref, 'refs/heads/1-') ||
       startsWith(github.ref, 'refs/heads/develop') ||
       startsWith(github.ref, 'refs/heads/test') ||
       startsWith(github.ref, 'refs/heads/qa') ||
@@ -342,6 +349,10 @@ jobs:
 
       - name: Set Master Environment
         if: github.ref == 'refs/heads/master'
+        run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
+
+      - name: Set 1. Release Environment
+        if: startsWith(github.ref, 'refs/heads/1-')
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Dev Environment

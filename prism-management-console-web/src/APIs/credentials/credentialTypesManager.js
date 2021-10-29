@@ -39,13 +39,19 @@ async function getCredentialTypeDetails(id) {
   return mappedCredentialType;
 }
 
-function getTemplateCategories() {
+// eslint-disable-next-line no-unused-vars
+async function createTemplate(_values) {
+  // TODO: add implementation for creating credential types
+  return Promise.resolve();
+}
+
+async function getTemplateCategories() {
   return Promise.resolve(hardcodedTemplateCategories);
 }
 
 // eslint-disable-next-line no-unused-vars
-function createCategory(_values) {
-  return Promise.resolve();
+async function createCategory(values) {
+  return Promise.resolve(values);
 }
 
 const mapCredentialTypeField = field => ({
@@ -62,6 +68,7 @@ function CredentialTypesManager(config, auth) {
 
 CredentialTypesManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialTypesManager.prototype.getCredentialTypeDetails = getCredentialTypeDetails;
+CredentialTypesManager.prototype.createTemplate = createTemplate;
 CredentialTypesManager.prototype.getTemplateCategories = getTemplateCategories;
 CredentialTypesManager.prototype.createCategory = createCategory;
 

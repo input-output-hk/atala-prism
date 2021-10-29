@@ -15,34 +15,49 @@ object CredVerification {
     case class CredentialWasRevoked(revokedOn: TimestampInfo) extends VerificationError
     case class BatchWasRevoked(revokedOn: TimestampInfo) extends VerificationError
     case object InvalidMerkleProof extends VerificationError
-    case class KeyWasNotValid(keyAddedOn: TimestampInfo, credentialIssuedOn: TimestampInfo) extends VerificationError
-    case class KeyWasRevoked(credentialIssuedOn: TimestampInfo, keyRevokedOn: TimestampInfo) extends VerificationError
+    case class KeyWasNotValid(
+        keyAddedOn: TimestampInfo,
+        credentialIssuedOn: TimestampInfo
+    ) extends VerificationError
+    case class KeyWasRevoked(
+        credentialIssuedOn: TimestampInfo,
+        keyRevokedOn: TimestampInfo
+    ) extends VerificationError
     case object InvalidSignature extends VerificationError
   }
 
-  case class BatchData(batchIssuanceDate: TimestampInfo, revocationDate: Option[TimestampInfo])
+  case class BatchData(
+      batchIssuanceDate: TimestampInfo,
+      revocationDate: Option[TimestampInfo]
+  )
 
   import VerificationError._
 
   private val valid = ().validNel[VerificationError]
 
-  /** This method receives data retrieved from the node and the credential to verify and
-    * returns true if and only if the credential is valid.
+  /** This method receives data retrieved from the node and the credential to verify and returns true if and only if the
+    * credential is valid.
     *
-   * We have some assumptions to call this method:
-    * 1. The keyData is obtained from the PRISM node and corresponds to the key used to sign the credential
-    * 2. The batchData is obtained from the PRISM node and corresponds to the signedCredential parameter
-    * 3. The issuer DID is a trusted one
-    * 4. The credentialRevocationTime is obtained from the PRISM node and corresponds to the signedCredential parameter
+    * We have some assumptions to call this method:
+    *   1. The keyData is obtained from the PRISM node and corresponds to the key used to sign the credential 2. The
+    *      batchData is obtained from the PRISM node and corresponds to the signedCredential parameter 3. The issuer DID
+    *      is a trusted one 4. The credentialRevocationTime is obtained from the PRISM node and corresponds to the
+    *      signedCredential parameter
     *
-   * @param keyData the public key used to sign the credential and its addition and (optional)
-    *                revocation timestamps
-    * @param batchData the credential information extracted from the node
-    * @param credentialRevocationTime the credential information extracted from the node
-    * @param merkleRoot merkle root that represents the batch
-    * @param inclusionProof merkle proof of inclusion that states that signedCredential is in the batch
-    * @param signedCredential the credential to verify
-    * @return a validation result
+    * @param keyData
+    *   the public key used to sign the credential and its addition and (optional) revocation timestamps
+    * @param batchData
+    *   the credential information extracted from the node
+    * @param credentialRevocationTime
+    *   the credential information extracted from the node
+    * @param merkleRoot
+    *   merkle root that represents the batch
+    * @param inclusionProof
+    *   merkle proof of inclusion that states that signedCredential is in the batch
+    * @param signedCredential
+    *   the credential to verify
+    * @return
+    *   a validation result
     */
   def verify(
       keyData: KeyData,
@@ -68,7 +83,10 @@ object CredVerification {
       Validated.condNel(
         keyData.addedOn occurredBefore batchData.batchIssuanceDate,
         (),
-        KeyWasNotValid(keyAddedOn = keyData.addedOn, credentialIssuedOn = batchData.batchIssuanceDate)
+        KeyWasNotValid(
+          keyAddedOn = keyData.addedOn,
+          credentialIssuedOn = batchData.batchIssuanceDate
+        )
       )
 
     // the key is not revoked or, the key was revoked after the credential was signed
@@ -78,7 +96,11 @@ object CredVerification {
           valid
         case Some(revokedOn) =>
           if (batchData.batchIssuanceDate occurredBefore revokedOn) valid
-          else KeyWasRevoked(credentialIssuedOn = batchData.batchIssuanceDate, keyRevokedOn = revokedOn).invalidNel
+          else
+            KeyWasRevoked(
+              credentialIssuedOn = batchData.batchIssuanceDate,
+              keyRevokedOn = revokedOn
+            ).invalidNel
       }
     }
 
@@ -97,7 +119,8 @@ object CredVerification {
 
     val merkleProofIsValid: ValidationResult[Unit] =
       Validated.condNel(
-        CredentialBatches.verifyInclusion(signedCredential, merkleRoot, inclusionProof),
+        CredentialBatches
+          .verifyInclusion(signedCredential, merkleRoot, inclusionProof),
         (),
         InvalidMerkleProof
       )

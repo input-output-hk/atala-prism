@@ -12,7 +12,10 @@ import scala.util.control.NonFatal
 
 object NodeLogging {
 
-  def withLog[Response <: GeneratedMessage, Req <: GeneratedMessage](methodName: String, request: Req)(
+  def withLog[Response <: GeneratedMessage, Req <: GeneratedMessage](
+      methodName: String,
+      request: Req
+  )(
       code: String => Future[Response]
   )(implicit ec: ExecutionContext, logger: Logger): Future[Response] = {
     val traceId = UUID.randomUUID().toString
@@ -21,8 +24,9 @@ object NodeLogging {
       kv("methodName", methodName),
       kv("traceId", traceId)
     )
-    try { code(traceId).map(resp => logAndReturnResponse(methodName, traceId, resp)) }
-    catch {
+    try {
+      code(traceId).map(resp => logAndReturnResponse(methodName, traceId, resp))
+    } catch {
       case NonFatal(ex) =>
         logger.error(
           s"methodName:$methodName Error: Non Fatal Error traceId = $traceId \n Exception : $ex",
@@ -33,11 +37,17 @@ object NodeLogging {
     }
   }
 
-  def logWithTraceId(methodName: String, traceId: String, argsToLog: (String, String)*)(implicit
+  def logWithTraceId(
+      methodName: String,
+      traceId: String,
+      argsToLog: (String, String)*
+  )(implicit
       logger: Logger
   ): Unit = {
     logger.info(
-      s"methodName:$methodName traceId = $traceId, \n  ${argsToLog.map(x => s"${x._1}=${x._2}").mkString(",")}",
+      s"methodName:$methodName traceId = $traceId, \n  ${argsToLog
+        .map(x => s"${x._1}=${x._2}")
+        .mkString(",")}",
       kv("methodName", methodName),
       kv("traceId", traceId)
     )
@@ -55,8 +65,12 @@ object NodeLogging {
     }
   }
 
-  def logAndReturnResponse[Response <: GeneratedMessage](methodName: String, traceId: String, response: Response)(
-      implicit logger: Logger
+  def logAndReturnResponse[Response <: GeneratedMessage](
+      methodName: String,
+      traceId: String,
+      response: Response
+  )(implicit
+      logger: Logger
   ): Response = {
     ("traceId" -> traceId)
     logger.info(

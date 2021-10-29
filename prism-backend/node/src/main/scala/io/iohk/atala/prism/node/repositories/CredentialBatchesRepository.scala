@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.node.repositories
 
+import cats.{Comonad, Functor}
 import cats.data.EitherT
 import cats.effect.BracketThrow
+import cats.syntax.comonad._
+import cats.syntax.functor._
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
@@ -11,15 +14,20 @@ import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.repositories.logs.CredentialBatchesRepositoryLogs
+import io.iohk.atala.prism.node.repositories.metrics.CredentialBatchesRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait CredentialBatchesRepository[F[_]] {
-  def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, Option[CredentialBatchState]]]
+  def getBatchState(
+      batchId: CredentialBatchId
+  ): F[Either[NodeError, Option[CredentialBatchState]]]
   def getCredentialRevocationTime(
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
@@ -27,18 +35,38 @@ trait CredentialBatchesRepository[F[_]] {
 }
 
 object CredentialBatchesRepository {
-  def apply[F[_]: TimeMeasureMetric: BracketThrow](xa: Transactor[F]): CredentialBatchesRepository[F] = {
-    val metrics: CredentialBatchesRepository[Mid[F, *]] = new CredentialBatchesRepositoryMetrics[F]
-    metrics attach new CredentialBatchesRepositoryImpl(xa)
-  }
+  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): R[CredentialBatchesRepository[F]] =
+    for {
+      serviceLogs <- logs.service[CredentialBatchesRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, CredentialBatchesRepository[F]] = serviceLogs
+      val metrics: CredentialBatchesRepository[Mid[F, *]] =
+        new CredentialBatchesRepositoryMetrics[F]()
+      val logs: CredentialBatchesRepository[Mid[F, *]] =
+        new CredentialBatchesRepositoryLogs[F]
+      val mid = metrics |+| logs
+      mid attach new CredentialBatchesRepositoryImpl[F](transactor)
+    }
+
+  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): CredentialBatchesRepository[F] =
+    CredentialBatchesRepository(transactor, logs).extract
 }
 
-private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends CredentialBatchesRepository[F] {
+private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CredentialBatchesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, Option[CredentialBatchState]]] =
+  def getBatchState(
+      batchId: CredentialBatchId
+  ): F[Either[NodeError, Option[CredentialBatchState]]] =
     EitherT
       .right[NodeError](CredentialBatchesDAO.findBatch(batchId))
       .value
@@ -50,24 +78,11 @@ private final class CredentialBatchesRepositoryImpl[F[_]: BracketThrow](xa: Tran
       credentialHash: Sha256Digest
   ): F[Either[NodeError, Option[LedgerData]]] =
     EitherT
-      .right[NodeError](CredentialBatchesDAO.findRevokedCredentialLedgerData(batchId, credentialHash))
+      .right[NodeError](
+        CredentialBatchesDAO
+          .findRevokedCredentialLedgerData(batchId, credentialHash)
+      )
       .value
       .logSQLErrors("getting credential revocation time", logger)
       .transact(xa)
-}
-
-private final class CredentialBatchesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
-    extends CredentialBatchesRepository[Mid[F, *]] {
-
-  private val repoName = "CredentialBatchesRepository"
-  private lazy val getBatchStateTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "getBatchState")
-  private lazy val getCredentialRevocationTimeTimer =
-    TimeMeasureUtil.createDBQueryTimer(repoName, "getCredentialRevocationTime")
-
-  override def getBatchState(batchId: CredentialBatchId): Mid[F, Either[NodeError, Option[CredentialBatchState]]] =
-    _.measureOperationTime(getBatchStateTimer)
-  override def getCredentialRevocationTime(
-      batchId: CredentialBatchId,
-      credentialHash: Sha256Digest
-  ): Mid[F, Either[NodeError, Option[LedgerData]]] = _.measureOperationTime(getCredentialRevocationTimeTimer)
 }

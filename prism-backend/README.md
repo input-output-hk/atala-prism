@@ -38,7 +38,7 @@ To properly set your PAT to use with packages, refer to the links below:
 
 ## Run services
 
-You need to run connector and node services
+You need to run **connector**, **node** and optionally **management-console** services.
 
 *NOTE:* If it is the first time you are running `sbt`, it will take a couple of minutes to start. the reason being is that `sbt` is actually an "sbt launcher", it has to download the appropriate version of sbt, (defined in `project/build.properties`) first time it is used. all the subsequent runs should take a couple of seconds.
 
@@ -52,6 +52,11 @@ In a different terminal tab/window, run node service
 sbt "node/run"
 ```
 
+If you are setting up backend for prism-management-console-web app, you need to run the management-console service in a separate terminal too
+
+```bash
+sbt "management-console/run"
+```
 
 ### Testnet
 The node can run against the Cardano Testnet by providing these environment variables before running it:

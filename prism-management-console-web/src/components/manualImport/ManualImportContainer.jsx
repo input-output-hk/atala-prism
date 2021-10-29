@@ -62,7 +62,7 @@ ManualImportContainer.propTypes = {
     showGroupSelection: PropTypes.func.isRequired,
     isEmbedded: PropTypes.bool.isRequired
   }).isRequired,
-  credentialType: PropTypes.shape(credentialTypeShape),
+  credentialType: credentialTypeShape,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
   recipients: PropTypes.arrayOf(credentialShape),

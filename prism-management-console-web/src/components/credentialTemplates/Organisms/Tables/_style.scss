@@ -1,9 +1,12 @@
 @import "../../../../../src/css/general_styling";
 
-.templatesContent{
+.templatesContent {
   height: 100%;
   .TemplatesTableContainer {
     overflow-y: auto;
     height: calc(100vh - 17em);
+    .template-icon {
+      height: 2.5em;
+    }
   }
 }

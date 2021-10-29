@@ -9,7 +9,11 @@ import tofu.higherKind.Mid
 
 final class StatisticsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends StatisticsRepository[Mid[F, *]] {
   private val repoName = "StatisticsRepository"
-  private lazy val queryTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "query")
-  override def query(participantId: ParticipantId, timeIntervalMaybe: Option[TimeInterval]): Mid[F, Statistics] =
+  private lazy val queryTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "query")
+  override def query(
+      participantId: ParticipantId,
+      timeIntervalMaybe: Option[TimeInterval]
+  ): Mid[F, Statistics] =
     _.measureOperationTime(queryTimer)
 }

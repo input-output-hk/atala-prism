@@ -180,8 +180,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
           </CardDetail>
           <CardDetail title={cardanoExplorerHeader}>
             <CustomButton
+              overrideClassName="GoToCardanoBtn theme-primary"
               buttonProps={{
-                className: 'GoToCardanoBtn theme-primary',
                 target: '_blank',
                 href: getCardanoExplorerUrl(transactionid, ledger),
                 disabled: !transactionid

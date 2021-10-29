@@ -59,9 +59,8 @@ const FileUploader = ({
           <div />
         ) : (
           <CustomButton
-            buttonProps={{ className: 'theme-outline', disabled }}
+            buttonProps={{ className: 'theme-outline', disabled, icon: <UploadOutlined /> }}
             buttonText={t(uploadText)}
-            icon={<UploadOutlined />}
           />
         )}
       </Upload>

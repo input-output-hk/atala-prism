@@ -8,9 +8,13 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 
 case class AddConnectionRequest(
     token: TokenString,
-    basedOn: Either[UnpublishedDidBasedAddConnectionRequest, PublicKeyBasedAddConnectionRequest]
+    basedOn: Either[
+      UnpublishedDidBasedAddConnectionRequest,
+      PublicKeyBasedAddConnectionRequest
+    ]
 ) {
-  def didOrPublicKey: Either[DID, ECPublicKey] = basedOn.bimap(_.authHeader.did, _.publicKey)
+  def didOrPublicKey: Either[DID, ECPublicKey] =
+    basedOn.bimap(_.authHeader.did, _.publicKey)
 }
 
 final case class PublicKeyBasedAddConnectionRequest(

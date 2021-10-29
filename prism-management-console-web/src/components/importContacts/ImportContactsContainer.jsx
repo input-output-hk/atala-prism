@@ -10,7 +10,7 @@ import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { validateContactsBulk } from '../../helpers/contactValidations';
 import { useAllContacts } from '../../hooks/useContacts';
-import { DynamicFormProvider } from '../../providers/DynamicFormProvider';
+import { DynamicFormProvider } from '../providers/DynamicFormProvider';
 
 import './_style.scss';
 

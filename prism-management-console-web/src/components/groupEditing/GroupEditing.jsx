@@ -120,7 +120,7 @@ const GroupEditing = ({
           className="GroupNameForm"
         />
       );
-    return groupName;
+    return <p>{groupName}</p>;
   };
 
   return (
@@ -134,10 +134,10 @@ const GroupEditing = ({
           <CustomButton
             overrideClassName="theme-secondary custom"
             buttonProps={{
-              onClick: () => setModalVisible(true)
+              onClick: () => setModalVisible(true),
+              icon: <PlusOutlined />
             }}
             buttonText={t('groupEditing.buttons.addContacts')}
-            icon={<PlusOutlined />}
           />
         </Col>
       </Row>

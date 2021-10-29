@@ -25,12 +25,12 @@ const SuccessPage = ({
     [IMPORT_CREDENTIALS_DATA]: credentialDataImported
   };
 
+  const successMessage = t(`${importType}.importSuccess.${useCase}.uploadedEntities`);
+
   return (
     <SuccessBanner
       title={t(`${importType}.importSuccess.${useCase}.title`)}
-      message={`${successAmount[useCase]} ${t(
-        `${importType}.importSuccess.${useCase}.uploadedEntities`
-      )}`}
+      message={`${successAmount[useCase]} ${successMessage}`}
       buttonText={t(`${importType}.importSuccess.${useCase}.continue`)}
       onContinue={continueCallback}
     />

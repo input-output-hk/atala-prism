@@ -96,7 +96,7 @@ GroupName.propTypes = {
   className: PropTypes.string,
   formRef: refPropShape.isRequired,
   updateForm: PropTypes.func.isRequired,
-  nameState: PropTypes.oneOf(GROUP_NAME_STATES),
+  nameState: PropTypes.oneOf(Object.values(GROUP_NAME_STATES)),
   setNameState: PropTypes.func.isRequired,
   formValues: PropTypes.shape().isRequired
 };

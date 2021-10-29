@@ -6,12 +6,13 @@ import './_style.scss';
 const IconOption = ({ icon, selected }) => (
   <Radio value={icon}>
     <img
-      className={`CategoryIconOption ${selected ? 'selected' : ''}`}
+      className={`IconOption ${selected ? 'selected' : ''}`}
       src={icon.isCustomIcon ? icon.file.thumbUrl : icon.src}
-      alt="categoryIcon"
+      alt="template icon"
     />
   </Radio>
 );
+
 IconOption.propTypes = {
   icon: PropTypes.oneOfType([
     PropTypes.shape({

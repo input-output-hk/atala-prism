@@ -13,7 +13,9 @@ import scala.concurrent.duration._
 class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   private val CHANNEL = "test_channel"
 
-  private def usingDbNotificationStreamer(f: DbNotificationStreamer => _): Unit = {
+  private def usingDbNotificationStreamer(
+      f: DbNotificationStreamer => _
+  ): Unit = {
     val dbNotificationStreamer = DbNotificationStreamer(CHANNEL)
     try {
       f(dbNotificationStreamer)
@@ -50,7 +52,9 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
     stream
   }
 
-  private def streamAll(dbNotificationStreamer: DbNotificationStreamer): Future[List[DbNotification]] = {
+  private def streamAll(
+      dbNotificationStreamer: DbNotificationStreamer
+  ): Future[List[DbNotification]] = {
     val stream = dbNotificationStreamer.stream
       .transact(database)
       .drain
@@ -75,7 +79,10 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
         val notificationPayload2 = "Notification payload #2"
         notify(notificationPayload2)
 
-        stream.futureValue mustBe List(DbNotification(notificationPayload1), DbNotification(notificationPayload2))
+        stream.futureValue mustBe List(
+          DbNotification(notificationPayload1),
+          DbNotification(notificationPayload2)
+        )
       }
     }
 

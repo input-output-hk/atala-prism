@@ -1,16 +1,21 @@
-@import '../../../src/css/general_styling';
+@import "../../../src/css/general_styling";
 
 .CredentialMainContent {
   display: flex;
   width: 100%;
   padding: 0 1em;
   flex-direction: column;
+  .StepHeader {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
   .WizardContentContainer {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     width: 100%;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 19em);
     overflow-y: auto;
     position: relative;
   }

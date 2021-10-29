@@ -1,10 +1,27 @@
-import { PENDING_CONNECTION, CONNECTED, CONNECTION_STATUSES } from './constants';
-import { dateFormat } from './formatters';
+import moment from 'moment';
+import {
+  PENDING_CONNECTION,
+  CONNECTED,
+  CONNECTION_STATUSES,
+  DEFAULT_DATE_FORMAT
+} from './constants';
+import { backendDateFormat, dateFormat } from './formatters';
 
 export const filterByInclusion = (filter, field) =>
   !filter || field.toLowerCase().includes(filter.toLowerCase());
 
 export const filterByExactMatch = (filter, field) => !filter || filter === field;
+
+export const filterByDateRange = (filter, field) => {
+  if (!filter?.length) return false;
+  const fieldDate = backendDateFormat(field.seconds);
+  const fieldDateMoment = moment(fieldDate, DEFAULT_DATE_FORMAT);
+  const bottomFilterMoment = moment(filter[0], DEFAULT_DATE_FORMAT);
+  const topFilterMoment = moment(filter[1], DEFAULT_DATE_FORMAT);
+  const isAfterBottomLimit = fieldDateMoment.isSameOrAfter(bottomFilterMoment);
+  const isBeforeTopLimit = fieldDateMoment.isSameOrBefore(topFilterMoment);
+  return isAfterBottomLimit && isBeforeTopLimit;
+};
 
 export const filterByNewerDate = (filter, field) => !filter || filter < field;
 

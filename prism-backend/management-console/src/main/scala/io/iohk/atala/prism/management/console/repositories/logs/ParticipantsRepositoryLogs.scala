@@ -12,7 +12,9 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[repositories] final class ParticipantsRepositoryLogs[F[_]: BracketThrow: ServiceLogging[*[
+private[repositories] final class ParticipantsRepositoryLogs[F[
+    _
+]: BracketThrow: ServiceLogging[*[
   _
 ], ParticipantsRepository[F]]]
     extends ParticipantsRepository[Mid[F, *]] {
@@ -27,9 +29,13 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: BracketThrow:
             r => info"creating participant - successfully done $r"
           )
         )
-        .onError(errorCause"encountered an error while creating participant" (_))
+        .onError(
+          errorCause"encountered an error while creating participant" (_)
+        )
 
-  override def findBy(id: ParticipantId): Mid[F, Either[errors.ManagementConsoleError, ParticipantInfo]] =
+  override def findBy(
+      id: ParticipantId
+  ): Mid[F, Either[errors.ManagementConsoleError, ParticipantInfo]] =
     in =>
       info"finding participant $id" *> in
         .flatTap(
@@ -40,7 +46,9 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: BracketThrow:
         )
         .onError(errorCause"encountered an error while finding participant" (_))
 
-  override def findBy(did: DID): Mid[F, Either[errors.ManagementConsoleError, ParticipantInfo]] =
+  override def findBy(
+      did: DID
+  ): Mid[F, Either[errors.ManagementConsoleError, ParticipantInfo]] =
     in =>
       info"finding participant ${Option(did.asCanonical().getSuffix)}" *> in
         .flatTap(
@@ -51,9 +59,13 @@ private[repositories] final class ParticipantsRepositoryLogs[F[_]: BracketThrow:
         )
         .onError(errorCause"encountered an error while finding participant" (_))
 
-  override def update(request: ParticipantsRepository.UpdateParticipantProfileRequest): Mid[F, Unit] =
+  override def update(
+      request: ParticipantsRepository.UpdateParticipantProfileRequest
+  ): Mid[F, Unit] =
     in =>
       info"updating participant ${request.id}" *> in
         .flatTap(_ => info"updating participant - successfully done")
-        .onError(errorCause"encountered an error while updating participant" (_))
+        .onError(
+          errorCause"encountered an error while updating participant" (_)
+        )
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import _ from 'lodash';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/withApi';
@@ -18,13 +19,13 @@ import {
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useContacts } from '../../hooks/useContacts';
-import { useGroups } from '../../hooks/useGroups';
-import { useCredentialTypes } from '../../hooks/useCredentialTypes';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
+import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 
-const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
+const NewCredentialContainer = observer(({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
   const { session } = useSession();
 
@@ -36,9 +37,9 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const resetCredentialTypeDetails = useCallback(() => setCredentialTypeDetails(), []);
 
   const [selectedGroups, setSelectedGroups] = useState([]);
-  const { groups, setName, setSortingDirection, setSortingKey, sortingDirection } = useGroups(
-    api.groupsManager
-  );
+
+  const { groups } = useGroupStore({ fetch: true, reset: true });
+  useGroupUiState({ reset: true });
 
   const [selectedContacts, setSelectedContacts] = useState([]);
   const {
@@ -48,9 +49,10 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     hasMore: hasMoreContacts
   } = useContacts(api.contactsManager);
 
-  const { credentialTypes, getCredentialTypeDetails } = useCredentialTypes(
-    api.credentialTypesManager
-  );
+  const {
+    getCredentialTemplateDetails: getCredentialTypeDetails,
+    templateCategories
+  } = useTemplateStore({ fetch: true });
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);
@@ -128,7 +130,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     });
   };
 
-  const handleImportedData = ({ credentials, ...rest }, setResults) => {
+  const handleImportedData = ({ credentials }, setResults) => {
     const { isMultiRow, multiRowKey, fields } = credentialTypeDetails;
     const credentialsData = isMultiRow
       ? parseMultiRowCredentials(credentials, multiRowKey, fields)
@@ -209,13 +211,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const groupsProps = {
-    groups,
     selectedGroups,
-    setSelectedGroups,
-    setGroupsFilter: setName,
-    setSortingDirection,
-    setSortingKey,
-    sortingDirection
+    setSelectedGroups
   };
 
   const contactsProps = {
@@ -243,7 +240,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       case SELECT_CREDENTIAL_TYPE_STEP:
         return (
           <TypeSelection
-            credentialTypes={credentialTypes}
+            templateCategories={templateCategories}
             onTypeSelection={handleTypeSelection}
             selectedType={selectedCredentialTypeId}
           />
@@ -296,7 +293,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       isLoading={isLoading}
     />
   );
-};
+});
 
 NewCredentialContainer.propTypes = {
   api: PropTypes.shape({

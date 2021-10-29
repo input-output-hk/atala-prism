@@ -51,11 +51,9 @@ const validateContactsData = (newContacts, expectedHeaders, preExistingContacts,
 const validateHeaders = (inputHeaders, expectedHeaders) => {
   const trimmedHeaders = trimLastEmptyElements(inputHeaders);
 
-  const headerErrors = _.isEqual(trimmedHeaders, expectedHeaders)
+  return _.isEqual(trimmedHeaders, expectedHeaders)
     ? [[]]
     : [generateInvalidHeadersError(trimmedHeaders, expectedHeaders)];
-
-  return headerErrors;
 };
 
 const trimLastEmptyElements = array => {

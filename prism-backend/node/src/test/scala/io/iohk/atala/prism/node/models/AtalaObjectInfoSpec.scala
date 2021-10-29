@@ -10,7 +10,8 @@ import org.scalatest.OptionValues._
 
 class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
 
-  private val dummyAtalaOperation = BlockProcessingServiceSpec.createDidOperation
+  private val dummyAtalaOperation =
+    BlockProcessingServiceSpec.createDidOperation
   private val dummySignedOperations = (0 to 3).indices.map { masterId =>
     BlockProcessingServiceSpec.signOperation(
       dummyAtalaOperation,
@@ -27,7 +28,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
       .AtalaObject(
         blockOperationCount = ops.size
       )
-      .withBlockContent(node_internal.AtalaBlock(version = "1.0", operations = ops))
+      .withBlockContent(node_internal.AtalaBlock(operations = ops))
     AtalaObjectInfo(
       objectId = AtalaObjectId.of(blockContent),
       blockContent.toByteArray,
@@ -61,7 +62,10 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
     }
 
     "not merge objects if one of them was processed" in {
-      val processedAtalaObject = createAtalaObject(dummySignedOperations.take(2), status = AtalaObjectStatus.Processed)
+      val processedAtalaObject = createAtalaObject(
+        dummySignedOperations.take(2),
+        status = AtalaObjectStatus.Processed
+      )
       val atalaObject = createAtalaObject(dummySignedOperations.drop(2))
       val maybeMerged1 = processedAtalaObject.mergeIfPossible(atalaObject)
       val maybeMerged2 = atalaObject.mergeIfPossible(processedAtalaObject)

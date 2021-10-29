@@ -28,7 +28,8 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
 
-  lazy val participantsRepository = ParticipantsRepository.unsafe(database, logs)
+  lazy val participantsRepository =
+    ParticipantsRepository.unsafe(database, logs)
 
   "getParticipant by did" should {
     "get a participant" in {
@@ -68,17 +69,24 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       val request = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",
-        did = DID.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey),
+        did = DID.buildCanonicalFromMasterPublicKey(
+          EC.generateKeyPair().getPublicKey
+        ),
         logo = ParticipantLogo(Vector.empty)
       )
 
-      participantsRepository.create(request).unsafeRunSync() mustBe a[Right[_, _]]
+      participantsRepository
+        .create(request)
+        .unsafeRunSync() mustBe a[Right[_, _]]
 
-      val credentialTypesRepository = CredentialTypeRepository.unsafe(database, logs)
+      val credentialTypesRepository =
+        CredentialTypeRepository.unsafe(database, logs)
 
       val defaultCredentialTypes =
         credentialTypesRepository.findByInstitution(request.id).unsafeRunSync()
-      defaultCredentialTypes.map(_.name).toSet mustBe DefaultCredentialTypeConfig(
+      defaultCredentialTypes
+        .map(_.name)
+        .toSet mustBe DefaultCredentialTypeConfig(
         ConfigFactory.load()
       ).defaultCredentialTypes
         .map(_.name)
@@ -86,7 +94,8 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "return error while trying to create participant with the same did twice" in {
-      val did = DID.buildCanonicalFromMasterKey(EC.generateKeyPair().getPublicKey)
+      val did =
+        DID.buildCanonicalFromMasterPublicKey(EC.generateKeyPair().getPublicKey)
       val request1 = CreateParticipantRequest(
         id = ParticipantId.random(),
         name = "participant name",
@@ -100,8 +109,13 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
         logo = ParticipantLogo(Vector.empty)
       )
 
-      participantsRepository.create(request1).unsafeRunSync().isRight mustBe true
-      participantsRepository.create(request2).unsafeRunSync() mustBe Left(InvalidRequest("DID already exists"))
+      participantsRepository
+        .create(request1)
+        .unsafeRunSync()
+        .isRight mustBe true
+      participantsRepository.create(request2).unsafeRunSync() mustBe Left(
+        InvalidRequest("DID already exists")
+      )
     }
   }
 
@@ -122,7 +136,8 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       .transact(database)
       .unsafeRunSync()
 
-    val expectedParticipant = info.copy(did = did, name = "Updated Issuer", logo = Some(logo))
+    val expectedParticipant =
+      info.copy(did = did, name = "Updated Issuer", logo = Some(logo))
 
     val result = participantsRepository.findBy(did).unsafeRunSync()
     result.toOption.value must be(expectedParticipant)
@@ -170,7 +185,8 @@ class ParticipantsRepositorySpec extends AtalaWithPostgresSpec {
       .transact(database)
       .unsafeRunSync()
 
-    val expectedParticipant = info.copy(did = did, name = "Updated Issuer", logo = None)
+    val expectedParticipant =
+      info.copy(did = did, name = "Updated Issuer", logo = None)
 
     val result = participantsRepository.findBy(did).unsafeRunSync()
     result.toOption.value must be(expectedParticipant)

@@ -18,10 +18,10 @@ const governmentId = {
   id: 1,
   enabled: false,
   isMultiRow: false,
-  name: 'Government Id',
-  logo: governmentIdLogo,
+  name: 'Government ID',
+  icon: governmentIdLogo,
   sampleImage: governmentIdSample,
-  category: 1,
+  category: '1',
   fields: [
     {
       key: 'idNumber',
@@ -62,9 +62,9 @@ const educational = {
   enabled: false,
   isMultiRow: false,
   name: 'Educational',
-  logo: educationalLogo,
+  icon: educationalLogo,
   sampleImage: educationalSample,
-  category: 2,
+  category: '2',
   fields: [
     {
       key: 'degree',
@@ -106,9 +106,9 @@ const proofOfEmployment = {
   enabled: false,
   isMultiRow: false,
   name: 'Proof Of Employment',
-  logo: proofOfEmploymentLogo,
+  icon: proofOfEmploymentLogo,
   sampleImage: proofOfEmploymentSample,
-  category: 3,
+  category: '3',
   fields: [
     {
       key: 'adress',
@@ -139,9 +139,9 @@ const healthIsurance = {
   enabled: false,
   isMultiRow: false,
   name: 'Health Insurance',
-  logo: healthInsuranceLogo,
+  icon: healthInsuranceLogo,
   sampleImage: healthInsuranceSample,
-  category: 4,
+  category: '4',
   fields: [
     {
       key: 'class',
@@ -172,7 +172,7 @@ const GeorgiaNationalID = {
   enabled: false,
   isMultiRow: false,
   name: 'credentials.type.governmentId',
-  logo: georgiaNationalIDLogo,
+  icon: georgiaNationalIDLogo,
   sampleImage: georgiaNationalIDSample,
   fields: [
     {
@@ -233,7 +233,7 @@ const GeorgiaEducationalDegree = {
   enabled: false,
   isMultiRow: false,
   name: 'credentials.type.educational',
-  logo: georgiaEducationalDegreeLogo,
+  icon: georgiaEducationalDegreeLogo,
   sampleImage: georgiaEducationalDegreeSample,
   fields: [
     {
@@ -272,7 +272,7 @@ const GeorgiaEducationalDegreeTranscript = {
   multiRowKey: 'courses',
   multiRowView: georgiaCoursesView,
   name: 'credentials.type.transcript',
-  logo: georgiaEducationalDegreeTranscriptLogo,
+  icon: georgiaEducationalDegreeTranscriptLogo,
   sampleImage: georgiaEducationalDegreeTranscriptSample,
   fields: [
     {
@@ -333,7 +333,7 @@ const EthiopiaNationalID = {
   enabled: true,
   isMultiRow: false,
   name: 'credentials.type.governmentId',
-  logo: georgiaNationalIDLogo,
+  icon: georgiaNationalIDLogo,
   sampleImage: georgiaNationalIDSample,
   fields: [
     {
@@ -394,7 +394,7 @@ const EthiopiaEducationalDegree = {
   enabled: true,
   isMultiRow: false,
   name: 'credentials.type.educational',
-  logo: georgiaEducationalDegreeLogo,
+  icon: georgiaEducationalDegreeLogo,
   sampleImage: georgiaEducationalDegreeSample,
   fields: [
     {
@@ -433,7 +433,7 @@ const EthiopiaEducationalDegreeTranscript = {
   multiRowKey: 'courses',
   multiRowView: ethiopiaCoursesView,
   name: 'credentials.type.transcript',
-  logo: georgiaEducationalDegreeTranscriptLogo,
+  icon: georgiaEducationalDegreeTranscriptLogo,
   sampleImage: georgiaEducationalDegreeTranscriptSample,
   fields: [
     {

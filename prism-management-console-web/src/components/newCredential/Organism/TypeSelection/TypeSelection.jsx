@@ -1,44 +1,52 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import TypeCard from '../../Molecules/TypeCard/TypeCard';
-import { credentialTypesShape } from '../../../../helpers/propShapes';
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
+import { CONFIRMED } from '../../../../helpers/constants';
+import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import TemplatesList from './TemplatesList';
+import CreateTemplateButton from '../../../credentialTemplates/Atoms/Buttons/CreateTemplateButton';
+import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
+import noTemplatesPicture from '../../../../images/noTemplates.svg';
+import { useSession } from '../../../../hooks/useSession';
 
 import './_style.scss';
 
-const ENABLED_STATE = 1;
+const TypeSelection = observer(({ selectedType, onTypeSelection }) => {
+  const { t } = useTranslation();
+  const { accountStatus } = useSession();
+  const { isLoading } = useTemplateStore();
+  const { filteredTemplates, hasFiltersApplied } = useTemplateUiState();
 
-const TypeSelection = ({ credentialTypes, selectedType, onTypeSelection }) => (
-  <div className="TypeSelectionWrapper">
-    <div className="TypeSelectionContainer">
-      <div className="TypeSelection">
-        {!credentialTypes ? (
-          <SimpleLoading size="md" />
-        ) : (
-          credentialTypes
-            .filter(({ state }) => state === ENABLED_STATE)
-            .map(ct => (
-              <TypeCard
-                credentialType={ct}
-                typeKey={ct.id}
-                key={ct.id}
-                isSelected={selectedType === ct.id}
-                onClick={onTypeSelection}
-              />
-            ))
-        )}
+  const noTemplates = !filteredTemplates?.length;
+
+  const emptyProps = {
+    photoSrc: noTemplatesPicture,
+    model: t('templates.title'),
+    isFilter: hasFiltersApplied,
+    button: noTemplates && accountStatus === CONFIRMED ? <CreateTemplateButton /> : null
+  };
+
+  if (isLoading) return <SimpleLoading size="md" />;
+  if (noTemplates) return <EmptyComponent {...emptyProps} />;
+
+  return (
+    <div className="TypeSelectionWrapper">
+      <div className="TypeSelectionContainer">
+        <div className="TypeSelection">
+          <TemplatesList selectedType={selectedType} onTypeSelection={onTypeSelection} />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+});
 
 TypeSelection.defaultProps = {
-  credentialTypes: undefined,
   selectedType: ''
 };
 
 TypeSelection.propTypes = {
-  credentialTypes: credentialTypesShape,
   selectedType: PropTypes.string,
   onTypeSelection: PropTypes.func.isRequired
 };

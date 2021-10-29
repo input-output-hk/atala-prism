@@ -8,10 +8,16 @@ import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import tofu.higherKind.Mid
 
-final class RequestNoncesRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+final class RequestNoncesRepositoryMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends RequestNoncesRepository[Mid[F, *]] {
   private val repoName = "RequestNoncesRepositoryPostgresImpl"
-  private lazy val burnTimer = TimeMeasureUtil.createDBQueryTimer(repoName, "burn")
-  override def burn(participantId: ParticipantId, requestNonce: RequestNonce): Mid[F, Unit] =
+  private lazy val burnTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "burn")
+  override def burn(
+      participantId: ParticipantId,
+      requestNonce: RequestNonce
+  ): Mid[F, Unit] =
     _.measureOperationTime(burnTimer)
 }

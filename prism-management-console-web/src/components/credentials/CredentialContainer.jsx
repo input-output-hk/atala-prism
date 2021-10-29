@@ -21,7 +21,7 @@ import {
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
 import { getCheckedAndIndeterminateProps, handleSelectAll } from '../../helpers/selectionHelpers';
-import { useCredentialTypes } from '../../hooks/useCredentialTypes';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -29,7 +29,7 @@ const CredentialContainer = ({ api }) => {
   const [loadingSelection, setLoadingSelection] = useState(false);
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
-  const { credentialTypes } = useCredentialTypes(api.credentialTypesManager);
+  const { credentialTemplates: credentialTypes } = useTemplateStore();
 
   const {
     credentialsIssued,

@@ -1,10 +1,14 @@
 package io.iohk.atala.prism.node.repositories
 
+import cats.effect.IO
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
+import tofu.logging.Logging
 
 class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
-  private lazy val keyValuesRepository = KeyValuesRepository(database)
+  private val logs = Logging.Make.plain[IO]
+  private lazy val keyValuesRepository =
+    KeyValuesRepository.unsafe(database, logs)
 
   private val KEY = "test-key"
   private val VALUE = "Test value"
@@ -20,7 +24,10 @@ class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "update a KeyValue when it exists" in {
-      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).unsafeToFuture().futureValue
+      keyValuesRepository
+        .upsert(KeyValue(KEY, Some("Old value")))
+        .unsafeToFuture()
+        .futureValue
       val expectedKeyValue = KeyValue(KEY, Some(VALUE))
       keyValuesRepository.upsert(expectedKeyValue).unsafeToFuture().futureValue
 
@@ -30,7 +37,10 @@ class KeyValuesRepositorySpec extends AtalaWithPostgresSpec {
     }
 
     "clear a KeyValue when set to None" in {
-      keyValuesRepository.upsert(KeyValue(KEY, Some("Old value"))).unsafeToFuture().futureValue
+      keyValuesRepository
+        .upsert(KeyValue(KEY, Some("Old value")))
+        .unsafeToFuture()
+        .futureValue
       val expectedKeyValue = KeyValue(KEY, None)
       keyValuesRepository.upsert(expectedKeyValue).unsafeToFuture().futureValue
 

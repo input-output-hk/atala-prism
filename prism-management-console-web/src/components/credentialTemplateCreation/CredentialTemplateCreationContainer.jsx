@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { SELECT_TEMPLATE_CATEGORY } from '../../helpers/constants';
-import { credentialTypesManagerShape } from '../../helpers/propShapes';
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
+import { Form } from 'antd';
+import { TEMPLATE_NAME_ICON_CATEGORY } from '../../helpers/constants';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
-import { withTemplateProvider } from '../providers/TemplateContext';
 import TemplateCreationStep from './Organisms/TemplateCreationStep';
+import { useTemplateStore } from '../../hooks/useTemplateStore';
+import { defaultTemplateSketch } from '../../helpers/templateHelpers';
+import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 
-const CredentialTemplateCreationContainer = ({ api: { credentialTypesManager } }) => {
-  const [currentStep, setCurrentStep] = useState(SELECT_TEMPLATE_CATEGORY);
+const CredentialTemplateCreationContainer = observer(() => {
+  const { t } = useTranslation();
+  useTemplateStore({ fetch: true });
+  const { setForm, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
+
+  const [currentStep, setCurrentStep] = useState(TEMPLATE_NAME_ICON_CATEGORY);
+  const [form] = Form.useForm();
+  setForm(form);
+
+  const validateMessages = {
+    required: t('credentialTemplateCreation.errors.required')
+  };
+
   return (
     <div className="TemplateMainContent">
-      <CredentialTemplateCreation currentStep={currentStep} changeStep={setCurrentStep} />
-      <TemplateCreationStep
-        currentStep={currentStep}
-        credentialTypesManager={credentialTypesManager}
-      />
+      <Form
+        form={form}
+        name="template-form"
+        requiredMark={false}
+        layout="vertical"
+        validateMessages={validateMessages}
+        initialValues={defaultTemplateSketch}
+        onValuesChange={handleValuesUpdate}
+      >
+        <CredentialTemplateCreation currentStep={currentStep} changeStep={setCurrentStep} />
+        <TemplateCreationStep currentStep={currentStep} />
+      </Form>
     </div>
   );
-};
+});
 
-CredentialTemplateCreationContainer.propTypes = {
-  api: PropTypes.shape({
-    credentialTypesManager: credentialTypesManagerShape
-  }).isRequired
-};
-
-export default withTemplateProvider(CredentialTemplateCreationContainer);
+export default CredentialTemplateCreationContainer;

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
 import { credentialTabShape } from '../../helpers/propShapes';
 import CreateCredentialsButton from './Atoms/Buttons/CreateCredentialsButton';
@@ -14,13 +15,13 @@ import {
   UNCONFIRMED
 } from '../../helpers/constants';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 
 import './_style.scss';
 
 const { TabPane } = Tabs;
 
-const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
+const Credentials = observer(({ tabProps, setActiveTab, loading, verifyCredential }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState();
   const [showDrawer, setShowDrawer] = useState(false);
@@ -74,7 +75,7 @@ const Credentials = ({ tabProps, setActiveTab, loading, verifyCredential }) => {
       </div>
     </div>
   );
-};
+});
 
 Credentials.defaultProps = {
   loading: {

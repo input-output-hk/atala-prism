@@ -5,6 +5,7 @@ import { DeleteOutlined, SwapOutlined } from '@ant-design/icons';
 import { SortableElement, SortableHandle } from 'react-sortable-hoc';
 import FixedTextInput from './FixedTextInput';
 import DynamicAttributeInput from './DynamicAttributeInput';
+import { templateBodyAttributeShape } from '../../../../helpers/propShapes';
 
 const DragHandle = SortableHandle(() => (
   <div className="dragHandleWrapper">
@@ -28,11 +29,7 @@ const SortableItem = SortableElement(({ value, remove }) => {
 });
 
 SortableItem.propTypes = {
-  value: PropTypes.shape({
-    key: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    fieldKey: PropTypes.string.isRequired
-  }).isRequired,
+  value: templateBodyAttributeShape.isRequired,
   remove: PropTypes.func.isRequired
 };
 

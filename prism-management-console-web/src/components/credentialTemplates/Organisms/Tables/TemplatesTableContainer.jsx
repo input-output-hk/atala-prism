@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
-import { useSession } from '../../../providers/SessionContext';
+import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED } from '../../../../helpers/constants';
 import CreateTemplateButton from '../../Atoms/Buttons/CreateTemplateButton';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
@@ -10,21 +10,13 @@ import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent'
 import TemplatesTable from './TemplatesTable';
 import noTemplatesPicture from '../../../../images/noTemplates.svg';
 import SortControls from '../../Molecules/Headers/SortControls';
-import {
-  credentialTypeShape,
-  templateCategoryShape,
-  templateFiltersShape,
-  templateSortingShape
-} from '../../../../helpers/propShapes';
-import { UiStateContext } from '../../../../stores/ui/UiState';
+import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
-const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) => {
+const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { templateCategories, isLoading } = tableProps;
-
-  const { templateUiState } = useContext(UiStateContext);
-  const { hasFiltersApplied, filteredTemplates } = templateUiState;
+  const { templateCategories, isLoading, fetchTemplates } = useTemplateStore();
+  const { hasFiltersApplied, filteredTemplates } = useTemplateUiState();
 
   const noTemplates = !filteredTemplates?.length;
 
@@ -32,7 +24,7 @@ const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) =
     photoSrc: noTemplatesPicture,
     model: t('templates.title'),
     isFilter: hasFiltersApplied,
-    button: noTemplates && accountStatus === CONFIRMED && <CreateTemplateButton />
+    button: noTemplates && accountStatus === CONFIRMED ? <CreateTemplateButton /> : null
   };
 
   const renderContent = () => {
@@ -44,6 +36,8 @@ const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) =
         <TemplatesTable
           credentialTemplates={filteredTemplates}
           templateCategories={templateCategories}
+          getMoreTemplates={fetchTemplates}
+          isLoading={isLoading}
           showTemplatePreview={showTemplatePreview}
         />
       </>
@@ -54,13 +48,6 @@ const TemplatesTableContainer = observer(({ tableProps, showTemplatePreview }) =
 });
 
 TemplatesTableContainer.propTypes = {
-  tableProps: PropTypes.shape({
-    credentialTemplates: PropTypes.arrayOf(credentialTypeShape),
-    templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
-    isLoading: PropTypes.bool,
-    filterProps: PropTypes.shape(templateFiltersShape),
-    sortingProps: PropTypes.shape(templateSortingShape)
-  }).isRequired,
   showTemplatePreview: PropTypes.func.isRequired
 };
 

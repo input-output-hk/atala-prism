@@ -18,7 +18,11 @@ class V21MigrationSpec extends PostgresMigrationSpec("V21") with BaseDAO {
     sql"""INSERT INTO issuers (issuer_id) VALUES ($issuerId)""".runUpdate()
   }
 
-  private def insertGroup(issuerId: UUID, groupId: UUID, groupName: String): Unit = {
+  private def insertGroup(
+      issuerId: UUID,
+      groupId: UUID,
+      groupName: String
+  ): Unit = {
     sql"""INSERT INTO issuer_groups (group_id,issuer_id,name)
          |VALUES ($groupId, $issuerId, $groupName)
          |""".stripMargin.runUpdate()
@@ -65,7 +69,11 @@ class V21MigrationSpec extends PostgresMigrationSpec("V21") with BaseDAO {
   test(
     beforeApply = {
       // Issuer 1 has 2 groups with 2 subjects per group
-      insertIssuer(issuerId1, "issuer 1", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId1,
+        "issuer 1",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId1, groupId1, "Group 1")
       insertSubject(subjectId1, groupId1)
       insertSubject(subjectId2, groupId1)
@@ -73,18 +81,30 @@ class V21MigrationSpec extends PostgresMigrationSpec("V21") with BaseDAO {
       insertSubject(subjectId3, groupId2)
       insertSubject(subjectId4, groupId2)
       // Issuer 2 has 1 group, also with 2 subjects
-      insertIssuer(issuerId2, "issuer 2", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId2,
+        "issuer 2",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId2, groupId3, "Group 3")
       insertSubject(subjectId5, groupId3)
       insertSubject(subjectId6, groupId3)
       // Issuer 3 has 2 groups, but each group has a unique subject
-      insertIssuer(issuerId3, "issuer 3", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId3,
+        "issuer 3",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId3, groupId4, "Group 4")
       insertSubject(subjectId7, groupId4)
       insertGroup(issuerId3, groupId5, "Group 5")
       insertSubject(subjectId8, groupId5)
       // Issuer 4 has 1 group, which is empty
-      insertIssuer(issuerId4, "issuer 4", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId4,
+        "issuer 4",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId4, groupId6, "Group 6")
     },
     afterApplied = {
@@ -97,9 +117,18 @@ class V21MigrationSpec extends PostgresMigrationSpec("V21") with BaseDAO {
       assignedIssuerForSubject(subjectId7) mustBe issuerId3
       assignedIssuerForSubject(subjectId8) mustBe issuerId3
 
-      subjectsInGroup(groupId1) must contain theSameElementsAs Seq(subjectId1, subjectId2)
-      subjectsInGroup(groupId2) must contain theSameElementsAs Seq(subjectId3, subjectId4)
-      subjectsInGroup(groupId3) must contain theSameElementsAs Seq(subjectId5, subjectId6)
+      subjectsInGroup(groupId1) must contain theSameElementsAs Seq(
+        subjectId1,
+        subjectId2
+      )
+      subjectsInGroup(groupId2) must contain theSameElementsAs Seq(
+        subjectId3,
+        subjectId4
+      )
+      subjectsInGroup(groupId3) must contain theSameElementsAs Seq(
+        subjectId5,
+        subjectId6
+      )
       subjectsInGroup(groupId4) must contain theSameElementsAs Seq(subjectId7)
       subjectsInGroup(groupId5) must contain theSameElementsAs Seq(subjectId8)
       subjectsInGroup(groupId6) must be(empty)

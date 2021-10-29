@@ -65,7 +65,8 @@ class EmploymentServiceImpl(
 
 object EmploymentServiceImpl {
   // id of Decentralized Inc. in connector_db/public/participants table
-  val issuerId = ParticipantId.unsafeFrom("12c28b34-95be-4801-951e-c775f89d05ba")
+  val issuerId =
+    ParticipantId.unsafeFrom("12c28b34-95be-4801-951e-c775f89d05ba")
   val credentialTypeId = "VerifiableCredential/AtalaEmploymentCredential"
 
   case class EmploymentCredentialHtmlTemplateData(
@@ -81,7 +82,9 @@ object EmploymentServiceImpl {
       degreeCredential: credential_models.PlainTextCredential
   )
 
-  private def requestIdAndDegreeCredentials(connectorIntegration: ConnectorIntegration)(
+  private def requestIdAndDegreeCredentials(
+      connectorIntegration: ConnectorIntegration
+  )(
       connection: Connection
   )(implicit ec: ExecutionContext): Future[Unit] = {
     for {
@@ -89,40 +92,60 @@ object EmploymentServiceImpl {
         issuerId,
         connection.connectionId,
         credential_models.ProofRequest(
-          Seq(IdServiceImpl.credentialTypeId, DegreeServiceImpl.credentialTypeId),
+          Seq(
+            IdServiceImpl.credentialTypeId,
+            DegreeServiceImpl.credentialTypeId
+          ),
           connection.connectionToken.token
         )
       )
     } yield ()
   }
 
-  private def getRequiredEmploymentData(connectorIntegration: ConnectorIntegration)(implicit
+  private def getRequiredEmploymentData(
+      connectorIntegration: ConnectorIntegration
+  )(implicit
       ec: ExecutionContext
   ): TokenString => Future[Option[RequiredEmploymentData]] = { connectionToken =>
-    getSharedCredentials(connectorIntegration)(ec)(connectionToken).map(toRequiredEmploymentData)
+    getSharedCredentials(connectorIntegration)(ec)(connectionToken)
+      .map(toRequiredEmploymentData)
   }
 
   private def toRequiredEmploymentData(
       seq: Seq[credential_models.PlainTextCredential]
   ): Option[RequiredEmploymentData] = {
     for {
-      idCredential <- seq.find(credential => SharedCredentials.getTypeId(credential) == IdServiceImpl.credentialTypeId)
+      idCredential <- seq.find(credential =>
+        SharedCredentials.getTypeId(
+          credential
+        ) == IdServiceImpl.credentialTypeId
+      )
       degreeCredential <-
-        seq.find(credential => SharedCredentials.getTypeId(credential) == DegreeServiceImpl.credentialTypeId)
+        seq.find(credential =>
+          SharedCredentials.getTypeId(
+            credential
+          ) == DegreeServiceImpl.credentialTypeId
+        )
     } yield RequiredEmploymentData(idCredential, degreeCredential)
   }
 
   private def getSharedCredentials(
       connectorIntegration: ConnectorIntegration
-  )(implicit ec: ExecutionContext): TokenString => Future[Seq[credential_models.PlainTextCredential]] = {
-    connectionToken =>
-      SharedCredentials
-        .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
-          Set(IdServiceImpl.credentialTypeId, DegreeServiceImpl.credentialTypeId)
+  )(implicit
+      ec: ExecutionContext
+  ): TokenString => Future[Seq[credential_models.PlainTextCredential]] = { connectionToken =>
+    SharedCredentials
+      .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
+        Set(
+          IdServiceImpl.credentialTypeId,
+          DegreeServiceImpl.credentialTypeId
         )
+      )
   }
 
-  def getEmploymentCredential(requiredEmploymentData: RequiredEmploymentData): credential_models.PlainTextCredential = {
+  def getEmploymentCredential(
+      requiredEmploymentData: RequiredEmploymentData
+  ): credential_models.PlainTextCredential = {
 
     val idCredentialData = IdCredentialData(requiredEmploymentData.idCredential)
     val issuerName = "Decentralized Inc."
@@ -156,7 +179,9 @@ object EmploymentServiceImpl {
     )
 
     val credentialDocument = employmentCredentialJson.printWith(jsonPrinter)
-    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
+    val credential = Try(
+      JsonBasedCredential.fromString(credentialDocument)
+    ).toEither
 
     credential match {
       case Left(_) =>
@@ -197,7 +222,9 @@ object EmploymentServiceImpl {
       )
     )
 
-  private def employmentCredentialHtmlTemplate(credentialData: EmploymentCredentialHtmlTemplateData): String = {
+  private def employmentCredentialHtmlTemplate(
+      credentialData: EmploymentCredentialHtmlTemplateData
+  ): String = {
     ProofOfEmployment(credentialData).body
   }
 }

@@ -1,11 +1,13 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import 'antd/dist/antd.css';
 import Router from '../Router';
-import { SessionProvider } from '../providers/SessionContext';
-import i18nInitialise from '../../i18nInitialisator';
+import i18nInitialise from '../../i18nInitialise';
 import I18nError from '../I18nError';
 import Logger from '../../helpers/Logger';
+import UnconfirmedAccountErrorModal from '../common/Organisms/Modals/UnconfirmedAccountErrorModal/UnconfirmedAccountErrorModal';
+import { useSession } from '../../hooks/useSession';
 import '../../App.scss';
 import './_main.scss';
 
@@ -25,17 +27,20 @@ const Main = () => {
 
   return (
     <main>
-      <SessionProvider>
-        <MainContent />
-      </SessionProvider>
+      <MainContent />
     </main>
   );
 };
 
-const MainContent = () => (
-  <div className="AppContainer">
-    <Router />
-  </div>
-);
+const MainContent = observer(() => {
+  const { modalIsVisible, hideModal } = useSession();
+
+  return (
+    <div className="AppContainer">
+      <Router />
+      <UnconfirmedAccountErrorModal visible={modalIsVisible} hide={hideModal} />
+    </div>
+  );
+});
 
 export default Main;

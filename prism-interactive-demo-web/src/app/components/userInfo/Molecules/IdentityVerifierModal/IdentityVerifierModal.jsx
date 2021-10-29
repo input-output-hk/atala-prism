@@ -9,8 +9,8 @@ import './_style.scss';
 
 const IdentityVerifierModal = ({ showModal, onOk, onCancel, user }) => {
   const { t } = useTranslation();
-  const { firstName, lastName, dateOfBirth } = user;
-  const fullName = `${firstName} ${lastName}`;
+  const { firstName } = user;
+
   return (
     <Modal visible={showModal} onOk={onOk} onCancel={onCancel} okText="Continue">
       <div className="IdentityVerifierModal">

@@ -41,7 +41,10 @@ object ConnectorIntegration {
 
   class ConnectorIntegrationImpl(
       connectionsService: ConnectionsService[IOWithTraceIdContext],
-      messagesService: MessagesService[fs2.Stream[IOWithTraceIdContext, *], IOWithTraceIdContext]
+      messagesService: MessagesService[
+        fs2.Stream[IOWithTraceIdContext, *],
+        IOWithTraceIdContext
+      ]
   )(implicit
       ec: ExecutionContext
   ) extends ConnectorIntegration
@@ -50,7 +53,8 @@ object ConnectorIntegration {
     import io.iohk.atala.prism.connector.model.{ConnectionId, TokenString}
     import io.iohk.atala.prism.models.ParticipantId
 
-    val logger: Logger = LoggerFactory.getLogger(classOf[ConnectorIntegrationImpl])
+    val logger: Logger =
+      LoggerFactory.getLogger(classOf[ConnectorIntegrationImpl])
 
     override def sendCredential(
         senderId: ParticipantId,
@@ -68,7 +72,11 @@ object ConnectorIntegration {
         connectionId: ConnectionId,
         proofRequest: credential_models.ProofRequest
     ): Future[MessageId] =
-      sendMessage(senderId, connectionId, AtalaMessage().withProofRequest(proofRequest).toByteArray)
+      sendMessage(
+        senderId,
+        connectionId,
+        AtalaMessage().withProofRequest(proofRequest).toByteArray
+      )
 
     private def sendMessage(
         senderId: ParticipantId,
@@ -82,7 +90,9 @@ object ConnectorIntegration {
         .toFutureEither
         .toFuture(toRuntimeException(senderId, connectionId))
 
-    override def getConnectionByToken(token: TokenString): Future[Option[Connection]] =
+    override def getConnectionByToken(
+        token: TokenString
+    ): Future[Option[Connection]] =
       connectionsService
         .getConnectionByToken(token)
         .run(TraceId.generateYOLO)
@@ -91,7 +101,9 @@ object ConnectorIntegration {
         .toFutureEither
         .toFuture(toRuntimeException)
 
-    override def generateConnectionToken(senderId: ParticipantId): Future[TokenString] =
+    override def generateConnectionToken(
+        senderId: ParticipantId
+    ): Future[TokenString] =
       connectionsService
         .generateTokens(senderId, tokensCount = 1)
         .run(TraceId.generateYOLO)
@@ -102,7 +114,13 @@ object ConnectorIntegration {
         .flatMap(
           _.headOption
             .map(Future.successful)
-            .getOrElse(Future.failed(new RuntimeException("Connection service returned empty connection tokens list")))
+            .getOrElse(
+              Future.failed(
+                new RuntimeException(
+                  "Connection service returned empty connection tokens list"
+                )
+              )
+            )
         )
 
     override def getMessages(
@@ -114,11 +132,19 @@ object ConnectorIntegration {
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
 
-    private def toRuntimeException(senderId: ParticipantId, connectionId: ConnectionId): Any => RuntimeException =
-      _ => new RuntimeException(s"Failed to send credential for senderId = $senderId, connectionId = $connectionId.")
+    private def toRuntimeException(
+        senderId: ParticipantId,
+        connectionId: ConnectionId
+    ): Any => RuntimeException =
+      _ =>
+        new RuntimeException(
+          s"Failed to send credential for senderId = $senderId, connectionId = $connectionId."
+        )
 
     private def toRuntimeException: ConnectorError => RuntimeException =
       error =>
-        new RuntimeException(s"Failed to get connection due to connector error: '${error.toStatus.getDescription}'.")
+        new RuntimeException(
+          s"Failed to get connection due to connector error: '${error.toStatus.getDescription}'."
+        )
   }
 }

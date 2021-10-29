@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.operations
 
-import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -8,7 +7,6 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
-import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -20,12 +18,25 @@ object IssueCredentialBatchOperationSpec {
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
   lazy val issuerDidKeys = List(
-    DIDPublicKey(issuerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey),
-    DIDPublicKey(issuerDIDSuffix, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublicKey)
+    DIDPublicKey(
+      issuerDIDSuffix,
+      "master",
+      KeyUsage.MasterKey,
+      masterKeys.getPublicKey
+    ),
+    DIDPublicKey(
+      issuerDIDSuffix,
+      "issuing",
+      KeyUsage.IssuingKey,
+      issuingKeys.getPublicKey
+    )
   )
 
   lazy val issuerCreateDIDOperation =
-    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData).toOption.value
+    CreateDIDOperation
+      .parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData)
+      .toOption
+      .value
   lazy val issuerDIDSuffix = issuerCreateDIDOperation.id
   val content = ""
   val mockMerkleRoot = new MerkleRoot(Sha256.compute(content.getBytes))
@@ -48,55 +59,82 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
   import IssueCredentialBatchOperationSpec._
 
-  lazy val didDataRepository: DIDDataRepository[IO] = DIDDataRepository(database)
-
   "IssueCredentialBatchOperation.parse" should {
     "parse valid IssueCredentialBatchOperation AtalaOperation" in {
-      IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]
+      IssueCredentialBatchOperation.parse(
+        exampleOperation,
+        dummyLedgerData
+      ) mustBe a[Right[_, _]]
     }
 
     "return error when issuerDID is not provided / empty" in {
       val invalidOperation = exampleOperation
         .update(_.issueCredentialBatch.credentialBatchData.issuerDid := "")
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "issuerDID")
-          value mustBe ""
+      inside(
+        IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, value, _)) =>
+        path.path mustBe Vector(
+          "issueCredentialBatch",
+          "credentialBatchData",
+          "issuerDID"
+        )
+        value mustBe ""
       }
     }
 
     "return error when issuerDID doesn't have valid form" in {
       val invalidOperation = exampleOperation
-        .update(_.issueCredentialBatch.credentialBatchData.issuerDid := "my best friend")
+        .update(
+          _.issueCredentialBatch.credentialBatchData.issuerDid := "my best friend"
+        )
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "issuerDID")
-          value mustBe "my best friend"
+      inside(
+        IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, value, _)) =>
+        path.path mustBe Vector(
+          "issueCredentialBatch",
+          "credentialBatchData",
+          "issuerDID"
+        )
+        value mustBe "my best friend"
       }
     }
 
     "return error when merkle root is not provided / empty" in {
       val invalidOperation = exampleOperation
-        .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.EMPTY)
+        .update(
+          _.issueCredentialBatch.credentialBatchData.merkleRoot := ByteString.EMPTY
+        )
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "merkleRoot")
-          value mustBe "0x0"
+      inside(
+        IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, value, _)) =>
+        path.path mustBe Vector(
+          "issueCredentialBatch",
+          "credentialBatchData",
+          "merkleRoot"
+        )
+        value mustBe "0x0"
       }
     }
 
     "return error when hash has invalid length" in {
       val invalidHash = ByteString.copyFrom("abc", "UTF8")
       val invalidOperation = exampleOperation
-        .update(_.issueCredentialBatch.credentialBatchData.merkleRoot := invalidHash)
+        .update(
+          _.issueCredentialBatch.credentialBatchData.merkleRoot := invalidHash
+        )
 
-      inside(IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredentialBatch", "credentialBatchData", "merkleRoot")
-          value mustBe "0x616263"
+      inside(
+        IssueCredentialBatchOperation.parse(invalidOperation, dummyLedgerData)
+      ) { case Left(ValidationError.InvalidValue(path, value, _)) =>
+        path.path mustBe Vector(
+          "issueCredentialBatch",
+          "credentialBatchData",
+          "merkleRoot"
+        )
+        value mustBe "0x616263"
       }
     }
   }
@@ -104,8 +142,18 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
   "IssueCredentialBatchOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
       DataPreparation
-        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+        .createDID(
+          DIDData(
+            issuerDIDSuffix,
+            issuerDidKeys,
+            issuerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
+      val parsedOperation = IssueCredentialBatchOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
@@ -120,8 +168,18 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
     }
     "return state error when there are used different key than issuing key" in {
       DataPreparation
-        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+        .createDID(
+          DIDData(
+            issuerDIDSuffix,
+            issuerDidKeys,
+            issuerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
+      val parsedOperation = IssueCredentialBatchOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .getCorrectnessData("master")
@@ -129,12 +187,26 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
         .value
         .unsafeRunSync()
 
-      result mustBe Left(StateError.InvalidKeyUsed("The key type expected is Issuing key. Type used: MasterKey"))
+      result mustBe Left(
+        StateError.InvalidKeyUsed(
+          "The key type expected is Issuing key. Type used: MasterKey"
+        )
+      )
     }
     "return state error when unknown keyId is used" in {
       DataPreparation
-        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+        .createDID(
+          DIDData(
+            issuerDIDSuffix,
+            issuerDidKeys,
+            issuerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
+      val parsedOperation = IssueCredentialBatchOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .getCorrectnessData("issuing3")
@@ -149,8 +221,18 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
   "IssueCredentialBatchOperation.applyState" should {
     "create the credential batch information in the database" in {
       DataPreparation
-        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+        .createDID(
+          DIDData(
+            issuerDIDSuffix,
+            issuerDidKeys,
+            issuerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
+      val parsedOperation = IssueCredentialBatchOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .applyState()
@@ -177,7 +259,10 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = IssueCredentialBatchOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       val result = parsedOperation
         .applyState()
@@ -193,9 +278,19 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when the credential already exists in the db" in {
       DataPreparation
-        .createDID(DIDData(issuerDIDSuffix, issuerDidKeys, issuerCreateDIDOperation.digest), dummyLedgerData)
+        .createDID(
+          DIDData(
+            issuerDIDSuffix,
+            issuerDidKeys,
+            issuerCreateDIDOperation.digest
+          ),
+          dummyLedgerData
+        )
 
-      val parsedOperation = IssueCredentialBatchOperation.parse(exampleOperation, dummyLedgerData).toOption.value
+      val parsedOperation = IssueCredentialBatchOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
 
       // first insertion
       val resultAttempt1 = parsedOperation

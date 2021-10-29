@@ -22,7 +22,10 @@ class ManagementConsoleAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[ParticipantId](nodeClient, grpcAuthenticationHeaderParser) {
+) extends SignedRequestsAuthenticatorBase[ParticipantId](
+      nodeClient,
+      grpcAuthenticationHeaderParser
+    ) {
 
   override def burnNonce(id: ParticipantId, requestNonce: RequestNonce, traceId: TraceId)(implicit
       ec: ExecutionContext
@@ -42,7 +45,9 @@ class ManagementConsoleAuthenticator(
   override def findByPublicKey(publicKey: ECPublicKey, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, ParticipantId] =
-    Future.successful(UnsupportedAuthMethod().asLeft[ParticipantId]).toFutureEither
+    Future
+      .successful(UnsupportedAuthMethod().asLeft[ParticipantId])
+      .toFutureEither
 
   override def findByDid(did: DID, traceId: TraceId)(implicit
       ec: ExecutionContext

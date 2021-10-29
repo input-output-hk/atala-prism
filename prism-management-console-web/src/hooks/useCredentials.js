@@ -17,7 +17,7 @@ import {
   filterContactByStatus
 } from '../helpers/filterHelpers';
 import { credentialMapper, credentialReceivedMapper } from '../APIs/helpers/credentialHelpers';
-import { useSession } from '../components/providers/SessionContext';
+import { useSession } from './useSession';
 import { useDebounce } from './useDebounce';
 
 const useCredentialsFilters = () => {
@@ -94,9 +94,10 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
     ({ isFetchAll } = {}) => {
       if (isLoading || isSearching) return;
       setIsSearching(true);
+      const pageSize = isFetchAll ? MAX_CREDENTIAL_PAGE_SIZE : CREDENTIAL_PAGE_SIZE;
       return (hasMore
         ? credentialsManager.getCredentials(
-            isFetchAll ? MAX_CREDENTIAL_PAGE_SIZE : CREDENTIAL_PAGE_SIZE,
+            pageSize,
             credentials.length,
             filters.values,
             sortingBy && {
@@ -120,10 +121,7 @@ export const useCredentialsIssuedListWithFilters = credentialsManager => {
           removeUnconfirmedAccountError();
           return updatedCredentials;
         })
-        .then(updatedCredentials => {
-          const newFilteredCredentials = applyFrontendFilters(updatedCredentials);
-          return newFilteredCredentials;
-        })
+        .then(updatedCredentials => applyFrontendFilters(updatedCredentials))
         .catch(error => {
           Logger.error(
             '[CredentialContainer.getCredentialsRecieved] Error while getting Credentials',

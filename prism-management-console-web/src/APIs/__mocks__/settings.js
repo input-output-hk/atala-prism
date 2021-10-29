@@ -2,7 +2,7 @@ let SETTINGS = {
   payForCredential: false
 };
 
-export const getSettings = () => new Promise(resolve => resolve(SETTINGS));
+export const getSettings = () => Promise.resolve(SETTINGS);
 
 export const editSettings = newSettings =>
   new Promise(resolve => {

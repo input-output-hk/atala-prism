@@ -17,7 +17,8 @@ import scala.concurrent.Future
 object SharedCredentials {
 
   def getTypeId(credential: credential_models.PlainTextCredential): String = {
-    val decodedCredential = Base64Utils.decodeUrlToString(credential.encodedCredential)
+    val decodedCredential =
+      Base64Utils.decodeUrlToString(credential.encodedCredential)
     parse(decodedCredential)
       .flatMap { json =>
         val cursor = json.hcursor.downField("credentialSubject")
@@ -30,15 +31,18 @@ object SharedCredentials {
       }
   }
 
-  def credentialsOfType(typeIds: Set[String])(messages: Seq[Message]): Seq[credential_models.PlainTextCredential] = {
-    messages.collect {
-      case message =>
-        val credential = credential_models.AtalaMessage.parseFrom(message.content).getPlainCredential
-        if (typeIds.contains { getTypeId(credential) }) {
-          Some(credential)
-        } else {
-          None
-        }
+  def credentialsOfType(
+      typeIds: Set[String]
+  )(messages: Seq[Message]): Seq[credential_models.PlainTextCredential] = {
+    messages.collect { case message =>
+      val credential = credential_models.AtalaMessage
+        .parseFrom(message.content)
+        .getPlainCredential
+      if (typeIds.contains { getTypeId(credential) }) {
+        Some(credential)
+      } else {
+        None
+      }
     }.flatten
   }
 
@@ -46,9 +50,12 @@ object SharedCredentials {
       connectorIntegration: ConnectorIntegration,
       connectionToken: TokenString,
       issuerId: ParticipantId
-  )(typeIds: Set[String])(implicit ec: ExecutionContext): Future[Seq[credential_models.PlainTextCredential]] = {
+  )(typeIds: Set[String])(implicit
+      ec: ExecutionContext
+  ): Future[Seq[credential_models.PlainTextCredential]] = {
     for {
-      maybeConnection: Option[Connection] <- connectorIntegration.getConnectionByToken(connectionToken)
+      maybeConnection: Option[Connection] <- connectorIntegration
+        .getConnectionByToken(connectionToken)
       messages <-
         maybeConnection
           .fold(Future.successful(Seq.empty[Message]))(connection =>

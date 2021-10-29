@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Input } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import { noEmptyInput, futureDate, pastDate, minOneElement } from '../../../../helpers/formRules';
+import { noEmptyInput, futureDate, pastDate } from '../../../../helpers/formRules';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
-import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 
 import './_style.scss';

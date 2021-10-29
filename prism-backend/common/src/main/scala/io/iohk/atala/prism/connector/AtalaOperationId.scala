@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.BytesOps
+import tofu.logging.{DictLoggable, LogRenderer}
 
 import java.util.UUID
 
@@ -26,6 +27,18 @@ class AtalaOperationId private (val digest: Sha256Digest) {
 }
 
 object AtalaOperationId {
+
+  implicit val atalaOperationLoggable: DictLoggable[AtalaOperationId] =
+    new DictLoggable[AtalaOperationId] {
+      override def fields[I, V, R, S](a: AtalaOperationId, i: I)(implicit
+          r: LogRenderer[I, V, R, S]
+      ): R =
+        r.addString("AtalaOperationId", a.hexValue, i)
+
+      override def logShow(a: AtalaOperationId): String =
+        s"AtalaOperationId{${a.hexValue}"
+    }
+
   def of(atalaOperation: node_models.SignedAtalaOperation): AtalaOperationId = {
     val hash = Sha256.compute(atalaOperation.toByteArray)
     new AtalaOperationId(hash)

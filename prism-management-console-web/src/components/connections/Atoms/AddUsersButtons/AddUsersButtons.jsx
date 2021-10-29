@@ -13,10 +13,10 @@ const AddUsersButtons = ({ redirector: { redirectToImportContacts } }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-secondary',
-          onClick: redirectToImportContacts
+          onClick: redirectToImportContacts,
+          icon: <PlusOutlined />
         }}
         buttonText={t('contacts.buttons.import')}
-        icon={<PlusOutlined />}
       />
     </div>
   );

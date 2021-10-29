@@ -65,7 +65,8 @@ class InsuranceServiceImpl(
 
 object InsuranceServiceImpl {
   // id of Verified Insurance Ltd connector_db/public/participants table
-  val issuerId = ParticipantId.unsafeFrom("a1cb7eee-65c1-4d7f-9417-db8a37a6212a")
+  val issuerId =
+    ParticipantId.unsafeFrom("a1cb7eee-65c1-4d7f-9417-db8a37a6212a")
   val credentialTypeId = "VerifiableCredential/AtalaCertificateOfInsurance"
 
   case class RequiredInsuranceData(
@@ -81,7 +82,9 @@ object InsuranceServiceImpl {
       expirationDate: String
   )
 
-  private def requestIdAndEmploymentCredentials(connectorIntegration: ConnectorIntegration)(
+  private def requestIdAndEmploymentCredentials(
+      connectorIntegration: ConnectorIntegration
+  )(
       connection: Connection
   )(implicit ec: ExecutionContext): Future[Unit] = {
     for {
@@ -89,43 +92,65 @@ object InsuranceServiceImpl {
         issuerId,
         connection.connectionId,
         credential_models.ProofRequest(
-          Seq(IdServiceImpl.credentialTypeId, EmploymentServiceImpl.credentialTypeId),
+          Seq(
+            IdServiceImpl.credentialTypeId,
+            EmploymentServiceImpl.credentialTypeId
+          ),
           connection.connectionToken.token
         )
       )
     } yield ()
   }
 
-  private def getRequiredInsuranceData(connectorIntegration: ConnectorIntegration)(implicit
+  private def getRequiredInsuranceData(
+      connectorIntegration: ConnectorIntegration
+  )(implicit
       ec: ExecutionContext
   ): TokenString => Future[Option[RequiredInsuranceData]] = { connectionToken =>
-    getSharedCredentials(connectorIntegration)(ec)(connectionToken).map(toRequiredInsuranceData)
+    getSharedCredentials(connectorIntegration)(ec)(connectionToken)
+      .map(toRequiredInsuranceData)
   }
 
   private def toRequiredInsuranceData(
       seq: Seq[credential_models.PlainTextCredential]
   ): Option[RequiredInsuranceData] = {
     for {
-      idCredential <- seq.find(credential => SharedCredentials.getTypeId(credential) == IdServiceImpl.credentialTypeId)
+      idCredential <- seq.find(credential =>
+        SharedCredentials.getTypeId(
+          credential
+        ) == IdServiceImpl.credentialTypeId
+      )
       employmentCredential <-
-        seq.find(credential => SharedCredentials.getTypeId(credential) == EmploymentServiceImpl.credentialTypeId)
+        seq.find(credential =>
+          SharedCredentials.getTypeId(
+            credential
+          ) == EmploymentServiceImpl.credentialTypeId
+        )
     } yield RequiredInsuranceData(idCredential, employmentCredential)
   }
 
   private def getSharedCredentials(
       connectorIntegration: ConnectorIntegration
-  )(implicit ec: ExecutionContext): TokenString => Future[Seq[credential_models.PlainTextCredential]] = {
-    connectionToken =>
-      SharedCredentials
-        .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
-          Set(IdServiceImpl.credentialTypeId, EmploymentServiceImpl.credentialTypeId)
+  )(implicit
+      ec: ExecutionContext
+  ): TokenString => Future[Seq[credential_models.PlainTextCredential]] = { connectionToken =>
+    SharedCredentials
+      .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
+        Set(
+          IdServiceImpl.credentialTypeId,
+          EmploymentServiceImpl.credentialTypeId
         )
+      )
   }
 
-  def getInsuranceCredential(requiredInsuranceData: RequiredInsuranceData): credential_models.PlainTextCredential = {
+  def getInsuranceCredential(
+      requiredInsuranceData: RequiredInsuranceData
+  ): credential_models.PlainTextCredential = {
 
     val idCredentialData = IdCredentialData(requiredInsuranceData.idCredential)
-    val employmentCredentialData = EmploymentCredentialData(requiredInsuranceData.employmentCredential)
+    val employmentCredentialData = EmploymentCredentialData(
+      requiredInsuranceData.employmentCredential
+    )
     val policyNumber = "ABC-123456789"
     val productClass = "Health Insurance"
     val issuerName = "Verified Insurance Ltd"
@@ -160,7 +185,9 @@ object InsuranceServiceImpl {
 
     val credentialDocument = insuranceCredentialJson.printWith(jsonPrinter)
 
-    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
+    val credential = Try(
+      JsonBasedCredential.fromString(credentialDocument)
+    ).toEither
 
     credential match {
       case Left(_) =>
@@ -209,7 +236,9 @@ object InsuranceServiceImpl {
       )
     )
 
-  private def insuranceCredentialHtmlTemplate(credentialData: InsuranceCredentialHtmlTemplateData): String = {
+  private def insuranceCredentialHtmlTemplate(
+      credentialData: InsuranceCredentialHtmlTemplateData
+  ): String = {
     HealthCredential(credentialData).body
   }
 }

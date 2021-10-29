@@ -1,13 +1,14 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { backgroundColors, themeColors } from '../../../../helpers/colors';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 import ColorPicker from './ColorPicker';
 import './_style.scss';
 
-const ThemeOptions = () => {
+const ThemeOptions = observer(() => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSketch } = useTemplateSketch();
 
   return (
     <>
@@ -17,17 +18,17 @@ const ThemeOptions = () => {
           name="themeColor"
           label={t('credentialTemplateCreation.step2.style.themeColor')}
           colors={themeColors}
-          selected={templateSettings.themeColor}
+          selected={templateSketch.themeColor}
         />
         <ColorPicker
           name="backgroundColor"
           label={t('credentialTemplateCreation.step2.style.backgroundColor')}
           colors={backgroundColors}
-          selected={templateSettings.backgroundColor}
+          selected={templateSketch.backgroundColor}
         />
       </div>
     </>
   );
-};
+});
 
 export default ThemeOptions;

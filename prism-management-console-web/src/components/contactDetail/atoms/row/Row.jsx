@@ -6,7 +6,7 @@ import IdIcon from '../../../../images/IdIcon.svg';
 import peopleIcon from '../../../../images/iconpeople.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
-const RowInfo = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
+const Row = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
   const { t } = useTranslation();
   const classname = `RowInfo ${theme}`;
   return (
@@ -42,13 +42,13 @@ const RowInfo = ({ theme, groupName, contacts, groupId, contactId, onDelete }) =
   );
 };
 
-RowInfo.defaultProps = {
+Row.defaultProps = {
   theme: 'row-info',
   onDelete: null,
   contactId: ''
 };
 
-RowInfo.propTypes = {
+Row.propTypes = {
   theme: PropTypes.string,
   groupName: PropTypes.string.isRequired,
   contacts: PropTypes.number.isRequired,
@@ -57,4 +57,4 @@ RowInfo.propTypes = {
   onDelete: PropTypes.func
 };
 
-export default RowInfo;
+export default Row;

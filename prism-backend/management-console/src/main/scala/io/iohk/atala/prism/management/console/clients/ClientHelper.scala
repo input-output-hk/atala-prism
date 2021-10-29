@@ -13,7 +13,8 @@ object ClientHelper {
       whitelistedDID: DID,
       didPrivateKey: ECPrivateKey
   ): scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased = { request =>
-    val signedRequest = authenticator.signConnectorRequest(request.toByteArray, didPrivateKey)
+    val signedRequest =
+      authenticator.signConnectorRequest(request.toByteArray, didPrivateKey)
     GrpcAuthenticationHeader.UnpublishedDIDBased(
       did = whitelistedDID,
       keyId = DID.getDEFAULT_MASTER_KEY_ID,

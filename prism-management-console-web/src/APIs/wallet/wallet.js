@@ -51,25 +51,6 @@ function isValidSession(session) {
   return !!session.sessionId;
 }
 
-function verifyRegistration() {
-  return new Promise((resolve, reject) => {
-    const extensionApi = window.prism;
-
-    if (!extensionApi) reject(MISSING_WALLET_ERROR);
-
-    extensionApi
-      .login()
-      .then(session => {
-        if (isValidSession(session)) {
-          resolve();
-        } else reject(MISSING_WALLET_ERROR);
-      })
-      .catch(() => {
-        reject(MISSING_WALLET_ERROR);
-      });
-  });
-}
-
 function setSessionState(sessionData) {
   this.session = sessionData?.sessionId
     ? {
@@ -178,7 +159,9 @@ function revokeCredentials(credentials) {
 function Wallet(config) {
   this.config = config;
   this.session = defaultSessionState;
-  this.handleSessionError = () => {};
+  this.handleSessionError = () => {
+    // This function should be overridden using setSessionErrorHandler
+  };
 }
 
 const defaultSessionState = {
@@ -191,7 +174,6 @@ const defaultSessionState = {
 Wallet.prototype.getSessionFromExtension = getSessionFromExtension;
 Wallet.prototype.repeatGetSessionRequest = repeatGetSessionRequest;
 Wallet.prototype.getSessionRequest = getSessionRequest;
-Wallet.prototype.verifyRegistration = verifyRegistration;
 Wallet.prototype.setSessionState = setSessionState;
 Wallet.prototype.setSessionErrorHandler = setSessionErrorHandler;
 Wallet.prototype.getNonce = getNonce;

@@ -6,7 +6,6 @@ import java.time.Instant
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put, Read, Write}
-import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
@@ -34,14 +33,19 @@ package object daos extends BaseDAO {
       a =>
         AtalaObjectTransactionSubmissionStatus
           .withNameOption(a)
-          .getOrElse(throw InvalidEnum[AtalaObjectTransactionSubmissionStatus](a)),
+          .getOrElse(
+            throw InvalidEnum[AtalaObjectTransactionSubmissionStatus](a)
+          ),
       _.entryName
     )
 
   implicit val pgAtalaObjectStatus: Meta[AtalaObjectStatus] =
     pgEnumString[AtalaObjectStatus](
       "ATALA_OBJECT_STATUS",
-      a => AtalaObjectStatus.withNameOption(a).getOrElse(throw InvalidEnum[AtalaObjectStatus](a)),
+      a =>
+        AtalaObjectStatus
+          .withNameOption(a)
+          .getOrElse(throw InvalidEnum[AtalaObjectStatus](a)),
       _.entryName
     )
 
@@ -59,7 +63,8 @@ package object daos extends BaseDAO {
   implicit val didSuffixGet: Get[DidSuffix] = Get[String].map(DidSuffix.apply)
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
-  implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
+  implicit val credentialIdGet: Get[CredentialId] =
+    Get[String].map(CredentialId(_))
 
   implicit val credentialBatchIdMeta: Meta[CredentialBatchId] =
     Meta[String].timap(CredentialBatchId.fromString)(_.getId)
@@ -136,9 +141,13 @@ package object daos extends BaseDAO {
             rLedger
           ) =>
         assert(curveId == ECConfig.getCURVE_NAME)
-        val javaPublicKey: ECPublicKey = EC.toPublicKeyFromCompressed(compressed)
+        val javaPublicKey: ECPublicKey =
+          EC.toPublicKeyFromCompressed(compressed)
         val revokeLedgerData =
-          for (transactionId <- rTransactionId; ledger <- rLedger; t <- rTimestamp; absn <- rABSN; osn <- rOSN)
+          for (
+            transactionId <- rTransactionId; ledger <- rLedger; t <- rTimestamp;
+            absn <- rABSN; osn <- rOSN
+          )
             yield LedgerData(
               transactionId = transactionId,
               ledger = ledger,
@@ -162,7 +171,9 @@ package object daos extends BaseDAO {
   // added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger
 
   implicit val atalaObjectIdMeta: Meta[AtalaObjectId] =
-    Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(_.value.toArray)
+    Meta[Array[Byte]].timap(value => AtalaObjectId(value.toVector))(
+      _.value.toArray
+    )
 
   implicit val atalaOperationInfoRead: Read[AtalaOperationInfo] = {
     Read[
@@ -203,9 +214,27 @@ package object daos extends BaseDAO {
           objectId,
           byteContent,
           status,
-          (maybeTransactionId, maybeLedger, maybeBlockNumber, maybeBlockTimestamp, maybeBlockIndex) match {
-            case (Some(transactionId), Some(ledger), Some(blockNumber), Some(blockTimestamp), Some(blockIndex)) =>
-              Some(TransactionInfo(transactionId, ledger, Some(BlockInfo(blockNumber, blockTimestamp, blockIndex))))
+          (
+            maybeTransactionId,
+            maybeLedger,
+            maybeBlockNumber,
+            maybeBlockTimestamp,
+            maybeBlockIndex
+          ) match {
+            case (
+                  Some(transactionId),
+                  Some(ledger),
+                  Some(blockNumber),
+                  Some(blockTimestamp),
+                  Some(blockIndex)
+                ) =>
+              Some(
+                TransactionInfo(
+                  transactionId,
+                  ledger,
+                  Some(BlockInfo(blockNumber, blockTimestamp, blockIndex))
+                )
+              )
             case _ => None
           }
         )
@@ -215,26 +244,30 @@ package object daos extends BaseDAO {
   implicit val ledgerDataGet: Get[LedgerData] =
     Get.Advanced
       .other[(Array[Byte], String, Instant, Int, Int)](
-        NonEmptyList.of("TRANSACTION_ID", "VARCHAR(32)", "TIMESTAMPTZ", "INTEGER", "INTEGER")
+        NonEmptyList.of(
+          "TRANSACTION_ID",
+          "VARCHAR(32)",
+          "TIMESTAMPTZ",
+          "INTEGER",
+          "INTEGER"
+        )
       )
-      .tmap {
-        case (tId, ledger, abt, absn, osn) =>
-          LedgerData(
-            TransactionId.from(tId).get,
-            Ledger.withNameInsensitive(ledger),
-            new TimestampInfo(abt.toEpochMilli, absn, osn)
-          )
+      .tmap { case (tId, ledger, abt, absn, osn) =>
+        LedgerData(
+          TransactionId.from(tId).get,
+          Ledger.withNameInsensitive(ledger),
+          new TimestampInfo(abt.toEpochMilli, absn, osn)
+        )
       }
 
   implicit val ledgerDataRead: Read[LedgerData] =
     Read[(Array[Byte], String, Instant, Int, Int)]
-      .map {
-        case (tId, ledger, abt, absn, osn) =>
-          LedgerData(
-            TransactionId.from(tId).get,
-            Ledger.withNameInsensitive(ledger),
-            new TimestampInfo(abt.toEpochMilli, absn, osn)
-          )
+      .map { case (tId, ledger, abt, absn, osn) =>
+        LedgerData(
+          TransactionId.from(tId).get,
+          Ledger.withNameInsensitive(ledger),
+          new TimestampInfo(abt.toEpochMilli, absn, osn)
+        )
       }
 
   implicit val CredentialBatchStateRead: Read[CredentialBatchState] = {
@@ -279,7 +312,13 @@ package object daos extends BaseDAO {
         )
         val revokedOn = {
           (revTxIdOp, revLedgerOp, revABTOp, revABSNOp, revOSNOp) match {
-            case (Some(rTrId), Some(rLedger), Some(rAbt), Some(rAbsn), Some(rOsn)) =>
+            case (
+                  Some(rTrId),
+                  Some(rLedger),
+                  Some(rAbt),
+                  Some(rAbsn),
+                  Some(rOsn)
+                ) =>
               Some(
                 LedgerData(
                   TransactionId.from(rTrId).get,
@@ -303,14 +342,17 @@ package object daos extends BaseDAO {
 
   implicit val protocolVersionRead: Read[ProtocolVersion] =
     Read[(Int, Int)]
-      .map {
-        case (major, minor) => ProtocolVersion(major, minor)
+      .map { case (major, minor) =>
+        ProtocolVersion(major, minor)
       }
 
   implicit val protocolVersionInfoRead: Read[ProtocolVersionInfo] =
     Read[(Int, Int, Option[String], Int)]
-      .map {
-        case (major, minor, versionName, effectiveSince) =>
-          ProtocolVersionInfo(ProtocolVersion(major, minor), versionName, effectiveSince)
+      .map { case (major, minor, versionName, effectiveSince) =>
+        ProtocolVersionInfo(
+          ProtocolVersion(major, minor),
+          versionName,
+          effectiveSince
+        )
       }
 }

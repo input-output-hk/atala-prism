@@ -79,7 +79,10 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
       group: Option[InstitutionGroup.Name]
   ): F[Either[errors.ManagementConsoleError, ContactWithConnection]] =
     for {
-      tokens <- connector.generateConnectionTokens(request.generateConnectionTokenRequestMetadata, count = 1)
+      tokens <- connector.generateConnectionTokens(
+        request.generateConnectionTokenRequestMetadata,
+        count = 1
+      )
       contact <-
         tokens.headOption
           .traverse(token =>
@@ -93,7 +96,10 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
           )
           .map(
             _.toRight[errors.ManagementConsoleError](
-              errors.GenerationOfConnectionTokensFailed(expectedTokenCount = 1, actualTokenCount = 0)
+              errors.GenerationOfConnectionTokensFailed(
+                expectedTokenCount = 1,
+                actualTokenCount = 0
+              )
             )
           )
 
@@ -110,7 +116,10 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
       request: CreateContact.Batch
   ): F[Either[errors.ManagementConsoleError, Int]] =
     for {
-      tokens <- generateTokens(request.contacts, request.generateConnectionTokenRequestMetadata)
+      tokens <- generateTokens(
+        request.contacts,
+        request.generateConnectionTokenRequestMetadata
+      )
       verifiedTokens = verifyGeneratedConnectionTokens(tokens, request.contacts)
       numberOfConacts <-
         verifiedTokens.flatTraverse(tokens => contactsRepository.createBatch(institutionId, request, tokens))
@@ -125,11 +134,20 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
       institutionId: ParticipantId,
       paginatedQuery: Contact.PaginatedQuery
   ): F[GetContactsResult] = {
-    val filterByConnectionStatusSpecified = paginatedQuery.filters.exists(f => f.connectionStatus.isDefined)
+    val filterByConnectionStatusSpecified =
+      paginatedQuery.filters.exists(f => f.connectionStatus.isDefined)
     for {
-      allContacts <- contactsRepository.getBy(institutionId, paginatedQuery, filterByConnectionStatusSpecified)
-      allConnectionStatuses <- connector.getConnectionStatus(allContacts.map(_.details.connectionToken))
-      tokenToConnection = allConnectionStatuses.map(c => ConnectionToken(c.connectionToken) -> c).toMap
+      allContacts <- contactsRepository.getBy(
+        institutionId,
+        paginatedQuery,
+        filterByConnectionStatusSpecified
+      )
+      allConnectionStatuses <- connector.getConnectionStatus(
+        allContacts.map(_.details.connectionToken)
+      )
+      tokenToConnection = allConnectionStatuses
+        .map(c => ConnectionToken(c.connectionToken) -> c)
+        .toMap
     } yield {
       val data = allContacts
         .map { contact =>
@@ -149,9 +167,8 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
         .flatMap(fb => fb.connectionStatus)
         .map(contactConnectionStatusToFilterBy => {
           data
-            .filter {
-              case (contactWithConnection, _) =>
-                contactConnectionStatusToFilterBy == contactWithConnection.connection.connectionStatus
+            .filter { case (contactWithConnection, _) =>
+              contactConnectionStatusToFilterBy == contactWithConnection.connection.connectionStatus
             }
             .take(paginatedQuery.limit)
         })
@@ -172,13 +189,17 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
         contactMaybe
           .traverse { contact =>
             val connectionTokens =
-              (contact.issuedCredentials.map(_.connectionToken) :+ contact.contact.connectionToken).distinct
+              (contact.issuedCredentials.map(
+                _.connectionToken
+              ) :+ contact.contact.connectionToken).distinct
             connector
               .getConnectionStatus(connectionTokens)
               .map(contactConnections =>
                 DetailedContactWithConnection.from(
                   contact,
-                  contactConnections.map(c => ConnectionToken(c.connectionToken) -> c).toMap
+                  contactConnections
+                    .map(c => ConnectionToken(c.connectionToken) -> c)
+                    .toMap
                 )
               )
           }
@@ -195,7 +216,11 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
       contacts: List[CreateContact.NoOwner],
       generateConnectionTokenRequestMetadata: GrpcAuthenticationHeader.DIDBased
   ): F[Seq[ConnectionToken]] = {
-    if (contacts.nonEmpty) connector.generateConnectionTokens(generateConnectionTokenRequestMetadata, contacts.size)
+    if (contacts.nonEmpty)
+      connector.generateConnectionTokens(
+        generateConnectionTokenRequestMetadata,
+        contacts.size
+      )
     else Seq.empty[ConnectionToken].pure[F]
   }
 
@@ -225,23 +250,30 @@ object ContactsIntegrationService {
       serviceLogs <- logs.service[ContactsIntegrationService[F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, ContactsIntegrationService[F]] = serviceLogs
-      val logs: ContactsIntegrationService[Mid[F, *]] = new ContactsIntegrationServiceLogs[F]
+      val logs: ContactsIntegrationService[Mid[F, *]] =
+        new ContactsIntegrationServiceLogs[F]
       val mid = logs
-      mid attach new ContactsIntegrationServiceImpl[F](contactsRepository, connector)
+      mid attach new ContactsIntegrationServiceImpl[F](
+        contactsRepository,
+        connector
+      )
     }
 
   def unsafe[F[_]: BracketThrow, R[_]: Comonad](
       contactsRepository: ContactsRepository[F],
       connector: ConnectorClient[F],
       logs: Logs[R, F]
-  ): ContactsIntegrationService[F] = ContactsIntegrationService(contactsRepository, connector, logs).extract
+  ): ContactsIntegrationService[F] =
+    ContactsIntegrationService(contactsRepository, connector, logs).extract
 
   def makeResource[F[_]: BracketThrow, R[_]: Monad](
       contactsRepository: ContactsRepository[F],
       connector: ConnectorClient[F],
       logs: Logs[R, F]
   ): Resource[R, ContactsIntegrationService[F]] =
-    Resource.eval(ContactsIntegrationService(contactsRepository, connector, logs))
+    Resource.eval(
+      ContactsIntegrationService(contactsRepository, connector, logs)
+    )
 
   case class ContactWithConnection(
       contact: Contact,
@@ -251,7 +283,10 @@ object ContactsIntegrationService {
   case class DetailedContactWithConnection(
       contactWithDetails: Contact.WithDetails,
       connection: connector_models.ContactConnection,
-      issuedCredentialsConnections: Map[ConnectionToken, connector_models.ContactConnection]
+      issuedCredentialsConnections: Map[
+        ConnectionToken,
+        connector_models.ContactConnection
+      ]
   )
   object DetailedContactWithConnection {
     def from(
@@ -269,7 +304,11 @@ object ContactsIntegrationService {
               )
             )
           )
-          .map(contactConnection => ConnectionToken(contactConnection.connectionToken) -> contactConnection)
+          .map(contactConnection =>
+            ConnectionToken(
+              contactConnection.connectionToken
+            ) -> contactConnection
+          )
           .toMap
       DetailedContactWithConnection(
         contact,
@@ -285,8 +324,11 @@ object ContactsIntegrationService {
     }
   }
 
-  case class GetContactsResult(data: List[(ContactWithConnection, Contact.CredentialCounts)]) {
-    def scrollId: Option[Contact.Id] = data.lastOption.map(_._1.contact.contactId)
+  case class GetContactsResult(
+      data: List[(ContactWithConnection, Contact.CredentialCounts)]
+  ) {
+    def scrollId: Option[Contact.Id] =
+      data.lastOption.map(_._1.contact.contactId)
   }
 }
 
@@ -324,13 +366,19 @@ private final class ContactsIntegrationServiceLogs[F[_]: ServiceLogging[
         )
         .onError(errorCause"encountered an error while creating contacts" (_))
 
-  override def updateContact(institutionId: ParticipantId, request: UpdateContact): Mid[F, Unit] =
+  override def updateContact(
+      institutionId: ParticipantId,
+      request: UpdateContact
+  ): Mid[F, Unit] =
     in =>
       info"updating contact $institutionId ${request.id}" *> in
         .flatTap(_ => info"updating contact - successfully done")
         .onError(errorCause"encountered an error while updating contact" (_))
 
-  override def getContacts(institutionId: ParticipantId, paginatedQuery: PaginatedQuery): Mid[F, GetContactsResult] =
+  override def getContacts(
+      institutionId: ParticipantId,
+      paginatedQuery: PaginatedQuery
+  ): Mid[F, GetContactsResult] =
     in =>
       info"getting contacts $institutionId" *> in
         .flatTap(result => info"getting contacts - successfully done got ${result.data.size} entities")
@@ -342,7 +390,10 @@ private final class ContactsIntegrationServiceLogs[F[_]: ServiceLogging[
   ): Mid[F, Option[DetailedContactWithConnection]] =
     in =>
       info"getting contact $institutionId" *> in
-        .flatTap(result => info"getting contact - successfully done, contact ${result.fold("not found")(_ => "found")}")
+        .flatTap(result =>
+          info"getting contact - successfully done, contact ${result
+            .fold("not found")(_ => "found")}"
+        )
         .onError(errorCause"encountered an error while getting contact" (_))
 
   override def deleteContact(

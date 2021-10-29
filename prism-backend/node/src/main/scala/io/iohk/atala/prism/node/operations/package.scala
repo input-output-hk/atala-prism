@@ -37,18 +37,22 @@ package object operations {
 
     /** Error signifying that a value is missing at the path
       *
-      * Note: As Protobuf 3 doesn't differentiate between empty and default values for primitives
-      * this error is to be used for message fields only
+      * Note: As Protobuf 3 doesn't differentiate between empty and default values for primitives this error is to be
+      * used for message fields only
       *
-      * @param path Path where the problem occurred - list of field names
+      * @param path
+      *   Path where the problem occurred - list of field names
       */
     case class MissingValue(override val path: Path) extends ValidationError {
       override def name = "Missing Value"
       override def explanation = "missing value"
     }
 
-    case class InvalidValue(override val path: Path, value: String, override val explanation: String)
-        extends ValidationError {
+    case class InvalidValue(
+        override val path: Path,
+        value: String,
+        override val explanation: String
+    ) extends ValidationError {
       override def name = "Invalid Value"
     }
   }
@@ -60,17 +64,20 @@ package object operations {
 
   object StateError {
 
-    /** Error signifying that operation cannot be applied as it tries to access an entity that does not exist */
+    /** Error signifying that operation cannot be applied as it tries to access an entity that does not exist
+      */
     final case class EntityMissing(tpe: String, identifier: String) extends StateError {
       override def name: String = "entity-missing"
     }
 
-    /** Error signifying that operation cannot be applied as it tries to create an entity that already exists */
+    /** Error signifying that operation cannot be applied as it tries to create an entity that already exists
+      */
     final case class EntityExists(tpe: String, identifier: String) extends StateError {
       override def name: String = "entity-exists"
     }
 
-    /** Error signifying that key that was supposed to be used to verify the signature does not exist */
+    /** Error signifying that key that was supposed to be used to verify the signature does not exist
+      */
     final case class UnknownKey(didSuffix: DidSuffix, keyId: String) extends StateError {
       override def name: String = "unknown-key"
     }
@@ -110,31 +117,50 @@ package object operations {
       override def name: String = "unsupported-operation"
     }
 
-    final case class NonSequentialProtocolVersion(lastKnownVersion: ProtocolVersion, version: ProtocolVersion)
-        extends StateError {
+    final case class NonSequentialProtocolVersion(
+        lastKnownVersion: ProtocolVersion,
+        version: ProtocolVersion
+    ) extends StateError {
       override def name: String = "non-sequential-protocol-version"
     }
 
-    final case class NonAscendingEffectiveSince(lastKnownEffectiveSince: Int, effectiveSince: Int) extends StateError {
+    final case class NonAscendingEffectiveSince(
+        lastKnownEffectiveSince: Int,
+        effectiveSince: Int
+    ) extends StateError {
       override def name: String = "non-ascending-effective-since"
     }
 
-    final case class EffectiveSinceNotGreaterThanCurrentCardanoBlockNo(currentBlockNo: Int, effectiveSince: Int)
-        extends StateError {
-      override def name: String = "effective-since-not-greater-than-current-cardano-block-no"
+    final case class EffectiveSinceNotGreaterThanCurrentCardanoBlockNo(
+        currentBlockNo: Int,
+        effectiveSince: Int
+    ) extends StateError {
+      override def name: String =
+        "effective-since-not-greater-than-current-cardano-block-no"
+    }
+
+    final case class UntrustedProposer(proposer: DidSuffix) extends StateError {
+      override def name: String = "untrusted-proposer"
     }
   }
 
   /** Data required to verify the correctness of the operation */
-  case class CorrectnessData(key: ECPublicKey, previousOperation: Option[Sha256Digest])
+  case class CorrectnessData(
+      key: ECPublicKey,
+      previousOperation: Option[Sha256Digest]
+  )
 
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
 
     /** Fetches key and possible previous operation reference from database */
-    def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData]
+    def getCorrectnessData(
+        keyId: String
+    ): EitherT[ConnectionIO, StateError, CorrectnessData]
 
-    final def isSupported()(implicit updateOracle: SupportedOperations): EitherT[ConnectionIO, StateError, Unit] =
+    final def isSupported()(implicit
+        updateOracle: SupportedOperations
+    ): EitherT[ConnectionIO, StateError, Unit] =
       EitherT {
         for {
           currentVersion <- ProtocolVersionsDAO.getCurrentProtocolVersion
@@ -150,9 +176,11 @@ package object operations {
 
     /** Applies operation to the state checking that the operation is supported
       *
-     * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
+      * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
       */
-    final def applyState()(implicit updateOracle: SupportedOperations): EitherT[ConnectionIO, StateError, Unit] =
+    final def applyState()(implicit
+        updateOracle: SupportedOperations
+    ): EitherT[ConnectionIO, StateError, Unit] =
       for {
         _ <- isSupported()
         _ <- applyStateImpl()
@@ -181,9 +209,12 @@ package object operations {
 
     /** Parses the protobuf representation of operation
       *
-      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @param ledgerData information of the underlying ledger transaction that carried this operation
-      * @return parsed operation or ValidationError signifying the operation is invalid
+      * @param signedOperation
+      *   signed operation, needs to be of the type compatible with the called companion object
+      * @param ledgerData
+      *   information of the underlying ledger transaction that carried this operation
+      * @return
+      *   parsed operation or ValidationError signifying the operation is invalid
       */
     def parse(
         signedOperation: node_models.SignedAtalaOperation,
@@ -199,20 +230,28 @@ package object operations {
 
     /** Parses the protobuf representation of operation and report errors (if any)
       *
-      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @return Unit if the operation is valid or ValidationError signifying the operation is invalid
+      * @param signedOperation
+      *   signed operation, needs to be of the type compatible with the called companion object
+      * @return
+      *   Unit if the operation is valid or ValidationError signifying the operation is invalid
       */
-    def validate(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Unit] = {
+    def validate(
+        signedOperation: node_models.SignedAtalaOperation
+    ): Either[ValidationError, Unit] = {
       parseWithMockedLedgerData(signedOperation) map (_ => ())
     }
 
-    /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
-      * (defined in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
+    /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter (defined
+      * in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
       *
-      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
+      * @param signedOperation
+      *   signed operation, needs to be of the type compatible with the called companion object
+      * @return
+      *   parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
       */
-    def parseWithMockedLedgerData(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] =
+    def parseWithMockedLedgerData(
+        signedOperation: node_models.SignedAtalaOperation
+    ): Either[ValidationError, Repr] =
       parse(signedOperation, mockLedgerData)
   }
 
@@ -223,7 +262,9 @@ package object operations {
     ): Either[ValidationError, Repr]
   }
 
-  def parseOperationWithMockedLedger(operation: SignedAtalaOperation): Either[ValidationError, Operation] =
+  def parseOperationWithMockedLedger(
+      operation: SignedAtalaOperation
+  ): Either[ValidationError, Operation] =
     parseOperation(operation, mockLedgerData)
 
   def parseOperation(
@@ -242,11 +283,19 @@ package object operations {
       case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
         ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
       case empty @ node_models.AtalaOperation.Operation.Empty =>
-        Left(InvalidValue(Path.root, empty.getClass.getSimpleName, "Empty operation"))
+        Left(
+          InvalidValue(
+            Path.root,
+            empty.getClass.getSimpleName,
+            "Empty operation"
+          )
+        )
     }
   }
 
-  def parseOperationsFromByteContent(byteContent: Array[Byte]): List[Operation] =
+  def parseOperationsFromByteContent(
+      byteContent: Array[Byte]
+  ): List[Operation] =
     node_internal.AtalaObject
       .validate(byteContent)
       .toOption

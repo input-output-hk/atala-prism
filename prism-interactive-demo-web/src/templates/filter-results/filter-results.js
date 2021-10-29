@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, graphql } from 'gatsby';
 import HeaderBlog from '../../components/headerBlog/headerBlog';
-import FooterBlog from '../../components/footer/footer';
+import FooterBlog from '../../components/footer/BlogFooter';
 import calendarIcon from '../../images/calendar.svg';
 import authorIcon from '../../images/author.svg';
 import clockIcon from '../../images/clock.svg';
@@ -33,7 +33,7 @@ const BlogIndex = ({ data, pageContext }) => {
                     <article
                       className="post-list-item"
                       itemScope
-                      itemType="http://schema.org/Article"
+                      itemType="https://schema.org/Article"
                       key={post.fields.slug}
                     >
                       <header className="entryHeader">

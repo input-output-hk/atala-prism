@@ -27,7 +27,9 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
   "health check" should {
     "respond" in {
-      consoleService.healthCheck(HealthCheckRequest()).futureValue must be(HealthCheckResponse())
+      consoleService.healthCheck(HealthCheckRequest()).futureValue must be(
+        HealthCheckResponse()
+      )
     }
   }
 
@@ -68,7 +70,9 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
       val contact1 = createContact(institutionId, "Contact 1")
       createGenericCredential(institutionId, contact1.contactId, "A")
 
-      Thread.sleep(10) // sleep to add some time padding for the inspected interval
+      Thread.sleep(
+        10
+      ) // sleep to add some time padding for the inspected interval
 
       val start = Instant.now()
       createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 2"))
@@ -76,7 +80,9 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
       createGenericCredential(institutionId, contact2.contactId, "B")
       val end = Instant.now()
 
-      Thread.sleep(10) // sleep to add some time padding for the inspected interval
+      Thread.sleep(
+        10
+      ) // sleep to add some time padding for the inspected interval
 
       createInstitutionGroup(institutionId, InstitutionGroup.Name("Grp 3"))
       val contact3 = createContact(institutionId, "Contact 3", None)
@@ -173,7 +179,11 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
   }
 
   "registerDID" should {
-    def doTest(did: DID, operationId: AtalaOperationId, request: console_api.RegisterConsoleDIDRequest) = {
+    def doTest(
+        did: DID,
+        operationId: AtalaOperationId,
+        request: console_api.RegisterConsoleDIDRequest
+    ) = {
       usingApiAsConsole.unlogged { serviceStub =>
         nodeMock.createDID(*).returns {
           Future.successful(
@@ -244,7 +254,9 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
       doTest(did, operationId, request)
       val mustBeError = Try(doTest(did, operationId, request))
-      mustBeError.toEither.left.map(_.getMessage) mustBe Left("INVALID_ARGUMENT: DID already exists")
+      mustBeError.toEither.left.map(_.getMessage) mustBe Left(
+        "INVALID_ARGUMENT: DID already exists"
+      )
     }
   }
 
@@ -301,7 +313,10 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
       usingApiAsConsole(rpcRequest) { blockingStub =>
         blockingStub.updateParticipantProfile(rpcRequest.request)
-        val result = participantsRepository.findBy(participantId).run(TraceId.generateYOLO).unsafeRunSync()
+        val result = participantsRepository
+          .findBy(participantId)
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
         val participantInfo = result.toOption.value
         participantInfo.name must be("iohk updated")
         participantInfo.logo must be(Some(logo))

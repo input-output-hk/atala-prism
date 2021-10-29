@@ -540,7 +540,7 @@
     "table": {
       "unknownValue": "Unknown",
       "columns": {
-        "name":"Template Name",
+        "name": "Template Name",
         "category": "Category",
         "lastEdited": "Last Edited"
       }
@@ -551,16 +551,16 @@
       "preview": "Preview",
       "edit": "Edit ",
       "copy": "Copy",
-      "delete":"Delete"
+      "delete": "Delete"
+    },
+    "messages": {
+      "customTypeWarning": "Custom types are not available"
     }
   },
   "credentialTemplateCreation": {
     "step1": {
       "title": "Create a Credential Template",
-      "subtitle": "",
-      "templateName": "Template Name",
-      "templateNamePlaceholder": "Insert template name",
-      "selectCategory": "Select a Category"
+      "subtitle": ""
     },
     "step2": {
       "title": "Create a Credential Template",
@@ -599,22 +599,30 @@
       "successMessage": "You have a new credential template available",
       "continueButton": "Continue"
     },
-    "categoryCreationModal": {
-      "title": "Select your Category Icon",
-      "categoryNameLabel": "Category Name",
-      "categoryNamePlaceholder": "Category Name",  
-      "categoryIconLabel": "Select your Category Icon",
-      "categoryIcon": "Category Icon",
-      "uploadIcon": "Upload Your Icon",
-      "uploadButton":"Browse",
+    "templateName": {
+      "title": "Template Name",
+      "info": "Create a name for your credential’s template",
+      "placeholder": "Insert template name",
+      "label": "Template Name"
+    },
+    "templateIcon": {
+      "title": "Template Icon",
+      "info": "Select an Icon for your template",
+      "changeIcon": "Change Icon"
+    },
+    "iconPicker": {
+      "title": "Select the new Template Icon",
+      "uploadButton": "Upload",
       "gallery": "Gallery",
       "save": "Save",
-      "allowedFormats": "Allowed formats are {{allowedFormats}}",
-      "errors": {
-        "required": "${label} is required",
-        "preExisting": "A category called '{{value}}' already exists",
-        "fieldIsRequired": "{{field}} is required"
-      }
+      "allowedFormats": "Allowed formats are {{allowedFormats}}"
+    },
+    "templateCategory": {
+      "title": "Select a Category",
+      "info": "Assign your template to an existing category or create a new one",
+      "placeholder": "Type in or select a category",
+      "addCategoryButton": "Add {{searchValue}}",
+      "label": "Template Category"
     },
     "messages": {
       "selectCategoryError": "Please select a category",
@@ -1034,6 +1042,8 @@
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
     "errorSaving": "An error occurred while saving {{model}}",
+    "getting": "An error occurred while getting {{model}}",
+    "saving": "An error occurred while saving {{model}}",
     "errorInvitingHolder": "An error occurred while inviting the holder",
     "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
     "issueCredential": "Failed issuing the Credential",

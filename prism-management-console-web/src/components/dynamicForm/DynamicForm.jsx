@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Form, Row } from 'antd';
-import { DynamicFormContext } from '../../providers/DynamicFormProvider';
+import { DynamicFormContext } from '../providers/DynamicFormProvider';
 import IndividualForm from './IndividualForm/IndividualForm';
 import { DEFAULT_WIDTH_INPUT, IMPORT_CONTACTS } from '../../helpers/constants';
 import { columnShape, importUseCasePropType, skeletonShape } from '../../helpers/propShapes';

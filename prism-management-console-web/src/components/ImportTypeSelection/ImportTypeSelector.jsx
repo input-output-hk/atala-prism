@@ -21,8 +21,9 @@ const ImportTypeSelector = ({ selected, onSelect, useCase, selectedRecipientsAmo
   const tooManyRecipients = selectedRecipientsAmount > MAX_MANUAL_IMPORT_RECIPIENTS;
   const shouldDisableManual = isImportCredentials && (noRecipients || tooManyRecipients);
 
+  const recipientsMessage = noRecipients ? 'noRecipients' : 'tooManyRecipients';
   const disabledHelp = shouldDisableManual
-    ? t(`${useCase}.manualImportCard.${noRecipients ? 'noRecipients' : 'tooManyRecipients'}`)
+    ? t(`${useCase}.manualImportCard.${recipientsMessage}`)
     : '';
 
   return (

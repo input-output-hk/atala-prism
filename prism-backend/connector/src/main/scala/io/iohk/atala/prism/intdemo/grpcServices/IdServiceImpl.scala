@@ -75,7 +75,11 @@ class IdServiceImpl(
         .mergePersonalInfo(
           new TokenString(request.connectionToken),
           request.firstName,
-          LocalDate.of(request.dateOfBirth.get.year, request.dateOfBirth.get.month, request.dateOfBirth.get.day)
+          LocalDate.of(
+            request.dateOfBirth.get.year,
+            request.dateOfBirth.get.month,
+            request.dateOfBirth.get.day
+          )
         )
         .as(intdemo_api.SetPersonalDataResponse())
     }
@@ -84,7 +88,8 @@ class IdServiceImpl(
 
 object IdServiceImpl {
   // id of Metropol City Government in connector_db/public/participants table
-  val issuerId = ParticipantId.unsafeFrom("091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
+  val issuerId =
+    ParticipantId.unsafeFrom("091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
   val credentialTypeId = "VerifiableCredential/RedlandIdCredential"
 
   case class IdCredentialHtmlTemplateData(
@@ -126,7 +131,9 @@ object IdServiceImpl {
       )
     )
 
-  private def idCredentialHtmlTemplate(credentialData: IdCredentialHtmlTemplateData): String = {
+  private def idCredentialHtmlTemplate(
+      credentialData: IdCredentialHtmlTemplateData
+  ): String = {
     IdCredential(credentialData).body
   }
 
@@ -137,10 +144,14 @@ object IdServiceImpl {
 
   private val jsonPrinter = Printer(dropNullValues = false, indent = "  ")
 
-  def getIdCredential(nameAndDob: (String, LocalDate)): credential_models.PlainTextCredential = {
+  def getIdCredential(
+      nameAndDob: (String, LocalDate)
+  ): credential_models.PlainTextCredential = {
     val (holderName, holderDateOfBirth) = nameAndDob
     val issuerName = "Metropol City Government"
-    val identityNumber = generateSubjectIdNumber(holderName + dateFormatter.format(holderDateOfBirth))
+    val identityNumber = generateSubjectIdNumber(
+      holderName + dateFormatter.format(holderDateOfBirth)
+    )
     val issuanceDate = LocalDate.now()
     val expirationDate = issuanceDate.plusYears(10)
     val issuerDID = s"did:prism:${issuerId.uuid}"
@@ -169,7 +180,9 @@ object IdServiceImpl {
         expirationDate = expirationDate
       )
     val credentialDocument = idCredentialJson.printWith(jsonPrinter)
-    val credential = Try(JsonBasedCredential.fromString(credentialDocument)).toEither
+    val credential = Try(
+      JsonBasedCredential.fromString(credentialDocument)
+    ).toEither
 
     credential match {
       case Left(_) =>

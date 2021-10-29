@@ -17,14 +17,23 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
     sql"""INSERT INTO issuers (issuer_id) VALUES ($issuerId)""".runUpdate()
   }
 
-  private def insertVerifier(verifierId: UUID, name: String, did: String): Unit = {
+  private def insertVerifier(
+      verifierId: UUID,
+      name: String,
+      did: String
+  ): Unit = {
     sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo)
          |VALUES ($verifierId, ${ParticipantType.Verifier: ParticipantType}::PARTICIPANT_TYPE, $did, null, $name, '')
          |""".stripMargin.runUpdate()
-    sql"""INSERT INTO verifiers (verifier_id) VALUES ($verifierId)""".runUpdate()
+    sql"""INSERT INTO verifiers (verifier_id) VALUES ($verifierId)"""
+      .runUpdate()
   }
 
-  private def insertGroup(issuerId: UUID, groupId: UUID, groupName: String): Unit = {
+  private def insertGroup(
+      issuerId: UUID,
+      groupId: UUID,
+      groupName: String
+  ): Unit = {
     sql"""INSERT INTO issuer_groups (group_id,issuer_id,name)
          |VALUES ($groupId, $issuerId, $groupName)
          |""".stripMargin.runUpdate()
@@ -67,7 +76,12 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
          |""".stripMargin.runUnique[UUID]()
   }
 
-  private def addCredential(credentialId: UUID, subjectId: UUID, issuerId: UUID, groupName: String): Unit = {
+  private def addCredential(
+      credentialId: UUID,
+      subjectId: UUID,
+      issuerId: UUID,
+      groupName: String
+  ): Unit = {
     sql"""INSERT INTO credentials (credential_id, issuer_id, subject_id, credential_data, group_name, created_on)
          |VALUES ($credentialId, $issuerId, $subjectId, '{}'::jsonb, $groupName, now())
          |""".stripMargin.runUpdate()
@@ -115,7 +129,11 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
   test(
     beforeApply = {
       // Issuer 1 has 2 groups with 2 subjects per group
-      insertIssuer(issuerId1, "issuer 1", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId1,
+        "issuer 1",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId1, groupId1, "Group 1")
       insertSubject(subjectId1, issuerId1)
       assignGroup(subjectId1, groupId1)
@@ -129,7 +147,11 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
       insertSubject(subjectId4, issuerId1)
       assignGroup(subjectId4, groupId2)
       // Issuer 2 has 1 group, also with 2 subjects
-      insertIssuer(issuerId2, "issuer 2", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId2,
+        "issuer 2",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId2, groupId3, "Group 3")
       insertSubject(subjectId5, issuerId2)
       assignGroup(subjectId5, groupId3)
@@ -139,7 +161,11 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
       addCredential(credentialId2, subjectId5, issuerId2, "Group 3")
       addCredential(credentialId3, subjectId6, issuerId2, "Group 3")
       // Issuer 3 has 2 groups, but each group has a unique subject
-      insertIssuer(issuerId3, "issuer 3", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId3,
+        "issuer 3",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId3, groupId4, "Group 4")
       insertSubject(subjectId7, issuerId3)
       assignGroup(subjectId7, groupId4)
@@ -147,23 +173,43 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
       insertSubject(subjectId8, issuerId3)
       assignGroup(subjectId8, groupId5)
       // Issuer 4 has 1 group, which is empty
-      insertIssuer(issuerId4, "issuer 4", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId4,
+        "issuer 4",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId4, groupId6, "Group 6")
       // Issuer 5 has 1 group, which is empty and one subject attached
-      insertIssuer(issuerId5, "issuer 5", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId5,
+        "issuer 5",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertGroup(issuerId5, groupId7, "Group 7")
       insertSubject(subjectId9, issuerId5)
       // Issuer 6 has no groups and two subject attached
-      insertIssuer(issuerId6, "issuer 6", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertIssuer(
+        issuerId6,
+        "issuer 6",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertSubject(subjectId10, issuerId6)
       insertSubject(subjectId11, issuerId6)
 
       // Verifier 1 has 2 holders
-      insertVerifier(verifierId1, "Verifier 1", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertVerifier(
+        verifierId1,
+        "Verifier 1",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
       insertHolder(holderId1, verifierId1)
       insertHolder(holderId2, verifierId1)
       // Verifier 2 has no holders assigned
-      insertVerifier(verifierId2, "Verifier 2", "did:prism:asdasdasdasdasdaasdasdasdasdasda")
+      insertVerifier(
+        verifierId2,
+        "Verifier 2",
+        "did:prism:asdasdasdasdasdaasdasdasdasdasda"
+      )
     },
     afterApplied = {
       assignedIssuerForSubject(subjectId1) mustBe issuerId1
@@ -178,9 +224,18 @@ class V22MigrationSpec extends PostgresMigrationSpec("V22") with BaseDAO {
       assignedIssuerForSubject(subjectId10) mustBe issuerId6
       assignedIssuerForSubject(subjectId11) mustBe issuerId6
 
-      subjectsInGroup(groupId1) must contain theSameElementsAs Seq(subjectId1, subjectId2)
-      subjectsInGroup(groupId2) must contain theSameElementsAs Seq(subjectId3, subjectId4)
-      subjectsInGroup(groupId3) must contain theSameElementsAs Seq(subjectId5, subjectId6)
+      subjectsInGroup(groupId1) must contain theSameElementsAs Seq(
+        subjectId1,
+        subjectId2
+      )
+      subjectsInGroup(groupId2) must contain theSameElementsAs Seq(
+        subjectId3,
+        subjectId4
+      )
+      subjectsInGroup(groupId3) must contain theSameElementsAs Seq(
+        subjectId5,
+        subjectId6
+      )
       subjectsInGroup(groupId4) must contain theSameElementsAs Seq(subjectId7)
       subjectsInGroup(groupId5) must contain theSameElementsAs Seq(subjectId8)
       subjectsInGroup(groupId6) must be(empty)

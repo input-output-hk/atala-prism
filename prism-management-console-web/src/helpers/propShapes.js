@@ -5,7 +5,6 @@ import {
   oneOf,
   oneOfType,
   func,
-  object,
   bool,
   arrayOf,
   element,
@@ -18,7 +17,7 @@ import {
   IMPORT_CONTACTS,
   IMPORT_CREDENTIALS_DATA,
   DESIGN_TEMPLATE,
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from './constants';
 
@@ -56,7 +55,7 @@ export const credentialSummaryShape = {
 export const refShape = oneOfType([
   func,
   shape({
-    current: object
+    current: instanceOf(Element)
   })
 ]);
 
@@ -135,13 +134,13 @@ export const credentialTabShape = {
   searchDueGeneralScroll: bool
 };
 
-export const credentialTypeShape = {
-  id: number,
+export const credentialTypeShape = shape({
+  id: string,
   enabled: bool,
   isMultiRow: bool,
   name: string,
-  logo: element,
-  sampleImage: element,
+  logo: string,
+  sampleImage: oneOfType([element, string]),
   fields: arrayOf(
     shape({
       key: string,
@@ -152,7 +151,7 @@ export const credentialTypeShape = {
   ),
   placeholders: objectOf(string),
   template: string
-};
+});
 
 export const credentialTypesShape = arrayOf(credentialTypeShape);
 
@@ -170,7 +169,7 @@ export const skeletonShape = arrayOf({
 });
 
 export const templateCategoryShape = shape({
-  id: number.isRequired,
+  id: string.isRequired,
   name: string.isRequired,
   logo: string,
   sampleImage: string,
@@ -190,7 +189,7 @@ export const antdV4FormShape = shape({ validateFields: func, resetFields: func }
 
 export const templateBodyAttributeShape = shape({
   key: number,
-  name: string,
+  name: number,
   fieldKey: number,
   textAttributeIndex: number,
   dynamicAttributeIndex: number
@@ -199,7 +198,7 @@ export const templateBodyAttributeShape = shape({
 export const importUseCasePropType = oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]);
 
 export const templateCreationStepShape = oneOf([
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   DESIGN_TEMPLATE,
   TEMPLATE_CREATION_RESULT
 ]);
@@ -216,5 +215,3 @@ export const templateSortingShape = {
   sortingBy: string,
   setSortingBy: func
 };
-
-export const childrenType = oneOfType([string, element, arrayOf(element)]);

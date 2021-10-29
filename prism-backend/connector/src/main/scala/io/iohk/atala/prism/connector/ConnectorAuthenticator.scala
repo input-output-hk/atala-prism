@@ -23,7 +23,10 @@ class ConnectorAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[ParticipantId](nodeClient, grpcAuthenticationHeaderParser) {
+) extends SignedRequestsAuthenticatorBase[ParticipantId](
+      nodeClient,
+      grpcAuthenticationHeaderParser
+    ) {
 
   override def burnNonce(
       id: ParticipantId,
@@ -60,6 +63,7 @@ class ConnectorAuthenticator(
       .run(traceId)
       .unsafeToFuture()
       .toFutureEither
+      .mapLeft(_.unify)
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 
@@ -71,6 +75,7 @@ class ConnectorAuthenticator(
       .run(traceId)
       .unsafeToFuture()
       .toFutureEither
+      .mapLeft(_.unify)
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 }

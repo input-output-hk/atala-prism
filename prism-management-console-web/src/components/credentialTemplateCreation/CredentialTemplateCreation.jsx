@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
@@ -7,16 +8,15 @@ import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import {
   DESIGN_TEMPLATE,
   NEW_TEMPLATE_STEP_UNIT,
-  SELECT_TEMPLATE_CATEGORY,
+  TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
 import { withRedirector } from '../providers/withRedirector';
-import { useTemplateContext } from '../providers/TemplateContext';
-import { PrismStoreContext } from '../../stores/domain/PrismStore';
+import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 import './_style.scss';
 
 const fieldsByStep = {
-  [SELECT_TEMPLATE_CATEGORY]: ['name', 'category'],
+  [TEMPLATE_NAME_ICON_CATEGORY]: ['name', 'category'],
   [DESIGN_TEMPLATE]: [
     'layout',
     'themeColor',
@@ -27,67 +27,73 @@ const fieldsByStep = {
   ]
 };
 
-const CredentialTemplateCreation = ({
-  currentStep,
-  changeStep,
-  redirector: { redirectToCredentialTemplates }
-}) => {
-  const { t } = useTranslation();
-  const { form, templateSettings, templatePreview } = useTemplateContext();
-  const { addCredentialTemplate } = useContext(PrismStoreContext).templateStore;
+const CredentialTemplateCreation = observer(
+  ({ currentStep, changeStep, redirector: { redirectToCredentialTemplates } }) => {
+    const { t } = useTranslation();
+    const { form, createTemplateFromSketch } = useTemplateSketch();
+    const [loadingNext, setLoadingNext] = useState(false);
 
-  const validateByStep = () =>
-    form.validateFields().catch(({ errorFields }) => {
-      const stepFields = fieldsByStep[currentStep];
-      const partialErrorsFields = errorFields.filter(errField =>
-        stepFields.includes(...errField.name)
-      );
-      return { errors: partialErrorsFields.map(errorField => errorField.errors) };
-    });
+    const validateByStep = () =>
+      form
+        .validateFields()
+        .then(() => ({ errors: [] }))
+        .catch(({ errorFields }) => {
+          const stepFields = fieldsByStep[currentStep];
+          const partialErrorsFields = errorFields.filter(errField =>
+            stepFields.includes(...errField.name)
+          );
+          const errors = partialErrorsFields.map(errorField => errorField.errors);
+          return { errors };
+        });
 
-  const advanceStep = async () => {
-    const { errors } = await validateByStep(currentStep);
-    const isPartiallyValid = !errors;
-    if (isPartiallyValid) changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
-    else errors.map(msg => message.error(t(msg)));
-  };
+    const advanceStep = () => changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
 
-  const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
+    const validateAndAdvance = async () => (await validate()) && advanceStep();
 
-  const createTemplate = () => {
-    const newTemplate = {
-      ...templateSettings,
-      template: templatePreview,
-      category: parseInt(templateSettings?.category, 10)
+    const validate = async () => {
+      const { errors } = await validateByStep();
+      const hasPartialErrors = Boolean(errors.length);
+      if (hasPartialErrors) errors.forEach(msg => message.error(t(msg)));
+      return !hasPartialErrors;
     };
-    addCredentialTemplate(newTemplate);
-    advanceStep();
-  };
 
-  const steps = [
-    { back: redirectToCredentialTemplates, next: advanceStep },
-    { back: goBack, next: createTemplate },
-    { back: goBack, next: redirectToCredentialTemplates }
-  ];
+    const createTemplateAndAdvance = async () => {
+      setLoadingNext(true);
+      const isPartiallyValid = await validate();
+      if (isPartiallyValid) {
+        await createTemplateFromSketch();
+        advanceStep();
+      }
+      setLoadingNext(false);
+    };
 
-  const defaultStepText = {
-    title: t(`credentialTemplateCreation.step${currentStep + 1}.title`),
-    subtitle: t(`credentialTemplateCreation.step${currentStep + 1}.subtitle`)
-  };
+    const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
-  const getStepText = {
-    [SELECT_TEMPLATE_CATEGORY]: defaultStepText,
-    [DESIGN_TEMPLATE]: defaultStepText,
-    [TEMPLATE_CREATION_RESULT]: {}
-  };
+    const steps = [
+      { key: '0', back: redirectToCredentialTemplates, next: validateAndAdvance },
+      { key: '1', back: goBack, next: createTemplateAndAdvance },
+      { key: '2', back: goBack, next: redirectToCredentialTemplates }
+    ];
 
-  return (
-    <div className="TitleContainer">
-      <GenericStepsButtons steps={steps} currentStep={currentStep} />
-      <WizardTitle {...getStepText[currentStep]} />
-    </div>
-  );
-};
+    const defaultStepText = {
+      title: t(`credentialTemplateCreation.step${currentStep + 1}.title`),
+      subtitle: t(`credentialTemplateCreation.step${currentStep + 1}.subtitle`)
+    };
+
+    const getStepText = {
+      [TEMPLATE_NAME_ICON_CATEGORY]: defaultStepText,
+      [DESIGN_TEMPLATE]: defaultStepText,
+      [TEMPLATE_CREATION_RESULT]: {}
+    };
+
+    return (
+      <div className="TitleContainer">
+        <GenericStepsButtons steps={steps} currentStep={currentStep} loading={loadingNext} />
+        <WizardTitle {...getStepText[currentStep]} />
+      </div>
+    );
+  }
+);
 
 CredentialTemplateCreation.propTypes = {
   currentStep: PropTypes.number.isRequired,

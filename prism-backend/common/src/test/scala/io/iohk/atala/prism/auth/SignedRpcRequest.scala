@@ -26,7 +26,9 @@ object SignedRpcRequest {
     val privateKey = keyPair.getPrivateKey
     val requestNonce = UUID.randomUUID().toString.getBytes.toVector
     val signature = EC.signBytes(
-      SignedRequestsHelper.merge(auth.model.RequestNonce(requestNonce), request.toByteArray).toArray,
+      SignedRequestsHelper
+        .merge(auth.model.RequestNonce(requestNonce), request.toByteArray)
+        .toArray,
       privateKey
     )
     SignedRpcRequest(

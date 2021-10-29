@@ -17,7 +17,11 @@ class V40MigrationSpec extends PostgresMigrationSpec("V40") with BaseDAO {
   private def getActualState: List[String] =
     sql"SELECT did FROM participants".queryList[String]().toList
 
-  private def insertParticipants(issuerId: UUID, name: String, did: String): Unit =
+  private def insertParticipants(
+      issuerId: UUID,
+      name: String,
+      did: String
+  ): Unit =
     sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo)
          |VALUES ($issuerId, ${ParticipantType.Issuer: ParticipantType}::PARTICIPANT_TYPE, $did, null, $name, '')
          |""".stripMargin.runUpdate()

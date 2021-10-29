@@ -36,7 +36,7 @@ const TemplatesActionButtons = ({ template, onPreview }) => {
 };
 
 TemplatesActionButtons.propTypes = {
-  template: PropTypes.shape(credentialTypeShape).isRequired,
+  template: credentialTypeShape.isRequired,
   onPreview: PropTypes.func.isRequired
 };
 

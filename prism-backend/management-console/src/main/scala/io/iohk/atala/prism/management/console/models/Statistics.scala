@@ -18,5 +18,6 @@ final case class Statistics(
     numberOfCredentialsPublished: Int,
     numberOfCredentialsReceived: Int
 ) {
-  val numberOfCredentialsInDraft: Int = numberOfCredentials - numberOfCredentialsPublished
+  val numberOfCredentialsInDraft: Int =
+    numberOfCredentials - numberOfCredentialsPublished
 }

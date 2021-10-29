@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { ReactComponent as PreloginLogo } from '../../images/logo-login.svg';
 import { ReactComponent as PreloginImg } from '../../images/img-wallet-login.svg';
 import { withRedirector } from '../providers/withRedirector';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 
 import './_style.scss';
 
-const Landing = () => {
+const Landing = observer(() => {
   const { t } = useTranslation();
   const { login } = useSession();
 
@@ -54,6 +55,6 @@ const Landing = () => {
       </div>
     </div>
   );
-};
+});
 
 export default withRedirector(Landing);

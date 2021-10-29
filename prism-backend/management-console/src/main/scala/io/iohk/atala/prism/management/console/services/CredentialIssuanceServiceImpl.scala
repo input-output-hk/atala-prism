@@ -44,30 +44,40 @@ object CredentialIssuanceService {
       serviceLogs <- logs.service[CredentialIssuanceService[F]]
     } yield {
       implicit val implicitLogs: ServiceLogging[F, CredentialIssuanceService[F]] = serviceLogs
-      val logs: CredentialIssuanceService[Mid[F, *]] = new CredentialIssuanceServiceLogs[F]
+      val logs: CredentialIssuanceService[Mid[F, *]] =
+        new CredentialIssuanceServiceLogs[F]
       val mid = logs
-      mid attach new CredentialIssuanceServiceImpl[F](credentialIssuancesRepository)
+      mid attach new CredentialIssuanceServiceImpl[F](
+        credentialIssuancesRepository
+      )
     }
 
   def unsafe[F[_]: BracketThrow, R[_]: Comonad](
       credentialIssuancesRepository: CredentialIssuancesRepository[F],
       logs: Logs[R, F]
-  ): CredentialIssuanceService[F] = CredentialIssuanceService(credentialIssuancesRepository, logs).extract
+  ): CredentialIssuanceService[F] =
+    CredentialIssuanceService(credentialIssuancesRepository, logs).extract
 
   def makeResource[F[_]: BracketThrow, R[_]: Monad](
       credentialIssuancesRepository: CredentialIssuancesRepository[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialIssuanceService[F]] =
-    Resource.eval(CredentialIssuanceService(credentialIssuancesRepository, logs))
+    Resource.eval(
+      CredentialIssuanceService(credentialIssuancesRepository, logs)
+    )
 }
 
-private final class CredentialIssuanceServiceImpl[F[_]](credentialIssuancesRepository: CredentialIssuancesRepository[F])
-    extends CredentialIssuanceService[F] {
+private final class CredentialIssuanceServiceImpl[F[_]](
+    credentialIssuancesRepository: CredentialIssuancesRepository[F]
+) extends CredentialIssuanceService[F] {
   override def createCredentialIssuance(
       participantId: ParticipantId,
       createCredentialIssuance: CreateCredentialIssuance
   ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
-    credentialIssuancesRepository.create(participantId, createCredentialIssuance)
+    credentialIssuancesRepository.create(
+      participantId,
+      createCredentialIssuance
+    )
 
   override def getCredentialIssuance(
       participantId: ParticipantId,
@@ -88,8 +98,9 @@ private final class CredentialIssuanceServiceImpl[F[_]](credentialIssuancesRepos
     )
 }
 
-private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], CredentialIssuanceService[F]]: MonadThrow]
-    extends CredentialIssuanceService[Mid[F, *]] {
+private final class CredentialIssuanceServiceLogs[
+    F[_]: ServiceLogging[*[_], CredentialIssuanceService[F]]: MonadThrow
+] extends CredentialIssuanceService[Mid[F, *]] {
   override def createCredentialIssuance(
       participantId: ParticipantId,
       createCredentialIssuance: CreateCredentialIssuance
@@ -102,7 +113,11 @@ private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], Cre
             _ => info"creating credential issuance - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating credential issuance" (_))
+        .onError(
+          errorCause"encountered an error while creating credential issuance" (
+            _
+          )
+        )
 
   override def getCredentialIssuance(
       participantId: ParticipantId,
@@ -125,5 +140,9 @@ private final class CredentialIssuanceServiceLogs[F[_]: ServiceLogging[*[_], Cre
             _ => info"creating bulk credential issuance - successfully done"
           )
         )
-        .onError(errorCause"encountered an error while creating bulk credential issuance" (_))
+        .onError(
+          errorCause"encountered an error while creating bulk credential issuance" (
+            _
+          )
+        )
 }

@@ -1,12 +1,15 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
+import _ from 'lodash';
 import { graphql } from 'gatsby';
+import firebase from 'gatsby-plugin-firebase';
 import { Disqus } from 'gatsby-plugin-disqus';
-import FooterBlog from '../../components/footer/footer';
+import FooterBlog from '../../components/footer/BlogFooter';
 import HeaderBlog from '../../components/headerBlog/headerBlog';
 import calendarIcon from '../../images/calendar.svg';
 import authorIcon from '../../images/author.svg';
 import clockIcon from '../../images/clock.svg';
 import SEO from '../../components/seo/seo';
+import { BLOG_POST_EVENT } from '../../helpers/constants';
 
 import './_style.scss';
 import '../../pages/blog.scss';
@@ -17,13 +20,17 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
   const backTo =
     location && location.state && location.state.fromResources ? '/resources' : '/blog';
 
+  useEffect(() => {
+    firebase.analytics().logEvent(`${BLOG_POST_EVENT}${_.snakeCase(post.frontmatter.title)}`);
+  }, []);
+
   return (
     <div className="BlogContainer">
       <SEO title={post.frontmatter.title} description={post.excerpt} />
       <HeaderBlog backTo={backTo} />
       <div className="middleSectionContainer">
         <div className="mainSectionContainer">
-          <article className="postSection" itemScope itemType="http://schema.org/Article">
+          <article className="postSection" itemScope itemType="https://schema.org/Article">
             <header>
               <h1 className="postHeader" itemProp="headline">
                 {post.frontmatter.title}
@@ -34,7 +41,7 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
               <div className="postInfoContainer">
                 <div className="postInfo">
                   <div className="postInfoImgContainer">
-                    <img src={calendarIcon} />
+                    <img src={calendarIcon} alt="date" />
                   </div>
                   <div>
                     <small>{post.frontmatter.date}</small>
@@ -42,7 +49,7 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
                 </div>
                 <div className="postInfo">
                   <div className="postInfoImgContainer">
-                    <img src={authorIcon} />
+                    <img src={authorIcon} alt="author" />
                   </div>
                   <div>
                     <small>{post.frontmatter.author}</small>
@@ -50,7 +57,7 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
                 </div>
                 <div className="postInfo">
                   <div className="postInfoImgContainer">
-                    <img src={clockIcon} />
+                    <img src={clockIcon} alt="readingTime" />
                   </div>
                   <div>
                     <small>{post.frontmatter.readingTime} mins read</small>
@@ -60,7 +67,11 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
             </header>
             <div className="blog-post-container">
               {post.frontmatter.image && (
-                <img className="imgBlogPost" src={post.frontmatter.image.publicURL} />
+                <img
+                  className="imgBlogPost"
+                  src={post.frontmatter.image.publicURL}
+                  alt="thumbnail"
+                />
               )}
               <section
                 className="post-article"

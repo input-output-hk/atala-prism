@@ -14,14 +14,13 @@ const tp = chain => i18n.t(`${translationKeyPrefix}.${chain}`);
 export const getTemplatesColumns = (templateCategories, tableActions) => {
   const unknownValue = i18n.t('templates.table.unknownValue');
   const getCategoryName = id => templateCategories.find(c => c.id === id)?.name;
-  const getCategoryIcon = id => templateCategories.find(c => c.id === id)?.logo;
 
   const baseColumns = [
     {
       key: 'icon',
       width: 25,
-      render: ({ category }) => (
-        <img src={getCategoryIcon(category) || DefaultIcon} alt="template-icon" />
+      render: ({ icon }) => (
+        <img className="template-icon" src={icon || DefaultIcon} alt="template-icon" />
       )
     },
     {

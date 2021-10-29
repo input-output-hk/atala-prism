@@ -61,7 +61,8 @@ final case class Contact(
 
 object Contact {
 
-  implicit val contactIdContains: Contains[Contact, Id] = GenContains[Contact](_.contactId)
+  implicit val contactIdContains: Contains[Contact, Id] =
+    GenContains[Contact](_.contactId)
 
   case class WithDetails(
       contact: Contact,
@@ -74,7 +75,10 @@ object Contact {
     def contactId: Id = details.contactId
   }
 
-  case class CredentialCounts(numberOfCredentialsReceived: Int, numberOfCredentialsCreated: Int)
+  case class CredentialCounts(
+      numberOfCredentialsReceived: Int,
+      numberOfCredentialsCreated: Int
+  )
 
   @derive(loggable)
   final case class Id(uuid: UUID) extends AnyVal with UUIDValue
@@ -87,12 +91,14 @@ object Contact {
 
     def validated(string: String): Try[ExternalId] = {
       Try {
-        if (string.trim.isEmpty) throw new RuntimeException("externalId cannot be empty")
+        if (string.trim.isEmpty)
+          throw new RuntimeException("externalId cannot be empty")
         else Contact.ExternalId(string.trim)
       }
     }
 
-    def validatedF(string: String): Future[ExternalId] = Future.fromTry(validated(string))
+    def validatedF(string: String): Future[ExternalId] =
+      Future.fromTry(validated(string))
   }
 
   // Used to sort the results by the given field
@@ -108,13 +114,16 @@ object Contact {
     val name: SortBy = Name
   }
 
-  /**
-    * Used to filter the results by the given criteria
+  /** Used to filter the results by the given criteria
     *
-    * @param groupName when provided, all results belong to this group
-    * @param externalId when provided, the externalId on results is similar to this one
-    * @param name when provided, the name on results is similar to this one
-    * @param createdAt when provided, the createdAt on results matches this date
+    * @param groupName
+    *   when provided, all results belong to this group
+    * @param externalId
+    *   when provided, the externalId on results is similar to this one
+    * @param name
+    *   when provided, the name on results is similar to this one
+    * @param createdAt
+    *   when provided, the createdAt on results matches this date
     */
   case class FilterBy(
       groupName: Option[InstitutionGroup.Name] = None,
@@ -122,10 +131,12 @@ object Contact {
       createdAt: Option[LocalDate] = None,
       connectionStatus: Option[ContactConnectionStatus] = None
   ) {
-    lazy val nonEmptyNameOrExternalId: Option[String] = nameOrExternalId.map(_.trim).filter(_.nonEmpty)
+    lazy val nonEmptyNameOrExternalId: Option[String] =
+      nameOrExternalId.map(_.trim).filter(_.nonEmpty)
   }
 
-  type PaginatedQuery = PaginatedQueryConstraints[Contact.Id, Contact.SortBy, Contact.FilterBy]
+  type PaginatedQuery =
+    PaginatedQueryConstraints[Contact.Id, Contact.SortBy, Contact.FilterBy]
 
   def paginatedQuery(
       limit: Int,
@@ -135,7 +146,10 @@ object Contact {
     import PaginatedQueryConstraints._
     PaginatedQueryConstraints(
       limit = limit,
-      ordering = ResultOrdering(Contact.SortBy.createdAt, ResultOrdering.Direction.Ascending),
+      ordering = ResultOrdering(
+        Contact.SortBy.createdAt,
+        ResultOrdering.Direction.Ascending
+      ),
       scrollId = scrollId,
       filters = Some(Contact.FilterBy(groupName))
     )

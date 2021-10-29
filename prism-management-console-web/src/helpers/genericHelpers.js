@@ -6,13 +6,11 @@ const firstLetterAsUpperCase = word => customUpperCase(word.charAt(0));
 export const getInitials = (name = '') => {
   const words = name.split(' ');
 
-  const initials = words.reduce((accumulator, nextWord) => {
+  return words.reduce((accumulator, nextWord) => {
     const upperCaseInitial = firstLetterAsUpperCase(nextWord);
 
     return `${accumulator}${upperCaseInitial}`;
   }, '');
-
-  return initials;
 };
 
 export const getLogoAsBase64 = logo => `data:image/png;base64,${logo}`;
@@ -50,9 +48,10 @@ export const svgPathToEncodedBase64 = async path => {
   return blobToBase64(logoBlob);
 };
 
-export const blobToBase64 = blob =>
-  new Promise(resolve => {
+export const blobToBase64 = file =>
+  new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
   });

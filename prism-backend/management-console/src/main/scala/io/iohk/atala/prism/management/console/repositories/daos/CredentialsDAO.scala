@@ -32,7 +32,9 @@ object CredentialsDAO {
         |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
       """.stripMargin
 
-  private def withPublishedCredentialsPC(maybeCredentialId: Option[GenericCredential.Id] = None) =
+  private def withPublishedCredentialsPC(
+      maybeCredentialId: Option[GenericCredential.Id] = None
+  ) =
     maybeCredentialId match {
       case Some(credentialId) =>
         fr"""
@@ -68,7 +70,9 @@ object CredentialsDAO {
          |    $createdAt, ${data.credentialIssuanceContactId}, ${data.credentialTypeId})
          |  RETURNING credential_id, issuer_id, contact_id, credential_data, created_at, credential_type_id,
          |    credential_issuance_contact_id
-         |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(id)) ++
+         |),""".stripMargin ++ withParticipantsPTS ++ withPublishedCredentialsPC(
+      Some(id)
+    ) ++
       fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_token,
            |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
            |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
@@ -81,8 +85,12 @@ object CredentialsDAO {
       .unique
   }
 
-  def getBy(credentialId: GenericCredential.Id): doobie.ConnectionIO[Option[GenericCredential]] = {
-    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC(Some(credentialId)) ++ selectGenericCredential ++
+  def getBy(
+      credentialId: GenericCredential.Id
+  ): doobie.ConnectionIO[Option[GenericCredential]] = {
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC(
+      Some(credentialId)
+    ) ++ selectGenericCredential ++
       fr"""
          |FROM draft_credentials c
          |     JOIN PTS USING (issuer_id)
@@ -132,7 +140,10 @@ object CredentialsDAO {
     query.query[GenericCredential].to[List]
   }
 
-  def getBy(issuedBy: ParticipantId, contactId: Contact.Id): doobie.ConnectionIO[List[GenericCredential]] = {
+  def getBy(
+      issuedBy: ParticipantId,
+      contactId: Contact.Id
+  ): doobie.ConnectionIO[List[GenericCredential]] = {
     (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
       fr"""
          |FROM draft_credentials c
@@ -156,24 +167,32 @@ object CredentialsDAO {
       case GenericCredential.SortBy.CreatedOn => "c.created_at"
     }
 
-    val whereCredentialType = query.filters.flatMap(_.credentialType).map { credentialType =>
-      fr"""c.credential_type_id = $credentialType"""
-    }
+    val whereCredentialType =
+      query.filters.flatMap(_.credentialType).map { credentialType =>
+        fr"""c.credential_type_id = $credentialType"""
+      }
 
-    val whereCreatedBefore = query.filters.flatMap(_.createdBefore).map { createdBefore =>
-      fr"c.created_at::DATE <= $createdBefore"
-    }
+    val whereCreatedBefore =
+      query.filters.flatMap(_.createdBefore).map { createdBefore =>
+        fr"c.created_at::DATE <= $createdBefore"
+      }
 
-    val whereCreatedAfter = query.filters.flatMap(_.createdAfter).map { createdAfter =>
-      fr"c.created_at::DATE >= $createdAfter"
-    }
+    val whereCreatedAfter =
+      query.filters.flatMap(_.createdAfter).map { createdAfter =>
+        fr"c.created_at::DATE >= $createdAfter"
+      }
 
     (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++ fr"""
         |FROM draft_credentials c
         |     JOIN PTS USING (issuer_id)
         |     JOIN contacts ON (c.contact_id = contacts.contact_id)
         |     LEFT JOIN PC USING (credential_id)
-        |${whereAndOpt(Some(fr"c.issuer_id = $issuedBy"), whereCredentialType, whereCreatedBefore, whereCreatedAfter)}
+        |${whereAndOpt(
+      Some(fr"c.issuer_id = $issuedBy"),
+      whereCredentialType,
+      whereCreatedBefore,
+      whereCreatedAfter
+    )}
         |$orderBy
         |${limitFr(query.limit)}
         |${offsetFr(query.offset)}
@@ -200,7 +219,10 @@ object CredentialsDAO {
       .to[List]
   }
 
-  def storePublicationData(issuerId: ParticipantId, credentialData: PublishCredential): doobie.ConnectionIO[Int] = {
+  def storePublicationData(
+      issuerId: ParticipantId,
+      credentialData: PublishCredential
+  ): doobie.ConnectionIO[Int] = {
     sql"""
          |INSERT INTO published_credentials (
          |  credential_id, batch_id, encoded_signed_credential, inclusion_proof
@@ -213,7 +235,11 @@ object CredentialsDAO {
          |WHERE credential_id = ${credentialData.consoleCredentialId} AND
          |      issuer_id = $issuerId
          |""".stripMargin.update.run.flatTap { n =>
-      FC.raiseError(new RuntimeException(s"The credential was not issued by the specified issuer")).whenA(n != 1)
+      FC.raiseError(
+        new RuntimeException(
+          s"The credential was not issued by the specified issuer"
+        )
+      ).whenA(n != 1)
     }
   }
 
@@ -251,8 +277,11 @@ object CredentialsDAO {
          |WHERE credential_id = $credentialId AND
          |      credential_id IN (SELECT * FROM institution_credentials)
          |""".stripMargin.update.run.flatTap { n =>
-      FC.raiseError(new RuntimeException(s"The credential wasn't found or it hasn't been published yet"))
-        .whenA(n != 1)
+      FC.raiseError(
+        new RuntimeException(
+          s"The credential wasn't found or it hasn't been published yet"
+        )
+      ).whenA(n != 1)
     }.void
   }
 
@@ -268,9 +297,10 @@ object CredentialsDAO {
          |      issuer_id = $institutionId AND""".stripMargin ++
       Fragments.in(fr"pc.credential_id", credentialsIds)).update.run.flatTap { n =>
       FC.raiseError(
-          new RuntimeException(s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}")
+        new RuntimeException(
+          s"Cannot mark credentials as shared. Updated rows: $n expected ${credentialsIds.size}"
         )
-        .whenA(n != credentialsIds.size)
+      ).whenA(n != credentialsIds.size)
     }.void
   }
 
@@ -309,7 +339,9 @@ object CredentialsDAO {
          |""".stripMargin.update.run
   }
 
-  def deletePublishedCredentialsBy(contactId: Contact.Id): doobie.ConnectionIO[Int] = {
+  def deletePublishedCredentialsBy(
+      contactId: Contact.Id
+  ): doobie.ConnectionIO[Int] = {
     sql"""
          |DELETE FROM published_credentials
          |USING draft_credentials
@@ -328,9 +360,10 @@ object CredentialsDAO {
          |""".stripMargin ++
       Fragments.in(fr"credential_id", credentialsIds)).update.run.flatTap { n =>
       FC.raiseError(
-          new RuntimeException(s"Cannot delete credentials. Updated rows: $n expected ${credentialsIds.size}")
+        new RuntimeException(
+          s"Cannot delete credentials. Updated rows: $n expected ${credentialsIds.size}"
         )
-        .whenA(n != credentialsIds.size)
+      ).whenA(n != credentialsIds.size)
     }.void
   }
 

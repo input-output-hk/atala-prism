@@ -73,8 +73,6 @@ const AssignToGroupsStep = ({
 AssignToGroupsStep.defaultProps = {
   showGroupSelection: false,
   selectedGroups: [],
-  setSelectedGroups: () => {},
-  setSkipGroupsAssignment: () => {},
   disabled: false
 };
 
@@ -88,8 +86,8 @@ AssignToGroupsStep.propTypes = {
   setCurrentStep: PropTypes.func.isRequired,
   showGroupSelection: PropTypes.bool,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
-  setSelectedGroups: PropTypes.func,
-  setSkipGroupsAssignment: PropTypes.func,
+  setSelectedGroups: PropTypes.func.isRequired,
+  setSkipGroupsAssignment: PropTypes.func.isRequired,
   disabled: PropTypes.bool
 };
 

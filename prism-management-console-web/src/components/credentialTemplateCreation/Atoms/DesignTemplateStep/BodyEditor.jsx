@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Form } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -6,18 +7,28 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import {
   getNewDynamicAttribute,
   getNewFixedTextAttribute
-} from '../../../../hooks/useTemplateSettings';
+} from '../../../../helpers/templateHelpers';
 import SortableAttributes from './SortableAttributes';
-import { useTemplateContext } from '../../../providers/TemplateContext';
+import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
 
-const BodyEditor = () => {
+const BodyEditor = observer(() => {
   const { t } = useTranslation();
-  const { templateSettings } = useTemplateContext();
+  const { templateSketch } = useTemplateSketch();
 
   return (
-    <Form.List name="credentialBody">
+    <Form.List
+      name="credentialBody"
+      rules={[
+        {
+          required: true,
+          message: t('credentialTemplateCreation.errors.fieldIsRequired', {
+            field: t('credentialTemplateCreation.step2.content.body')
+          })
+        }
+      ]}
+    >
       {(attributes, { add, move, remove }) => {
-        const attributesWithValues = templateSettings.credentialBody;
+        const attributesWithValues = templateSketch.credentialBody;
 
         const mergedAttributes = attributes.map((attr, index) => ({
           ...attr,
@@ -57,6 +68,6 @@ const BodyEditor = () => {
       }}
     </Form.List>
   );
-};
+});
 
 export default BodyEditor;

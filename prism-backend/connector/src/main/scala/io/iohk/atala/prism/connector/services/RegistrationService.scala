@@ -11,16 +11,17 @@ import cats.syntax.traverse._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.connector.errors.{ConnectorError, InvalidRequest}
+import io.iohk.atala.prism.connector.errors.{InvalidRequest, co}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.connector.services.RegistrationService.RegistrationResult
+import io.iohk.atala.prism.connector.services.RegistrationService.{RegisterParticipantError, RegistrationResult}
 import io.iohk.atala.prism.connector.services.logs.RegistrationServiceLogs
 import io.iohk.atala.prism.models.{DidSuffix, ParticipantId}
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, NodeServiceGrpc}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api
+import shapeless.{:+:, CNil}
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -33,7 +34,7 @@ trait RegistrationService[F[_]] {
       name: String,
       logo: ParticipantLogo,
       didOrOperation: Either[DID, SignedAtalaOperation]
-  ): F[Either[ConnectorError, RegistrationResult]]
+  ): F[Either[RegisterParticipantError, RegistrationResult]]
 
 }
 
@@ -51,11 +52,16 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
       name: String,
       logo: ParticipantLogo,
       didOrOperation: Either[DID, SignedAtalaOperation]
-  ): F[Either[ConnectorError, RegistrationResult]] = {
+  ): F[Either[RegisterParticipantError, RegistrationResult]] = {
     for {
       maybeCreateRequest <-
-        didOrOperation.fold(checkAndUseExistingDID(_, tpe, name, logo), createDID(tpe, name, logo, _))
-      createResult <- maybeCreateRequest.flatTraverse(participantsRepository.create)
+        didOrOperation.fold(
+          checkAndUseExistingDID(_, tpe, name, logo),
+          createDID(tpe, name, logo, _).map(_.asRight)
+        )
+      createResult <- maybeCreateRequest.flatTraverse[F, Unit](
+        participantsRepository.create
+      )
       result = createResult.flatMap(_ =>
         maybeCreateRequest.map { createRequest =>
           RegistrationResult(
@@ -73,10 +79,14 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
       name: String,
       logo: ParticipantLogo,
       createDIDOperation: SignedAtalaOperation
-  ): F[Either[ConnectorError, ParticipantsRepository.CreateParticipantRequest]] = {
+  ): F[ParticipantsRepository.CreateParticipantRequest] = {
     for {
       createDIDResponse <-
-        ex.deferFuture(nodeService.createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation)))
+        ex.deferFuture(
+          nodeService.createDID(
+            node_api.CreateDIDRequest().withSignedOperation(createDIDOperation)
+          )
+        )
       did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.id))
       createRequest =
         ParticipantsRepository
@@ -92,21 +102,31 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
               )
               .some
           )
-          .asRight
     } yield createRequest
   }
+
+  type CheckAndUseExistingDIDError = InvalidRequest :+: CNil
 
   private def checkAndUseExistingDID(
       did: DID,
       tpe: ParticipantType,
       name: String,
       logo: ParticipantLogo
-  ): F[Either[ConnectorError, ParticipantsRepository.CreateParticipantRequest]] = {
+  ): F[Either[
+    CheckAndUseExistingDIDError,
+    ParticipantsRepository.CreateParticipantRequest
+  ]] = {
     for {
-      response <- ex.deferFuture(nodeService.getDidDocument(GetDidDocumentRequest(did.getValue)))
+      response <- ex.deferFuture(
+        nodeService.getDidDocument(GetDidDocumentRequest(did.getValue))
+      )
       result =
         response.document
-          .toRight(InvalidRequest("the passed DID was not found on the node"))
+          .toRight(
+            co[CheckAndUseExistingDIDError](
+              InvalidRequest("the passed DID was not found on the node")
+            )
+          )
           .as(
             ParticipantsRepository.CreateParticipantRequest(
               id = ParticipantId.random(),
@@ -123,6 +143,8 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
 
 object RegistrationService {
 
+  type RegisterParticipantError = InvalidRequest :+: CNil
+
   def apply[F[_]: BracketThrow: Execute, R[_]: Functor](
       participantsRepository: ParticipantsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
@@ -131,17 +153,26 @@ object RegistrationService {
     for {
       serviceLogs <- logs.service[RegistrationService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, RegistrationService[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, RegistrationService[F]] =
+        serviceLogs
       val logs: RegistrationService[Mid[F, *]] = new RegistrationServiceLogs[F]
       val mid = logs
-      mid attach new RegistrationServiceImpl[F](participantsRepository, nodeService)
+      mid attach new RegistrationServiceImpl[F](
+        participantsRepository,
+        nodeService
+      )
     }
 
   def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
       participantsRepository: ParticipantsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
-  ): RegistrationService[F] = RegistrationService(participantsRepository, nodeService, logs).extract
+  ): RegistrationService[F] =
+    RegistrationService(participantsRepository, nodeService, logs).extract
 
-  case class RegistrationResult(id: ParticipantId, did: DID, operationId: Option[AtalaOperationId])
+  case class RegistrationResult(
+      id: ParticipantId,
+      did: DID,
+      operationId: Option[AtalaOperationId]
+  )
 }

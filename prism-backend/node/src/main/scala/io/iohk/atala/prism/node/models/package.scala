@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import derevo.derive
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -8,6 +9,7 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import tofu.logging.derivation.loggable
 
 import java.time.Instant
 import scala.util.matching.Regex
@@ -40,15 +42,27 @@ package object models {
     case object Processed extends AtalaObjectStatus
   }
 
-  case class DIDPublicKey(didSuffix: DidSuffix, keyId: String, keyUsage: KeyUsage, key: ECPublicKey)
+  case class DIDPublicKey(
+      didSuffix: DidSuffix,
+      keyId: String,
+      keyUsage: KeyUsage,
+      key: ECPublicKey
+  )
 
-  case class DIDData(didSuffix: DidSuffix, keys: List[DIDPublicKey], lastOperation: Sha256Digest)
+  case class DIDData(
+      didSuffix: DidSuffix,
+      keys: List[DIDPublicKey],
+      lastOperation: Sha256Digest
+  )
 
   class CredentialId private (val id: String) extends AnyVal
 
   object CredentialId {
     def apply(id: String): CredentialId = {
-      require(CREDENTIAL_ID_RE.pattern.matcher(id).matches(), s"invalid credential id: $id")
+      require(
+        CREDENTIAL_ID_RE.pattern.matcher(id).matches(),
+        s"invalid credential id: $id"
+      )
 
       new CredentialId(id)
     }
@@ -62,7 +76,9 @@ package object models {
       operationId: AtalaOperationId,
       objectId: AtalaObjectId,
       operationStatus: AtalaOperationStatus,
-      transactionSubmissionStatus: Option[AtalaObjectTransactionSubmissionStatus] = None,
+      transactionSubmissionStatus: Option[
+        AtalaObjectTransactionSubmissionStatus
+      ] = None,
       transactionId: Option[TransactionId] = None
   )
 
@@ -77,6 +93,7 @@ package object models {
     case object REJECTED extends AtalaOperationStatus // Confirmed, but rejected by PRISM
   }
 
+  @derive(loggable)
   case class ProtocolVersion(major: Int, minor: Int) {
     override def toString: String = s"$major.$minor"
 
@@ -134,7 +151,9 @@ package object models {
         timestampInfo: TimestampInfo
     )
 
-    def getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp: Option[String]): Instant = {
+    def getLastSyncedTimestampFromMaybe(
+        maybeLastSyncedBlockTimestamp: Option[String]
+    ): Instant = {
       val lastSyncedBlockTimestamp =
         maybeLastSyncedBlockTimestamp
           .flatMap(_.toLongOption)

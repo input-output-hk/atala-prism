@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.node.metrics
 
 import com.typesafe.config.Config
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
 import io.iohk.atala.prism.node.cardano.models.WalletId
 import io.iohk.atala.prism.node.services.{CardanoLedgerService, KeyValueService}
@@ -14,8 +16,8 @@ import scala.util.Try
 
 class NodeReporter(
     walletId: WalletId,
-    cardanoClient: CardanoClient,
-    keyValueService: KeyValueService,
+    cardanoClient: CardanoClient[IOWithTraceIdContext],
+    keyValueService: KeyValueService[IOWithTraceIdContext],
     blockNumberSyncStart: Int
 )(implicit
     ec: ExecutionContext
@@ -23,9 +25,12 @@ class NodeReporter(
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val nextBlockToSyncGauge: Gauge = Kamon.gauge("node.next.block.to.sync.by.prism").withoutTags()
-  private val lastSyncedBlockByWallet: Gauge = Kamon.gauge("node.last.synced.block.by.wallet").withoutTags()
-  private val walletFunds: Gauge = Kamon.gauge("node.wallet.available.funds").withoutTags()
+  private val nextBlockToSyncGauge: Gauge =
+    Kamon.gauge("node.next.block.to.sync.by.prism").withoutTags()
+  private val lastSyncedBlockByWallet: Gauge =
+    Kamon.gauge("node.last.synced.block.by.wallet").withoutTags()
+  private val walletFunds: Gauge =
+    Kamon.gauge("node.wallet.available.funds").withoutTags()
 
   override def reportPeriodSnapshot(snapshot: PeriodSnapshot): Unit = {
     postNextBlockToSync()
@@ -40,21 +45,27 @@ class NodeReporter(
   private def reportWalletFunds(): Unit =
     cardanoClient
       .getWalletDetails(walletId)
-      .value
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
       .foreach(_.foreach(details => walletFunds.update(details.balance.available.doubleValue)))
 
   private def postNextBlockToSync(): Unit =
     keyValueService
       .getInt(LAST_SYNCED_BLOCK_NO)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
       .foreach { maybeNumber =>
-        val nextBlockToSync = CardanoLedgerService.calculateLastSyncedBlockNo(maybeNumber, blockNumberSyncStart) + 1
+        val nextBlockToSync = CardanoLedgerService.calculateLastSyncedBlockNo(
+          maybeNumber,
+          blockNumberSyncStart
+        ) + 1
         updateGauge(nextBlockToSyncGauge, nextBlockToSync)
       }
 
   private def postWalletLastBlock(): Unit = {
-    cardanoClient
-      .getLatestBlock()
-      .value
+    cardanoClient.getLatestBlock
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
       .foreach(_.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo)))
   }
 
@@ -65,13 +76,26 @@ class NodeReporter(
 }
 
 object NodeReporter {
-  def apply(config: CardanoLedgerService.Config, cardanoClient: CardanoClient, keyValueService: KeyValueService)(
-      implicit ec: ExecutionContext
+  def apply(
+      config: CardanoLedgerService.Config,
+      cardanoClient: CardanoClient[IOWithTraceIdContext],
+      keyValueService: KeyValueService[IOWithTraceIdContext]
+  )(implicit
+      ec: ExecutionContext
   ): NodeReporter = {
     val walletId = WalletId
       .from(config.walletId)
-      .getOrElse(throw new IllegalArgumentException(s"Wallet ID ${config.walletId} is invalid"))
+      .getOrElse(
+        throw new IllegalArgumentException(
+          s"Wallet ID ${config.walletId} is invalid"
+        )
+      )
 
-    new NodeReporter(walletId, cardanoClient, keyValueService, config.blockNumberSyncStart)
+    new NodeReporter(
+      walletId,
+      cardanoClient,
+      keyValueService,
+      config.blockNumberSyncStart
+    )
   }
 }

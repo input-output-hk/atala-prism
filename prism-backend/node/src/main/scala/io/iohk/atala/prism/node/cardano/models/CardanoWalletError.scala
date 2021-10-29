@@ -1,23 +1,30 @@
 package io.iohk.atala.prism.node.cardano.models
+import derevo.derive
 import enumeratum._
-
+import tofu.logging.derivation.loggable
+@derive(loggable)
 case class CardanoWalletError(message: String, code: CardanoWalletErrorCode)
     extends RuntimeException(f"Status [${code.entryName}]. $message")
 
 object CardanoWalletError {
-  private val undefinedErrorDescription: String = "Undefined internal error in Cardano Wallet occurred."
+  private val undefinedErrorDescription: String =
+    "Undefined internal error in Cardano Wallet occurred."
 
   def fromString(message: String, errorCode: String): CardanoWalletError = {
     val errorCodeMaybe = CardanoWalletErrorCode.fromString(errorCode)
     errorCodeMaybe.fold {
       val errorDescription = f"$undefinedErrorDescription [$errorCode]"
-      CardanoWalletError(errorDescription, CardanoWalletErrorCode.UndefinedCardanoWalletError)
+      CardanoWalletError(
+        errorDescription,
+        CardanoWalletErrorCode.UndefinedCardanoWalletError
+      )
     } { code =>
       CardanoWalletError(message, code)
     }
   }
 }
 
+@derive(loggable)
 sealed trait CardanoWalletErrorCode extends EnumEntry.Snakecase
 object CardanoWalletErrorCode extends Enum[CardanoWalletErrorCode] {
   val values: IndexedSeq[CardanoWalletErrorCode] = findValues

@@ -37,8 +37,7 @@ const prevCredentialMessage = [
 const CreatedCredential = ({ confirmSuccessCredential, currentCredential }) => {
   const { t } = useTranslation();
   const { user } = useContext(UserContext);
-  const { firstName, lastName, dateOfBirth } = user;
-  const fullName = `${firstName} ${lastName}`;
+  const { firstName } = user;
   const currentCredentialCellList = {
     0: undefined,
     1: {

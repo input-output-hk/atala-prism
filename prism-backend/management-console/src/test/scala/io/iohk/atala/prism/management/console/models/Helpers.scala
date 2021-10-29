@@ -11,7 +11,10 @@ object Helpers {
 
     PaginatedQueryConstraints(
       limit = limit,
-      ordering = ResultOrdering(Contact.SortBy.createdAt, ResultOrdering.Direction.Ascending),
+      ordering = ResultOrdering(
+        Contact.SortBy.createdAt,
+        ResultOrdering.Direction.Ascending
+      ),
       scrollId = scrollId,
       filters = Some(Contact.FilterBy(groupName))
     )

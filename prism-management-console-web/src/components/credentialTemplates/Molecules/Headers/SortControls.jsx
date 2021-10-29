@@ -1,18 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Menu } from 'antd';
 import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { UiStateContext } from '../../../../stores/ui/UiState';
+import { useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
 const { ascending } = SORTING_DIRECTIONS;
 
 const SortControls = observer(() => {
   const { t } = useTranslation();
-  const { templateUiState } = useContext(UiStateContext);
-  const { sortDirection, toggleSortDirection, sortingBy, setSortingBy } = templateUiState;
+  const { sortDirection, toggleSortDirection, sortingBy, setSortingBy } = useTemplateUiState();
 
   const sortingOptions = Object.keys(TEMPLATES_SORTING_KEYS);
 
@@ -32,7 +31,6 @@ const SortControls = observer(() => {
         <Button
           className="TableOptionButton no-border"
           onClick={toggleSortDirection}
-          large
           icon={
             sortAscending ? (
               <SortAscendingOutlined style={{ fontSize: '16px' }} />
@@ -42,12 +40,11 @@ const SortControls = observer(() => {
           }
         />
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
-          {
-            <CustomButton
-              buttonText={t(sortingBy ? `templates.table.columns.${sortingBy}` : 'actions.sortBy')}
-              buttonProps={{ className: 'theme-link TableOptionButton', icon: <DownOutlined /> }}
-            />
-          }
+          <CustomButton
+            overrideClassName="theme-link TableOptionButton"
+            buttonText={t(sortingBy ? `templates.table.columns.${sortingBy}` : 'actions.sortBy')}
+            buttonProps={{ icon: <DownOutlined /> }}
+          />
         </Dropdown>
       </div>
     </div>

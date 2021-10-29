@@ -35,13 +35,16 @@ const Sidebar = ({ selectedYear, recentPosts, postsPerYear, postsPerMonth }) => 
             <Link to={`/blog/${year}`}>{`${year} (${postsPerYearCount})`}</Link>
             {selectedYear === Number(year) && (
               <ul className="dashed">
-                {postsPerMonth.map(({ totalCount: postsPerMonthCount, fieldValue: month }) => (
-                  <li className="red">
-                    <Link to={`/blog/${year}/${month}`}>{`${moment(`${year}-${month}`).format(
-                      'MMM, YYYY'
-                    )} (${postsPerMonthCount})`}</Link>
-                  </li>
-                ))}
+                {postsPerMonth.map(({ totalCount: postsPerMonthCount, fieldValue: month }) => {
+                  const monthLabel = moment(`${year}-${month}`).format('MMM, YYYY');
+                  return (
+                    <li className="red">
+                      <Link to={`/blog/${year}/${month}`}>
+                        {`${monthLabel} (${postsPerMonthCount})`}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </li>

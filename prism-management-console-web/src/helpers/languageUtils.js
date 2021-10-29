@@ -39,7 +39,5 @@ export const getBrowserLanguage = () => {
 
   const preferredLang = browserLang.substr(0, 2);
 
-  const langToUse = langs.includes(preferredLang) ? preferredLang : DEFAULT_LANG;
-
-  return langToUse;
+  return langs.includes(preferredLang) ? preferredLang : DEFAULT_LANG;
 };

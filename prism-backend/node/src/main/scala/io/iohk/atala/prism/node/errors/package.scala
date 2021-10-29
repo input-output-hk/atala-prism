@@ -1,10 +1,15 @@
 package io.iohk.atala.prism.node
 
+import derevo.derive
 import io.grpc.Status
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
+import tofu.logging.derivation.loggable
+import io.iohk.atala.prism.node.models.ProtocolVersion
+import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 
 package object errors {
+  @derive(loggable)
   sealed trait NodeError {
     def toStatus: Status
     def name: String
@@ -16,8 +21,10 @@ package object errors {
 
     /** Error indicating lack of some value required for the operation
       *
-      * @param tpe type of the value, e.g. "didSuffix" or "contract"
-      * @param identifier identifier used to look for the value
+      * @param tpe
+      *   type of the value, e.g. "didSuffix" or "contract"
+      * @param identifier
+      *   identifier used to look for the value
       */
     case class UnknownValueError(tpe: String, identifier: String) extends NodeError {
       override def toStatus: Status = {
@@ -35,9 +42,13 @@ package object errors {
       override def name: String = "internal"
     }
 
-    case class InternalCardanoWalletError(cardanoWalletError: CardanoWalletError) extends NodeError {
+    case class InternalCardanoWalletError(
+        cardanoWalletError: CardanoWalletError
+    ) extends NodeError {
       override def toStatus: Status = {
-        Status.INTERNAL.withDescription(s"CardanoWalletError: ${cardanoWalletError.getMessage}")
+        Status.INTERNAL.withDescription(
+          s"CardanoWalletError: ${cardanoWalletError.getMessage}"
+        )
       }
 
       override def name: String = "internal-cardano-wallet"
@@ -59,6 +70,17 @@ package object errors {
       }
 
       override def name: String = "duplicate-atala-operation"
+    }
+
+    case class UnsupportedProtocolVersion(currentVersion: ProtocolVersion) extends NodeError {
+      override def toStatus: Status = {
+        Status.FAILED_PRECONDITION.withDescription(
+          s"Node supports $SUPPORTED_VERSION but current protocol version is $currentVersion. Update your node " +
+            s"in order to be able to schedule operations to the blockchain"
+        )
+      }
+
+      override def name: String = "unsupported-protocol-version"
     }
   }
 

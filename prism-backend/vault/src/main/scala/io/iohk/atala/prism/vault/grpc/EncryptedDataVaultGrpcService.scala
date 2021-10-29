@@ -31,10 +31,14 @@ class EncryptedDataVaultGrpcService(
   override def healthCheck(
       request: HealthCheckRequest
   ): Future[HealthCheckResponse] = {
-    measureRequestFuture(serviceName, "healthCheck")(Future(HealthCheckResponse()))
+    measureRequestFuture(serviceName, "healthCheck")(
+      Future(HealthCheckResponse())
+    )
   }
 
-  override def storeData(request: vault_api.StoreDataRequest): Future[vault_api.StoreDataResponse] = {
+  override def storeData(
+      request: vault_api.StoreDataRequest
+  ): Future[vault_api.StoreDataResponse] = {
     val methodName = "storeData"
     authenticator.authenticated(methodName, request) { (did, traceId) =>
       measureRequestFuture(serviceName, methodName) {
@@ -59,7 +63,11 @@ class EncryptedDataVaultGrpcService(
     authenticator.authenticated(methodName, request) { (did, traceId) =>
       measureRequestFuture(serviceName, methodName) {
         service
-          .getByPaginated(did, parseOptionalLastSeenId(request.lastSeenId), request.limit)
+          .getByPaginated(
+            did,
+            parseOptionalLastSeenId(request.lastSeenId),
+            request.limit
+          )
           .map(toGetPaginatedDataResponse)
           .run(traceId)
           .unsafeToFuture()
@@ -67,7 +75,9 @@ class EncryptedDataVaultGrpcService(
     }
   }
 
-  private def parseOptionalLastSeenId(lastSeenId: String): Option[Payload.Id] = {
+  private def parseOptionalLastSeenId(
+      lastSeenId: String
+  ): Option[Payload.Id] = {
     if (lastSeenId.isEmpty) {
       None
     } else {

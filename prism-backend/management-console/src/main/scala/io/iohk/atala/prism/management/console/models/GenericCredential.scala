@@ -49,7 +49,7 @@ final case class DeleteCredentials(
 )
 
 final case class StoreCredential(
-    connectionId: Contact.Id,
+    connectionToken: ConnectionToken,
     encodedSignedCredential: String,
     credentialExternalId: CredentialExternalId
 )
@@ -108,5 +108,9 @@ object GenericCredential {
   )
 
   type PaginatedQuery =
-    PaginatedQueryConstraints[GenericCredential.Id, GenericCredential.SortBy, GenericCredential.FilterBy]
+    PaginatedQueryConstraints[
+      GenericCredential.Id,
+      GenericCredential.SortBy,
+      GenericCredential.FilterBy
+    ]
 }

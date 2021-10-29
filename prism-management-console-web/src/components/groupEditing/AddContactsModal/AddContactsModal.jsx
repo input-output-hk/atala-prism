@@ -63,6 +63,8 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
     setSelectedContacts([]);
   };
 
+  const selectedLabel = selectedContacts.length ? `  (${selectedContacts.length})  ` : null;
+
   return (
     <Modal
       title={t('groupEditing.selectContacts')}
@@ -94,7 +96,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
               ) : (
                 <span>
                   {t('groupEditing.selectAll')}
-                  {selectedContacts.length ? `  (${selectedContacts.length})  ` : null}
+                  {selectedLabel}
                 </span>
               )}
             </Checkbox>

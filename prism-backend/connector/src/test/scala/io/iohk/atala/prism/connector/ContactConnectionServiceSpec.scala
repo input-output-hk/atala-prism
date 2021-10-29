@@ -20,19 +20,27 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
   implicit val cs = IO.contextShift(ec)
 
   private val usingApiAs = usingApiAsConstructor(
-    new connector_api.ContactConnectionServiceGrpc.ContactConnectionServiceBlockingStub(_, _)
+    new connector_api.ContactConnectionServiceGrpc.ContactConnectionServiceBlockingStub(
+      _,
+      _
+    )
   )
 
-  protected lazy val nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+  protected lazy val nodeMock =
+    mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val connectionsRepository = ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val requestNoncesRepository = RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
-  lazy val participantsRepository = ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  private lazy val connectionsRepository =
+    ConnectionsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  lazy val requestNoncesRepository =
+    RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
+  lazy val participantsRepository =
+    ParticipantsRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
 
   val (keyPair, did) = DIDUtil.createUnpublishedDid
   val publicKey: ECPublicKey = keyPair.getPublicKey
 
-  lazy val connectionsService = ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
+  lazy val connectionsService =
+    ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
 
   private lazy val authenticator =
     new ConnectorAuthenticator(
@@ -45,7 +53,14 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
   override def services =
     Seq(
       connector_api.ContactConnectionServiceGrpc
-        .bindService(new ContactConnectionService(connectionsService, authenticator, Set(did)), executionContext)
+        .bindService(
+          new ContactConnectionService(
+            connectionsService,
+            authenticator,
+            Set(did)
+          ),
+          executionContext
+        )
     )
 
   "ContactConnectionService" should {
@@ -55,12 +70,22 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
       val initiator1 = createHolder("initiator1", None)
       val acceptor1 = createHolder("acceptor1", None)
       val token1 = createToken(initiator1)
-      val connectionId1 = createConnection(initiator1, acceptor1, token1, ConnectionStatus.InvitationMissing)
+      val connectionId1 = createConnection(
+        initiator1,
+        acceptor1,
+        token1,
+        ConnectionStatus.InvitationMissing
+      )
 
       val initiator2 = createHolder("initiator2", None)
       val acceptor2 = createHolder("acceptor2", None)
       val token2 = createToken(initiator2)
-      val connectionId2 = createConnection(initiator2, acceptor2, token2, ConnectionStatus.ConnectionAccepted)
+      val connectionId2 = createConnection(
+        initiator2,
+        acceptor2,
+        token2,
+        ConnectionStatus.ConnectionAccepted
+      )
 
       val contactConnection1 = connector_models.ContactConnection(
         connectionId1.toString,
@@ -73,11 +98,14 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
         console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
       )
 
-      val request = connector_api.ConnectionsStatusRequest(List(token1.token, token2.token))
+      val request =
+        connector_api.ConnectionsStatusRequest(List(token1.token, token2.token))
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { service =>
-        service.getConnectionStatus(request).connections must be(List(contactConnection1, contactConnection2))
+        service.getConnectionStatus(request).connections must be(
+          List(contactConnection1, contactConnection2)
+        )
       }
     }
 
@@ -96,11 +124,15 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
           console_models.ContactConnectionStatus.STATUS_INVITATION_MISSING
         )
 
-      val request = connector_api.ConnectionsStatusRequest(List(acceptor1.uuid.toString, acceptor2.uuid.toString))
+      val request = connector_api.ConnectionsStatusRequest(
+        List(acceptor1.uuid.toString, acceptor2.uuid.toString)
+      )
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { service =>
-        service.getConnectionStatus(request).connections must be(List(contactConnection1, contactConnection2))
+        service.getConnectionStatus(request).connections must be(
+          List(contactConnection1, contactConnection2)
+        )
       }
     }
   }

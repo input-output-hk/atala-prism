@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
-import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
 import Logger from '../../helpers/Logger';
@@ -17,7 +17,7 @@ import {
   UNKNOWN_DID_SUFFIX_ERROR_CODE
 } from '../../helpers/constants';
 import WaitBanner from './Atoms/WaitBanner/WaitBanner';
-import { useSession } from '../providers/SessionContext';
+import { useSession } from '../../hooks/useSession';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import TutorialModal from '../tutorial/tutorialModal';
 import TutorialTool from '../tutorial/tutorialTool/tutorialTool';
@@ -25,7 +25,7 @@ import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
 
 import './_style.scss';
 
-const Dashboard = ({ api, name, bundle }) => {
+const Dashboard = observer(({ api, name }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
 
@@ -105,7 +105,6 @@ const Dashboard = ({ api, name, bundle }) => {
           <Welcome name={name} importantInfo={tp('welcome.subtitle')} />
         )}
         {accountStatus === UNCONFIRMED && <WaitBanner />}
-        {false && <CurrentBundle bundle={bundle} />}
       </div>
       <div className="DashboardContentBottom">
         <h1>{tp('titleBottom')}</h1>
@@ -118,10 +117,9 @@ const Dashboard = ({ api, name, bundle }) => {
       {tutorialIsRunning && <TutorialTool {...tutorialProgress} onSkip={onPauseTutorial} />}
     </div>
   );
-};
+});
 
 Dashboard.defaultProps = {
-  bundle: undefined,
   name: 'Username'
 };
 
@@ -143,11 +141,7 @@ Dashboard.propTypes = {
       saveTutorialProgress: PropTypes.func.isRequired
     }).isRequired
   }).isRequired,
-  name: PropTypes.string,
-  bundle: PropTypes.shape({
-    remaining: PropTypes.number,
-    totalConnections: PropTypes.number
-  })
+  name: PropTypes.string
 };
 
 export default withApi(Dashboard);

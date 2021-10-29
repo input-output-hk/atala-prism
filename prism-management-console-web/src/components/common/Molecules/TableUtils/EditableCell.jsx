@@ -82,13 +82,12 @@ const EditableCell = ({
   const errorToShow = getError();
 
   const getElement = () => {
-    switch (type) {
-      case 'date':
-        return <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />;
-      default:
-        return <Input ref={inputRef} onPressEnter={save} onBlur={save} />;
-    }
+    if (type === 'date')
+      return <DatePicker ref={inputRef} onPressEnter={save} onBlur={save} onChange={save} />;
+    return <Input ref={inputRef} onPressEnter={save} onBlur={save} />;
   };
+
+  const validateStatus = errorToShow ? 'error' : null;
 
   return (
     <td {...restProps}>
@@ -97,7 +96,7 @@ const EditableCell = ({
           initialValue={savedData}
           rules={getFieldRules}
           validateFirst
-          validateStatus={errorToShow ? 'error' : null}
+          validateStatus={validateStatus}
           hasFeedback
           help={errorToShow}
           name={dataIndex}
@@ -122,8 +121,15 @@ EditableCell.defaultProps = {
 
 EditableCell.propTypes = {
   EditableContext: PropTypes.element.isRequired,
-  record: PropTypes.shape({ key: PropTypes.number }),
-  children: PropTypes.oneOf([PropTypes.bool, PropTypes.string]).isRequired,
+  record: PropTypes.shape({
+    key: PropTypes.number,
+    errorFields: PropTypes.arrayOfType(
+      PropTypes.shape({
+        name: PropTypes.string
+      })
+    )
+  }),
+  children: PropTypes.node.isRequired,
   dataIndex: PropTypes.string,
   type: PropTypes.string.isRequired,
   editable: PropTypes.bool,
