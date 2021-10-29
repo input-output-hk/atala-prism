@@ -30,7 +30,6 @@ import io.iohk.atala.prism.node.services.{
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.NodeClientUtils._
-import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
 import java.time.Duration

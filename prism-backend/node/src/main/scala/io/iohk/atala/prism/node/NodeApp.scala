@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ContextShift, IO, Timer}
 import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.Transactor
@@ -18,7 +18,6 @@ import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.utils.IOUtils._
 import kamon.Kamon
-import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
@@ -43,6 +42,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   implicit val implicitExecutionContext: ExecutionContext = executionContext
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+  implicit val timer: Timer[IO] = IO.timer(executionContext)
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

@@ -6,11 +6,12 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, DIDData, ECKeyData}
-import monix.execution.Scheduler.Implicits.global
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class DIDUtilsSpec extends AnyWordSpec with Matchers {
   val masterKeys: ECKeyPair = EC.generateKeyPair()

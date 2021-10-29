@@ -1,17 +1,16 @@
 package io.iohk.atala.prism.db
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
-
 import cats.effect._
+import cats.effect.concurrent.Ref
 import cats.implicits._
 import doobie._
 import doobie.implicits._
 import doobie.postgres._
 import fs2.Stream
 import fs2.Stream._
-import monix.execution.atomic.AtomicBoolean
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 import scala.concurrent.duration._
 
 class DbNotificationStreamer private (channelName: String)(implicit
@@ -23,8 +22,9 @@ class DbNotificationStreamer private (channelName: String)(implicit
   private implicit val connectionIOTimer: Timer[ConnectionIO] =
     timer.mapK(LiftIO.liftK[ConnectionIO])
 
-  private val stopped = AtomicBoolean(false)
+  private val stopped = Ref.unsafe[IO, Boolean](false)
   private val stoppedLatch = new CountDownLatch(1)
+  private val liftToConnIO = LiftIO.liftK[ConnectionIO]
 
   lazy val stream: Stream[ConnectionIO, DbNotification] = {
     val notificationStream = for {
@@ -35,8 +35,9 @@ class DbNotificationStreamer private (channelName: String)(implicit
       // Query DB notifications
       notifications <- eval(PHC.pgGetNotifications <* HC.commit)
       // Determine whether to stream down notifications or terminate
+      isStopped <- Stream.eval(liftToConnIO(stopped.get))
       maybeNotification <-
-        if (stopped.get()) {
+        if (isStopped) {
           // Stream has been told to shutdown, let the caller know
           stoppedLatch.countDown()
           // Use `None` to signal that the stream should terminate (`unNoneTerminate` is used below)
@@ -50,13 +51,13 @@ class DbNotificationStreamer private (channelName: String)(implicit
     notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))
   }
 
-  def isStopped: Boolean = stopped.get()
+  def isStopped: Boolean = stopped.get.unsafeRunSync()
 
   def stopStreaming(): Unit = {
     logger.info(
       s"Stopping all open DB notification streams for channel $channelName"
     )
-    stopped.set(true)
+    stopped.set(true).unsafeRunSync()
     if (!stoppedLatch.await(1, TimeUnit.SECONDS)) {
       logger.warn(
         s"DB notification streams for channel $channelName could not stop gracefully on time"

@@ -108,7 +108,6 @@ object PrismBuild {
             Seq(
               diffx,
               flyway,
-              monix,
               typesafeConfig
             ) ++
             prismDependencies ++
@@ -159,7 +158,6 @@ object PrismBuild {
           Seq(
             chimney,
             flyway,
-            monix,
             postgresql,
             scalapbRuntimeGrpc,
             slf4j,

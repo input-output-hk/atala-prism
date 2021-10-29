@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ContextShift, IO, Timer}
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
@@ -28,7 +28,6 @@ import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaO
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.utils.BytesOps
 import io.iohk.atala.prism.utils.IOUtils._
-import monix.execution.schedulers.TestScheduler
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
@@ -36,6 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
   private val ledger = Ledger.CardanoTestnet
@@ -49,7 +49,6 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
   private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
   private val noOpBlockHandler: CardanoBlockHandler = _ => Future.unit
-  private val scheduler: TestScheduler = TestScheduler()
   private lazy val keyValueService = KeyValueService.unsafe(
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
     logs
@@ -395,8 +394,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       cardanoClient,
       keyValueService,
       noOpBlockHandler,
-      onAtalaObject,
-      scheduler
+      onAtalaObject
     )
   }
 

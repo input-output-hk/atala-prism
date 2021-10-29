@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ContextShift, IO, Timer}
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.CardanoClient
@@ -15,7 +15,6 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.utils.IOUtils._
-import monix.execution.schedulers.TestScheduler
 import org.scalatest.Ignore
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -29,13 +28,12 @@ import scala.concurrent.duration._
 @Ignore
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)
   private val RETRY_TIMEOUT = 2.minutes
   private val RETRY_SLEEP = 10.seconds
-
-  private val scheduler: TestScheduler = TestScheduler()
 
   "CardanoLedgerService" should {
     "notify on published PRISM transactions" in {
@@ -72,8 +70,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         cardanoClient,
         keyValueService,
         notificationHandler.asCardanoBlockHandler,
-        notificationHandler.asAtalaObjectHandler,
-        scheduler
+        notificationHandler.asAtalaObjectHandler
       )
 
       // Avoid syncing pre-existing blocks

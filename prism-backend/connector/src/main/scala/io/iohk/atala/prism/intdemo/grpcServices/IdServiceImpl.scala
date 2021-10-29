@@ -16,7 +16,6 @@ import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.utils.BytesOps
 import io.iohk.atala.prism.utils.Base64Utils
-import monix.execution.Scheduler.{global => scheduler}
 
 import java.security.MessageDigest
 import java.time.LocalDate
@@ -42,8 +41,7 @@ class IdServiceImpl(
     schedulerPeriod = schedulerPeriod,
     requiredDataLoader = getPersonalData(intDemoRepository),
     proofRequestIssuer = noProofRequests,
-    getCredential = getIdCredential,
-    scheduler = scheduler
+    getCredential = getIdCredential
   )
 
   override def getConnectionToken(

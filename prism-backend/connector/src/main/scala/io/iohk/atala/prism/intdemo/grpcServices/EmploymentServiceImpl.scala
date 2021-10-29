@@ -17,7 +17,6 @@ import io.iohk.atala.prism.intdemo.html.ProofOfEmployment
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
 import io.iohk.atala.prism.protos.credential_models
-import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,8 +40,7 @@ class EmploymentServiceImpl(
     schedulerPeriod = schedulerPeriod,
     requiredDataLoader = getRequiredEmploymentData(connectorIntegration),
     proofRequestIssuer = requestIdAndDegreeCredentials(connectorIntegration),
-    getCredential = EmploymentServiceImpl.getEmploymentCredential,
-    scheduler = scheduler
+    getCredential = EmploymentServiceImpl.getEmploymentCredential
   )
 
   override def getConnectionToken(
