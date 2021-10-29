@@ -1,32 +1,24 @@
 package io.iohk.atala.prism.node.services
 
-import cats.{Comonad, Functor}
-import cats.effect.MonadThrow
-import cats.syntax.applicativeError._
+import cats.effect.{MonadThrow, Timer}
 import cats.syntax.applicative._
+import cats.syntax.applicativeError._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import cats.{Comonad, Functor}
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
-import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.cardano.models._
+import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
-import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 import tofu.Execute
 import tofu.higherKind.Mid
@@ -46,11 +38,11 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
     cardanoClient: CardanoClient[F],
     keyValueService: KeyValueService[F],
     onCardanoBlock: CardanoBlockHandler,
-    onAtalaObject: AtalaObjectNotificationHandler,
-    scheduler: Scheduler
+    onAtalaObject: AtalaObjectNotificationHandler
 )(implicit
     ec: ExecutionContext,
     ex: Execute[F],
+    timer: Timer[F],
     liftToFuture: Lift[F, Future]
 ) extends UnderlyingLedger[F] {
   private val MAX_SYNC_BLOCKS = 100
@@ -90,25 +82,22 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
     cardanoClient.deleteTransaction(walletId, transactionId)
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
-    scheduler.scheduleOnce(delay) {
-      // Ensure run is scheduled after completion, even if current run fails
-      liftToFuture
-        .lift(
-          syncAtalaObjects()
-            .recover { case e =>
-              logger.error("Could not sync Atala objects", e)
-              false
-            }
-        )
-        .onComplete { pendingBlocksToSync =>
-          if (pendingBlocksToSync.toOption.getOrElse(false)) {
-            // There blocks to sync, don't wait to sync faster
-            scheduleSync(0.seconds)
-          } else {
-            scheduleSync(20.seconds)
+    liftToFuture.lift(
+      timer.sleep(delay) >>
+        syncAtalaObjects()
+          .recover { case e =>
+            logger.error("Could not sync Atala objects", e)
+            false
           }
-        }
-    }
+          .map { pendingBlocksToSync =>
+            if (pendingBlocksToSync) {
+              // There blocks to sync, don't wait to sync faster
+              scheduleSync(0.seconds)
+            } else {
+              scheduleSync(20.seconds)
+            }
+          }
+    )
     ()
   }
 
@@ -233,9 +222,8 @@ object CardanoLedgerService {
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
-      scheduler: Scheduler,
       logs: Logs[R, F]
-  )(implicit ec: ExecutionContext): R[UnderlyingLedger[F]] =
+  )(implicit ec: ExecutionContext, timer: Timer[F]): R[UnderlyingLedger[F]] =
     for {
       serviceLogs <- logs.service[UnderlyingLedger[F]]
     } yield {
@@ -252,8 +240,7 @@ object CardanoLedgerService {
         cardanoClient,
         keyValueService,
         onCardanoBlock,
-        onAtalaObject,
-        scheduler
+        onAtalaObject
       )
     }
 
@@ -264,10 +251,7 @@ object CardanoLedgerService {
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
       logs: Logs[R, F]
-  )(implicit
-      scheduler: Scheduler,
-      liftToFuture: Lift[F, Future]
-  ): UnderlyingLedger[F] = {
+  )(implicit liftToFuture: Lift[F, Future], ec: ExecutionContext, timer: Timer[F]): UnderlyingLedger[F] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(
@@ -289,7 +273,6 @@ object CardanoLedgerService {
       keyValueService,
       onCardanoBlock,
       onAtalaObject,
-      scheduler,
       logs
     ).extract
   }

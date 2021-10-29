@@ -30,7 +30,6 @@ import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
-import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}

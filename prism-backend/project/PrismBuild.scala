@@ -171,7 +171,7 @@ object PrismBuild {
       .settings(
         name := "node",
         Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
-        libraryDependencies ++= Seq(awsSdk, osLib, monix)
+        libraryDependencies ++= Seq(awsSdk, osLib)
       )
       .dependsOn(common % "compile->compile;test->test")
 
