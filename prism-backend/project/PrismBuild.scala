@@ -108,7 +108,6 @@ object PrismBuild {
             Seq(
               diffx,
               flyway,
-              monix,
               typesafeConfig
             ) ++
             prismDependencies ++
@@ -159,7 +158,6 @@ object PrismBuild {
           Seq(
             chimney,
             flyway,
-            monix,
             postgresql,
             scalapbRuntimeGrpc,
             slf4j,
@@ -173,7 +171,7 @@ object PrismBuild {
       .settings(
         name := "node",
         Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
-        libraryDependencies ++= Seq(awsSdk, osLib)
+        libraryDependencies ++= Seq(awsSdk, osLib, monix)
       )
       .dependsOn(common % "compile->compile;test->test")
 
