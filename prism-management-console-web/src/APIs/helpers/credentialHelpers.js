@@ -5,7 +5,10 @@ export function credentialMapper(credential) {
   return {
     ...credential,
     status: getCredentialStatus(credential),
-    contactData: contactMapper(credential),
+    contactData: {
+      ...contactMapper(credential),
+      contactName: credential.credentialData.contactName
+    },
     proof: getCredentialProof(credential)
   };
 }
@@ -22,14 +25,25 @@ function getCredentialProof(credential) {
   return credential.batchInclusionProof ? JSON.parse(credential.batchInclusionProof) : undefined;
 }
 
-export function credentialReceivedMapper(credentialReceived, credentialTypes) {
-  const { externalId, contactName, credentialType, ...rest } = credentialReceived;
+export function credentialReceivedMapper(credentialReceived) {
+  const { encodedSignedCredential, contactData, credentialSubject, ...rest } = credentialReceived;
+  const {
+    credentialTypeName,
+    credentialTypeIcon,
+    credentialTypeIconFormat,
+    ...restCredentialSubject
+  } = credentialSubject;
   return {
-    contactData: {
-      externalId,
-      contactName
-    },
-    credentialType: credentialTypes[credentialType],
-    ...rest
+    encodedSignedCredential,
+    contactData: contactMapper(contactData),
+    credentialData: {
+      ...rest,
+      ...restCredentialSubject,
+      credentialTypeDetails: {
+        name: credentialTypeName,
+        icon: credentialTypeIcon,
+        iconFormat: credentialTypeIconFormat
+      }
+    }
   };
 }

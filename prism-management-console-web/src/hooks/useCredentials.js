@@ -308,12 +308,12 @@ export const useCredentialsReceivedListWithFilters = api => {
       if (isLoading) return;
       setIsLoading(true);
       const newlyFetchedCredentials = await api.credentialsReceivedManager.getReceivedCredentials();
-      const credentialWithIssuanceProofPromises = newlyFetchedCredentials.map(credential =>
-        api.credentialsManager
-          .getBlockchainData(credential.encodedSignedCredential)
-          .then(issuanceProof => Object.assign({ issuanceProof }, credential))
+      const credentialsWithContactsData = newlyFetchedCredentials.map(credential =>
+        api.contactsManager
+          .getContact(credential.individualId)
+          .then(contactData => Object.assign({ contactData }, credential))
       );
-      const credentialsWithIssuanceProof = await Promise.all(credentialWithIssuanceProofPromises);
+      const credentialsWithIssuanceProof = await Promise.all(credentialsWithContactsData);
 
       const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
         credentialReceivedMapper(cred, credentialTypes)
