@@ -27,7 +27,7 @@ object versions {
   val odyssey = "0.1.5"
   val osLib = "0.7.8"
   val playJson = "2.9.1"
-  val postgresql = "42.2.18"
+  val postgresql = "42.2.24"
   val scalatest = "3.2.2"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.11.6"
