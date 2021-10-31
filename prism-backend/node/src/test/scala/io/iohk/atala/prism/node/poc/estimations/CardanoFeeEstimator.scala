@@ -23,9 +23,9 @@ import scala.concurrent.duration._
 
 /** Estimates the Cardano fees to pay for a given deployment simulation.
   *
-  * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list.
-  * In order to do so, make sure you have set the proper environment variables, as suggested
-  * <a href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
+  * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list. In order to
+  * do so, make sure you have set the proper environment variables, as suggested <a
+  * href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
   */
 class CardanoFeeEstimator(walletId: WalletId, paymentAddress: Address, cardanoWalletApiClient: CardanoWalletApiClient) {
   // Max number of credentials that can be issued in the same transaction

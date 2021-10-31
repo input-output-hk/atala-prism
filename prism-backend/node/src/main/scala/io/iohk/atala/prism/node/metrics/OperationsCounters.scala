@@ -24,14 +24,14 @@ object OperationsCounters {
   private val NODE_ERROR_TAG = "node-error"
   private val STATE_ERROR_TAG = "state-error"
 
-  //Values for operations tags
+  // Values for operations tags
   private val EMPTY_OPERATION_TAG_VALUE = "empty"
   private val REVOKE_CREDENTIALS_TAG_VALUE = "revoke-credentials"
   private val CREATE_DID_TAG_VALUE = "create-did"
   private val ISSUE_CREDENTIAL_BATCH_TAG_VALUE = "issue-credential-batch"
   private val UPDATE_DID_OPERATION_TAG_VALUE = "did-update"
 
-  //Values for atala update did operations
+  // Values for atala update did operations
   private val EMPTY_ACTION_TAG_VALUE = "empty-did-update"
   private val ADD_KEY_ACTION_TAG_VALUE = "add-key"
   private val REMOVE_KEY_ACTION_TAG_VALUE = "remove-key"

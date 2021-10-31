@@ -8,8 +8,8 @@ import monix.execution.Scheduler
 
 object GrpcStreamsUtils {
 
-  /**  Creates a Fs2Stream from grpc stream using bounded queue of specified size.
-    *  When the queue is full, queue.enqueue1() blocks until there is a free space in queue.
+  /** Creates a Fs2Stream from grpc stream using bounded queue of specified size. When the queue is full,
+    * queue.enqueue1() blocks until there is a free space in queue.
     */
   def createFs2Stream[A](registerStreamCallback: StreamObserver[A] => Unit, maxQueueSize: Int = 100)(implicit
       scheduler: Scheduler
