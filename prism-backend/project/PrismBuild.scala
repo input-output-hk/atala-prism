@@ -37,7 +37,7 @@ object PrismBuild {
         githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
         resolvers += Resolver.githubPackages("input-output-hk", "atala-prism-sdk"),
         libraryDependencies ++= scalatestDependencies,
-        addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
+        addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
         coverageScalacPluginVersion := "1.4.1",
         Test / fork := true,
         Test / parallelExecution := false,
