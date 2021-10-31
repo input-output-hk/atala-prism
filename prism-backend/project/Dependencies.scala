@@ -6,7 +6,7 @@ object versions {
   val bouncycastle = "1.62"
   val braintree = "3.2.0"
   val catsScalatest = "3.0.8"
-  val chimney = "0.6.0"
+  val chimney = "0.6.1"
   val circe = "0.14.1"
   val circeOptics = "0.14.1"
   val diffx = "0.3.30"
