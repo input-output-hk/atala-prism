@@ -42,7 +42,8 @@ object ProtocolVersionUpdateOperationSpec {
     )
 
   val masterKeys = CreateDIDOperationSpec.masterKeys
-  val logs: Make[IOWithTraceIdContext] = Logging.Make.plain[IOWithTraceIdContext]
+  val logs: Make[IOWithTraceIdContext] =
+    Logging.Make.plain[IOWithTraceIdContext]
 
   lazy val proposerDidKeys = List(
     DIDPublicKey(

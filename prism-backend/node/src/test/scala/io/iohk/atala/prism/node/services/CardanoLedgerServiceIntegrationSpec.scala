@@ -27,7 +27,8 @@ import scala.concurrent.duration._
 //  when https://input-output.atlassian.net/browse/ATA-5337 done or 1-2 released
 @Ignore
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
-  private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  private implicit val contextShift: ContextShift[IO] =
+    IO.contextShift(ExecutionContext.global)
   private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
@@ -49,7 +50,10 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       val paymentAddress = Address(clientConfig.paymentAddress)
       val (cardanoClient, releaseCardanoClient) =
         CardanoClient
-          .makeResource[IO, IOWithTraceIdContext](clientConfig.cardanoClientConfig, logs)
+          .makeResource[IO, IOWithTraceIdContext](
+            clientConfig.cardanoClientConfig,
+            logs
+          )
           .allocated
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
@@ -75,7 +79,12 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
 
       // Avoid syncing pre-existing blocks
       val latestBlock =
-        cardanoClient.getLatestBlock(TraceId.generateYOLO).unsafeToFuture().futureValue(LONG_TIMEOUT).toOption.value
+        cardanoClient
+          .getLatestBlock(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .futureValue(LONG_TIMEOUT)
+          .toOption
+          .value
       keyValueService
         .set(LAST_SYNCED_BLOCK_NO, Some(latestBlock.header.blockNo))
         .run(TraceId.generateYOLO)
@@ -109,7 +118,10 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
       ) {
         Thread.sleep(RETRY_SLEEP.toMillis)
         // Sync objects
-        cardanoLedgerService.syncAtalaObjects().run(TraceId.generateYOLO).unsafeRunSync()
+        cardanoLedgerService
+          .syncAtalaObjects()
+          .run(TraceId.generateYOLO)
+          .unsafeRunSync()
       }
 
       // Verify object has been notified

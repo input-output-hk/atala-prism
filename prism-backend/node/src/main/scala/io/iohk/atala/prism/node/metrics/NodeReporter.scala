@@ -47,7 +47,9 @@ class NodeReporter(
       .getWalletDetails(walletId)
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
-      .foreach(_.foreach(details => walletFunds.update(details.balance.available.doubleValue)))
+      .foreach(
+        _.foreach(details => walletFunds.update(details.balance.available.doubleValue))
+      )
 
   private def postNextBlockToSync(): Unit =
     keyValueService
@@ -66,7 +68,9 @@ class NodeReporter(
     cardanoClient.getLatestBlock
       .run(TraceId.generateYOLO)
       .unsafeToFuture()
-      .foreach(_.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo)))
+      .foreach(
+        _.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo))
+      )
   }
 
   private def updateGauge(gauge: Gauge, newValue: Int): Unit =

@@ -45,18 +45,27 @@ trait ConnectorClient[F[_]] {
       header: GrpcAuthenticationHeader.DIDBased
   ): F[SendMessagesResponse]
 
-  def getConnectionStatus(tokens: Seq[ConnectionToken]): F[Seq[ContactConnection]]
+  def getConnectionStatus(
+      tokens: Seq[ConnectionToken]
+  ): F[Seq[ContactConnection]]
 }
 
 object ConnectorClient {
 
-  case class Config(host: String, port: Int, whitelistedDID: DID, didPrivateKey: ECPrivateKey) {
+  case class Config(
+      host: String,
+      port: Int,
+      whitelistedDID: DID,
+      didPrivateKey: ECPrivateKey
+  ) {
     override def toString: String = {
       s"""ConnectorClient.Config:
          |host = $host
          |port = $port
          |whitelistedDID = $whitelistedDID
-         |didPrivateKey = ${StringUtils.masked(didPrivateKey.getHexEncoded)}""".stripMargin
+         |didPrivateKey = ${StringUtils.masked(
+        didPrivateKey.getHexEncoded
+      )}""".stripMargin
     }
   }
   object Config {
@@ -68,19 +77,29 @@ object ConnectorClient {
           DID
             .fromString(typesafe.getString("did"))
         ).getOrElse {
-          throw new RuntimeException("Failed to load the connector's whitelisted DID, which is required to invoke it")
+          throw new RuntimeException(
+            "Failed to load the connector's whitelisted DID, which is required to invoke it"
+          )
         }
 
         val didPrivateKey = EC.toPrivateKeyFromBytes(
           BytesOps.hexToBytes(typesafe.getString("didPrivateKeyHex"))
         )
 
-        Config(host = host, port = port, whitelistedDID = whitelistedDID, didPrivateKey = didPrivateKey)
+        Config(
+          host = host,
+          port = port,
+          whitelistedDID = whitelistedDID,
+          didPrivateKey = didPrivateKey
+        )
       }
 
       Try(unsafe) match {
         case Failure(exception) =>
-          throw new RuntimeException(s"Failed to load connector config: ${exception.getMessage}", exception)
+          throw new RuntimeException(
+            s"Failed to load connector config: ${exception.getMessage}",
+            exception
+          )
         case Success(value) => value
       }
     }
@@ -93,7 +112,8 @@ object ConnectorClient {
     for {
       serviceLogs <- logs.service[ConnectorClient[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ConnectorClient[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, ConnectorClient[F]] =
+        serviceLogs
       val connectorContactsService = GrpcUtils.createPlaintextStub(
         host = config.host,
         port = config.port,
@@ -101,18 +121,31 @@ object ConnectorClient {
       )
 
       val connectorService = GrpcUtils
-        .createPlaintextStub(host = config.host, port = config.port, stub = ConnectorServiceGrpc.stub)
+        .createPlaintextStub(
+          host = config.host,
+          port = config.port,
+          stub = ConnectorServiceGrpc.stub
+        )
 
       val requestAuthenticator = new RequestAuthenticator
-      val requestSigner = ClientHelper.requestSigner(requestAuthenticator, config.whitelistedDID, config.didPrivateKey)
+      val requestSigner = ClientHelper.requestSigner(
+        requestAuthenticator,
+        config.whitelistedDID,
+        config.didPrivateKey
+      )
       val logs: ConnectorClient[Mid[F, *]] = new ConnectorClientLogs[F]
       val metrics: ConnectorClient[Mid[F, *]] = new ConnectorClientMetrics[F]
 
       val mid: ConnectorClient[Mid[F, *]] = metrics |+| logs
-      mid attach new ConnectorClient.GrpcImpl[F](connectorService, connectorContactsService)(requestSigner)
+      mid attach new ConnectorClient.GrpcImpl[F](
+        connectorService,
+        connectorContactsService
+      )(requestSigner)
     }
 
-  def makeResource[F[_]: Execute: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+  def makeResource[F[_]: Execute: BracketThrow: TimeMeasureMetric, R[
+      _
+  ]: Applicative: Functor](
       config: Config,
       logs: Logs[R, F]
   )(implicit ec: ExecutionContext): Resource[R, ConnectorClient[F]] =
@@ -121,7 +154,9 @@ object ConnectorClient {
   private final class GrpcImpl[F[_]](
       connectorService: ConnectorServiceGrpc.ConnectorServiceStub,
       contactConnectionService: ContactConnectionServiceGrpc.ContactConnectionServiceStub
-  )(requestSigner: scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased)(implicit
+  )(
+      requestSigner: scalapb.GeneratedMessage => GrpcAuthenticationHeader.DIDBased
+  )(implicit
       ec: ExecutionContext,
       ex: Execute[F]
   ) extends ConnectorClient[F] {
@@ -131,7 +166,9 @@ object ConnectorClient {
         count: Int
     ): F[Seq[ConnectionToken]] = {
       val metadata = header.toMetadata
-      val newStub = connectorService.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+      val newStub = connectorService.withInterceptors(
+        MetadataUtils.newAttachHeadersInterceptor(metadata)
+      )
 
       ex.deferFuture(
         newStub
@@ -145,17 +182,23 @@ object ConnectorClient {
         header: GrpcAuthenticationHeader.DIDBased
     ): F[SendMessagesResponse] = {
       val metadata = header.toMetadata
-      val newStub = connectorService.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+      val newStub = connectorService.withInterceptors(
+        MetadataUtils.newAttachHeadersInterceptor(metadata)
+      )
 
       ex.deferFuture(newStub.sendMessages(request))
     }
 
-    override def getConnectionStatus(tokens: Seq[ConnectionToken]): F[Seq[ContactConnection]] = {
+    override def getConnectionStatus(
+        tokens: Seq[ConnectionToken]
+    ): F[Seq[ContactConnection]] = {
       val request = ConnectionsStatusRequest()
         .withConnectionTokens(tokens.map(_.token))
       val header = requestSigner(request)
       val metadata = header.toMetadata
-      val newStub = contactConnectionService.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+      val newStub = contactConnectionService.withInterceptors(
+        MetadataUtils.newAttachHeadersInterceptor(metadata)
+      )
 
       ex.deferFuture(
         newStub
@@ -166,8 +209,9 @@ object ConnectorClient {
   }
 }
 
-private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], ConnectorClient[F]]: MonadThrow]
-    extends ConnectorClient[Mid[F, *]] {
+private[clients] final class ConnectorClientLogs[
+    F[_]: ServiceLogging[*[_], ConnectorClient[F]]: MonadThrow
+] extends ConnectorClient[Mid[F, *]] {
   override def generateConnectionTokens(
       header: GrpcAuthenticationHeader.DIDBased,
       count: Int
@@ -175,7 +219,11 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
     in =>
       info"generating connection tokens for ${header.did.asCanonical().getSuffix}" *> in
         .flatTap(list => info"generating connection tokens - successfully done got ${list.size} entities")
-        .onError(errorCause"encountered an error while generating connection tokens" (_))
+        .onError(
+          errorCause"encountered an error while generating connection tokens" (
+            _
+          )
+        )
 
   override def sendMessages(
       request: SendMessagesRequest,
@@ -186,36 +234,49 @@ private[clients] final class ConnectorClientLogs[F[_]: ServiceLogging[*[_], Conn
         .flatTap(response => info"sending messages - successfully done got ${response.ids.size} ids")
         .onError(errorCause"encountered an error while sending messages" (_))
 
-  override def getConnectionStatus(tokens: Seq[ConnectionToken]): Mid[F, Seq[ContactConnection]] =
+  override def getConnectionStatus(
+      tokens: Seq[ConnectionToken]
+  ): Mid[F, Seq[ContactConnection]] =
     in =>
       info"getting connection status for ${tokens.size} token(s)" *> in
         .flatTap(response =>
           info"getting connection status - successfully done got ${response.size} contact connection(s)"
         )
-        .onError(errorCause"encountered an error while getting connection status" (_))
+        .onError(
+          errorCause"encountered an error while getting connection status" (_)
+        )
 }
 
-private[clients] final class ConnectorClientMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private[clients] final class ConnectorClientMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends ConnectorClient[Mid[F, *]] {
 
   val clientName = "ConnectorClient"
 
   val generateConnectionTokensTimer: DomainTimer =
-    TimeMeasureUtil.createClientRequestTimer(clientName, "generateConnectionTokens")
-  val sendMessagesTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "sendMessages")
+    TimeMeasureUtil.createClientRequestTimer(
+      clientName,
+      "generateConnectionTokens"
+    )
+  val sendMessagesTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "sendMessages")
   val getConnectionStatusTimer: DomainTimer =
     TimeMeasureUtil.createClientRequestTimer(clientName, "getConnectionStatus")
 
   override def generateConnectionTokens(
       header: GrpcAuthenticationHeader.DIDBased,
       count: Int
-  ): Mid[F, Seq[ConnectionToken]] = _.measureOperationTime(generateConnectionTokensTimer)
+  ): Mid[F, Seq[ConnectionToken]] =
+    _.measureOperationTime(generateConnectionTokensTimer)
 
   override def sendMessages(
       request: SendMessagesRequest,
       header: GrpcAuthenticationHeader.DIDBased
   ): Mid[F, SendMessagesResponse] = _.measureOperationTime(sendMessagesTimer)
 
-  override def getConnectionStatus(tokens: Seq[ConnectionToken]): Mid[F, Seq[ContactConnection]] =
+  override def getConnectionStatus(
+      tokens: Seq[ConnectionToken]
+  ): Mid[F, Seq[ContactConnection]] =
     _.measureOperationTime(getConnectionStatusTimer)
 }

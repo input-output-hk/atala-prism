@@ -61,7 +61,7 @@ private[grpc] object GrpcAuthenticationContext {
   val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] =
     GrpcMetadataContextKeys("requestNonce")
 
-  //tracing
+  // tracing
   val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
     "traceId"
   )

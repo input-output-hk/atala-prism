@@ -116,7 +116,10 @@ object DataPreparation {
       executionContext: ExecutionContext
   ): Future[List[Either[NodeError, AtalaOperationId]]] = {
     for {
-      ids <- objectManagementService.scheduleAtalaOperations(ops: _*).run(TraceId.generateYOLO).unsafeToFuture()
+      ids <- objectManagementService
+        .scheduleAtalaOperations(ops: _*)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
       _ <- submissionService
         .submitReceivedObjects()
         .run(TraceId.generateYOLO)

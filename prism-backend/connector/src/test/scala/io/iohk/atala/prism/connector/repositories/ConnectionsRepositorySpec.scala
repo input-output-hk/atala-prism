@@ -30,7 +30,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   ): Assertion = {
     sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId"""
       .runUnique[Int]() mustBe 1
-    //verify that instantiated_at field is set correctly, to avoid conversion or timezone errors
+    // verify that instantiated_at field is set correctly, to avoid conversion or timezone errors
     sql"""SELECT COUNT(1) FROM connections
          |WHERE id = $connectionId
          |AND instantiated_at > now() - '10 seconds'::interval AND instantiated_at < now()""".stripMargin

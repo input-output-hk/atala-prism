@@ -70,7 +70,9 @@ class IntDemoStateMachine[D](
   ): Unit = {
     try {
       responseObserver.onNext(response)
-      (IO.sleep(schedulerPeriod) *> IO(streamCurrentStatus(responseObserver, schedulerPeriod)))
+      (IO.sleep(schedulerPeriod) *> IO(
+        streamCurrentStatus(responseObserver, schedulerPeriod)
+      ))
         .unsafeRunAsyncAndForget()
       ()
     } catch (withLoggingHandler)

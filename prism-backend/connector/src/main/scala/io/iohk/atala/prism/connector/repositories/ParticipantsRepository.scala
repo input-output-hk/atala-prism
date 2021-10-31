@@ -77,10 +77,13 @@ object ParticipantsRepository {
       mid attach new ParticipantsRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative: Functor](
+  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[
+      _
+  ]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, ParticipantsRepository[F]] = Resource.eval(ParticipantsRepository(transactor, logs))
+  ): Resource[R, ParticipantsRepository[F]] =
+    Resource.eval(ParticipantsRepository(transactor, logs))
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],

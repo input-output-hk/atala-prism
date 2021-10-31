@@ -75,7 +75,8 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % versions.scalapb
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp.client3" %% "core" % versions.sttp
-  val sttpCE2 = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
+  val sttpCE2 =
+    "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
   val tofu =
     "tf.tofu" %% "tofu" % versions.tofu
   val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
@@ -95,15 +96,16 @@ object Dependencies {
   // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
   val prismCredentials =
-    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization =
-      "org.bouncycastle"
+    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(
+      organization = "org.bouncycastle"
     )
   val prismProtos =
     "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
-  //Can be used only in tests!
-  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization =
-    "org.bouncycastle"
-  )
+  // Can be used only in tests!
+  val prismApi =
+    "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(
+      organization = "org.bouncycastle"
+    )
 
   // Test dependencies
   val catsScalatest =

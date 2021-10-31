@@ -37,14 +37,22 @@ trait CardanoClient[F[_]] {
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, TransactionDetails]]
 
-  def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Either[CardanoWalletError, Unit]]
+  def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): F[Either[CardanoWalletError, Unit]]
 
-  def getWalletDetails(walletId: WalletId): F[Either[CardanoWalletError, WalletDetails]]
+  def getWalletDetails(
+      walletId: WalletId
+  ): F[Either[CardanoWalletError, WalletDetails]]
 }
 
 object CardanoClient {
 
-  case class Config(dbSyncConfig: CardanoDbSyncClient.Config, cardanoWalletConfig: CardanoWalletApiClient.Config)
+  case class Config(
+      dbSyncConfig: CardanoDbSyncClient.Config,
+      cardanoWalletConfig: CardanoWalletApiClient.Config
+  )
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
@@ -56,20 +64,34 @@ object CardanoClient {
     for {
       serviceLogs <- logs.service[CardanoClient[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CardanoClient[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, CardanoClient[F]] =
+        serviceLogs
       val logs: CardanoClient[Mid[F, *]] = new CardanoClientLogs[F]
       val mid = logs
-      mid attach new CardanoClientImpl(cardanoDbSyncClient, cardanoWalletApiClient)
+      mid attach new CardanoClientImpl(
+        cardanoDbSyncClient,
+        cardanoWalletApiClient
+      )
     }
 
-  def makeResource[I[_]: Comonad, F[_]: TimeMeasureMetric: Concurrent: ContextShift](
+  def makeResource[I[_]: Comonad, F[
+      _
+  ]: TimeMeasureMetric: Concurrent: ContextShift](
       config: Config,
       logs: Logs[I, F]
   ): Resource[F, CardanoClient[F]] =
     for {
-      cardanoDbSyncClient <- CardanoDbSyncClient[F, I](config.dbSyncConfig, logs)
-      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](config.cardanoWalletConfig, logs)
-    } yield CardanoClient.make[I, F](cardanoDbSyncClient, cardanoWalletApiClient, logs).extract
+      cardanoDbSyncClient <- CardanoDbSyncClient[F, I](
+        config.dbSyncConfig,
+        logs
+      )
+      cardanoWalletApiClient <- CardanoWalletApiClient.makeResource[F, I](
+        config.cardanoWalletConfig,
+        logs
+      )
+    } yield CardanoClient
+      .make[I, F](cardanoDbSyncClient, cardanoWalletApiClient, logs)
+      .extract
 
   def makeUnsafe[F[_]: Functor](
       dbSyncClient: CardanoDbSyncClient[F],
@@ -83,7 +105,9 @@ object CardanoClient {
       cardanoWalletApiClient: CardanoWalletApiClient[F]
   ) extends CardanoClient[F] {
 
-    def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] = {
+    def getFullBlock(
+        blockNo: Int
+    ): F[Either[BlockError.NotFound, Block.Full]] = {
       cardanoDbSyncClient.getFullBlock(blockNo)
     }
 
@@ -127,7 +151,9 @@ object CardanoClient {
         })
     }
 
-    def getWalletDetails(walletId: WalletId): F[Either[CardanoWalletError, WalletDetails]] = {
+    def getWalletDetails(
+        walletId: WalletId
+    ): F[Either[CardanoWalletError, WalletDetails]] = {
       cardanoWalletApiClient
         .getWallet(walletId)
         .map(_.leftMap { e =>

@@ -142,7 +142,7 @@ case class EndorsementsService(
         !isAlreadyEndorsed(childDID)
       ) {
 
-        //if all checks are valid we issue the credential
+        // if all checks are valid we issue the credential
         nodeServiceStub
           .issueCredentialBatch(
             IssueCredentialBatchRequest().withSignedOperation(signedOperation)

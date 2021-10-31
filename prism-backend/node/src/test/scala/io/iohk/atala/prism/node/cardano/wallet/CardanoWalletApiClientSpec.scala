@@ -72,7 +72,12 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
         )
 
       val error =
-        client.estimateTransactionFee(walletId, List(payment), Some(metadata)).unsafeToFuture().futureValue.left.value
+        client
+          .estimateTransactionFee(walletId, List(payment), Some(metadata))
+          .unsafeToFuture()
+          .futureValue
+          .left
+          .value
 
       error must be(
         ErrorResponse(
@@ -106,7 +111,10 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
         )
 
       val transaction =
-        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).unsafeToFuture().futureValue
+        client
+          .postTransaction(walletId, List(payment), Some(metadata), passphrase)
+          .unsafeToFuture()
+          .futureValue
 
       transaction must beRight(
         TransactionId
@@ -151,9 +159,16 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
 
     "get transaction details" in {
       val client =
-        FakeCardanoWalletApiClient.Success[IO](expectedPath, "", readResource("getTransaction_success_response.json"))
+        FakeCardanoWalletApiClient.Success[IO](
+          expectedPath,
+          "",
+          readResource("getTransaction_success_response.json")
+        )
 
-      val transactionDetails = client.getTransaction(walletId, transactionId).unsafeToFuture().futureValue
+      val transactionDetails = client
+        .getTransaction(walletId, transactionId)
+        .unsafeToFuture()
+        .futureValue
 
       transactionDetails must beRight(
         TransactionDetails(transactionId, TransactionStatus.InLedger)
@@ -169,7 +184,12 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
           "Bad request"
         )
 
-      val error = client.getTransaction(walletId, transactionId).unsafeToFuture().futureValue.left.value
+      val error = client
+        .getTransaction(walletId, transactionId)
+        .unsafeToFuture()
+        .futureValue
+        .left
+        .value
 
       error must be(
         ErrorResponse(
@@ -189,7 +209,10 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
     "delete a transaction" in {
       val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", "")
 
-      client.deleteTransaction(walletId, transactionId).unsafeToFuture().futureValue
+      client
+        .deleteTransaction(walletId, transactionId)
+        .unsafeToFuture()
+        .futureValue
     }
 
     "fail on server error" in {
@@ -201,7 +224,12 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
           "Bad request"
         )
 
-      val error = client.deleteTransaction(walletId, transactionId).unsafeToFuture().futureValue.left.value
+      val error = client
+        .deleteTransaction(walletId, transactionId)
+        .unsafeToFuture()
+        .futureValue
+        .left
+        .value
 
       error must be(
         ErrorResponse(
@@ -216,7 +244,8 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
     val expectedPath = s"v2/wallets/$walletId"
 
     "return available funds and state data" in {
-      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", readResource("getWallet.json"))
+      val client = FakeCardanoWalletApiClient
+        .Success[IO](expectedPath, "", readResource("getWallet.json"))
 
       val result = client.getWallet(walletId).unsafeToFuture().futureValue
       result.isRight mustBe true
@@ -235,7 +264,8 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
           "Bad request"
         )
 
-      val error = client.getWallet(walletId).unsafeToFuture().futureValue.left.value
+      val error =
+        client.getWallet(walletId).unsafeToFuture().futureValue.left.value
 
       error must be(
         ErrorResponse(
@@ -258,7 +288,8 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with Cats
                        |  }
                        |}""".stripMargin
 
-      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", response)
+      val client =
+        FakeCardanoWalletApiClient.Success[IO](expectedPath, "", response)
 
       val result = client.getWallet(walletId).unsafeToFuture().futureValue
 

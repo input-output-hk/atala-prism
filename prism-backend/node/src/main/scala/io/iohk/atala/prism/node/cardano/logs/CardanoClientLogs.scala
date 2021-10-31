@@ -12,9 +12,12 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-private[cardano] final class CardanoClientLogs[F[_]: ServiceLogging[*[_], CardanoClient[F]]: MonadThrow]
-    extends CardanoClient[Mid[F, *]] {
-  override def getFullBlock(blockNo: Int): Mid[F, Either[BlockError.NotFound, Block.Full]] =
+private[cardano] final class CardanoClientLogs[
+    F[_]: ServiceLogging[*[_], CardanoClient[F]]: MonadThrow
+] extends CardanoClient[Mid[F, *]] {
+  override def getFullBlock(
+      blockNo: Int
+  ): Mid[F, Either[BlockError.NotFound, Block.Full]] =
     in =>
       info"getting full block $blockNo" *> in
         .flatTap(
@@ -34,7 +37,9 @@ private[cardano] final class CardanoClientLogs[F[_]: ServiceLogging[*[_], Cardan
             block => info"getting latest block - successfully done, transactions ${block.header.blockNo}"
           )
         )
-        .onError(errorCause"Encountered an error while getting latest block" (_))
+        .onError(
+          errorCause"Encountered an error while getting latest block" (_)
+        )
 
   override def postTransaction(
       walletId: WalletId,
@@ -78,9 +83,13 @@ private[cardano] final class CardanoClientLogs[F[_]: ServiceLogging[*[_], Cardan
             _ => info"deleting transaction - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while deleting transaction" (_))
+        .onError(
+          errorCause"Encountered an error while deleting transaction" (_)
+        )
 
-  override def getWalletDetails(walletId: WalletId): Mid[F, Either[CardanoWalletError, WalletDetails]] =
+  override def getWalletDetails(
+      walletId: WalletId
+  ): Mid[F, Either[CardanoWalletError, WalletDetails]] =
     in =>
       info"getting wallet details" *> in
         .flatTap(
@@ -89,5 +98,7 @@ private[cardano] final class CardanoClientLogs[F[_]: ServiceLogging[*[_], Cardan
             details => info"getting wallet details - successfully done $details"
           )
         )
-        .onError(errorCause"Encountered an error while getting wallet details" (_))
+        .onError(
+          errorCause"Encountered an error while getting wallet details" (_)
+        )
 }

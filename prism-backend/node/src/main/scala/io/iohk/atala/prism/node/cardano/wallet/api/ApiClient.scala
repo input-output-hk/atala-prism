@@ -31,8 +31,10 @@ import sttp.model.Uri
 
 /** Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
   */
-private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend: SttpBackend[F, Any])
-    extends CardanoWalletApiClient[F] {
+private[wallet] class ApiClient[F[_]: Functor](
+    config: ApiClient.Config,
+    backend: SttpBackend[F, Any]
+) extends CardanoWalletApiClient[F] {
   override def estimateTransactionFee(
       walletId: WalletId,
       payments: List[Payment],
@@ -47,14 +49,22 @@ private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend
       metadata: Option[TransactionMetadata],
       passphrase: String
   ): F[Result[TransactionId]] = {
-    PostTransaction(walletId, payments, metadata, passphrase).run(transactionIdFromTransactionDecoder)
+    PostTransaction(walletId, payments, metadata, passphrase).run(
+      transactionIdFromTransactionDecoder
+    )
   }
 
-  override def getTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[TransactionDetails]] = {
+  override def getTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): F[Result[TransactionDetails]] = {
     GetTransaction(walletId, transactionId).run
   }
 
-  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[Unit]] = {
+  override def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): F[Result[Unit]] = {
     DeleteTransaction(walletId, transactionId).run
   }
 
@@ -66,7 +76,10 @@ private[wallet] class ApiClient[F[_]: Functor](config: ApiClient.Config, backend
     basicRequest
       .contentType(ApplicationJson)
       .response(asString)
-      .method(method.httpMethod, Uri.apply(config.host, config.port).withWholePath(method.path))
+      .method(
+        method.httpMethod,
+        Uri.apply(config.host, config.port).withWholePath(method.path)
+      )
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send(backend)
       .map { response =>
@@ -115,7 +128,8 @@ private[wallet] object ApiClient {
       parse(response).fold(
         parsingFailure =>
           throw new RuntimeException(
-            s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response.take(256)}",
+            s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response
+              .take(256)}",
             parsingFailure.underlying
           ),
         identity
@@ -131,20 +145,28 @@ private[wallet] object ApiClient {
       .as[CardanoWalletError]
       .fold(
         decodingFailure =>
-          throw new RuntimeException(s"Cardano Wallet API Error: ${decodingFailure.toString}", decodingFailure),
+          throw new RuntimeException(
+            s"Cardano Wallet API Error: ${decodingFailure.toString}",
+            decodingFailure
+          ),
         identity
       )
   }
 
   /** Try to map a string response to its success result.
     */
-  private def unsafeToResult[A](response: String)(implicit decoder: Decoder[A]): A = {
+  private def unsafeToResult[A](
+      response: String
+  )(implicit decoder: Decoder[A]): A = {
     val json = unsafeToJson(response)
     json
       .as[A]
       .fold(
         decodingFailure =>
-          throw new RuntimeException(s"Cardano Wallet API Error: ${decodingFailure.toString}", decodingFailure),
+          throw new RuntimeException(
+            s"Cardano Wallet API Error: ${decodingFailure.toString}",
+            decodingFailure
+          ),
         identity
       )
   }

@@ -45,10 +45,13 @@ object RequestNoncesRepository {
       mid attach new RequestNoncesRepositoryPostgresImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative: Functor](
+  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[
+      _
+  ]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, RequestNoncesRepository[F]] = Resource.eval(RequestNoncesRepository(transactor, logs))
+  ): Resource[R, RequestNoncesRepository[F]] =
+    Resource.eval(RequestNoncesRepository(transactor, logs))
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],
