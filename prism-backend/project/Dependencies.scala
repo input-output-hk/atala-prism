@@ -1,7 +1,7 @@
 import sbt._
 
 object versions {
-  val awsSdk = "2.11.14"
+  val awsSdk = "2.17.71"
   val bouncycastle = "1.69"
   val catsScalatest = "3.1.1"
   val chimney = "0.6.1"
