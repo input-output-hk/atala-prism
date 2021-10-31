@@ -21,7 +21,7 @@ object versions {
   val logback = "1.2.6"
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
-  val mockito = "1.16.0"
+  val mockito = "1.16.46"
   val monix = "3.2.2"
   val monocle = "2.1.0"
   val odyssey = "0.1.5"
