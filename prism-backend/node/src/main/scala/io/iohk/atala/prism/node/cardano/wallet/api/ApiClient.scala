@@ -91,8 +91,10 @@ private[wallet] object ApiClient {
     *
     * <p>If the mapping is not possible, throw an exception.
     *
-    * @tparam A the success type.
-    * @return The success or the error response.
+    * @tparam A
+    *   the success type.
+    * @return
+    *   The success or the error response.
     */
   private def getResult[A](response: Response[String])(implicit
       decoder: Decoder[A]

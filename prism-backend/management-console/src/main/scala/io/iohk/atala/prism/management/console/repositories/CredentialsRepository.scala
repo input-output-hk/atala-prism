@@ -160,7 +160,7 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](xa: Transactor
 
     val transaction =
       for {
-        //validate credential data
+        // validate credential data
         credentialTypeWithRequiredFields <-
           EitherT[ConnectionIO, ManagementConsoleError, CredentialTypeWithRequiredFields](
             CredentialTypeDao.findValidated(data.credentialTypeId, participantId)

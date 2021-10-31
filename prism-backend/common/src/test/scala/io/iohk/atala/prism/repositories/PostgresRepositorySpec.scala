@@ -13,8 +13,8 @@ case class PostgresConfig(host: String, database: String, user: String, password
   *
   * The database is launched in a docker instance using docker-it-scala library.
   *
-  * When the database is started, play evolutions are automatically applied, the
-  * idea is to let you write tests like this, with the Cats IO:
+  * When the database is started, play evolutions are automatically applied, the idea is to let you write tests like
+  * this, with the Cats IO:
   * {{{
   *   import io.iohk.atala.prism.AtalaSpecBase.implicits._
   *   class UserPostgresDALSpec extends PostgresRepositorySpec[IO] {

@@ -22,17 +22,19 @@ private[grpc] object GrpcAuthenticationContext {
     // For some reason the compiler complains if the method is named withValue
     def addValue[T](keys: GrpcMetadataContextKeys[T], value: T): Context = context.withValue(keys.context, value)
 
-    /** While the predefined way to get a value from the [[Context]] is to call the getters from
-      * the [[Context.Key]], that's usually unsafe because the actual [[Context]] is not required and
-      * it is retrieved from the [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent
-      * environments (think about dealing with [[scala.concurrent.Future]]).
+    /** While the predefined way to get a value from the [[Context]] is to call the getters from the [[Context.Key]],
+      * that's usually unsafe because the actual [[Context]] is not required and it is retrieved from the
+      * [[java.lang.ThreadLocal]], which isn't safe to deal with on concurrent environments (think about dealing with
+      * [[scala.concurrent.Future]]).
       *
-      * This method allows avoiding the calls to the [[java.lang.ThreadLocal]], so, it's far safer than
-      * the default way.
+      * This method allows avoiding the calls to the [[java.lang.ThreadLocal]], so, it's far safer than the default way.
       *
-      * @param keys the key used to retrieve the value from the context.
-      * @tparam T the expected value type
-      * @return the actual value
+      * @param keys
+      *   the key used to retrieve the value from the context.
+      * @tparam T
+      *   the expected value type
+      * @return
+      *   the actual value
       */
     def getOpt[T](keys: GrpcMetadataContextKeys[T]): Option[T] = {
       Option(keys.context.get(context))
@@ -52,7 +54,7 @@ private[grpc] object GrpcAuthenticationContext {
   // on different languages, like a string.
   val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] = GrpcMetadataContextKeys("requestNonce")
 
-  //tracing
+  // tracing
   val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("traceId")
 
   def getTraceIdFromContext(ctx: Context): TraceId =

@@ -5,7 +5,7 @@ import cats.effect.IO
 
 object IOUtils {
 
-  //Needed for better integration with tests, see io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase at 57 line
+  // Needed for better integration with tests, see io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase at 57 line
   implicit val ioComonad: Comonad[IO] = new Comonad[IO] {
     override def extract[A](x: IO[A]): A = x.unsafeRunSync()
 

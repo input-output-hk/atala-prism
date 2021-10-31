@@ -3,9 +3,9 @@ import sbt._
 object versions {
   val awsSdk = "2.11.8"
   val bitcoinLib = "0.18"
-  val bouncycastle = "1.62"
+  val bouncycastle = "1.69"
   val braintree = "3.2.0"
-  val catsScalatest = "3.0.8"
+  val catsScalatest = "3.1.1"
   val chimney = "0.6.1"
   val circe = "0.14.1"
   val circeOptics = "0.14.1"
@@ -13,28 +13,28 @@ object versions {
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
   val doobie = "0.12.1"
-  val enumeratum = "1.6.1"
+  val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
-  val flyway = "7.10.0"
+  val flyway = "7.15.0"
   val grpc = "1.41.0"
   val kamon = "2.1.21"
   val logback = "1.2.6"
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
-  val mockito = "1.16.0"
+  val mockito = "1.16.46"
   val monix = "3.2.2"
   val monocle = "2.1.0"
   val odyssey = "0.1.5"
   val osLib = "0.7.8"
   val playJson = "2.9.1"
-  val postgresql = "42.2.18"
+  val postgresql = "42.2.24"
   val scalatest = "3.2.2"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.11.6"
-  val slf4j = "1.7.30"
+  val slf4j = "1.7.32"
   val sttp = "1.7.2"
   val tofu = "0.10.2"
-  val tofuDerevo = "0.12.5"
+  val tofuDerevo = "0.12.6"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
@@ -92,10 +92,15 @@ object Dependencies {
 
   // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
-  val prismCredentials = "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization = "org.bouncycastle")
+  val prismCredentials =
+    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization =
+      "org.bouncycastle"
+    )
   val prismProtos = "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
-  //Can be used only in tests!
-  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization = "org.bouncycastle")
+  // Can be used only in tests!
+  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization =
+    "org.bouncycastle"
+  )
 
   // Test dependencies
   val catsScalatest = "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
