@@ -29,8 +29,8 @@ import io.iohk.atala.prism.daos.DbConfigDao
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import doobie.implicits._
 
-/** Abstract service which provides support for DID based authentication for gRPC
-  * and wraps response into [[monix.eval.Task]].
+/** Abstract service which provides support for DID based authentication for gRPC and wraps response into
+  * [[monix.eval.Task]].
   */
 abstract class BaseGrpcClientService[S <: AbstractStub[S]](
     stub: S,
@@ -42,8 +42,10 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
 
   /** Perform gRPC call with DID based authentication.
     *
-    * @param request gRPC request needed to create a signature
-    * @param call a gRPC method that is performed on stub with proper authorization headers
+    * @param request
+    *   gRPC request needed to create a signature
+    * @param call
+    *   a gRPC method that is performed on stub with proper authorization headers
     */
   def authenticatedCall[Response, Request <: GeneratedMessage](
       request: Request,
@@ -61,8 +63,10 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
 
   /** Perform gRPC call with DID based authentication for stream processing.
     *
-    * @param request gRPC request needed to create a signature
-    * @param call a gRPC method that is performed on stub with proper authorization headers
+    * @param request
+    *   gRPC request needed to create a signature
+    * @param call
+    *   a gRPC method that is performed on stub with proper authorization headers
     */
   def authenticatedCallStream[Request <: GeneratedMessage, StreamElement](
       request: Request,
@@ -98,8 +102,10 @@ abstract class BaseGrpcClientService[S <: AbstractStub[S]](
 
   /** Helper method to create authorization headers.
     *
-    * @param headers pairs with header name -> value
-    * @return [[Metadata]]
+    * @param headers
+    *   pairs with header name -> value
+    * @return
+    *   [[Metadata]]
     */
   private[services] def createMetadataHeaders(headers: (Metadata.Key[String], String)*): Metadata = {
     val metadata = new Metadata

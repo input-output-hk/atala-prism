@@ -12,9 +12,12 @@ object PaginatedQueryConstraints {
 
   /** Defines how to sort the result while retrieving data
     *
-    * @param field the possible field to sort the result by
-    * @param direction whether the result should be sorted in ascending or descending order
-    * @tparam T the type used to sort the result
+    * @param field
+    *   the possible field to sort the result by
+    * @param direction
+    *   whether the result should be sorted in ascending or descending order
+    * @tparam T
+    *   the type used to sort the result
     */
   case class ResultOrdering[T](field: T, direction: ResultOrdering.Direction = ResultOrdering.Direction.Ascending)
 

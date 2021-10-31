@@ -4,8 +4,8 @@ import cats.data.NonEmptyList
 import cats.implicits._
 import doobie.free.connection
 
-/** Postgres has a limit of 32767 bind variables per statement.
-  * That's why all "find in" queries need to be split to not exceed 32767 bind variables.
+/** Postgres has a limit of 32767 bind variables per statement. That's why all "find in" queries need to be split to not
+  * exceed 32767 bind variables.
   */
 object PostgresWhereInSplitter {
 
@@ -13,9 +13,12 @@ object PostgresWhereInSplitter {
 
   /** Splits execution of SELECT ... WHERE ... IN ... into many queries and joins the results
     *
-    * @param whereInValues list of values for the WHERE IN clauses
-    * @param findQuery query ConnectionIO for chosen subset of values
-    * @return joined results; it should be the same as findQuery(whereInValues)
+    * @param whereInValues
+    *   list of values for the WHERE IN clauses
+    * @param findQuery
+    *   query ConnectionIO for chosen subset of values
+    * @return
+    *   joined results; it should be the same as findQuery(whereInValues)
     */
   def splitQueryExecution[A, B](
       whereInValues: List[A],

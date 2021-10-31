@@ -9,15 +9,19 @@ trait ObjectStorageService {
 
   /** Store the object identified by id, overwriting it if exists.
     *
-    * @param id the object identifier
-    * @param data the data to store
+    * @param id
+    *   the object identifier
+    * @param data
+    *   the data to store
     */
   def put(id: ObjectId, data: Array[Byte]): Future[Unit]
 
   /** Find an object by its id.
     *
-    * @param id the object identifier
-    * @return the object data if it was found
+    * @param id
+    *   the object identifier
+    * @return
+    *   the object data if it was found
     */
   def get(id: ObjectId): Future[Option[Array[Byte]]]
 }

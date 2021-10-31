@@ -101,8 +101,7 @@ class ConnectorService(
     *
     * Available to: Holder
     *
-    * Errors:
-    * Token does not exist (UNKNOWN)
+    * Errors: Token does not exist (UNKNOWN)
     */
   override def getConnectionTokenInfo(
       request: connector_api.GetConnectionTokenInfoRequest
@@ -127,8 +126,7 @@ class ConnectorService(
     *
     * Available to: Holder
     *
-    * Errors:
-    * Token does not exist (UNKNOWN)
+    * Errors: Token does not exist (UNKNOWN)
     */
   override def addConnectionFromToken(
       request: connector_api.AddConnectionFromTokenRequest
@@ -195,8 +193,7 @@ class ConnectorService(
     *
     * Available to: Holder, Issuer, Validator
     *
-    * Errors:
-    * Connection does not exist (UNKNOWN)
+    * Errors: Connection does not exist (UNKNOWN)
     */
   override def revokeConnection(
       request: connector_api.RevokeConnectionRequest
@@ -214,10 +211,8 @@ class ConnectorService(
     *
     * Available to: Issuer
     *
-    * Errors:
-    * Invalid DID (INVALID_ARGUMENT)
-    * Invalid DID document (INVALID_ARGUMENT)
-    * DID Document does not match DID (INVALID_ARGUMENT)
+    * Errors: Invalid DID (INVALID_ARGUMENT) Invalid DID document (INVALID_ARGUMENT) DID Document does not match DID
+    * (INVALID_ARGUMENT)
     */
   override def registerDID(request: connector_api.RegisterDIDRequest): Future[connector_api.RegisterDIDResponse] =
     public[RegisterDIDRequest]("registerDID", request) { (traceId, registerDidRequest) =>
@@ -246,8 +241,7 @@ class ConnectorService(
     *
     * Available to: Issuer, Validator
     *
-    * Errors:
-    * Billing plan doesn't allow token generation (PERMISSION_DENIED)
+    * Errors: Billing plan doesn't allow token generation (PERMISSION_DENIED)
     */
   override def generateConnectionToken(
       request: connector_api.GenerateConnectionTokenRequest
@@ -359,9 +353,7 @@ class ConnectorService(
     *
     * Available to: Issuer, Holder, Validator
     *
-    * Errors:
-    * Unknown connection (UNKNOWN)
-    * Connection closed (FAILED_PRECONDITION)
+    * Errors: Unknown connection (UNKNOWN) Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
     auth[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
@@ -434,9 +426,7 @@ class ConnectorService(
     *
     * Available to: Issuer, Holder, Validator
     *
-    * Errors:
-    * Unknown connection (UNKNOWN)
-    * Connection closed (FAILED_PRECONDITION)
+    * Errors: Unknown connection (UNKNOWN) Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessages(request: connector_api.SendMessagesRequest): Future[connector_api.SendMessagesResponse] =
     auth[SendMessagesRequest]("sendMessages", request) { (participantId, _, query) =>

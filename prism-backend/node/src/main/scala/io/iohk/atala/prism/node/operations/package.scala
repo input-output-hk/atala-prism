@@ -37,10 +37,11 @@ package object operations {
 
     /** Error signifying that a value is missing at the path
       *
-      * Note: As Protobuf 3 doesn't differentiate between empty and default values for primitives
-      * this error is to be used for message fields only
+      * Note: As Protobuf 3 doesn't differentiate between empty and default values for primitives this error is to be
+      * used for message fields only
       *
-      * @param path Path where the problem occurred - list of field names
+      * @param path
+      *   Path where the problem occurred - list of field names
       */
     case class MissingValue(override val path: Path) extends ValidationError {
       override def name = "Missing Value"
@@ -181,9 +182,12 @@ package object operations {
 
     /** Parses the protobuf representation of operation
       *
-      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @param ledgerData information of the underlying ledger transaction that carried this operation
-      * @return parsed operation or ValidationError signifying the operation is invalid
+      * @param signedOperation
+      *   signed operation, needs to be of the type compatible with the called companion object
+      * @param ledgerData
+      *   information of the underlying ledger transaction that carried this operation
+      * @return
+      *   parsed operation or ValidationError signifying the operation is invalid
       */
     def parse(
         signedOperation: node_models.SignedAtalaOperation,
@@ -199,18 +203,22 @@ package object operations {
 
     /** Parses the protobuf representation of operation and report errors (if any)
       *
-      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @return Unit if the operation is valid or ValidationError signifying the operation is invalid
+      * @param signedOperation
+      *   signed operation, needs to be of the type compatible with the called companion object
+      * @return
+      *   Unit if the operation is valid or ValidationError signifying the operation is invalid
       */
     def validate(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Unit] = {
       parseWithMockedLedgerData(signedOperation) map (_ => ())
     }
 
-    /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
-      * (defined in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
+    /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter (defined
+      * in (the SDK) io.iohk.atala.prism.credentials.TimestampInfo.dummyTime)
       *
-      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
-      * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
+      * @param signedOperation
+      *   signed operation, needs to be of the type compatible with the called companion object
+      * @return
+      *   parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
       */
     def parseWithMockedLedgerData(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] =
       parse(signedOperation, mockLedgerData)
