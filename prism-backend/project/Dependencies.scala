@@ -13,7 +13,7 @@ object versions {
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
   val doobie = "0.12.1"
-  val enumeratum = "1.6.1"
+  val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
   val flyway = "7.10.0"
   val grpc = "1.41.0"
