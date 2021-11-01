@@ -1,6 +1,6 @@
 package io.iohk.atala.prism
 
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.AtalaSpecBase.implicits._
 import io.iohk.atala.prism.logging.TraceId
@@ -10,6 +10,7 @@ import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import cats.effect.Temporal
 
 class AtalaWithPostgresSpec extends PostgresRepositorySpec[IO] with ScalaFutures {
   implicit val executionContext: ExecutionContext = ExecutionContext.global
@@ -23,6 +24,6 @@ object AtalaSpecBase {
   object implicits {
     implicit val contextShift: ContextShift[IO] =
       IO.contextShift(ExecutionContext.global)
-    implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
+    implicit val timer: Temporal[IO] = IO.timer(ExecutionContext.global)
   }
 }

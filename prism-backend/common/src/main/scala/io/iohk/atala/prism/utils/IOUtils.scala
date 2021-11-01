@@ -2,6 +2,7 @@ package io.iohk.atala.prism.utils
 
 import cats.Comonad
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 
 object IOUtils {
 

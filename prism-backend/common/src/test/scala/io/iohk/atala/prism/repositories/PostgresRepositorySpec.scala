@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.repositories
 
-import cats.effect.{ConcurrentEffect, ContextShift}
+import cats.effect.ConcurrentEffect
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}

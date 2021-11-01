@@ -2,6 +2,7 @@ package io.iohk.atala.prism.logging
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.~>
 import derevo.derive
 import tofu.lift.Lift

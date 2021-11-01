@@ -2,7 +2,7 @@ package io.iohk.atala.prism.repositories
 
 import java.util.concurrent.Executors
 
-import cats.effect.{Sync, Async, Blocker, ContextShift, Resource}
+import cats.effect.{Sync, Async, Resource}
 import doobie.hikari.HikariTransactor
 import org.flywaydb.core.Flyway
 
@@ -36,7 +36,7 @@ object TransactorFactory {
 
   // We need a ContextShift[A] before we can construct a Transactor[A]. The passed ExecutionContext
   // is where nonblocking operations will be executed.
-  def transactor[A[_]: Async: ContextShift](
+  def transactor[A[_]: Async](
       config: Config
   ): Resource[A, HikariTransactor[A]] = {
     // Threads for awaiting on database connection. After some local performance tests it turned out
@@ -46,21 +46,13 @@ object TransactorFactory {
         Executors.newFixedThreadPool(config.awaitConnectionThreads)
       )
 
-    // Threads for executing blocking JDBC operations. After some local performance tests it turned out
-    // that the best performance can be achieved when cached thread pool is used.
-    val executeJdbcBlocker =
-      Blocker.liftExecutionContext(
-        ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
-      )
-
     // Hikari transactor is used in order to reuse connections to database
     HikariTransactor.newHikariTransactor[A](
       "org.postgresql.Driver",
       config.jdbcUrl,
       config.username,
       config.password,
-      awaitConnectionExecutor, // await connection here
-      executeJdbcBlocker // execute JDBC operations here
+      awaitConnectionExecutor
     )
   }
 
