@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prestart": "./scripts/compile-protos.sh",
-    "start": "./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/ && react-scripts start",
+    "start": "./scripts/copyEnvVarsToWindow.sh && cp env-config.js ./public/ && DISABLE_ESLINT_PLUGIN=true react-scripts start",
     "prestart-test-server": "./scripts/compile-protos.sh",
     "start-test-server": "cp ./cypress/App.js ./src/ && react-scripts start",
     "prebuild": "./scripts/compile-protos.sh",
