@@ -175,7 +175,7 @@ export default class CredentialIssuedStore {
       const mappedCredentials = response.credentialsList.map(credentialMapper);
       const mappedResponse = { ...response, credentialsList: mappedCredentials };
       this.updateHasMoreState(response.credentialsList, pageSize);
-      return mappedResponse || fallback;
+      return mappedResponse;
     } catch (error) {
       const metadata = {
         store: this.storeName,
