@@ -2,7 +2,7 @@ package io.iohk.atala.prism.connector.repositories
 
 import cats.{Applicative, Comonad, Functor}
 import cats.data.{EitherT, OptionT}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.implicits.{catsSyntaxApplicativeId, catsSyntaxEitherId, catsSyntaxOptionId}
 import cats.syntax.either._
 import cats.syntax.comonad._
@@ -33,6 +33,7 @@ import shapeless.{:+:, CNil}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ConnectionsRepository[F[_]] {
@@ -96,7 +97,7 @@ object ConnectionsRepository {
   type RevokeConnectionError =
     UnknownValueError :+: InternalConnectorError :+: CNil
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[ConnectionsRepository[F]] =
@@ -113,7 +114,7 @@ object ConnectionsRepository {
       mid attach new ConnectionsRepositoryPostgresImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[
+  def resource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[
       _
   ]: Applicative: Functor](
       transactor: Transactor[F],
@@ -121,13 +122,13 @@ object ConnectionsRepository {
   ): Resource[R, ConnectionsRepository[F]] =
     Resource.eval(ConnectionsRepository(transactor, logs))
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): ConnectionsRepository[F] = ConnectionsRepository(transactor, logs).extract
 }
 
-private final class ConnectionsRepositoryPostgresImpl[F[_]: BracketThrow](
+private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ConnectionsRepository[F]
     with ConnectorErrorSupportNew {

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.comonad._
 import cats.syntax.either._
@@ -31,6 +31,7 @@ import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.util.Base64
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ParticipantsRepository[F[_]] {
@@ -60,7 +61,7 @@ object ParticipantsRepository {
 
   type FindByError = UnknownValueError :+: CNil
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[ParticipantsRepository[F]] =
@@ -77,7 +78,7 @@ object ParticipantsRepository {
       mid attach new ParticipantsRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[
+  def resource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[
       _
   ]: Applicative: Functor](
       transactor: Transactor[F],
@@ -85,7 +86,7 @@ object ParticipantsRepository {
   ): Resource[R, ParticipantsRepository[F]] =
     Resource.eval(ParticipantsRepository(transactor, logs))
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): ParticipantsRepository[F] =
@@ -101,7 +102,7 @@ object ParticipantsRepository {
   )
 }
 
-private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
+private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ParticipantsRepository[F]
     with ConnectorErrorSupportNew {

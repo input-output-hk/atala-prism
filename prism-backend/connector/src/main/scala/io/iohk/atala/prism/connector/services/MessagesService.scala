@@ -2,7 +2,7 @@ package io.iohk.atala.prism.connector.services
 
 import cats.{Applicative, Comonad, Functor}
 import cats.data.NonEmptyList
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.tagless.ApplyK
 import cats.syntax.comonad._
 import cats.syntax.functor._
@@ -19,6 +19,7 @@ import io.iohk.atala.prism.connector.repositories.MessagesRepository.{
 import io.iohk.atala.prism.models.ParticipantId
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
+import cats.MonadThrow
 
 trait MessagesService[S[_], F[_]] {
   def insertMessage(

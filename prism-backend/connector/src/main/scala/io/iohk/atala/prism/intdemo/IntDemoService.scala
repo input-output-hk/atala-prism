@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
+import cats.effect.unsafe.IORuntime
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.intdemo.IntDemoService.log
 import io.iohk.atala.prism.connector.model.{Connection, TokenString}
@@ -19,9 +20,7 @@ class IntDemoService[D](
     requiredDataLoader: TokenString => Future[Option[D]],
     proofRequestIssuer: Connection => Future[Unit],
     getCredential: D => credential_models.PlainTextCredential
-)(implicit
-    ec: ExecutionContext
-) {
+)(implicit ec: ExecutionContext, runtime: IORuntime) {
 
   def getConnectionToken(
       request: intdemo_api.GetConnectionTokenRequest

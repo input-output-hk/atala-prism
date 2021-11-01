@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
-
 import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 import doobie.implicits._
 import doobie.implicits.legacy.localdate._
 import doobie.util.transactor.Transactor
@@ -12,7 +12,7 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_models
 
 import scala.concurrent.Future
 
-class IntDemoRepository(xa: Transactor[IO]) {
+class IntDemoRepository(xa: Transactor[IO])(implicit runtime: IORuntime) {
 
   def mergeSubjectStatus(
       token: TokenString,
