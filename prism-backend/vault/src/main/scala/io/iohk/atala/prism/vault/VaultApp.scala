@@ -48,7 +48,7 @@ class VaultApp(executionContext: ExecutionContext) {
     val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
 
     logger.info("Setting-up uptime metrics")
-    Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
+    Kamon.addReporter("uptime", new UptimeReporter(globalConfig))
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
