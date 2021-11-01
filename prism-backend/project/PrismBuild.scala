@@ -175,8 +175,7 @@ object PrismBuild {
     commonServerProject("node")
       .settings(
         name := "node",
-        Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
-        libraryDependencies ++= Seq(osLib)
+        Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp")
       )
       .dependsOn(common % "compile->compile;test->test")
 

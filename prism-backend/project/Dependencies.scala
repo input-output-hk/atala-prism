@@ -19,7 +19,6 @@ object versions {
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
   val mockito = "1.16.46"
-  val osLib = "0.7.8"
   val playJson = "2.9.1"
   val postgresql = "42.3.1"
   val scalatest = "3.2.10"
@@ -66,7 +65,6 @@ object Dependencies {
   val logbackLogstash =
     "net.logstash.logback" % "logstash-logback-encoder" % versions.logbackLogstash
   val jaxb = "javax.xml.bind" % "jaxb-api" % versions.jaxb
-  val osLib = "com.lihaoyi" %% "os-lib" % versions.osLib
   val playJson = "com.typesafe.play" %% "play-json" % versions.playJson
   val postgresql = "org.postgresql" % "postgresql" % versions.postgresql
   val scalapbRuntimeGrpc =
