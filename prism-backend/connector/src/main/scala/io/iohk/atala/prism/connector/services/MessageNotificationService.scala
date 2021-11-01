@@ -34,9 +34,7 @@ class MessageNotificationService private (
       queue <- Stream.eval(Queue.unbounded[IO, Option[Message]])
       _ <- Stream.eval {
         for {
-          oldQueue <- streamQueuesRef.modify(oldMap =>
-            (oldMap.updated(recipientId, queue), oldMap.get(recipientId))
-          )
+          oldQueue <- streamQueuesRef.modify(oldMap => (oldMap.updated(recipientId, queue), oldMap.get(recipientId)))
           // Terminate the old queue to prevent its stream from hanging around forever
           _ <- oldQueue.traverse_(enqueue(_, None))
         } yield ()
@@ -78,9 +76,11 @@ class MessageNotificationService private (
         .evalMap { message =>
           for {
             streamQueues <- streamQueuesRef.get
-            _ <- streamQueues.get(message.recipientId).traverse_(
-              enqueue(_, Some(message))
-            )
+            _ <- streamQueues
+              .get(message.recipientId)
+              .traverse_(
+                enqueue(_, Some(message))
+              )
           } yield ()
         }
         .compile
