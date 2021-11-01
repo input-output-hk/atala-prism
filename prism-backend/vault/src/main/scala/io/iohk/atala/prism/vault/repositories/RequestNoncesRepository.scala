@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault.repositories
 
+import cats.{Applicative, Comonad, Functor}
 import cats.syntax.apply._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
@@ -21,7 +22,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
-import cats.effect.MonadCancelThrow
+import cats.effect.{MonadCancelThrow, Resource}
 
 @derive(applyK)
 trait RequestNoncesRepository[F[_]] {
@@ -44,12 +45,12 @@ object RequestNoncesRepository {
         mid attach new PostgresImpl(xa)
       }
 
-    def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+    def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
         xa: Transactor[F],
         logs: Logs[R, F]
     ): Resource[R, RequestNoncesRepository[F]] = Resource.eval(RequestNoncesRepository.PostgresImpl.create(xa, logs))
 
-    def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+    def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
         xa: Transactor[F],
         logs: Logs[R, F]
     ): RequestNoncesRepository[F] = RequestNoncesRepository.PostgresImpl.create(xa, logs).extract

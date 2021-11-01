@@ -20,8 +20,8 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
-import cats.MonadThrow
-import cats.effect.{MonadCancel, MonadCancelThrow}
+import cats.{Applicative, Comonad, Functor, MonadThrow}
+import cats.effect.{MonadCancel, MonadCancelThrow, Resource}
 
 @derive(applyK)
 trait PayloadsRepository[F[_]] {
@@ -49,12 +49,12 @@ object PayloadsRepository {
       mid attach new PayloadsRepositoryImpl(xa)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
       xa: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, PayloadsRepository[F]] = Resource.eval(PayloadsRepository.create(xa, logs))
 
-  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
       xa: Transactor[F],
       logs: Logs[R, F]
   ): PayloadsRepository[F] = PayloadsRepository.create(xa, logs).extract

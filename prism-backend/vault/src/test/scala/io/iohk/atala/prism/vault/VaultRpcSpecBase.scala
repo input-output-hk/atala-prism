@@ -26,13 +26,11 @@ class VaultRpcSpecBase extends RpcSpecBase {
   private val vaultTestLogs: Logs[IO, IOWithTraceIdContext] =
     Logs.withContext[IO, IOWithTraceIdContext]
 
+  RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO, vaultTestLogs)
+
   lazy val (payloadsRepository, vaultGrpcService) = (for {
-    requestNoncesRepository <- vaultTestLogs
-      .service[RequestNoncesRepository[IOWithTraceIdContext]]
-      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO))
-    payloadsRepository <- vaultTestLogs
-      .service[PayloadsRepository[IOWithTraceIdContext]]
-      .map(implicit l => PayloadsRepository.create(dbLiftedToTraceIdIO))
+    requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO, vaultTestLogs)
+    payloadsRepository <- PayloadsRepository.create(dbLiftedToTraceIdIO, vaultTestLogs)
     nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
     authenticator =
       new VaultAuthenticator(
@@ -40,9 +38,7 @@ class VaultRpcSpecBase extends RpcSpecBase {
         nodeMock,
         GrpcAuthenticationHeaderParser
       )
-    encryptedDataVaultService <- vaultTestLogs
-      .service[EncryptedDataVaultService[IOWithTraceIdContext]]
-      .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
+    encryptedDataVaultService <- EncryptedDataVaultService.create(payloadsRepository, vaultTestLogs)
     vaultGrpcService = new EncryptedDataVaultGrpcService(
       encryptedDataVaultService,
       authenticator

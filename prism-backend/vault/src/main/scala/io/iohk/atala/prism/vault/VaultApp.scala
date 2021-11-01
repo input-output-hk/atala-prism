@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.IO
+import cats.effect.{ExitCode, IO, IOApp, Resource}
 import cats.effect.unsafe.IORuntime
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
+import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId
@@ -58,7 +59,8 @@ class VaultApp() {
       )
       encryptedDataVaultService <- EncryptedDataVaultService.resource(payloadsRepository, vaultLogs)
       encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
-        ExecutionContext.global
+        ExecutionContext.global,
+        runtime
       )
       server <- startServer(encryptedDataVaultGrpcService)
     } yield server
