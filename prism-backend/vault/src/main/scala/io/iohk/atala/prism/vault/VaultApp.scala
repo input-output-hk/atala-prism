@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -22,7 +23,7 @@ import scala.concurrent.{Await, ExecutionContext}
 
 object VaultApp {
   def main(args: Array[String]): Unit = {
-    val server = new VaultApp(ExecutionContext.global)
+    val server = new VaultApp()(ExecutionContext.global)
     server.start()
     server.blockUntilShutdown()
     server.releaseResources()
@@ -31,9 +32,10 @@ object VaultApp {
   private val port = 50054
 }
 
-class VaultApp(executionContext: ExecutionContext) {
+class VaultApp(implicit executionContext: ExecutionContext) {
   self =>
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit val runtime: IORuntime = IORuntime.global
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val vaultLogs: Logs[IO, IOWithTraceIdContext] =
@@ -95,8 +97,6 @@ class VaultApp(executionContext: ExecutionContext) {
     val encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(
       encryptedDataVaultService,
       authenticator
-    )(
-      executionContext
     )
 
     logger.info("Starting server")
