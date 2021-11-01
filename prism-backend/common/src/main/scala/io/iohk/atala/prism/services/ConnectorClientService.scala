@@ -139,9 +139,12 @@ class ConnectorClientServiceImpl(
 
   /** Create a continuous stream with subsequent calls to connector's GetConnectionsPaginated method.
     *
-    * @param lastSeenConnectionId initial connection id
-    * @param limit limit of connections per one request to the gRPC
-    * @param awakeDelay the delay between each call to the connector
+    * @param lastSeenConnectionId
+    *   initial connection id
+    * @param limit
+    *   limit of connections per one request to the gRPC
+    * @param awakeDelay
+    *   the delay between each call to the connector
     */
   def getConnectionsPaginatedStream(
       lastSeenConnectionId: Option[ConnectionId],

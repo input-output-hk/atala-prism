@@ -53,7 +53,8 @@ object TransactorFactory {
 
   /** Run db migrations with Flyway.
     *
-    * @return number of applied migrations
+    * @return
+    *   number of applied migrations
     */
   def runDbMigrations[A[_]: Sync](transactor: HikariTransactor[A], classLoader: ClassLoader): Resource[A, Int] =
     Resource.eval(

@@ -114,9 +114,12 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   /** Parses the protobuf representation of operation
     *
-    * @param operation operation, needs to be of the type compatible with the called companion object
-    * @param ledgerData ledger information provided by the caller, needed to instantiate the operation objects
-    * @return parsed operation or ValidationError signifying the operation is invalid
+    * @param operation
+    *   operation, needs to be of the type compatible with the called companion object
+    * @param ledgerData
+    *   ledger information provided by the caller, needed to instantiate the operation objects
+    * @return
+    *   parsed operation or ValidationError signifying the operation is invalid
     */
   override def parse(
       operation: node_models.AtalaOperation,

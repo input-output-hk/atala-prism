@@ -143,7 +143,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
       .addService(
         ProtoReflectionService.newInstance()
-      ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
+      ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
       .build()
       .start()
 

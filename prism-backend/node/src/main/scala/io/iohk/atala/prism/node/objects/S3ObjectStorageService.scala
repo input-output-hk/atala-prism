@@ -38,8 +38,10 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
 
   /** Store the object identified by id, overwriting it if exists.
     *
-    * @param id   the object identifier
-    * @param data the data to store
+    * @param id
+    *   the object identifier
+    * @param data
+    *   the data to store
     */
   override def put(id: ObjectId, data: Array[Byte]): Future[Unit] = {
     val request = PutObjectRequest
@@ -65,8 +67,10 @@ class S3ObjectStorageService(bucket: String, keyPrefix: String, region: Option[R
 
   /** Find an object by its id.
     *
-    * @param id the object identifier
-    * @return the object data if it was found
+    * @param id
+    *   the object identifier
+    * @return
+    *   the object data if it was found
     */
   override def get(id: ObjectId): Future[Option[Array[Byte]]] = {
     val request = GetObjectRequest
