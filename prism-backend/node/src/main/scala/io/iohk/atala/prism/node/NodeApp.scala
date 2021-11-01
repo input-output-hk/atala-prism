@@ -54,7 +54,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val databaseConfig = TransactorFactory.transactorConfig(globalConfig)
 
     logger.info("Setting-up uptime metrics")
-    Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
+    Kamon.addReporter("uptime", new UptimeReporter(globalConfig))
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
@@ -167,7 +167,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   ): (CardanoLedgerService, Option[IO[Unit]]) = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     val (cardanoClient, releaseClient) = createCardanoClient(config.cardanoClientConfig, logs)
-    Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
+    Kamon.addReporter("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
     val cardano = CardanoLedgerService(config, cardanoClient, keyValueService, onAtalaObject)
     (cardano, Some(releaseClient))
   }
