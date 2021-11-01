@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.connector.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository._
@@ -10,10 +9,11 @@ import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.ParticipantId
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
 private[repositories] final class ConnectionsRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends ConnectionsRepository[Mid[F, *]] {
 
   private val repoName = "ConnectionsRepository"

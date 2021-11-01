@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.connector
 
-import cats.effect.{ContextShift, ExitCode, IO, IOApp, Resource}
+import cats.effect.unsafe.IORuntime
+import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
@@ -11,12 +12,7 @@ import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
-import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
-  DegreeServiceGrpc,
-  EmploymentServiceGrpc,
-  IDServiceGrpc,
-  InsuranceServiceGrpc
-}
+import io.iohk.atala.prism.intdemo.protos.intdemo_api.{DegreeServiceGrpc, EmploymentServiceGrpc, IDServiceGrpc, InsuranceServiceGrpc}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.connector_api
@@ -38,16 +34,16 @@ object ConnectorApp extends IOApp {
   private val port = 50051
 
   override def run(args: List[String]): IO[ExitCode] = {
-    val server = new ConnectorApp(ExecutionContext.global)
+    val server = new ConnectorApp()(ExecutionContext.global)
     server.start().use(_ => IO.never)
   }
 }
 
-class ConnectorApp(executionContext: ExecutionContext) { self =>
+class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit val runtime: IORuntime = IORuntime.global
 
   private def start(): Resource[IO, Server] = {
     for {
@@ -85,12 +81,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         GrpcAuthenticationHeaderParser
       )
       // Background services
-      timer = IO.timer(executionContext)
-      messageNotificationService <- MessageNotificationService.resourceAndStart(
-        tx,
-        cs,
-        timer
-      )
+      messageNotificationService <- MessageNotificationService.resourceAndStart(tx)
       // connector services
       connectionsService <- ConnectionsService.resource(
         connectionsRepository,
@@ -111,7 +102,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         connectionsService,
         authenticator,
         whitelistDid
-      )(executionContext)
+      )
       connectorService = new ConnectorService(
         connectionsService,
         messagesService,
@@ -120,7 +111,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         authenticator,
         node,
         participantsRepository
-      )(executionContext)
+      )
       credentialViewsService = new CredentialViewsService(authenticator)(
         executionContext
       )
@@ -129,29 +120,27 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       connectorIntegration = new ConnectorIntegrationImpl(
         connectionsService,
         messagesService
-      )(
-        executionContext
       )
       idService = new IdServiceImpl(
         connectorIntegration,
         intDemoRepository,
         schedulerPeriod = 1.second
-      )(executionContext)
+      )
       degreeService = new DegreeServiceImpl(
         connectorIntegration,
         intDemoRepository,
         schedulerPeriod = 1.second
-      )(executionContext)
+      )
       employmentService = new EmploymentServiceImpl(
         connectorIntegration,
         intDemoRepository,
         schedulerPeriod = 1.second
-      )(executionContext)
+      )
       insuranceService = new InsuranceServiceImpl(
         connectorIntegration,
         intDemoRepository,
         schedulerPeriod = 1.second
-      )(executionContext)
+      )
       server <- startServer(
         connectorService,
         credentialViewsService,

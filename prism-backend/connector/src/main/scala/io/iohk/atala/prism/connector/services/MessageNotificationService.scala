@@ -5,7 +5,6 @@ import cats.effect._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import fs2.concurrent.{NoneTerminatedQueue, Queue}
 import io.iohk.atala.prism.connector.model.{Message, MessageId}
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.db.DbNotificationStreamer
@@ -13,30 +12,28 @@ import io.iohk.atala.prism.models.ParticipantId
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Success}
+import cats.effect.Temporal
+import cats.effect.std.Queue
+import cats.effect.unsafe.IORuntime
 
 class MessageNotificationService private (
     dbNotificationStreamer: DbNotificationStreamer,
     xa: Transactor[IO]
-)(implicit
-    contextShift: ContextShift[IO]
-) {
+)(implicit runtime: IORuntime) {
   import MessageNotificationService._
 
   private val streamQueues =
-    new ConcurrentHashMap[ParticipantId, NoneTerminatedQueue[IO, Message]]()
+    new ConcurrentHashMap[ParticipantId, Queue[IO, Option[Message]]]()
 
   private def enqueue(
-      queue: NoneTerminatedQueue[IO, Message],
+      queue: Queue[IO, Option[Message]],
       v: Option[Message]
-  ): Unit = {
-    ConcurrentEffect[IO]
-      .runAsync(queue.enqueue1(v))(_ => IO.unit)
-      .unsafeRunSync()
-  }
+  ): Unit =
+    queue.offer(v).unsafeRunSync()
 
-  def stream(recipientId: ParticipantId): Stream[IO, Message] = {
+  def stream(recipientId: ParticipantId): Stream[IO, Message] =
     for {
-      queue <- Stream.eval(Queue.noneTerminated[IO, Message])
+      queue <- Stream.eval(Queue.unbounded[IO, Option[Message]])
       _ <- Stream.eval {
         IO.delay {
           val oldQueue = Option(streamQueues.put(recipientId, queue))
@@ -44,9 +41,8 @@ class MessageNotificationService private (
           oldQueue.foreach(enqueue(_, None))
         }
       }
-      message <- queue.dequeue
+      message <- Stream.fromQueueNoneTerminated(queue)
     } yield message
-  }
 
   def start(): Unit = {
     dbNotificationStreamer.stream
@@ -70,7 +66,7 @@ class MessageNotificationService private (
           case None =>
             logger.error(s"Message with ID $messageId not found")
             None
-        }
+        }.transact(xa)
       )
       // Ignore messages not found
       .unNone
@@ -80,7 +76,6 @@ class MessageNotificationService private (
           enqueue(_, Some(message))
         )
       }
-      .transact(xa)
       .compile
       .drain
       .unsafeRunAsync {
@@ -111,20 +106,18 @@ object MessageNotificationService {
   def apply(
       xa: Transactor[IO]
   )(implicit
-      contextShift: ContextShift[IO],
-      timer: Timer[IO]
+      timer: Temporal[IO],
+      runtime: IORuntime
   ): MessageNotificationService = {
-    val dbNotificationStreamer = DbNotificationStreamer("new_messages")
+    val dbNotificationStreamer = DbNotificationStreamer("new_messages", xa)
     new MessageNotificationService(dbNotificationStreamer, xa)
   }
 
   def resourceAndStart(
-      xa: Transactor[IO],
-      contextShift: ContextShift[IO],
-      timer: Timer[IO]
-  ): Resource[IO, MessageNotificationService] =
+      xa: Transactor[IO]
+  )(implicit timer: Temporal[IO], runtime: IORuntime): Resource[IO, MessageNotificationService] =
     Resource.make(IO.delay {
-      val service = MessageNotificationService(xa)(contextShift, timer)
+      val service = MessageNotificationService(xa)
       service.start()
       service
     })(service => IO(service.stop()))

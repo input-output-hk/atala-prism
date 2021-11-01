@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
+import cats.effect.unsafe.IORuntime
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
@@ -46,7 +47,8 @@ object ConnectorIntegration {
         IOWithTraceIdContext
       ]
   )(implicit
-      ec: ExecutionContext
+      ec: ExecutionContext,
+      runtime: IORuntime
   ) extends ConnectorIntegration
       with ConnectorErrorSupport {
 

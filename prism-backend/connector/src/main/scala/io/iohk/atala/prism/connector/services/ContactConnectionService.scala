@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
@@ -11,11 +12,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.connector_api.{
-  ConnectionsStatusRequest,
-  ConnectionsStatusResponse,
-  ContactConnectionServiceGrpc
-}
+import io.iohk.atala.prism.protos.connector_api.{ConnectionsStatusRequest, ConnectionsStatusResponse, ContactConnectionServiceGrpc}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -25,10 +22,8 @@ class ContactConnectionService(
     connectionsService: ConnectionsService[IOWithTraceIdContext],
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     didWhitelist: Set[DID]
-)(implicit
-    executionContext: ExecutionContext
-) extends ContactConnectionServiceGrpc.ContactConnectionService
-    with ConnectorErrorSupport {
+)(implicit executionContext: ExecutionContext, runtime: IORuntime)
+  extends ContactConnectionServiceGrpc.ContactConnectionService with ConnectorErrorSupport {
 
   val serviceName = "ContactConnectionService"
 

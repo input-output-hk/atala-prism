@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.services
 
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -25,6 +25,8 @@ import shapeless.{:+:, CNil}
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait RegistrationService[F[_]] {
@@ -143,7 +145,7 @@ object RegistrationService {
 
   type RegisterParticipantError = InvalidRequest :+: CNil
 
-  def apply[F[_]: BracketThrow: Execute, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow: Execute, R[_]: Functor](
       participantsRepository: ParticipantsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
@@ -161,7 +163,7 @@ object RegistrationService {
       )
     }
 
-  def resource[F[_]: BracketThrow: Execute, R[_]: Applicative: Functor](
+  def resource[F[_]: MonadCancelThrow: Execute, R[_]: Applicative: Functor](
       participantsRepository: ParticipantsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
@@ -169,7 +171,7 @@ object RegistrationService {
     RegistrationService(participantsRepository, nodeService, logs)
   )
 
-  def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: Execute, R[_]: Comonad](
       participantsRepository: ParticipantsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]

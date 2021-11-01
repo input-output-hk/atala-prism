@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.intdemo
 
-import cats.effect.{IO, Timer}
+import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 import cats.syntax.functor._
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.intdemo.IntDemoStateMachine.log
@@ -22,9 +23,7 @@ class IntDemoStateMachine[D](
     intDemoRepository: IntDemoRepository,
     connectionToken: TokenString,
     issuerId: ParticipantId
-)(implicit ec: ExecutionContext) {
-  implicit val timer: Timer[IO] = IO.timer(ec)
-
+)(implicit ec: ExecutionContext, runtime: IORuntime) {
   def getCurrentStatus(): Future[intdemo_models.SubjectStatus] = {
     // Detect if any changes to the "old" status need to be applied, and apply them before returning the current status
     for {
@@ -72,8 +71,7 @@ class IntDemoStateMachine[D](
       responseObserver.onNext(response)
       (IO.sleep(schedulerPeriod) *> IO(
         streamCurrentStatus(responseObserver, schedulerPeriod)
-      ))
-        .unsafeRunAsyncAndForget()
+      )).unsafeRunAndForget()
       ()
     } catch (withLoggingHandler)
   }

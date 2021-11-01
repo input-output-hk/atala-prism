@@ -7,7 +7,7 @@ import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.tagless.ApplyK
 import doobie.ConnectionIO
 import doobie.implicits._
@@ -32,6 +32,7 @@ import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.Instant
 import shapeless.{:+:, CNil}
+import cats.effect.MonadCancelThrow
 
 // S - Stream, needed different type because we don't want to have mid for a stream
 trait MessagesRepository[S[_], F[_]] {
@@ -87,7 +88,7 @@ object MessagesRepository {
   implicit def applyK[E[_]]: ApplyK[MessagesRepository[E, *[_]]] =
     cats.tagless.Derive.applyK[MessagesRepository[E, *[_]]]
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[MessagesRepository[Stream[F, *], F]] =
@@ -103,20 +104,20 @@ object MessagesRepository {
       mid attach new MessagesRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative](
+  def resource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Applicative](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, MessagesRepository[Stream[F, *], F]] =
     Resource.eval(MessagesRepository(transactor, logs))
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): MessagesRepository[Stream[F, *], F] =
     MessagesRepository(transactor, logs).extract
 }
 
-private final class MessagesRepositoryImpl[F[_]: BracketThrow](
+private final class MessagesRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends MessagesRepository[Stream[F, *], F]
     with ConnectorErrorSupportNew {
