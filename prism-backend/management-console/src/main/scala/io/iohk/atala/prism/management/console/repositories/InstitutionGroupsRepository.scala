@@ -2,7 +2,7 @@ package io.iohk.atala.prism.management.console.repositories
 
 import cats.{Comonad, Functor, Monad}
 import cats.data.EitherT
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicative._
 import cats.syntax.comonad._
@@ -25,6 +25,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait InstitutionGroupsRepository[F[_]] {
@@ -67,7 +68,7 @@ trait InstitutionGroupsRepository[F[_]] {
 
 object InstitutionGroupsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[InstitutionGroupsRepository[F]] =
@@ -83,13 +84,13 @@ object InstitutionGroupsRepository {
       mid attach new InstitutionGroupsRepositoryImpl[F](transactor)
     }
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): InstitutionGroupsRepository[F] =
     InstitutionGroupsRepository(transactor, logs).extract
 
-  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, InstitutionGroupsRepository[F]] =
@@ -99,7 +100,7 @@ object InstitutionGroupsRepository {
 
 }
 
-private final class InstitutionGroupsRepositoryImpl[F[_]: BracketThrow](
+private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends InstitutionGroupsRepository[F] {
 

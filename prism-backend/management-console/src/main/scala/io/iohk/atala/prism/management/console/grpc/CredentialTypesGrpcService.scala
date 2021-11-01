@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.effect.unsafe.IORuntime
 import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import cats.syntax.functor._
@@ -18,7 +19,7 @@ import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 class CredentialTypesGrpcService(
     credentialTypesService: CredentialTypesService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
-)(implicit ec: ExecutionContext)
+)(implicit ec: ExecutionContext, runtime: IORuntime)
     extends console_api.CredentialTypesServiceGrpc.CredentialTypesService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {

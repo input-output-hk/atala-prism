@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.{Comonad, Functor, Monad}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -31,6 +31,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ParticipantsRepository[F[_]] {
@@ -63,7 +64,7 @@ object ParticipantsRepository {
       participantProfile: UpdateParticipantProfile
   )
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F],
       defaultCredentialTypeConfig: DefaultCredentialTypeConfig
@@ -84,7 +85,7 @@ object ParticipantsRepository {
       )
     }
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F],
       defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
@@ -94,7 +95,7 @@ object ParticipantsRepository {
     defaultCredentialTypeConfig
   ).extract
 
-  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F],
       defaultCredentialTypeConfig: DefaultCredentialTypeConfig = DefaultCredentialTypeConfig(ConfigFactory.load())
@@ -105,7 +106,7 @@ object ParticipantsRepository {
 
 }
 
-private final class ParticipantsRepositoryImpl[F[_]: BracketThrow](
+private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F],
     defaultCredentialTypeConfig: DefaultCredentialTypeConfig
 ) extends ParticipantsRepository[F]

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.{Comonad, Functor, Monad}
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -16,6 +16,8 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait CredentialIssuanceService[F[_]] {
@@ -52,13 +54,13 @@ object CredentialIssuanceService {
       )
     }
 
-  def unsafe[F[_]: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow, R[_]: Comonad](
       credentialIssuancesRepository: CredentialIssuancesRepository[F],
       logs: Logs[R, F]
   ): CredentialIssuanceService[F] =
     CredentialIssuanceService(credentialIssuancesRepository, logs).extract
 
-  def makeResource[F[_]: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: MonadCancelThrow, R[_]: Monad](
       credentialIssuancesRepository: CredentialIssuancesRepository[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialIssuanceService[F]] =

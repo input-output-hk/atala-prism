@@ -3,7 +3,7 @@ package io.iohk.atala.prism.management.console.services
 import cats.{Comonad, Functor, Monad}
 import cats.implicits.toFunctorOps
 import cats.data.NonEmptyList
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -44,6 +44,7 @@ import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
 
 @derive(applyK)
 trait CredentialsService[F[_]] {

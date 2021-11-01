@@ -5,7 +5,7 @@ import cats.syntax.comonad._
 import cats.syntax.functor._
 import cats.data.{EitherT, NonEmptyList}
 import cats.data.Validated.{Invalid, Valid}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import derevo.tagless.applyK
 import derevo.derive
 import doobie.{ConnectionIO, FC}
@@ -26,6 +26,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait CredentialsRepository[F[_]] {
@@ -89,7 +90,7 @@ trait CredentialsRepository[F[_]] {
 
 object CredentialsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[CredentialsRepository[F]] =
@@ -106,12 +107,12 @@ object CredentialsRepository {
       mid attach new CredentialsRepositoryImpl[F](transactor)
     }
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): CredentialsRepository[F] = CredentialsRepository(transactor, logs).extract
 
-  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialsRepository[F]] =
@@ -119,7 +120,7 @@ object CredentialsRepository {
 
 }
 
-private final class CredentialsRepositoryImpl[F[_]: BracketThrow](
+private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CredentialsRepository[F] {
 

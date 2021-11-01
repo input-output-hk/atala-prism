@@ -1,16 +1,13 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.effect.unsafe.IORuntime
 import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
-  CreateCredentialBulk,
-  CreateCredentialIssuance,
-  GetCredentialIssuance
-}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialBulk, CreateCredentialIssuance, GetCredentialIssuance}
 import io.iohk.atala.prism.management.console.services.CredentialIssuanceService
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact
@@ -25,7 +22,8 @@ class CredentialIssuanceGrpcService(
     credentialIssuanceService: CredentialIssuanceService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    runtime: IORuntime
 ) extends console_api.CredentialIssuanceServiceGrpc.CredentialIssuanceService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {

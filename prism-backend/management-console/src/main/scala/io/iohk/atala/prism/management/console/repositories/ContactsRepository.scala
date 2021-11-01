@@ -24,6 +24,7 @@ import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.Instant
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ContactsRepository[F[_]] {
@@ -83,7 +84,7 @@ trait ContactsRepository[F[_]] {
 
 object ContactsRepository {
 
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[ContactsRepository[F]] =
@@ -99,12 +100,12 @@ object ContactsRepository {
       mid attach new ContactsRepositoryImpl[F](transactor)
     }
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): ContactsRepository[F] = ContactsRepository(transactor, logs).extract
 
-  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Monad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, ContactsRepository[F]] =
@@ -112,7 +113,7 @@ object ContactsRepository {
 
 }
 
-private final class ContactsRepositoryImpl[F[_]: BracketThrow](
+private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ContactsRepository[F] {
 

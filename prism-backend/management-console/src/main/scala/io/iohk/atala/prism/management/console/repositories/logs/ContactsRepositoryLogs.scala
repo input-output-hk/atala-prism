@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.logs
 
-import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -14,8 +13,9 @@ import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
 import java.time.Instant
+import cats.effect.MonadCancelThrow
 
-private[repositories] final class ContactsRepositoryLogs[F[_]: BracketThrow](implicit
+private[repositories] final class ContactsRepositoryLogs[F[_]: MonadCancelThrow](implicit
     l: ServiceLogging[F, ContactsRepository[F]]
 ) extends ContactsRepository[Mid[F, *]] {
 

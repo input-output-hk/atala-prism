@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.{Comonad, Functor, Monad}
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -18,6 +18,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait GroupsService[F[_]] {
@@ -63,12 +65,12 @@ object GroupsService {
       mid attach new GroupsServiceImpl[F](institutionGroupsRepository)
     }
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       institutionGroupsRepository: InstitutionGroupsRepository[F],
       logs: Logs[R, F]
   ): GroupsService[F] = GroupsService(institutionGroupsRepository, logs).extract
 
-  def makeResource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Monad](
       institutionGroupsRepository: InstitutionGroupsRepository[F],
       logs: Logs[R, F]
   ): Resource[R, GroupsService[F]] =

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.{CredentialIssuance, CredentialTypeId, ParticipantId}
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
@@ -11,10 +10,11 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
 final class CredentialIssuancesRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends CredentialIssuancesRepository[Mid[F, *]] {
 
   private val repoName = "CredentialIssuancesRepository"

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console
 
+import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.ConfigFactory
 import io.grpc.Server
@@ -16,11 +17,7 @@ import io.iohk.atala.prism.management.console.grpc.CredentialsStoreGrpcService
 import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
 import io.iohk.atala.prism.management.console.grpc.CredentialsGrpcService
 import io.iohk.atala.prism.management.console.grpc.ConsoleGrpcService
-import io.iohk.atala.prism.management.console.integrations.{
-  ContactsIntegrationService,
-  CredentialsIntegrationService,
-  ParticipantsIntegrationService
-}
+import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, CredentialsIntegrationService, ParticipantsIntegrationService}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.metrics.UptimeReporter
@@ -41,6 +38,7 @@ object ManagementConsoleApp extends IOApp {
   private val grpcConfig = GrpcUtils.GrpcConfig(port = 50054)
 
   implicit val ec = ExecutionContext.global
+  implicit val ioRuntime: IORuntime = runtime
 
   override def run(args: List[String]): IO[ExitCode] = {
     Kamon.init()

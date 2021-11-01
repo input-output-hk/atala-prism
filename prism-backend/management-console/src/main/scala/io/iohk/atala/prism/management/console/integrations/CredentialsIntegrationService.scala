@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.integrations
 
 import cats.{Comonad, Functor, Monad}
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
@@ -33,6 +33,8 @@ import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait CredentialsIntegrationService[F[_]] {
@@ -166,7 +168,7 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
 
 object CredentialsIntegrationService {
 
-  def apply[F[_]: Execute: BracketThrow, R[_]: Functor](
+  def apply[F[_]: Execute: MonadCancelThrow, R[_]: Functor](
       credentialsRepository: CredentialsRepository[F],
       nodeService: node_api.NodeServiceGrpc.NodeService,
       connector: ConnectorClient[F],
@@ -186,7 +188,7 @@ object CredentialsIntegrationService {
       )
     }
 
-  def unsafe[F[_]: Execute: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: Execute: MonadCancelThrow, R[_]: Comonad](
       credentialsRepository: CredentialsRepository[F],
       nodeService: node_api.NodeServiceGrpc.NodeService,
       connector: ConnectorClient[F],
@@ -199,7 +201,7 @@ object CredentialsIntegrationService {
       logs
     ).extract
 
-  def makeResource[F[_]: Execute: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: Execute: MonadCancelThrow, R[_]: Monad](
       credentialsRepository: CredentialsRepository[F],
       nodeService: node_api.NodeServiceGrpc.NodeService,
       connector: ConnectorClient[F],
