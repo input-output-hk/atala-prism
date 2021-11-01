@@ -1,8 +1,11 @@
 package io.iohk.atala.prism.vault.repositories
 
-import cats.effect.BracketThrow
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{BracketThrow, Resource}
 import cats.syntax.apply._
+import cats.syntax.comonad._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import cats.syntax.applicativeError._
 import derevo.derive
 import derevo.tagless.applyK
@@ -17,7 +20,7 @@ import io.iohk.atala.prism.vault.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
-import tofu.logging.ServiceLogging
+import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
 
@@ -28,19 +31,29 @@ trait RequestNoncesRepository[F[_]] {
 
 object RequestNoncesRepository {
   object PostgresImpl {
-    def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[
-      _
-    ], RequestNoncesRepository[F]]](
-        xa: Transactor[F]
-    ): RequestNoncesRepository[F] = {
-      val mid =
-        (new RequestNoncesRepositoryMetrics: RequestNoncesRepository[
-          Mid[F, *]
-        ]) |+| (new RequestNoncesRepositoryLogging: RequestNoncesRepository[
-          Mid[F, *]
-        ])
-      mid attach new PostgresImpl(xa)
-    }
+    def create[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+        xa: Transactor[F],
+        logs: Logs[R, F]
+    ): R[RequestNoncesRepository[F]] =
+      for {
+        serviceLogs <- logs.service[RequestNoncesRepository[F]]
+      } yield {
+        implicit val implicitLogs: ServiceLogging[F, RequestNoncesRepository[F]] = serviceLogs
+        val metrics: RequestNoncesRepository[Mid[F, *]] = new RequestNoncesRepositoryMetrics
+        val logging: RequestNoncesRepository[Mid[F, *]] = new RequestNoncesRepositoryLogging
+        val mid = metrics |+| logging
+        mid attach new PostgresImpl(xa)
+      }
+
+    def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+        xa: Transactor[F],
+        logs: Logs[R, F]
+    ): Resource[R, RequestNoncesRepository[F]] = Resource.eval(RequestNoncesRepository.PostgresImpl.create(xa, logs))
+
+    def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+        xa: Transactor[F],
+        logs: Logs[R, F]
+    ): RequestNoncesRepository[F] = RequestNoncesRepository.PostgresImpl.create(xa, logs).extract
   }
 }
 

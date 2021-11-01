@@ -5,6 +5,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.{EC, Sha256}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
+import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues
 import tofu.logging.Logs
 
@@ -15,16 +16,13 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   private lazy val vaultTestLogs: Logs[IO, IO] = Logs.sync[IO, IO]
 
-  lazy val repository: IO[PayloadsRepository[IO]] =
-    vaultTestLogs
-      .service[PayloadsRepository[IO]]
-      .map(implicit l => PayloadsRepository.create(database))
+  lazy val repo: PayloadsRepository[IO] = PayloadsRepository.unsafe(database, vaultTestLogs)
 
   def createPayload(did: DID, content: Vector[Byte]): IO[Payload] = {
     val externalId = Payload.ExternalId.random()
     val hash = Sha256.compute(content.toArray)
     val createPayload1 = CreatePayload(externalId, hash, did, content)
-    repository.flatMap(_.create(createPayload1))
+    repo.create(createPayload1)
   }
 
   "create" should {
@@ -67,7 +65,6 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
         payload1 <- createPayload(did1, content1)
         payload2 <- createPayload(did2, content2)
         payload3 <- createPayload(did2, content3)
-        repo <- repository
         mustBe1Payload <- repo.getByPaginated(did1, None, 10)
         mustBe2And3Payload <- repo.getByPaginated(did2, None, 10)
         mustBe2Payload <- repo.getByPaginated(did2, None, 1)

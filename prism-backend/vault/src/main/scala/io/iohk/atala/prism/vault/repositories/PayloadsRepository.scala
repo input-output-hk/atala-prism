@@ -1,8 +1,11 @@
 package io.iohk.atala.prism.vault.repositories
 
-import cats.effect.{Bracket, BracketThrow, MonadThrow}
+import cats.{Applicative, Comonad, Functor}
+import cats.effect.{Bracket, BracketThrow, MonadThrow, Resource}
 import cats.syntax.apply._
+import cats.syntax.comonad._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import cats.syntax.applicativeError._
 import doobie.Transactor
 import doobie.implicits._
@@ -16,7 +19,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
 import tofu.higherKind.Mid
-import tofu.logging.ServiceLogging
+import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
 
@@ -32,18 +35,29 @@ trait PayloadsRepository[F[_]] {
 }
 
 object PayloadsRepository {
-  def create[F[_]: BracketThrow: TimeMeasureMetric: ServiceLogging[*[
-    _
-  ], PayloadsRepository[F]]](
-      xa: Transactor[F]
-  ): PayloadsRepository[F] = {
-    val mid = (new PayloadsRepoMetrics: PayloadsRepository[
-      Mid[F, *]
-    ]) |+| (new PayloadsRepoLogging: PayloadsRepository[
-      Mid[F, *]
-    ])
-    mid attach new PayloadsRepositoryImpl(xa)
-  }
+  def create[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+      xa: Transactor[F],
+      logs: Logs[R, F]
+  ): R[PayloadsRepository[F]] =
+    for {
+      serviceLogs <- logs.service[PayloadsRepository[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, PayloadsRepository[F]] = serviceLogs
+      val metrics: PayloadsRepository[Mid[F, *]] = new PayloadsRepoMetrics
+      val logging: PayloadsRepository[Mid[F, *]] = new PayloadsRepoLogging
+      val mid = metrics |+| logging
+      mid attach new PayloadsRepositoryImpl(xa)
+    }
+
+  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+      xa: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, PayloadsRepository[F]] = Resource.eval(PayloadsRepository.create(xa, logs))
+
+  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+      xa: Transactor[F],
+      logs: Logs[R, F]
+  ): PayloadsRepository[F] = PayloadsRepository.create(xa, logs).extract
 }
 
 private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
