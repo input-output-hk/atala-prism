@@ -191,7 +191,7 @@ export default class ContactStore {
       });
       const contactsWithKey = response.contactsList.map(contactMapper);
       const mappedResponse = { ...response, contactsList: contactsWithKey };
-      return mappedResponse || fallback;
+      return mappedResponse;
     } catch (error) {
       const metadata = {
         store: this.storeName,
@@ -203,6 +203,7 @@ export default class ContactStore {
         this.rootStore.handleTransportLayerError(error, metadata);
         this.isFetching = false;
       });
+      return fallback;
     }
   };
 }
