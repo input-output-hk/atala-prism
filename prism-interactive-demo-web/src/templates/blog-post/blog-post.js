@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { graphql } from 'gatsby';
 import firebase from 'gatsby-plugin-firebase';
@@ -10,13 +11,12 @@ import authorIcon from '../../images/author.svg';
 import clockIcon from '../../images/clock.svg';
 import SEO from '../../components/seo/seo';
 import { BLOG_POST_EVENT } from '../../helpers/constants';
+import { postLinkShape, postShape } from '../../helpers/propTypes';
 
 import './_style.scss';
 import '../../pages/blog.scss';
 
-const BlogPostTemplate = ({ data, location, pageContext }) => {
-  const post = data.markdownRemark;
-
+const BlogPostTemplate = ({ data: { post }, location, pageContext }) => {
   const backTo =
     location && location.state && location.state.fromResources ? '/resources' : '/blog';
 
@@ -75,6 +75,7 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
               )}
               <section
                 className="post-article"
+                // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{ __html: post.html }}
                 itemProp="articleBody"
               />
@@ -94,6 +95,23 @@ const BlogPostTemplate = ({ data, location, pageContext }) => {
   );
 };
 
+BlogPostTemplate.propTypes = {
+  location: PropTypes.shape({
+    href: PropTypes.string,
+    state: PropTypes.shape({
+      fromResources: PropTypes.bool
+    })
+  }).isRequired,
+  pageContext: PropTypes.shape({
+    id: PropTypes.string
+  }).isRequired,
+  data: PropTypes.shape({
+    post: postShape,
+    previous: postLinkShape,
+    next: postLinkShape
+  }).isRequired
+};
+
 export default BlogPostTemplate;
 
 export const pageQuery = graphql`
@@ -103,7 +121,7 @@ export const pageQuery = graphql`
         title
       }
     }
-    markdownRemark(id: { eq: $id }) {
+    post: markdownRemark(id: { eq: $id }) {
       id
       excerpt(pruneLength: 160)
       html

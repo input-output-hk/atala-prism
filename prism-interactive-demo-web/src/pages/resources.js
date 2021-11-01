@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { graphql, Link } from 'gatsby';
 import firebase from 'gatsby-plugin-firebase';
 import _ from 'lodash';
@@ -9,6 +10,7 @@ import FaqPanel from '../app/components/landing/Molecules/FaqPanel/FaqPanel';
 import ContactPanel from '../app/components/landing/Organisms/ContactPanel/ContactPanel';
 import { RESOURCES_EVENT, RESOURCES_NAME } from '../helpers/constants';
 import Play from '../images/play.svg';
+import { brochureShape, postsShape, videoShape } from '../helpers/propTypes';
 
 import './resources.scss';
 
@@ -146,6 +148,18 @@ const Resources = ({ data }) => {
       <FooterBlog />
     </div>
   );
+};
+
+Resources.propTypes = {
+  data: PropTypes.shape({
+    allVideosJson: PropTypes.shape({
+      nodes: PropTypes.arrayOf(PropTypes.shape(videoShape))
+    }),
+    allBrochuresJson: PropTypes.shape({
+      nodes: PropTypes.arrayOf(PropTypes.shape(brochureShape))
+    }),
+    allMarkdownRemark: postsShape
+  }).isRequired
 };
 
 export default Resources;

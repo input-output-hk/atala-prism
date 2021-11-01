@@ -72,6 +72,8 @@
     "eslint-plugin-prettier": "3.1.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.14.2",
+    "jest": "27.3.1",
+    "jest-sonar-reporter": "2.0.0",
     "prettier": "1.16.1"
   },
   "scripts": {
@@ -81,7 +83,8 @@
     "pretest": "./scripts/compile-protos.sh",
     "pretest-no-watch": "./scripts/compile-protos.sh",
     "start": "gatsby develop -p 3000",
-    "build": "gatsby build"
+    "build": "gatsby build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -97,5 +100,13 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "type": "module",
+  "jest": {
+    "testResultsProcessor": "jest-sonar-reporter"
+  },
+  "jestSonar": {
+    "reportPath": "coverage",
+    "reportFile": "testlog.xml"
   }
 }

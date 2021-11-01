@@ -1,16 +1,18 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { graphql } from 'gatsby';
 import HeaderBlog from '../components/headerBlog/headerBlog';
 import FooterBlog from '../components/footer/BlogFooter';
 import Sidebar from '../components/sidebar/sidebar';
 import AuthorPill from '../components/author/authorpill';
 import SEO from '../components/seo/seo';
+import { authorsShape, groupedPostsShape, recentPostsShape } from '../helpers/propTypes';
 
 import './blog.scss';
 
 const Authors = ({ data }) => {
   const {
-    authors: { nodes: authors },
+    authors: { nodes: allAuthors },
     postsPerYear: { group: postsPerYear },
     recentPosts: { nodes: recentPosts }
   } = data;
@@ -23,10 +25,10 @@ const Authors = ({ data }) => {
         <div className="SectionContainerAuthor">
           <div>
             <div className="containerHeader">
-              <h2 class="h2">Authors</h2>
+              <h2 className="h2">Authors</h2>
             </div>
             <div className="containerAuthor">
-              {authors.map(author => (
+              {allAuthors.map(author => (
                 <AuthorPill {...author} />
               ))}
             </div>
@@ -37,6 +39,20 @@ const Authors = ({ data }) => {
       <FooterBlog />
     </div>
   );
+};
+
+Authors.propTypes = {
+  data: PropTypes.shape({
+    authors: PropTypes.shape({
+      nodes: authorsShape
+    }),
+    recentPosts: PropTypes.shape({
+      nodes: recentPostsShape
+    }),
+    postsPerYear: PropTypes.shape({
+      group: groupedPostsShape
+    })
+  }).isRequired
 };
 
 export default Authors;

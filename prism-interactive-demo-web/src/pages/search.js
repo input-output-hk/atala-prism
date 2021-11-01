@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Link, graphql } from 'gatsby';
 import queryString from 'query-string';
-import * as JsSearch from 'js-search';
 import Highlighter from 'react-highlight-words';
 import HeaderBlog from '../components/headerBlog/headerBlog';
 import FooterBlog from '../components/footer/BlogFooter';
@@ -10,13 +10,13 @@ import authorIcon from '../images/author.svg';
 import clockIcon from '../images/clock.svg';
 import SEO from '../components/seo/seo';
 import Sidebar from '../components/sidebar/sidebar';
+import { getTextToHighlight } from '../helpers/textFormatter';
+import { buildSearchIndex } from '../helpers/searchIndex';
+import { groupedPostsShape, postsShape, recentPostsShape } from '../helpers/propTypes';
 
 import './blog.scss';
 
-const PREFIX_LENGTH = 100;
-const DISPLAY_LENGTH = 400;
-
-const BlogIndex = ({ data, location }) => {
+const Search = ({ data, location }) => {
   const {
     posts: { nodes: posts },
     postsPerYear: { group: postsPerYear },
@@ -29,18 +29,10 @@ const BlogIndex = ({ data, location }) => {
   const [filteredPosts, setFilteredPosts] = useState([]);
 
   useEffect(() => {
-    const rebuildIndex = () => {
-      const dataToSearch = new JsSearch.Search('id');
-      dataToSearch.sanitizer = new JsSearch.LowerCaseSanitizer();
-      dataToSearch.searchIndex = new JsSearch.UnorderedSearchIndex();
-      dataToSearch.indexStrategy = new JsSearch.ExactWordIndexStrategy();
-      dataToSearch.addIndex(['frontmatter', 'title']);
-      dataToSearch.addIndex(['frontmatter', 'description']);
-      dataToSearch.addIndex(['internal', 'content']);
-      dataToSearch.addDocuments(posts);
+    if (posts) {
+      const dataToSearch = buildSearchIndex(posts);
       setSearchIndex(dataToSearch);
-    };
-    if (posts) rebuildIndex();
+    }
   }, [posts]);
 
   useEffect(() => {
@@ -61,21 +53,7 @@ const BlogIndex = ({ data, location }) => {
             {filteredPosts.map(post => {
               const title = post.frontmatter.title || post.fields.slug;
 
-              const lowerCaseQuery = search.query.toLowerCase();
-              const postAsText = post.html.replace(/(<([^>]+)>)/gi, '');
-              const postAsLowerCaseText = postAsText.toLowerCase();
-              const queryIsFirstWord =
-                postAsLowerCaseText.substring(0, search.query.length + 1) === `${lowerCaseQuery} `;
-              const firstInstanceIndex = queryIsFirstWord
-                ? 0
-                : postAsLowerCaseText.indexOf(` ${lowerCaseQuery} `);
-              const startIndex = Math.max(0, firstInstanceIndex - PREFIX_LENGTH);
-              const endIndex = startIndex + DISPLAY_LENGTH;
-
-              const displayBody = `${startIndex ? '...' : ''}${postAsText.substring(
-                startIndex,
-                endIndex
-              )}...`;
+              const displayBody = getTextToHighlight(post.html, search.query);
 
               return (
                 <div className="mainSectionContainer">
@@ -111,7 +89,7 @@ const BlogIndex = ({ data, location }) => {
                           <div className="postInfoContainer">
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={calendarIcon} />
+                                <img src={calendarIcon} alt="date" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.date}</p>
@@ -119,7 +97,7 @@ const BlogIndex = ({ data, location }) => {
                             </div>
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={authorIcon} />
+                                <img src={authorIcon} alt="author" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.author}</p>
@@ -127,7 +105,7 @@ const BlogIndex = ({ data, location }) => {
                             </div>
                             <div className="postInfo">
                               <div className="postInfoImgContainer">
-                                <img src={clockIcon} />
+                                <img src={clockIcon} alt="readingTime" />
                               </div>
                               <div>
                                 <p>{post.frontmatter.readingTime} mins read</p>
@@ -157,7 +135,24 @@ const BlogIndex = ({ data, location }) => {
   );
 };
 
-export default BlogIndex;
+Search.propTypes = {
+  location: PropTypes.shape({
+    search: PropTypes.string
+  }).isRequired,
+  data: PropTypes.shape({
+    posts: PropTypes.shape({
+      nodes: postsShape
+    }),
+    recentPosts: PropTypes.shape({
+      nodes: recentPostsShape
+    }),
+    postsPerYear: PropTypes.shape({
+      group: groupedPostsShape
+    })
+  }).isRequired
+};
+
+export default Search;
 
 export const pageQuery = graphql`
   query SearchResults {
