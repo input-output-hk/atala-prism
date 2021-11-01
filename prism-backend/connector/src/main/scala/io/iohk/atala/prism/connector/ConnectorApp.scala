@@ -145,7 +145,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     Resource.make(IO {
       logger.info("Setting-up uptime metrics")
       Kamon.init()
-      Kamon.registerModule("uptime", new UptimeReporter(config))
+      Kamon.addReporter("uptime", new UptimeReporter(config))
     }) { _ => IO.fromFuture(IO(Kamon.stop())) }
 
   private def loadConfig: Resource[IO, Config] =

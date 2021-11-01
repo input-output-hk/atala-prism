@@ -66,7 +66,7 @@ object ManagementConsoleApp extends IOApp {
       })
       defaultCredentialTypeConfig = DefaultCredentialTypeConfig(globalConfig)
       _ = logger.info("Setting-up uptime metrics")
-      _ = Kamon.registerModule("uptime", new UptimeReporter(globalConfig))
+      _ = Kamon.addReporter("uptime", new UptimeReporter(globalConfig))
       transactorConfig = TransactorFactory.transactorConfig(globalConfig)
       nodeConfig = NodeConfig(globalConfig)
 

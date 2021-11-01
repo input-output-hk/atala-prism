@@ -117,7 +117,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def startMetrics(config: Config): Resource[IO, Module.Registration] = Resource.make(IO {
     Kamon.init()
-    Kamon.registerModule("uptime", new UptimeReporter(config))
+    Kamon.addReporter("uptime", new UptimeReporter(config))
   })(_ => IO.fromFuture(IO(Kamon.stop())))
 
   private def loadConfig(): Resource[IO, Config] = Resource.pure[IO, Config] {
@@ -134,7 +134,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     createCardanoClient(config.cardanoClientConfig, logs).flatMap { cardanoClient =>
-      Kamon.registerModule("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
+      Kamon.addReporter("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
       CardanoLedgerService.resource[IOWithTraceIdContext, IO](
         config,
         cardanoClient,
