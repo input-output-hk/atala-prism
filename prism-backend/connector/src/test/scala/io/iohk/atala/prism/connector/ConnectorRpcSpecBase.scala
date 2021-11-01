@@ -1,22 +1,14 @@
 package io.iohk.atala.prism.connector
 
+import cats.effect.std.Queue
+import cats.effect.{IO, Ref}
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories._
-import io.iohk.atala.prism.connector.repositories.daos.{
-  ConnectionTokensDAO,
-  ConnectionsDAO,
-  MessagesDAO,
-  ParticipantsDAO
-}
-import io.iohk.atala.prism.connector.services.{
-  ConnectionsService,
-  MessageNotificationService,
-  MessagesService,
-  RegistrationService
-}
+import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
+import io.iohk.atala.prism.connector.services.{ConnectionsService, MessageNotificationService, MessagesService, RegistrationService}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
@@ -75,7 +67,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
     MessagesService.unsafe(messagesRepository, testLogs)
   lazy val registrationService =
     RegistrationService.unsafe(participantsRepository, nodeMock, testLogs)
-  lazy val messageNotificationService = MessageNotificationService(database)
+  val streamQueuesRef = Ref.unsafe[IO, Map[ParticipantId, Queue[IO, Option[Message]]]](Map.empty)
+  lazy val messageNotificationService = MessageNotificationService(database, streamQueuesRef)
   lazy val connectorService = new ConnectorService(
     connectionsService,
     messagesService,
