@@ -5,7 +5,11 @@ import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
+import io.iohk.atala.prism.auth.grpc.{
+  GrpcAuthenticationHeaderParser,
+  GrpcAuthenticatorInterceptor,
+  TraceExposeInterceptor
+}
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
@@ -227,6 +231,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
     logger.info("Starting server")
     val server = ServerBuilder
       .forPort(ConnectorApp.port)
+      .intercept(new TraceExposeInterceptor)
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(
         _root_.grpc.health.v1.health.HealthGrpc

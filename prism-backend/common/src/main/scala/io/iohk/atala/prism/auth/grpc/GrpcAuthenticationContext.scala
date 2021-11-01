@@ -63,7 +63,7 @@ private[grpc] object GrpcAuthenticationContext {
 
   // tracing
   val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
-    "traceId"
+    "trace-id"
   )
 
   def getTraceIdFromContext(ctx: Context): TraceId =
@@ -71,6 +71,14 @@ private[grpc] object GrpcAuthenticationContext {
 
   def getTraceIdFromMetadata(headers: Metadata): TraceId =
     headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
+
+  def getTraceIdContext(headers: Metadata): Context = {
+    val traceId = headers.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
+
+    Context
+      .current()
+      .withValue(TraceIdKeys.context, traceId.traceId)
+  }
 
   def getPublicKeySignatureContext(headers: Metadata): Option[Context] = {
     (
