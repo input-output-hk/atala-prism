@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.repositories
 
-import cats.effect.ConcurrentEffect
+import cats.effect.unsafe.implicits.global
+import cats.effect.IO
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-
 import doobie.implicits._
 
 case class PostgresConfig(
@@ -37,7 +37,7 @@ case class PostgresConfig(
   *   }
   * }}}
   */
-abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
+abstract class PostgresRepositorySpec[F[_]]
     extends AnyWordSpec
     with Matchers
     with BeforeAndAfterAll
@@ -62,9 +62,7 @@ abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
   }
 
   lazy val (database, releaseDatabase) =
-    ConcurrentEffect[F]
-      .toIO(TransactorFactory.transactor[F](transactorConfig).allocated)
-      .unsafeRunSync()
+    TransactorFactory.transactor[IO](transactorConfig).allocated.unsafeRunSync()
 
   private lazy val postgresConfig =
     getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
@@ -91,13 +89,13 @@ abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
       |COMMENT ON SCHEMA public IS 'standard public schema'
       """.stripMargin
 
-    ConcurrentEffect[F].toIO(sql.update.run.transact(database)).unsafeRunSync()
+    sql.update.run.transact(database).unsafeRunSync()
     migrate()
   }
 
   override protected def afterAll(): Unit = {
     super.afterAll()
-    ConcurrentEffect[F].toIO(releaseDatabase).unsafeRunSync()
+    releaseDatabase.unsafeRunSync()
   }
 
   override def beforeEach(): Unit = {
@@ -126,8 +124,7 @@ abstract class PostgresRepositorySpec[F[_]: ConcurrentEffect: ContextShift]
       |$$$$
       |""".stripMargin
 
-    ConcurrentEffect[F]
-      .toIO(sql.update.run.transact(database))
+    sql.update.run.transact(database)
       .void
       .unsafeRunSync()
   }

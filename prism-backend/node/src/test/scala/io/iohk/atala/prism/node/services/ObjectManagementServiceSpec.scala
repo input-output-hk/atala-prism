@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -17,12 +18,7 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  KeyValuesRepository,
-  ProtocolVersionRepository
-}
+import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, KeyValuesRepository, ProtocolVersionRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
@@ -39,7 +35,6 @@ import org.scalatest.concurrent.ScalaFutures
 import tofu.logging.Logs
 
 import java.time.{Duration, Instant}
-import scala.concurrent.ExecutionContext
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -76,8 +71,6 @@ class ObjectManagementServiceSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
-  private implicit val ce: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger[IOWithTraceIdContext] =
     mock[UnderlyingLedger[IOWithTraceIdContext]]

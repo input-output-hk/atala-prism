@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
@@ -14,12 +15,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.node.DataPreparation._
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  KeyValuesRepository,
-  ProtocolVersionRepository
-}
+import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, KeyValuesRepository, ProtocolVersionRepository}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -31,7 +27,6 @@ import tofu.logging.Logs
 
 import scala.concurrent.duration._
 import java.time.Duration
-import scala.concurrent.ExecutionContext
 
 object SubmissionServiceSpec {}
 
@@ -41,8 +36,6 @@ class SubmissionServiceSpec
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
 
-  private implicit val ce: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger[IOWithTraceIdContext] =
     mock[UnderlyingLedger[IOWithTraceIdContext]]

@@ -20,17 +20,13 @@ import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import tofu.logging.Logs
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import cats.effect.Temporal
+import cats.effect.unsafe.implicits.global
 
 // Todo make CardanoLedgerServiceIntegrationSpec great again
 //  when https://input-output.atlassian.net/browse/ATA-5337 done or 1-2 released
 @Ignore
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
-  private implicit val contextShift: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
-  private implicit val timer: Temporal[IO] = IO.timer(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)

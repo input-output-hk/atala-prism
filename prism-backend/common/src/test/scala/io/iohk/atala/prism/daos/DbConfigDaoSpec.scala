@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.daos
 
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 

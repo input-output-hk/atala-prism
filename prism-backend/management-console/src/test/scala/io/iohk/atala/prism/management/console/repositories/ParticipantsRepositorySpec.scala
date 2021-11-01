@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.typesafe.config.ConfigFactory
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -9,18 +10,12 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors.{InvalidRequest, UnknownValueError}
-import io.iohk.atala.prism.management.console.models.{
-  ParticipantId,
-  ParticipantInfo,
-  ParticipantLogo,
-  UpdateParticipantProfile
-}
+import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, ParticipantLogo, UpdateParticipantProfile}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
-
 import tofu.logging.Logs
 
 //sbt "project management-console" "testOnly *ParticipantsRepositorySpec"

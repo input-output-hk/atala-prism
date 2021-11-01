@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.unsafe.implicits.global
+
 import java.util.UUID
 import io.grpc.StatusRuntimeException
 import org.scalatest.OptionValues
@@ -10,11 +12,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import io.iohk.atala.prism.management.console.DataPreparation._
-import io.iohk.atala.prism.management.console.models.{
-  CreateCredentialTypeField,
-  CredentialTypeFieldType,
-  CredentialTypeState
-}
+import io.iohk.atala.prism.management.console.models.{CreateCredentialTypeField, CredentialTypeFieldType, CredentialTypeState}
 
 class CredentialTypesServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with OptionValues {
 

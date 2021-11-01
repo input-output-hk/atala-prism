@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -14,6 +15,7 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
+
 import java.time.Instant
 
 object RevokeCredentialsOperationSpec {

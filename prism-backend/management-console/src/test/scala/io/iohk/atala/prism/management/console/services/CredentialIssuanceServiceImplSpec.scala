@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.unsafe.implicits.global
 import io.circe.{Json, JsonObject, parser}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest

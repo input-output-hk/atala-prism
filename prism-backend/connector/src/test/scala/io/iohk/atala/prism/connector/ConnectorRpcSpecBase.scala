@@ -1,22 +1,12 @@
 package io.iohk.atala.prism.connector
 
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaSpecBase.implicits.{contextShift, timer}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories._
-import io.iohk.atala.prism.connector.repositories.daos.{
-  ConnectionTokensDAO,
-  ConnectionsDAO,
-  MessagesDAO,
-  ParticipantsDAO
-}
-import io.iohk.atala.prism.connector.services.{
-  ConnectionsService,
-  MessageNotificationService,
-  MessagesService,
-  RegistrationService
-}
+import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
+import io.iohk.atala.prism.connector.services.{ConnectionsService, MessageNotificationService, MessagesService, RegistrationService}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
@@ -85,7 +75,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
     nodeMock,
     participantsRepository
   )(
-    executionContext
+    executionContext,
+    global
   )
 
   override def beforeAll(): Unit = {

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.poc.endorsements
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
@@ -19,32 +20,14 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository,
-  ProtocolVersionRepository
-}
+import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository, ProtocolVersionRepository}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceImpl,
-  InMemoryLedgerService,
-  ObjectManagementService,
-  SubmissionSchedulingService,
-  SubmissionService
-}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService, SubmissionSchedulingService, SubmissionService}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.node.poc.Wallet
 import io.iohk.atala.prism.node.poc.endorsements.EndorsementsService.SignedKey
-import io.iohk.atala.prism.protos.endorsements_api.{
-  EndorseInstitutionRequest,
-  GetEndorsementsRequest,
-  GetFreshMasterKeyRequest,
-  RevokeEndorsementRequest
-}
+import io.iohk.atala.prism.protos.endorsements_api.{EndorseInstitutionRequest, GetEndorsementsRequest, GetFreshMasterKeyRequest, RevokeEndorsementRequest}
 import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
 import io.iohk.atala.prism.utils.NodeClientUtils.{issueBatchOperation, revokeCredentialsOperation}
 import io.iohk.atala.prism.utils.IOUtils._
@@ -52,14 +35,12 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   import Utils._
 
-  private implicit val ce: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val endorsementsFlowPoCLogs =
     Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _

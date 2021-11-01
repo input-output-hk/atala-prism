@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.scalatest.EitherMatchers._
 import io.circe.Json
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
@@ -8,7 +9,6 @@ import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee}
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
 import io.iohk.atala.prism.node.models.WalletStatus
-import io.iohk.atala.prism.node.services.CatsEffectBase
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures
@@ -18,7 +18,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.ExecutionContext
 
-class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures with CatsEffectBase {
+class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))

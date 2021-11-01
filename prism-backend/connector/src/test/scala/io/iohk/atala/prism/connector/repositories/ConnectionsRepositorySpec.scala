@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.effect.unsafe.implicits.global
 import cats.syntax.either._
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._

@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.db
 
+import cats.effect.unsafe.implicits.global
 import doobie.HC
 import doobie.implicits._
 import doobie.postgres._
-import io.iohk.atala.prism.AtalaSpecBase.implicits.{contextShift, timer}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
 
@@ -16,7 +16,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   private def usingDbNotificationStreamer(
       f: DbNotificationStreamer => _
   ): Unit = {
-    val dbNotificationStreamer = DbNotificationStreamer(CHANNEL)
+    val dbNotificationStreamer = DbNotificationStreamer(CHANNEL, db)
     try {
       f(dbNotificationStreamer)
     } finally {
@@ -39,7 +39,6 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
       some: Int
   ): Future[List[DbNotification]] = {
     val stream = dbNotificationStreamer.stream
-      .transact(database)
       .take(some.toLong)
       .timeout(5.seconds)
       .compile
@@ -56,7 +55,6 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
       dbNotificationStreamer: DbNotificationStreamer
   ): Future[List[DbNotification]] = {
     val stream = dbNotificationStreamer.stream
-      .transact(database)
       .drain
       .timeout(5.seconds)
       .compile

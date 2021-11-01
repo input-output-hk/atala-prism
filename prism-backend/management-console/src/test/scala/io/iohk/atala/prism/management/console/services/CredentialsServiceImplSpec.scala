@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
@@ -13,15 +14,7 @@ import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
 import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup, PaginatedQueryConstraints}
-import io.iohk.atala.prism.management.console.DataPreparation.{
-  createContact,
-  createGenericCredential,
-  createInstitutionGroup,
-  createParticipant,
-  getBatchData,
-  publishBatch,
-  publishCredential
-}
+import io.iohk.atala.prism.management.console.DataPreparation.{createContact, createGenericCredential, createInstitutionGroup, createParticipant, getBatchData, publishBatch, publishCredential}
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.protos.connector_api.SendMessagesResponse
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken

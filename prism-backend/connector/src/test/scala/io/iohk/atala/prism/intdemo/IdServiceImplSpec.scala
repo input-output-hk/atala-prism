@@ -2,12 +2,12 @@ package io.iohk.atala.prism.intdemo
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 import io.circe.parser.parse
 import io.grpc.{Status, StatusException}
 import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IdServiceImplSpec._
 import Testing._
+import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{mock, verify, when}
@@ -16,6 +16,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 import io.iohk.atala.prism.utils.Base64Utils
+
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps

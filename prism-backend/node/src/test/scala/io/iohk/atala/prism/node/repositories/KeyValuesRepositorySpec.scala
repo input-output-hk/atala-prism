@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import tofu.logging.Logging
