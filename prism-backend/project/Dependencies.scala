@@ -1,7 +1,6 @@
 import sbt._
 
 object versions {
-  val awsSdk = "2.11.14"
   val bouncycastle = "1.69"
   val catsScalatest = "3.1.1"
   val chimney = "0.6.1"
@@ -37,7 +36,6 @@ object versions {
 }
 
 object Dependencies {
-  val awsSdk = "software.amazon.awssdk" % "s3" % versions.awsSdk
   val bouncyBcpkix =
     "org.bouncycastle" % "bcpkix-jdk15on" % versions.bouncycastle
   val bouncyBcprov =
