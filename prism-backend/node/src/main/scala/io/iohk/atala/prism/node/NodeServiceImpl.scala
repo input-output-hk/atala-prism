@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.applicative._
 import com.google.protobuf.ByteString
 import io.grpc.Status
@@ -12,11 +13,7 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus
-}
+import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmissionStatus, AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
@@ -47,9 +44,7 @@ class NodeServiceImpl(
     credentialBatchesRepository: CredentialBatchesRepository[
       IOWithTraceIdContext
     ]
-)(implicit
-    ec: ExecutionContext
-) extends node_api.NodeServiceGrpc.NodeService {
+)(implicit ec: ExecutionContext, runtime: IORuntime) extends node_api.NodeServiceGrpc.NodeService {
 
   import NodeServiceImpl._
 
@@ -65,14 +60,13 @@ class NodeServiceImpl(
   ): Future[node_api.GetDidDocumentResponse] = {
     val methodName = "getDidDocument"
 
-    implicit val didDataRepositoryImplicit: DIDDataRepository[IOWithTraceIdContext] = didDataRepository
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { _ =>
         for {
           lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
             .run(TraceId.generateYOLO)
             .unsafeToFuture()
-          response <- getDidDocument(request.did, methodName)
+          response <- getDidDocument(request.did, methodName, didDataRepository)
         } yield response.withLastSyncedBlockTimestamp(
           lastSyncedTimestamp.toProtoTimestamp
         )
@@ -81,7 +75,9 @@ class NodeServiceImpl(
 
   }
 
-  private def getDidDocument(didRequestStr: String, methodName: String)(implicit
+  private def getDidDocument(
+      didRequestStr: String,
+      methodName: String,
       didDataRepository: DIDDataRepository[IOWithTraceIdContext]
   ) = {
     val didTry = Try(PrismDid.fromString(didRequestStr))
@@ -90,10 +86,10 @@ class NodeServiceImpl(
       case Success(did) =>
         did match {
           case canon: CanonicalPrismDid =>
-            resolve(canon, tid) orElse (countAndThrowNodeError(methodName, _))
+            resolve(canon, tid, didDataRepository) orElse (countAndThrowNodeError(methodName, _))
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
-            resolve(did.asCanonical(), did, tid).orReturn {
+            resolve(did.asCanonical(), did, tid, didDataRepository).orReturn {
               // if it was not published, we return the encoded initial state
               succeedWith(
                 Some(
@@ -677,10 +673,9 @@ object NodeServiceImpl {
   private def resolve(
       did: CanonicalPrismDid,
       butShowInDIDDocument: DID,
-      tId: TraceId
-  )(implicit
+      tId: TraceId,
       didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  ): OrElse = {
+  )(implicit runtime: IORuntime): OrElse = {
     OrElse(
       butShowInDIDDocument,
       didDataRepository.findByDid(did).run(tId).unsafeToFuture()
@@ -689,10 +684,9 @@ object NodeServiceImpl {
 
   private def resolve(
       did: CanonicalPrismDid,
-      tId: TraceId
-  )(implicit
+      tId: TraceId,
       didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  ): OrElse = {
+  )(implicit runtime: IORuntime): OrElse = {
     OrElse(did, didDataRepository.findByDid(did).run(tId).unsafeToFuture())
   }
 

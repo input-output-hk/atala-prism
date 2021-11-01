@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.node.NodeConfig
 import io.iohk.atala.prism.node.cardano.CardanoClient
@@ -22,6 +22,7 @@ import tofu.logging.Logs
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import cats.effect.Temporal
 
 // Todo make CardanoLedgerServiceIntegrationSpec great again
 //  when https://input-output.atlassian.net/browse/ATA-5337 done or 1-2 released
@@ -29,7 +30,7 @@ import scala.concurrent.duration._
 class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private implicit val contextShift: ContextShift[IO] =
     IO.contextShift(ExecutionContext.global)
-  private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
+  private implicit val timer: Temporal[IO] = IO.timer(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val LAST_SYNCED_BLOCK_NO = "last_synced_block_no"
   private val LONG_TIMEOUT = Timeout(1.minute)

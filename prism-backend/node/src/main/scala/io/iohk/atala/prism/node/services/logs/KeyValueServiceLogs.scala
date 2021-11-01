@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.services.logs
 
-import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -9,6 +8,7 @@ import io.iohk.atala.prism.node.services.KeyValueService
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
+import cats.MonadThrow
 
 private[services] class KeyValueServiceLogs[
     F[_]: ServiceLogging[*[_], KeyValueService[F]]: MonadThrow

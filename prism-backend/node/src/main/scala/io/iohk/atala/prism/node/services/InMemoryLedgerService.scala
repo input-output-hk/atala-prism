@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.implicits._
 
 import java.time.Instant
@@ -22,6 +22,7 @@ import io.iohk.atala.prism.protos.node_internal
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
+import cats.MonadThrow
 
 private final class InMemoryLedgerService[F[_]: MonadThrow](
     onAtalaObject: AtalaObjectNotificationHandler

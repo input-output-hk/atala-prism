@@ -1,15 +1,13 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories.metrics
 
+import cats.effect.kernel.MonadCancel
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
-import tofu.BracketThrow
 import tofu.higherKind.Mid
 
-private[repositories] final class CardanoBlockRepositoryMetrics[F[
-    _
-]: BracketThrow: TimeMeasureMetric]
+private[repositories] final class CardanoBlockRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancel[*[_], Throwable]]
     extends CardanoBlockRepository[Mid[F, *]] {
 
   val repoName = "CardanoBlockRepository"

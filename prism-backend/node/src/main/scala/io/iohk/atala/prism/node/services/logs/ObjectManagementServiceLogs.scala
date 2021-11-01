@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.services.logs
 
-import cats.effect.MonadThrow
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models._
@@ -16,6 +15,7 @@ import cats.syntax.applicativeError._
 import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 
 import java.time.Instant
+import cats.MonadThrow
 
 private[services] class ObjectManagementServiceLogs[
     F[_]: ServiceLogging[*[_], ObjectManagementService[F]]: MonadThrow

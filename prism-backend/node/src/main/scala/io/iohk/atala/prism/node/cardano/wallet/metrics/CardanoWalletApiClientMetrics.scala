@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.cardano.wallet.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
@@ -9,10 +8,11 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.Result
 import io.iohk.atala.prism.node.models.WalletDetails
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
 private[wallet] final class CardanoWalletApiClientMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends CardanoWalletApiClient[Mid[F, *]] {
 
   val clientName = "CardanoWalletApiClient"

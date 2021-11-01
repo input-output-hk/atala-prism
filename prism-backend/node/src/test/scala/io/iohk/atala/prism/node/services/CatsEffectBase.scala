@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 
 import scala.concurrent.ExecutionContext
 

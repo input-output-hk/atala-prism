@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -16,10 +15,11 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import tofu.higherKind.Mid
 
 import java.time.Duration
+import cats.effect.MonadCancelThrow
 
 private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends AtalaObjectsTransactionsRepository[Mid[F, *]] {
 
   private val repoName = "AtalaObjectsTransactionsRepository"

@@ -1,15 +1,15 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
 private[repositories] final class KeyValuesRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends KeyValuesRepository[Mid[F, *]] {
 
   private val repoName = "KeyValuesRepository"

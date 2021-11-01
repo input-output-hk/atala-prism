@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.metrics
 
+import cats.effect.unsafe.IORuntime
 import com.typesafe.config.Config
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -19,9 +20,7 @@ class NodeReporter(
     cardanoClient: CardanoClient[IOWithTraceIdContext],
     keyValueService: KeyValueService[IOWithTraceIdContext],
     blockNumberSyncStart: Int
-)(implicit
-    ec: ExecutionContext
-) extends MetricReporter {
+)(implicit ec: ExecutionContext, runtime: IORuntime) extends MetricReporter {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -84,9 +83,7 @@ object NodeReporter {
       config: CardanoLedgerService.Config,
       cardanoClient: CardanoClient[IOWithTraceIdContext],
       keyValueService: KeyValueService[IOWithTraceIdContext]
-  )(implicit
-      ec: ExecutionContext
-  ): NodeReporter = {
+  )(implicit ec: ExecutionContext, runtime: IORuntime): NodeReporter = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(

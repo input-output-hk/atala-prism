@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.poc.estimations
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
