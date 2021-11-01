@@ -25,7 +25,7 @@ class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(i
   private val stopped = Ref.unsafe[IO, Boolean](false)
   private val stoppedLatch = new CountDownLatch(1)
 
-  lazy val stream: Stream[IO, DbNotification] = {
+  lazy val stream: IO[Stream[IO, DbNotification]] = {
     def inner(liftToConnIO: IO ~> ConnectionIO): Pipe[ConnectionIO, FiniteDuration, Option[PGNotification]] =
       ticks =>
         for {
@@ -54,7 +54,8 @@ class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(i
       stream <- awakeEvery[IO](100.millis).through(inner(liftToConnIO).transact(xa))
     } yield stream
 
-    notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))
+    IO(notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))) <*
+      IO.sleep(1000.millis)
   }
 
   def isStopped: Boolean = stopped.get.unsafeRunSync()

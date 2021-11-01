@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.db
 
+import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.HC
 import doobie.implicits._
@@ -7,104 +8,96 @@ import doobie.postgres._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   private val CHANNEL = "test_channel"
 
-  private def usingDbNotificationStreamer(
-      f: DbNotificationStreamer => _
+  private def usingDbNotificationStreamer[A](
+      f: DbNotificationStreamer => IO[A]
   ): Unit = {
     val dbNotificationStreamer = DbNotificationStreamer(CHANNEL, db)
     try {
-      f(dbNotificationStreamer)
+      f(dbNotificationStreamer).unsafeRunSync()
     } finally {
       dbNotificationStreamer.stopStreaming()
     }
     ()
   }
 
-  private def notify(payload: String): Unit = {
+  private def notify(payload: String): IO[Unit] = {
     val sendNotification = for {
       _ <- PHC.pgNotify(CHANNEL, payload)
       _ <- HC.commit
     } yield ()
 
-    sendNotification.transact(database).unsafeRunSync()
+    sendNotification.transact(database)
   }
 
   private def streamSome(
-      dbNotificationStreamer: DbNotificationStreamer,
+      stream: fs2.Stream[IO, DbNotification],
       some: Int
-  ): Future[List[DbNotification]] = {
-    val stream = dbNotificationStreamer.stream
+  ): IO[List[DbNotification]] =
+    stream
       .take(some.toLong)
       .timeout(5.seconds)
       .compile
       .toList
-      .unsafeToFuture()
-
-    // Give it some time to asynchronously connect to the DB
-    Thread.sleep(100)
-
-    stream
-  }
 
   private def streamAll(
-      dbNotificationStreamer: DbNotificationStreamer
-  ): Future[List[DbNotification]] = {
-    val stream = dbNotificationStreamer.stream.drain
+      stream: fs2.Stream[IO, DbNotification]
+  ): IO[List[DbNotification]] =
+    stream
+      .drain
       .timeout(5.seconds)
       .compile
       .toList
-      .unsafeToFuture()
-
-    // Give it some time to asynchronously connect to the DB
-    Thread.sleep(100)
-
-    stream
-  }
 
   "dbNotificationStreamer" should {
     "stream DB notifications" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
-        val stream = streamSome(dbNotificationStreamer, some = 2)
-
-        val notificationPayload1 = "Notification payload #1"
-        notify(notificationPayload1)
-        val notificationPayload2 = "Notification payload #2"
-        notify(notificationPayload2)
-
-        stream.futureValue mustBe List(
-          DbNotification(notificationPayload1),
-          DbNotification(notificationPayload2)
-        )
+        for {
+          stream <- dbNotificationStreamer.stream
+          notificationPayload1 = "Notification payload #1"
+          notificationPayload2 = "Notification payload #2"
+          _ <- notify(notificationPayload1)
+          _ <- notify(notificationPayload2)
+          result <- streamSome(stream, some = 2)
+          _ = result mustBe List(
+            DbNotification(notificationPayload1),
+            DbNotification(notificationPayload2)
+          )
+        } yield ()
       }
     }
 
     "support multiple streams for the same channel" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
-        val stream1 = streamSome(dbNotificationStreamer, some = 1)
-        val stream2 = streamSome(dbNotificationStreamer, some = 1)
+        for {
+          stream1 <- dbNotificationStreamer.stream
+          stream2 <- dbNotificationStreamer.stream
 
-        val notificationPayload = "Notification payload"
-        notify(notificationPayload)
+          notificationPayload = "Notification payload"
+          _ <- notify(notificationPayload)
 
-        val expectedNotifications = List(DbNotification(notificationPayload))
-        stream1.futureValue mustBe expectedNotifications
-        stream2.futureValue mustBe expectedNotifications
+          expectedNotifications = List(DbNotification(notificationPayload))
+          result1 <- streamSome(stream1, some = 1)
+          result2 <- streamSome(stream2, some = 1)
+          _ = result1 mustBe expectedNotifications
+          _ = result2 mustBe expectedNotifications
+        } yield ()
       }
     }
 
     "stop streaming when stopped" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
-        val stream = streamAll(dbNotificationStreamer)
-
-        dbNotificationStreamer.stopStreaming()
-
-        // Really only care about completing the future
-        stream.futureValue mustBe empty
+        for {
+          stream <- dbNotificationStreamer.stream
+          _ = dbNotificationStreamer.stopStreaming()
+          result <- streamAll(stream)
+          // Really only care about completing the effect
+          _ = result mustBe empty
+        } yield ()
       }
     }
   }
