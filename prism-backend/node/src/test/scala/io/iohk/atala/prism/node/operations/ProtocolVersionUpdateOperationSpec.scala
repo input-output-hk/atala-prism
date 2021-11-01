@@ -17,12 +17,13 @@ import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest.OptionValues._
-import tofu.logging.Logs
+import tofu.logging.Logging.Make
+import tofu.logging.Logging
 
 class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
   val masterKeys = CreateDIDOperationSpec.masterKeys
-  val logs = Logs.universal[IOWithTraceIdContext]
+  val logs: Make[IOWithTraceIdContext] = Logging.Make.plain[IOWithTraceIdContext]
 
   lazy val proposerDidKeys = List(
     DIDPublicKey(proposerDIDSuffix, "master", KeyUsage.MasterKey, masterKeys.getPublicKey)
