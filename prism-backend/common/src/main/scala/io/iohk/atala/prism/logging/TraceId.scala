@@ -29,7 +29,8 @@ object TraceId {
 
   implicit val liftToFutureInstance: Lift[IOWithTraceIdContext, Future] =
     new Lift[IOWithTraceIdContext, Future] {
-      override def lift[A](fa: IOWithTraceIdContext[A]): Future[A] = fa.run(generateYOLO).unsafeToFuture()
+      override def lift[A](fa: IOWithTraceIdContext[A]): Future[A] =
+        fa.run(generateYOLO).unsafeToFuture()
     }
 
   implicit lazy val myctxLoggableCtxIO: LoggableContext[IOWithTraceIdContext] =

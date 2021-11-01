@@ -30,7 +30,6 @@ import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
-import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
@@ -80,7 +79,8 @@ class ObjectManagementServiceSpec
   private implicit val ce: ContextShift[IO] =
     IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
-  private val ledger: UnderlyingLedger[IOWithTraceIdContext] = mock[UnderlyingLedger[IOWithTraceIdContext]]
+  private val ledger: UnderlyingLedger[IOWithTraceIdContext] =
+    mock[UnderlyingLedger[IOWithTraceIdContext]]
   private val atalaOperationsRepository: AtalaOperationsRepository[IOWithTraceIdContext] =
     AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, logs)
   private val atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] =
@@ -125,7 +125,9 @@ class ObjectManagementServiceSpec
     "update status to received when operation was received, but haven't processed yet" in {
       doReturn(
         ReaderT
-          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+            Right(dummyPublicationInfo)
+          )
       ).when(ledger).publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
@@ -154,7 +156,9 @@ class ObjectManagementServiceSpec
     "ignore publishing duplicate operation" in {
       doReturn(
         ReaderT
-          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+            Right(dummyPublicationInfo)
+          )
       ).when(ledger).publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
@@ -187,7 +191,9 @@ class ObjectManagementServiceSpec
     "ignore publishing duplicate operation in the same block" in {
       doReturn(
         ReaderT
-          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+            Right(dummyPublicationInfo)
+          )
       ).when(ledger).publish(*)
 
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
@@ -217,7 +223,9 @@ class ObjectManagementServiceSpec
     "put block content onto the ledger when supported" in {
       doReturn(
         ReaderT
-          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(dummyPublicationInfo))
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+            Right(dummyPublicationInfo)
+          )
       ).when(ledger).publish(*)
 
       val returnedOperationId =
@@ -257,10 +265,13 @@ class ObjectManagementServiceSpec
     }
 
     "record immediate in-ledger transactions" in {
-      val inLedgerPublication = dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
+      val inLedgerPublication =
+        dummyPublicationInfo.copy(status = TransactionStatus.InLedger)
       doReturn(
         ReaderT
-          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](Right(inLedgerPublication))
+          .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
+            Right(inLedgerPublication)
+          )
       ).when(ledger).publish(*)
 
       val returnedOperationId =
@@ -340,7 +351,9 @@ class ObjectManagementServiceSpec
       doReturn(
         ReaderT
           .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
-            Right(PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger))
+            Right(
+              PublicationInfo(dummyTransactionInfo, TransactionStatus.InLedger)
+            )
           )
       ).when(ledger)
         .publish(*)
@@ -358,7 +371,11 @@ class ObjectManagementServiceSpec
 
       val atalaObject = queryAtalaObject(obj)
       val operationInfo =
-        objectManagementService.getOperationInfo(operationId).run(TraceId.generateYOLO).unsafeToFuture().futureValue
+        objectManagementService
+          .getOperationInfo(operationId)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
+          .futureValue
 
       atalaObject.transaction.value mustBe dummyTransactionInfo
       // We don't check the whole returned AtalaOperationInfo because `operationStatus`

@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.repositories
 
-import cats.{Comonad, Functor}
+import cats.{Applicative, Comonad, Functor}
 import cats.data.EitherT
-import cats.effect.BracketThrow
+import cats.effect.{BracketThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.derive
@@ -44,6 +44,14 @@ object DIDDataRepository {
       val mid = metrics |+| logs
       mid attach new DIDDataRepositoryImpl[F](transactor)
     }
+
+  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[
+      _
+  ]: Applicative: Functor](
+      transactor: Transactor[F],
+      logs: Logs[R, F]
+  ): Resource[R, DIDDataRepository[F]] =
+    Resource.eval(DIDDataRepository(transactor, logs))
 
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],

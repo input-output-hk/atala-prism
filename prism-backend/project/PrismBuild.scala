@@ -56,7 +56,12 @@ object PrismBuild {
           val cp = (assembly / fullClasspath).value
 
           val excludeLibs =
-            Set("protobuf-javalite", "kotlinx-coroutines-core", "pbandk-protos", "jakarta")
+            Set(
+              "protobuf-javalite",
+              "kotlinx-coroutines-core",
+              "pbandk-protos",
+              "jakarta"
+            )
 
           cp.filter { path =>
             excludeLibs.exists(lib => path.data.getName.startsWith(lib))
@@ -72,7 +77,7 @@ object PrismBuild {
           case "logback.xml"                        => MergeStrategy.concat
           case "scala-collection-compat.properties" => MergeStrategy.last
           // org.bitcoin classes are coming from both bitcoinj and fr.acinq.secp256k1-jni
-          case PathList("org", "bitcoin", _*)       => MergeStrategy.last
+          case PathList("org", "bitcoin", _*) => MergeStrategy.last
           case x =>
             val oldStrategy = (assembly / assemblyMergeStrategy).value
             oldStrategy(x)
@@ -108,7 +113,6 @@ object PrismBuild {
             Seq(
               diffx,
               flyway,
-              monix,
               typesafeConfig
             ) ++
             prismDependencies ++
@@ -159,7 +163,6 @@ object PrismBuild {
           Seq(
             chimney,
             flyway,
-            monix,
             postgresql,
             scalapbRuntimeGrpc,
             slf4j,

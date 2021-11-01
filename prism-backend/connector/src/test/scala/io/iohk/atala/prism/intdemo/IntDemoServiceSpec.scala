@@ -8,7 +8,6 @@ import Testing.{eventually, neverEver}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import io.iohk.atala.prism.protos.credential_models
-// import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{after, mock, verify, when}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -92,7 +91,6 @@ class IntDemoServiceSpec extends AnyFlatSpec {
             intdemo_api.GetSubjectStatusRequest(token.token),
             streamObserver
           )
-          scheduler.tick(1 second)
           verify(streamObserver, eventually.atLeastOnce())
             .onNext(intdemo_api.GetSubjectStatusResponse(expectedResponse))
           verify(connectorIntegration, neverEver).sendCredential(
@@ -159,7 +157,6 @@ class IntDemoServiceSpec extends AnyFlatSpec {
             intdemo_api.GetSubjectStatusRequest(token.token),
             streamObserver
           )
-          scheduler.tick(1 second)
 
           verify(connectorIntegration, eventually.atLeastOnce())
             .sendCredential(
@@ -221,7 +218,6 @@ class IntDemoServiceSpec extends AnyFlatSpec {
             intdemo_api.GetSubjectStatusRequest(token.token),
             streamObserver
           )
-          scheduler.tick(1 second)
 
           verify(connectorIntegration, neverEver).sendCredential(
             any[ParticipantId],
@@ -267,8 +263,6 @@ class IntDemoServiceSpec extends AnyFlatSpec {
       intdemo_api.GetSubjectStatusRequest(token.token),
       streamObserver
     )
-    scheduler.tick(1 second)
-    scheduler.tick(1 second)
 
     verify(streamObserver, after(100).atMost(1))
       .onNext(any[intdemo_api.GetSubjectStatusResponse])
@@ -285,7 +279,6 @@ class IntDemoServiceSpec extends AnyFlatSpec {
       intdemo_api.GetSubjectStatusRequest(token.token),
       streamObserver
     )
-    scheduler.tick(1 second)
 
     verify(connectorIntegration, eventually.atLeastOnce())
       .sendProofRequest(eqTo(issuerId), eqTo(connectionId), proofRequestMatcher)
@@ -318,9 +311,7 @@ class IntDemoServiceSpec extends AnyFlatSpec {
 object IntDemoServiceSpec {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  import monix.execution.schedulers.TestScheduler
 
-  private val scheduler = TestScheduler()
   private val connectionId = ConnectionId.random()
   private val messageId = MessageId.random()
   private val issuerId = IdServiceImpl.issuerId
@@ -396,8 +387,7 @@ object IntDemoServiceSpec {
       schedulerPeriod = 1 second,
       requiredDataLoader = _ => Future(requiredData),
       proofRequestIssuer = proofRequestIssuer,
-      getCredential = _ => credential,
-      scheduler = scheduler
+      getCredential = _ => credential
     )
 
     testCode(connectorIntegration, repository, service)

@@ -26,7 +26,9 @@ object DidWhitelistLoader {
               )
           }
         case other =>
-          throw new IllegalArgumentException("Expected whitelisted DID as String, but got " + other.getClass)
+          throw new IllegalArgumentException(
+            "Expected whitelisted DID as String, but got " + other.getClass
+          )
       }
     }.toSet
   }

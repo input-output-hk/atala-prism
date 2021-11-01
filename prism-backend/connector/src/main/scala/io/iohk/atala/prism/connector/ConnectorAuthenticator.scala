@@ -30,46 +30,49 @@ class ConnectorAuthenticator(
 
   override def burnNonce(
       id: ParticipantId,
-      requestNonce: auth.model.RequestNonce
+      requestNonce: auth.model.RequestNonce,
+      traceId: TraceId
   )(implicit ec: ExecutionContext): FutureEither[AuthError, Unit] =
     requestNoncesRepository
       .burn(id, requestNonce)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
       .map(_.asRight)
       .toFutureEither
 
   override def burnNonce(
       did: DID,
-      requestNonce: RequestNonce
+      requestNonce: RequestNonce,
+      traceId: TraceId
   )(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
     requestNoncesRepository
       .burn(did, requestNonce)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
       .map(_.asRight)
       .toFutureEither
 
   override def findByPublicKey(
-      publicKey: ECPublicKey
+      publicKey: ECPublicKey,
+      traceId: TraceId
   )(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(publicKey)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
       .toFutureEither
       .mapLeft(_.unify)
       .map(_.id)
       .mapLeft(e => UnexpectedError(e.toStatus))
 
-  override def findByDid(
-      did: DID
-  )(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: DID, traceId: TraceId)(implicit
+      ec: ExecutionContext
+  ): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
       .toFutureEither
       .mapLeft(_.unify)

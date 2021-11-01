@@ -13,28 +13,27 @@ object versions {
   val doobie = "0.13.4"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
-  val flyway = "7.15.0"
+  val flyway = "8.0.2"
   val grpc = "1.41.0"
-  val kamon = "2.1.21"
+  val kamon = "2.3.1"
   val logback = "1.2.6"
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
   val mockito = "1.16.46"
-  val monix = "3.4.0"
   val osLib = "0.7.8"
   val playJson = "2.9.1"
-  val postgresql = "42.2.24"
+  val postgresql = "42.3.1"
   val scalatest = "3.2.10"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.11.6"
   val slf4j = "1.7.32"
-  val sttp = "3.3.15"
+  val sttp = "3.3.16"
   val tofu = "0.10.6"
   val tofuDerevo = "0.12.6"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "1.3.0-build-8-a84ebb4a"
+  val prismSdk = "1.3.0-build-9-6840800f"
 }
 
 object Dependencies {
@@ -69,7 +68,6 @@ object Dependencies {
   val logbackLogstash =
     "net.logstash.logback" % "logstash-logback-encoder" % versions.logbackLogstash
   val jaxb = "javax.xml.bind" % "jaxb-api" % versions.jaxb
-  val monix = "io.monix" %% "monix" % versions.monix
   val osLib = "com.lihaoyi" %% "os-lib" % versions.osLib
   val playJson = "com.typesafe.play" %% "play-json" % versions.playJson
   val postgresql = "org.postgresql" % "postgresql" % versions.postgresql
@@ -77,10 +75,10 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % versions.scalapb
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp.client3" %% "core" % versions.sttp
-  val sttpCE2 = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
-  // TODO update monix in the project
+  val sttpCE2 =
+    "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
   val tofu =
-    "tf.tofu" %% "tofu" % versions.tofu excludeAll ExclusionRule(organization = "io.monix")
+    "tf.tofu" %% "tofu" % versions.tofu
   val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
   val tofuDerevoTagless =
     "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
@@ -98,15 +96,16 @@ object Dependencies {
   // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
   val prismCredentials =
-    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization =
-      "org.bouncycastle"
+    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(
+      organization = "org.bouncycastle"
     )
   val prismProtos =
     "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
-  //Can be used only in tests!
-  val prismApi = "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(organization =
-    "org.bouncycastle"
-  )
+  // Can be used only in tests!
+  val prismApi =
+    "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(
+      organization = "org.bouncycastle"
+    )
 
   // Test dependencies
   val catsScalatest =

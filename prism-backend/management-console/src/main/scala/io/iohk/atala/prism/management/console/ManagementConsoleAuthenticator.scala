@@ -27,34 +27,42 @@ class ManagementConsoleAuthenticator(
       grpcAuthenticationHeaderParser
     ) {
 
-  override def burnNonce(id: ParticipantId, requestNonce: RequestNonce)(implicit
+  override def burnNonce(
+      id: ParticipantId,
+      requestNonce: RequestNonce,
+      traceId: TraceId
+  )(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
     requestNoncesRepository
       .burn(id, requestNonce)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
       .map(_.asRight)
       .toFutureEither
 
-  override def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
+  override def burnNonce(
+      did: DID,
+      requestNonce: RequestNonce,
+      traceId: TraceId
+  )(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
     throw new NotImplementedError()
 
-  override def findByPublicKey(publicKey: ECPublicKey)(implicit
+  override def findByPublicKey(publicKey: ECPublicKey, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, ParticipantId] =
     Future
       .successful(UnsupportedAuthMethod().asLeft[ParticipantId])
       .toFutureEither
 
-  override def findByDid(
-      did: DID
-  )(implicit ec: ExecutionContext): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: DID, traceId: TraceId)(implicit
+      ec: ExecutionContext
+  ): FutureEither[AuthError, ParticipantId] =
     participantsRepository
       .findBy(did)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
       .toFutureEither
       .map(_.id)

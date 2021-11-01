@@ -30,7 +30,6 @@ import io.iohk.atala.prism.node.services.{
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.NodeClientUtils._
-import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.scalatest.BeforeAndAfterEach
 
 import java.time.Duration
@@ -62,7 +61,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
-  protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] = _
+  protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
+    _
   protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _

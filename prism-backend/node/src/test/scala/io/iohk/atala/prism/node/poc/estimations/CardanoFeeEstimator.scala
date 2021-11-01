@@ -321,7 +321,10 @@ object CardanoFeeEstimator {
     val paymentAddress = Address(clientConfig.paymentAddress)
     val logs = Logs.sync[IO, IO]
     val cardanoWalletApiClient =
-      CardanoWalletApiClient.unsafe[IO, IO](clientConfig.cardanoClientConfig.cardanoWalletConfig, logs)
+      CardanoWalletApiClient.unsafe[IO, IO](
+        clientConfig.cardanoClientConfig.cardanoWalletConfig,
+        logs
+      )
 
     new CardanoFeeEstimator(walletId, paymentAddress, cardanoWalletApiClient)
   }

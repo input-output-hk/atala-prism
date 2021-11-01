@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.MonadThrow
-import cats.{Comonad, Functor}
+import cats.effect.{MonadThrow, Resource}
+import cats.{Applicative, Comonad, Functor}
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.derive
@@ -34,6 +34,12 @@ object KeyValueService {
       val mid = logs
       mid attach new KeyValueServiceImpl[F](keyValueRepository)
     }
+
+  def resource[F[_]: MonadThrow, R[_]: Applicative: Functor](
+      keyValueRepository: KeyValuesRepository[F],
+      logs: Logs[R, F]
+  ): Resource[R, KeyValueService[F]] =
+    Resource.eval(KeyValueService(keyValueRepository, logs))
 
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
       keyValueRepository: KeyValuesRepository[F],

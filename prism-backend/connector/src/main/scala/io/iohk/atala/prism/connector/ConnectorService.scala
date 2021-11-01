@@ -349,18 +349,19 @@ class ConnectorService(
   override def getMessagesPaginated(
       request: connector_api.GetMessagesPaginatedRequest
   ): Future[connector_api.GetMessagesPaginatedResponse] = {
-    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) { (participantId, _, messagesPaginatedRequest) =>
-      messages
-        .getMessagesPaginated(
-          participantId,
-          messagesPaginatedRequest.limit,
-          messagesPaginatedRequest.lastSeenMessageId
-        )
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .toFutureEither
-        .mapLeft(_.unify)
-        .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
+    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) {
+      (participantId, traceId, messagesPaginatedRequest) =>
+        messages
+          .getMessagesPaginated(
+            participantId,
+            messagesPaginatedRequest.limit,
+            messagesPaginatedRequest.lastSeenMessageId
+          )
+          .run(traceId)
+          .unsafeToFuture()
+          .toFutureEither
+          .mapLeft(_.unify)
+          .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
   }
 
@@ -370,7 +371,8 @@ class ConnectorService(
   ): Unit = {
     def streamMessages(
         recipientId: ParticipantId,
-        lastSeenMessageId: Option[MessageId]
+        lastSeenMessageId: Option[MessageId],
+        traceId: TraceId
     ): Unit = {
       val existingMessageStream =
         messages.getMessageStream(
@@ -390,7 +392,7 @@ class ConnectorService(
         )
         .compile
         .drain
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .onComplete {
           case Success(_) => responseObserver.onCompleted()
@@ -403,11 +405,12 @@ class ConnectorService(
         }
     }
 
-    auth[GetMessageStreamRequest]("getMessageStream", request) { (participantId, _, getMessageStreamRequest) =>
+    auth[GetMessageStreamRequest]("getMessageStream", request) { (participantId, traceId, getMessageStreamRequest) =>
       FutureEither.right(
         streamMessages(
           participantId,
-          getMessageStreamRequest.lastSeenMessageId
+          getMessageStreamRequest.lastSeenMessageId,
+          traceId
         )
       )
     }
@@ -418,14 +421,14 @@ class ConnectorService(
       request: connector_api.GetMessagesForConnectionRequest
   ): Future[connector_api.GetMessagesForConnectionResponse] =
     auth[GetMessagesForConnectionRequest]("getMessagesForConnection", request) {
-      (participantId, _, getMessagesForConnectionRequest) =>
+      (participantId, traceId, getMessagesForConnectionRequest) =>
         messages
           .getConnectionMessages(
             participantId,
             getMessagesForConnectionRequest.connectionId
           )
           .map(msgs => connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto)))
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .map(_.asRight)
           .toFutureEither
@@ -477,7 +480,7 @@ class ConnectorService(
   override def sendMessage(
       request: connector_api.SendMessageRequest
   ): Future[connector_api.SendMessageResponse] =
-    authCo[SendMessageRequest]("sendMessage", request) { (participantId, _, sendMessageRequest) =>
+    authCo[SendMessageRequest]("sendMessage", request) { (participantId, traceId, sendMessageRequest) =>
       messages
         .insertMessage(
           sender = participantId,
@@ -485,7 +488,7 @@ class ConnectorService(
           content = sendMessageRequest.message,
           messageId = sendMessageRequest.id
         )
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
@@ -559,7 +562,7 @@ class ConnectorService(
   override def sendMessages(
       request: connector_api.SendMessagesRequest
   ): Future[connector_api.SendMessagesResponse] =
-    auth[SendMessagesRequest]("sendMessages", request) { (participantId, _, query) =>
+    auth[SendMessagesRequest]("sendMessages", request) { (participantId, traceId, query) =>
       query.messages.fold(
         FutureEither
           .right[ConnectorError, connector_api.SendMessagesResponse](
@@ -568,7 +571,7 @@ class ConnectorService(
       ) { messagesToInsert =>
         messages
           .insertMessages(participantId, messagesToInsert)
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
           .toFutureEither
           .mapLeft(_.unify)

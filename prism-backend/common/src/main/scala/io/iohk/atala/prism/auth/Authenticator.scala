@@ -59,25 +59,25 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
   /** Burns given nonce for user id, so that the request can not be cloned by a malicious agent
     */
-  def burnNonce(id: Id, requestNonce: RequestNonce)(implicit
+  def burnNonce(id: Id, requestNonce: RequestNonce, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit]
 
   /** Burns given nonce for DID, so that the request can not be cloned by a malicious agent
     */
-  def burnNonce(did: DID, requestNonce: RequestNonce)(implicit
+  def burnNonce(did: DID, requestNonce: RequestNonce, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit]
 
   /** Finds a user associated with the given public key
     */
-  def findByPublicKey(publicKey: ECPublicKey)(implicit
+  def findByPublicKey(publicKey: ECPublicKey, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Id]
 
   /** Finds a user associated with the given DID
     */
-  def findByDid(did: DID)(implicit
+  def findByDid(did: DID, traceId: TraceId)(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Id]
 
@@ -154,11 +154,12 @@ abstract class SignedRequestsAuthenticatorBase[Id](
       publicKey: ECPublicKey,
       request: Array[Byte],
       requestNonce: model.RequestNonce,
-      signature: ECSignature
+      signature: ECSignature,
+      traceId: TraceId
   )(implicit ec: ExecutionContext): FutureEither[AuthError, Id] = {
     for {
       _ <- verifyRequestSignature(publicKey, request, requestNonce, signature)
-      _ <- burnNonce(id, requestNonce)
+      _ <- burnNonce(id, requestNonce, traceId)
     } yield id
   }
 
@@ -167,11 +168,12 @@ abstract class SignedRequestsAuthenticatorBase[Id](
       publicKey: ECPublicKey,
       request: Array[Byte],
       requestNonce: model.RequestNonce,
-      signature: ECSignature
+      signature: ECSignature,
+      traceId: TraceId
   )(implicit ec: ExecutionContext): FutureEither[AuthError, DID] = {
     for {
       _ <- verifyRequestSignature(publicKey, request, requestNonce, signature)
-      _ <- burnNonce(did, requestNonce)
+      _ <- burnNonce(did, requestNonce, traceId)
     } yield did
   }
 
@@ -200,7 +202,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
 
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
-      id <- findByPublicKey(authenticationHeader.publicKey)
+      id <- findByPublicKey(authenticationHeader.publicKey, traceId)
       signature = authenticationHeader.signature
       publicKey = authenticationHeader.publicKey
       _ <- verifyRequestSignature(
@@ -208,7 +210,8 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         publicKey = publicKey,
         signature = signature,
         request = request,
-        requestNonce = authenticationHeader.requestNonce
+        requestNonce = authenticationHeader.requestNonce,
+        traceId = traceId
       )
     } yield (id, traceId)
   }
@@ -222,7 +225,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
   ): FutureEither[AuthError, (Id, TraceId)] = {
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
-      id <- findByDid(authenticationHeader.did)
+      id <- findByDid(authenticationHeader.did, traceId)
 
       didDocumentResponse <-
         nodeClient
@@ -246,7 +249,8 @@ abstract class SignedRequestsAuthenticatorBase[Id](
         publicKey = publicKey,
         signature = authenticationHeader.signature,
         request = request,
-        requestNonce = authenticationHeader.requestNonce
+        requestNonce = authenticationHeader.requestNonce,
+        traceId = traceId
       )
     } yield (id, traceId)
   }
@@ -261,13 +265,14 @@ abstract class SignedRequestsAuthenticatorBase[Id](
     DIDUtils.validateDid(authenticationHeader.did).flatMap { didData =>
       for {
         publicKey <- DIDUtils.findPublicKey(didData, authenticationHeader.keyId)
-        id <- findByDid(authenticationHeader.did)
+        id <- findByDid(authenticationHeader.did, traceId)
         _ <- verifyRequestSignature(
           id = id,
           publicKey = publicKey,
           signature = authenticationHeader.signature,
           request = request,
-          requestNonce = authenticationHeader.requestNonce
+          requestNonce = authenticationHeader.requestNonce,
+          traceId = traceId
         )
       } yield (id, traceId)
     }
@@ -360,7 +365,8 @@ abstract class SignedRequestsAuthenticatorBase[Id](
                 publicKey = publicKey,
                 signature = signature,
                 request = request.toByteArray,
-                requestNonce = requestNonce
+                requestNonce = requestNonce,
+                traceId = traceId
               )
             } yield did
           }

@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.services
 
-import cats.{Comonad, Functor, Monad}
+import cats.{Applicative, Comonad, Functor, Monad}
 import cats.data.EitherT
-import cats.effect.MonadThrow
+import cats.effect.{MonadThrow, Resource}
 import cats.syntax.applicative._
 import cats.syntax.comonad._
 import cats.syntax.either._
@@ -70,6 +70,22 @@ object SubmissionService {
         config
       )
     }
+
+  def resource[F[_]: MonadThrow, R[_]: Applicative: Functor](
+      atalaReferenceLedger: UnderlyingLedger[F],
+      atalaOperationsRepository: AtalaOperationsRepository[F],
+      atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
+      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      logs: Logs[R, F]
+  ): Resource[R, SubmissionService[F]] = Resource.eval(
+    SubmissionService(
+      atalaReferenceLedger,
+      atalaOperationsRepository,
+      atalaObjectsTransactionsRepository,
+      config,
+      logs
+    )
+  )
 
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
       atalaReferenceLedger: UnderlyingLedger[F],
@@ -185,9 +201,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
   }
 
   private def publishObjectsAndRecordTransaction(
-      atalaObjectsWithParsedContent: List[(AtalaObjectInfo, node_internal.AtalaObject)]
+      atalaObjectsWithParsedContent: List[
+        (AtalaObjectInfo, node_internal.AtalaObject)
+      ]
   ): F[List[TransactionInfo]] = {
-    def logAndKeep(keep: List[TransactionInfo])(err: NodeError): List[TransactionInfo] = {
+    def logAndKeep(
+        keep: List[TransactionInfo]
+    )(err: NodeError): List[TransactionInfo] = {
       logger.error("Was not able to publish and record transaction", err)
       keep
     }
@@ -343,7 +363,8 @@ private class SubmissionServiceImpl[F[_]: Monad](
     logger.info(s"Publish atala object [${atalaObjectInfo.objectId}]")
     val publicationEitherT = for {
       // Publish object to the blockchain
-      publication <- EitherT(atalaReferenceLedger.publish(atalaObject)).leftMap(NodeError.InternalCardanoWalletError)
+      publication <- EitherT(atalaReferenceLedger.publish(atalaObject))
+        .leftMap(NodeError.InternalCardanoWalletError)
 
       _ <- EitherT(
         atalaObjectsTransactionsRepository
@@ -361,7 +382,9 @@ private class SubmissionServiceImpl[F[_]: Monad](
       s"Getting transaction details for transaction ${transaction.transactionId}"
     )
     for {
-      transactionDetails <- atalaReferenceLedger.getTransactionDetails(transaction.transactionId)
+      transactionDetails <- atalaReferenceLedger.getTransactionDetails(
+        transaction.transactionId
+      )
     } yield {
       transactionDetails.left
         .map { err =>
