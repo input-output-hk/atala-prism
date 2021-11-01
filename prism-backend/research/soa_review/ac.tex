@@ -63,7 +63,6 @@ the attributes that the user is willing to share (or a function of them).
   \end{itemize}
 \item[\cite{cl02}:]
   \begin{itemize}
-  \item Functionality:
   \item Approach: Te paper aims at improving efficiency of AC systems, as
     well as still ensuring that the user can retrieve their credentials in
     a privacy-preserving manner. For this purpose, the core of the paper
@@ -82,12 +81,32 @@ the attributes that the user is willing to share (or a function of them).
   changing the security assumptions to be based only on problems related
   to the discrete logarithm, and on bilinear maps. Basically, defines a
   signature scheme suitable for signing multiple messages, a protocol to
-  obtain a signature con a committed value, and a protocol to prove knowledge
+  obtain a signature on a committed value, and a protocol to prove knowledge
   of a signature. Concerning commitments, they rely on Pedersen commitment
   scheme, for which protocols are known to prove knowledge and equality of
   committed values. This lets them follow the same approach to \cite{cl02},
   which is in turn the one in \cite{cl01}.
-\item[\cite{cdhk15}:]
+\item[\cite{cdhk15}:] The approach to build anonymous credentials is roughly
+  the same as in the previous works \cite{cl01,cl02,cl04}, although with
+  relevant differences that make it more efficient. Basically, users create
+  pseudonyms derived from a common secret. Then, any user can request a
+  credential. For this, the user needs to prove knowledge of the pseudonym's
+  secret. In return, the issuer produces an ``unlinkable redactable signature''
+  on a set of attributes, for that pseudonym. A redactable signature is
+  essentially a signature over a set (block) of messages, that enables
+  subsequent verification that a subset of those messages was signed. This
+  is essentially the same as in \cite{cl02,cl04}. However, to achieve
+  unlinkability, \cite{cdhk15} incorporates efficient zero-knowledge proofs
+  to prove correctness of the subset of the messages that a user wants to
+  ``show'' in a credential showing process. This ensures unlinkability (hence,
+  privacy). The internal scheme used for this is a vector commitment scheme
+  that uses Lagrange interpolation to allow checking that a subset of the
+  committed messages are indeed contained within the commitment. Moreover,
+  both the vector commitment scheme, and the vector signing scheme, are
+  structure preserving. This means that, since all the produced messages,
+  commitments, and signatures, are elements of the group (rather than of the
+  field), proving knowledge is much more efficient (e.g., it prevents costly
+  extraction required for security proofs).
 \end{enumerate}
 
 \paragraph{Main security models.}
@@ -106,7 +125,16 @@ the attributes that the user is willing to share (or a function of them).
   based on the Strong RSA and Diffie-Hellman assumptions.
 \item[\cite{cl04}:] Same as in \cite{cl02} (no actual security model for the
   AC system). The custom proofs are based on the DDH and LRSW assumptions.
-\item[\cite{cdhk15}:]
+\item[\cite{cdhk15}:] The model (and associated proofs) presented in this paper
+  is very comprehensive, and detailed. Specifically, for the main building block
+  (Unlinkable Redactable Signatures), the authors give both game-based
+  definitions as well as an ideal functionality. This ideal functionality models
+  security in a single-issuer setting. However, as it is done in the UC
+  framework, it can be composed with itself, so that a scenario with multiple
+  issuers, in which users can combine credentials obtained by different users
+  into a single showing process (``presentation'') is directly achievable by
+  composing multiple instances of the ideal functionality (one per ``proof
+  part'').
 \end{enumerate}
 
 \paragraph{Variations in functionality.}
@@ -142,7 +170,7 @@ the attributes that the user is willing to share (or a function of them).
     within the exponent used to compute the pseudonym in sub-intervals, and then
     proving that the exponent lies within a sub-interval.
   \end{itemize}
-\item[\cite{cdhk15}:]
+\item[\cite{cdhk15}:] The same as in the previous works (\cite{cl01,cl02,cl04}).
 \end{enumerate}
 
 \paragraph{Efficiency.}
