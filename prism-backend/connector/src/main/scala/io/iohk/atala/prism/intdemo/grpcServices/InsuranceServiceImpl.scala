@@ -30,7 +30,8 @@ class InsuranceServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends intdemo_api.InsuranceServiceGrpc.InsuranceService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.InsuranceServiceGrpc.InsuranceService {
 
   val service = new IntDemoService[RequiredInsuranceData](
     InsuranceServiceImpl.issuerId,

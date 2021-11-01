@@ -15,7 +15,12 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.node.DataPreparation._
-import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, KeyValuesRepository, ProtocolVersionRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  KeyValuesRepository,
+  ProtocolVersionRepository
+}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

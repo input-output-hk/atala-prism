@@ -124,7 +124,8 @@ abstract class PostgresRepositorySpec[F[_]]
       |$$$$
       |""".stripMargin
 
-    sql.update.run.transact(database)
+    sql.update.run
+      .transact(database)
       .void
       .unsafeRunSync()
   }

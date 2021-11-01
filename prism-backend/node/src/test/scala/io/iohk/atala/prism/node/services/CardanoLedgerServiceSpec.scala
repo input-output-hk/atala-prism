@@ -5,7 +5,14 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionDetails, TransactionId, TransactionInfo, TransactionStatus}
+import io.iohk.atala.prism.models.{
+  BlockInfo,
+  Ledger,
+  TransactionDetails,
+  TransactionId,
+  TransactionInfo,
+  TransactionStatus
+}
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository

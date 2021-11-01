@@ -18,7 +18,12 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
-import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, KeyValuesRepository, ProtocolVersionRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  KeyValuesRepository,
+  ProtocolVersionRepository
+}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}

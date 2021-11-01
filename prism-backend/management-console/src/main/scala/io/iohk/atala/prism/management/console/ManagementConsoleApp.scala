@@ -17,7 +17,11 @@ import io.iohk.atala.prism.management.console.grpc.CredentialsStoreGrpcService
 import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
 import io.iohk.atala.prism.management.console.grpc.CredentialsGrpcService
 import io.iohk.atala.prism.management.console.grpc.ConsoleGrpcService
-import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, CredentialsIntegrationService, ParticipantsIntegrationService}
+import io.iohk.atala.prism.management.console.integrations.{
+  ContactsIntegrationService,
+  CredentialsIntegrationService,
+  ParticipantsIntegrationService
+}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.metrics.UptimeReporter

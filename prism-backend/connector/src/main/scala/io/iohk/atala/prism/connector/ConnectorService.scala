@@ -15,7 +15,12 @@ import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.model.actions._
 import io.iohk.atala.prism.connector.repositories.ConnectionsRepository.AddConnectionFromTokenError
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
-import io.iohk.atala.prism.connector.services.{ConnectionsService, MessageNotificationService, MessagesService, RegistrationService}
+import io.iohk.atala.prism.connector.services.{
+  ConnectionsService,
+  MessageNotificationService,
+  MessagesService,
+  RegistrationService
+}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.logging.TraceId

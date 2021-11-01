@@ -21,7 +21,8 @@ import io.iohk.atala.prism.management.console.services.CredentialsService
 class CredentialsGrpcService(
     credentialsService: CredentialsService[IOWithTraceIdContext],
     val authenticator: Authenticator[ParticipantId]
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends console_api.CredentialsServiceGrpc.CredentialsService
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends console_api.CredentialsServiceGrpc.CredentialsService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
 

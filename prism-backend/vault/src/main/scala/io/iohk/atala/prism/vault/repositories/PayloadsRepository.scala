@@ -21,7 +21,7 @@ import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
 import cats.MonadThrow
-import cats.effect.{ MonadCancel, MonadCancelThrow }
+import cats.effect.{MonadCancel, MonadCancelThrow}
 
 @derive(applyK)
 trait PayloadsRepository[F[_]] {
@@ -83,7 +83,8 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
       .transact(xa)
 }
 
-private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow] extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow]
+    extends PayloadsRepository[Mid[F, *]] {
   val repoName: String = "payloads-repository"
 
   private lazy val createTimer =

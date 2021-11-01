@@ -13,7 +13,11 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
-import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmissionStatus, AtalaOperationInfo, AtalaOperationStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus
+}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
@@ -44,7 +48,8 @@ class NodeServiceImpl(
     credentialBatchesRepository: CredentialBatchesRepository[
       IOWithTraceIdContext
     ]
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends node_api.NodeServiceGrpc.NodeService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends node_api.NodeServiceGrpc.NodeService {
 
   import NodeServiceImpl._
 

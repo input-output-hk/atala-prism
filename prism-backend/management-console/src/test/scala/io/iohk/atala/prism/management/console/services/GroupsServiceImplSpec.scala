@@ -15,7 +15,11 @@ import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.R
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
-import io.iohk.atala.prism.management.console.repositories.{InstitutionGroupsRepository, ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.management.console.repositories.{
+  InstitutionGroupsRepository,
+  ParticipantsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}

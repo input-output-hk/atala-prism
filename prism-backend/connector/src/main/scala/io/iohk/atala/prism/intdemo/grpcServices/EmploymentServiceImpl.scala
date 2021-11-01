@@ -6,7 +6,12 @@ import java.time.LocalDate
 import io.circe.Json
 import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
-import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.{RequiredEmploymentData, getRequiredEmploymentData, issuerId, requestIdAndDegreeCredentials}
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.{
+  RequiredEmploymentData,
+  getRequiredEmploymentData,
+  issuerId,
+  requestIdAndDegreeCredentials
+}
 import io.iohk.atala.prism.utils.Base64Utils
 import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, jsonPrinter}
 import io.iohk.atala.prism.connector.model.{Connection, TokenString}
@@ -26,7 +31,8 @@ class EmploymentServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends intdemo_api.EmploymentServiceGrpc.EmploymentService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.EmploymentServiceGrpc.EmploymentService {
 
   val service = new IntDemoService[RequiredEmploymentData](
     issuerId = issuerId,

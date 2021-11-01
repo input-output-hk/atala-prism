@@ -10,7 +10,12 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
 import io.iohk.atala.prism.management.console.errors.{InvalidRequest, UnknownValueError}
-import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo, ParticipantLogo, UpdateParticipantProfile}
+import io.iohk.atala.prism.management.console.models.{
+  ParticipantId,
+  ParticipantInfo,
+  ParticipantLogo,
+  UpdateParticipantProfile
+}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.utils.IOUtils._

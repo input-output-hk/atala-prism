@@ -22,7 +22,8 @@ class EncryptedDataVaultGrpcService(
     service: EncryptedDataVaultService[IOWithTraceIdContext],
     authenticator: VaultAuthenticator
 )(implicit ec: ExecutionContext, runtime: IORuntime)
-  extends vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultService with AuthErrorSupport {
+    extends vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultService
+    with AuthErrorSupport {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   val serviceName = "encrypted-data-vault-service"

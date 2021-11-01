@@ -7,7 +7,11 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus
+}
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
 
