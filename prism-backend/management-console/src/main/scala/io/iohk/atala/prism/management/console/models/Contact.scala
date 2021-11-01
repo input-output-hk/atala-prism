@@ -110,10 +110,14 @@ object Contact {
 
   /** Used to filter the results by the given criteria
     *
-    * @param groupName when provided, all results belong to this group
-    * @param externalId when provided, the externalId on results is similar to this one
-    * @param name when provided, the name on results is similar to this one
-    * @param createdAt when provided, the createdAt on results matches this date
+    * @param groupName
+    *   when provided, all results belong to this group
+    * @param externalId
+    *   when provided, the externalId on results is similar to this one
+    * @param name
+    *   when provided, the name on results is similar to this one
+    * @param createdAt
+    *   when provided, the createdAt on results matches this date
     */
   case class FilterBy(
       groupName: Option[InstitutionGroup.Name] = None,

@@ -281,7 +281,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val mockOperationHash = Sha256.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
 
-      /// we first publish the batch
+      // / we first publish the batch
       DataPreparation.publishBatch(
         mockBatchId,
         mockOperationHash,
@@ -327,7 +327,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val mockOperationHash = Sha256.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
 
-      /// we first publish the batch
+      // / we first publish the batch
       DataPreparation.publishBatch(
         mockBatchId,
         mockOperationHash,
@@ -367,7 +367,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val mockOperationHash = Sha256.compute("000".getBytes())
       val mockBatchId = CredentialBatchId.fromDigest(mockOperationHash)
 
-      /// we first publish the batch
+      // / we first publish the batch
       DataPreparation.publishBatch(
         mockBatchId,
         mockOperationHash,

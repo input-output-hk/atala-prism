@@ -197,13 +197,21 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   /** Applies function to all sequence elements, up to the point error occurs
     *
-    * @param in input sequence
-    * @param f function to be applied to elements of the sequence
-    * @tparam A type of input sequence element
-    * @tparam L left alternative of Either returned by f
-    * @tparam R right alternative of Either returned by f
-    * @tparam M the input sequence type
-    * @return Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no errors
+    * @param in
+    *   input sequence
+    * @param f
+    *   function to be applied to elements of the sequence
+    * @tparam A
+    *   type of input sequence element
+    * @tparam L
+    *   left alternative of Either returned by f
+    * @tparam R
+    *   right alternative of Either returned by f
+    * @tparam M
+    *   the input sequence type
+    * @return
+    *   Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no
+    *   errors
     */
   private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
       in: M[A]
