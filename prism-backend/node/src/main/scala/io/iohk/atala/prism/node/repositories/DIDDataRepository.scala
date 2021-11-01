@@ -45,10 +45,13 @@ object DIDDataRepository {
       mid attach new DIDDataRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[
+      _
+  ]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, DIDDataRepository[F]] = Resource.eval(DIDDataRepository(transactor, logs))
+  ): Resource[R, DIDDataRepository[F]] =
+    Resource.eval(DIDDataRepository(transactor, logs))
 
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],

@@ -61,7 +61,10 @@ object TimeMeasureUtil {
     DomainTimer(Kamon.timer(DB_QUERY_TIMER).withTags(tags))
   }
 
-  def createClientRequestTimer(clientName: String, methodName: String): DomainTimer = {
+  def createClientRequestTimer(
+      clientName: String,
+      methodName: String
+  ): DomainTimer = {
     val tags = TagSet
       .builder()
       .add(CLIENT_TAG_NAME, clientName)

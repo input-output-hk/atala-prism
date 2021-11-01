@@ -57,7 +57,10 @@ trait CardanoWalletApiClient[F[_]] {
     * @see
     *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
     */
-  def getTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[TransactionDetails]]
+  def getTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): F[Result[TransactionDetails]]
 
   /** Forget pending transaction. Importantly, a transaction, when sent, cannot be cancelled. One can only request
     * forgetting about it in order to try spending (concurrently) the same UTxO in another transaction.
@@ -67,7 +70,10 @@ trait CardanoWalletApiClient[F[_]] {
     * @see
     *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
     */
-  def deleteTransaction(walletId: WalletId, transactionId: TransactionId): F[Result[Unit]]
+  def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): F[Result[Unit]]
 
   /** Get detailed information about the given wallet.
     *
@@ -87,17 +93,22 @@ object CardanoWalletApiClient {
   ): I[F[CardanoWalletApiClient[F]]] = for {
     logs <- logs.service[CardanoWalletApiClient[F]]
   } yield {
-    implicit val implicitLogs: ServiceLogging[F, CardanoWalletApiClient[F]] = logs
+    implicit val implicitLogs: ServiceLogging[F, CardanoWalletApiClient[F]] =
+      logs
     ApiClient.defaultBackend.use { backend =>
-      val logging: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientLogs[F]
-      val metrics: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientMetrics[F]
+      val logging: CardanoWalletApiClient[Mid[F, *]] =
+        new CardanoWalletApiClientLogs[F]
+      val metrics: CardanoWalletApiClient[Mid[F, *]] =
+        new CardanoWalletApiClientMetrics[F]
       val client: CardanoWalletApiClient[F] = new ApiClient(config, backend)
       val mid = metrics |+| logging
       Applicative[F].pure(mid attach client)
     }
   }
 
-  def makeResource[F[_]: TimeMeasureMetric: Concurrent: ContextShift, I[_]: Comonad](
+  def makeResource[F[_]: TimeMeasureMetric: Concurrent: ContextShift, I[
+      _
+  ]: Comonad](
       config: Config,
       logs: Logs[I, F]
   ): Resource[F, CardanoWalletApiClient[F]] = {
@@ -105,8 +116,10 @@ object CardanoWalletApiClient {
       .service[CardanoWalletApiClient[F]]
       .map { implicit logging =>
         ApiClient.defaultBackend.map { backend =>
-          val logs: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientLogs[F]
-          val metrics: CardanoWalletApiClient[Mid[F, *]] = new CardanoWalletApiClientMetrics[F]
+          val logs: CardanoWalletApiClient[Mid[F, *]] =
+            new CardanoWalletApiClientLogs[F]
+          val metrics: CardanoWalletApiClient[Mid[F, *]] =
+            new CardanoWalletApiClientMetrics[F]
           val mid = metrics |+| logs
           mid attach new ApiClient(config, backend)
         }
@@ -114,7 +127,9 @@ object CardanoWalletApiClient {
       .extract
   }
 
-  def unsafe[F[_]: TimeMeasureMetric: Concurrent: ContextShift: Comonad, I[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: Concurrent: ContextShift: Comonad, I[
+      _
+  ]: Comonad](
       config: Config,
       logs: Logs[I, F]
   ): CardanoWalletApiClient[F] =
@@ -130,11 +145,15 @@ object CardanoWalletApiClient {
   case class EstimatedFee(min: Lovelace, max: Lovelace)
 
   object EstimatedFee {
-    implicit val estimatedFeeLoggable: DictLoggable[EstimatedFee] = new DictLoggable[EstimatedFee] {
-      override def fields[I, V, R, S](a: EstimatedFee, i: I)(implicit r: LogRenderer[I, V, R, S]): R =
-        r.addBigInt("min", a.min, i) |+| r.addBigInt("max", a.max, i)
+    implicit val estimatedFeeLoggable: DictLoggable[EstimatedFee] =
+      new DictLoggable[EstimatedFee] {
+        override def fields[I, V, R, S](a: EstimatedFee, i: I)(implicit
+            r: LogRenderer[I, V, R, S]
+        ): R =
+          r.addBigInt("min", a.min, i) |+| r.addBigInt("max", a.max, i)
 
-      override def logShow(a: EstimatedFee): String = s"EstimatedFee{min=${a.min} max=${a.max}}"
-    }
+        override def logShow(a: EstimatedFee): String =
+          s"EstimatedFee{min=${a.min} max=${a.max}}"
+      }
   }
 }

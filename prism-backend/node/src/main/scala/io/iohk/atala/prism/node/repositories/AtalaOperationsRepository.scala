@@ -61,10 +61,13 @@ object AtalaOperationsRepository {
       mid attach new AtalaOperationsRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[
+      _
+  ]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, AtalaOperationsRepository[F]] = Resource.eval(AtalaOperationsRepository(transactor, logs))
+  ): Resource[R, AtalaOperationsRepository[F]] =
+    Resource.eval(AtalaOperationsRepository(transactor, logs))
 
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],

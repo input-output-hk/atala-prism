@@ -68,7 +68,9 @@ private[intdemo] object Testing {
                 loop(l.tail, ac.downField(h))
             }
           case other =>
-            throw new IllegalStateException("Unrecognized JSON cursor type: " + other.getClass)
+            throw new IllegalStateException(
+              "Unrecognized JSON cursor type: " + other.getClass
+            )
         }
 
       }

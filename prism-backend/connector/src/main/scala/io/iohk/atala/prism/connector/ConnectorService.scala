@@ -369,7 +369,11 @@ class ConnectorService(
       request: connector_api.GetMessageStreamRequest,
       responseObserver: StreamObserver[connector_api.GetMessageStreamResponse]
   ): Unit = {
-    def streamMessages(recipientId: ParticipantId, lastSeenMessageId: Option[MessageId], traceId: TraceId): Unit = {
+    def streamMessages(
+        recipientId: ParticipantId,
+        lastSeenMessageId: Option[MessageId],
+        traceId: TraceId
+    ): Unit = {
       val existingMessageStream =
         messages.getMessageStream(
           recipientId = recipientId,
@@ -402,7 +406,13 @@ class ConnectorService(
     }
 
     auth[GetMessageStreamRequest]("getMessageStream", request) { (participantId, traceId, getMessageStreamRequest) =>
-      FutureEither.right(streamMessages(participantId, getMessageStreamRequest.lastSeenMessageId, traceId))
+      FutureEither.right(
+        streamMessages(
+          participantId,
+          getMessageStreamRequest.lastSeenMessageId,
+          traceId
+        )
+      )
     }
     ()
   }
@@ -467,7 +477,9 @@ class ConnectorService(
     *
     * Errors: Unknown connection (UNKNOWN) Connection closed (FAILED_PRECONDITION)
     */
-  override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] =
+  override def sendMessage(
+      request: connector_api.SendMessageRequest
+  ): Future[connector_api.SendMessageResponse] =
     authCo[SendMessageRequest]("sendMessage", request) { (participantId, traceId, sendMessageRequest) =>
       messages
         .insertMessage(
@@ -547,7 +559,9 @@ class ConnectorService(
     *
     * Errors: Unknown connection (UNKNOWN) Connection closed (FAILED_PRECONDITION)
     */
-  override def sendMessages(request: connector_api.SendMessagesRequest): Future[connector_api.SendMessagesResponse] =
+  override def sendMessages(
+      request: connector_api.SendMessagesRequest
+  ): Future[connector_api.SendMessagesResponse] =
     auth[SendMessagesRequest]("sendMessages", request) { (participantId, traceId, query) =>
       query.messages.fold(
         FutureEither

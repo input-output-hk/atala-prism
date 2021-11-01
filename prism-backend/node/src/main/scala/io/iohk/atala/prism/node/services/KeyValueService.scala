@@ -38,7 +38,8 @@ object KeyValueService {
   def resource[F[_]: MonadThrow, R[_]: Applicative: Functor](
       keyValueRepository: KeyValuesRepository[F],
       logs: Logs[R, F]
-  ): Resource[R, KeyValueService[F]] = Resource.eval(KeyValueService(keyValueRepository, logs))
+  ): Resource[R, KeyValueService[F]] =
+    Resource.eval(KeyValueService(keyValueRepository, logs))
 
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
       keyValueRepository: KeyValuesRepository[F],

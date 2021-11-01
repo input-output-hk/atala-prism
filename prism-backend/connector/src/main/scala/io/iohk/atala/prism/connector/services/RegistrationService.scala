@@ -165,7 +165,9 @@ object RegistrationService {
       participantsRepository: ParticipantsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
-  ): Resource[R, RegistrationService[F]] = Resource.eval(RegistrationService(participantsRepository, nodeService, logs))
+  ): Resource[R, RegistrationService[F]] = Resource.eval(
+    RegistrationService(participantsRepository, nodeService, logs)
+  )
 
   def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
       participantsRepository: ParticipantsRepository[F],

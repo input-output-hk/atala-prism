@@ -10,35 +10,53 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.Result
 import io.iohk.atala.prism.node.models.WalletDetails
 import tofu.higherKind.Mid
 
-private[wallet] final class CardanoWalletApiClientMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+private[wallet] final class CardanoWalletApiClientMetrics[F[
+    _
+]: TimeMeasureMetric: BracketThrow]
     extends CardanoWalletApiClient[Mid[F, *]] {
 
   val clientName = "CardanoWalletApiClient"
   val estimateTransactionFeeTimer: DomainTimer =
-    TimeMeasureUtil.createClientRequestTimer(clientName, "estimateTransactionFee")
-  val postTransactionTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "postTransaction")
-  val getTransactionTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "getTransaction")
-  val deleteTransactionTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "deleteTransaction")
-  val getWalletTimer: DomainTimer = TimeMeasureUtil.createClientRequestTimer(clientName, "getWallet")
+    TimeMeasureUtil.createClientRequestTimer(
+      clientName,
+      "estimateTransactionFee"
+    )
+  val postTransactionTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "postTransaction")
+  val getTransactionTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "getTransaction")
+  val deleteTransactionTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "deleteTransaction")
+  val getWalletTimer: DomainTimer =
+    TimeMeasureUtil.createClientRequestTimer(clientName, "getWallet")
 
   override def estimateTransactionFee(
       walletId: WalletId,
       payments: List[Payment],
       metadata: Option[TransactionMetadata]
-  ): Mid[F, Result[CardanoWalletApiClient.EstimatedFee]] = _.measureOperationTime(estimateTransactionFeeTimer)
+  ): Mid[F, Result[CardanoWalletApiClient.EstimatedFee]] =
+    _.measureOperationTime(estimateTransactionFeeTimer)
 
   override def postTransaction(
       walletId: WalletId,
       payments: List[Payment],
       metadata: Option[TransactionMetadata],
       passphrase: String
-  ): Mid[F, Result[TransactionId]] = _.measureOperationTime(postTransactionTimer)
+  ): Mid[F, Result[TransactionId]] =
+    _.measureOperationTime(postTransactionTimer)
 
-  override def getTransaction(walletId: WalletId, transactionId: TransactionId): Mid[F, Result[TransactionDetails]] =
+  override def getTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Mid[F, Result[TransactionDetails]] =
     _.measureOperationTime(getTransactionTimer)
 
-  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Mid[F, Result[Unit]] =
+  override def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Mid[F, Result[Unit]] =
     _.measureOperationTime(deleteTransactionTimer)
 
-  override def getWallet(walletId: WalletId): Mid[F, Result[WalletDetails]] = _.measureOperationTime(getWalletTimer)
+  override def getWallet(walletId: WalletId): Mid[F, Result[WalletDetails]] =
+    _.measureOperationTime(getWalletTimer)
 }

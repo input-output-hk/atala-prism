@@ -175,7 +175,7 @@ private final class CredentialsRepositoryImpl[F[_]: BracketThrow](
 
     val transaction =
       for {
-        //validate credential data
+        // validate credential data
         credentialTypeWithRequiredFields <-
           EitherT[
             ConnectionIO,

@@ -37,7 +37,9 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
             res => info"estimating transaction fee - successfully done, $res"
           )
         )
-        .onError(errorCause"Encountered an error while estimating transaction fee" (_))
+        .onError(
+          errorCause"Encountered an error while estimating transaction fee" (_)
+        )
 
   /** Post a new transaction and return its ID.
     *
@@ -58,14 +60,19 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
             tid => info"posting transaction - successfully done $tid"
           )
         )
-        .onError(errorCause"Encountered an error while estimating transaction fee" (_))
+        .onError(
+          errorCause"Encountered an error while estimating transaction fee" (_)
+        )
 
   /** Get the details of the given transaction.
     *
     * @see
     *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/getTransaction
     */
-  override def getTransaction(walletId: WalletId, transactionId: TransactionId): Mid[F, Result[TransactionDetails]] =
+  override def getTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Mid[F, Result[TransactionDetails]] =
     in =>
       info"getting transaction" *> in
         .flatTap(
@@ -84,7 +91,10 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
     * @see
     *   https://input-output-hk.github.io/cardano-wallet/api/edge/#operation/deleteTransaction
     */
-  override def deleteTransaction(walletId: WalletId, transactionId: TransactionId): Mid[F, Result[Unit]] =
+  override def deleteTransaction(
+      walletId: WalletId,
+      transactionId: TransactionId
+  ): Mid[F, Result[Unit]] =
     in =>
       info"deleting transaction" *> in
         .flatTap(
@@ -93,7 +103,9 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
             _ => info"deleting transaction - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while deleting transaction" (_))
+        .onError(
+          errorCause"Encountered an error while deleting transaction" (_)
+        )
 
   /** Get detailed information about the given wallet.
     *

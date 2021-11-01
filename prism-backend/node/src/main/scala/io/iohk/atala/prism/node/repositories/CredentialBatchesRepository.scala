@@ -51,10 +51,13 @@ object CredentialBatchesRepository {
       mid attach new CredentialBatchesRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[
+      _
+  ]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, CredentialBatchesRepository[F]] = Resource.eval(CredentialBatchesRepository(transactor, logs))
+  ): Resource[R, CredentialBatchesRepository[F]] =
+    Resource.eval(CredentialBatchesRepository(transactor, logs))
 
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
