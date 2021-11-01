@@ -10,7 +10,7 @@ object versions {
   val diffx = "0.5.6"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
-  val doobie = "0.13.4"
+  val doobie = "1.0.0-RC1"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
   val flyway = "8.0.2"
@@ -76,9 +76,9 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % versions.slf4j
   val sttpCore = "com.softwaremill.sttp.client3" %% "core" % versions.sttp
   val sttpCE2 =
-    "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats-ce2" % versions.sttp
+    "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % versions.sttp
   val tofu =
-    "tf.tofu" %% "tofu" % versions.tofu
+    "tf.tofu" %% "tofu-core-ce3" % versions.tofu
   val tofuLogging = "tf.tofu" %% "tofu-logging" % versions.tofu
   val tofuDerevoTagless =
     "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
