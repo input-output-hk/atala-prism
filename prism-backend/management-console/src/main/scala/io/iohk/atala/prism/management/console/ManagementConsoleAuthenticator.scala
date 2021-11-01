@@ -23,7 +23,8 @@ class ManagementConsoleAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-)(implicit runtime: IORuntime) extends SignedRequestsAuthenticatorBase[ParticipantId](
+)(implicit runtime: IORuntime)
+    extends SignedRequestsAuthenticatorBase[ParticipantId](
       nodeClient,
       grpcAuthenticationHeaderParser
     ) {

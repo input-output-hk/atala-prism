@@ -8,9 +8,20 @@ import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee, Result}
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{
+  CardanoWalletError,
+  ErrorResponse,
+  EstimatedFee,
+  Result
+}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._
-import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{DeleteTransaction, EstimateTransactionFee, GetTransaction, GetWallet, PostTransaction}
+import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{
+  DeleteTransaction,
+  EstimateTransactionFee,
+  GetTransaction,
+  GetWallet,
+  PostTransaction
+}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 import io.iohk.atala.prism.node.models.WalletDetails
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend

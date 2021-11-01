@@ -6,13 +6,25 @@ import cats.syntax.either._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
-import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport, UnknownValueError}
-import io.iohk.atala.prism.management.console.models.{GetLatestCredential, GetStoredCredentials, ParticipantId, StoreCredential}
+import io.iohk.atala.prism.management.console.errors.{
+  ManagementConsoleError,
+  ManagementConsoleErrorSupport,
+  UnknownValueError
+}
+import io.iohk.atala.prism.management.console.models.{
+  GetLatestCredential,
+  GetStoredCredentials,
+  ParticipantId,
+  StoreCredential
+}
 import io.iohk.atala.prism.management.console.repositories.ContactsRepository
 import io.iohk.atala.prism.management.console.repositories.daos.ReceivedCredentialsDAO.ReceivedSignedCredentialData
 import io.iohk.atala.prism.management.console.services.CredentialsStoreService
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.protos.console_api.{GetLatestCredentialExternalIdRequest, GetLatestCredentialExternalIdResponse}
+import io.iohk.atala.prism.protos.console_api.{
+  GetLatestCredentialExternalIdRequest,
+  GetLatestCredentialExternalIdResponse
+}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -23,7 +35,7 @@ class CredentialsStoreGrpcService(
     contactsRepository: ContactsRepository[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit ec: ExecutionContext, runtime: IORuntime)
-  extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
+    extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
 

@@ -25,7 +25,11 @@ import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionSchedulingService}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceSpec,
+  ObjectManagementService,
+  SubmissionSchedulingService
+}
 import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}

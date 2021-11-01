@@ -20,7 +20,8 @@ class NodeReporter(
     cardanoClient: CardanoClient[IOWithTraceIdContext],
     keyValueService: KeyValueService[IOWithTraceIdContext],
     blockNumberSyncStart: Int
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends MetricReporter {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends MetricReporter {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

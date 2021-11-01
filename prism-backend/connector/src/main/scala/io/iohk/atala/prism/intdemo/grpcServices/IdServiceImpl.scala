@@ -31,7 +31,8 @@ class IdServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends intdemo_api.IDServiceGrpc.IDService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.IDServiceGrpc.IDService {
 
   val service = new IntDemoService[(String, LocalDate)](
     issuerId = IdServiceImpl.issuerId,

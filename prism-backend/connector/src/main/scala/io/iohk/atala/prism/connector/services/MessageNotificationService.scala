@@ -61,12 +61,15 @@ class MessageNotificationService private (
       .unNone
       // Query whole message
       .evalMap(messageId =>
-        MessagesDAO.getMessage(messageId).map {
-          case Some(message) => Some(message)
-          case None =>
-            logger.error(s"Message with ID $messageId not found")
-            None
-        }.transact(xa)
+        MessagesDAO
+          .getMessage(messageId)
+          .map {
+            case Some(message) => Some(message)
+            case None =>
+              logger.error(s"Message with ID $messageId not found")
+              None
+          }
+          .transact(xa)
       )
       // Ignore messages not found
       .unNone

@@ -14,7 +14,12 @@ import io.iohk.atala.prism.management.console.grpc.CredentialsStoreGrpcService
 import io.iohk.atala.prism.management.console.models.{CredentialExternalId, ParticipantId, ParticipantLogo}
 import io.iohk.atala.prism.management.console.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.atala.prism.management.console.repositories.daos._
-import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, ParticipantsRepository, ReceivedCredentialsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.management.console.repositories.{
+  ContactsRepository,
+  ParticipantsRepository,
+  ReceivedCredentialsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}

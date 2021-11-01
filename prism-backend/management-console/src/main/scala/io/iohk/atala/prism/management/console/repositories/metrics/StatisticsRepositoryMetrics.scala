@@ -7,7 +7,8 @@ import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import tofu.higherKind.Mid
 import cats.effect.MonadCancelThrow
 
-final class StatisticsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow] extends StatisticsRepository[Mid[F, *]] {
+final class StatisticsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow]
+    extends StatisticsRepository[Mid[F, *]] {
   private val repoName = "StatisticsRepository"
   private lazy val queryTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "query")

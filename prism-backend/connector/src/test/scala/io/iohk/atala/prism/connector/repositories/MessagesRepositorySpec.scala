@@ -7,7 +7,11 @@ import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.Fragments
 import doobie.implicits._
 import io.iohk.atala.prism.connector.errors.ConnectorError
-import io.iohk.atala.prism.connector.errors.MessagesError.{ConnectionNotFoundByConnectionIdAndSender, MessageIdsNotUnique, MessagesAlreadyExist}
+import io.iohk.atala.prism.connector.errors.MessagesError.{
+  ConnectionNotFoundByConnectionIdAndSender,
+  MessageIdsNotUnique,
+  MessagesAlreadyExist
+}
 import io.iohk.atala.prism.connector.model.actions.SendMessagesRequest
 import io.iohk.atala.prism.connector.model.{ConnectionId, ConnectionStatus, MessageId, TokenString}
 import io.iohk.atala.prism.connector.repositories.daos._

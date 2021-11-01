@@ -32,7 +32,8 @@ class DegreeServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends intdemo_api.DegreeServiceGrpc.DegreeService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.DegreeServiceGrpc.DegreeService {
 
   val service = new IntDemoService[credential_models.PlainTextCredential](
     issuerId = issuerId,

@@ -12,9 +12,22 @@ import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
-import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository, KeyValuesRepository, ProtocolVersionRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  CredentialBatchesRepository,
+  DIDDataRepository,
+  KeyValuesRepository,
+  ProtocolVersionRepository
+}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceImpl, InMemoryLedgerService, ObjectManagementService, SubmissionSchedulingService, SubmissionService}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceImpl,
+  InMemoryLedgerService,
+  ObjectManagementService,
+  SubmissionSchedulingService,
+  SubmissionService
+}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.NodeClientUtils._

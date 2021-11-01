@@ -54,8 +54,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   private def streamAll(
       dbNotificationStreamer: DbNotificationStreamer
   ): Future[List[DbNotification]] = {
-    val stream = dbNotificationStreamer.stream
-      .drain
+    val stream = dbNotificationStreamer.stream.drain
       .timeout(5.seconds)
       .compile
       .toList

@@ -20,7 +20,8 @@ class VaultAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-)(implicit runtime: IORuntime) extends SignedRequestsAuthenticatorBase[DID](
+)(implicit runtime: IORuntime)
+    extends SignedRequestsAuthenticatorBase[DID](
       nodeClient,
       grpcAuthenticationHeaderParser
     ) {

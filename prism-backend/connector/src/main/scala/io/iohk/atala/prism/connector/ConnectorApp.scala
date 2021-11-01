@@ -12,7 +12,12 @@ import io.iohk.atala.prism.cviews.CredentialViewsService
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
-import io.iohk.atala.prism.intdemo.protos.intdemo_api.{DegreeServiceGrpc, EmploymentServiceGrpc, IDServiceGrpc, InsuranceServiceGrpc}
+import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
+  DegreeServiceGrpc,
+  EmploymentServiceGrpc,
+  IDServiceGrpc,
+  InsuranceServiceGrpc
+}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.connector_api

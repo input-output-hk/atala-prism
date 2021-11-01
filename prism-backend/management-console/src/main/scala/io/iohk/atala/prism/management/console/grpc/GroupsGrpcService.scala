@@ -19,7 +19,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class GroupsGrpcService(
     groupsService: GroupsService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
-)(implicit ec: ExecutionContext, runtime: IORuntime) extends console_api.GroupsServiceGrpc.GroupsService
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends console_api.GroupsServiceGrpc.GroupsService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
 

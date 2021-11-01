@@ -7,7 +7,11 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors._
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialBulk, CreateCredentialIssuance, GetCredentialIssuance}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
+  CreateCredentialBulk,
+  CreateCredentialIssuance,
+  GetCredentialIssuance
+}
 import io.iohk.atala.prism.management.console.services.CredentialIssuanceService
 import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.CredentialIssuanceContact

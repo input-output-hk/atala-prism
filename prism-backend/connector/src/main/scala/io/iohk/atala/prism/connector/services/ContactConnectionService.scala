@@ -12,7 +12,11 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.connector_api.{ConnectionsStatusRequest, ConnectionsStatusResponse, ContactConnectionServiceGrpc}
+import io.iohk.atala.prism.protos.connector_api.{
+  ConnectionsStatusRequest,
+  ConnectionsStatusResponse,
+  ContactConnectionServiceGrpc
+}
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -23,7 +27,8 @@ class ContactConnectionService(
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     didWhitelist: Set[DID]
 )(implicit executionContext: ExecutionContext, runtime: IORuntime)
-  extends ContactConnectionServiceGrpc.ContactConnectionService with ConnectorErrorSupport {
+    extends ContactConnectionServiceGrpc.ContactConnectionService
+    with ConnectorErrorSupport {
 
   val serviceName = "ContactConnectionService"
 

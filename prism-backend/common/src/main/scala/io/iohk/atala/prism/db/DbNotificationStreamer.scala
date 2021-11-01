@@ -14,9 +14,12 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 import scala.concurrent.duration._
-import cats.effect.{ Ref, Temporal }
+import cats.effect.{Ref, Temporal}
 
-class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(implicit temporal: Temporal[IO], runtime: IORuntime) {
+class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(implicit
+    temporal: Temporal[IO],
+    runtime: IORuntime
+) {
   import DbNotificationStreamer._
 
   private val stopped = Ref.unsafe[IO, Boolean](false)
@@ -24,26 +27,27 @@ class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(i
 
   lazy val stream: Stream[IO, DbNotification] = {
     def inner(liftToConnIO: IO ~> ConnectionIO): Pipe[ConnectionIO, FiniteDuration, Option[PGNotification]] =
-      ticks => for {
-        // Grab channel as resource so it gets closed automatically when done
-        _ <- resource(channel(channelName))
-        // Sleep a bit between notification queries
-        _ <- ticks
-        // Query DB notifications
-        notifications <- eval(PHC.pgGetNotifications <* HC.commit)
-        // Determine whether to stream down notifications or terminate
-        isStopped <- Stream.eval(liftToConnIO(stopped.get))
-        maybeNotification <-
-          if (isStopped) {
-            // Stream has been told to shutdown, let the caller know
-            stoppedLatch.countDown()
-            // Use `None` to signal that the stream should terminate (`unNoneTerminate` is used below)
-            emit[ConnectionIO, Option[PGNotification]](None)
-          } else {
-            // Push the new notifications down the stream
-            emits[ConnectionIO, Option[PGNotification]](notifications.map(Option(_)))
-          }
-      } yield maybeNotification
+      ticks =>
+        for {
+          // Grab channel as resource so it gets closed automatically when done
+          _ <- resource(channel(channelName))
+          // Sleep a bit between notification queries
+          _ <- ticks
+          // Query DB notifications
+          notifications <- eval(PHC.pgGetNotifications <* HC.commit)
+          // Determine whether to stream down notifications or terminate
+          isStopped <- Stream.eval(liftToConnIO(stopped.get))
+          maybeNotification <-
+            if (isStopped) {
+              // Stream has been told to shutdown, let the caller know
+              stoppedLatch.countDown()
+              // Use `None` to signal that the stream should terminate (`unNoneTerminate` is used below)
+              emit[ConnectionIO, Option[PGNotification]](None)
+            } else {
+              // Push the new notifications down the stream
+              emits[ConnectionIO, Option[PGNotification]](notifications.map(Option(_)))
+            }
+        } yield maybeNotification
 
     val notificationStream = for {
       liftToConnIO <- resource(WeakAsync.liftK[IO, ConnectionIO])

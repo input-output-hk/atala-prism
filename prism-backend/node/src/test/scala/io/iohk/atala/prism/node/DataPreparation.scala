@@ -16,12 +16,29 @@ import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, 
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus, AtalaOperationInfo, AtalaOperationStatus, DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.models.{
+  AtalaObjectId,
+  AtalaObjectTransactionSubmission,
+  AtalaObjectTransactionSubmissionStatus,
+  AtalaOperationInfo,
+  AtalaOperationStatus,
+  DIDData,
+  DIDPublicKey
+}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO, AtalaOperationsDAO, CredentialBatchesDAO, DIDDataDAO, KeyValuesDAO, ProtocolVersionsDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
+  AtalaObjectsDAO,
+  AtalaOperationsDAO,
+  CredentialBatchesDAO,
+  DIDDataDAO,
+  KeyValuesDAO,
+  ProtocolVersionsDAO,
+  PublicKeysDAO
+}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
 import org.scalatest.OptionValues._
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
