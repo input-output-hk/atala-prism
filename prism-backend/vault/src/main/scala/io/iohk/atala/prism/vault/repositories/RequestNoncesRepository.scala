@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.vault.repositories
 
-import cats.{Applicative, Comonad, Functor}
-import cats.effect.{BracketThrow, Resource}
 import cats.syntax.apply._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
@@ -23,6 +21,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait RequestNoncesRepository[F[_]] {
@@ -31,7 +30,7 @@ trait RequestNoncesRepository[F[_]] {
 
 object RequestNoncesRepository {
   object PostgresImpl {
-    def create[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+    def create[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Functor](
         xa: Transactor[F],
         logs: Logs[R, F]
     ): R[RequestNoncesRepository[F]] =
@@ -57,7 +56,7 @@ object RequestNoncesRepository {
   }
 }
 
-private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F]) extends RequestNoncesRepository[F] {
+private class PostgresImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends RequestNoncesRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -70,7 +69,7 @@ private class PostgresImpl[F[_]: BracketThrow](xa: Transactor[F]) extends Reques
 
 private final class RequestNoncesRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends RequestNoncesRepository[Mid[F, *]] {
   val repoName = "RequestNoncesRepositoryPostgresImpl"
   private lazy val burnTimer =
@@ -80,7 +79,7 @@ private final class RequestNoncesRepositoryMetrics[F[
 }
 
 private final class RequestNoncesRepositoryLogging[
-    F[_]: BracketThrow: ServiceLogging[*[_], RequestNoncesRepository[F]]
+    F[_]: MonadCancelThrow: ServiceLogging[*[_], RequestNoncesRepository[F]]
 ] extends RequestNoncesRepository[Mid[F, *]] {
   override def burn(did: DID, requestNonce: RequestNonce): Mid[F, Unit] =
     in =>

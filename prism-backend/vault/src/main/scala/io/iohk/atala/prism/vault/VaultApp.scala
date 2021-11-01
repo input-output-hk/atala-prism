@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.{ContextShift, ExitCode, IO, IOApp, Resource}
-import com.typesafe.config.{Config, ConfigFactory}
-import doobie.hikari.HikariTransactor
+import cats.effect.IO
+import cats.effect.unsafe.IORuntime
+import com.typesafe.config.ConfigFactory
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId
@@ -33,7 +33,8 @@ object VaultApp extends IOApp {
 
 class VaultApp() {
   self =>
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit val runtime: IORuntime = IORuntime.global
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val vaultLogs: Logs[IO, IOWithTraceIdContext] =
