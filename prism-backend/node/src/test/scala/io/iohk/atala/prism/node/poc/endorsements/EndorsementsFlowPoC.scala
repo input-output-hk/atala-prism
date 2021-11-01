@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.poc.endorsements
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}

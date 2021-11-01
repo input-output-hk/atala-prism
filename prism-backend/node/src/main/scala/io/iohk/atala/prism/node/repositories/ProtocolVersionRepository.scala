@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.implicits._
 import derevo.derive
 import derevo.tagless.applyK
@@ -18,6 +18,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ProtocolVersionRepository[F[_]] {
@@ -27,7 +28,7 @@ trait ProtocolVersionRepository[F[_]] {
 }
 
 object ProtocolVersionRepository {
-  def apply[F[_]: TimeMeasureMetric: BracketThrow: Applicative, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow: Applicative, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[ProtocolVersionRepository[F]] =
@@ -43,20 +44,20 @@ object ProtocolVersionRepository {
       mid attach new ProtocolVersionRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative](
+  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Applicative](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, ProtocolVersionRepository[F]] =
     Resource.eval(ProtocolVersionRepository(transactor, logs))
 
-  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): ProtocolVersionRepository[F] =
     ProtocolVersionRepository(transactor, logs).extract
 }
 
-private class ProtocolVersionRepositoryImpl[F[_]: BracketThrow](
+private class ProtocolVersionRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ProtocolVersionRepository[F] {
 

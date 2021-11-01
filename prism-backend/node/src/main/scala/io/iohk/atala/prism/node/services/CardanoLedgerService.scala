@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.Timer
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -28,8 +27,9 @@ import tofu.logging.{Logs, ServiceLogging}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import cats.effect.Temporal
 
-class CardanoLedgerService[F[_]: MonadThrow] private[services] (
+class CardanoLedgerService[F[_]] private[services] (
     network: CardanoNetwork,
     walletId: WalletId,
     walletPassphrase: String,
@@ -43,7 +43,7 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
 )(implicit
     ec: ExecutionContext,
     ex: Execute[F],
-    timer: Timer[F],
+    timer: Temporal[F],
     liftToFuture: Lift[F, Future]
 ) extends UnderlyingLedger[F] {
   private val MAX_SYNC_BLOCKS = 100
@@ -234,7 +234,7 @@ object CardanoLedgerService {
       cardanoClientConfig: CardanoClient.Config
   )
 
-  def apply[F[_]: MonadThrow: Execute: Lift[*[_], Future], R[_]: Functor](
+  def apply[F[_]: Execute: Lift[*[_], Future]: Temporal, R[_]: Functor](
       network: CardanoNetwork,
       walletId: WalletId,
       walletPassphrase: String,
@@ -246,7 +246,7 @@ object CardanoLedgerService {
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
       logs: Logs[R, F]
-  )(implicit ec: ExecutionContext, timer: Timer[F]): R[UnderlyingLedger[F]] =
+  )(implicit ec: ExecutionContext): R[UnderlyingLedger[F]] =
     for {
       serviceLogs <- logs.service[UnderlyingLedger[F]]
     } yield {
@@ -268,17 +268,14 @@ object CardanoLedgerService {
       )
     }
 
-  def resource[F[_]: MonadThrow: Timer: Execute, R[_]: Applicative](
+  def resource[F[_]: Temporal: Execute: Lift[*[_], Future], R[_]: Applicative](
       config: Config,
       cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
       logs: Logs[R, F]
-  )(implicit
-      ec: ExecutionContext,
-      liftToFuture: Lift[F, Future]
-  ): Resource[R, UnderlyingLedger[F]] = {
+  )(implicit ec: ExecutionContext): Resource[R, UnderlyingLedger[F]] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(
@@ -306,18 +303,14 @@ object CardanoLedgerService {
     )
   }
 
-  def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
+  def unsafe[F[_]: Execute: Lift[*[_], Future]: Temporal, R[_]: Comonad](
       config: Config,
       cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
       logs: Logs[R, F]
-  )(implicit
-      liftToFuture: Lift[F, Future],
-      ec: ExecutionContext,
-      timer: Timer[F]
-  ): UnderlyingLedger[F] = {
+  )(implicit ec: ExecutionContext): UnderlyingLedger[F] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(

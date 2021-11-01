@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.EitherT
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.traverse._
@@ -44,6 +44,7 @@ import tofu.syntax.feither._
 import tofu.syntax.monadic._
 
 import java.time.Instant
+import cats.effect.MonadCancelThrow
 
 private class DuplicateAtalaBlock extends Exception
 private class DuplicateAtalaOperation extends Exception
@@ -69,7 +70,7 @@ trait ObjectManagementService[F[_]] {
   ): F[Option[AtalaOperationInfo]]
 }
 
-private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
+private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     atalaOperationsRepository: AtalaOperationsRepository[F],
     atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
     keyValuesRepository: KeyValuesRepository[F],
@@ -263,7 +264,7 @@ object ObjectManagementService {
       .withBlockContent(block)
   }
 
-  def make[I[_]: Functor, F[_]: BracketThrow](
+  def make[I[_]: Functor, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],
@@ -291,7 +292,7 @@ object ObjectManagementService {
     }
   }
 
-  def resource[I[_]: Applicative: Functor, F[_]: BracketThrow](
+  def resource[I[_]: Applicative: Functor, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],
@@ -312,7 +313,7 @@ object ObjectManagementService {
       )
   )
 
-  def unsafe[I[_]: Comonad, F[_]: BracketThrow](
+  def unsafe[I[_]: Comonad, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
       keyValuesRepository: KeyValuesRepository[F],

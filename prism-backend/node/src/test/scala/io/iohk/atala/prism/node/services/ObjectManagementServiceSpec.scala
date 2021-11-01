@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.ReaderT
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec

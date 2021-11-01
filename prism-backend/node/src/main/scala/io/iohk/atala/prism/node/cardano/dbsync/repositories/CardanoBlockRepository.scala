@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories
 
 import cats.{Comonad, Functor}
-import cats.effect.BracketThrow
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -19,6 +18,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait CardanoBlockRepository[F[_]] {
@@ -27,7 +27,7 @@ trait CardanoBlockRepository[F[_]] {
 }
 
 object CardanoBlockRepository {
-  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[CardanoBlockRepository[F]] =
@@ -44,14 +44,14 @@ object CardanoBlockRepository {
       mid attach new CardanoBlockRepositoryImpl[F](transactor)
     }
 
-  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): CardanoBlockRepository[F] =
     CardanoBlockRepository(transactor, logs).extract
 }
 
-private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](
+private final class CardanoBlockRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CardanoBlockRepository[F] {
 

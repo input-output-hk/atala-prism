@@ -1,27 +1,16 @@
 package io.iohk.atala.prism.node.cardano.wallet.api
 
 import cats.Functor
-import cats.effect.{Concurrent, ContextShift, Resource}
+import cats.effect.{Async, Resource}
 import sttp.client3._
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{
-  CardanoWalletError,
-  ErrorResponse,
-  EstimatedFee,
-  Result
-}
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, ErrorResponse, EstimatedFee, Result}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient._
-import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{
-  DeleteTransaction,
-  EstimateTransactionFee,
-  GetTransaction,
-  GetWallet,
-  PostTransaction
-}
+import io.iohk.atala.prism.node.cardano.wallet.api.ApiRequest.{DeleteTransaction, EstimateTransactionFee, GetTransaction, GetWallet, PostTransaction}
 import io.iohk.atala.prism.node.cardano.wallet.api.JsonCodecs._
 import io.iohk.atala.prism.node.models.WalletDetails
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
@@ -97,8 +86,8 @@ private[wallet] object ApiClient {
 
   case class Config(host: String, port: Int)
 
-  private[wallet] def defaultBackend[F[_]: Concurrent: ContextShift]: Resource[F, SttpBackend[F, Any]] =
-    AsyncHttpClientCatsBackend.resource()
+  private[wallet] def defaultBackend[F[_]: Async]: Resource[F, SttpBackend[F, Any]] =
+    AsyncHttpClientCatsBackend.resource[F]()
 
   /** Try to map a response to a result or an error.
     *

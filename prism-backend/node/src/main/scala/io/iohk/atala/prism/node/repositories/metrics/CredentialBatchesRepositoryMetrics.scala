@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
@@ -9,10 +8,11 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.CredentialBatchesRepository
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
 private[repositories] final class CredentialBatchesRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends CredentialBatchesRepository[Mid[F, *]] {
 
   private val repoName = "CredentialBatchesRepository"

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.{Applicative, Comonad, Functor}
 import cats.data.EitherT
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.derive
@@ -22,6 +22,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait DIDDataRepository[F[_]] {
@@ -29,7 +30,7 @@ trait DIDDataRepository[F[_]] {
 }
 
 object DIDDataRepository {
-  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[DIDDataRepository[F]] =
@@ -45,7 +46,7 @@ object DIDDataRepository {
       mid attach new DIDDataRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[
+  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[
       _
   ]: Applicative: Functor](
       transactor: Transactor[F],
@@ -53,13 +54,13 @@ object DIDDataRepository {
   ): Resource[R, DIDDataRepository[F]] =
     Resource.eval(DIDDataRepository(transactor, logs))
 
-  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): DIDDataRepository[F] = DIDDataRepository(transactor, logs).extract
 }
 
-private final class DIDDataRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
+private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

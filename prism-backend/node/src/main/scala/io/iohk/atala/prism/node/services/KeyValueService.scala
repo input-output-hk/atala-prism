@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.{Applicative, Comonad, Functor}
 import cats.syntax.comonad._
 import cats.syntax.functor._
@@ -11,6 +11,7 @@ import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.logs.KeyValueServiceLogs
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
+import cats.MonadThrow
 
 @derive(applyK)
 trait KeyValueService[F[_]] {

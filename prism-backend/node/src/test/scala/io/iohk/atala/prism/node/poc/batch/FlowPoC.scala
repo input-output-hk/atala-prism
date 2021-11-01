@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.poc.batch
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
