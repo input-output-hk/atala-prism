@@ -5,14 +5,7 @@ import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionDetails, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -31,13 +24,10 @@ import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
-import scala.concurrent.{ExecutionContext, Future}
-import cats.effect.Temporal
+import scala.concurrent.Future
+import cats.effect.unsafe.implicits.global
 
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
-  private implicit val contextShift: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
-  private implicit val timer: Temporal[IO] = IO.timer(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
   private val ledger = Ledger.CardanoTestnet

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.cviews
 
+import cats.effect.unsafe.implicits.global
 import io.grpc.ServerServiceDefinition
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser

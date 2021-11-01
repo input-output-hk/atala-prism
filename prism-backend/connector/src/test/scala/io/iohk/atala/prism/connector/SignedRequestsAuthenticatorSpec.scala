@@ -2,6 +2,7 @@ package io.iohk.atala.prism.connector
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.{global => globalRuntime}
 
 import java.util.UUID
 import io.grpc.Context

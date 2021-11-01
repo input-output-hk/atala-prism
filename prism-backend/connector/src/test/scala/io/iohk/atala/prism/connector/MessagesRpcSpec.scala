@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector
 
+import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.stub.StreamObserver

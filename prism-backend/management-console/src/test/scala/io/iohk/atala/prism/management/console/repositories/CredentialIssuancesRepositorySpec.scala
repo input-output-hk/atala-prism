@@ -1,16 +1,14 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation
 import io.iohk.atala.prism.management.console.DataPreparation.{createInstitutionGroup, createParticipant}
 import io.iohk.atala.prism.management.console.errors.CredentialDataValidationFailedForContacts
 import io.iohk.atala.prism.management.console.models.{Contact, InstitutionGroup}
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
-  CreateCredentialIssuance,
-  CreateCredentialIssuanceContact
-}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialIssuance, CreateCredentialIssuanceContact}
 import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
 import tofu.logging.Logs

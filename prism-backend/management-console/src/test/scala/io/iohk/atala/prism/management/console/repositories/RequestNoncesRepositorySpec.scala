@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 
 import java.time.Instant
 import doobie.implicits._

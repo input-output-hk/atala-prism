@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.vault.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.{EC, Sha256}
 import io.iohk.atala.prism.identity.{PrismDid => DID}

@@ -4,6 +4,7 @@ import io.iohk.atala.prism.connector.model.{ConnectionId, MessageId}
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import ConnectorIntegrationImplSpec._
+import cats.effect.unsafe.implicits.{global => globalRuntime}
 import cats.syntax.applicative._
 import cats.syntax.either._
 import io.iohk.atala.prism.connector.repositories.MessagesRepository.InsertMessageError

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json

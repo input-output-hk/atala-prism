@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.vault
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -12,8 +13,6 @@ import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 import tofu.logging.Logs
 
-import scala.concurrent.ExecutionContext
-
 class VaultRpcSpecBase extends RpcSpecBase {
 
   override def services =
@@ -24,31 +23,34 @@ class VaultRpcSpecBase extends RpcSpecBase {
           executionContext
         )
     )
-  implicit lazy val cs: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val vaultTestLogs: Logs[IO, IOWithTraceIdContext] =
     Logs.withContext[IO, IOWithTraceIdContext]
 
-  lazy val requestNoncesRepository = RequestNoncesRepository.PostgresImpl.unsafe(dbLiftedToTraceIdIO, vaultTestLogs)
-  lazy val payloadsRepository = PayloadsRepository.unsafe(dbLiftedToTraceIdIO, vaultTestLogs)
-
-  lazy val nodeMock =
-    mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  lazy val authenticator =
-    new VaultAuthenticator(
-      requestNoncesRepository,
-      nodeMock,
-      GrpcAuthenticationHeaderParser
+  lazy val (payloadsRepository, vaultGrpcService) = (for {
+    requestNoncesRepository <- vaultTestLogs
+      .service[RequestNoncesRepository[IOWithTraceIdContext]]
+      .map(implicit l => RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO))
+    payloadsRepository <- vaultTestLogs
+      .service[PayloadsRepository[IOWithTraceIdContext]]
+      .map(implicit l => PayloadsRepository.create(dbLiftedToTraceIdIO))
+    nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
+    authenticator =
+      new VaultAuthenticator(
+        requestNoncesRepository,
+        nodeMock,
+        GrpcAuthenticationHeaderParser
+      )
+    encryptedDataVaultService <- vaultTestLogs
+      .service[EncryptedDataVaultService[IOWithTraceIdContext]]
+      .map(implicit l => EncryptedDataVaultService.create(payloadsRepository))
+    vaultGrpcService = new EncryptedDataVaultGrpcService(
+      encryptedDataVaultService,
+      authenticator
+    )(
+      executionContext,
+      global
     )
-
-  lazy val encryptedDataVaultService = EncryptedDataVaultService.unsafe(payloadsRepository, vaultTestLogs)
-
-  lazy val vaultGrpcService = new EncryptedDataVaultGrpcService(
-    encryptedDataVaultService,
-    authenticator
-  )(
-    executionContext
-  )
+  } yield (payloadsRepository, vaultGrpcService)).unsafeRunSync()
 
   val usingApiAs: ApiTestHelper[
     vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultServiceBlockingStub

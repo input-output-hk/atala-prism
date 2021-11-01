@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories.testing
 
 import java.time.Instant
-
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.postgres.circe.json.implicits.jsonPut

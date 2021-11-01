@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.repositories
 
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.connector.errors.{UnknownValueError, co}
 import io.iohk.atala.prism.connector.model._

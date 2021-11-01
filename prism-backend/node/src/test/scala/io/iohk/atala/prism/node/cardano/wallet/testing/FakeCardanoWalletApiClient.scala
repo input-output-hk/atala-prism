@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.cardano.wallet.testing
 
-import cats.effect.Concurrent
+import cats.effect.Async
 import sttp.client3._
 import io.circe.parser.parse
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
@@ -14,7 +14,7 @@ object FakeCardanoWalletApiClient {
   /** Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
     */
   object Success {
-    def apply[F[_]: Concurrent](
+    def apply[F[_]: Async](
         expectedPath: String,
         expectedJsonRequest: String,
         responseBody: String
@@ -31,7 +31,7 @@ object FakeCardanoWalletApiClient {
   /** Sets up a CardanoWalletApiClient instance that will return a fail response for the given path and request.
     */
   object Fail {
-    def apply[F[_]: Concurrent](
+    def apply[F[_]: Async](
         expectedPath: String,
         expectedJsonRequest: String,
         errorCode: String,
@@ -49,14 +49,14 @@ object FakeCardanoWalletApiClient {
   /** Sets up a CardanoWalletApiClient instance that will return {@code 404 Not Found} errors for all requests.
     */
   object NotFound {
-    def apply[F[_]: Concurrent](): CardanoWalletApiClient[F] = {
+    def apply[F[_]: Async](): CardanoWalletApiClient[F] = {
       val config = ApiClient.Config("localhost", 8090)
       val backend = AsyncHttpClientCatsBackend.stub
       new ApiClient(config, backend)
     }
   }
 
-  private def apply[F[_]: Concurrent](
+  private def apply[F[_]: Async](
       expectedPath: String,
       expectedJsonRequest: String,
       responseCode: Int,

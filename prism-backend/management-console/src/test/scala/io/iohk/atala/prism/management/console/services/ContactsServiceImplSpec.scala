@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.services
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.circe.{Json, parser}
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
