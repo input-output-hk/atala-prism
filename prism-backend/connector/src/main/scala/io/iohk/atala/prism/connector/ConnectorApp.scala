@@ -61,10 +61,22 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       connectorLogs = Logs.withContext[IO, IOWithTraceIdContext]
       node = initNodeClient(globalConfig)
       // connector repositories
-      connectionsRepository <- ConnectionsRepository.resource(txTraceIdLifted, connectorLogs)
-      messagesRepository <- MessagesRepository.resource(txTraceIdLifted, connectorLogs)
-      requestNoncesRepository <- RequestNoncesRepository.resource(txTraceIdLifted, connectorLogs)
-      participantsRepository <- ParticipantsRepository.resource(txTraceIdLifted, connectorLogs)
+      connectionsRepository <- ConnectionsRepository.resource(
+        txTraceIdLifted,
+        connectorLogs
+      )
+      messagesRepository <- MessagesRepository.resource(
+        txTraceIdLifted,
+        connectorLogs
+      )
+      requestNoncesRepository <- RequestNoncesRepository.resource(
+        txTraceIdLifted,
+        connectorLogs
+      )
+      participantsRepository <- ParticipantsRepository.resource(
+        txTraceIdLifted,
+        connectorLogs
+      )
       // authenticator
       authenticator = new ConnectorAuthenticator(
         participantsRepository,
@@ -74,18 +86,27 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       )
       // Background services
       timer = IO.timer(executionContext)
-      messageNotificationService <- MessageNotificationService.resourceAndStart(tx, cs, timer)
+      messageNotificationService <- MessageNotificationService.resourceAndStart(
+        tx,
+        cs,
+        timer
+      )
       // connector services
-      connectionsService <- ConnectionsService.resource(connectionsRepository, node, connectorLogs)
+      connectionsService <- ConnectionsService.resource(
+        connectionsRepository,
+        node,
+        connectorLogs
+      )
       messagesService <- MessagesService.resource[IOWithTraceIdContext, IO](
         messagesRepository,
         connectorLogs
       )
-      registrationService <- RegistrationService.resource[IOWithTraceIdContext, IO](
-        participantsRepository,
-        node,
-        connectorLogs
-      )
+      registrationService <- RegistrationService
+        .resource[IOWithTraceIdContext, IO](
+          participantsRepository,
+          node,
+          connectorLogs
+        )
       contactConnectionService = new ContactConnectionService(
         connectionsService,
         authenticator,
@@ -105,7 +126,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       )
       // interactive demo services
       intDemoRepository = new IntDemoRepository(tx)
-      connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)(
+      connectorIntegration = new ConnectorIntegrationImpl(
+        connectionsService,
+        messagesService
+      )(
         executionContext
       )
       idService = new IdServiceImpl(
@@ -154,12 +178,16 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       ConfigFactory.load()
     }
 
-  private def applyMigrations(databaseConfig: TransactorFactory.Config): Unit = {
+  private def applyMigrations(
+      databaseConfig: TransactorFactory.Config
+  ): Unit = {
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
   }
 
-  private def connectToTheDb(databaseConfig: TransactorFactory.Config): Resource[IO, HikariTransactor[IO]] = {
+  private def connectToTheDb(
+      databaseConfig: TransactorFactory.Config
+  ): Resource[IO, HikariTransactor[IO]] = {
     logger.info("Connecting to the database")
     TransactorFactory.transactor[IO](databaseConfig)
   }
@@ -179,7 +207,9 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     didWhitelist
   }
 
-  private def initNodeClient(config: Config): NodeServiceGrpc.NodeServiceStub = {
+  private def initNodeClient(
+      config: Config
+  ): NodeServiceGrpc.NodeServiceStub = {
     val configLoader = new ConfigLoader
     val nodeConfig =
       configLoader.nodeClientConfig(config.getConfig("node"))
@@ -204,21 +234,45 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new GrpcAuthenticatorInterceptor)
-      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
-      .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
-      .addService(CredentialViewsServiceGrpc.bindService(credentialViewsService, executionContext))
+      .addService(
+        _root_.grpc.health.v1.health.HealthGrpc
+          .bindService(new HealthService, executionContext)
+      )
+      .addService(
+        connector_api.ConnectorServiceGrpc.bindService(
+          connectorService,
+          executionContext
+        )
+      )
+      .addService(
+        CredentialViewsServiceGrpc.bindService(
+          credentialViewsService,
+          executionContext
+        )
+      )
       .addService(IDServiceGrpc.bindService(idService, executionContext))
-      .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
-      .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))
-      .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
-      .addService(ContactConnectionServiceGrpc.bindService(contactConnectionService, executionContext))
+      .addService(
+        DegreeServiceGrpc.bindService(degreeService, executionContext)
+      )
+      .addService(
+        EmploymentServiceGrpc.bindService(employmentService, executionContext)
+      )
+      .addService(
+        InsuranceServiceGrpc.bindService(insuranceService, executionContext)
+      )
+      .addService(
+        ContactConnectionServiceGrpc
+          .bindService(contactConnectionService, executionContext)
+      )
       .build()
       .start()
     logger.info("Server started, listening on " + ConnectorApp.port)
     server
   })(server =>
     IO {
-      System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      System.err.println(
+        "*** shutting down gRPC server since JVM is shutting down"
+      )
       server.shutdown()
       server.awaitTermination()
       System.err.println("*** server shut down")

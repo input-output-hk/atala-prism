@@ -19,7 +19,12 @@ object FakeCardanoWalletApiClient {
         expectedJsonRequest: String,
         responseBody: String
     ): CardanoWalletApiClient[F] = {
-      FakeCardanoWalletApiClient(expectedPath, expectedJsonRequest, 200, responseBody)
+      FakeCardanoWalletApiClient(
+        expectedPath,
+        expectedJsonRequest,
+        200,
+        responseBody
+      )
     }
   }
 
@@ -60,8 +65,13 @@ object FakeCardanoWalletApiClient {
     val config = ApiClient.Config("localhost", 8090)
     val backend = AsyncHttpClientCatsBackend.stub
       .whenRequestMatches(request =>
-        request.uri.host.exists(_ == config.host) && request.uri.port.value == config.port && request.uri.path
-          .mkString("/") == expectedPath && sameJson(request.body.asInstanceOf[StringBody].s, expectedJsonRequest)
+        request.uri.host.exists(
+          _ == config.host
+        ) && request.uri.port.value == config.port && request.uri.path
+          .mkString("/") == expectedPath && sameJson(
+          request.body.asInstanceOf[StringBody].s,
+          expectedJsonRequest
+        )
       )
       .thenRespondWithCode(StatusCode.apply(responseCode), responseBody)
 
@@ -72,7 +82,10 @@ object FakeCardanoWalletApiClient {
     a == b || parse(a).toOption.get == parse(b).toOption.get
   }
 
-  private def createJsonErrorResponse(errorCode: String, message: String): String = {
+  private def createJsonErrorResponse(
+      errorCode: String,
+      message: String
+  ): String = {
     s"""
        |{
        |  "code": "$errorCode",

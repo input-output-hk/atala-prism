@@ -34,9 +34,12 @@ object CardanoBlockRepository {
     for {
       serviceLogs <- logs.service[CardanoBlockRepository[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, CardanoBlockRepository[F]] = serviceLogs
-      val metrics: CardanoBlockRepository[Mid[F, *]] = new CardanoBlockRepositoryMetrics[F]
-      val logs: CardanoBlockRepository[Mid[F, *]] = new CardanoBlockRepositoryLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, CardanoBlockRepository[F]] =
+        serviceLogs
+      val metrics: CardanoBlockRepository[Mid[F, *]] =
+        new CardanoBlockRepositoryMetrics[F]
+      val logs: CardanoBlockRepository[Mid[F, *]] =
+        new CardanoBlockRepositoryLogs[F]
       val mid = metrics |+| logs
       mid attach new CardanoBlockRepositoryImpl[F](transactor)
     }
@@ -44,11 +47,13 @@ object CardanoBlockRepository {
   def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CardanoBlockRepository[F] = CardanoBlockRepository(transactor, logs).extract
+  ): CardanoBlockRepository[F] =
+    CardanoBlockRepository(transactor, logs).extract
 }
 
-private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](xa: Transactor[F])
-    extends CardanoBlockRepository[F] {
+private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](
+    xa: Transactor[F]
+) extends CardanoBlockRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -70,9 +75,9 @@ private final class CardanoBlockRepositoryImpl[F[_]: BracketThrow](xa: Transacto
       .logSQLErrors("getting latest block", logger)
       .transact(xa)
       .map(
-        _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](BlockError.NoneAvailable.asLeft)(header =>
-          Block.Canonical(header).asRight
-        )
+        _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](
+          BlockError.NoneAvailable.asLeft
+        )(header => Block.Canonical(header).asRight)
       )
   }
 }

@@ -27,7 +27,11 @@ class ManagementConsoleAuthenticator(
       grpcAuthenticationHeaderParser
     ) {
 
-  override def burnNonce(id: ParticipantId, requestNonce: RequestNonce, traceId: TraceId)(implicit
+  override def burnNonce(
+      id: ParticipantId,
+      requestNonce: RequestNonce,
+      traceId: TraceId
+  )(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
     requestNoncesRepository
@@ -37,7 +41,11 @@ class ManagementConsoleAuthenticator(
       .map(_.asRight)
       .toFutureEither
 
-  override def burnNonce(did: DID, requestNonce: RequestNonce, traceId: TraceId)(implicit
+  override def burnNonce(
+      did: DID,
+      requestNonce: RequestNonce,
+      traceId: TraceId
+  )(implicit
       ec: ExecutionContext
   ): FutureEither[AuthError, Unit] =
     throw new NotImplementedError()

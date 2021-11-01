@@ -69,7 +69,9 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { _ =>
         for {
-          lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp.run(TraceId.generateYOLO).unsafeToFuture()
+          lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
           response <- getDidDocument(request.did, methodName)
         } yield response.withLastSyncedBlockTimestamp(
           lastSyncedTimestamp.toProtoTimestamp
@@ -296,7 +298,9 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
         for {
-          lastSyncedTimestamp <- lastSyncedTimestampF.run(TraceId.generateYOLO).unsafeToFuture()
+          lastSyncedTimestamp <- lastSyncedTimestampF
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
             methodName,
@@ -339,7 +343,9 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
         for {
-          lastSyncedTimestamp <- lastSyncedTimestampF.run(TraceId.generateYOLO).unsafeToFuture()
+          lastSyncedTimestamp <- lastSyncedTimestampF
+            .run(TraceId.generateYOLO)
+            .unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
             methodName,
@@ -418,7 +424,10 @@ class NodeServiceImpl(
             }
           )
           operationIds <-
-            objectManagement.scheduleAtalaOperations(operations: _*).run(TraceId.generateYOLO).unsafeToFuture()
+            objectManagement
+              .scheduleAtalaOperations(operations: _*)
+              .run(TraceId.generateYOLO)
+              .unsafeToFuture()
           outputsWithOperationIds = outputs.zip(operationIds).map {
             case (out, Right(opId)) =>
               out.withOperationId(opId.toProtoByteString)
@@ -455,7 +464,9 @@ class NodeServiceImpl(
 
     withLog(methodName, request) { traceId =>
       for {
-        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp.run(TraceId.generateYOLO).unsafeToFuture()
+        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
         atalaOperationId = AtalaOperationId.fromVectorUnsafe(
           request.operationId.toByteArray.toVector
         )
@@ -464,7 +475,10 @@ class NodeServiceImpl(
           traceId,
           "atalaOperationId" -> s"${atalaOperationId.toString}"
         )
-        operationInfo <- objectManagement.getOperationInfo(atalaOperationId).run(TraceId.generateYOLO).unsafeToFuture()
+        operationInfo <- objectManagement
+          .getOperationInfo(atalaOperationId)
+          .run(TraceId.generateYOLO)
+          .unsafeToFuture()
       } yield {
         val operationStatus = operationInfo
           .fold[common_models.OperationStatus](
@@ -711,6 +725,8 @@ object NodeServiceImpl {
           )
         )
       case other =>
-        throw new IllegalArgumentException("Unknown operation type: " + other.getClass)
+        throw new IllegalArgumentException(
+          "Unknown operation type: " + other.getClass
+        )
     }
 }

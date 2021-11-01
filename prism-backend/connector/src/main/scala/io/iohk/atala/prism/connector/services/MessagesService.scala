@@ -72,7 +72,8 @@ object MessagesService {
   def resource[F[_]: MonadThrow, R[_]: Applicative](
       messagesRepository: MessagesRepository[Stream[F, *], F],
       logs: Logs[R, F]
-  ): Resource[R, MessagesService[Stream[F, *], F]] = Resource.eval(MessagesService(messagesRepository, logs))
+  ): Resource[R, MessagesService[Stream[F, *], F]] =
+    Resource.eval(MessagesService(messagesRepository, logs))
 
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
       messagesRepository: MessagesRepository[Stream[F, *], F],

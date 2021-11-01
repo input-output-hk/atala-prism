@@ -23,7 +23,9 @@ import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 
-private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: AtalaObjectNotificationHandler)(implicit
+private final class InMemoryLedgerService[F[_]: MonadThrow](
+    onAtalaObject: AtalaObjectNotificationHandler
+)(implicit
     ex: Execute[F]
 ) extends UnderlyingLedger[F] {
 
@@ -54,7 +56,10 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: Atala
     publcationInfoF
       .map(publication => publication.asRight[CardanoWalletError])
       .recover { case e =>
-        CardanoWalletError(e.getMessage, CardanoWalletErrorCode.UndefinedCardanoWalletError).asLeft[PublicationInfo]
+        CardanoWalletError(
+          e.getMessage,
+          CardanoWalletErrorCode.UndefinedCardanoWalletError
+        ).asLeft[PublicationInfo]
       }
   }
 
@@ -62,9 +67,13 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](onAtalaObject: Atala
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, TransactionDetails]] =
     // In-memory transactions are immediately in the ledger
-    TransactionDetails(transactionId, TransactionStatus.InLedger).asRight[CardanoWalletError].pure[F]
+    TransactionDetails(transactionId, TransactionStatus.InLedger)
+      .asRight[CardanoWalletError]
+      .pure[F]
 
-  override def deleteTransaction(transactionId: TransactionId): F[Either[CardanoWalletError, Unit]] =
+  override def deleteTransaction(
+      transactionId: TransactionId
+  ): F[Either[CardanoWalletError, Unit]] =
     CardanoWalletError(
       "In-memory transactions cannot be deleted",
       CardanoWalletErrorCode.TransactionAlreadyInLedger
@@ -79,7 +88,8 @@ object InMemoryLedgerService {
     for {
       serviceLogs <- logs.service[UnderlyingLedger[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, UnderlyingLedger[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, UnderlyingLedger[F]] =
+        serviceLogs
       val logs: UnderlyingLedger[Mid[F, *]] = new UnderlyingLedgerLogs[F]
       val mid = logs
       mid attach new InMemoryLedgerService[F](onAtalaObject)
@@ -88,7 +98,8 @@ object InMemoryLedgerService {
   def resource[F[_]: MonadThrow: Execute, R[_]: Applicative](
       onAtalaObject: AtalaObjectNotificationHandler,
       logs: Logs[R, F]
-  ): Resource[R, UnderlyingLedger[F]] = Resource.eval(InMemoryLedgerService(onAtalaObject, logs))
+  ): Resource[R, UnderlyingLedger[F]] =
+    Resource.eval(InMemoryLedgerService(onAtalaObject, logs))
 
   def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
       onAtalaObject: AtalaObjectNotificationHandler,

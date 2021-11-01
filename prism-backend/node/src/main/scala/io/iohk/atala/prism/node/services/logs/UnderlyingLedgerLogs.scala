@@ -13,13 +13,16 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-class UnderlyingLedgerLogs[F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: MonadThrow]
-    extends UnderlyingLedger[Mid[F, *]] {
+class UnderlyingLedgerLogs[
+    F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: MonadThrow
+] extends UnderlyingLedger[Mid[F, *]] {
 
-  //wont be logged/called since not mid
+  // wont be logged/called since not mid
   override def getType: Ledger = ???
 
-  override def publish(obj: AtalaObject): Mid[F, Either[CardanoWalletError, PublicationInfo]] =
+  override def publish(
+      obj: AtalaObject
+  ): Mid[F, Either[CardanoWalletError, PublicationInfo]] =
     in =>
       info"publishing object with - ${obj.blockContent.map(_.operations.size)} operations" *> in
         .flatTap(
@@ -41,9 +44,13 @@ class UnderlyingLedgerLogs[F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: Mona
             result => info"getting transaction details - successfully done ${result.status.entryName}"
           )
         )
-        .onError(errorCause"Encountered an error while getting transaction details" (_))
+        .onError(
+          errorCause"Encountered an error while getting transaction details" (_)
+        )
 
-  override def deleteTransaction(transactionId: TransactionId): Mid[F, Either[CardanoWalletError, Unit]] =
+  override def deleteTransaction(
+      transactionId: TransactionId
+  ): Mid[F, Either[CardanoWalletError, Unit]] =
     in =>
       info"deleting transaction $transactionId" *> in
         .flatTap(
@@ -52,7 +59,9 @@ class UnderlyingLedgerLogs[F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: Mona
             _ => info"deleting transaction - successfully done"
           )
         )
-        .onError(errorCause"Encountered an error while deleting transaction" (_))
+        .onError(
+          errorCause"Encountered an error while deleting transaction" (_)
+        )
 
   def getOperationsIds(obj: AtalaObject): List[AtalaOperationId] = {
     obj.blockContent

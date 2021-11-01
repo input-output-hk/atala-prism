@@ -342,7 +342,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-1", originalGroupName.some)
       createContact(institutionId, "test-contact-2", originalGroupName.some)
 
-      //To ensure that contacts are added
+      // To ensure that contacts are added
       repository
         .listContacts(institutionId, originalGroupName)
         .unsafeRunSync()
@@ -482,7 +482,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
       createContact(institutionId, "test-contact-1", groupName.some)
       createContact(institutionId, "test-contact-2", groupName.some)
 
-      //To ensure that contacts are added
+      // To ensure that contacts are added
       repository
         .listContacts(institutionId, groupName)
         .unsafeRunSync()
@@ -498,7 +498,7 @@ class InstitutionGroupsRepositorySpec extends AtalaWithPostgresSpec {
         PaginatedQueryConstraints(ordering = ResultOrdering(InstitutionGroup.SortBy.Name))
 
       repository.getBy(institutionId, query).unsafeRunSync().groups mustBe Nil
-      //Guarantee that we removed contacts and group
+      // Guarantee that we removed contacts and group
       intercept[RuntimeException](
         repository
           .listContacts(institutionId, groupName)

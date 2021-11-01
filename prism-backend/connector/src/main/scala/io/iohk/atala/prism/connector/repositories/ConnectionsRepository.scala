@@ -113,10 +113,13 @@ object ConnectionsRepository {
       mid attach new ConnectionsRepositoryPostgresImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Applicative: Functor](
+  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[
+      _
+  ]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): Resource[R, ConnectionsRepository[F]] = Resource.eval(ConnectionsRepository(transactor, logs))
+  ): Resource[R, ConnectionsRepository[F]] =
+    Resource.eval(ConnectionsRepository(transactor, logs))
 
   def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
       transactor: Transactor[F],

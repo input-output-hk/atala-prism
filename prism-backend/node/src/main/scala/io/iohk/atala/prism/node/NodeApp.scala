@@ -53,18 +53,38 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       transactor <- connectToTheDb(databaseConfig)
       liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
       logs = Logs.withContext[IO, IOWithTraceIdContext]
-      protocolVersionRepository <- ProtocolVersionRepository.resource(liftedTransactor, logs)
-      objectManagementServicePromise = Promise[ObjectManagementService[IOWithTraceIdContext]]()
+      protocolVersionRepository <- ProtocolVersionRepository.resource(
+        liftedTransactor,
+        logs
+      )
+      objectManagementServicePromise = Promise[ObjectManagementService[
+        IOWithTraceIdContext
+      ]]()
       onCardanoBlock = onCardanoBlockOp(protocolVersionRepository)
       onAtalaObject = onAtalaObjectOp(objectManagementServicePromise)
-      keyValuesRepository <- KeyValuesRepository.resource(liftedTransactor, logs)
+      keyValuesRepository <- KeyValuesRepository.resource(
+        liftedTransactor,
+        logs
+      )
       keyValueService <- KeyValueService.resource(keyValuesRepository, logs)
-      ledger <- createLedger(globalConfig, keyValueService, onCardanoBlock, onAtalaObject, logs)
+      ledger <- createLedger(
+        globalConfig,
+        keyValueService,
+        onCardanoBlock,
+        onAtalaObject,
+        logs
+      )
       blockProcessingService = new BlockProcessingServiceImpl
       didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
-      atalaOperationsRepository <- AtalaOperationsRepository.resource(liftedTransactor, logs)
-      atalaObjectsTransactionsRepository <- AtalaObjectsTransactionsRepository.resource(liftedTransactor, logs)
-      ledgerPendingTransactionTimeout = globalConfig.getDuration("ledgerPendingTransactionTimeout")
+      atalaOperationsRepository <- AtalaOperationsRepository.resource(
+        liftedTransactor,
+        logs
+      )
+      atalaObjectsTransactionsRepository <- AtalaObjectsTransactionsRepository
+        .resource(liftedTransactor, logs)
+      ledgerPendingTransactionTimeout = globalConfig.getDuration(
+        "ledgerPendingTransactionTimeout"
+      )
       transactionRetryPeriod = FiniteDuration(
         globalConfig.getDuration("transactionRetryPeriod").toNanos,
         TimeUnit.NANOSECONDS
@@ -115,10 +135,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     } yield server
   }
 
-  private def startMetrics(config: Config): Resource[IO, Module.Registration] = Resource.make(IO {
-    Kamon.init()
-    Kamon.addReporter("uptime", new UptimeReporter(config))
-  })(_ => IO.fromFuture(IO(Kamon.stop())))
+  private def startMetrics(config: Config): Resource[IO, Module.Registration] =
+    Resource.make(IO {
+      Kamon.init()
+      Kamon.addReporter("uptime", new UptimeReporter(config))
+    })(_ => IO.fromFuture(IO(Kamon.stop())))
 
   private def loadConfig(): Resource[IO, Config] = Resource.pure[IO, Config] {
     logger.info("Loading config")
@@ -134,7 +155,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
     createCardanoClient(config.cardanoClientConfig, logs).flatMap { cardanoClient =>
-      Kamon.addReporter("node-reporter", NodeReporter(config, cardanoClient, keyValueService))
+      Kamon.addReporter(
+        "node-reporter",
+        NodeReporter(config, cardanoClient, keyValueService)
+      )
       CardanoLedgerService.resource[IOWithTraceIdContext, IO](
         config,
         cardanoClient,
@@ -156,19 +180,31 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       .mapK(TraceId.unLiftIOWithTraceId())
   }
 
-  private def connectToTheDb(dbConfig: TransactorFactory.Config): Resource[IO, HikariTransactor[IO]] = {
+  private def connectToTheDb(
+      dbConfig: TransactorFactory.Config
+  ): Resource[IO, HikariTransactor[IO]] = {
     logger.info("Connecting to the database")
     TransactorFactory.transactor[IO](dbConfig)
   }
 
-  private def onCardanoBlockOp(in: ProtocolVersionRepository[IOWithTraceIdContext]): CardanoBlockHandler = block =>
-    in.markEffective(block.header.blockNo).void.run(TraceId.generateYOLO).unsafeToFuture()
+  private def onCardanoBlockOp(
+      in: ProtocolVersionRepository[IOWithTraceIdContext]
+  ): CardanoBlockHandler = block =>
+    in.markEffective(block.header.blockNo)
+      .void
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
 
   private def onAtalaObjectOp(
-      objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]]
+      objectManagementServicePromise: Promise[
+        ObjectManagementService[IOWithTraceIdContext]
+      ]
   ): AtalaObjectNotification => Future[Unit] = notification => {
     objectManagementServicePromise.future.flatMap { objectManagementService =>
-      objectManagementService.saveObject(notification).run(TraceId.generateYOLO).unsafeToFuture()
+      objectManagementService
+        .saveObject(notification)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
     }.void
   }
 
@@ -193,28 +229,34 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         InMemoryLedgerService.resource(onAtalaObject, logs)
     }
 
-  private def startServer(nodeService: NodeServiceImpl): Resource[IO, Server] = Resource.make[IO, Server](IO {
-    logger.info("Starting server")
-    import io.grpc.protobuf.services.ProtoReflectionService
-    val server = ServerBuilder
-      .forPort(NodeApp.port)
-      .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
-      .addService(_root_.grpc.health.v1.health.HealthGrpc.bindService(new HealthService, executionContext))
-      .addService(
-        ProtoReflectionService.newInstance()
-      ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
-      .build()
-      .start()
-    logger.info("Server started, listening on " + NodeApp.port)
-    server
-  })(server =>
-    IO {
-      System.err.println("*** shutting down gRPC server since JVM is shutting down")
-      server.shutdown()
-      server.awaitTermination()
-      System.err.println("*** server shut down")
-    }
-  )
+  private def startServer(nodeService: NodeServiceImpl): Resource[IO, Server] =
+    Resource.make[IO, Server](IO {
+      logger.info("Starting server")
+      import io.grpc.protobuf.services.ProtoReflectionService
+      val server = ServerBuilder
+        .forPort(NodeApp.port)
+        .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
+        .addService(
+          _root_.grpc.health.v1.health.HealthGrpc
+            .bindService(new HealthService, executionContext)
+        )
+        .addService(
+          ProtoReflectionService.newInstance()
+        ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
+        .build()
+        .start()
+      logger.info("Server started, listening on " + NodeApp.port)
+      server
+    })(server =>
+      IO {
+        System.err.println(
+          "*** shutting down gRPC server since JVM is shutting down"
+        )
+        server.shutdown()
+        server.awaitTermination()
+        System.err.println("*** server shut down")
+      }
+    )
 
   private def applyDatabaseMigrations(
       databaseConfig: TransactorFactory.Config

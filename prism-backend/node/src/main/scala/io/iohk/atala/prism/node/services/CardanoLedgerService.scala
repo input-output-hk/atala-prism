@@ -64,22 +64,35 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
-  override def publish(obj: node_internal.AtalaObject): F[Either[CardanoWalletError, PublicationInfo]] = {
+  override def publish(
+      obj: node_internal.AtalaObject
+  ): F[Either[CardanoWalletError, PublicationInfo]] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
 
     for {
       txId <- cardanoClient
-        .postTransaction(walletId, List(Payment(paymentAddress, minUtxoDeposit)), Some(metadata), walletPassphrase)
+        .postTransaction(
+          walletId,
+          List(Payment(paymentAddress, minUtxoDeposit)),
+          Some(metadata),
+          walletPassphrase
+        )
     } yield txId.map(transactionId =>
-      PublicationInfo(TransactionInfo(transactionId, getType), TransactionStatus.Pending)
+      PublicationInfo(
+        TransactionInfo(transactionId, getType),
+        TransactionStatus.Pending
+      )
     )
   }
 
   override def getTransactionDetails(
       transactionId: TransactionId
-  ): F[Either[CardanoWalletError, TransactionDetails]] = cardanoClient.getTransaction(walletId, transactionId)
+  ): F[Either[CardanoWalletError, TransactionDetails]] =
+    cardanoClient.getTransaction(walletId, transactionId)
 
-  override def deleteTransaction(transactionId: TransactionId): F[Either[CardanoWalletError, Unit]] =
+  override def deleteTransaction(
+      transactionId: TransactionId
+  ): F[Either[CardanoWalletError, Unit]] =
     cardanoClient.deleteTransaction(walletId, transactionId)
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
@@ -107,13 +120,22 @@ class CardanoLedgerService[F[_]: MonadThrow] private[services] (
   private[services] def syncAtalaObjects(): F[Boolean] = {
     for {
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
-      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(maybeLastSyncedBlockNo, blockNumberSyncStart)
+      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(
+        maybeLastSyncedBlockNo,
+        blockNumberSyncStart
+      )
       latestBlock <- cardanoClient.getLatestBlock
-      lastConfirmedBlockNo = latestBlock.map(_.header.blockNo - blockConfirmationsToWait)
+      lastConfirmedBlockNo = latestBlock.map(
+        _.header.blockNo - blockConfirmationsToWait
+      )
       syncStart = lastSyncedBlockNo + 1
-      syncEnd = lastConfirmedBlockNo.map(math.min(_, lastSyncedBlockNo + MAX_SYNC_BLOCKS))
+      syncEnd = lastConfirmedBlockNo.map(
+        math.min(_, lastSyncedBlockNo + MAX_SYNC_BLOCKS)
+      )
       _ <- syncEnd.traverse(end => syncBlocks(syncStart to end))
-    } yield lastConfirmedBlockNo.flatMap(last => syncEnd.map(last > _)).getOrElse(false)
+    } yield lastConfirmedBlockNo
+      .flatMap(last => syncEnd.map(last > _))
+      .getOrElse(false)
   }
 
   private def syncBlocks(blockNos: Range): F[Unit] = {
@@ -228,7 +250,8 @@ object CardanoLedgerService {
     for {
       serviceLogs <- logs.service[UnderlyingLedger[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, UnderlyingLedger[F]] = serviceLogs
+      implicit val implicitLogs: ServiceLogging[F, UnderlyingLedger[F]] =
+        serviceLogs
       val logs: UnderlyingLedger[Mid[F, *]] = new UnderlyingLedgerLogs[F]
       val mid = logs
       mid attach new CardanoLedgerService[F](
@@ -290,7 +313,11 @@ object CardanoLedgerService {
       onCardanoBlock: CardanoBlockHandler,
       onAtalaObject: AtalaObjectNotificationHandler,
       logs: Logs[R, F]
-  )(implicit liftToFuture: Lift[F, Future], ec: ExecutionContext, timer: Timer[F]): UnderlyingLedger[F] = {
+  )(implicit
+      liftToFuture: Lift[F, Future],
+      ec: ExecutionContext,
+      timer: Timer[F]
+  ): UnderlyingLedger[F] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(

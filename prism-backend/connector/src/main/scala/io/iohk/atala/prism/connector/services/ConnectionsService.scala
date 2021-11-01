@@ -97,7 +97,8 @@ object ConnectionsService {
       connectionsRepository: ConnectionsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
-  ): Resource[R, ConnectionsService[F]] = Resource.eval(ConnectionsService(connectionsRepository, nodeService, logs))
+  ): Resource[R, ConnectionsService[F]] =
+    Resource.eval(ConnectionsService(connectionsRepository, nodeService, logs))
 
   def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
       connectionsRepository: ConnectionsRepository[F],

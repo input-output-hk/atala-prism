@@ -201,9 +201,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
   }
 
   private def publishObjectsAndRecordTransaction(
-      atalaObjectsWithParsedContent: List[(AtalaObjectInfo, node_internal.AtalaObject)]
+      atalaObjectsWithParsedContent: List[
+        (AtalaObjectInfo, node_internal.AtalaObject)
+      ]
   ): F[List[TransactionInfo]] = {
-    def logAndKeep(keep: List[TransactionInfo])(err: NodeError): List[TransactionInfo] = {
+    def logAndKeep(
+        keep: List[TransactionInfo]
+    )(err: NodeError): List[TransactionInfo] = {
       logger.error("Was not able to publish and record transaction", err)
       keep
     }
@@ -359,7 +363,8 @@ private class SubmissionServiceImpl[F[_]: Monad](
     logger.info(s"Publish atala object [${atalaObjectInfo.objectId}]")
     val publicationEitherT = for {
       // Publish object to the blockchain
-      publication <- EitherT(atalaReferenceLedger.publish(atalaObject)).leftMap(NodeError.InternalCardanoWalletError)
+      publication <- EitherT(atalaReferenceLedger.publish(atalaObject))
+        .leftMap(NodeError.InternalCardanoWalletError)
 
       _ <- EitherT(
         atalaObjectsTransactionsRepository
@@ -377,7 +382,9 @@ private class SubmissionServiceImpl[F[_]: Monad](
       s"Getting transaction details for transaction ${transaction.transactionId}"
     )
     for {
-      transactionDetails <- atalaReferenceLedger.getTransactionDetails(transaction.transactionId)
+      transactionDetails <- atalaReferenceLedger.getTransactionDetails(
+        transaction.transactionId
+      )
     } yield {
       transactionDetails.left
         .map { err =>

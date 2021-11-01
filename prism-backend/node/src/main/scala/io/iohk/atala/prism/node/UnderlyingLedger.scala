@@ -10,11 +10,17 @@ import io.iohk.atala.prism.protos.node_internal
 trait UnderlyingLedger[F[_]] {
   def getType: Ledger
 
-  def publish(obj: node_internal.AtalaObject): F[Either[CardanoWalletError, PublicationInfo]]
+  def publish(
+      obj: node_internal.AtalaObject
+  ): F[Either[CardanoWalletError, PublicationInfo]]
 
-  def getTransactionDetails(transactionId: TransactionId): F[Either[CardanoWalletError, TransactionDetails]]
+  def getTransactionDetails(
+      transactionId: TransactionId
+  ): F[Either[CardanoWalletError, TransactionDetails]]
 
-  def deleteTransaction(transactionId: TransactionId): F[Either[CardanoWalletError, Unit]]
+  def deleteTransaction(
+      transactionId: TransactionId
+  ): F[Either[CardanoWalletError, Unit]]
 }
 
 case class PublicationInfo(

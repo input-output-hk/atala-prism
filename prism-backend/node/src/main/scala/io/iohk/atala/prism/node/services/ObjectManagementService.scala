@@ -50,15 +50,23 @@ private class DuplicateAtalaOperation extends Exception
 
 @derive(applyK)
 trait ObjectManagementService[F[_]] {
-  def saveObject(notification: AtalaObjectNotification): F[Either[SaveObjectError, Boolean]]
+  def saveObject(
+      notification: AtalaObjectNotification
+  ): F[Either[SaveObjectError, Boolean]]
 
-  def scheduleSingleAtalaOperation(op: node_models.SignedAtalaOperation): F[Either[NodeError, AtalaOperationId]]
+  def scheduleSingleAtalaOperation(
+      op: node_models.SignedAtalaOperation
+  ): F[Either[NodeError, AtalaOperationId]]
 
-  def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
+  def scheduleAtalaOperations(
+      ops: node_models.SignedAtalaOperation*
+  ): F[List[Either[NodeError, AtalaOperationId]]]
 
   def getLastSyncedTimestamp: F[Instant]
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]]
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): F[Option[AtalaOperationInfo]]
 }
 
 private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
@@ -72,18 +80,21 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def saveObject(notification: AtalaObjectNotification): F[Either[SaveObjectError, Boolean]] = {
+  def saveObject(
+      notification: AtalaObjectNotification
+  ): F[Either[SaveObjectError, Boolean]] = {
     // TODO: just add the object to processing queue, instead of processing here
     val updateAction = atalaObjectsTransactionsRepository
       .setObjectTransactionDetails(notification)
       .flatMap {
         case Some(obj) =>
           for {
-            _ <- atalaObjectsTransactionsRepository.updateSubmissionStatusIfExists(
-              obj.transaction.get.ledger,
-              obj.transaction.get.transactionId,
-              InLedger
-            )
+            _ <- atalaObjectsTransactionsRepository
+              .updateSubmissionStatusIfExists(
+                obj.transaction.get.ledger,
+                obj.transaction.get.transactionId,
+                InLedger
+              )
             transaction <- Monad[F].pure(processObject(obj))
             result <- transaction flatTraverse {
               _.logSQLErrors("saving object", logger).attemptSql
@@ -116,7 +127,9 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
       }
   }
 
-  def scheduleSingleAtalaOperation(op: node_models.SignedAtalaOperation): F[Either[NodeError, AtalaOperationId]] =
+  def scheduleSingleAtalaOperation(
+      op: node_models.SignedAtalaOperation
+  ): F[Either[NodeError, AtalaOperationId]] =
     scheduleAtalaOperations(op).map(_.head)
 
   def scheduleAtalaOperations(
@@ -126,44 +139,48 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
       (op, ObjectManagementService.createAtalaObject(List(op)))
     }
 
-    val queryIO: F[List[Either[NodeError, (Int, Int)]]] = opsWithObjects traverse { case (op, obj) =>
-      val objBytes = obj.toByteArray
-      atalaOperationsRepository
-        .insertOperation(
-          AtalaObjectId.of(objBytes),
-          objBytes,
-          AtalaOperationId.of(op),
-          AtalaOperationStatus.RECEIVED
-        )
-    }
-
-    val resultEitherT: EitherT[F, NodeError, List[Either[NodeError, AtalaOperationId]]] = for {
-      _ <- EitherT(
-        protocolVersionsRepository
-          .ifNodeSupportsCurrentProtocol()
-          .map(_.left.map(UnsupportedProtocolVersion))
-      )
-      operationInsertions <- EitherT.liftF(queryIO)
-    } yield {
-      opsWithObjects.zip(operationInsertions).map {
-        case ((atalaOperation, _), Left(err)) =>
-          OperationsCounters
-            .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
-          err.asLeft[AtalaOperationId]
-        case ((atalaOperation, _), Right(cntAdded)) if cntAdded == ((0, 0)) =>
-          val err = NodeError
-            .DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
-          OperationsCounters
-            .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
-          AtalaOperationId.of(atalaOperation).asRight[NodeError]
-        case ((atalaOperation, _), Right(_)) =>
-          OperationsCounters.countReceivedAtalaOperations(List(atalaOperation))
-          AtalaOperationId.of(atalaOperation).asRight[NodeError]
+    val queryIO: F[List[Either[NodeError, (Int, Int)]]] =
+      opsWithObjects traverse { case (op, obj) =>
+        val objBytes = obj.toByteArray
+        atalaOperationsRepository
+          .insertOperation(
+            AtalaObjectId.of(objBytes),
+            objBytes,
+            AtalaOperationId.of(op),
+            AtalaOperationStatus.RECEIVED
+          )
       }
-    }
+
+    val resultEitherT: EitherT[F, NodeError, List[Either[NodeError, AtalaOperationId]]] =
+      for {
+        _ <- EitherT(
+          protocolVersionsRepository
+            .ifNodeSupportsCurrentProtocol()
+            .map(_.left.map(UnsupportedProtocolVersion))
+        )
+        operationInsertions <- EitherT.liftF(queryIO)
+      } yield {
+        opsWithObjects.zip(operationInsertions).map {
+          case ((atalaOperation, _), Left(err)) =>
+            OperationsCounters
+              .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+            err.asLeft[AtalaOperationId]
+          case ((atalaOperation, _), Right(cntAdded)) if cntAdded == ((0, 0)) =>
+            val err = NodeError
+              .DuplicateAtalaOperation(AtalaOperationId.of(atalaOperation))
+            OperationsCounters
+              .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
+            AtalaOperationId.of(atalaOperation).asRight[NodeError]
+          case ((atalaOperation, _), Right(_)) =>
+            OperationsCounters
+              .countReceivedAtalaOperations(List(atalaOperation))
+            AtalaOperationId.of(atalaOperation).asRight[NodeError]
+        }
+      }
 
     resultEitherT.value.flatMap {
-      case Left(e) => ApplicativeError[F, Throwable].raiseError(e.toStatus.asRuntimeException)
+      case Left(e) =>
+        ApplicativeError[F, Throwable].raiseError(e.toStatus.asRuntimeException)
       case Right(r) => Applicative[F].pure(r)
     }
   }
@@ -173,23 +190,35 @@ private final class ObjectManagementServiceImpl[F[_]: BracketThrow](
       maybeLastSyncedBlockTimestamp <-
         keyValuesRepository
           .get(LAST_SYNCED_BLOCK_TIMESTAMP)
-      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(maybeLastSyncedBlockTimestamp.value)
+      lastSyncedBlockTimestamp = getLastSyncedTimestampFromMaybe(
+        maybeLastSyncedBlockTimestamp.value
+      )
     } yield lastSyncedBlockTimestamp
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): F[Option[AtalaOperationInfo]] =
+  def getOperationInfo(
+      atalaOperationId: AtalaOperationId
+  ): F[Option[AtalaOperationInfo]] =
     atalaOperationsRepository
       .getOperationInfo(atalaOperationId)
 
-  private def processObject(obj: AtalaObjectInfo): Either[SaveObjectError, ConnectionIO[Boolean]] = {
+  private def processObject(
+      obj: AtalaObjectInfo
+  ): Either[SaveObjectError, ConnectionIO[Boolean]] = {
     for {
       protobufObject <-
         Either
           .fromTry(node_internal.AtalaObject.validate(obj.byteContent))
           .leftMap(err => SaveObjectError(err.getMessage))
       block = protobufObject.blockContent.get
-      transactionInfo <- Either.fromOption(obj.transaction, SaveObjectError("AtalaObject has no transaction info"))
+      transactionInfo <- Either.fromOption(
+        obj.transaction,
+        SaveObjectError("AtalaObject has no transaction info")
+      )
       transactionBlock <-
-        Either.fromOption(transactionInfo.block, SaveObjectError("AtalaObject has no transaction block"))
+        Either.fromOption(
+          transactionInfo.block,
+          SaveObjectError("AtalaObject has no transaction block")
+        )
       blockProcessed = blockProcessing.processBlock(
         block,
         transactionInfo.transactionId,
@@ -225,9 +254,13 @@ object ObjectManagementService {
   @derive(loggable)
   final case class SaveObjectError(msg: String)
 
-  def createAtalaObject(ops: List[SignedAtalaOperation]): node_internal.AtalaObject = {
+  def createAtalaObject(
+      ops: List[SignedAtalaOperation]
+  ): node_internal.AtalaObject = {
     val block = node_internal.AtalaBlock(ops)
-    node_internal.AtalaObject(blockOperationCount = block.operations.size).withBlockContent(block)
+    node_internal
+      .AtalaObject(blockOperationCount = block.operations.size)
+      .withBlockContent(block)
   }
 
   def make[I[_]: Functor, F[_]: BracketThrow](
@@ -242,8 +275,10 @@ object ObjectManagementService {
     for {
       serviceLogs <- logs.service[ObjectManagementService[F]]
     } yield {
-      implicit val implicitLogs: ServiceLogging[F, ObjectManagementService[F]] = serviceLogs
-      val logs: ObjectManagementService[Mid[F, *]] = new ObjectManagementServiceLogs[F]
+      implicit val implicitLogs: ServiceLogging[F, ObjectManagementService[F]] =
+        serviceLogs
+      val logs: ObjectManagementService[Mid[F, *]] =
+        new ObjectManagementServiceLogs[F]
       val mid = logs
       mid attach new ObjectManagementServiceImpl[F](
         atalaOperationsRepository,

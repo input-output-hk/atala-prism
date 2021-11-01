@@ -24,8 +24,14 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
                 Some(
                   node_models.CreateDIDOperation.DIDCreationData(
                     publicKeys = List(
-                      node_models.PublicKey(id = masterKeyId, usage = node_models.KeyUsage.MASTER_KEY),
-                      node_models.PublicKey(id = "issuing0", usage = node_models.KeyUsage.ISSUING_KEY)
+                      node_models.PublicKey(
+                        id = masterKeyId,
+                        usage = node_models.KeyUsage.MASTER_KEY
+                      ),
+                      node_models.PublicKey(
+                        id = "issuing0",
+                        usage = node_models.KeyUsage.ISSUING_KEY
+                      )
                     )
                   )
                 )
@@ -42,8 +48,15 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
       node_internal.AtalaBlock(
         operations = atalaOperations,
         // Unknown field corresponding to a deprecated field "version", equal to "1"
-        unknownFields =
-          UnknownFieldSet.empty.withField(1, Field(Vector(), Vector(), Vector(), Vector(ByteString.copyFromUtf8("1"))))
+        unknownFields = UnknownFieldSet.empty.withField(
+          1,
+          Field(
+            Vector(),
+            Vector(),
+            Vector(),
+            Vector(ByteString.copyFromUtf8("1"))
+          )
+        )
       )
     )
   private val atalaObjectWithoutVersion = node_internal
@@ -183,7 +196,8 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
 
   "toTransactionMetadata" should {
     "generate correct metadata" in {
-      val metadata = AtalaObjectMetadata.toTransactionMetadata(atalaObjectWithoutVersion)
+      val metadata =
+        AtalaObjectMetadata.toTransactionMetadata(atalaObjectWithoutVersion)
 
       metadata.json.spaces2 must be(
         s"""{
@@ -204,10 +218,14 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
           |        "v" : {
           |          "list" : [
           |            {
-          |              "bytes" : "${atalaObjectByteStringsWithoutBlockVersion(0)}"
+          |              "bytes" : "${atalaObjectByteStringsWithoutBlockVersion(
+          0
+        )}"
           |            },
           |            {
-          |              "bytes" : "${atalaObjectByteStringsWithoutBlockVersion(1)}"
+          |              "bytes" : "${atalaObjectByteStringsWithoutBlockVersion(
+          1
+        )}"
           |            }
           |          ]
           |        }
