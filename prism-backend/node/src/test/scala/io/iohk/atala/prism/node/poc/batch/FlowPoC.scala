@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.poc.batch
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
@@ -34,7 +35,7 @@ import org.scalatest.BeforeAndAfterEach
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.api.CredentialBatches
@@ -46,8 +47,6 @@ import tofu.logging.Logs
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
-  private implicit val ce: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val flowPocTestLogs = Logs.withContext[IO, IOWithTraceIdContext]
   protected var serverName: String = _
   protected var serverHandle: Server = _

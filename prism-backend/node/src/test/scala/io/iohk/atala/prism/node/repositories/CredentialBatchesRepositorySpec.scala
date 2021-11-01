@@ -9,6 +9,7 @@ import org.scalatest.OptionValues._
 
 import java.time.Instant
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.functor._
 import io.circe.Json.fromString
 import io.circe._
@@ -31,9 +32,8 @@ class DegreeServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit
-    ec: ExecutionContext
-) extends intdemo_api.DegreeServiceGrpc.DegreeService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.DegreeServiceGrpc.DegreeService {
 
   val service = new IntDemoService[credential_models.PlainTextCredential](
     issuerId = issuerId,

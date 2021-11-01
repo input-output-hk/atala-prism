@@ -5,6 +5,7 @@ import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import IntDemoServiceSpec._
 import Testing.{eventually, neverEver}
+import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import io.iohk.atala.prism.protos.credential_models

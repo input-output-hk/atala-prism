@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
@@ -23,12 +24,7 @@ import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar.mock
 import tofu.logging.Logs
 
-import scala.concurrent.ExecutionContext
-
 class ManagementConsoleRpcSpecBase extends RpcSpecBase {
-
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-
   private val managementConsoleTestLogs: Logs[IO, IOWithTraceIdContext] =
     Logs.withContext[IO, IOWithTraceIdContext]
 
@@ -121,27 +117,19 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
       managementConsoleTestLogs
     ),
     authenticator
-  )(
-    executionContext
   )
   lazy val contactsService =
-    new ContactsGrpcService(contactsIntegrationService, authenticator)(
-      executionContext
-    )
+    new ContactsGrpcService(contactsIntegrationService, authenticator)
   lazy val credentialIssuanceService = new CredentialIssuanceGrpcService(
     CredentialIssuanceService
       .unsafe(credentialIssuancesRepository, managementConsoleTestLogs),
     authenticator
-  )(
-    executionContext
   )
 
   lazy val credentialTypeService = new CredentialTypesGrpcService(
     CredentialTypesService
       .unsafe(credentialTypeRepository, managementConsoleTestLogs),
     authenticator
-  )(
-    executionContext
   )
 
   lazy val credentialsIntegrationService =
@@ -162,8 +150,6 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
           managementConsoleTestLogs
         ),
       authenticator
-    )(
-      executionContext
     )
 
   val usingApiAsConsole: ApiTestHelper[

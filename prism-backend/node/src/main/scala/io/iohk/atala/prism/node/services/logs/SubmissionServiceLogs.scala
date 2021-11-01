@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.services.logs
 
-import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -11,6 +10,7 @@ import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
 import java.time.Duration
+import cats.MonadThrow
 
 private[services] final class SubmissionServiceLogs[
     F[_]: ServiceLogging[*[_], SubmissionService[F]]: MonadThrow

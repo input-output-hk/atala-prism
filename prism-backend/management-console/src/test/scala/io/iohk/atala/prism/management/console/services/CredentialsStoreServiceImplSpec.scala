@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.implicits._
 import io.iohk.atala.prism.auth.SignedRpcRequest

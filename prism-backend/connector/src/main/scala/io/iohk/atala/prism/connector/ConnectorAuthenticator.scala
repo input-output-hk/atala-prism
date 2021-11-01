@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError}
 import io.iohk.atala.prism.auth
@@ -23,7 +24,8 @@ class ConnectorAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[ParticipantId](
+)(implicit runtime: IORuntime)
+    extends SignedRequestsAuthenticatorBase[ParticipantId](
       nodeClient,
       grpcAuthenticationHeaderParser
     ) {

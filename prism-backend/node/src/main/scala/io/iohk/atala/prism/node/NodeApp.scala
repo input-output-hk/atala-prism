@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node
 
-import cats.effect.{ContextShift, ExitCode, IO, IOApp, Resource, Timer}
+import cats.effect.{ExitCode, IO, IOApp, Resource}
 import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
@@ -25,6 +25,7 @@ import tofu.logging.Logs
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import cats.effect.unsafe.IORuntime
 
 object NodeApp extends IOApp {
 
@@ -38,9 +39,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   implicit val implicitExecutionContext: ExecutionContext = executionContext
 
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-
-  implicit val timer: Timer[IO] = IO.timer(executionContext)
+  implicit val runtime: IORuntime = IORuntime.global
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

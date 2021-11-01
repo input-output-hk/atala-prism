@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._

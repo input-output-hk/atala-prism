@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import cats.{Applicative, Comonad, Functor, Monad}
 import cats.data.EitherT
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.comonad._
 import cats.syntax.either._
@@ -30,6 +30,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 
 import java.time.Duration
+import cats.MonadThrow
 
 @derive(applyK)
 trait SubmissionService[F[_]] {

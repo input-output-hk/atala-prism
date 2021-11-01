@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.metrics
 
 import cats.data.ReaderT
-import cats.effect.{Bracket, IO}
-import cats.effect.syntax.bracket._
+import cats.effect.{IO, MonadCancel}
+import cats.effect.syntax.monadCancel._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
@@ -75,7 +75,7 @@ object TimeMeasureUtil {
 
   def measureTime[F[_], T](in: F[T], timer: DomainTimer)(implicit
       timeMeasureMetric: TimeMeasureMetric[F],
-      br: Bracket[F, Throwable]
+      br: MonadCancel[F, Throwable]
   ): F[T] = {
     for {
       maybeStartedTimer <- timeMeasureMetric.startTimer(timer)
@@ -88,7 +88,7 @@ object TimeMeasureUtil {
   implicit class MeasureOps[F[_], T](val in: F[T]) extends AnyVal {
     def measureOperationTime(
         timer: DomainTimer
-    )(implicit br: Bracket[F, Throwable], m: TimeMeasureMetric[F]): F[T] =
+    )(implicit br: MonadCancel[F, Throwable], m: TimeMeasureMetric[F]): F[T] =
       measureTime(in, timer)
   }
 

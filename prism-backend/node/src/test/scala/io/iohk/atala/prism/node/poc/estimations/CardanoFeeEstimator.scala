@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.poc.estimations
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
@@ -20,7 +21,6 @@ import org.scalatest.concurrent.ScalaFutures._
 import tofu.logging.Logs
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 /** Estimates the Cardano fees to pay for a given deployment simulation.
@@ -312,8 +312,6 @@ object CardanoFeeEstimator {
 
   private def createCardanoFeeEstimator(): CardanoFeeEstimator = {
     import io.iohk.atala.prism.utils.IOUtils._
-    implicit val ec: ExecutionContext = ExecutionContext.global
-    implicit val cs: ContextShift[IO] = IO.contextShift(ec)
 
     val clientConfig =
       NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))

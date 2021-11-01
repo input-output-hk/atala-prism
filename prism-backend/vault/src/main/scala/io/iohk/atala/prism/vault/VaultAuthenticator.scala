@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault
 
+import cats.effect.unsafe.IORuntime
 import io.iohk.atala.prism.auth.errors.{AuthError, UnsupportedAuthMethod}
 import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -19,7 +20,8 @@ class VaultAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[DID](
+)(implicit runtime: IORuntime)
+    extends SignedRequestsAuthenticatorBase[DID](
       nodeClient,
       grpcAuthenticationHeaderParser
     ) {

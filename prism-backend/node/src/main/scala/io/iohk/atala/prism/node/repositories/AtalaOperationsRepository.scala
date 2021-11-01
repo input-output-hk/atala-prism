@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.derive
@@ -23,6 +23,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait AtalaOperationsRepository[F[_]] {
@@ -45,7 +46,7 @@ trait AtalaOperationsRepository[F[_]] {
 }
 
 object AtalaOperationsRepository {
-  def apply[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[AtalaOperationsRepository[F]] =
@@ -61,7 +62,7 @@ object AtalaOperationsRepository {
       mid attach new AtalaOperationsRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[
+  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[
       _
   ]: Applicative: Functor](
       transactor: Transactor[F],
@@ -69,14 +70,14 @@ object AtalaOperationsRepository {
   ): Resource[R, AtalaOperationsRepository[F]] =
     Resource.eval(AtalaOperationsRepository(transactor, logs))
 
-  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): AtalaOperationsRepository[F] =
     AtalaOperationsRepository(transactor, logs).extract
 }
 
-private final class AtalaOperationsRepositoryImpl[F[_]: BracketThrow](
+private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends AtalaOperationsRepository[F] {
 

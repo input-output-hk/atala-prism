@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.grpc
 
 import cats.data.EitherT
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -33,9 +34,8 @@ class CredentialsStoreGrpcService(
     credentialsStoreService: CredentialsStoreService[IOWithTraceIdContext],
     contactsRepository: ContactsRepository[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
-)(implicit
-    ec: ExecutionContext
-) extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
 

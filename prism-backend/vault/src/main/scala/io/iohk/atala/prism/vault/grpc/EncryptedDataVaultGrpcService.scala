@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault.grpc
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.AuthErrorSupport
@@ -20,9 +21,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class EncryptedDataVaultGrpcService(
     service: EncryptedDataVaultService[IOWithTraceIdContext],
     authenticator: VaultAuthenticator
-)(implicit
-    ec: ExecutionContext
-) extends vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultService
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultService
     with AuthErrorSupport {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

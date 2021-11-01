@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.google.protobuf.ByteString
 import doobie.util.transactor.Transactor

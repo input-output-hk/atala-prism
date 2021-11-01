@@ -34,13 +34,6 @@ trait BlockProcessingService {
 }
 
 class BlockProcessingServiceImpl extends BlockProcessingService {
-
-  // there are two implicit implementations for cats.Monad[doobie.free.connection.ConnectionIO],
-  // one from doobie, the other for cats, making it ambiguous
-  // we need to choose one
-  implicit def _connectionIOMonad: cats.Monad[doobie.free.connection.ConnectionIO] =
-    doobie.free.connection.AsyncConnectionIO
-
   private val logger = LoggerFactory.getLogger(getClass)
 
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this

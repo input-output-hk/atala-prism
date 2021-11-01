@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -27,6 +27,8 @@ import shapeless.{:+:, CNil}
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ConnectionsService[F[_]] {
@@ -75,7 +77,7 @@ trait ConnectionsService[F[_]] {
 object ConnectionsService {
   type GetConnectionCommunicationKeysError = InternalConnectorError :+: CNil
 
-  def apply[F[_]: BracketThrow: Execute, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow: Execute, R[_]: Functor](
       connectionsRepository: ConnectionsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
@@ -93,14 +95,14 @@ object ConnectionsService {
       )
     }
 
-  def resource[F[_]: BracketThrow: Execute, R[_]: Applicative: Functor](
+  def resource[F[_]: MonadCancelThrow: Execute, R[_]: Applicative: Functor](
       connectionsRepository: ConnectionsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]
   ): Resource[R, ConnectionsService[F]] =
     Resource.eval(ConnectionsService(connectionsRepository, nodeService, logs))
 
-  def unsafe[F[_]: BracketThrow: Execute, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: Execute, R[_]: Comonad](
       connectionsRepository: ConnectionsRepository[F],
       nodeService: NodeServiceGrpc.NodeService,
       logs: Logs[R, F]

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.{ContextShift, ExitCode, IO, IOApp, Resource}
+import cats.effect.{ExitCode, IO, IOApp, Resource}
+import cats.effect.unsafe.IORuntime
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
@@ -33,7 +34,8 @@ object VaultApp extends IOApp {
 
 class VaultApp() {
   self =>
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit val runtime: IORuntime = IORuntime.global
+
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val vaultLogs: Logs[IO, IOWithTraceIdContext] =
@@ -57,7 +59,8 @@ class VaultApp() {
       )
       encryptedDataVaultService <- EncryptedDataVaultService.resource(payloadsRepository, vaultLogs)
       encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
-        ExecutionContext.global
+        ExecutionContext.global,
+        runtime
       )
       server <- startServer(encryptedDataVaultGrpcService)
     } yield server

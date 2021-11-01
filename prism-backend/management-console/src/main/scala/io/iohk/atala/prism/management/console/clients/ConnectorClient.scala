@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.clients
 
 import cats.{Applicative, Functor}
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.functor._
@@ -24,11 +24,13 @@ import io.iohk.atala.prism.utils.GrpcUtils
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import tofu.{BracketThrow, Execute}
+import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.MonadThrow
+import cats.effect.kernel.MonadCancel
 
 @derive(applyK)
 trait ConnectorClient[F[_]] {
@@ -105,7 +107,7 @@ object ConnectorClient {
     }
   }
 
-  def apply[F[_]: Execute: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+  def apply[F[_]: Execute: MonadCancel[*[_], Throwable]: TimeMeasureMetric, R[_]: Functor](
       config: Config,
       logs: Logs[R, F]
   )(implicit ec: ExecutionContext): R[ConnectorClient[F]] =
@@ -143,9 +145,7 @@ object ConnectorClient {
       )(requestSigner)
     }
 
-  def makeResource[F[_]: Execute: BracketThrow: TimeMeasureMetric, R[
-      _
-  ]: Applicative: Functor](
+  def makeResource[F[_]: Execute: TimeMeasureMetric: MonadCancel[*[_], Throwable], R[_]: Applicative: Functor](
       config: Config,
       logs: Logs[R, F]
   )(implicit ec: ExecutionContext): Resource[R, ConnectorClient[F]] =
@@ -247,9 +247,7 @@ private[clients] final class ConnectorClientLogs[
         )
 }
 
-private[clients] final class ConnectorClientMetrics[F[
-    _
-]: TimeMeasureMetric: BracketThrow]
+private[clients] final class ConnectorClientMetrics[F[_]: TimeMeasureMetric: MonadCancel[*[_], Throwable]]
     extends ConnectorClient[Mid[F, *]] {
 
   val clientName = "ConnectorClient"

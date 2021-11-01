@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import cats.syntax.functor._
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
@@ -18,9 +19,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class GroupsGrpcService(
     groupsService: GroupsService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
-)(implicit
-    ec: ExecutionContext
-) extends console_api.GroupsServiceGrpc.GroupsService
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends console_api.GroupsServiceGrpc.GroupsService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
 

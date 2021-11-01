@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.integrations
 
 import cats.{Comonad, Functor, Monad, MonadThrow}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
@@ -32,6 +32,7 @@ import io.iohk.atala.prism.management.console.models.Contact.PaginatedQuery
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ContactsIntegrationService[F[_]] {
@@ -241,7 +242,7 @@ private final class ContactsIntegrationServiceImpl[F[_]: MonadThrow](
 
 object ContactsIntegrationService {
 
-  def apply[F[_]: BracketThrow, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow, R[_]: Functor](
       contactsRepository: ContactsRepository[F],
       connector: ConnectorClient[F],
       logs: Logs[R, F]
@@ -259,14 +260,14 @@ object ContactsIntegrationService {
       )
     }
 
-  def unsafe[F[_]: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow, R[_]: Comonad](
       contactsRepository: ContactsRepository[F],
       connector: ConnectorClient[F],
       logs: Logs[R, F]
   ): ContactsIntegrationService[F] =
     ContactsIntegrationService(contactsRepository, connector, logs).extract
 
-  def makeResource[F[_]: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: MonadCancelThrow, R[_]: Monad](
       contactsRepository: ContactsRepository[F],
       connector: ConnectorClient[F],
       logs: Logs[R, F]

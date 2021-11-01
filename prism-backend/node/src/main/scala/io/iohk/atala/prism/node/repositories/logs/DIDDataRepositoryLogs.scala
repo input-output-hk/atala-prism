@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.repositories.logs
 
-import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -11,6 +10,7 @@ import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
+import cats.MonadThrow
 
 private[repositories] final class DIDDataRepositoryLogs[
     F[_]: ServiceLogging[*[_], DIDDataRepository[F]]: MonadThrow

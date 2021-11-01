@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.ReaderT
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
@@ -31,7 +32,6 @@ import tofu.logging.Logs
 
 import scala.concurrent.duration._
 import java.time.Duration
-import scala.concurrent.ExecutionContext
 
 object SubmissionServiceSpec {}
 
@@ -41,8 +41,6 @@ class SubmissionServiceSpec
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
 
-  private implicit val ce: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger[IOWithTraceIdContext] =
     mock[UnderlyingLedger[IOWithTraceIdContext]]

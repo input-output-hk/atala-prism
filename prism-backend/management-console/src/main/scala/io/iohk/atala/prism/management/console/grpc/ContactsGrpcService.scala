@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.effect.unsafe.IORuntime
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
@@ -19,7 +20,8 @@ class ContactsGrpcService(
     ],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    runtime: IORuntime
 ) extends console_api.ContactsServiceGrpc.ContactsService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {

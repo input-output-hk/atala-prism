@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano
 
 import cats.{Comonad, Functor}
-import cats.effect.{Concurrent, ContextShift, IO, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.comonad._
 import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
@@ -17,7 +17,8 @@ import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import tofu.higherKind.Mid
 
-import scala.concurrent.ExecutionContext
+import cats.MonadThrow
+import cats.effect.kernel.Async
 
 @derive(applyK)
 trait CardanoClient[F[_]] {
@@ -54,8 +55,6 @@ object CardanoClient {
       cardanoWalletConfig: CardanoWalletApiClient.Config
   )
 
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-
   def make[I[_]: Functor, F[_]: MonadThrow](
       cardanoDbSyncClient: CardanoDbSyncClient[F],
       cardanoWalletApiClient: CardanoWalletApiClient[F],
@@ -74,9 +73,7 @@ object CardanoClient {
       )
     }
 
-  def makeResource[I[_]: Comonad, F[
-      _
-  ]: TimeMeasureMetric: Concurrent: ContextShift](
+  def makeResource[I[_]: Comonad, F[_]: TimeMeasureMetric: Async](
       config: Config,
       logs: Logs[I, F]
   ): Resource[F, CardanoClient[F]] =

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.connector.repositories
 
 import cats.{Applicative, Comonad, Functor}
-import cats.effect.{BracketThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import derevo.derive
@@ -20,6 +20,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait RequestNoncesRepository[F[_]] {
@@ -28,7 +29,7 @@ trait RequestNoncesRepository[F[_]] {
 }
 
 object RequestNoncesRepository {
-  def apply[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Functor](
+  def apply[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): R[RequestNoncesRepository[F]] =
@@ -45,7 +46,7 @@ object RequestNoncesRepository {
       mid attach new RequestNoncesRepositoryPostgresImpl[F](transactor)
     }
 
-  def resource[F[_]: TimeMeasureMetric: BracketThrow, R[
+  def resource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[
       _
   ]: Applicative: Functor](
       transactor: Transactor[F],
@@ -53,14 +54,14 @@ object RequestNoncesRepository {
   ): Resource[R, RequestNoncesRepository[F]] =
     Resource.eval(RequestNoncesRepository(transactor, logs))
 
-  def unsafe[F[_]: TimeMeasureMetric: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): RequestNoncesRepository[F] =
     RequestNoncesRepository(transactor, logs).extract
 }
 
-private final class RequestNoncesRepositoryPostgresImpl[F[_]: BracketThrow](
+private final class RequestNoncesRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends RequestNoncesRepository[F] {
 

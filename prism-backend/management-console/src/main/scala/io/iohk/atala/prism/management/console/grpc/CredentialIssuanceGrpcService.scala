@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.effect.unsafe.IORuntime
 import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -25,7 +26,8 @@ class CredentialIssuanceGrpcService(
     credentialIssuanceService: CredentialIssuanceService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    runtime: IORuntime
 ) extends console_api.CredentialIssuanceServiceGrpc.CredentialIssuanceService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {

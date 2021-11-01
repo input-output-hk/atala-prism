@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node
 
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.scalatest.EitherMatchers._
 import com.google.protobuf.ByteString
 import doobie.implicits._
@@ -36,7 +37,6 @@ import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
-import tofu.syntax.monadic._
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit

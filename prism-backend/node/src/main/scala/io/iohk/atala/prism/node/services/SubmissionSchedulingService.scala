@@ -1,21 +1,23 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{CancelToken, IO, Timer}
+import cats.effect.IO
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
 import org.slf4j.LoggerFactory
 
 import java.time.Duration
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import cats.effect.unsafe.IORuntime
+
+import scala.language.postfixOps
 
 class SubmissionSchedulingService private (
     config: Config,
     submissionService: SubmissionService[IOWithTraceIdContext]
-)(implicit ec: ExecutionContext) {
-  private implicit val timer: Timer[IO] = IO.timer(ec)
-
+)(implicit ec: ExecutionContext, runtime: IORuntime) {
+  type CancelToken = () => Future[Unit]
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   // Schedule first run
@@ -23,7 +25,7 @@ class SubmissionSchedulingService private (
   scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
 
   // NOTE: submitReceivedObjects is not thread-safe, so race-conditions may occur in a concurrent mode.
-  private var submitReceivedObjectsCancellationToken: Option[CancelToken[IO]] =
+  private var submitReceivedObjectsCancellationToken: Option[CancelToken] =
     None
   scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
 
@@ -33,7 +35,7 @@ class SubmissionSchedulingService private (
         "Skip flushing because operations submission is already in progress."
       )
     ) { cancellationToken =>
-      cancellationToken.unsafeRunSync() // cancel a scheduled task
+      Await.result(cancellationToken(), 5 seconds) // cancel a scheduled task
       scheduleSubmitReceivedObjects(
         config.operationSubmissionPeriod,
         immediate = true
@@ -56,7 +58,7 @@ class SubmissionSchedulingService private (
         .onComplete { _ =>
           scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
         }
-    )).unsafeRunAsyncAndForget()
+    )).unsafeRunAndForget()
   }
 
   private def scheduleSubmitReceivedObjects(
@@ -86,7 +88,7 @@ class SubmissionSchedulingService private (
     } else {
       submitReceivedObjectsCancellationToken = Some(
         (IO.sleep(delay) *> IO(run()))
-          .unsafeRunCancelable(_ => ())
+          .unsafeRunCancelable()
       )
     }
     ()
@@ -103,7 +105,7 @@ object SubmissionSchedulingService {
   def apply(
       config: Config,
       submissionService: SubmissionService[IOWithTraceIdContext]
-  )(implicit ec: ExecutionContext): SubmissionSchedulingService = {
+  )(implicit ec: ExecutionContext, runtime: IORuntime): SubmissionSchedulingService = {
     new SubmissionSchedulingService(config, submissionService)
   }
 }

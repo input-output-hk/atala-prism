@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.scalatest.EitherMatchers._
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec

@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.ReaderT
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -39,7 +40,6 @@ import org.scalatest.concurrent.ScalaFutures
 import tofu.logging.Logs
 
 import java.time.{Duration, Instant}
-import scala.concurrent.ExecutionContext
 
 object ObjectManagementServiceSpec {
   private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
@@ -76,8 +76,6 @@ class ObjectManagementServiceSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
-  private implicit val ce: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val ledger: UnderlyingLedger[IOWithTraceIdContext] =
     mock[UnderlyingLedger[IOWithTraceIdContext]]

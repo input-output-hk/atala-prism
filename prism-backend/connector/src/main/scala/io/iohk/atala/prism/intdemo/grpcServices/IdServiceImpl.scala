@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.functor._
 import io.circe.Json.fromString
 import io.circe._
@@ -30,9 +31,8 @@ class IdServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit
-    ec: ExecutionContext
-) extends intdemo_api.IDServiceGrpc.IDService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.IDServiceGrpc.IDService {
 
   val service = new IntDemoService[(String, LocalDate)](
     issuerId = IdServiceImpl.issuerId,

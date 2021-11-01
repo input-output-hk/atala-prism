@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.vault.services
 
-import cats.{Applicative, Comonad, Functor}
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
@@ -17,6 +16,7 @@ import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.{Applicative, Comonad, Functor, MonadThrow}
 
 @derive(applyK)
 trait EncryptedDataVaultService[F[_]] {

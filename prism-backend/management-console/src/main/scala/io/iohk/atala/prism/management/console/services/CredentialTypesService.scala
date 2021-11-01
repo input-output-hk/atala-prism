@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.{Comonad, Functor, Monad}
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -15,6 +15,8 @@ import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait CredentialTypesService[F[_]] {
@@ -49,7 +51,7 @@ trait CredentialTypesService[F[_]] {
 }
 
 object CredentialTypesService {
-  def apply[F[_]: BracketThrow, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow, R[_]: Functor](
       credentialTypeRepository: CredentialTypeRepository[F],
       logs: Logs[R, F]
   ): R[CredentialTypesService[F]] =
@@ -64,13 +66,13 @@ object CredentialTypesService {
       mid attach new CredentialTypesServiceImpl[F](credentialTypeRepository)
     }
 
-  def unsafe[F[_]: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow, R[_]: Comonad](
       credentialTypeRepository: CredentialTypeRepository[F],
       logs: Logs[R, F]
   ): CredentialTypesService[F] =
     CredentialTypesService(credentialTypeRepository, logs).extract
 
-  def makeResource[F[_]: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: MonadCancelThrow, R[_]: Monad](
       credentialTypeRepository: CredentialTypeRepository[F],
       logs: Logs[R, F]
   ): Resource[R, CredentialTypesService[F]] =

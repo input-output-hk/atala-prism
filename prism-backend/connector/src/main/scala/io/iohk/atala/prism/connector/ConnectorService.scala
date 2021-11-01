@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.connector
 
-import cats.effect._
+import cats.effect.unsafe.IORuntime
 import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
 import com.google.protobuf.ByteString
@@ -28,7 +28,7 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import io.iohk.atala.prism.protos.{connector_api, common_models, connector_models, node_api}
+import io.iohk.atala.prism.protos.{common_models, connector_api, connector_models, node_api}
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
@@ -49,7 +49,8 @@ class ConnectorService(
     nodeService: NodeServiceGrpc.NodeService,
     participantsRepository: ParticipantsRepository[IOWithTraceIdContext]
 )(implicit
-    executionContext: ExecutionContext
+    executionContext: ExecutionContext,
+    runtime: IORuntime
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
     with ConnectorErrorSupport
     with AuthAndMiddlewareSupport[ConnectorError, ParticipantId] {
@@ -57,9 +58,6 @@ class ConnectorService(
   override protected val serviceName: String = "connector-service"
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  private implicit val contextSwitch: ContextShift[IO] =
-    IO.contextShift(executionContext)
 
   override def healthCheck(
       request: common_models.HealthCheckRequest

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.Contact.PaginatedQuery
 import io.iohk.atala.prism.management.console.models._
@@ -11,8 +10,9 @@ import io.iohk.atala.prism.models.ConnectionToken
 import tofu.higherKind.Mid
 
 import java.time.Instant
+import cats.effect.MonadCancelThrow
 
-final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends ContactsRepository[Mid[F, *]] {
+final class ContactsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow] extends ContactsRepository[Mid[F, *]] {
 
   private val repoName = "ContactsRepository"
   private lazy val createTimer =

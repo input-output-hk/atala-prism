@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.grpc
 
 import cats.syntax.functor._
 import cats.data.NonEmptyList
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupport, Authenticator}
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -20,9 +21,8 @@ import io.iohk.atala.prism.management.console.services.CredentialsService
 class CredentialsGrpcService(
     credentialsService: CredentialsService[IOWithTraceIdContext],
     val authenticator: Authenticator[ParticipantId]
-)(implicit
-    ec: ExecutionContext
-) extends console_api.CredentialsServiceGrpc.CredentialsService
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends console_api.CredentialsServiceGrpc.CredentialsService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
 

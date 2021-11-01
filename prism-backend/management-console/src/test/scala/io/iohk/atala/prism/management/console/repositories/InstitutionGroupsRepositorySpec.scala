@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.syntax.option._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.management.console.DataPreparation._

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.connector.services
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
@@ -25,9 +26,8 @@ class ContactConnectionService(
     connectionsService: ConnectionsService[IOWithTraceIdContext],
     authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
     didWhitelist: Set[DID]
-)(implicit
-    executionContext: ExecutionContext
-) extends ContactConnectionServiceGrpc.ContactConnectionService
+)(implicit executionContext: ExecutionContext, runtime: IORuntime)
+    extends ContactConnectionServiceGrpc.ContactConnectionService
     with ConnectorErrorSupport {
 
   val serviceName = "ContactConnectionService"

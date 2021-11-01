@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console.grpc
 
+import cats.effect.unsafe.IORuntime
 import cats.implicits.catsSyntaxEitherId
 import com.google.protobuf.ByteString
 import cats.syntax.functor._
@@ -26,7 +27,8 @@ class ConsoleGrpcService(
     consoleService: ConsoleService[IOWithTraceIdContext],
     val authenticator: ManagementConsoleAuthenticator
 )(implicit
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    runtime: IORuntime
 ) extends console_api.ConsoleServiceGrpc.ConsoleService
     with ManagementConsoleErrorSupport
     with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {

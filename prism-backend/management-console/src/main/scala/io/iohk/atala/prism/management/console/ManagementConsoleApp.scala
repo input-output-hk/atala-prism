@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console
 
+import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.Server
@@ -40,6 +41,7 @@ object ManagementConsoleApp extends IOApp {
   private val grpcConfig = GrpcUtils.GrpcConfig(port = 50054)
 
   implicit val ec = ExecutionContext.global
+  implicit val ioRuntime: IORuntime = runtime
 
   override def run(args: List[String]): IO[ExitCode] = {
     // Cats resource runs in multiple threads, we have to pass class loader

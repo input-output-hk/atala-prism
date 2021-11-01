@@ -1,7 +1,5 @@
 package io.iohk.atala.prism.vault.repositories
 
-import cats.{Applicative, Comonad, Functor}
-import cats.effect.{Bracket, BracketThrow, MonadThrow, Resource}
 import cats.syntax.apply._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
@@ -22,6 +20,8 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import tofu.syntax.logging._
+import cats.{Applicative, Comonad, Functor, MonadThrow}
+import cats.effect.{MonadCancel, MonadCancelThrow, Resource}
 
 @derive(applyK)
 trait PayloadsRepository[F[_]] {
@@ -35,7 +35,7 @@ trait PayloadsRepository[F[_]] {
 }
 
 object PayloadsRepository {
-  def create[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Functor](
+  def create[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Functor](
       xa: Transactor[F],
       logs: Logs[R, F]
   ): R[PayloadsRepository[F]] =
@@ -49,19 +49,19 @@ object PayloadsRepository {
       mid attach new PayloadsRepositoryImpl(xa)
     }
 
-  def resource[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
+  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
       xa: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, PayloadsRepository[F]] = Resource.eval(PayloadsRepository.create(xa, logs))
 
-  def unsafe[F[_]: BracketThrow: TimeMeasureMetric, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Comonad](
       xa: Transactor[F],
       logs: Logs[R, F]
   ): PayloadsRepository[F] = PayloadsRepository.create(xa, logs).extract
 }
 
 private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
-    br: Bracket[F, Throwable]
+    br: MonadCancel[F, Throwable]
 ) extends PayloadsRepository[F] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -83,7 +83,8 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
       .transact(xa)
 }
 
-private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: BracketThrow] extends PayloadsRepository[Mid[F, *]] {
+private final class PayloadsRepoMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow]
+    extends PayloadsRepository[Mid[F, *]] {
   val repoName: String = "payloads-repository"
 
   private lazy val createTimer =

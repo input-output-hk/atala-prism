@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
+import cats.effect.unsafe.implicits.global
+
 import java.util.UUID
 import io.grpc.StatusRuntimeException
 import org.scalatest.OptionValues

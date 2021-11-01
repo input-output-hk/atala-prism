@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.vault.services
 
+import cats.effect.unsafe.implicits.global
+
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.{Base64, UUID}

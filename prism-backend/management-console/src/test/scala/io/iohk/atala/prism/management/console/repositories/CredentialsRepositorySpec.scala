@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.repositories
 
 import cats.data.NonEmptyList
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.util.transactor
 import doobie.implicits._

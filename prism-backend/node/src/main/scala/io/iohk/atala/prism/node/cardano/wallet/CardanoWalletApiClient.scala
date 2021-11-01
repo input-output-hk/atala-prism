@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.cardano.wallet
 
-import cats.effect.{Concurrent, ContextShift, Resource}
+import cats.effect.kernel.Async
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import cats.{Applicative, Comonad, Functor}
@@ -87,7 +88,7 @@ object CardanoWalletApiClient {
 
   type Config = ApiClient.Config
   val Config = ApiClient.Config
-  def make[F[_]: TimeMeasureMetric: Concurrent: ContextShift, I[_]: Functor](
+  def make[F[_]: TimeMeasureMetric: Async, I[_]: Functor](
       config: Config,
       logs: Logs[I, F]
   ): I[F[CardanoWalletApiClient[F]]] = for {
@@ -106,7 +107,7 @@ object CardanoWalletApiClient {
     }
   }
 
-  def makeResource[F[_]: TimeMeasureMetric: Concurrent: ContextShift, I[
+  def makeResource[F[_]: TimeMeasureMetric: Async, I[
       _
   ]: Comonad](
       config: Config,
@@ -127,7 +128,7 @@ object CardanoWalletApiClient {
       .extract
   }
 
-  def unsafe[F[_]: TimeMeasureMetric: Concurrent: ContextShift: Comonad, I[
+  def unsafe[F[_]: TimeMeasureMetric: Async: Comonad, I[
       _
   ]: Comonad](
       config: Config,

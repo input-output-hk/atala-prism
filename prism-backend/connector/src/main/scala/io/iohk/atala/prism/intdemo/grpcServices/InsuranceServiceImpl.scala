@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.intdemo
 
+import cats.effect.unsafe.IORuntime
 import io.circe.Json
 import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
@@ -29,9 +30,8 @@ class InsuranceServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(implicit
-    ec: ExecutionContext
-) extends intdemo_api.InsuranceServiceGrpc.InsuranceService {
+)(implicit ec: ExecutionContext, runtime: IORuntime)
+    extends intdemo_api.InsuranceServiceGrpc.InsuranceService {
 
   val service = new IntDemoService[RequiredInsuranceData](
     InsuranceServiceImpl.issuerId,
