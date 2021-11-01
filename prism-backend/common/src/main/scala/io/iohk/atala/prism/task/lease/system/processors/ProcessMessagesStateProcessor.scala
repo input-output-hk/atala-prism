@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.task.lease.system.processors
 
-import cats.implicits._
 import io.iohk.atala.prism.services.ConnectorMessagesService
 import io.iohk.atala.prism.task.lease.system.{
   ProcessingTask,
