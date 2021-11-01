@@ -6,7 +6,7 @@ import cats.syntax.apply._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.effect.{BracketThrow, MonadThrow, Resource}
+import cats.effect.Resource
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.management.console.errors
@@ -16,6 +16,8 @@ import io.iohk.atala.prism.management.console.repositories.ParticipantsRepositor
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
+import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ParticipantsIntegrationService[F[_]] {
@@ -30,7 +32,7 @@ trait ParticipantsIntegrationService[F[_]] {
 }
 
 object ParticipantsIntegrationService {
-  def apply[F[_]: BracketThrow, R[_]: Functor](
+  def apply[F[_]: MonadCancelThrow, R[_]: Functor](
       participantsRepository: ParticipantsRepository[F],
       logs: Logs[R, F]
   ): R[ParticipantsIntegrationService[F]] =
@@ -46,13 +48,13 @@ object ParticipantsIntegrationService {
       )
     }
 
-  def unsafe[F[_]: BracketThrow, R[_]: Comonad](
+  def unsafe[F[_]: MonadCancelThrow, R[_]: Comonad](
       participantsRepository: ParticipantsRepository[F],
       logs: Logs[R, F]
   ): ParticipantsIntegrationService[F] =
     ParticipantsIntegrationService(participantsRepository, logs).extract
 
-  def makeResource[F[_]: BracketThrow, R[_]: Monad](
+  def makeResource[F[_]: MonadCancelThrow, R[_]: Monad](
       participantsRepository: ParticipantsRepository[F],
       logs: Logs[R, F]
   ): Resource[R, ParticipantsIntegrationService[F]] =

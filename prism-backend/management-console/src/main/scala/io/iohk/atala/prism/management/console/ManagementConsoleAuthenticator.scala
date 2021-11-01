@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.management.console
 
+import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
 import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError, UnsupportedAuthMethod}
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
@@ -22,7 +23,7 @@ class ManagementConsoleAuthenticator(
     requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-) extends SignedRequestsAuthenticatorBase[ParticipantId](
+)(implicit runtime: IORuntime) extends SignedRequestsAuthenticatorBase[ParticipantId](
       nodeClient,
       grpcAuthenticationHeaderParser
     ) {

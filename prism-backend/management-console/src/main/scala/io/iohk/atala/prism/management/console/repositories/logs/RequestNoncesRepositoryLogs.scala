@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.logs
 
-import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -10,13 +9,14 @@ import io.iohk.atala.prism.management.console.repositories.RequestNoncesReposito
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
+import cats.effect.MonadCancelThrow
 
 private[repositories] final class RequestNoncesRepositoryLogs[F[
     _
 ]: ServiceLogging[
   *[_],
   RequestNoncesRepository[F]
-]: BracketThrow]
+]: MonadCancelThrow]
     extends RequestNoncesRepository[Mid[F, *]] {
   override def burn(
       participantId: ParticipantId,

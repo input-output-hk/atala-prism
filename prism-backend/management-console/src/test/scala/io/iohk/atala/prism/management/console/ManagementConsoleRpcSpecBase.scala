@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.logs
 
-import cats.effect.BracketThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -11,12 +10,13 @@ import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepo
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
+import cats.effect.MonadCancelThrow
 
 private[repositories] final class InstitutionGroupsRepositoryLogs[F[
     _
 ]: ServiceLogging[*[
   _
-], InstitutionGroupsRepository[F]]: BracketThrow]
+], InstitutionGroupsRepository[F]]: MonadCancelThrow]
     extends InstitutionGroupsRepository[Mid[F, *]] {
 
   override def create(

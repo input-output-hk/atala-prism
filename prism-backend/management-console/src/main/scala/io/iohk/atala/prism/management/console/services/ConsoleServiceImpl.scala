@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.services
 
 import cats.{Comonad, Functor, Monad}
-import cats.effect.{MonadThrow, Resource}
+import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
@@ -16,6 +16,7 @@ import io.iohk.atala.prism.management.console.repositories.StatisticsRepository
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
+import cats.MonadThrow
 
 @derive(applyK)
 trait ConsoleService[F[_]] {

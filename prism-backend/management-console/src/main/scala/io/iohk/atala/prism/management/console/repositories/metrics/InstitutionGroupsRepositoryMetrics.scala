@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQuery
 import io.iohk.atala.prism.management.console.models.{Contact, GetGroupsResult, InstitutionGroup, ParticipantId}
@@ -8,10 +7,11 @@ import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepo
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
 final class InstitutionGroupsRepositoryMetrics[F[
     _
-]: TimeMeasureMetric: BracketThrow]
+]: TimeMeasureMetric: MonadCancelThrow]
     extends InstitutionGroupsRepository[Mid[F, *]] {
   private val repoName = "InstitutionGroupsRepository"
   private lazy val createTimer =

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.management.console.repositories.metrics
 
-import cats.effect.BracketThrow
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
 import io.iohk.atala.prism.management.console.models.{ParticipantId, ParticipantInfo}
@@ -12,8 +11,9 @@ import io.iohk.atala.prism.management.console.repositories.ParticipantsRepositor
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import tofu.higherKind.Mid
+import cats.effect.MonadCancelThrow
 
-final class ParticipantsRepositoryMetrics[F[_]: TimeMeasureMetric: BracketThrow]
+final class ParticipantsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow]
     extends ParticipantsRepository[Mid[F, *]] {
 
   private val repoName = "ParticipantsRepository"

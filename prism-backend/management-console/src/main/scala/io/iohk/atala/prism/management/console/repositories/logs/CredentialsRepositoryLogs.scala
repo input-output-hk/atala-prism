@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.logs
 
 import cats.data.NonEmptyList
-import cats.effect.MonadThrow
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -16,6 +15,7 @@ import io.iohk.atala.prism.management.console.models.GenericCredential.Paginated
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
+import cats.MonadThrow
 
 private[repositories] final class CredentialsRepositoryLogs[F[
     _
