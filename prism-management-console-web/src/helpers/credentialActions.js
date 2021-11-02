@@ -11,15 +11,20 @@ export const getTargetCredentials = (credentials, selectedCredentials, requiredS
 
   return {
     selected,
-    targetCredentials: selected.filter(({ status, contactData }) => {
-      const validCredentialStatus =
-        !requiredStatus?.credential?.length || requiredStatus.credential.includes(status);
-      const validContactStatus =
-        !requiredStatus?.contact?.length ||
-        requiredStatus.contact.includes(contactData.connectionStatus);
-      return validCredentialStatus && validContactStatus;
-    })
+    targetCredentials: selected.filter(cred => hasRequiredStatus(cred, requiredStatus))
   };
+};
+
+export const hasRequiredStatus = ({ status, contactData }, requiredStatus) => {
+  const hasNoRequiredCredentialStatus = !requiredStatus?.credential?.length;
+  const hasNoRequiredContactStatus = !requiredStatus?.contact?.length;
+
+  const validCredentialStatus =
+    hasNoRequiredCredentialStatus || requiredStatus.credential.includes(status);
+  const validContactStatus =
+    hasNoRequiredContactStatus || requiredStatus.contact.includes(contactData.connectionStatus);
+
+  return validCredentialStatus && validContactStatus;
 };
 
 const getSelectedCredentials = (credentials, selectedCredentials) =>
@@ -30,7 +35,8 @@ export const credentialRequiredStatus = {
     credential: [CREDENTIAL_STATUSES.credentialSigned, CREDENTIAL_STATUSES.credentialSent]
   },
   [SIGN_CREDENTIALS]: {
-    credential: [CREDENTIAL_STATUSES.credentialDraft]
+    credential: [CREDENTIAL_STATUSES.credentialDraft],
+    contact: [CONNECTION_STATUSES.statusConnectionAccepted]
   },
   [SEND_CREDENTIALS]: {
     credential: [CREDENTIAL_STATUSES.credentialSigned],

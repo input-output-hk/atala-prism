@@ -16,10 +16,16 @@ import {
   CREDENTIALS_RECEIVED,
   CONTACT_STATUS,
   CREDENTIAL_STATUS,
-  CONNECTION_STATUSES
+  SIGN_CREDENTIALS,
+  SEND_CREDENTIALS,
+  REVOKE_CREDENTIALS
 } from '../../../../../helpers/constants';
 import './_style.scss';
 import { useScrolledToBottom } from '../../../../../hooks/useScrolledToBottom';
+import {
+  credentialRequiredStatus,
+  hasRequiredStatus
+} from '../../../../../helpers/credentialActions';
 
 const translationKeyPrefix = 'credentials.table.columns';
 
@@ -112,7 +118,7 @@ const getCredentialsIssuedColumns = (
   {
     key: 'actions',
     render: credential => {
-      const { status, credentialId, contactData } = credential;
+      const { status, credentialId } = credential;
       const loadingProps = { size: 3, color: '#F83633' };
       const actionButtons = (
         <div>
@@ -120,7 +126,11 @@ const getCredentialsIssuedColumns = (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
-                onClick: () => revokeSingleCredential(credentialId)
+                onClick: () => revokeSingleCredential(credentialId),
+                disabled: !hasRequiredStatus(
+                  credential,
+                  credentialRequiredStatus[REVOKE_CREDENTIALS]
+                )
               }}
               buttonText={i18n.t('credentials.actions.revokeOneCredential')}
               loading={loadingRevokeSingle}
@@ -131,7 +141,8 @@ const getCredentialsIssuedColumns = (
             <CustomButton
               buttonProps={{
                 className: 'theme-link',
-                onClick: () => signSingleCredential(credentialId)
+                onClick: () => signSingleCredential(credentialId),
+                disabled: !hasRequiredStatus(credential, credentialRequiredStatus[SIGN_CREDENTIALS])
               }}
               buttonText={i18n.t('credentials.actions.signOneCredential')}
               loading={loadingSignSingle}
@@ -143,8 +154,7 @@ const getCredentialsIssuedColumns = (
               buttonProps={{
                 className: 'theme-link',
                 onClick: () => sendSingleCredential(credentialId),
-                disabled:
-                  contactData.connectionStatus !== CONNECTION_STATUSES.statusConnectionAccepted
+                disabled: !hasRequiredStatus(credential, credentialRequiredStatus[SEND_CREDENTIALS])
               }}
               buttonText={i18n.t('credentials.actions.sendOneCredential')}
               loading={loadingSendSingle}

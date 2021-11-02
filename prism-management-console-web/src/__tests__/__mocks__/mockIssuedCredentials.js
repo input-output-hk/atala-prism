@@ -1,4 +1,21 @@
+import { CONNECTION_STATUSES, CREDENTIAL_STATUSES } from '../../helpers/constants';
+
+export const DRAFT_NOT_CONNECTED_COUNT = 2;
+export const DRAFT_CONNECTED_COUNT = 3;
+export const SIGNED_CONNECTED_COUNT = 2;
+export const SENT_CONNECTED_COUNT = 1;
+export const REVOKED_CONNECTED_COUNT = 1;
+
+export const UNSIGNABLE_CREDENTIAL_INDEX = 0;
+export const SIGNABLE_CREDENTIAL_INDEX = 1;
+export const UNSENDABLE_CREDENTIAL_INDEX = 1;
+export const SENDABLE_CREDENTIAL_INDEX = 2;
+export const UNREVOCABLE_CREDENTIAL_INDEX = 1;
+export const REVOCABLE_CREDENTIAL_INDEX = 3;
+
 export const mockCredentials = [
+  // Credential: DRAFT
+  // Contact: STATUS_INVITATION_MISSING
   {
     gender: 'male',
     issuer: '!!J5',
@@ -16,7 +33,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 1,
+    status: CREDENTIAL_STATUSES.credentialDraft,
     contactData: {
       externalId: 'debcdfb1dec543c3965d133bed318be4',
       contactName: 'Priya Lamb',
@@ -24,10 +41,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Lamb',
       key: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusInvitationMissing,
       contactId: '53d6c434-3e07-4391-82fa-2e3c9f0dbb09'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -45,7 +64,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 1,
+    status: CREDENTIAL_STATUSES.credentialDraft,
     contactData: {
       externalId: '8b3339d551884afb8171d4c353fb91f0',
       contactName: 'Klaudia Munoz',
@@ -53,10 +72,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Munoz',
       key: '6ba33ecf-7833-4899-a6df-6a681c742067',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '6ba33ecf-7833-4899-a6df-6a681c742067'
     }
   },
+  // Credential: SIGNED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -79,7 +100,7 @@ export const mockCredentials = [
     batchinclusionproof:
       '{"hash":"0ed73bc9fd29c94795a2f8644abf96cef12bbd9398ad94a3d1f0c32bb073192c","index":0,"siblings":[]}',
     sharedat: 0,
-    status: 2,
+    status: CREDENTIAL_STATUSES.credentialSigned,
     contactData: {
       externalId: '575a095607ca4f86b59b38e7715f922c',
       contactName: 'Harleigh Wells',
@@ -87,10 +108,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Wells',
       key: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '49fcb20a-5b7e-48ee-b4f3-e39952c36c4b'
     }
   },
+  // Credential: SIGNED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -108,7 +131,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 2,
+    status: CREDENTIAL_STATUSES.credentialSigned,
     contactData: {
       externalId: 'f5ecf2f2037745d3be0283bd876140ff',
       contactName: 'Ayyub Conner',
@@ -116,10 +139,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Conner',
       key: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280',
-      connectionStatus: 3,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '920dfbb4-3f6b-4e6a-bfc9-732570e3e280'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -137,7 +162,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 3,
+    status: CREDENTIAL_STATUSES.credentialDraft,
     contactData: {
       externalId: '63880e9e5cbd44319afb7c43b047cf88',
       contactName: 'Malika Ferguson',
@@ -145,10 +170,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Ferguson',
       key: '49e55b84-d542-440a-8c92-eac9f6df7e90',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '49e55b84-d542-440a-8c92-eac9f6df7e90'
     }
   },
+  // Credential: SENT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -171,7 +198,7 @@ export const mockCredentials = [
     batchinclusionproof:
       '{"hash":"ca656f8c528c78f82509fbff4de8ed997c2d7b3e4089e4e7229547f0b1c9f391","index":0,"siblings":[]}',
     sharedat: 0,
-    status: 3,
+    status: CREDENTIAL_STATUSES.credentialSent,
     contactData: {
       externalId: 'fae84b4f0ecf42db8f793b0b7c3f7bd2',
       contactName: 'Nick Magana',
@@ -179,10 +206,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Magana',
       key: '2c4cb6eb-26d1-48f5-80fd-1957160af38e',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '2c4cb6eb-26d1-48f5-80fd-1957160af38e'
     }
   },
+  // Credential: REVOKED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -200,7 +229,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 4,
+    status: CREDENTIAL_STATUSES.credentialRevoked,
     contactData: {
       externalId: '0308e770ba9541c58732d1a046b170b9',
       contactName: 'Indi Avery',
@@ -208,10 +237,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Avery',
       key: '810eddfb-5395-42ea-a528-c6042ca1c6d0',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '810eddfb-5395-42ea-a528-c6042ca1c6d0'
     }
   },
+  // Credential: REVOKED
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -229,7 +260,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 4,
+    status: CREDENTIAL_STATUSES.credentialRevoked,
     contactData: {
       externalId: 'da1811b94bb1456dad3f32b1478fea47',
       contactName: 'Ffion Bray',
@@ -237,10 +268,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Bray',
       key: '2e9524ce-1764-457b-96c8-3a0a011b3e52',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: '2e9524ce-1764-457b-96c8-3a0a011b3e52'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_INVITATION_MISSING
   {
     gender: 'male',
     issuer: '!!J5',
@@ -258,7 +291,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 1,
+    status: CREDENTIAL_STATUSES.credentialDraft,
     contactData: {
       externalId: '62a300409b2645c597bb143e968c1f17',
       contactName: 'Soraya Love',
@@ -266,10 +299,12 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Love',
       key: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusInvitationMissing,
       contactId: 'c13ad41f-2a20-41b7-bbc0-a07693f64b85'
     }
   },
+  // Credential: DRAFT
+  // Contact: STATUS_CONNECTION_ACCEPTED
   {
     gender: 'male',
     issuer: '!!J5',
@@ -287,7 +322,7 @@ export const mockCredentials = [
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
-    status: 4,
+    status: CREDENTIAL_STATUSES.credentialDraft,
     contactData: {
       externalId: '7a7a9160cd3b40b182399b65c0f086fe',
       contactName: 'Pixie Mann',
@@ -295,7 +330,7 @@ export const mockCredentials = [
       midNames: '',
       lastName: 'Mann',
       key: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c',
-      connectionStatus: 1,
+      connectionStatus: CONNECTION_STATUSES.statusConnectionAccepted,
       contactId: 'c4215efe-e8c8-4002-8ca8-49379f0fae4c'
     }
   }
