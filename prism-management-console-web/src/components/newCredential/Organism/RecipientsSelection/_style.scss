@@ -1,19 +1,5 @@
 @import '../../../../css/general_styling';
 
-.TypeSelectionContainer {
-  padding: 1em 1.5em;
-  .titleContainer {
-    h1 {
-      font-variant: normal;
-    }
-  }
-  .TypeSelection {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-  }
-}
-
 .RecipientsSelection {
   .ant-tabs {
     height: 100%;
@@ -58,67 +44,9 @@
   .ant-tabs-content-holder {
     padding: 1em 2em;
   }
-  .selectGroupSubtitle {
+  .helperTextContainer {
     span {
       @include body-text($body, #728099, 400);
-    }
-  }
-  .selectGroupCheckbox {
-    margin-right: 3em;
-    display: flex;
-    flex-direction: row-reverse;
-    span {
-      @include primary-text($label, $black);
-    }
-  }
-
-  .selectionContainer {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin: 2em 0;
-    .FilterControls {
-      margin: 0 !important;
-    }
-    .selectContactsCheckbox,
-    .selectGroupsCheckbox {
-      margin-left: 1em;
-      .loadingSelection {
-        width: 4em;
-      }
-      .ant-checkbox-wrapper {
-        display: flex !important;
-        align-items: center !important;
-      }
-    }
-    .checkboxReverse {
-      display: flex;
-      flex-direction: row-reverse;
-      align-items: center !important;
-      .icon {
-        margin-right: 0.5em;
-      }
-      .ant-checkbox-wrapper {
-        display: flex !important;
-        align-items: center !important;
-        flex-direction: row-reverse !important;
-      }
-      span {
-        display: flex !important;
-        align-items: center;
-        top: 0;
-        margin: 0;
-        font-family: 'Circular-book', sans-serif;
-        font-size: 12px;
-        color: #303034;
-      }
-    }
-    .noRecipientsCheckbox {
-      margin-left: 1em;
-      background-color: $light-grey;
-      border: 1px solid $medium-grey;
-      padding: 0.5em 1.5em 0.5em 1em;
-      border-radius: 2em;
     }
   }
 }

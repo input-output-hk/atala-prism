@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { Input, Select } from 'antd';
+import { observer } from 'mobx-react-lite';
 import {
   PENDING_CONNECTION,
   CONNECTED,
@@ -12,8 +13,9 @@ import {
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import { useContactUiState } from '../../../../hooks/useContactStore';
+import './_style.scss';
 
-const ConnectionsFilter = ({ fullFilters }) => {
+const ConnectionsFilter = observer(({ showFullFilter }) => {
   const { t } = useTranslation();
   const {
     sortingDirection,
@@ -39,7 +41,7 @@ const ConnectionsFilter = ({ fullFilters }) => {
           prefix={<SearchOutlined />}
           onChange={({ target: { value } }) => setFilterValue('textFilter', value)}
         />
-        {fullFilters && [
+        {showFullFilter && [
           <Select
             allowClear
             onChange={value => setFilterValue('statusFilter', value)}
@@ -74,18 +76,18 @@ const ConnectionsFilter = ({ fullFilters }) => {
       </div>
     </div>
   );
-};
+});
 
 ConnectionsFilter.defaultProps = {
   searchText: undefined,
   setStatus: undefined,
-  fullFilters: true
+  showFullFilter: true
 };
 
 ConnectionsFilter.propTypes = {
   setSearchText: PropTypes.func.isRequired,
   searchText: PropTypes.string,
-  fullFilters: PropTypes.bool,
+  showFullFilter: PropTypes.bool,
   setStatus: PropTypes.func,
   sortingDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
     .isRequired,

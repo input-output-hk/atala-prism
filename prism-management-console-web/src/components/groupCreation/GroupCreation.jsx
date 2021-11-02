@@ -76,7 +76,7 @@ const GroupCreation = ({
 
         <div className="flex">
           <div className="SearchBar">
-            <ConnectionsFilter {...filterProps} fullFilters={false} />
+            <ConnectionsFilter {...filterProps} showFullFilter={false} />
           </div>
 
           <div className="groupsButtonContainer">

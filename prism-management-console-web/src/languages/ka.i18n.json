@@ -466,7 +466,7 @@
     "targetsSelection": {
       "groups": "Select group(s)",
       "subjects": "Select contact(s)",
-      "selectGroup": "You can select multiple groups and contacts to assign recipients",
+      "helpText": "You can select multiple groups and contacts to assign recipients",
       "selectAll": "Select all",
       "checkbox": "Do not select any group or contact"
     },

@@ -46,9 +46,8 @@ export default class ContactStore {
       fetchContactsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
-      updateFetchedResults: action,
-      fetchAllContacts: flow.bound,
-      fetchAllFilteredContacts: flow.bound,
+      updateStoredContacts: action,
+      getContactsToSelect: flow.bound,
       fetchContacts: action,
       fetchRecursively: false,
       rootStore: false
@@ -125,10 +124,11 @@ export default class ContactStore {
   *getContactsToSelect() {
     const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
     const alreadyFetched = hasFiltersApplied ? this.searchResults : this.contacts;
+    const currentScrollId = hasFiltersApplied ? this.resultsScrollId : this.contactsScrollId;
 
     if (!this.hasMore) return alreadyFetched;
 
-    const response = yield this.fetchRecursively(alreadyFetched);
+    const response = yield this.fetchRecursively(alreadyFetched, currentScrollId);
     this.updateStoredContacts(response);
     return response.contactsList;
   }
@@ -145,7 +145,7 @@ export default class ContactStore {
     }
   };
 
-  fetchRecursively = async (acc, scrollId) => {
+  fetchRecursively = async (acc = [], scrollId) => {
     const response = await this.fetchContacts({
       scrollId,
       pageSize: MAX_CONTACT_PAGE_SIZE

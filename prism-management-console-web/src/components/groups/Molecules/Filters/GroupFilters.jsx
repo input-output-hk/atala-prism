@@ -8,8 +8,9 @@ import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInput
 import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/CustomDateRangePicker';
 import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import { useGroupUiState } from '../../../../hooks/useGroupStore';
+import './_style.scss';
 
-const GroupFilters = observer(({ fullFilters }) => {
+const GroupFilters = observer(({ showFullFilter }) => {
   const { t } = useTranslation();
 
   const { sortingDirection, setSortingBy, setFilterValue, toggleSortDirection } = useGroupUiState();
@@ -32,7 +33,7 @@ const GroupFilters = observer(({ fullFilters }) => {
             onChange={({ target: { value } }) => setFilterValue('nameFilter', value)}
           />
         </div>
-        {fullFilters && (
+        {showFullFilter && (
           <>
             <div>
               <CustomInputGroup prefixIcon="calendar">
@@ -65,11 +66,11 @@ const GroupFilters = observer(({ fullFilters }) => {
 });
 
 GroupFilters.defaultProps = {
-  fullFilters: false
+  showFullFilter: false
 };
 
 GroupFilters.propTypes = {
-  fullFilters: PropTypes.bool
+  showFullFilter: PropTypes.bool
 };
 
 export default GroupFilters;

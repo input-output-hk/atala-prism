@@ -1,5 +1,17 @@
 @import "../../../../css/general_styling";
 
 .TypeSelectionWrapper {
-    width: 100%;
+  width: 100%;
+  .TypeSelectionContainer {
+    padding: 1em 1.5em;
+    .titleContainer {
+      h1 {
+        font-variant: normal;
+      }
+    }
+    .TypeSelection {
+      display: flex;
+      justify-content: space-around;
+    }
+  }
 }

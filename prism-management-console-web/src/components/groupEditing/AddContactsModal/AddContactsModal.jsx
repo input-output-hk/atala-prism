@@ -103,7 +103,7 @@ const AddContactsModal = ({ api, groupName, visible, onCancel, onConfirm }) => {
           </div>
         </Col>
         <Col span={17}>
-          <ConnectionsFilter {...filterProps} fullFilters={false} />
+          <ConnectionsFilter {...filterProps} showFullFilter={false} />
         </Col>
       </Row>
       <Row className="ModalContactsContainer">
