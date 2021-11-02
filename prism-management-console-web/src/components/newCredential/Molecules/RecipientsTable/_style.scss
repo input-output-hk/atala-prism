@@ -1,58 +1,14 @@
 @import "../../../../css/general_styling";
 
-.RecipientsSelectionTableHeader {
+.SelectAllCheckbox {
+  display: flex !important;
+}
+
+.SelectAllCheckboxContainer {
+  height: 1em;
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin: 2em 0;
-  .SelectAllCheckbox {
-    display: flex !important;
-  }
-  .RecipientSelectionCheckbox {
-    margin-left: 1em;
-    .LoadingSelection {
-      width: 4em;
-    }
-    .ant-checkbox-wrapper {
-      display: flex !important;
-      align-items: center !important;
-    }
-  }
-  .CheckboxReverse {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center !important;
-    .icon {
-      margin-right: 0.5em;
-    }
-    .ant-checkbox-wrapper {
-      display: flex !important;
-      align-items: center !important;
-      flex-direction: row-reverse !important;
-    }
-    span {
-      display: flex !important;
-      align-items: center;
-      top: 0;
-      margin: 0;
-      font-family: "Circular-book";
-      font-size: 12px;
-      color: #303034;
-    }
-  }
-  .NoRecipientsCheckbox {
-    margin-left: 1em;
-    background-color: $light-grey;
-    border: 1px solid $medium-grey;
-    padding: 0.5em 1.5em 0.5em 1em;
-    border-radius: 2em;
-  }
-  .SelectAllCheckboxContainer {
-    margin-right: 3em;
-    display: flex;
-    flex-direction: row-reverse;
-    span {
-      @include primary-text($label, $black);
-    }
+  flex-direction: row-reverse;
+  span {
+    @include primary-text($label, $black);
   }
 }

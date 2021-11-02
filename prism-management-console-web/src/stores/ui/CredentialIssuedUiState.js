@@ -6,7 +6,7 @@ import {
   filterByMultipleKeys
 } from '../../helpers/filterHelpers';
 import {
-  CREDENTIAL_SORTING_KEYS,
+  CREDENTIAL_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
 } from '../../helpers/constants';
@@ -147,8 +147,8 @@ export default class CredentialIssuedUiState {
       const matchName =
         !this.hasNameFilterApplied ||
         filterByMultipleKeys(this.nameFilter, { ...item.contactData, ...item.credentialData }, [
-          'contactName',
-          'externalId'
+          CREDENTIAL_SORTING_KEYS_TRANSLATION.CONTACT_NAME,
+          CREDENTIAL_SORTING_KEYS_TRANSLATION.EXTERNAL_ID
         ]);
       const matchDate =
         !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.publicationStoredAt);
@@ -163,14 +163,19 @@ export default class CredentialIssuedUiState {
     });
 
   getCredentialValue = (credential, sortingKey) => {
-    if (sortingKey === CREDENTIAL_SORTING_KEYS.credentialType)
+    // createdOn filter doesn't work on the backend, nor an attribute is provided.
+    // the temporary solution is to reverse the default sorting from the backend
+    if (sortingKey === CREDENTIAL_SORTING_KEYS_TRANSLATION.CREATED_ON) return credential.index;
+    if (sortingKey === CREDENTIAL_SORTING_KEYS_TRANSLATION.CREDENTIAL_TYPE)
       return credential.credentialData.credentialTypeDetails.id;
+    if (sortingKey === CREDENTIAL_SORTING_KEYS_TRANSLATION.DATE_SIGNED)
+      return credential.publicationStoredAt?.seconds;
     return credential[sortingKey] || credential.credentialData[this.sortingKey];
   };
 
   applySorting = credentials =>
     _.orderBy(
-      credentials,
+      credentials.map((c, index) => ({ ...c, index })),
       [
         credential => {
           const value = this.getCredentialValue(credential, this.sortingKey);
@@ -180,7 +185,8 @@ export default class CredentialIssuedUiState {
       this.sortDirection === ascending ? 'asc' : 'desc'
     );
 
-  sortingIsCaseSensitive = () => this.sortingBy === 'contactName';
+  sortingIsCaseSensitive = () =>
+    this.sortingBy === CREDENTIAL_SORTING_KEYS_TRANSLATION.CONTACT_NAME;
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
