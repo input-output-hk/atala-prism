@@ -22,6 +22,7 @@ import io.iohk.atala.prism.node.repositories.{
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
+import io.iohk.atala.prism.node.services.models.RetryOldPendingTransactionsResult
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.utils.IOUtils._
@@ -312,7 +313,7 @@ class SubmissionServiceSpec
       submissionService
         .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
-        .unsafeRunSync() must be(1)
+        .unsafeRunSync() mustBe RetryOldPendingTransactionsResult(4, 0, 1)
 
       val inLedgerTxs = DataPreparation.getSubmissionsByStatus(
         AtalaObjectTransactionSubmissionStatus.InLedger

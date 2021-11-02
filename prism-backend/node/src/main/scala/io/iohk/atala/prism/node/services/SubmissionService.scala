@@ -194,7 +194,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
   ): F[List[TransactionInfo]] = {
     def justKeep(
         keep: List[TransactionInfo]
-    )(err: NodeError): List[TransactionInfo] = {
+    ): NodeError => List[TransactionInfo] = { _ =>
       keep
     }
 
@@ -298,7 +298,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
         } yield atalaObject
 
         atalaObjectIOEither.value.map {
-          case Left(err) => None
+          case Left(_) => None
           case Right(atalaObjectInfo) => Some(atalaObjectInfo)
         }
       } else {

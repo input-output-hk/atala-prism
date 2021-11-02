@@ -42,6 +42,6 @@ private[repositories] final class AtalaOperationsRepositoryMetrics[F[
 
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
-  ): Mid[F, Option[AtalaOperationInfo]] =
+  ): Mid[F, Either[NodeError, Option[AtalaOperationInfo]]] =
     _.measureOperationTime(getOperationInfoTimer)
 }

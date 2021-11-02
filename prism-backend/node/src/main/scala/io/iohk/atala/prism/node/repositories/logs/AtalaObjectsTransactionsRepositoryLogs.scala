@@ -75,7 +75,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
             err => error"Encountered an error while updating submission status $err",
             _ => {
               if (newSubmissionStatus == submission.status) {
-                warn"current status of transaction submission [${submission.transactionId}] is already $newSubmissionStatus. Skipping"
+                warn"current status of transaction submission [${submission.transactionId}] is already ${newSubmissionStatus.entryName} Skipping"
               } else {
                 info"updating submission status - successfully done"
               }

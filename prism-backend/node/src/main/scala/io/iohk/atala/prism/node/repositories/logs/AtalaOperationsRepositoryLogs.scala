@@ -12,6 +12,7 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 import cats.MonadThrow
+import io.iohk.atala.prism.node.errors.NodeError
 
 private[repositories] final class AtalaOperationsRepositoryLogs[F[
     _
@@ -55,13 +56,14 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
 
   override def getOperationInfo(
       atalaOperationId: AtalaOperationId
-  ): Mid[F, Option[models.AtalaOperationInfo]] =
+  ): Mid[F, Either[NodeError, Option[models.AtalaOperationInfo]]] =
     in =>
-      info"getting operation info" *>
+      info"getting operation info $atalaOperationId" *>
         in.flatTap(
           _.fold(
-            info"getting operation info - got nothing"
-          )(res => info"getting operation info - successfully done, ${res.transactionId}")
+            err => error"Encountered an error while getting operation info $err",
+            maybeResult => info"getting operation info - got ${maybeResult.fold("nothing")(_.transactionId.toString)}"
+          )
         ).onError(
           errorCause"Encountered an error while updating merged objects" (_)
         )
