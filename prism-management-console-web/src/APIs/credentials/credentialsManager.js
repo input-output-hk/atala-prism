@@ -62,7 +62,7 @@ async function getCredentials({
     filterBy.setCreatedAfter(protoDate);
   }
   const sortBy = new SortBy();
-  sortBy.setField(fieldKeys[field]);
+  sortBy.setField(fieldKeys[CREDENTIAL_SORTING_KEYS[field]]);
   sortBy.setDirection(sortByDirection[direction]);
 
   const getCredentialsRequest = new GetGenericCredentialsRequest();

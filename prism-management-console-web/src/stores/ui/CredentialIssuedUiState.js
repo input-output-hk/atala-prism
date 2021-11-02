@@ -7,7 +7,6 @@ import {
 } from '../../helpers/filterHelpers';
 import {
   CREDENTIAL_SORTING_KEYS,
-  CREDENTIAL_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
 } from '../../helpers/constants';
@@ -23,7 +22,7 @@ const defaultValues = {
   connectionStatusFilter: '',
   dateFilter: null,
   sortDirection: ascending,
-  sortingBy: CREDENTIAL_SORTING_KEYS.createdOn
+  sortingBy: 'createdOn'
 };
 export default class CredentialIssuedUiState {
   isSearching = defaultValues.isSearching;
@@ -79,7 +78,7 @@ export default class CredentialIssuedUiState {
   }
 
   get sortingKey() {
-    return CREDENTIAL_SORTING_KEYS_TRANSLATION[this.sortingBy];
+    return this.sortingBy;
   }
 
   get hasFiltersApplied() {
@@ -163,14 +162,20 @@ export default class CredentialIssuedUiState {
       return matchName && matchDate && matchCredentialStatus && matchConnectionStatus;
     });
 
+  getCredentialValue = (credential, sortingKey) => {
+    if (sortingKey === CREDENTIAL_SORTING_KEYS.credentialType)
+      return credential.credentialData.credentialTypeDetails.id;
+    return credential[sortingKey] || credential.credentialData[this.sortingKey];
+  };
+
   applySorting = credentials =>
     _.orderBy(
       credentials,
       [
-        credential =>
-          this.sortingIsCaseSensitive()
-            ? credential[this.sortingKey].toLowerCase()
-            : credential[this.sortingKey]
+        credential => {
+          const value = this.getCredentialValue(credential, this.sortingKey);
+          return this.sortingIsCaseSensitive() ? value.toLowerCase() : value;
+        }
       ],
       this.sortDirection === ascending ? 'asc' : 'desc'
     );

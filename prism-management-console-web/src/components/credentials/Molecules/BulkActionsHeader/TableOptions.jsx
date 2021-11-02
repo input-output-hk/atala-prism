@@ -8,26 +8,25 @@ import {
   SortDescendingOutlined
 } from '@ant-design/icons';
 import { Button, Dropdown, Menu } from 'antd';
-
-import './_style.scss';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
+import { checkboxPropShape } from '../../../../helpers/propShapes';
+
+import './_style.scss';
 
 const TableOptions = ({ bulkActionsProps }) => {
   const { t } = useTranslation();
   const { selectedCredentials, selectAllProps, refreshCredentials } = bulkActionsProps;
-  const { sortingBy, setSortingBy, sortDirection, toggleSorting } = useCredentialIssuedUiState();
+  const {
+    sortingBy,
+    setSortingBy,
+    sortDirection,
+    toggleSortDirection
+  } = useCredentialIssuedUiState();
 
-  // FIXME: remove frontend sorting when backend is ready:
-  // CREDENTIAL_SORTING_KEYS contains the sorting options currently supported by the backend
-  // For the remaining options, the sorting is done by the frontend
-  const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS).concat(
-    'contactName',
-    'externalId',
-    'dateSigned'
-  );
+  const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS);
 
   const sortingOptionsMenu = (
     <Menu onClick={({ key }) => setSortingBy(key)}>
@@ -44,7 +43,7 @@ const TableOptions = ({ bulkActionsProps }) => {
       <div className="LeftOptions">
         <Button
           className="TableOptionButton no-border"
-          onClick={toggleSorting}
+          onClick={toggleSortDirection}
           icon={
             sortAscending ? (
               <SortAscendingOutlined style={{ fontSize: '16px' }} />
@@ -73,21 +72,14 @@ const TableOptions = ({ bulkActionsProps }) => {
   );
 };
 
-TableOptions.defaultProps = {
-  loadingSelection: false
-};
-
 TableOptions.propTypes = {
   bulkActionsProps: PropTypes.shape({
+    selectedCredentials: PropTypes.arrayOf(PropTypes.string).isRequired,
     refreshCredentials: PropTypes.func.isRequired,
-    selectAllProps: PropTypes.shape()
-  }).isRequired,
-  loadingSelection: PropTypes.bool,
-  sortingProps: PropTypes.shape({
-    sortingBy: PropTypes.string,
-    setSortingBy: PropTypes.func,
-    sortDirection: PropTypes.string,
-    setSortDirection: PropTypes.func
+    selectAllProps: PropTypes.shape({
+      loadingSelection: PropTypes.bool.isRequired,
+      checkboxProps: checkboxPropShape.isRequired
+    })
   }).isRequired
 };
 
