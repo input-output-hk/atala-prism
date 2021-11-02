@@ -4,7 +4,11 @@ import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.Server
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
+import io.iohk.atala.prism.auth.grpc.{
+  GrpcAuthenticationHeaderParser,
+  GrpcAuthenticatorInterceptor,
+  TraceExposeInterceptor
+}
 import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -219,7 +223,7 @@ object ManagementConsoleApp extends IOApp {
       grpcServer <- GrpcUtils.createGrpcServer[IO](
         grpcConfig,
         sslConfigOption = None,
-        interceptor = Some(new GrpcAuthenticatorInterceptor),
+        interceptor = List(new TraceExposeInterceptor, new GrpcAuthenticatorInterceptor),
         console_api.ConsoleServiceGrpc.bindService(consoleGrpcService, ec),
         console_api.ContactsServiceGrpc.bindService(contactsGrpcService, ec),
         console_api.CredentialIssuanceServiceGrpc
