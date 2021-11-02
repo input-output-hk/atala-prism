@@ -20,37 +20,49 @@ import {
 const selectedCredentials = mockCredentials.map(c => c.credentialId);
 
 describe('credential actions are applied to the valid credentials', () => {
-  test('credential signability validator works', () => {
+  test('attempting to sign an unsignable credential is rejected by the status validator', () => {
     const unsignableCredential = mockCredentials[UNSIGNABLE_CREDENTIAL_INDEX];
-    const signableCredential = mockCredentials[SIGNABLE_CREDENTIAL_INDEX];
 
     expect(
       hasRequiredStatus(unsignableCredential, credentialRequiredStatus[SIGN_CREDENTIALS])
     ).toBeFalsy();
+  });
+
+  test('attempting to sign a signable credential is NOT rejected by the status validator', () => {
+    const signableCredential = mockCredentials[SIGNABLE_CREDENTIAL_INDEX];
+
     expect(
       hasRequiredStatus(signableCredential, credentialRequiredStatus[SIGN_CREDENTIALS])
     ).toBeTruthy();
   });
 
-  test('credential sendability validator works', () => {
+  test('attempting to send an unsendable credential is rejected by the status validator', () => {
     const unsendableCredential = mockCredentials[UNSENDABLE_CREDENTIAL_INDEX];
-    const sendableCredential = mockCredentials[SENDABLE_CREDENTIAL_INDEX];
 
     expect(
       hasRequiredStatus(unsendableCredential, credentialRequiredStatus[SEND_CREDENTIALS])
     ).toBeFalsy();
+  });
+
+  test('attempting to send a sendable credential is NOT rejected by the status validator', () => {
+    const sendableCredential = mockCredentials[SENDABLE_CREDENTIAL_INDEX];
+
     expect(
       hasRequiredStatus(sendableCredential, credentialRequiredStatus[SEND_CREDENTIALS])
     ).toBeTruthy();
   });
 
-  test('credential revocability validator works', () => {
+  test('attempting to revoke an unrevocable credential is rejected by the status validator', () => {
     const unrevocableCredential = mockCredentials[UNREVOCABLE_CREDENTIAL_INDEX];
-    const revocableCredential = mockCredentials[REVOCABLE_CREDENTIAL_INDEX];
 
     expect(
       hasRequiredStatus(unrevocableCredential, credentialRequiredStatus[REVOKE_CREDENTIALS])
     ).toBeFalsy();
+  });
+
+  test('attempting to revoke a revocable credential is NOT rejected by the status validator', () => {
+    const revocableCredential = mockCredentials[REVOCABLE_CREDENTIAL_INDEX];
+
     expect(
       hasRequiredStatus(revocableCredential, credentialRequiredStatus[REVOKE_CREDENTIALS])
     ).toBeTruthy();
