@@ -32,7 +32,7 @@ const CredentialContainer = observer(({ api }) => {
   });
   const {
     credentials: credentialsIssued,
-    fetchMoreData: fetchMoreCredentialsIssued,
+    getCredentialsToSelect: getCredentialsIssuedToSelect,
     refreshCredentialsIssued,
     isFetching: isFetchingCredentialsIssued,
     isLoadingFirstPage: isLoadingIssued
@@ -73,7 +73,7 @@ const CredentialContainer = observer(({ api }) => {
 
   const selectAllCredentialsIssuedProps = useSelectAll({
     displayedEntities: displayedCredentialsIssued,
-    entitiesFetcher: fetchMoreCredentialsIssued,
+    entitiesFetcher: getCredentialsIssuedToSelect,
     entityKey: CREDENTIAL_ID_KEY,
     selectedEntities: selectedCredentials,
     setSelectedEntities: setSelectedCredentials,

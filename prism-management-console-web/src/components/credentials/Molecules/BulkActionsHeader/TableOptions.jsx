@@ -18,7 +18,7 @@ import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssue
 const TableOptions = ({ bulkActionsProps }) => {
   const { t } = useTranslation();
   const { selectedCredentials, selectAllProps, refreshCredentials } = bulkActionsProps;
-  const { sortingBy, setSortingBy, sortDirection, setSortDirection } = useCredentialIssuedUiState;
+  const { sortingBy, setSortingBy, sortDirection, toggleSorting } = useCredentialIssuedUiState();
 
   // FIXME: remove frontend sorting when backend is ready:
   // CREDENTIAL_SORTING_KEYS contains the sorting options currently supported by the backend
@@ -38,9 +38,6 @@ const TableOptions = ({ bulkActionsProps }) => {
   );
 
   const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
-
-  const toggleSorting = () =>
-    setSortDirection(sortAscending ? SORTING_DIRECTIONS.descending : SORTING_DIRECTIONS.ascending);
 
   return (
     <div className="TableOptions">

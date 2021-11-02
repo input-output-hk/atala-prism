@@ -43,6 +43,7 @@ export default class CredentialIssuedStore {
       fetchCredentials: action,
       updateCredentialName: flow.bound,
       updateCredentialMembers: flow.bound,
+      refreshCredentialsIssued: flow.bound,
       updateCredential: action,
       updateHasMoreState: action,
       fetchRecursively: false,
@@ -76,14 +77,15 @@ export default class CredentialIssuedStore {
 
   *refreshCredentialsIssued() {
     const pageSizeIsWithinBoundary = this.credentials.length <= MAX_CREDENTIAL_PAGE_SIZE;
-    const response = pageSizeIsWithinBoundary
-      ? yield this.fetchCredentials({ offset: 0, pageSize: this.credentials.length })
-      : yield this.fetchRecursively();
+    const response = yield pageSizeIsWithinBoundary
+      ? this.fetchCredentials({ offset: 0, pageSize: this.credentials.length })
+      : this.fetchRecursively();
     this.credentials = response.credentialsList;
   }
 
   *fetchCredentialsNextPage() {
     if (!this.hasMoreCredentials && this.isLoadingFirstPage) return;
+
     const response = yield this.fetchCredentials({ offset: this.credentials.length });
     this.credentials = this.credentials.concat(response.credentialsList);
   }
@@ -106,32 +108,34 @@ export default class CredentialIssuedStore {
   }
 
   *getCredentialsToSelect() {
-    const { hasFiltersApplied } = this.rootStore.uiState.credentialIssuedUiState;
+    const { hasFiltersApplied, applyFilters } = this.rootStore.uiState.credentialIssuedUiState;
     const alreadyFetched = hasFiltersApplied ? this.searchResults : this.credentials;
 
     if (!this.hasMore) return alreadyFetched;
 
     const response = yield this.fetchRecursively(alreadyFetched);
-    this.updateStoredCredentials(response);
-    return response.credentialsList;
+    const filteredCredentials = applyFilters(response.credentialsList);
+    this.updateStoredCredentials(filteredCredentials);
+    return filteredCredentials;
   }
 
-  updateStoredCredentials = response => {
+  updateStoredCredentials = credentialsList => {
     const { hasFiltersApplied } = this.rootStore.uiState.credentialIssuedUiState;
     if (hasFiltersApplied) {
-      this.searchResults = response.credentialsList;
+      this.searchResults = credentialsList;
     } else {
-      this.credentials = response.credentialsList;
+      this.credentials = credentialsList;
     }
   };
 
   fetchRecursively = async (acc = [], limit) => {
+    const pageSize = Math.min(limit || Infinity, MAX_CREDENTIAL_PAGE_SIZE);
     const response = await this.fetchCredentials({
       offset: acc.length,
-      pageSize: MAX_CREDENTIAL_PAGE_SIZE
+      pageSize
     });
     const updatedAcc = acc.concat(response.credentialsList);
-    if (response.credentialsList.length >= MAX_CREDENTIAL_PAGE_SIZE)
+    if (response.credentialsList.length < pageSize)
       return {
         credentialsList: updatedAcc
       };
