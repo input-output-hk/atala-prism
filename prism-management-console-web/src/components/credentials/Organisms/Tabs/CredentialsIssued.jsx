@@ -56,7 +56,6 @@ const CredentialsIssued = observer(
     };
 
     const renderContent = () => {
-      // TODO: check loading booleans
       if (initialLoading) return <SimpleLoading size="md" />;
       if (!displayedCredentials.length) return <EmptyComponent {...emptyProps} />;
       return (

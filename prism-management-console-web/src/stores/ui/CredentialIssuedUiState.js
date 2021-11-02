@@ -12,6 +12,13 @@ import {
 } from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
+const {
+  CREATED_ON,
+  CONTACT_NAME,
+  EXTERNAL_ID,
+  CREDENTIAL_TYPE,
+  DATE_SIGNED
+} = CREDENTIAL_SORTING_KEYS_TRANSLATION;
 
 const defaultValues = {
   isSearching: false,
@@ -22,7 +29,7 @@ const defaultValues = {
   connectionStatusFilter: '',
   dateFilter: null,
   sortDirection: ascending,
-  sortingBy: 'createdOn'
+  sortingBy: CREATED_ON
 };
 export default class CredentialIssuedUiState {
   isSearching = defaultValues.isSearching;
@@ -73,6 +80,7 @@ export default class CredentialIssuedUiState {
       setFilterValue: action,
       toggleSortDirection: action,
       setSortingBy: action,
+      getCredentialValue: false,
       rootStore: false
     });
   }
@@ -147,8 +155,8 @@ export default class CredentialIssuedUiState {
       const matchName =
         !this.hasNameFilterApplied ||
         filterByMultipleKeys(this.nameFilter, { ...item.contactData, ...item.credentialData }, [
-          CREDENTIAL_SORTING_KEYS_TRANSLATION.CONTACT_NAME,
-          CREDENTIAL_SORTING_KEYS_TRANSLATION.EXTERNAL_ID
+          CONTACT_NAME,
+          EXTERNAL_ID
         ]);
       const matchDate =
         !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.publicationStoredAt);
@@ -163,13 +171,12 @@ export default class CredentialIssuedUiState {
     });
 
   getCredentialValue = (credential, sortingKey) => {
-    // createdOn filter doesn't work on the backend, nor an attribute is provided.
-    // the temporary solution is to reverse the default sorting from the backend
-    if (sortingKey === CREDENTIAL_SORTING_KEYS_TRANSLATION.CREATED_ON) return credential.index;
-    if (sortingKey === CREDENTIAL_SORTING_KEYS_TRANSLATION.CREDENTIAL_TYPE)
-      return credential.credentialData.credentialTypeDetails.id;
-    if (sortingKey === CREDENTIAL_SORTING_KEYS_TRANSLATION.DATE_SIGNED)
-      return credential.publicationStoredAt?.seconds;
+    // CREATED_ON filter doesn't work on the backend, nor it's attribute is provided.
+    // this temporary solution reverses the default sorting from the backend when
+    // sorting by the CREATED_ON key and descending direction
+    if (sortingKey === CREATED_ON) return credential.index;
+    if (sortingKey === CREDENTIAL_TYPE) return credential.credentialData.credentialTypeDetails.id;
+    if (sortingKey === DATE_SIGNED) return credential.publicationStoredAt?.seconds;
     return credential[sortingKey] || credential.credentialData[this.sortingKey];
   };
 
@@ -185,8 +192,7 @@ export default class CredentialIssuedUiState {
       this.sortDirection === ascending ? 'asc' : 'desc'
     );
 
-  sortingIsCaseSensitive = () =>
-    this.sortingBy === CREDENTIAL_SORTING_KEYS_TRANSLATION.CONTACT_NAME;
+  sortingIsCaseSensitive = () => this.sortingBy === CONTACT_NAME;
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
