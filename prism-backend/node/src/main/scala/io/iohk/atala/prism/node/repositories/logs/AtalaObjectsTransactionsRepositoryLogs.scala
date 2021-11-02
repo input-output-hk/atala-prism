@@ -73,7 +73,13 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
         .flatTap(
           _.fold(
             err => error"Encountered an error while updating submission status $err",
-            _ => info"updating submission status - successfully done"
+            _ => {
+              if (newSubmissionStatus == submission.status) {
+                warn"current status of transaction submission [${submission.transactionId}] is already $newSubmissionStatus. Skipping"
+              } else {
+                info"updating submission status - successfully done"
+              }
+            }
           )
         )
         .onError(
