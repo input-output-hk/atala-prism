@@ -59,7 +59,7 @@ object GrpcUtils {
   def createGrpcServer[F[_]: Sync](
       grpcConfig: GrpcConfig,
       sslConfigOption: Option[SslConfig],
-      interceptor: Option[ServerInterceptor],
+      interceptor: List[ServerInterceptor],
       services: ServerServiceDefinition*
   ): Resource[F, Server] = {
     val builder = NettyServerBuilder
