@@ -17,11 +17,11 @@ import { useSelectAll } from '../../hooks/useSelectAll';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
 import { useCurrentGroupState } from '../../hooks/useCurrentGroupState';
-import './_style.scss';
 import { useContactUiState } from '../../hooks/useContactStore';
+import './_style.scss';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
-  const { applyFilters } = useContactUiState({ reset: true });
+  const { applyFilters, hasFiltersApplied } = useContactUiState({ reset: true });
   const {
     isLoadingGroup,
     isLoadingMembers,
@@ -30,6 +30,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     members,
     getAllGroupMembers
   } = useCurrentGroupState();
+
   const { t } = useTranslation();
   const formRef = React.createRef();
   const [groupName, setGroupName] = useState(name);
@@ -187,10 +188,10 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         </div>
         <div className="ConnectionsTable">
           <ConnectionsTable
-            overrideContacts
+            // TODO: add pagination for getting group members
             contacts={filteredContacts}
-            overrideLoading
-            loading={isLoadingMembers}
+            hasFiltersApplied={hasFiltersApplied}
+            isFetchingMore={isLoadingMembers}
             columns={getGroupContactColumns(handleDelete)}
             selectedContacts={selectedGroupContacts}
             setSelectedContacts={setSelectedGroupContacts}

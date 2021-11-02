@@ -100,10 +100,10 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       <Row className="ModalContactsContainer">
         <Col span={24}>
           <ConnectionsTable
-            overrideContacts
+            // TODO: add pagination for getting group members
             contacts={filteredContacts}
-            overrideLoading
-            loading={isLoadingContactsNotInGroup}
+            hasFiltersApplied
+            isLoading={isLoadingContactsNotInGroup}
             selectedContacts={selectedContacts}
             setSelectedContacts={setSelectedContacts}
             size="md"

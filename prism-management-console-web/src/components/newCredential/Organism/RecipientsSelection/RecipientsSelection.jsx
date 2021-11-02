@@ -9,6 +9,7 @@ import GroupsTableHeader from '../../Molecules/RecipientsTable/GroupsTableHeader
 import ContactsTableHeader from '../../Molecules/RecipientsTable/ContactsTableHeader';
 
 import './_style.scss';
+import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
 
 const { TabPane } = Tabs;
 
@@ -16,8 +17,18 @@ const GROUPS_KEY = 'groups';
 const SUBJECTS_KEY = 'subjects';
 
 const RecipientsSelection = observer(
-  ({ groupsProps, contactsProps, toggleShouldSelectRecipients, shouldSelectRecipients }) => {
+  ({
+    selectedGroups,
+    setSelectedGroups,
+    selectedContacts,
+    setSelectedContacts,
+    toggleShouldSelectRecipients,
+    shouldSelectRecipients
+  }) => {
     const { t } = useTranslation();
+
+    const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
+    const { isLoadingFirstPage, fetchMoreData, isFetching, hasMore } = useContactStore();
 
     const renderHelpText = () => (
       <div className="helperTextContainer">
@@ -31,23 +42,36 @@ const RecipientsSelection = observer(
           <TabPane key={GROUPS_KEY} tab={t('newCredential.targetsSelection.groups')}>
             {renderHelpText()}
             <GroupsTableHeader
-              {...groupsProps}
+              selectedGroups={selectedGroups}
+              setSelectedGroups={setSelectedGroups}
               shouldSelectRecipients={shouldSelectRecipients}
               toggleShouldSelectRecipients={toggleShouldSelectRecipients}
             />
             <div className="groupsTableContainer">
-              <GroupsTable {...groupsProps} shouldSelectRecipients={shouldSelectRecipients} />
+              <GroupsTable
+                selectedGroups={selectedGroups}
+                setSelectedGroups={setSelectedGroups}
+                shouldSelectRecipients={shouldSelectRecipients}
+              />
             </div>
           </TabPane>
           <TabPane key={SUBJECTS_KEY} tab={t('newCredential.targetsSelection.subjects')}>
             {renderHelpText()}
             <ContactsTableHeader
-              {...contactsProps}
+              setSelectedContacts={setSelectedContacts}
+              selectedContacts={selectedContacts}
               shouldSelectRecipients={shouldSelectRecipients}
               toggleShouldSelectRecipients={toggleShouldSelectRecipients}
             />
             <ConnectionsTable
-              {...contactsProps}
+              contacts={displayedContacts}
+              fetchMoreData={fetchMoreData}
+              hasMore={hasMore}
+              hasFiltersApplied={hasFiltersApplied}
+              isLoading={isLoadingFirstPage || isLoadingFirstPage || isSorting}
+              isFetchingMore={isFetching || isSearching}
+              setSelectedContacts={setSelectedContacts}
+              selectedContacts={selectedContacts}
               shouldSelectRecipients={shouldSelectRecipients}
               size="xs"
               searchDueGeneralScroll
@@ -65,13 +89,8 @@ RecipientsSelection.propTypes = {
     setSelectedGroups: PropTypes.func.isRequired
   }).isRequired,
   contactsProps: PropTypes.shape({
-    contacts: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
     selectedContacts: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setSelectedContacts: PropTypes.func.isRequired,
-    setContactsFilter: PropTypes.func.isRequired,
-    handleContactsRequest: PropTypes.func.isRequired,
-    hasMore: PropTypes.bool.isRequired,
-    fetchAllContacts: PropTypes.func.isRequired
+    setSelectedContacts: PropTypes.func.isRequired
   }).isRequired,
   toggleShouldSelectRecipients: PropTypes.func.isRequired,
   shouldSelectRecipients: PropTypes.bool.isRequired
