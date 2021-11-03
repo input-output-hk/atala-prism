@@ -1,4 +1,4 @@
-/*eslint no-magic-numbers: "off"*/
+/* eslint no-magic-numbers: "off" */
 
 import { random, image, date as fakeDate } from 'faker';
 import moment from 'moment';

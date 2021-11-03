@@ -24,7 +24,8 @@ const ConnectionsTable = ({
   const { timesScrolledToBottom } = useScrolledToBottom(hasMore, loading, 'ConnectionsTable ');
   const [lastUpdated, setLastUpdated] = useState(timesScrolledToBottom);
 
-  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove searchDueGeneralScroll
+  // leave this trigger for backward compatibility, when all tables uses useScrolledToBottom remove
+  // searchDueGeneralScroll
   const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
 
   const getMoreData = useCallback(() => {

@@ -1,4 +1,4 @@
-/*eslint no-magic-numbers: "off"*/
+/* eslint no-magic-numbers: "off" */
 import { date as fakeDate, image, lorem, name as fakeName, random } from 'faker';
 import moment from 'moment';
 import __ from 'lodash';

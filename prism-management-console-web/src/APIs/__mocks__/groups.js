@@ -1,4 +1,4 @@
-/*eslint no-magic-numbers: "off"*/
+/* eslint no-magic-numbers: "off" */
 import __ from 'lodash';
 import icon from '../../images/icon-groups.svg';
 

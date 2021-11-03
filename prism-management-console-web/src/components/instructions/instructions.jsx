@@ -6,7 +6,7 @@ import imgScreenshots from '../../images/screenshots.png';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import './style.scss';
 
-const Instructions = ({ name, bundle, credentials, proofRequests }) => {
+const Instructions = () => {
   const { t } = useTranslation();
 
   return (
