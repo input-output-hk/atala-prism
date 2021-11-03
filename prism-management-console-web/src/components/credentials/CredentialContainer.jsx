@@ -24,6 +24,7 @@ import {
   useCredentialIssuedUiState
 } from '../../hooks/useCredentialIssuedStore';
 import { useSelectAll } from '../../hooks/useSelectAll';
+import { useCredentialReceivedStore, useCredentialReceivedUiState } from '../../hooks/useCredentialReceivedStore';
 
 const CredentialContainer = observer(({ api }) => {
   const { t } = useTranslation();
@@ -31,23 +32,28 @@ const CredentialContainer = observer(({ api }) => {
   const {
     credentials: credentialsIssued,
     getCredentialsToSelect: getCredentialsIssuedToSelect,
-    refreshCredentialsIssued,
+    refreshCredentials: refreshCredentialsIssued,
     isFetching: isFetchingCredentialsIssued,
     isLoadingFirstPage: isLoadingIssued
   } = useCredentialIssuedStore({ reset: true });
 
+  const { displayedCredentials: displayedCredentialsReceived } = useCredentialReceivedUiState({
+    reset: true
+  });
+  const {
+    credentials: credentialsReceived,
+    getCredentialsToSelect: getCredentialsReceivedToSelect,
+    refreshCredentials: refreshCredentialsReceived,
+    isFetching: isFetchingCredentialsReceived,
+    isLoadingFirstPage: isLoadingReceived
+  } = useCredentialReceivedStore({
+    reset: true,
+    fetch: true
+  });
+
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
   const { credentialTemplates: credentialTypes } = useTemplateStore({ fetch: true });
-
-  const {
-    fetchCredentialsReceived,
-    filteredCredentialsReceived,
-    filtersReceived,
-    noReceivedCredentials,
-    isLoading: isLoadingReceived,
-    hasMoreReceived
-  } = useCredentialsReceivedListWithFilters(api);
 
   const {
     revokeSingleCredential,
@@ -62,9 +68,9 @@ const CredentialContainer = observer(({ api }) => {
     confirmationModalProps
   } = useCredentialActions(api, credentialsIssued, refreshCredentialsIssued);
 
-  useEffect(() => {
-    if (activeTab === CREDENTIALS_RECEIVED && hasMoreReceived) fetchCredentialsReceived();
-  }, [activeTab, fetchCredentialsReceived, hasMoreReceived]);
+  // useEffect(() => {
+  //   if (activeTab === CREDENTIALS_RECEIVED && hasMoreReceived) fetchCredentialsReceived();
+  // }, [activeTab, fetchCredentialsReceived, hasMoreReceived]);
 
   const selectAllCredentialsIssuedProps = useSelectAll({
     displayedEntities: credentialsIssued,
@@ -110,11 +116,9 @@ const CredentialContainer = observer(({ api }) => {
     },
     [CREDENTIALS_RECEIVED]: {
       tableProps: {
-        credentials: filteredCredentialsReceived
+        credentials: displayedCredentialsReceived
       },
-      fetchCredentials: fetchCredentialsReceived,
       bulkActionsProps: {},
-      filterProps: filtersReceived,
       showEmpty: noReceivedCredentials,
       credentialTypes
     }
