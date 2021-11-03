@@ -22,7 +22,6 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
-import org.slf4j.LoggerFactory
 import shapeless.{:+:, CNil}
 import tofu.Execute
 import tofu.higherKind.Mid
@@ -115,9 +114,6 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
     nodeService: NodeServiceGrpc.NodeService
 )(implicit ex: Execute[F])
     extends ConnectionsService[F] {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
   def getConnectionByToken(token: TokenString): F[Option[Connection]] =
     connectionsRepository.getConnectionByToken(token)
 
@@ -206,13 +202,7 @@ private class ConnectionsServiceImpl[F[_]: MonadThrow](
           .getOtherSideInfo(connectionId, userId)
           .map(_.get)
       keys <- (participantInfo.did, participantInfo.publicKey) match {
-        case (Some(did), keyOpt) =>
-          if (keyOpt.isDefined) {
-            logger.warn(
-              s"Both DID and keys found for user ${userId}, using DID keys only"
-            )
-          }
-          getDidCommunicationKeys(did)
+        case (Some(did), _) => getDidCommunicationKeys(did)
         case (None, Some(key)) => Right(Seq(("", key))).pure[F]
         case (None, None) => Right(Seq.empty).pure[F]
       }

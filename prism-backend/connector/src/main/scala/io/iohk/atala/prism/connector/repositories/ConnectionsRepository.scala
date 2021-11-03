@@ -143,7 +143,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
   ): F[List[TokenString]] = {
     ConnectionTokensDAO
       .insert(initiator, tokens)
-      .logSQLErrors("inserting tokens", logger)
+      .logSQLErrorsV2("inserting tokens")
       .transact(xa)
       .as(tokens)
   }
@@ -159,7 +159,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
         co(UnknownValueError("token", token.token).logWarnNew)
       )
       .value
-      .logSQLErrors("getting token info", logger)
+      .logSQLErrorsV2("getting token info")
       .transact(xa)
   }
 
@@ -260,7 +260,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     )
 
     query.value
-      .logSQLErrors("adding connection from token", logger)
+      .logSQLErrorsV2("adding connection from token")
       .transact(xa)
   }
 
@@ -319,7 +319,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     } yield ()
 
     query.value
-      .logSQLErrors(s"revoke connection, connection id - $connectionId", logger)
+      .logSQLErrorsV2(s"revoke connection, connection id - $connectionId")
       .transact(xa)
   }
 
@@ -355,10 +355,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     )
 
     query.value
-      .logSQLErrors(
-        s"getConnection, id - $id, participant - $participant",
-        logger
-      )
+      .logSQLErrorsV2(s"getConnection, id - $id, participant - $participant")
       .transact(xa)
   }
 
@@ -377,7 +374,7 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     else
       ConnectionsDAO
         .getConnectionsPaginated(participant, limit, lastSeenConnectionId)
-        .logSQLErrors("getting connection paginated", logger)
+        .logSQLErrorsV2("getting connection paginated")
         .transact(xa)
         .map(_.asRight)
   }
@@ -392,14 +389,14 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
     } yield participantInfo
 
     query.value
-      .logSQLErrors(s"getting other side info, connection id - $id", logger)
+      .logSQLErrorsV2(s"getting other side info, connection id - $id")
       .transact(xa)
   }
 
   override def getConnectionByToken(token: TokenString): F[Option[Connection]] =
     ConnectionsDAO
       .getConnectionByToken(token)
-      .logSQLErrors("getting connection by token", logger)
+      .logSQLErrorsV2("getting connection by token")
       .transact(xa)
 
   override def getConnectionsByConnectionTokens(
@@ -407,6 +404,6 @@ private final class ConnectionsRepositoryPostgresImpl[F[_]: MonadCancelThrow](
   ): F[List[ContactConnection]] =
     ConnectionsDAO
       .getConnectionsByConnectionTokens(connectionTokens)
-      .logSQLErrors("getting by connection tokens", logger)
+      .logSQLErrorsV2("getting by connection tokens")
       .transact(xa)
 }

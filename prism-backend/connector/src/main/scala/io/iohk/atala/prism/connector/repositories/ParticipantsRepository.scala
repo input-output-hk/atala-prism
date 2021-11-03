@@ -126,7 +126,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
 
     ParticipantsDAO
       .insert(info)
-      .logSQLErrors("inserting participants", logger)
+      .logSQLErrorsV2("inserting participants")
       .transact(xa)
       .map(_.asRight[CreateParticipantError])
       .handleErrorWith {
@@ -150,7 +150,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
         co(UnknownValueError("id", id.uuid.toString).logWarnNew)
       )
       .value
-      .logSQLErrors(s"finding, participant id - $id", logger)
+      .logSQLErrorsV2(s"finding, participant id - $id")
       .transact(xa)
   }
 
@@ -174,7 +174,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
         )
       )
       .value
-      .logSQLErrors("finding by public key", logger)
+      .logSQLErrorsV2("finding by public key")
       .transact(xa)
   }
 
@@ -187,7 +187,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
         co(UnknownValueError("did", did.getValue).logWarnNew)
       )
       .value
-      .logSQLErrors(s"finding, did - $did", logger)
+      .logSQLErrorsV2(s"finding, did - $did")
       .transact(xa)
   }
 
