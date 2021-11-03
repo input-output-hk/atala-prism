@@ -66,6 +66,11 @@
     "no-magic-numbers": [ "warn", { "ignore": [0, 1], "ignoreArrayIndexes": true }]
   },
   "settings": {
-    "import/ignore": ["node_modules", ".scss$"]
+    "import/resolver": {
+      "node": {
+        "extensions": [".js",".jsx"]
+      }
+    },
+    "import/ignore": ["node_modules", ".scss$"],
   }
 }
