@@ -26,7 +26,6 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialIssuancesRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialIssuancesRepositoryMetrics
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -123,8 +122,6 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CredentialIssuancesRepository[F] {
   import CredentialIssuancesRepository._
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   private def createContacts(
       createCredentialIssuance: CreateCredentialIssuance,
@@ -349,10 +346,7 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: MonadCancelThrow](
       createCredentialIssuance: CreateCredentialIssuance
   ): F[Either[ManagementConsoleError, CredentialIssuance.Id]] =
     createQuery(participantId, createCredentialIssuance)
-      .logSQLErrors(
-        s"creating credential issuance, participant id - $participantId",
-        logger
-      )
+      .logSQLErrorsV2(s"creating credential issuance, participant id - $participantId")
       .transact(xa)
 
   def createBulk(
@@ -404,10 +398,7 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: MonadCancelThrow](
     } yield credentialId
 
     query.value
-      .logSQLErrors(
-        s"creating bulk credential issuance, participant id - $participantId",
-        logger
-      )
+      .logSQLErrorsV2(s"creating bulk credential issuance, participant id - $participantId")
       .transact(xa)
   }
 
@@ -446,10 +437,7 @@ private final class CredentialIssuancesRepositoryImpl[F[_]: MonadCancelThrow](
     } yield issuance
 
     query
-      .logSQLErrors(
-        s"getting credential, issuance id - $credentialIssuanceId",
-        logger
-      )
+      .logSQLErrorsV2(s"getting credential, issuance id - $credentialIssuanceId")
       .transact(xa)
   }
 }

@@ -18,7 +18,6 @@ import io.iohk.atala.prism.management.console.repositories.metrics.ContactsRepos
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -116,9 +115,6 @@ object ContactsRepository {
 private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ContactsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def create(
       participantId: ParticipantId,
       contactData: CreateContact,
@@ -153,10 +149,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
     }
 
     query
-      .logSQLErrors(
-        s"creating contact, participant id - $participantId",
-        logger
-      )
+      .logSQLErrorsV2(s"creating contact, participant id - $participantId")
       .transact(xa)
   }
 
@@ -186,10 +179,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield result
 
     connectionIO
-      .logSQLErrors(
-        s"creating contacts by batch, institution id - $institutionId",
-        logger
-      )
+      .logSQLErrorsV2(s"creating contacts by batch, institution id - $institutionId")
       .transact(xa)
   }
 
@@ -199,10 +189,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Unit] =
     ContactsDAO
       .updateContact(institutionId, request)
-      .logSQLErrors(
-        s"updating contact, institution id - $institutionId",
-        logger
-      )
+      .logSQLErrorsV2(s"updating contact, institution id - $institutionId")
       .transact(xa)
 
   def find(
@@ -230,10 +217,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
       receivedCredentials,
       issuedCredentials
     )).value
-      .logSQLErrors(
-        s"finding contact with details, contact id - $contactId",
-        logger
-      )
+      .logSQLErrorsV2(s"finding contact with details, contact id - $contactId")
       .transact(xa)
 
   def find(
@@ -242,7 +226,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Option[Contact]] =
     ContactsDAO
       .findContact(institutionId, externalId)
-      .logSQLErrors(s"finding contact, institution id - $institutionId", logger)
+      .logSQLErrorsV2(s"finding contact, institution id - $institutionId")
       .transact(xa)
 
   override def findByToken(
@@ -251,10 +235,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Option[Contact]] =
     ContactsDAO
       .findByToken(institutionId, connectionToken)
-      .logSQLErrors(
-        s"finding contact by token, institution id - $institutionId, token = $connectionToken",
-        logger
-      )
+      .logSQLErrorsV2(s"finding contact by token, institution id - $institutionId, token = $connectionToken")
       .transact(xa)
 
   def findContacts(
@@ -263,10 +244,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[Contact]] =
     ContactsDAO
       .findContacts(institutionId, contactIds)
-      .logSQLErrors(
-        s"finding contacts, institution id - $institutionId",
-        logger
-      )
+      .logSQLErrorsV2(s"finding contacts, institution id - $institutionId")
       .transact(xa)
 
   def getBy(
@@ -276,10 +254,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[Contact.WithCredentialCounts]] =
     ContactsDAO
       .getBy(createdBy, constraints, ignoreFilterLimit)
-      .logSQLErrors(
-        s"getting by some constraint, created by - $createdBy",
-        logger
-      )
+      .logSQLErrorsV2(s"getting by some constraint, created by - $createdBy")
       .transact(xa)
 
   def delete(
@@ -330,10 +305,7 @@ private final class ContactsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield result
 
     connectionIO.value
-      .logSQLErrors(
-        s"deleting contact, institution id - $institutionId",
-        logger
-      )
+      .logSQLErrorsV2(s"deleting contact, institution id - $institutionId")
       .transact(xa)
   }
 }

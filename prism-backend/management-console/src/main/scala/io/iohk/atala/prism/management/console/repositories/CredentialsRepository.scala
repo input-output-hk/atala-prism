@@ -22,7 +22,6 @@ import io.iohk.atala.prism.management.console.repositories.metrics.CredentialsRe
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -123,9 +122,6 @@ object CredentialsRepository {
 private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CredentialsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def create(
       participantId: ParticipantId,
       data: CreateGenericCredential
@@ -196,17 +192,14 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
       } yield credential
 
     transaction.value
-      .logSQLErrors(
-        s"creating credential, participant id - $participantId",
-        logger
-      )
+      .logSQLErrorsV2(s"creating credential, participant id - $participantId")
       .transact(xa)
   }
 
   def getBy(credentialId: GenericCredential.Id): F[Option[GenericCredential]] =
     CredentialsDAO
       .getBy(credentialId)
-      .logSQLErrors(s"getting, credential id - $credentialId", logger)
+      .logSQLErrorsV2(s"getting, credential id - $credentialId")
       .transact(xa)
 
   def getBy(
@@ -215,7 +208,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[GenericCredential]] =
     CredentialsDAO
       .getBy(issuedBy, query)
-      .logSQLErrors(s"getting, issued id - $issuedBy", logger)
+      .logSQLErrorsV2(s"getting, issued id - $issuedBy")
       .transact(xa)
 
   def getBy(
@@ -225,7 +218,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[GenericCredential]] =
     CredentialsDAO
       .getBy(issuedBy, limit, lastSeenCredential)
-      .logSQLErrors(s"getting, issued id - $issuedBy", logger)
+      .logSQLErrorsV2(s"getting, issued id - $issuedBy")
       .transact(xa)
 
   def getBy(
@@ -234,7 +227,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[GenericCredential]] =
     CredentialsDAO
       .getBy(issuedBy, contactId)
-      .logSQLErrors(s"getting, contact id - $contactId", logger)
+      .logSQLErrorsV2(s"getting, contact id - $contactId")
       .transact(xa)
 
   def storePublicationData(
@@ -243,7 +236,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Int] =
     CredentialsDAO
       .storePublicationData(issuerId, credentialData)
-      .logSQLErrors(s"store publication data, issuer id - $issuerId", logger)
+      .logSQLErrorsV2(s"store publication data, issuer id - $issuerId")
       .transact(xa)
 
   def markAsShared(
@@ -252,7 +245,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Unit] =
     CredentialsDAO
       .markAsShared(issuerId, credentialsIds)
-      .logSQLErrors(s"marking as shared, issuer id - $issuerId", logger)
+      .logSQLErrorsV2(s"marking as shared, issuer id - $issuerId")
       .transact(xa)
 
   def verifyPublishedCredentialsExist(
@@ -261,10 +254,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Either[ManagementConsoleError, Unit]] =
     CredentialsDAO
       .verifyPublishedCredentialsExist(issuerId, credentialsIds)
-      .logSQLErrors(
-        s"verifying published credentials exists, issuer id - $issuerId",
-        logger
-      )
+      .logSQLErrorsV2(s"verifying published credentials exists, issuer id - $issuerId")
       .transact(xa)
       .map { existingCredentialIds =>
         val nonExistingCredentials =
@@ -281,7 +271,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Int] =
     CredentialsDAO
       .storeBatchData(batchId, issuanceOperationHash, atalaOperationId)
-      .logSQLErrors(s"storing batch data, batch id - $batchId", logger)
+      .logSQLErrorsV2(s"storing batch data, batch id - $batchId")
       .transact(xa)
 
   def deleteCredentials(
@@ -306,10 +296,7 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
         else
           deleteIO
       }
-      .logSQLErrors(
-        s"deleting credentials, institutionId = $institutionId",
-        logger
-      )
+      .logSQLErrorsV2(s"deleting credentials, institutionId = $institutionId")
       .transact(xa)
   }
 
@@ -320,9 +307,6 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Unit] =
     CredentialsDAO
       .revokeCredential(institutionId, credentialId, operationId)
-      .logSQLErrors(
-        s"storing revocation data, institution id - $institutionId",
-        logger
-      )
+      .logSQLErrorsV2(s"storing revocation data, institution id - $institutionId")
       .transact(xa)
 }

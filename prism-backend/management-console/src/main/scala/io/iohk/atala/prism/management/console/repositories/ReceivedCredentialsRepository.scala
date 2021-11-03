@@ -15,7 +15,6 @@ import io.iohk.atala.prism.management.console.repositories.logs.ReceivedCredenti
 import io.iohk.atala.prism.management.console.repositories.metrics.ReceivedCredentialsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -72,22 +71,19 @@ object ReceivedCredentialsRepository {
 private final class ReceivedCredentialsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ReceivedCredentialsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def getCredentialsFor(
       verifierId: ParticipantId,
       contactId: Option[Contact.Id]
   ): F[List[ReceivedSignedCredential]] =
     ReceivedCredentialsDAO
       .getReceivedCredentialsFor(verifierId, contactId)
-      .logSQLErrors(s"getting credentials, verifier id - $verifierId", logger)
+      .logSQLErrorsV2(s"getting credentials, verifier id - $verifierId")
       .transact(xa)
 
   def createReceivedCredential(data: ReceivedSignedCredentialData): F[Unit] =
     ReceivedCredentialsDAO
       .insertSignedCredential(data)
-      .logSQLErrors("creating received credentials", logger)
+      .logSQLErrorsV2("creating received credentials")
       .transact(xa)
 
   def getLatestCredentialExternalId(
@@ -95,9 +91,6 @@ private final class ReceivedCredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Option[CredentialExternalId]] =
     ReceivedCredentialsDAO
       .getLatestCredentialExternalId(verifierId)
-      .logSQLErrors(
-        s"getting latest credential external id, verifier id -  $verifierId",
-        logger
-      )
+      .logSQLErrorsV2(s"getting latest credential external id, verifier id -  $verifierId")
       .transact(xa)
 }

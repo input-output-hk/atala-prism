@@ -131,7 +131,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
         defaultCredentialTypeConfig
       )
     } yield ())
-      .logSQLErrors("creating", logger)
+      .logSQLErrorsV2("creating")
       .transact(xa)
       .map(_.asRight[ManagementConsoleError])
       .handleErrorWith {
@@ -158,7 +158,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
           UnknownValueError("id", id.uuid.toString).logWarn
         )
       )
-      .logSQLErrors(s"finding, participant id - $id", logger)
+      .logSQLErrorsV2(s"finding, participant id - $id")
       .transact(xa)
   }
 
@@ -172,7 +172,7 @@ private final class ParticipantsRepositoryImpl[F[_]: MonadCancelThrow](
           UnknownValueError("did", did.getValue).logWarn
         )
       )
-      .logSQLErrors(s"finding, did - $did", logger)
+      .logSQLErrorsV2(s"finding, did - $did")
       .transact(xa)
   }
 
