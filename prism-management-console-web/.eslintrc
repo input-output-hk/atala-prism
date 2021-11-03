@@ -58,7 +58,7 @@
     "import/imports-first": "warn",
     "no-multi-spaces": "warn",
     "no-multiple-empty-lines": "warn",
-    "react/jsx-indent": "warn",
+    "react/jsx-indent": ["warn", 2],
     "object-shorthand": [2, "always"],
     "global-require": "off",
     "no-unused-expressions": 0,
@@ -71,6 +71,6 @@
         "extensions": [".js",".jsx"]
       }
     },
-    "import/ignore": ["node_modules", ".scss$"],
+    "import/ignore": ["node_modules", ".scss$"]
   }
 }

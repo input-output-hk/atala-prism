@@ -62,7 +62,7 @@
     "object-shorthand": [2, "always"],
     "global-require": "off",
     "no-unused-expressions": 0,
-    "chai-friendly/no-unused-expressions": 2
+    "chai-friendly/no-unused-expressions": 2,
   },
   "globals": {
     "artifacts": false,
