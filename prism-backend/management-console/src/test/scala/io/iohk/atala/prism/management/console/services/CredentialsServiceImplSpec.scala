@@ -13,7 +13,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
-import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup, PaginatedQueryConstraints}
+import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup}
 import io.iohk.atala.prism.management.console.DataPreparation.{
   createContact,
   createGenericCredential,
@@ -35,7 +35,6 @@ import org.mockito.ArgumentMatchersSugar.*
 import java.util.UUID
 import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.management.console.models.GenericCredential.SortBy
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 
 import scala.concurrent.Future
@@ -101,31 +100,26 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
-      val contactConnection = connector_models.ContactConnection(
-        connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
-        connectionToken = connectionToken
-      )
-      connectorMock.getConnectionStatus(*).returns {
-        ReaderT.liftF(
-          IO.pure(
-            List(contactConnection)
-          )
+      val request = console_api.GetGenericCredentialsRequest().withLimit(10)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        val contactConnection = connector_models.ContactConnection(
+          connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+          connectionToken = connectionToken
         )
+        connectorMock.getConnectionStatus(*).returns {
+          ReaderT.liftF(
+            IO.pure(
+              List(contactConnection)
+            )
+          )
+        }
+
+        val response = serviceStub.getGenericCredentials(request)
+        response.credentials.size must be(1)
+        response.credentials.head.revokedOnOperationId.toByteArray must be(mockRevocationOperationId.value.toArray)
       }
-
-      val results = credentialsIntegrationService
-        .getGenericCredentials(
-          issuerId,
-          new GenericCredential.PaginatedQuery(
-            ordering = PaginatedQueryConstraints.ResultOrdering(SortBy.CreatedOn)
-          )
-        )
-        .run(TraceId.generateYOLO)
-        .unsafeRunSync()
-
-      results.data.head.genericCredential.revokedOnOperationId.value must be(
-        mockRevocationOperationId
-      )
     }
 
     "retrieve Credential with correct connection status given connection is present" in {
@@ -591,6 +585,83 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
             serviceStub.revokePublishedCredential(request)
           }
         }
+      }
+    }
+  }
+
+  "CredentialsServiceImpl.getContactCredentials" should {
+
+    "retrieve the revocation data when a credential is revoked" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.getPublicKey
+      val did = generateDid(publicKey)
+      val issuerId = createParticipant(issuerName, did)
+      val connectionToken = "connectionToken"
+      val contact = createContact(
+        issuerId,
+        "Contact 1",
+        None,
+        connectionToken = connectionToken
+      )
+      val originalCredential =
+        DataPreparation.createGenericCredential(issuerId, contact.contactId)
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
+      val mockCredentialBatchId = CredentialBatchId.fromDigest(
+        Sha256.compute("SomeRandomHash".getBytes())
+      )
+
+      // we need to first store the batch data in the db
+      publishBatch(
+        mockCredentialBatchId,
+        issuanceOpHash,
+        AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
+      )
+      val mockHash = Sha256.compute("".getBytes())
+      val mockMerkleProof =
+        new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential.credentialId,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val mockRevocationOperationId = AtalaOperationId.random()
+      credentialsRepository
+        .storeRevocationData(
+          issuerId,
+          originalCredential.credentialId,
+          mockRevocationOperationId
+        )
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+
+      val request = console_api.GetContactCredentialsRequest().withContactId(contact.contactId.uuid.toString)
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        val contactConnection = connector_models.ContactConnection(
+          connectionStatus = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+          connectionToken = connectionToken
+        )
+        connectorMock.getConnectionStatus(*).returns {
+          ReaderT.liftF(
+            IO.pure(
+              List(contactConnection)
+            )
+          )
+        }
+
+        val response = serviceStub.getContactCredentials(request)
+        response.genericCredentials.size must be(1)
+        response.genericCredentials.head.revokedOnOperationId.toByteArray must be(
+          mockRevocationOperationId.value.toArray
+        )
       }
     }
   }
