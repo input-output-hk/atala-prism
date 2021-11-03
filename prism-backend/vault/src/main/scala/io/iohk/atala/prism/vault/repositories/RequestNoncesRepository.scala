@@ -17,7 +17,6 @@ import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.vault.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -58,13 +57,10 @@ object RequestNoncesRepository {
 }
 
 private class PostgresImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends RequestNoncesRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   override def burn(did: DID, requestNonce: RequestNonce): F[Unit] =
     RequestNoncesDAO
       .burn(did, requestNonce)
-      .logSQLErrors("burning", logger)
+      .logSQLErrorsV2("burning")
       .transact(xa)
 }
 
