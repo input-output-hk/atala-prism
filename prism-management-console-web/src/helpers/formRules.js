@@ -76,7 +76,7 @@ const formatPasswordErrors = errors => {
 
   return errors.reduce((accum, current, currentIndex) => {
     let link = '';
-
+    /*eslint no-magic-numbers: "off"*/
     if (currentIndex < errors.length - 2) link = ',';
     else if (currentIndex < errors.length - 1) link = ` ${and}`;
     else if (currentIndex === errors.length - 1) link = '.';

@@ -1,3 +1,4 @@
+/*eslint no-magic-numbers: "off"*/
 import __ from 'lodash';
 import icon from '../../images/icon-groups.svg';
 
@@ -34,7 +35,7 @@ export const deleteGroup = ({ id = '' }) =>
   new Promise((resolve, reject) => {
     const index = __.findIndex(mockedGroups, ({ groupId }) => groupId === id);
 
-    if (index === -1) reject(new Error(500));
+    if (index === -1) reject(new Error('500'));
 
     mockedGroups.splice(index, 1);
 

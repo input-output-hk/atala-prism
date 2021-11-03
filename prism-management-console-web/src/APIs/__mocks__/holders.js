@@ -1,3 +1,4 @@
+/*eslint no-magic-numbers: "off"*/
 import { internet, name, random, date } from 'faker';
 import moment from 'moment';
 import { PENDING_CONNECTION, CONNECTED, DEFAULT_PAGE_SIZE } from '../../helpers/constants';

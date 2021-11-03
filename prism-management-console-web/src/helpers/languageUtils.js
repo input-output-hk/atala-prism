@@ -37,7 +37,8 @@ export const getBrowserLanguage = () => {
   // value doesn't exist and therefore tries to get it from language
   const browserLang = window.navigator.userLanguage || window.navigator.language || DEFAULT_LANG;
 
-  const preferredLang = browserLang.substr(0, 2);
+  /*eslint no-magic-numbers: "off"*/
+  const preferredLang = browserLang.substr(0, 2); // makes no sense to extract this to const
 
   return langs.includes(preferredLang) ? preferredLang : DEFAULT_LANG;
 };
