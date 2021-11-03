@@ -30,7 +30,7 @@ const Credentials = observer(({ tabProps, setActiveTab, loading, verifyCredentia
 
   const showCredentialData = async credential => {
     const verificationResult = await verifyCredential(credential);
-    setCurrentCredential(Object.assign({ verificationResult }, credential));
+    setCurrentCredential({ verificationResult, ...credential });
     setShowDrawer(true);
   };
 

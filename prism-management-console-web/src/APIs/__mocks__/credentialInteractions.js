@@ -49,27 +49,14 @@ export const saveDraft = ({ degreeName, award, startDate, graduationDate, logoUn
       );
     }
 
-    const credentialToSave = Object.assign(
-      {},
-      {
-        degreeName
-      },
-      {
-        award
-      },
-      {
-        startDate
-      },
-      {
-        graduationDate
-      },
-      {
-        logoUniversity
-      },
-      {
-        id: Math.ceil(Math.random() * 1000)
-      }
-    );
+    const credentialToSave = {
+      id: Math.ceil(Math.random() * 1000),
+      degreeName,
+      award,
+      startDate,
+      graduationDate,
+      logoUniversity
+    };
 
     resolve(credentialToSave);
   });

@@ -18,7 +18,7 @@ const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) 
 
   const showCredentialData = async clickedCredential => {
     const verificationResult = await verifyCredential(clickedCredential);
-    setCurrentCredential(Object.assign({ verificationResult }, clickedCredential));
+    setCurrentCredential({ verificationResult, ...clickedCredential });
     setShowDrawer(true);
   };
 
