@@ -107,6 +107,12 @@ the attributes that the user is willing to share (or a function of them).
   commitments, and signatures, are elements of the group (rather than of the
   field), proving knowledge is much more efficient (e.g., it prevents costly
   extraction required for security proofs).
+\item[sms+19:] The Coconut system follows a similar approach than the previous
+  works with respect to the representation and showing protocol for credentials.
+  Namely, credentials are randomizable signatures issued blindly. In this case,
+  the authors rely on Pointcheval Sanders signatures \cite{ps16} as main
+  building block, to which they incorporate techniques from other schemes to
+  support threshold issuance.
 \end{enumerate}
 
 \paragraph{Main security models.}
@@ -135,6 +141,7 @@ the attributes that the user is willing to share (or a function of them).
   into a single showing process (``presentation'') is directly achievable by
   composing multiple instances of the ideal functionality (one per ``proof
   part'').
+\item[\cite{sms+19}:] No security model is given nor adopted.
 \end{enumerate}
 
 \paragraph{Variations in functionality.}
@@ -171,13 +178,31 @@ the attributes that the user is willing to share (or a function of them).
     proving that the exponent lies within a sub-interval.
   \end{itemize}
 \item[\cite{cdhk15}:] The same as in the previous works (\cite{cl01,cl02,cl04}).
+\item[\cite{sms+19}:] It is essentially the same as previous works, although it
+  supports threshold issuance. Interestingly, \cite{sms+19} does not make use
+  of pseudonyms. I.e., credentials are just signed (blocks of) attributes. This
+  probably lets them achieve better efficiency. \doubt{This makes the scheme
+    to be practically like a group signature scheme (without revocation...)}
 \end{enumerate}
 
 \paragraph{Efficiency.}
 
+\cite{sms+19} seems to be the most efficient one (note: relies on the
+Fiat-Shamir heuristic). Credentials are only composed by two G1 elements,
+independently on the number of attributes.
+
 \paragraph{Main challenges.}
 
 \subsection{Related Primitives}
+
+Most schemes \cite{cl01,cl02,cl04,cdhk15,sms+19} are based on randomizable
+signatures, with the possibility of signing committed values, that also support
+efficient proofs of knowledge.
+
+The most recurrent signature schemes are Camenisch-Lysyanskaya \cite{cl02,cl04},
+BBS/BBS+ \cite{asm06,cdl16b}, and Pointcheval Sanders \cite{ps16}, with the
+exception of \cite{cdhk15} that leverages their own signature scheme, called
+Unlinkable Randomizable Signatures.
 
 \subsubsection{Pseudonym Systems}
 \label{sssec:pseudonyms}
