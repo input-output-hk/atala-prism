@@ -1,11 +1,13 @@
 {
   "parser": "babel-eslint",
-  "extends": [ "airbnb", "plugin:prettier/recommended", "plugin:css-modules/recommended", "plugin:cypress/recommended"],
-  "env": {
-    "browser": true,
-    "mocha": true,
-    "node": true
-  },
+  "extends": ["react-app", "airbnb-base", "plugin:css-modules/recommended", "plugin:cypress/recommended", "plugin:prettier/recommended"],
+  "plugins": [
+    "import",
+    "promise",
+    "css-modules",
+    "cypress",
+    "chai-friendly"
+  ],
   "rules": {
     "func-names": "off",
     "new-cap": "off",
@@ -62,14 +64,6 @@
     "no-unused-expressions": 0,
     "chai-friendly/no-unused-expressions": 2
   },
-  "plugins": [
-    "import",
-    "promise",
-    "react",
-    "css-modules",
-    "cypress",
-    "chai-friendly"
-  ],
   "globals": {
     "artifacts": false,
     "FlowRouter": false,
