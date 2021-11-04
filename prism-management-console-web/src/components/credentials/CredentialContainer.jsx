@@ -9,13 +9,12 @@ import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActi
 import { withApi } from '../providers/withApi';
 import {
   CREDENTIALS_ISSUED,
-  CREDENTIALS_RECEIVED,
   DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
   CREDENTIAL_ID_KEY,
   DRAFT_CREDENTIAL_VERIFICATION_RESULT,
-  PENDING_CREDENTIAL_VERIFICATION_RESULT
+  PENDING_CREDENTIAL_VERIFICATION_RESULT,
+  CREDENTIALS_RECEIVED
 } from '../../helpers/constants';
-import { useCredentialsReceivedListWithFilters } from '../../hooks/useCredentials';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
@@ -24,7 +23,10 @@ import {
   useCredentialIssuedUiState
 } from '../../hooks/useCredentialIssuedStore';
 import { useSelectAll } from '../../hooks/useSelectAll';
-import { useCredentialReceivedStore, useCredentialReceivedUiState } from '../../hooks/useCredentialReceivedStore';
+import {
+  useCredentialReceivedStore,
+  useCredentialReceivedUiState
+} from '../../hooks/useCredentialReceivedStore';
 
 const CredentialContainer = observer(({ api }) => {
   const { t } = useTranslation();
@@ -37,16 +39,10 @@ const CredentialContainer = observer(({ api }) => {
     isLoadingFirstPage: isLoadingIssued
   } = useCredentialIssuedStore({ reset: true });
 
-  const { displayedCredentials: displayedCredentialsReceived } = useCredentialReceivedUiState({
+  useCredentialReceivedUiState({
     reset: true
   });
-  const {
-    credentials: credentialsReceived,
-    getCredentialsToSelect: getCredentialsReceivedToSelect,
-    refreshCredentials: refreshCredentialsReceived,
-    isFetching: isFetchingCredentialsReceived,
-    isLoadingFirstPage: isLoadingReceived
-  } = useCredentialReceivedStore({
+  const { isLoadingFirstPage: isLoadingReceived } = useCredentialReceivedStore({
     reset: true,
     fetch: true
   });
@@ -67,10 +63,6 @@ const CredentialContainer = observer(({ api }) => {
     actions,
     confirmationModalProps
   } = useCredentialActions(api, credentialsIssued, refreshCredentialsIssued);
-
-  // useEffect(() => {
-  //   if (activeTab === CREDENTIALS_RECEIVED && hasMoreReceived) fetchCredentialsReceived();
-  // }, [activeTab, fetchCredentialsReceived, hasMoreReceived]);
 
   const selectAllCredentialsIssuedProps = useSelectAll({
     displayedEntities: credentialsIssued,
@@ -112,14 +104,6 @@ const CredentialContainer = observer(({ api }) => {
         selectedCredentials,
         selectAllProps: selectAllCredentialsIssuedProps
       },
-      credentialTypes
-    },
-    [CREDENTIALS_RECEIVED]: {
-      tableProps: {
-        credentials: displayedCredentialsReceived
-      },
-      bulkActionsProps: {},
-      showEmpty: noReceivedCredentials,
       credentialTypes
     }
   };

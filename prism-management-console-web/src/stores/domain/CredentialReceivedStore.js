@@ -43,7 +43,7 @@ export default class CredentialReceivedStore {
       fetchCredentials: action,
       updateCredentialName: flow.bound,
       updateCredentialMembers: flow.bound,
-      refreshCredentialsIssued: flow.bound,
+      refreshCredentialsReceived: flow.bound,
       updateCredential: action,
       updateHasMoreState: action,
       fetchRecursively: false,
@@ -65,6 +65,7 @@ export default class CredentialReceivedStore {
       hasFiltersApplied,
       hasCustomSorting
     } = this.rootStore.uiState.credentialReceivedUiState;
+    debugger
     return hasFiltersApplied || hasCustomSorting
       ? this.fetchSearchResultsNextPage
       : this.fetchCredentialsNextPage;
@@ -78,7 +79,7 @@ export default class CredentialReceivedStore {
     this.searchResults = defaultValues.searchResults;
   };
 
-  *refreshCredentialsIssued() {
+  *refreshCredentialsReceived() {
     const pageSizeIsWithinBoundary = this.credentials.length <= MAX_CREDENTIAL_PAGE_SIZE;
     const response = yield pageSizeIsWithinBoundary
       ? this.fetchCredentials({ offset: 0, pageSize: this.credentials.length })
@@ -87,6 +88,7 @@ export default class CredentialReceivedStore {
   }
 
   *fetchCredentialsNextPage() {
+    debugger
     if (!this.hasMoreCredentials && this.isLoadingFirstPage) return;
 
     const response = yield this.fetchCredentials({ offset: this.credentials.length });
