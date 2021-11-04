@@ -8,7 +8,8 @@ import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/Generic
 import {
   NEW_CREDENTIALS_STEP_UNIT,
   SELECT_RECIPIENTS_STEP,
-  IMPORT_CREDENTIAL_DATA_STEP
+  IMPORT_CREDENTIAL_DATA_STEP,
+  SELECT_CREDENTIAL_TYPE_STEP
 } from '../../helpers/constants';
 import TemplateFiltersContainer from '../credentialTemplates/Molecules/Filters/TemplateFiltersContainer';
 
@@ -54,9 +55,11 @@ const NewCredential = ({
         title={t(`newCredential.title.step${currentStep + 1}`)}
         subtitle={t(`newCredential.subtitle.step${currentStep + 1}`)}
       />
-      <div className="ActionsHeader EmbeddedTempalteFilters flex">
-        <TemplateFiltersContainer />
-      </div>
+      {currentStep === SELECT_CREDENTIAL_TYPE_STEP && (
+        <div className="ActionsHeader EmbeddedTempalteFilters flex">
+          <TemplateFiltersContainer />
+        </div>
+      )}
     </div>
   );
 
