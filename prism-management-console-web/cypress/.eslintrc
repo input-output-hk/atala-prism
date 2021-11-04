@@ -1,0 +1,16 @@
+{
+  "extends": ["react-app", "plugin:cypress/recommended", "plugin:prettier/recommended"],
+  "plugins": [
+    "cypress",
+    "chai-friendly"
+  ],
+  "rules": {},
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js",".jsx"]
+      }
+    },
+    "import/ignore": ["node_modules", ".scss$"]
+  }
+}
