@@ -14,8 +14,8 @@ export function credentialMapper(credential) {
 }
 
 function getCredentialStatus(credential) {
-  const { publicationStoredAt, sharedAt, revocationProof } = credential;
-  if (revocationProof) return CREDENTIAL_STATUSES.credentialRevoked;
+  const { publicationStoredAt, sharedAt, revokedOnOperationId } = credential;
+  if (revokedOnOperationId) return CREDENTIAL_STATUSES.credentialRevoked;
   if (sharedAt?.seconds) return CREDENTIAL_STATUSES.credentialSent;
   if (publicationStoredAt?.seconds) return CREDENTIAL_STATUSES.credentialSigned;
   return CREDENTIAL_STATUSES.credentialDraft;
