@@ -7,6 +7,7 @@ import io.circe.{Json, parser}
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
@@ -1406,6 +1407,54 @@ class ContactsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil 
         contactJsonData(response.contact.value) must be(contact.data)
         response.issuedCredentials.head.connectionStatus must be(
           contactConnection.connectionStatus
+        )
+      }
+    }
+
+    "return the contact with revocation proof for a revoked credential" in {
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.getPublicKey
+      val did = generateDid(publicKey)
+      val institutionId = createParticipant("Institution X", did)
+      val groupName = createInstitutionGroup(
+        institutionId,
+        InstitutionGroup.Name("Group A")
+      ).name
+      val contact = createContact(institutionId, "Alice", Some(groupName))
+
+      val issuedCredential = createGenericCredential(
+        issuedBy = institutionId,
+        contactId = contact.contactId,
+        tag = "tag1",
+        credentialIssuanceContactId = None
+      )
+      publishCredential(institutionId, issuedCredential)
+
+      val revokedOnOperationId = AtalaOperationId.random()
+      revokeCredential(institutionId, issuedCredential.credentialId, revokedOnOperationId)
+
+      val request = console_api.GetContactRequest(
+        contactId = contact.contactId.toString
+      )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      val contactConnection = connector_models.ContactConnection(
+        connectionStatus = console_models.ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        connectionToken = "connectionToken"
+      )
+
+      usingApiAsContacts(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          ReaderT.liftF(
+            IO.pure(
+              List(contactConnection)
+            )
+          )
+        }
+
+        val response = serviceStub.getContact(request)
+        response.issuedCredentials.headOption.value.revokedOnOperationId.toByteArray must be(
+          revokedOnOperationId.value.toArray
         )
       }
     }

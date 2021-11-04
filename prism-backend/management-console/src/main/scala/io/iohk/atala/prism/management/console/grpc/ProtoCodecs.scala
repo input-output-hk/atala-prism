@@ -120,6 +120,10 @@ object ProtoCodecs {
       credential: GenericCredential,
       connection: connector_models.ContactConnection
   ): console_models.CManagerGenericCredential = {
+    val revokedOnOperationId = credential.revokedOnOperationId
+      .map(_.value)
+      .getOrElse(Vector.empty)
+
     val model = console_models
       .CManagerGenericCredential()
       .withCredentialId(credential.credentialId.toString)
@@ -133,6 +137,7 @@ object ProtoCodecs {
       .withSharedAt(
         credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp())
       )
+      .withRevokedOnOperationId(ByteString.copyFrom(revokedOnOperationId.toArray))
     credential.publicationData.fold(model) { data =>
       model
         .withBatchId(data.credentialBatchId.getId)
