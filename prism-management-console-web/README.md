@@ -146,3 +146,10 @@ To run it, you must shut down the node, wallet and connector first.
 ### Running the whole project
 
 See our main [README](../README.md#How-to-run) for instructions on how to run the whole project, including the backend and the chrome extension (which is necessary to log into the management console).
+
+## ESLint setup
+
+It seems that current [CRA documentation](https://create-react-app.dev/docs/setting-up-your-editor/#extending-or-replacing-the-default-eslint-config) regarding ESLint setup is misleading/outdated.
+In multiple places it says: *changes will only affect the editor integration. They won’t affect the terminal and in-browser lint output.* This has not been the truth since the version 4, all changes to the ESLint config are applied everywhere.
+
+Just as a note, CRA has the basic ESLint setup in place, there is no need to install eslint and other tools like eslint-babel again. We just need to extend "react-app" and to add additional rules and plugins that we need.
