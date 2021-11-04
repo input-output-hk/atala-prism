@@ -1,5 +1,5 @@
 import React from 'react';
-
+import PropTypes from 'prop-types';
 import './_style.scss';
 
 const WizardTitle = ({ title, subtitle }) => (
@@ -12,5 +12,10 @@ const WizardTitle = ({ title, subtitle }) => (
     </div>
   </div>
 );
+
+WizardTitle.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired
+};
 
 export default WizardTitle;

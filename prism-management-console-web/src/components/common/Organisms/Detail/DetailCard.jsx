@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Card } from 'antd';
 
 const DetailCard = ({ title, badge, info, children }) => (
@@ -9,4 +10,12 @@ const DetailCard = ({ title, badge, info, children }) => (
     </Card>
   </div>
 );
+
+DetailCard.propTypes = {
+  title: PropTypes.string,
+  badge: PropTypes.node,
+  info: PropTypes.node,
+  children: PropTypes.node
+};
+
 export default DetailCard;
