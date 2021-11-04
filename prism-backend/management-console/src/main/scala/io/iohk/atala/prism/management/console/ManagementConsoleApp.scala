@@ -45,7 +45,6 @@ object ManagementConsoleApp extends IOApp {
   private val grpcConfig = GrpcUtils.GrpcConfig(port = 50054)
 
   implicit val ec = ExecutionContext.global
-  implicit val ioRuntime: IORuntime = runtime
 
   override def run(args: List[String]): IO[ExitCode] = {
     // Cats resource runs in multiple threads, we have to pass class loader
@@ -59,6 +58,11 @@ object ManagementConsoleApp extends IOApp {
   }
 
   def app(classLoader: ClassLoader): Resource[IO, Server] = {
+    // It is important for this implicit to not be in the class scope as the underlying `runtime` might not have
+    // been initialized. By putting it here we make sure that it has been already been initialized. Refer to `IOApp`'s
+    // implementation for more insight.
+    implicit val ioRuntime: IORuntime = runtime
+
     for {
       // configs
       globalConfig <- Resource.eval(IO.delay {
