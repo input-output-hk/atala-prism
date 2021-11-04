@@ -86,6 +86,23 @@ the attributes that the user is willing to share (or a function of them).
   scheme, for which protocols are known to prove knowledge and equality of
   committed values. This lets them follow the same approach to \cite{cl02},
   which is in turn the one in \cite{cl01}.
+\item[\cite{cmz14}:] This work differs from the rest in that they use
+  secret key cryptography rather than public key. Namely, they assume a
+  setting in which the issuer will also be the verifier (e.g., a
+  transportation organization that issues tickets for its travelers). In
+  this setting, it is reasonable to assume that both issuer and verifier
+  will have access to the same secret. Therefore, they replace signatures
+  with (algebraic) MACs. They do not create pseudonyms for end users (like
+  \cite{sms+19}). Other than that, the supported functionality is similar
+  to the rest: Setup and KeyGen to initialize the cryptographic parameters,
+  and produce the issuer's keys, respectively; an interactive protocol for
+  end users to blindly receive credentials (MACs) on their attributes; and
+  an interactive protocol for showing and verifying a credential. In case
+  that issuance does not need to be blinded, it becomes a non-interactive
+  protocol (i.e., the issuer just produces the credential and sends it to
+  the user). Otherwise, the user has to encrypt the attributes and prove
+  they are correct. Presentation only requires one message from the user
+  to the verifier.
 \item[\cite{cdhk15}:] The approach to build anonymous credentials is roughly
   the same as in the previous works \cite{cl01,cl02,cl04}, although with
   relevant differences that make it more efficient. Basically, users create
@@ -131,6 +148,20 @@ the attributes that the user is willing to share (or a function of them).
   based on the Strong RSA and Diffie-Hellman assumptions.
 \item[\cite{cl04}:] Same as in \cite{cl02} (no actual security model for the
   AC system). The custom proofs are based on the DDH and LRSW assumptions.
+\item[\cite{cmz14}:] The security properties proven in this work are:
+  \begin{itemize}
+  \item \emph{Unforgeability}: The adversary cannot produce a valid proof for a
+    statement, if none of the attribute sets for which it has received a
+    credential meets that statement.
+  \item \emph{Anonymity}: The proofs produced in a presentation do not leak
+    more information than the statement being proved.
+  \item \emph{Blind issuance}: The issuance protocol is a secure two-party
+    protocol for generating credentials on th euser's attributes.
+  \item \emph{Key-parameter consistency}: no issuer can use different parameters
+    to produce credentials of different users such that their anonymity can
+    be compromised afterwards. \doubt{This somehow remembers non-frameability in
+      group signatures.}
+  \end{itemize}
 \item[\cite{cdhk15}:] The model (and associated proofs) presented in this paper
   is very comprehensive, and detailed. Specifically, for the main building block
   (Unlinkable Redactable Signatures), the authors give both game-based
@@ -177,6 +208,10 @@ the attributes that the user is willing to share (or a function of them).
     within the exponent used to compute the pseudonym in sub-intervals, and then
     proving that the exponent lies within a sub-interval.
   \end{itemize}
+\item[\cite{cmz14}:] The paper mentions ``Credential translation'', which
+  basically means being able to prove that two attributes in different
+  credentials are actually the same. This is not formalized or detailed,
+  though.
 \item[\cite{cdhk15}:] The same as in the previous works (\cite{cl01,cl02,cl04}).
 \item[\cite{sms+19}:] It is essentially the same as previous works, although it
   supports threshold issuance. Interestingly, \cite{sms+19} does not make use
@@ -234,23 +269,19 @@ PS: Tokenization.
 PS: Tokenization.
 U-Prove.
 Idemix.
-Signal's AC \cite{}
+Signal's AC \needcite
 
 \subsection{TODO}
 
-\cite{cl04,ckl+15}.
-
-Look also for the non-bilinear-based approach of \cite{cl04}.
+\cite{bcc+09}: Delegation.
+\cite{dmm+18}: Functional credentials.
+\cite{fhs19}: Structure-preserving signatures for AC.
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
 
-Mental note: some of the early CL papers mentioned something about ACs
-containing some secret key/value of the credential holder (I think, to avoid
-sharing or something like that). Check which paper was it, and what happened
-with this concept in subsequent refinements. If this has been removed, this may
-be one key difference with respect to group signatures: i.e., without some
-holder-specific secret value in the show-verify protocols, it is just not
-possible to ensure traceability and/or non-frameability.
+\cite{cmz14} says: Idemix is efficient in that credentials are constant-size,
+although very expensive to present.
+
 
 %%% Local Variables:
 %%% mode: latex
