@@ -123,6 +123,7 @@ export default class CredentialReceivedUiState {
 
   get displayedCredentials() {
     const { credentials } = this.rootStore.prismStore.credentialReceivedStore;
+    debugger
     return this.hasFiltersApplied || this.hasCustomSorting
       ? this.sortedFilteredCredentials
       : credentials;

@@ -1,39 +1,56 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CREDENTIALS_RECEIVED } from '../../../../helpers/constants';
 import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
+import {
+  useCredentialReceivedStore,
+  useCredentialReceivedUiState
+} from '../../../../hooks/useCredentialReceivedStore';
 
-const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initialLoading }) => {
+const CredentialsReceived = observer(({ showEmpty, showCredentialData, initialLoading }) => {
   const { t } = useTranslation();
 
-  const { credentials } = tableProps;
+  const { displayedCredentials, hasFiltersApplied } = useCredentialReceivedUiState({
+    reset: true
+  });
+  const {
+    credentials: credentialsReceived,
+    getCredentialsToSelect: getCredentialsReceivedToSelect,
+    refreshCredentials: refreshCredentialsReceived,
+    isFetching: isFetchingCredentialsReceived,
+    isLoadingFirstPage: isLoadingReceived
+  } = useCredentialReceivedStore({
+    reset: true,
+    fetch: true
+  });
 
   const emptyProps = {
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
-    isFilter: !showEmpty && !credentials.length
+    isFilter: hasFiltersApplied
   };
 
   const expandedTableProps = {
-    ...tableProps,
+    credentials: displayedCredentials,
     tab: CREDENTIALS_RECEIVED,
     onView: showCredentialData
   };
 
-  const renderEmptyComponent = !credentials.length || showEmpty;
+  const renderEmptyComponent = !displayedCredentials.length || showEmpty;
 
   const renderContent = () => {
-    if (!credentials.length && initialLoading) return <SimpleLoading size="md" />;
+    if (!displayedCredentials.length && initialLoading) return <SimpleLoading size="md" />;
     if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
     return <CredentialsTable {...expandedTableProps} />;
   };
 
   return renderContent();
-};
+});
 
 CredentialsReceived.defaultProps = {
   showEmpty: false,
