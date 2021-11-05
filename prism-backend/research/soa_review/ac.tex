@@ -124,7 +124,23 @@ the attributes that the user is willing to share (or a function of them).
   commitments, and signatures, are elements of the group (rather than of the
   field), proving knowledge is much more efficient (e.g., it prevents costly
   extraction required for security proofs).
-\item[sms+19:] The Coconut system follows a similar approach than the previous
+\item[\cite{dmm+18}:] Follows a completely different approach to (most) other
+  works. Instead of using randomizable signatures (over committed values) or
+  some equivalent building block, it relies on predicate encryption.
+  Essentially, a user with attributes $A$ is given a decryption key for a
+  predicate $f_A(g)$ which, given a predicate $g$, returns $g(A)$. When
+  a verifier wants to check if a user has a set of attributes that meet
+  certain policy $h$, challenges the user to decrypt a ciphertext over
+  a random message that has been associated to predicate $h$. Then, only
+  if the attribute set $A$ of the user meets policy $h$, the user will be
+  able to decrypt the random message (since $f_A(h) = h(A) = 1$). This
+  protocol is actually augmented with some commitments, to prevent
+  misbehaviour from user and from verifier, but the approach is the same.
+  \doubt{There is something weird here, or that I do not understand --
+    predicate encryption requires a
+    set of attributes for encryption, rather than another predicate. I have
+    reached out to the authors to see if they can help me clarify this.}
+\item[\cite{sms+19}:] The Coconut system follows a similar approach than the previous
   works with respect to the representation and showing protocol for credentials.
   Namely, credentials are randomizable signatures issued blindly. In this case,
   the authors rely on Pointcheval Sanders signatures \cite{ps16} as main
@@ -172,6 +188,10 @@ the attributes that the user is willing to share (or a function of them).
   into a single showing process (``presentation'') is directly achievable by
   composing multiple instances of the ideal functionality (one per ``proof
   part'').
+\item[\cite{dmm+18}:] The authors give a game-based security model, covering
+  properties of unforgeability, anonymity, and policy-hiding. The latter
+  means that, for delegated verification, the verifier is oblivious to the
+  policy being verified.
 \item[\cite{sms+19}:] No security model is given nor adopted.
 \end{enumerate}
 
@@ -213,6 +233,16 @@ the attributes that the user is willing to share (or a function of them).
   credentials are actually the same. This is not formalized or detailed,
   though.
 \item[\cite{cdhk15}:] The same as in the previous works (\cite{cl01,cl02,cl04}).
+\item[\cite{dmm+18}:] The scheme supports delegated verification. Basically,
+  to implement delegated verification, the delegatee receives an encryption of
+  the policy it has to verify, plus a signature of the encryption. If the
+  signature is valid, it re-randomizes the ciphertext for the policy, and
+  sends it to the user, who follows the same protocol as in the normal case.
+  The paper also mentions how to add more functionality, like delegation of
+  credentials and revocation, but they are not modelled. Also interestingly,
+  they claim somewhat informally (in Section 2.3) that no scheme satisfying
+  anonymity in the presence of an untrustworthy issuer can support delegation
+  of verification with policy hiding.
 \item[\cite{sms+19}:] It is essentially the same as previous works, although it
   supports threshold issuance. Interestingly, \cite{sms+19} does not make use
   of pseudonyms. I.e., credentials are just signed (blocks of) attributes. This
@@ -273,14 +303,15 @@ Signal's AC \needcite
 
 \subsection{TODO}
 
-\cite{bcc+09}: Delegation.
-\cite{dmm+18}: Functional credentials.
-\cite{fhs19}: Structure-preserving signatures for AC.
+\begin{itemize}
+\item \cite{bcc+09}: Delegation.
+\item \cite{dmm+18}: Functional credentials.
+\item \cite{fhs19}: Structure-preserving signatures for AC.
+\item \cite{cks10,aks12}: ACs with revocation.
+\item \cite{ckl+15}: Formal treatment of privacy-preserving credentials.
+\end{itemize}
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
-
-\cite{cmz14} says: Idemix is efficient in that credentials are constant-size,
-although very expensive to present.
 
 
 %%% Local Variables:
