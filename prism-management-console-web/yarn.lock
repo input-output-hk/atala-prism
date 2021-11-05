@@ -1487,10 +1487,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@input-output-hk/atala-prism-protos@0.1.0-ff1968f":
-  version "0.1.0-ff1968f"
-  resolved "https://npm.pkg.github.com/download/@input-output-hk/atala-prism-protos/0.1.0-ff1968f/16e83c9f916dbdda1cba84bf189553bf581e5fc8a667dd8098cd6d19aca59fe3#31a4fa65dd77f44c9d9e452674cc53d6d2888644"
-  integrity sha512-wNDu7DqO5BeYWyTnKv4DiInpXK2pcy6Q9cnqoxRaNTSvFqtjc7APGYGpCkzkYjDQFKtne/1/qvf+5qT+lr0vMA==
+"@input-output-hk/atala-prism-protos@1.3.0-build-9-6840800f":
+  version "1.3.0-build-9-6840800f"
+  resolved "https://npm.pkg.github.com/download/@input-output-hk/atala-prism-protos/1.3.0-build-9-6840800f/68da0fd6a72d3655abb330df010e497e119fc6bf55861b7c0b13140cbb433278#ddad240605f6590845bbcbba65bfdb5c0a3aa3e5"
+  integrity sha512-r4O4FxtTG2pvNeTHlLeDz2+c/pgCxUYxUCnIrHzhlfVhTXuocDTxDebpO7OeiZOfXmtKl36x3nWHirSYJFJsog==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -8021,6 +8021,13 @@ jest-snapshot@^26.6.0, jest-snapshot@^26.6.2:
     pretty-format "^26.6.2"
     semver "^7.3.2"
 
+jest-sonar-reporter@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/jest-sonar-reporter/-/jest-sonar-reporter-2.0.0.tgz#faa54a7d2af7198767ee246a82b78c576789cf08"
+  integrity sha512-ZervDCgEX5gdUbdtWsjdipLN3bKJwpxbvhkYNXTAYvAckCihobSLr9OT/IuyNIRT1EZMDDwR6DroWtrq+IL64w==
+  dependencies:
+    xml "^1.0.1"
+
 jest-util@^26.6.0, jest-util@^26.6.2:
   version "26.6.2"
   resolved "https://registry.yarnpkg.com/jest-util/-/jest-util-26.6.2.tgz#907535dbe4d5a6cb4c47ac9b926f6af29576cbc1"
@@ -14268,6 +14275,11 @@ xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
   integrity sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==
+
+xml@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/xml/-/xml-1.0.1.tgz#78ba72020029c5bc87b8a81a3cfcd74b4a2fc1e5"
+  integrity sha1-eLpyAgApxbyHuKgaPPzXS0ovweU=
 
 xmlchars@^2.2.0:
   version "2.2.0"
