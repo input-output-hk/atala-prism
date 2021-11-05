@@ -17,6 +17,10 @@ const CustomInputGroup = ({ prefixIcon, children, onClick }) => {
   );
 };
 
+CustomInputGroup.defaultProps = {
+  onClick: undefined
+};
+
 CustomInputGroup.propTypes = {
   prefixIcon: PropTypes.string.isRequired,
   onClick: PropTypes.func,

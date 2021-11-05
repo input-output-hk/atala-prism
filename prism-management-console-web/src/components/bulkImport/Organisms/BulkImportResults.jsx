@@ -34,7 +34,7 @@ const BulkImportResults = ({
 };
 
 BulkImportResults.defaultProps = {
-  selectedGroups: PropTypes.arrayOf(PropTypes.string),
+  selectedGroups: [],
   validationErrors: null,
   contactCreations: 0,
   credentialDataImported: 0,

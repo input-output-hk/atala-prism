@@ -11,6 +11,13 @@ const DetailCard = ({ title, badge, info, children }) => (
   </div>
 );
 
+DetailCard.defaultProps = {
+  title: undefined,
+  badge: undefined,
+  info: null,
+  children: null
+};
+
 DetailCard.propTypes = {
   title: PropTypes.string,
   badge: PropTypes.node,
