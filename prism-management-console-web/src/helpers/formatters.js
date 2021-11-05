@@ -5,6 +5,8 @@ import { getCurrentLanguage } from './languageUtils';
 import { LONG_DATE_FORMAT, DEFAULT_DATE_FORMAT } from './constants';
 import { Date } from '../protos/common_models_pb';
 
+const MILLIS_IN_1_SECOND = 1000;
+
 const completeDateFormatter = (date, format = DEFAULT_DATE_FORMAT) => {
   const lang = getCurrentLanguage();
 
@@ -25,7 +27,7 @@ const completeFrontendDateFormatter = (date, format = DEFAULT_DATE_FORMAT) => {
   const lang = getCurrentLanguage();
   moment.locale(lang);
   // The dates come from the backend as unix timestamp with miliseconds
-  return moment.unix(date / 1000).format(format);
+  return moment.unix(date / MILLIS_IN_1_SECOND).format(format);
 };
 
 // TODO: Replace most of the code by calling fromMomentToProtoDateFormatter
@@ -78,7 +80,7 @@ export const getProtoDate = date => {
 
 export const backendDateFormat = unixDate =>
   // backend gives dates as timestamp expressed in seconds, moment takes it as milliseconds
-  moment(unixDate * 1000).format(DEFAULT_DATE_FORMAT);
+  moment(unixDate * MILLIS_IN_1_SECOND).format(DEFAULT_DATE_FORMAT);
 
 export const contactBackendDateFormat = unixDate =>
   // same as backendDateFormat but w/o *1000 due to an inconsistency on the timestamp formats

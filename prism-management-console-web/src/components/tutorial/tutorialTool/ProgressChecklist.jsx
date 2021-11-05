@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Progress, Modal } from 'antd';
 import success from '../../../images/tutSuccess.svg';
@@ -60,4 +61,8 @@ const ProgressChecklist = ({ text, percent }) => {
   );
 };
 
+ProgressChecklist.propTypes = {
+  text: PropTypes.string.isRequired,
+  percent: PropTypes.number.isRequired
+};
 export default ProgressChecklist;

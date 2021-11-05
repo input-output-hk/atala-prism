@@ -9,7 +9,7 @@ import invalidIcon from '../../../../images/redCross.svg';
 import pendingIcon from '../../../../images/pendingIcon.svg';
 import cardanoLogo from '../../../../images/cardanoLogo.svg';
 import hashedFile from '../../../../images/hashedFile.svg';
-import CardDetail from './DetailCard';
+import DetailCard from './DetailCard';
 import DataDetail from './DataDetail';
 import { sanitizeView } from '../../../../helpers/credentialView';
 import CredentialRawDetail from './CredentialRawDetail/CredentialRawDetail';
@@ -169,7 +169,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
           )}
         </TabPane>
         <TabPane tab={tabs.details.title} key={tabs.details.key}>
-          <CardDetail
+          <DetailCard
             title={t('credentials.detail.statusTitle')}
             info={infoFirstCard}
             badge={extraJsx}
@@ -180,8 +180,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
               data={t('credentials.detail.rawCredential')}
               contentPopOver={content}
             />
-          </CardDetail>
-          <CardDetail title={cardanoExplorerHeader}>
+          </DetailCard>
+          <DetailCard title={cardanoExplorerHeader}>
             <CustomButton
               overrideClassName="GoToCardanoBtn theme-primary"
               buttonProps={{
@@ -191,7 +191,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
               }}
               buttonText={t('credentials.detail.goToCardano')}
             />
-          </CardDetail>
+          </DetailCard>
         </TabPane>
       </Tabs>
       {!isCredentialReceived && (

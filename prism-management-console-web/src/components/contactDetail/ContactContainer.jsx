@@ -93,7 +93,7 @@ const ContactContainer = ({ api }) => {
         const credentialPromises = credentials.map(credential =>
           api.credentialsManager
             .getBlockchainData(credential.encodedSignedCredential)
-            .then(issuanceProof => Object.assign({ issuanceProof }, credential))
+            .then(issuanceProof => ({ issuanceProof, ...credential }))
         );
         return Promise.all(credentialPromises);
       })

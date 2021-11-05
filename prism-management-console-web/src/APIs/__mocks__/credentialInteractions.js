@@ -1,3 +1,4 @@
+/* eslint no-magic-numbers: "off" */
 import { ALLOWED_TYPES, MAX_FILE_SIZE } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 
@@ -20,6 +21,7 @@ export const savePictureInS3 = file =>
 
     if (tooLarge) {
       Logger.error(`The file had a size of ${size} when the maximum is ${MAX_FILE_SIZE}`);
+      // TODO: fix this, Error doesn't accept object, but strings only!
       reject(new Error(`${savePicture}tooLarge`, { maxSize: MAX_FILE_SIZE }));
     }
 
@@ -42,6 +44,7 @@ export const saveDraft = ({ degreeName, award, startDate, graduationDate, logoUn
     ) {
       Logger.error('Trying to save empty credential');
       reject(
+        // TODO: fix this, Error doesn't accept object, but strings only!
         new Error({
           error: 'Trying to save empty credential',
           errorMessage: 'errors.emptyCredential'
@@ -49,27 +52,14 @@ export const saveDraft = ({ degreeName, award, startDate, graduationDate, logoUn
       );
     }
 
-    const credentialToSave = Object.assign(
-      {},
-      {
-        degreeName
-      },
-      {
-        award
-      },
-      {
-        startDate
-      },
-      {
-        graduationDate
-      },
-      {
-        logoUniversity
-      },
-      {
-        id: Math.ceil(Math.random() * 1000)
-      }
-    );
+    const credentialToSave = {
+      id: Math.ceil(Math.random() * 1000),
+      degreeName,
+      award,
+      startDate,
+      graduationDate,
+      logoUniversity
+    };
 
     resolve(credentialToSave);
   });

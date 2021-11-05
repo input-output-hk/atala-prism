@@ -41,9 +41,11 @@ const CompleteSpreadSheetStep = ({
     reader.readAsText(blob);
     reader.onload = e => {
       const detection = chardet.detect(e.target.result);
-      // If jschardet determine 'pure ascii' means that it contains special ascii characters such as "�", this aren't expected as a result of parsing
+      // If jschardet determine 'pure ascii' means that it contains special ascii characters such as
+      // "�", this aren't expected as a result of parsing
       // This is because with UTF-8 doesn't parse file correctly, after this retry with ISO format
-      // ENCODING_ISO corresponds to default excel format (if before file saving it doesn't specified UTF-8)
+      // ENCODING_ISO corresponds to default excel format (if before file saving it doesn't
+      // specified UTF-8)
       // ENCODING_UTF corresponds to default web (google sheet for example) format
       const encoding = detection.encoding.includes('ascii') ? ENCODING_ISO : ENCODING_UTF;
       parseFile({ ...params, encoding });

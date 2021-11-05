@@ -8,7 +8,7 @@ export function contactMapper(contact) {
     ...jsondata,
     ...parseName(contact)
   };
-  return Object.assign({}, rest, { key: contactId, connectionStatus, contactId });
+  return { ...rest, key: contactId, connectionStatus, contactId };
 }
 
 export const parseName = ({ name = '', firstName = '', lastName = '', midNames = '' }) =>

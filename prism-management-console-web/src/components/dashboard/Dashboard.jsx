@@ -76,7 +76,7 @@ const Dashboard = observer(({ api, name }) => {
 
   const updateTutorialProgress = useCallback(
     update => {
-      const newTutorialProgress = Object.assign({}, tutorialProgress, update);
+      const newTutorialProgress = { ...tutorialProgress, ...update };
       setTutorialProgress(newTutorialProgress);
     },
     [tutorialProgress]

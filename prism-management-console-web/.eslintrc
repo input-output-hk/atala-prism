@@ -1,11 +1,9 @@
 {
-  "parser": "babel-eslint",
-  "extends": [ "airbnb", "plugin:prettier/recommended", "plugin:css-modules/recommended", "plugin:cypress/recommended"],
-  "env": {
-    "browser": true,
-    "mocha": true,
-    "node": true
-  },
+  "extends": ["react-app", "airbnb-base", "plugin:css-modules/recommended", "plugin:prettier/recommended"],
+  "plugins": [
+    "promise",
+    "css-modules"
+  ],
   "rules": {
     "func-names": "error",
     "new-cap": "off",
@@ -57,28 +55,19 @@
     "import/imports-first": "warn",
     "no-multi-spaces": "warn",
     "no-multiple-empty-lines": "warn",
-    "react/jsx-indent": "warn",
+    "react/jsx-indent": ["warn", 2],
+    "react/require-default-props": ["warn"],
     "object-shorthand": [2, "always"],
     "global-require": "off",
     "no-unused-expressions": 0,
-    "chai-friendly/no-unused-expressions": 2,
     "no-magic-numbers": [ "warn", { "ignore": [0, 1], "ignoreArrayIndexes": true }]
   },
-  "plugins": [
-    "import",
-    "promise",
-    "react",
-    "css-modules",
-    "cypress",
-    "chai-friendly"
-  ],
-  "globals": {
-    "artifacts": false,
-    "FlowRouter": false,
-    "SSR": false,
-    "Assets": false
-  },
   "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js",".jsx"]
+      }
+    },
     "import/ignore": ["node_modules", ".scss$"]
   }
 }
