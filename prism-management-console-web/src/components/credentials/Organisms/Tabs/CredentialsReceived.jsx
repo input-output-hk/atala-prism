@@ -20,14 +20,12 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData, initialLo
   });
   const {
     credentials: credentialsReceived,
+    fetchCredentialsNextPage: fetchCredentialsReceivedNextPage,
     getCredentialsToSelect: getCredentialsReceivedToSelect,
     refreshCredentials: refreshCredentialsReceived,
     isFetching: isFetchingCredentialsReceived,
     isLoadingFirstPage: isLoadingReceived
-  } = useCredentialReceivedStore({
-    reset: true,
-    fetch: true
-  });
+  } = useCredentialReceivedStore();
 
   const emptyProps = {
     photoSrc: noCredentialsPicture,
@@ -37,6 +35,7 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData, initialLo
 
   const expandedTableProps = {
     credentials: displayedCredentials,
+    getMoreData: fetchCredentialsReceivedNextPage,
     tab: CREDENTIALS_RECEIVED,
     onView: showCredentialData
   };
