@@ -42,10 +42,7 @@ const CredentialContainer = observer(({ api }) => {
   useCredentialReceivedUiState({
     reset: true
   });
-  const { isLoadingFirstPage: isLoadingReceived } = useCredentialReceivedStore({
-    reset: true,
-    fetch: true
-  });
+  const { isLoadingFirstPage: isLoadingReceived } = useCredentialReceivedStore();
 
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
