@@ -1,11 +1,8 @@
 {
-  "extends": ["react-app", "airbnb-base", "plugin:css-modules/recommended", "plugin:cypress/recommended", "plugin:prettier/recommended"],
+  "extends": ["react-app", "airbnb-base", "plugin:css-modules/recommended", "plugin:prettier/recommended"],
   "plugins": [
-    "import",
     "promise",
-    "css-modules",
-    "cypress",
-    "chai-friendly"
+    "css-modules"
   ],
   "rules": {
     "func-names": "error",
@@ -62,7 +59,6 @@
     "object-shorthand": [2, "always"],
     "global-require": "off",
     "no-unused-expressions": 0,
-    "chai-friendly/no-unused-expressions": 2,
     "no-magic-numbers": [ "warn", { "ignore": [0, 1], "ignoreArrayIndexes": true }]
   },
   "settings": {

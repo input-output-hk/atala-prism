@@ -15,7 +15,7 @@
     "pretest-no-watch": "./scripts/compile-protos.sh",
     "test-no-watch": "react-scripts test --watchAll=false --testPathIgnorePatterns=src/__tests__/__mocks__",
     "eject": "react-scripts eject",
-    "eslint": "npx eslint . --ext .jsx --ext .js",
+    "eslint": "eslint --ignore-path .eslintignore . --ext .jsx --ext .js",
     "ci-e2e": "start-server-and-test start-test-server http://localhost:3000 e2e-test",
     "test:debug": "react-scripts --inspect-brk test --runInBand --no-cache"
   },
@@ -66,8 +66,6 @@
     "eslint-import-resolver-meteor": "0.4.0",
     "eslint-plugin-chai-friendly": "0.7.2",
     "eslint-plugin-css-modules": "2.11.0",
-    "eslint-plugin-cypress": "2.12.1",
-    "eslint-plugin-import": "2.25.2",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-promise": "4.2.1",
     "prettier": "1.16.1",
