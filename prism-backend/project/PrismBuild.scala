@@ -23,7 +23,7 @@ object PrismBuild {
         git.baseVersion := "1.2",
         git.formattedShaVersion := git.gitHeadCommit.value
           .map(git.baseVersion.value + "-" + _.take(8)),
-        scalaVersion := "2.13.6",
+        scalaVersion := "2.13.7",
         scalacOptions ~= (options =>
           options.filterNot(
             Set(
