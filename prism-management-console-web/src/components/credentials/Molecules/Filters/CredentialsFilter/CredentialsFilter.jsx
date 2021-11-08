@@ -29,7 +29,6 @@ const CredentialsFilter = observer(({ isIssued }) => {
 
   const setFilterByKey = key => value => setFilterValue(key, value);
 
-  const CREDENTIALS_TYPES_ENABLED = Object.values(credentialTypes);
   const renderContactStatusFilter = () => (
     <div>
       <Select
@@ -78,7 +77,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
         allowClear
         onChange={setFilterByKey('credentialTypeFilter')}
       >
-        {CREDENTIALS_TYPES_ENABLED.map(aCredentialType => (
+        {credentialTypes.map(aCredentialType => (
           <Select.Option key={aCredentialType.id} value={aCredentialType.id}>
             {t(aCredentialType.name)}
           </Select.Option>

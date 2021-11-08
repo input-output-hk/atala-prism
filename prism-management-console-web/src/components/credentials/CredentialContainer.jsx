@@ -43,7 +43,7 @@ const CredentialContainer = observer(({ api }) => {
 
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
-  const { credentialTemplates: credentialTypes } = useTemplateStore();
+  const { credentialTemplates: credentialTypes } = useTemplateStore({ fetch: true });
 
   const {
     fetchCredentialsReceived,

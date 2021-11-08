@@ -23,10 +23,10 @@ const {
 const defaultValues = {
   isSearching: false,
   isSorting: false,
-  nameFilter: '',
-  credentialTypeFilter: '',
-  credentialStatusFilter: '',
-  connectionStatusFilter: '',
+  nameFilter: undefined,
+  credentialTypeFilter: undefined,
+  credentialStatusFilter: undefined,
+  connectionStatusFilter: undefined,
   dateFilter: null,
   sortDirection: ascending,
   sortingBy: CREATED_ON
@@ -66,9 +66,13 @@ export default class CredentialIssuedUiState {
   }
 
   get hasFiltersApplied() {
+    return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
+  }
+
+  get hasAditionalFiltersApplied() {
     return (
-      this.hasNameFilterApplied ||
       this.hasDateFilterApplied ||
+      this.hasCredentiaTypeFilter ||
       this.hasCredentialStatusFilterApplied ||
       this.hasConnectionStatusFilterApplied
     );
@@ -88,6 +92,10 @@ export default class CredentialIssuedUiState {
 
   get hasConnectionStatusFilterApplied() {
     return Boolean(this.connectionStatusFilter);
+  }
+
+  get hasCredentiaTypeFilter() {
+    return Boolean(this.credentialTypeFilter);
   }
 
   get hasCustomSorting() {
@@ -142,8 +150,17 @@ export default class CredentialIssuedUiState {
       const matchConnectionStatus =
         !this.hasConnectionStatusFilter ||
         filterByExactMatch(this.connectionStatusFilter, item.contactData.connectionStatus);
+      const matchCredentialTypeFilter =
+        !this.hasCredentiaTypeFilter ||
+        filterByExactMatch(this.credentialTypeFilter, item.credentialData.credentialTypeDetails.id);
 
-      return matchName && matchDate && matchCredentialStatus && matchConnectionStatus;
+      return (
+        matchName &&
+        matchDate &&
+        matchCredentialStatus &&
+        matchConnectionStatus &&
+        matchCredentialTypeFilter
+      );
     });
 
   getCredentialValue = (credential, sortingKey) => {

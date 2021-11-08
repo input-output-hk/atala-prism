@@ -27,7 +27,7 @@ const CredentialButtons = observer(
     disableSend
   }) => {
     const { t } = useTranslation();
-    const { hasFiltersApplied } = useCredentialIssuedUiState();
+    const { hasAditionalFiltersApplied } = useCredentialIssuedUiState();
 
     const [loadingByKey, setLoadingByKey] = useState(null);
 
@@ -85,7 +85,7 @@ const CredentialButtons = observer(
           buttonText={t('credentials.actions.sendSelectedCredentials')}
         />
 
-        <Badge dot={hasFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
+        <Badge dot={hasAditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
           <Dropdown.Button
             overlay={filtersMenu}
             trigger={['click']}
