@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector.repositories
 import cats.effect.unsafe.implicits.global
 import cats.syntax.either._
 import com.softwaremill.diffx.generic.auto._
-import com.softwaremill.diffx.scalatest.DiffMatcher._
+import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import doobie.implicits._
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.connector.model._
@@ -348,7 +348,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
           .getConnectionsPaginated(verifierId, 10, Option.empty)
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
-      result.toOption.value.map(_.id).toSet must matchTo(connections.toSet)
+      result.toOption.value.map(_.id).toSet mustMatchTo connections.toSet
     }
 
     // creates connections (initiator -> acceptor):
@@ -409,7 +409,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
           .getConnectionsPaginated(verifierId, 10, Option.empty)
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
-      firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
+      firstTenResult.toOption.value.map(_.id) mustMatchTo firstTenExpected
 
       val nextTenResult =
         connectionsRepository
@@ -417,7 +417,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
           .run(TraceId.generateYOLO)
           .unsafeToFuture()
           .futureValue
-      nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
+      nextTenResult.toOption.value.map(_.id) mustMatchTo nextTenExpected
     }
   }
 

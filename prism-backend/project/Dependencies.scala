@@ -6,7 +6,7 @@ object versions {
   val chimney = "0.6.1"
   val circe = "0.14.1"
   val circeOptics = "0.14.1"
-  val diffx = "0.5.6"
+  val diffx = "0.6.0"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
   val doobie = "1.0.0-RC1"
@@ -107,7 +107,7 @@ object Dependencies {
   val catsScalatest =
     "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
   val diffx =
-    "com.softwaremill.diffx" %% "diffx-scalatest" % versions.diffx % Test
+    "com.softwaremill.diffx" %% "diffx-scalatest-must" % versions.diffx % Test
   val dockerClient =
     "com.spotify" % "docker-client" % versions.dockerClient % Test
   val dockerTestkitScalatest =
