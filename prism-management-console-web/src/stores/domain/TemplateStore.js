@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, flow } from 'mobx';
+import { makeAutoObservable, flow } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class TemplateStore {
@@ -19,16 +19,11 @@ export default class TemplateStore {
     this.rootStore = rootStore;
     this.storeName = this.constructor.name;
     makeAutoObservable(this, {
-      isLoadingTemplates: observable,
-      isLoadingCategories: observable,
-      credentialTemplates: observable,
-      templateCategories: observable,
       fetchTemplates: flow.bound,
       getCredentialTemplateDetails: flow.bound,
       createCredentialTemplate: flow.bound,
       fetchCategories: flow.bound,
       createTemplateCategory: flow.bound,
-      isLoading: computed,
       rootStore: false
     });
   }

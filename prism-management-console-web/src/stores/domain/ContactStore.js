@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
+import { makeAutoObservable, flow, runInAction } from 'mobx';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
 
@@ -31,25 +31,11 @@ export default class ContactStore {
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
-      isFetching: observable,
-      contacts: observable,
-      contactsScrollId: observable,
-      searchResults: observable,
-      resultsScrollId: observable,
-      isLoadingFirstPage: computed,
-      scrollId: computed,
-      hasMore: computed,
-      hasMoreContacts: computed,
-      hasMoreResults: computed,
-      fetchMoreData: computed,
-      resetContacts: action,
       fetchContactsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
-      updateStoredContacts: action,
       fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
-      fetchContacts: action,
       fetchRecursively: false,
       rootStore: false
     });
