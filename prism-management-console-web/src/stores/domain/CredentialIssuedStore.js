@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
+import { makeAutoObservable, flow, runInAction } from 'mobx';
 import { credentialMapper } from '../../APIs/helpers/credentialHelpers';
 import { CREDENTIAL_PAGE_SIZE, MAX_CREDENTIAL_PAGE_SIZE } from '../../helpers/constants';
 
@@ -20,32 +20,23 @@ export default class CredentialIssuedStore {
 
   searchResults = defaultValues.searchResults;
 
+  hasMoreCredentials = defaultValues.hasMoreCredentials;
+
+  hasMoreResults = defaultValues.hasMoreResults;
+
   constructor(api, rootStore) {
     this.api = api;
     this.rootStore = rootStore;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
-      isFetching: observable,
-      isSaving: observable,
-      credentials: observable,
-      searchResults: observable,
-      isLoadingFirstPage: computed,
-      hasMore: computed,
-      hasMoreCredentials: observable,
-      hasMoreResults: observable,
-      fetchMoreData: computed,
-      resetCredentials: action,
       fetchCredentialsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       getCredentialsToSelect: flow.bound,
-      fetchCredentials: action,
       updateCredentialName: flow.bound,
       updateCredentialMembers: flow.bound,
       refreshCredentialsIssued: flow.bound,
-      updateCredential: action,
-      updateHasMoreState: action,
       fetchRecursively: false,
       rootStore: false
     });

@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, computed, action } from 'mobx';
 import _ from 'lodash';
 import {
   filterByDateRange,
@@ -53,33 +53,9 @@ export default class CredentialIssuedUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      isSearching: observable,
-      isSorting: observable,
-      nameFilter: observable,
-      credentialTypeFilter: observable,
-      credentialStatusFilter: observable,
-      connectionStatusFilter: observable,
-      dateFilter: observable,
-      sortDirection: observable,
-      sortingBy: observable,
-      sortingKey: computed,
-      hasFiltersApplied: computed,
-      hasNameFilterApplied: computed,
-      hasCredentialStatusFilterApplied: computed,
-      hasConnectionStatusFilterApplied: computed,
-      hasDateFilterApplied: computed,
-      hasCustomSorting: computed,
-      displayedCredentials: computed,
       sortedFilteredCredentials: computed({ requiresReaction: true }),
-      triggerSearch: action,
       triggerBackendSearch: action.bound,
-      applyFilters: action,
-      applySorting: action,
       sortingIsCaseSensitive: false,
-      resetState: action,
-      setFilterValue: action,
-      toggleSortDirection: action,
-      setSortingBy: action,
       getCredentialValue: false,
       rootStore: false
     });
