@@ -1,4 +1,3 @@
-import { reaction } from 'mobx';
 import { useContext, useEffect, useState } from 'react';
 import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
@@ -20,31 +19,19 @@ export const useContactStore = ({ fetch, reset } = { fetch: false, reset: false 
 
 export const useContactUiState = ({ reset } = { reset: false }) => {
   const { contactUiState } = useContext(UiStateContext);
-  const { triggerSearch, resetState } = contactUiState;
+  const { triggerSearch, resetState, statusFilter, sortingKey, sortDirection } = contactUiState;
 
   useEffect(() => {
     if (reset) resetState();
   }, [reset, resetState]);
 
   useEffect(() => {
-    reaction(() => contactUiState.textFilter, () => triggerSearch());
-  }, [contactUiState.textFilter, triggerSearch]);
+    if (reset) resetState();
+  }, [reset, resetState]);
 
   useEffect(() => {
-    reaction(() => contactUiState.dateFilter, () => triggerSearch());
-  }, [contactUiState.dateFilter, triggerSearch]);
-
-  useEffect(() => {
-    reaction(() => contactUiState.statusFilter, () => triggerSearch());
-  }, [contactUiState.statusFilter, triggerSearch]);
-
-  useEffect(() => {
-    reaction(() => contactUiState.sortingKey, () => triggerSearch());
-  }, [contactUiState.sortingKey, triggerSearch]);
-
-  useEffect(() => {
-    reaction(() => contactUiState.sortDirection, () => triggerSearch());
-  }, [contactUiState.sortDirection, triggerSearch]);
+    triggerSearch();
+  }, [statusFilter, sortingKey, sortDirection, sortDirection, triggerSearch]);
 
   return contactUiState;
 };
