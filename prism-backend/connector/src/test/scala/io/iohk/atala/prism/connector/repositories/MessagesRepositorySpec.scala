@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector.repositories
 import cats.data.NonEmptyList
 import cats.effect.unsafe.implicits.global
 import com.softwaremill.diffx.generic.auto._
-import com.softwaremill.diffx.scalatest.DiffMatcher._
+import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import doobie.Fragments
 import doobie.implicits._
 import io.iohk.atala.prism.connector.errors.ConnectorError
@@ -513,14 +513,14 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
           .getMessagesPaginated(holder, 10, Option.empty)
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
-      firstTenResult.toOption.value.map(_.id) must matchTo(firstTenExpected)
+      firstTenResult.toOption.value.map(_.id) mustMatchTo firstTenExpected
 
       val nextTenResult =
         messagesRepository
           .getMessagesPaginated(holder, 10, Some(firstTenExpected.last))
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
-      nextTenResult.toOption.value.map(_.id) must matchTo(nextTenExpected)
+      nextTenResult.toOption.value.map(_.id) mustMatchTo nextTenExpected
     }
   }
 }

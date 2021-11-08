@@ -107,7 +107,7 @@ object Dependencies {
   val catsScalatest =
     "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
   val diffx =
-    "com.softwaremill.diffx" %% "diffx-scalatest" % versions.diffx % Test
+    "com.softwaremill.diffx" %% "diffx-scalatest-must" % versions.diffx % Test
   val dockerClient =
     "com.spotify" % "docker-client" % versions.dockerClient % Test
   val dockerTestkitScalatest =
