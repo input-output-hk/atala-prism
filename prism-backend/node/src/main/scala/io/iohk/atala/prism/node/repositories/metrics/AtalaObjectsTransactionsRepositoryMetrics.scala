@@ -49,13 +49,13 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
 
   def retrieveObjects(
       transactions: List[AtalaObjectTransactionSubmission]
-  ): Mid[F, List[Option[AtalaObjectInfo]]] =
+  ): Mid[F, List[Either[NodeError, Option[AtalaObjectInfo]]]] =
     _.measureOperationTime(retrieveObjectsTimer)
 
   def getOldPendingTransactions(
       ledgerPendingTransactionTimeout: Duration,
       ledger: Ledger
-  ): Mid[F, List[AtalaObjectTransactionSubmission]] =
+  ): Mid[F, Either[NodeError, List[AtalaObjectTransactionSubmission]]] =
     _.measureOperationTime(getOldPendingTransactionsTimer)
 
   def getNotPublishedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] =
