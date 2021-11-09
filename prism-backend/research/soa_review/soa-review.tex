@@ -34,6 +34,21 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \input{discussion.tex}
 \input{conclusion.tex}
 
+\section{TODOs}
+
+General/pending doubts and tasks:
+
+\begin{itemize}
+\item Many constructions of ACs and GSs seem to be built using the same
+  approach: an issuer and a user interact so that the latter receives a signature
+  from the former; then the user employs that signature to do something else (in
+  ACs, prove attributes; in GSs, produce further signatures). Still, the typical
+  security models are different. Concretely, GSs have a very well established
+  model, but ACs don't. It also ``bothers'' me that none of the AC models I've
+  seen cover something similar to non-frameability, nor traceability, but just
+  include conventional unforgeability properties. Why is this?
+\end{itemize}
+
 \bibliographystyle{splncs04}
 \bibliography{soa-review}
 

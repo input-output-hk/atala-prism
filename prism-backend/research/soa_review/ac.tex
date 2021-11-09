@@ -86,6 +86,19 @@ the attributes that the user is willing to share (or a function of them).
   scheme, for which protocols are known to prove knowledge and equality of
   committed values. This lets them follow the same approach to \cite{cl02},
   which is in turn the one in \cite{cl01}.
+\item[\cite{cks10}:] The system proposed here follows the conventional
+  approach to anonymous credentials based on randomizable signatures (with
+  the possibility to sign committed values) over vectors of messages.
+  It however enables issuers to produce updates on already signed messages.
+  This updates can be leveraged to incorporate revocation. Essentially,
+  time is divided in epochs, and credentials include an attribute which
+  represents the expiration date/epoch of the credential. Users have to
+  prove that their credential is valid for the current epoch. Similarly,
+  to add new attributes, the issuer leverages the internal structure of
+  the signatures over vectors of messages, to basically add new messages
+  (attributes). In both cases, it is responsibility of the user to update
+  her credential given the latest update by the issuer. An example
+  instantiation is given using BBS signatures.
 \item[\cite{cmz14}:] This work differs from the rest in that they use
   secret key cryptography rather than public key. Namely, they assume a
   setting in which the issuer will also be the verifier (e.g., a
@@ -124,6 +137,9 @@ the attributes that the user is willing to share (or a function of them).
   commitments, and signatures, are elements of the group (rather than of the
   field), proving knowledge is much more efficient (e.g., it prevents costly
   extraction required for security proofs).
+\item[\cite{ckl+15}:] Follows the conventional approach: a secure commitment
+  scheme with proofs of knowledge, and a signature scheme that allows to
+  sign vectors of messages, including commitments.
 \item[\cite{dmm+18}:] Follows a completely different approach to (most) other
   works. Instead of using randomizable signatures (over committed values) or
   some equivalent building block, it relies on predicate encryption.
@@ -164,6 +180,14 @@ the attributes that the user is willing to share (or a function of them).
   based on the Strong RSA and Diffie-Hellman assumptions.
 \item[\cite{cl04}:] Same as in \cite{cl02} (no actual security model for the
   AC system). The custom proofs are based on the DDH and LRSW assumptions.
+\item[\cite{cks10}:] Signer privacy and user privacy properties are required
+  for the underlying signature scheme (thus, inherited by the credential system,
+  although I have not found explicit model). Signer privacy captures that the
+  adversary (including corrupt users) doesn't learn any information about the
+  signer from signatures and updates of signatures. User privacy captures that
+  the adversary (including a corrupt issuer) does not learn any information
+  about the blindly signed messages. \doubt{Not sure I get the utility of
+    signer privacy. The original property seems to come from \cite{bckl08}.}
 \item[\cite{cmz14}:] The security properties proven in this work are:
   \begin{itemize}
   \item \emph{Unforgeability}: The adversary cannot produce a valid proof for a
@@ -305,9 +329,8 @@ Signal's AC \needcite
 
 \begin{itemize}
 \item \cite{bcc+09}: Delegation.
-\item \cite{dmm+18}: Functional credentials.
 \item \cite{fhs19}: Structure-preserving signatures for AC.
-\item \cite{cks10,aks12}: ACs with revocation.
+\item \cite{aks12}: ACs with revocation.
 \item \cite{ckl+15}: Formal treatment of privacy-preserving credentials.
 \end{itemize}
 
