@@ -139,7 +139,24 @@ the attributes that the user is willing to share (or a function of them).
   extraction required for security proofs).
 \item[\cite{ckl+15}:] Follows the conventional approach: a secure commitment
   scheme with proofs of knowledge, and a signature scheme that allows to
-  sign vectors of messages, including commitments.
+  sign vectors of messages, including commitments. Here, as in the seminal
+  works by Camenisch and Lysyanskaya \cite{cl01,cl02,cl04}, pseudonyms are
+  used as explicit building blocks. \todo{Not sure yet of how they are
+    made explicit in the generic construction. Clarify.}
+  A ``syntactic'' variation: they introduce
+  the concept of tokens both for credential issuance and presentation. To
+  request issuance of a credential, users have to produce an issuance token
+  from the set of attributes they want to reveal to the issuer, and the set
+  of attributes they want to hide (potentially coming from another credential
+  already owned by the user). An equivalent description applies for presentation
+  of a credential to a verifier. In both cases, the issuer/verifier has to
+  check the received token prior to issuing a credential or granting access.
+  They also add revocation functionality. For this, a revocation authority
+  (not necessarily the issuer) keeps a revocation information list, which is
+  basically a list containing no longer valid attributes. In order to prove
+  that their credentials are valid w.r.t. some attribute, users have to generate
+  a (non) revocation token, which proves that the attribute has not been
+  included in the revocation information list.
 \item[\cite{dmm+18}:] Follows a completely different approach to (most) other
   works. Instead of using randomizable signatures (over committed values) or
   some equivalent building block, it relies on predicate encryption.
@@ -196,7 +213,7 @@ the attributes that the user is willing to share (or a function of them).
   \item \emph{Anonymity}: The proofs produced in a presentation do not leak
     more information than the statement being proved.
   \item \emph{Blind issuance}: The issuance protocol is a secure two-party
-    protocol for generating credentials on th euser's attributes.
+    protocol for generating credentials on the user's attributes.
   \item \emph{Key-parameter consistency}: no issuer can use different parameters
     to produce credentials of different users such that their anonymity can
     be compromised afterwards. \doubt{This somehow remembers non-frameability in
@@ -212,6 +229,35 @@ the attributes that the user is willing to share (or a function of them).
   into a single showing process (``presentation'') is directly achievable by
   composing multiple instances of the ideal functionality (one per ``proof
   part'').
+\item[\cite{ckl+15}:] The main security and privacy properties required are
+  pseudonym collision-resistance (two different user secret keys cannot produce
+  the same nym for the same scope), unforgeability (the adversary cannot forge
+  issuance tokens or presentation tokens), and privacy (no two presentations by
+  the same user can be linked) or weak privacy (presentations by the same user
+  can be linked, but not traced to an issuance session). Privacy is modelled
+  in the simulation paradigm, the difference in the modelling between privacy
+  and weak privacy being a filter that removes some information \note{(I find
+    this kind of weird; probably I'm wrong. Would be nice to study further)}.
+  The unforgeability and privacy properties are essentially inherited from the
+  main building block, privacy-enhancing attribute-based signatures. Although
+  there, the authors begin by defining a blind issuance experiment (ensuring
+  that the issuer does not learn anything more than what it should during
+  isusance), and then define two variants for user privacy: presentation privacy
+  and untraceability, which basically match the strong and weak notions for
+  PABCs (in untraceability, two presentations by the same user can be linked,
+  but not trace to a specific credential issuance). [Strong] user privacy has
+  to satisfy both blind issuance and presentation privacy; weak user privacy
+  has to satisfy both blind issuance and untraceability. I find this model
+  somehow interesting, as it is one of the few (maybe along with \cite{cmz14})
+  that includes some notion related to tracing back to issuance of credentials,
+  as in group signatures). In both cases (PABC and PABS), [strong] privacy
+  implies weak privacy.
+  Essentially, the security properties required by the PABC scheme, are
+  ensured by the building blocks. Namely: the pseudonym system (requiring
+  key extractability, collision resistance and pseudonym unlinkability); the
+  revocation scheme (requiring soundness and revocation privacy); the
+  PABs (requiring unforgeability, and [weak] privacy); and the commitment
+  scheme (requiring blinding and hiding, and opening extractability).
 \item[\cite{dmm+18}:] The authors give a game-based security model, covering
   properties of unforgeability, anonymity, and policy-hiding. The latter
   means that, for delegated verification, the verifier is oblivious to the
@@ -331,7 +377,6 @@ Signal's AC \needcite
 \item \cite{bcc+09}: Delegation.
 \item \cite{fhs19}: Structure-preserving signatures for AC.
 \item \cite{aks12}: ACs with revocation.
-\item \cite{ckl+15}: Formal treatment of privacy-preserving credentials.
 \end{itemize}
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
