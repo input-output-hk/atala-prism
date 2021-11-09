@@ -4,16 +4,14 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
-import Credentials from './Credentials';
+import CredentialTabs from './CredentialTabs';
 import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
 import { withApi } from '../providers/withApi';
 import {
-  CREDENTIALS_ISSUED,
   DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
   CREDENTIAL_ID_KEY,
   DRAFT_CREDENTIAL_VERIFICATION_RESULT,
-  PENDING_CREDENTIAL_VERIFICATION_RESULT,
-  CREDENTIALS_RECEIVED
+  PENDING_CREDENTIAL_VERIFICATION_RESULT
 } from '../../helpers/constants';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
@@ -23,10 +21,6 @@ import {
   useCredentialIssuedUiState
 } from '../../hooks/useCredentialIssuedStore';
 import { useSelectAll } from '../../hooks/useSelectAll';
-import {
-  useCredentialReceivedStore,
-  useCredentialReceivedUiState
-} from '../../hooks/useCredentialReceivedStore';
 
 const CredentialContainer = observer(({ api }) => {
   const { t } = useTranslation();
@@ -35,18 +29,9 @@ const CredentialContainer = observer(({ api }) => {
     credentials: credentialsIssued,
     getCredentialsToSelect: getCredentialsIssuedToSelect,
     refreshCredentials: refreshCredentialsIssued,
-    isFetching: isFetchingCredentialsIssued,
-    isLoadingFirstPage: isLoadingIssued
-  } = useCredentialIssuedStore({ reset: true });
-
-  useCredentialReceivedUiState({
-    reset: true
-  });
-  const { isLoadingFirstPage: isLoadingReceived } = useCredentialReceivedStore();
-
-  const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
-
-  const { credentialTemplates: credentialTypes } = useTemplateStore({ fetch: true });
+    isFetching: isFetchingCredentialsIssued
+  } = useCredentialIssuedStore();
+  useTemplateStore({ fetch: true });
 
   const {
     revokeSingleCredential,
@@ -81,27 +66,22 @@ const CredentialContainer = observer(({ api }) => {
         })
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
-  const tabProps = {
-    [CREDENTIALS_ISSUED]: {
-      tableProps: {
-        revokeSingleCredential,
-        signSingleCredential,
-        sendSingleCredential,
-        selectionType: {
-          selectedRowKeys: selectedCredentials,
-          type: 'checkbox',
-          onChange: setSelectedCredentials
-        }
-      },
-      bulkActionsProps: {
-        refreshCredentials: refreshCredentialsIssued,
-        revokeSelectedCredentials,
-        signSelectedCredentials,
-        sendSelectedCredentials,
-        selectedCredentials,
-        selectAllProps: selectAllCredentialsIssuedProps
-      },
-      credentialTypes
+  const credentialsIssuedProps = {
+    revokeSingleCredential,
+    signSingleCredential,
+    sendSingleCredential,
+    selectionType: {
+      selectedRowKeys: selectedCredentials,
+      type: 'checkbox',
+      onChange: setSelectedCredentials
+    },
+    bulkActionsProps: {
+      refreshCredentials: refreshCredentialsIssued,
+      revokeSelectedCredentials,
+      signSelectedCredentials,
+      sendSelectedCredentials,
+      selectedCredentials,
+      selectAllProps: selectAllCredentialsIssuedProps
     }
   };
 
@@ -120,10 +100,8 @@ const CredentialContainer = observer(({ api }) => {
   return (
     <>
       {confirmationModalProps.type && renderModal()}
-      <Credentials
-        tabProps={tabProps}
-        setActiveTab={setActiveTab}
-        loading={{ issued: isLoadingIssued, received: isLoadingReceived }}
+      <CredentialTabs
+        credentialsIssuedProps={credentialsIssuedProps}
         verifyCredential={verifyCredential}
       />
     </>
