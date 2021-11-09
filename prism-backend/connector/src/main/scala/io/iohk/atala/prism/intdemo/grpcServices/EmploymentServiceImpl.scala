@@ -15,6 +15,7 @@ import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.{
 import io.iohk.atala.prism.utils.Base64Utils
 import io.iohk.atala.prism.intdemo.SharedCredentials.{formatDate, jsonPrinter}
 import io.iohk.atala.prism.connector.model.{Connection, TokenString}
+import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.intdemo.html.ProofOfEmployment
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.intdemo.protos.intdemo_api
@@ -179,7 +180,7 @@ object EmploymentServiceImpl {
 
     val credentialDocument = employmentCredentialJson.printWith(jsonPrinter)
     val credential = Try(
-      JsonBasedCredential.fromString(credentialDocument)
+      new JsonBasedCredential(CredentialContent.fromString(credentialDocument), null)
     ).toEither
 
     credential match {

@@ -6,6 +6,7 @@ import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.connector.model.Connection
 import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.RequiredInsuranceData
@@ -184,7 +185,7 @@ object InsuranceServiceImpl {
     val credentialDocument = insuranceCredentialJson.printWith(jsonPrinter)
 
     val credential = Try(
-      JsonBasedCredential.fromString(credentialDocument)
+      new JsonBasedCredential(CredentialContent.fromString(credentialDocument), null)
     ).toEither
 
     credential match {

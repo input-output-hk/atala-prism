@@ -11,7 +11,6 @@ import io.iohk.atala.prism.crypto.keys.{ECPrivateKey, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.interop.CredentialContentConverter._
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.models.{DidSuffix, KeyData}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
@@ -127,8 +126,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       didSuffix: DidSuffix
   ): PrismCredential = {
     val privateKey = dids(didSuffix)(keyId)
-    val credentialString = credentialContent.asString
-    JsonBasedCredential.fromString(credentialString).sign(privateKey)
+    new JsonBasedCredential(credentialContent, null).sign(privateKey)
   }
 
   def signKey(
