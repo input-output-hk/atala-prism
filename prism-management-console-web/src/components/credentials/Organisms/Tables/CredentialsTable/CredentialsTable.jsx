@@ -7,7 +7,7 @@ import { backendDateFormat } from '../../../../../helpers/formatters';
 import InfiniteScrollTable from '../../../../common/Organisms/Tables/InfiniteScrollTable';
 import freeUniLogo from '../../../../../images/free-uni-logo.png';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
-import { credentialShape } from '../../../../../helpers/propShapes';
+import { credentialShape, emptyPropsShape } from '../../../../../helpers/propShapes';
 import StatusBadge from '../../../../connections/Atoms/StatusBadge/StatusBadge';
 import PopOver from '../../../../common/Organisms/Detail/PopOver';
 import {
@@ -314,7 +314,8 @@ CredentialsTable.propTypes = {
     onChange: PropTypes.func
   }),
   tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED]).isRequired,
-  searchDueGeneralScroll: PropTypes.bool
+  searchDueGeneralScroll: PropTypes.bool,
+  emptyProps: emptyPropsShape.isRequired
 };
 
 export default CredentialsTable;
