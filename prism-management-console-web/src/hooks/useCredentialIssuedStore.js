@@ -1,18 +1,14 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
 
-export const useCredentialIssuedStore = ({ fetch, reset } = { fetch: false, reset: false }) => {
+export const useCredentialIssuedStore = ({ reset } = { reset: false }) => {
   const { credentialIssuedStore } = useContext(PrismStoreContext);
-  const { fetchCredentialsNextPage, resetCredentials } = credentialIssuedStore;
+  const { resetCredentials } = credentialIssuedStore;
 
   useEffect(() => {
     if (reset) resetCredentials();
   }, [reset, resetCredentials]);
-
-  useEffect(() => {
-    if (fetch) fetchCredentialsNextPage();
-  }, [fetch, fetchCredentialsNextPage]);
 
   return credentialIssuedStore;
 };
@@ -35,8 +31,14 @@ export const useCredentialIssuedUiState = ({ reset } = { reset: false }) => {
     if (reset) resetState();
   }, [reset, resetState]);
 
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
-    triggerSearch();
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      triggerSearch();
+    }
   }, [
     nameFilter,
     credentialTypeFilter,

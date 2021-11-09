@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import CreateCredentialsButton from '../../Atoms/Buttons/CreateCredentialsButton';
-import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CONFIRMED, CREDENTIALS_ISSUED } from '../../../../helpers/constants';
@@ -26,8 +25,8 @@ const CredentialsIssued = observer(
   }) => {
     const { t } = useTranslation();
     const [selectedLength, setSelectedLength] = useState();
-    const { isFetching: loading, fetchMoreData } = useCredentialIssuedStore();
-    const { displayedCredentials, hasFiltersApplied } = useCredentialIssuedUiState();
+    const { credentials, isFetching, fetchMoreData } = useCredentialIssuedStore();
+    const { hasFiltersApplied, isSearching, isSorting } = useCredentialIssuedUiState();
 
     const { accountStatus } = useSession();
 
@@ -40,12 +39,18 @@ const CredentialsIssued = observer(
       setSelectedLength(keys.length);
     }, [selectedRowKeys]);
 
+    useEffect(() => {
+      fetchMoreData();
+    }, [fetchMoreData]);
+
     const expandedTableProps = {
       ...tableProps,
-      credentials: displayedCredentials,
+      credentials,
       tab: CREDENTIALS_ISSUED,
       onView: showCredentialData,
-      searchDueGeneralScroll
+      searchDueGeneralScroll,
+      isFetching,
+      loading: isSearching || isSorting
     };
 
     const emptyProps = {
@@ -57,12 +62,14 @@ const CredentialsIssued = observer(
 
     const renderContent = () => {
       if (initialLoading) return <SimpleLoading size="md" />;
-      if (!displayedCredentials.length) return <EmptyComponent {...emptyProps} />;
       return (
         <>
           <TableOptions bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
-          <CredentialsTable getMoreData={fetchMoreData} loading={loading} {...expandedTableProps} />
-          ;
+          <CredentialsTable
+            getMoreData={fetchMoreData}
+            emptyProps={emptyProps}
+            {...expandedTableProps}
+          />
         </>
       );
     };

@@ -26,6 +26,7 @@ import {
   credentialRequiredStatus,
   hasRequiredStatus
 } from '../../../../../helpers/credentialActions';
+import EmptyComponent from '../../../../common/Atoms/EmptyComponent/EmptyComponent';
 
 const translationKeyPrefix = 'credentials.table.columns';
 
@@ -207,6 +208,7 @@ const CredentialsTable = ({
   credentials,
   loading,
   getMoreData,
+  isFetching,
   hasMore,
   onView,
   revokeSingleCredential,
@@ -214,7 +216,8 @@ const CredentialsTable = ({
   sendSingleCredential,
   selectionType,
   tab,
-  searchDueGeneralScroll
+  searchDueGeneralScroll,
+  emptyProps
 }) => {
   const { t } = useTranslation();
   const [loadingRevokeSingle, setLoadingRevokeSingle] = useState();
@@ -281,6 +284,8 @@ const CredentialsTable = ({
         hasMore={hasMore}
         rowKey="credentialId"
         selectionType={selectionType}
+        fetchingMore={isFetching}
+        renderEmpty={() => <EmptyComponent {...emptyProps} />}
       />
     </div>
   );
@@ -289,13 +294,16 @@ const CredentialsTable = ({
 CredentialsTable.defaultProps = {
   credentials: [],
   selectionType: null,
-  searchDueGeneralScroll: false
+  searchDueGeneralScroll: false,
+  isFetching: false,
+  loading: false
 };
 
 CredentialsTable.propTypes = {
   credentials: PropTypes.arrayOf(credentialShape),
   getMoreData: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
+  isFetching: PropTypes.bool,
+  loading: PropTypes.bool,
   hasMore: PropTypes.bool.isRequired,
   onView: PropTypes.func.isRequired,
   revokeSingleCredential: PropTypes.func.isRequired,

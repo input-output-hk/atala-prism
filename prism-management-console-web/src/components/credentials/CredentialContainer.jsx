@@ -27,19 +27,14 @@ import { useSelectAll } from '../../hooks/useSelectAll';
 
 const CredentialContainer = observer(({ api }) => {
   const { t } = useTranslation();
-  const { displayedCredentials: displayedCredentialsIssued } = useCredentialIssuedUiState({
-    reset: true
-  });
+  useCredentialIssuedUiState({ reset: true });
   const {
     credentials: credentialsIssued,
     getCredentialsToSelect: getCredentialsIssuedToSelect,
     refreshCredentialsIssued,
     isFetching: isFetchingCredentialsIssued,
     isLoadingFirstPage: isLoadingIssued
-  } = useCredentialIssuedStore({
-    reset: true,
-    fetch: true
-  });
+  } = useCredentialIssuedStore({ reset: true });
 
   const [activeTab, setActiveTab] = useState(CREDENTIALS_ISSUED);
 
@@ -72,7 +67,7 @@ const CredentialContainer = observer(({ api }) => {
   }, [activeTab, fetchCredentialsReceived, hasMoreReceived]);
 
   const selectAllCredentialsIssuedProps = useSelectAll({
-    displayedEntities: displayedCredentialsIssued,
+    displayedEntities: credentialsIssued,
     entitiesFetcher: getCredentialsIssuedToSelect,
     entityKey: CREDENTIAL_ID_KEY,
     selectedEntities: selectedCredentials,

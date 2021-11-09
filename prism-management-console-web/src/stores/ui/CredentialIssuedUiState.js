@@ -1,10 +1,5 @@
-import { makeAutoObservable, computed, action } from 'mobx';
+import { makeAutoObservable, action } from 'mobx';
 import _ from 'lodash';
-import {
-  filterByDateRange,
-  filterByExactMatch,
-  filterByMultipleKeys
-} from '../../helpers/filterHelpers';
 import {
   CREDENTIAL_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
@@ -12,13 +7,7 @@ import {
 } from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
-const {
-  CREATED_ON,
-  CONTACT_NAME,
-  EXTERNAL_ID,
-  CREDENTIAL_TYPE,
-  DATE_SIGNED
-} = CREDENTIAL_SORTING_KEYS_TRANSLATION;
+const { CREATED_ON } = CREDENTIAL_SORTING_KEYS_TRANSLATION;
 
 const defaultValues = {
   isSearching: false,
@@ -53,7 +42,6 @@ export default class CredentialIssuedUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      sortedFilteredCredentials: computed({ requiresReaction: true }),
       triggerBackendSearch: action.bound,
       sortingIsCaseSensitive: false,
       getCredentialValue: false,
@@ -105,25 +93,9 @@ export default class CredentialIssuedUiState {
     );
   }
 
-  get displayedCredentials() {
-    const { credentials } = this.rootStore.prismStore.credentialIssuedStore;
-    return this.hasFiltersApplied || this.hasCustomSorting
-      ? this.sortedFilteredCredentials
-      : credentials;
-  }
-
-  get sortedFilteredCredentials() {
-    const { credentials, searchResults } = this.rootStore.prismStore.credentialIssuedStore;
-    const allFetchedCredentials = credentials.concat(searchResults);
-    const credentialsToFilter = _.uniqBy(allFetchedCredentials, c => c.credentialId);
-    const unsortedFilteredCredentials = this.applyFilters(credentialsToFilter);
-    const sortedFilteredCredentials = this.applySorting(unsortedFilteredCredentials);
-    return sortedFilteredCredentials;
-  }
-
   triggerSearch = () => {
-    this.isSearching = this.hasFiltersApplied;
-    this.isSorting = this.hasCustomSorting;
+    this.isSearching = true;
+    this.isSorting = true;
     this.triggerBackendSearch();
   };
 
@@ -133,59 +105,6 @@ export default class CredentialIssuedUiState {
     this.isSearching = false;
     this.isSorting = false;
   }, SEARCH_DELAY_MS);
-
-  applyFilters = credentials =>
-    credentials.filter(item => {
-      const matchName =
-        !this.hasNameFilterApplied ||
-        filterByMultipleKeys(this.nameFilter, { ...item.contactData, ...item.credentialData }, [
-          CONTACT_NAME,
-          EXTERNAL_ID
-        ]);
-      const matchDate =
-        !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.publicationStoredAt);
-      const matchCredentialStatus =
-        !this.hasCredentialStatusFilterApplied ||
-        filterByExactMatch(this.credentialStatusFilter, item.status);
-      const matchConnectionStatus =
-        !this.hasConnectionStatusFilter ||
-        filterByExactMatch(this.connectionStatusFilter, item.contactData.connectionStatus);
-      const matchCredentialTypeFilter =
-        !this.hasCredentiaTypeFilter ||
-        filterByExactMatch(this.credentialTypeFilter, item.credentialData.credentialTypeDetails.id);
-
-      return (
-        matchName &&
-        matchDate &&
-        matchCredentialStatus &&
-        matchConnectionStatus &&
-        matchCredentialTypeFilter
-      );
-    });
-
-  getCredentialValue = (credential, sortingKey) => {
-    // CREATED_ON filter doesn't work on the backend, nor it's attribute is provided.
-    // this temporary solution reverses the default sorting from the backend when
-    // sorting by the CREATED_ON key and descending direction
-    if (sortingKey === CREATED_ON) return credential.index;
-    if (sortingKey === CREDENTIAL_TYPE) return credential.credentialData.credentialTypeDetails.id;
-    if (sortingKey === DATE_SIGNED) return credential.publicationStoredAt?.seconds;
-    return credential[sortingKey] || credential.credentialData[this.sortingKey];
-  };
-
-  applySorting = credentials =>
-    _.orderBy(
-      credentials.map((c, index) => ({ ...c, index })),
-      [
-        credential => {
-          const value = this.getCredentialValue(credential, this.sortingKey);
-          return this.sortingIsCaseSensitive() ? value.toLowerCase() : value;
-        }
-      ],
-      this.sortDirection === ascending ? 'asc' : 'desc'
-    );
-
-  sortingIsCaseSensitive = () => this.sortingBy === CONTACT_NAME;
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
