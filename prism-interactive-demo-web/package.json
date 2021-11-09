@@ -101,7 +101,6 @@
       "last 1 safari version"
     ]
   },
-  "type": "module",
   "jest": {
     "testResultsProcessor": "jest-sonar-reporter"
   },
