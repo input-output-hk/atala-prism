@@ -23,6 +23,7 @@ const CredentialsIssued = observer(
     const {
       credentials,
       isFetching,
+      hasMore,
       fetchMoreData,
       isLoadingFirstPage
     } = useCredentialIssuedStore();
@@ -42,11 +43,13 @@ const CredentialsIssued = observer(
     }, [fetchMoreData]);
 
     const expandedTableProps = {
+      selectionType,
       credentials,
       tab: CREDENTIALS_ISSUED,
       onView: showCredentialData,
       searchDueGeneralScroll,
       isFetching,
+      hasMore,
       loading: isSearching || isSorting
     };
 

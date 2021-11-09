@@ -40,10 +40,6 @@ const CredentialsTable = ({
   const handleGetMoreData = () => !searchDueGeneralScroll && getMoreData();
 
   useEffect(() => {
-    if (hasMore) getMoreData();
-  }, [hasMore]);
-
-  useEffect(() => {
     if (timesScrolledToBottom !== lastUpdated && hasMore && searchDueGeneralScroll) {
       setLastUpdated(timesScrolledToBottom);
       getMoreData();
