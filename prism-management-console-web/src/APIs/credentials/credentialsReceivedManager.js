@@ -25,7 +25,7 @@ async function getReceivedCredentials(contactId) {
     return Object.assign(credential, { encodedSignedCredential });
   });
   Logger.info('Got received credentials:', credentials);
-  return credentials;
+  return { credentialsList: credentials };
 }
 
 function CredentialsReceivedManager(config, auth) {

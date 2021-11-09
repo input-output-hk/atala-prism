@@ -1,10 +1,7 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, action, runInAction } from 'mobx';
 import _ from 'lodash';
-import {
-  filterByDateRange,
-  filterByExactMatch,
-  filterByMultipleKeys
-} from '../../helpers/filterHelpers';
+import { message } from 'antd';
+import i18n from 'i18next';
 import {
   CREDENTIAL_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
@@ -12,21 +9,15 @@ import {
 } from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
-const {
-  CREATED_ON,
-  CONTACT_NAME,
-  EXTERNAL_ID,
-  CREDENTIAL_TYPE,
-  DATE_SIGNED
-} = CREDENTIAL_SORTING_KEYS_TRANSLATION;
+const { CREATED_ON } = CREDENTIAL_SORTING_KEYS_TRANSLATION;
 
 const defaultValues = {
   isSearching: false,
   isSorting: false,
-  nameFilter: '',
-  credentialTypeFilter: '',
-  credentialStatusFilter: '',
-  connectionStatusFilter: '',
+  searchTextFilter: undefined,
+  credentialTypeFilter: undefined,
+  credentialStatusFilter: undefined,
+  connectionStatusFilter: undefined,
   dateFilter: null,
   sortDirection: ascending,
   sortingBy: CREATED_ON
@@ -36,7 +27,7 @@ export default class CredentialReceivedUiState {
 
   isSorting = defaultValues.isSorting;
 
-  nameFilter = defaultValues.nameFilter;
+  searchTextFilter = defaultValues.searchTextFilter;
 
   credentialStatusFilter = defaultValues.credentialStatusFilter;
 
@@ -53,33 +44,8 @@ export default class CredentialReceivedUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      isSearching: observable,
-      isSorting: observable,
-      nameFilter: observable,
-      credentialTypeFilter: observable,
-      credentialStatusFilter: observable,
-      connectionStatusFilter: observable,
-      dateFilter: observable,
-      sortDirection: observable,
-      sortingBy: observable,
-      sortingKey: computed,
-      hasFiltersApplied: computed,
-      hasNameFilterApplied: computed,
-      hasCredentialStatusFilterApplied: computed,
-      hasConnectionStatusFilterApplied: computed,
-      hasDateFilterApplied: computed,
-      hasCustomSorting: computed,
-      displayedCredentials: computed,
-      sortedFilteredCredentials: computed({ requiresReaction: true }),
-      triggerSearch: action,
       triggerBackendSearch: action.bound,
-      applyFilters: action,
-      applySorting: action,
       sortingIsCaseSensitive: false,
-      resetState: action,
-      setFilterValue: action,
-      toggleSortDirection: action,
-      setSortingBy: action,
       getCredentialValue: false,
       rootStore: false
     });
@@ -90,16 +56,20 @@ export default class CredentialReceivedUiState {
   }
 
   get hasFiltersApplied() {
+    return this.hasSearchTextFilterApplied || this.hasAditionalFiltersApplied;
+  }
+
+  get hasAditionalFiltersApplied() {
     return (
-      this.hasNameFilterApplied ||
       this.hasDateFilterApplied ||
+      this.hasCredentiaTypeFilter ||
       this.hasCredentialStatusFilterApplied ||
       this.hasConnectionStatusFilterApplied
     );
   }
 
-  get hasNameFilterApplied() {
-    return Boolean(this.nameFilter);
+  get hasSearchTextFilterApplied() {
+    return Boolean(this.searchTextFilter);
   }
 
   get hasDateFilterApplied() {
@@ -114,6 +84,10 @@ export default class CredentialReceivedUiState {
     return Boolean(this.connectionStatusFilter);
   }
 
+  get hasCredentiaTypeFilter() {
+    return Boolean(this.credentialTypeFilter);
+  }
+
   get hasCustomSorting() {
     return (
       this.sortingBy !== defaultValues.sortingBy ||
@@ -121,83 +95,41 @@ export default class CredentialReceivedUiState {
     );
   }
 
-  get displayedCredentials() {
-    const { credentials } = this.rootStore.prismStore.credentialReceivedStore;
-    debugger
-    return this.hasFiltersApplied || this.hasCustomSorting
-      ? this.sortedFilteredCredentials
-      : credentials;
-  }
+  handleUnsupportedFilters = () => {
+    const unsupportedFilters = {
+      searchTextFilter: this.searchTextFilter,
+      credentialStatusFilter: this.credentialStatusFilter,
+      connectionStatusFilter: this.connectionStatusFilter
+    };
 
-  get sortedFilteredCredentials() {
-    const { credentials, searchResults } = this.rootStore.prismStore.credentialReceivedStore;
-    const allFetchedCredentials = credentials.concat(searchResults);
-    const credentialsToFilter = _.uniqBy(allFetchedCredentials, c => c.credentialId);
-    const unsortedFilteredCredentials = this.applyFilters(credentialsToFilter);
-    const sortedFilteredCredentials = this.applySorting(unsortedFilteredCredentials);
-    return sortedFilteredCredentials;
-  }
+    Object.keys(unsupportedFilters)
+      .filter(key => Boolean(unsupportedFilters[key]))
+      .map(key =>
+        message.warn(
+          i18n.t('errors.filtersNotSupported', { key: i18n.t(`credentials.filters.${key}`) })
+        )
+      );
+  };
 
   triggerSearch = () => {
-    this.isSearching = this.hasFiltersApplied;
-    this.isSorting = this.hasCustomSorting;
+    this.isSearching = true;
+    this.isSorting = true;
     this.triggerBackendSearch();
   };
 
   triggerBackendSearch = _.debounce(async () => {
     const { fetchSearchResults } = this.rootStore.prismStore.credentialReceivedStore;
+    this.handleUnsupportedFilters();
     await fetchSearchResults();
-    this.isSearching = false;
-    this.isSorting = false;
-  }, SEARCH_DELAY_MS);
-
-  applyFilters = credentials =>
-    credentials.filter(item => {
-      const matchName =
-        !this.hasNameFilterApplied ||
-        filterByMultipleKeys(this.nameFilter, { ...item.contactData, ...item.credentialData }, [
-          CONTACT_NAME,
-          EXTERNAL_ID
-        ]);
-      const matchDate =
-        !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.publicationStoredAt);
-      const matchCredentialStatus =
-        !this.hasCredentialStatusFilterApplied ||
-        filterByExactMatch(this.credentialStatusFilter, item.status);
-      const matchConnectionStatus =
-        !this.hasConnectionStatusFilter ||
-        filterByExactMatch(this.connectionStatusFilter, item.contactData.connectionStatus);
-
-      return matchName && matchDate && matchCredentialStatus && matchConnectionStatus;
+    runInAction(() => {
+      this.isSearching = false;
+      this.isSorting = false;
     });
-
-  getCredentialValue = (credential, sortingKey) => {
-    // CREATED_ON filter doesn't work on the backend, nor it's attribute is provided.
-    // this temporary solution reverses the default sorting from the backend when
-    // sorting by the CREATED_ON key and descending direction
-    if (sortingKey === CREATED_ON) return credential.index;
-    if (sortingKey === CREDENTIAL_TYPE) return credential.credentialData.credentialTypeDetails.id;
-    if (sortingKey === DATE_SIGNED) return credential.publicationStoredAt?.seconds;
-    return credential[sortingKey] || credential.credentialData[this.sortingKey];
-  };
-
-  applySorting = credentials =>
-    _.orderBy(
-      credentials.map((c, index) => ({ ...c, index })),
-      [
-        credential => {
-          const value = this.getCredentialValue(credential, this.sortingKey);
-          return this.sortingIsCaseSensitive() ? value.toLowerCase() : value;
-        }
-      ],
-      this.sortDirection === ascending ? 'asc' : 'desc'
-    );
-
-  sortingIsCaseSensitive = () => this.sortingBy === CONTACT_NAME;
+  }, SEARCH_DELAY_MS);
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
-    this.nameFilter = defaultValues.nameFilter;
+    this.searchTextFilter = defaultValues.searchTextFilter;
     this.credentialTypeFilter = defaultValues.credentialTypeFilter;
     this.credentialStatusFilter = defaultValues.credentialStatusFilter;
     this.connectionStatusFilter = defaultValues.connectionStatusFilter;
