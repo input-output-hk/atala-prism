@@ -18,6 +18,10 @@ export default class CredentialIssuedStore {
 
   hasMore = defaultValues.hasMore;
 
+  hasMoreCredentials = defaultValues.hasMoreCredentials;
+
+  hasMoreResults = defaultValues.hasMoreResults;
+
   constructor(api, rootStore) {
     this.api = api;
     this.rootStore = rootStore;

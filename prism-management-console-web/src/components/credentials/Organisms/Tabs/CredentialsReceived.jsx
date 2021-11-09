@@ -1,61 +1,51 @@
 import React from 'react';
+import { PropTypes } from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
-import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CREDENTIALS_RECEIVED } from '../../../../helpers/constants';
-import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import {
   useCredentialReceivedStore,
   useCredentialReceivedUiState
 } from '../../../../hooks/useCredentialReceivedStore';
 
-const CredentialsReceived = observer(({ showEmpty, showCredentialData, initialLoading }) => {
+const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
   const { t } = useTranslation();
-
+  const { isFetching, hasMore, fetchMoreData, isLoadingFirstPage } = useCredentialReceivedStore();
   const { displayedCredentials, hasFiltersApplied } = useCredentialReceivedUiState({
     reset: true
   });
-  const {
-    credentials: credentialsReceived,
-    fetchCredentialsNextPage: fetchCredentialsReceivedNextPage,
-    getCredentialsToSelect: getCredentialsReceivedToSelect,
-    refreshCredentials: refreshCredentialsReceived,
-    isFetching: isFetchingCredentialsReceived,
-    isLoadingFirstPage: isLoadingReceived
-  } = useCredentialReceivedStore();
+
+  const expandedTableProps = {
+    credentials: displayedCredentials,
+    getMoreData: fetchMoreData,
+    tab: CREDENTIALS_RECEIVED,
+    onView: showCredentialData,
+    searchDueGeneralScroll: true,
+    hasMore,
+    loading: isFetching
+  };
 
   const emptyProps = {
+    isEmpty: !displayedCredentials.length || showEmpty,
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
     isFilter: hasFiltersApplied
   };
 
-  const expandedTableProps = {
-    credentials: displayedCredentials,
-    getMoreData: fetchCredentialsReceivedNextPage,
-    tab: CREDENTIALS_RECEIVED,
-    onView: showCredentialData
-  };
-
-  const renderEmptyComponent = !displayedCredentials.length || showEmpty;
-
-  const renderContent = () => {
-    if (!displayedCredentials.length && initialLoading) return <SimpleLoading size="md" />;
-    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return <CredentialsTable {...expandedTableProps} />;
-  };
-
-  return renderContent();
+  if (isLoadingFirstPage) return <SimpleLoading size="md" />;
+  return <CredentialsTable {...expandedTableProps} emptyProps={emptyProps} />;
 });
 
 CredentialsReceived.defaultProps = {
-  showEmpty: false,
-  initialLoading: false
+  showEmpty: false
 };
 
-CredentialsReceived.propTypes = credentialTabShape;
+CredentialsReceived.propTypes = {
+  showEmpty: PropTypes.bool,
+  showCredentialData: PropTypes.func.isRequired
+};
 
 export default CredentialsReceived;

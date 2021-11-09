@@ -107,34 +107,6 @@ export const credentialShape = shape({
   connectionStatus: oneOf(Object.values(CONNECTION_STATUSES))
 });
 
-export const credentialTabShape = {
-  fetchCredentials: func.isRequired,
-  tableProps: shape({
-    credentials: arrayOf(shape()),
-    selectionType: shape({
-      selectedRowKeys: arrayOf(string)
-    }),
-    hasMore: bool,
-    searching: bool,
-    sortingProps: shape({
-      sortingBy: string,
-      setSortingBy: func,
-      sortDirection: string,
-      setSortDirection: func
-    }).isRequired
-  }).isRequired,
-  bulkActionsProps: shape({
-    signSelectedCredentials: func,
-    sendSelectedCredentials: func,
-    toggleSelectAll: func,
-    selectAll: bool,
-    indeterminateSelectAll: bool
-  }).isRequired,
-  showEmpty: bool,
-  initialLoading: bool,
-  searchDueGeneralScroll: bool
-};
-
 export const credentialTypeShape = shape({
   id: string,
   enabled: bool,
