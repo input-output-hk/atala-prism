@@ -60,6 +60,7 @@ export default class CredentialIssuedStore {
     if (!this.hasMore) return alreadyFetched;
 
     const response = yield this.fetchRecursively(alreadyFetched);
+    this.credentials = response.credentialsList;
     return response.credentialsList;
   }
 

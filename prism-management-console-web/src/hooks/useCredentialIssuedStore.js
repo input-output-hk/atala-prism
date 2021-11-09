@@ -19,7 +19,7 @@ export const useCredentialIssuedUiState = ({ reset } = { reset: false }) => {
   const {
     triggerSearch,
     resetState,
-    nameFilter,
+    searchTextFilter,
     credentialTypeFilter,
     credentialStatusFilter,
     connectionStatusFilter,
@@ -29,7 +29,7 @@ export const useCredentialIssuedUiState = ({ reset } = { reset: false }) => {
   } = credentialIssuedUiState;
 
   const sortingAndFiltersDependencies = [
-    nameFilter,
+    searchTextFilter,
     credentialTypeFilter,
     credentialStatusFilter,
     connectionStatusFilter,

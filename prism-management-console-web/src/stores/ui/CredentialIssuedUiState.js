@@ -1,5 +1,7 @@
-import { makeAutoObservable, action } from 'mobx';
+import { makeAutoObservable, action, runInAction } from 'mobx';
 import _ from 'lodash';
+import { message } from 'antd';
+import i18n from 'i18next';
 import {
   CREDENTIAL_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
@@ -12,7 +14,7 @@ const { CREATED_ON } = CREDENTIAL_SORTING_KEYS_TRANSLATION;
 const defaultValues = {
   isSearching: false,
   isSorting: false,
-  nameFilter: undefined,
+  searchTextFilter: undefined,
   credentialTypeFilter: undefined,
   credentialStatusFilter: undefined,
   connectionStatusFilter: undefined,
@@ -25,7 +27,7 @@ export default class CredentialIssuedUiState {
 
   isSorting = defaultValues.isSorting;
 
-  nameFilter = defaultValues.nameFilter;
+  searchTextFilter = defaultValues.searchTextFilter;
 
   credentialStatusFilter = defaultValues.credentialStatusFilter;
 
@@ -54,7 +56,7 @@ export default class CredentialIssuedUiState {
   }
 
   get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
+    return this.hasSearchTextFilterApplied || this.hasAditionalFiltersApplied;
   }
 
   get hasAditionalFiltersApplied() {
@@ -66,8 +68,8 @@ export default class CredentialIssuedUiState {
     );
   }
 
-  get hasNameFilterApplied() {
-    return Boolean(this.nameFilter);
+  get hasSearchTextFilterApplied() {
+    return Boolean(this.searchTextFilter);
   }
 
   get hasDateFilterApplied() {
@@ -93,6 +95,22 @@ export default class CredentialIssuedUiState {
     );
   }
 
+  handleUnsupportedFilters = () => {
+    const unsupportedFilters = {
+      searchTextFilter: this.searchTextFilter,
+      credentialStatusFilter: this.credentialStatusFilter,
+      connectionStatusFilter: this.connectionStatusFilter
+    };
+
+    Object.keys(unsupportedFilters)
+      .filter(key => Boolean(unsupportedFilters[key]))
+      .map(key =>
+        message.warn(
+          i18n.t('errors.filtersNotSupported', { key: i18n.t(`credentials.filters.${key}`) })
+        )
+      );
+  };
+
   triggerSearch = () => {
     this.isSearching = true;
     this.isSorting = true;
@@ -101,14 +119,17 @@ export default class CredentialIssuedUiState {
 
   triggerBackendSearch = _.debounce(async () => {
     const { fetchSearchResults } = this.rootStore.prismStore.credentialIssuedStore;
+    this.handleUnsupportedFilters();
     await fetchSearchResults();
-    this.isSearching = false;
-    this.isSorting = false;
+    runInAction(() => {
+      this.isSearching = false;
+      this.isSorting = false;
+    });
   }, SEARCH_DELAY_MS);
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
-    this.nameFilter = defaultValues.nameFilter;
+    this.searchTextFilter = defaultValues.searchTextFilter;
     this.credentialTypeFilter = defaultValues.credentialTypeFilter;
     this.credentialStatusFilter = defaultValues.credentialStatusFilter;
     this.connectionStatusFilter = defaultValues.connectionStatusFilter;

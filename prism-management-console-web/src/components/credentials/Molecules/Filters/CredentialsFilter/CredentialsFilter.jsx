@@ -22,7 +22,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const {
     credentialTypeFilter,
     credentialStatusFilter,
-    contactStatusFilter,
+    connectionStatusFilter,
     setFilterValue
   } = useCredentialIssuedUiState();
   const { credentialTemplates: credentialTypes } = useTemplateStore();
@@ -32,11 +32,11 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const renderContactStatusFilter = () => (
     <div>
       <Select
-        id="contactStateFilter"
-        value={contactStatusFilter}
-        placeholder={t('credentials.filters.contactStatus')}
+        id="connectionStatusFilter"
+        value={connectionStatusFilter}
+        placeholder={t('credentials.filters.connectionStatusPlaceholder')}
         allowClear
-        onChange={setFilterByKey('contactStatusFilter')}
+        onChange={setFilterByKey('connectionStatusFilter')}
       >
         {NORMALIZED_CONNECTION_STATUSES.map(aContactState => (
           <Select.Option key={aContactState} value={aContactState}>
@@ -52,7 +52,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
       <Select
         id="credentialStatusFilter"
         value={credentialStatusFilter}
-        placeholder={t('credentials.filters.credentialStatus')}
+        placeholder={t('credentials.filters.credentialStatusPlaceholder')}
         allowClear
         onChange={setFilterByKey('credentialStatusFilter')}
       >
@@ -73,7 +73,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
       <Select
         id="credentialTypeFilter"
         value={credentialTypeFilter}
-        placeholder={t('credentials.filters.credentialType')}
+        placeholder={t('credentials.filters.credentialTypePlaceholder')}
         allowClear
         onChange={setFilterByKey('credentialTypeFilter')}
       >
@@ -88,7 +88,9 @@ const CredentialsFilter = observer(({ isIssued }) => {
 
   const renderCredentialDateFilter = () => {
     const datePickerProps = {
-      placeholder: t(`credentials.filters.${isIssued ? 'dateSigned' : 'dateReceived'}`),
+      placeholder: t(
+        `credentials.filters.${isIssued ? 'dateSignedPlaceholder' : 'dateReceivedPlaceholder'}`
+      ),
       suffixIcon: <DownOutlined />,
       onChange: (_, dateString) => setFilterValue('dateFilter', dateString)
     };

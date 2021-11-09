@@ -17,8 +17,8 @@ const BulkActionsHeader = ({ bulkActionsProps, selectedRowKeys }) => {
     <div className="BulkActionsRow">
       <SearchBar
         searchText={nameFilter}
-        setSearchText={value => setFilterValue('nameFilter', value)}
-        placeholder={t('credentials.filters.search')}
+        setSearchText={value => setFilterValue('searchTextFilter', value)}
+        placeholder={t('credentials.filters.searchTextPlaceholder')}
       />
       <CredentialButtons
         {...bulkActionsProps}
