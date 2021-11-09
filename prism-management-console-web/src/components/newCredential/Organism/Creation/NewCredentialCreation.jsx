@@ -23,11 +23,12 @@ const NewCredentialCreation = observer(
     const userLogo = session.logo;
     const logo = getLogoAsBase64(userLogo);
 
-    const formattedData = Object.assign({}, credentialData, {
+    const formattedData = {
+      ...credentialData,
       startDate: formattedStartDate,
       graduationDate: formattedGraduationDate,
       logo
-    });
+    };
 
     return (
       <Row type="flex" align="middle" className="NewCredentialCreation">

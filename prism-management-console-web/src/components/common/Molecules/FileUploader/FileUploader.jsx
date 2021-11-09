@@ -41,15 +41,12 @@ const FileUploader = ({
       });
   };
 
-  const uploadProps = Object.assign(
-    {},
-    { accept },
-    {
-      fileList,
-      onChange,
-      customRequest
-    }
-  );
+  const uploadProps = {
+    accept,
+    fileList,
+    onChange,
+    customRequest
+  };
 
   return (
     <div className="FileUploader">
