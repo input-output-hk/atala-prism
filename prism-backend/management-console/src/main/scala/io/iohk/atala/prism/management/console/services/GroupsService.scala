@@ -14,7 +14,6 @@ import io.iohk.atala.prism.management.console.models.InstitutionGroup.PaginatedQ
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.InstitutionGroupsRepository
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
@@ -82,8 +81,6 @@ object GroupsService {
 private final class GroupsServiceImpl[F[_]](
     institutionGroupsRepository: InstitutionGroupsRepository[F]
 ) extends GroupsService[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGroup(
       institutionId: ParticipantId,
