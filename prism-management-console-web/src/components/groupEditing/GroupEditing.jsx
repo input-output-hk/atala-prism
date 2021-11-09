@@ -188,7 +188,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         </div>
         <div className="ConnectionsTable">
           <ConnectionsTable
-            // TODO: add pagination for getting group members
+            // TODO: add pagination for getting group members (ATA-5701)
             contacts={filteredContacts}
             hasFiltersApplied={hasFiltersApplied}
             isFetchingMore={isLoadingMembers}

@@ -55,7 +55,7 @@ const GroupCreation = observer(
 
           <div className="flex">
             <div className="SearchBar">
-              <ConnectionsFilter fullFilters={false} />
+              <ConnectionsFilter showFullFilter={false} />
             </div>
 
             <div className="groupsButtonContainer">
