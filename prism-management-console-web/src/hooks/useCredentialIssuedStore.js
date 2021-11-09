@@ -1,4 +1,5 @@
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect } from 'react';
+import { useUpdateEffect } from './useUpdateEffect';
 import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
 
@@ -27,28 +28,23 @@ export const useCredentialIssuedUiState = ({ reset } = { reset: false }) => {
     sortDirection
   } = credentialIssuedUiState;
 
-  useEffect(() => {
-    if (reset) resetState();
-  }, [reset, resetState]);
-
-  const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    } else {
-      triggerSearch();
-    }
-  }, [
+  const sortingAndFiltersDependencies = [
     nameFilter,
     credentialTypeFilter,
     credentialStatusFilter,
     connectionStatusFilter,
     dateFilter,
     sortingKey,
-    sortDirection,
-    triggerSearch
-  ]);
+    sortDirection
+  ];
+
+  useEffect(() => {
+    if (reset) resetState();
+  }, [reset, resetState]);
+
+  useUpdateEffect(() => {
+    triggerSearch();
+  }, [...sortingAndFiltersDependencies, triggerSearch]);
 
   return credentialIssuedUiState;
 };
