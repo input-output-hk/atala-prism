@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from 'antd';
 import moment from 'moment';
@@ -22,7 +22,7 @@ const getInput = (key, initialValue, t, onChange) => ({
   input: <Input size="large" onChange={onChange} />
 });
 
-const TemplateForm = React.forwardRef(
+const TemplateForm = forwardRef(
   (
     { credentialValues: { degreeName, startDate, graduationDate }, updateExampleCredential },
     ref

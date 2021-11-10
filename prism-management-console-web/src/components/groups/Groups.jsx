@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
 import GroupFilters from './Molecules/Filters/GroupFilters';
 import DeleteGroupModal from './Organisms/Modals/DeleteGroupModal/DeleteGroupModal';
-import { groupShape } from '../../helpers/propShapes';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
@@ -107,25 +106,9 @@ const Groups = observer(({ handleGroupDeletion, copyGroup }) => {
   );
 });
 
-Groups.defaultProps = {
-  groups: [],
-  searching: false,
-  hasMore: true
-};
-
 Groups.propTypes = {
-  groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
-  copyGroup: PropTypes.func.isRequired,
-  searching: PropTypes.bool,
-  hasMore: PropTypes.bool,
-  isFilter: PropTypes.bool.isRequired,
-  setName: PropTypes.func.isRequired,
-  setDateRange: PropTypes.func.isRequired,
-  setSortingKey: PropTypes.func.isRequired,
-  setSortingDirection: PropTypes.func.isRequired,
-  sortingDirection: PropTypes.string.isRequired,
-  getMoreGroups: PropTypes.func.isRequired
+  copyGroup: PropTypes.func.isRequired
 };
 
 NewGroupButton.propTypes = {

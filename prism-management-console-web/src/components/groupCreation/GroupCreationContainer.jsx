@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { createRef, useState } from 'react';
 import GroupCreation from './GroupCreation';
 import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 import { useGroupStore } from '../../hooks/useGroupStore';
@@ -12,7 +12,7 @@ const GroupCreationContainer = () => {
 
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState([]);
-  const formRef = React.createRef();
+  const formRef = createRef();
   const formValues = { groupName };
 
   const handleCreateGroup = async () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   } = useCurrentGroupState();
 
   const { t } = useTranslation();
-  const formRef = React.createRef();
+  const formRef = createRef();
   const [groupName, setGroupName] = useState(name);
   const [contactsToRemove, setContactsToRemove] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
