@@ -18,7 +18,6 @@ import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.repositories.logs.CredentialBatchesRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.CredentialBatchesRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -71,15 +70,13 @@ private final class CredentialBatchesRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CredentialBatchesRepository[F] {
 
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def getBatchState(
       batchId: CredentialBatchId
   ): F[Either[NodeError, Option[CredentialBatchState]]] =
     EitherT
       .right[NodeError](CredentialBatchesDAO.findBatch(batchId))
       .value
-      .logSQLErrors("getting batch state", logger)
+      .logSQLErrorsV2("getting batch state")
       .transact(xa)
 
   def getCredentialRevocationTime(
@@ -92,6 +89,6 @@ private final class CredentialBatchesRepositoryImpl[F[_]: MonadCancelThrow](
           .findRevokedCredentialLedgerData(batchId, credentialHash)
       )
       .value
-      .logSQLErrors("getting credential revocation time", logger)
+      .logSQLErrorsV2("getting credential revocation time")
       .transact(xa)
 }

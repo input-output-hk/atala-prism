@@ -3,13 +3,17 @@ package io.iohk.atala.prism.utils
 import cats.syntax.applicativeError._
 import com.google.protobuf.timestamp.Timestamp
 import doobie.implicits._
-import org.slf4j.Logger
+import org.slf4j.{Logger, LoggerFactory}
+
 import java.time.Instant
 import scala.concurrent.Future
 import scala.util.Try
 import io.iohk.atala.prism.repositories.ConnectionIOErrorHandlers
 
 object syntax {
+
+  lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   implicit class SyntaxOps[A](exp: => A) {
 
     /** returns a Future containing the value without creating a new thread
@@ -45,6 +49,20 @@ object syntax {
         logger: Logger,
         onError: => doobie.ConnectionIO[T] = new RuntimeException(
           "Unexpected DB error, please contact support"
+        ).raiseError[doobie.ConnectionIO, T]
+    ): doobie.ConnectionIO[T] =
+      ConnectionIOErrorHandlers.handleSQLErrors(
+        connection,
+        logger,
+        operationDescription,
+        onError
+      )
+
+    /** logs SQL errors from DB, to not expose them to the user */
+    def logSQLErrorsV2(
+        operationDescription: => String,
+        onError: => doobie.ConnectionIO[T] = new RuntimeException(
+          "Unexpected SQL error, please fix before creating PR"
         ).raiseError[doobie.ConnectionIO, T]
     ): doobie.ConnectionIO[T] =
       ConnectionIOErrorHandlers.handleSQLErrors(

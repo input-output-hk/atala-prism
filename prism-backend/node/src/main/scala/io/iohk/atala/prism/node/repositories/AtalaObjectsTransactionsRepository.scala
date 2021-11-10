@@ -186,12 +186,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
         s"Setting status $newSubmissionStatus for transaction ${submission.transactionId}"
       connectionIOSafe(query.logSQLErrors(opDescription, logger).void)
         .transact(xa)
-    } else {
-      logger.warn(
-        s"Current status of transaction submission [${submission.transactionId}] is already $newSubmissionStatus. Skipping"
-      )
-      ().asRight[NodeError].pure[F]
-    }
+    } else ().asRight[NodeError].pure[F]
 
   def updateSubmissionStatusIfExists(
       ledger: Ledger,

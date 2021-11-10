@@ -18,7 +18,6 @@ import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -61,9 +60,6 @@ object DIDDataRepository {
 }
 
 private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
     getByCanonicalSuffix(DidSuffix(did.getSuffix))
 
@@ -80,7 +76,7 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
     EitherT
       .right[NodeError](query)
       .value
-      .logSQLErrors(s"finding, did suffix - $canonicalSuffix", logger)
+      .logSQLErrorsV2(s"finding, did suffix - $canonicalSuffix")
       .transact(xa)
   }
 }

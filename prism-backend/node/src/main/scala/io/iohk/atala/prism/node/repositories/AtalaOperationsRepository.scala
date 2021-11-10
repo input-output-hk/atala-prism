@@ -19,7 +19,6 @@ import io.iohk.atala.prism.node.repositories.logs.AtalaOperationsRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.AtalaOperationsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -42,7 +41,7 @@ trait AtalaOperationsRepository[F[_]] {
 
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
-  ): F[Option[AtalaOperationInfo]]
+  ): F[Either[NodeError, Option[AtalaOperationInfo]]]
 }
 
 object AtalaOperationsRepository {
@@ -80,9 +79,6 @@ object AtalaOperationsRepository {
 private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends AtalaOperationsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def insertOperation(
       objectId: AtalaObjectId,
       objectBytes: Array[Byte],
@@ -99,7 +95,7 @@ private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield (numInsertObject, numInsertOperations)
 
     val opDescription = s"inserting operation: [$atalaOperationId]"
-    connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
+    connectionIOSafe(query.logSQLErrorsV2(opDescription)).transact(xa)
   }
 
   def updateMergedObjects(
@@ -122,26 +118,17 @@ private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield ()
 
     val opDescription = s"record new Atala Object ${atalaObject.objectId}"
-    connectionIOSafe(query.logSQLErrors(opDescription, logger)).transact(xa)
+    connectionIOSafe(query.logSQLErrorsV2(opDescription)).transact(xa)
   }
 
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
-  ): F[Option[AtalaOperationInfo]] = {
+  ): F[Either[NodeError, Option[AtalaOperationInfo]]] = {
     val opDescription = s"getting operation info for [$atalaOperationId]"
     val query = AtalaOperationsDAO
       .getAtalaOperationInfo(atalaOperationId)
-      .logSQLErrors(opDescription, logger)
+      .logSQLErrorsV2(opDescription)
 
-    connectionIOSafe(query)
-      .map(
-        _.left
-          .map { err =>
-            logger
-              .error(s"Could not retrieve operation [$atalaOperationId]", err)
-          }
-          .getOrElse(None)
-      )
-      .transact(xa)
+    connectionIOSafe(query).transact(xa)
   }
 }

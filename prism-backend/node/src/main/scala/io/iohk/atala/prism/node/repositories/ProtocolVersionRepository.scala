@@ -14,7 +14,6 @@ import io.iohk.atala.prism.node.repositories.daos.ProtocolVersionsDAO
 import io.iohk.atala.prism.node.repositories.logs.ProtocolVersionRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.ProtocolVersionRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -61,19 +60,17 @@ private class ProtocolVersionRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ProtocolVersionRepository[F] {
 
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   // Return a unit if node supports the current protocol version
   // Return current protocol version otherwise
   override def ifNodeSupportsCurrentProtocol(): F[Either[ProtocolVersion, Unit]] =
     ProtocolVersionsDAO.getCurrentProtocolVersion
-      .logSQLErrors("ifNodeSupportsCurrentProtocol", logger)
+      .logSQLErrorsV2("ifNodeSupportsCurrentProtocol")
       .transact(xa)
       .map(cv => Either.cond(ifNodeSupportsProtocolVersion(cv), (), cv))
 
   override def markEffective(blockLevel: Int): F[Option[ProtocolVersionInfo]] =
     ProtocolVersionsDAO
       .markEffective(blockLevel)
-      .logSQLErrors("markEffective", logger)
+      .logSQLErrorsV2("markEffective")
       .transact(xa)
 }

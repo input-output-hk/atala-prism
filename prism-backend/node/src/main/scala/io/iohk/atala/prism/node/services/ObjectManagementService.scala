@@ -36,7 +36,6 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.LoggerFactory
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
 import tofu.logging.{Logs, ServiceLogging}
@@ -78,9 +77,6 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     blockProcessing: BlockProcessingService,
     xa: Transactor[F]
 ) extends ObjectManagementService[F] {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
   def saveObject(
       notification: AtalaObjectNotification
   ): F[Either[SaveObjectError, Boolean]] = {
@@ -98,7 +94,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
               )
             transaction <- Monad[F].pure(processObject(obj))
             result <- transaction flatTraverse {
-              _.logSQLErrors("saving object", logger).attemptSql
+              _.logSQLErrorsV2("saving object").attemptSql
                 .transact(xa)
                 .leftMapIn(err => SaveObjectError(err.getMessage))
             }
@@ -201,6 +197,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
   ): F[Option[AtalaOperationInfo]] =
     atalaOperationsRepository
       .getOperationInfo(atalaOperationId)
+      .map(_.toOption.flatten)
 
   private def processObject(
       obj: AtalaObjectInfo

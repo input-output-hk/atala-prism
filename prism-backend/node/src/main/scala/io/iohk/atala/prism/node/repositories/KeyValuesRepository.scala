@@ -13,7 +13,6 @@ import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.repositories.logs.KeyValuesRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.KeyValuesRepositoryMetrics
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -71,14 +70,12 @@ private final class KeyValuesRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends KeyValuesRepository[F] {
 
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   /** Updates the value for the given key, inserting it if non-existent.
     */
   def upsert(keyValue: KeyValue): F[Unit] = {
     KeyValuesDAO
       .upsert(keyValue)
-      .logSQLErrors("upserting", logger)
+      .logSQLErrorsV2("upserting")
       .transact(xa)
   }
 
@@ -88,7 +85,7 @@ private final class KeyValuesRepositoryImpl[F[_]: MonadCancelThrow](
     keyValues
       .map(KeyValuesDAO.upsert)
       .sequence
-      .logSQLErrors(s"upserting: ${keyValues}", logger)
+      .logSQLErrorsV2(s"upserting: $keyValues")
       .transact(xa)
       .void
   }
@@ -98,7 +95,7 @@ private final class KeyValuesRepositoryImpl[F[_]: MonadCancelThrow](
   def get(key: String): F[KeyValue] = {
     KeyValuesDAO
       .get(key)
-      .logSQLErrors(s"getting, key - $key", logger)
+      .logSQLErrorsV2(s"getting, key - $key")
       .transact(xa)
       .map(_.getOrElse(KeyValue(key, None)))
   }
