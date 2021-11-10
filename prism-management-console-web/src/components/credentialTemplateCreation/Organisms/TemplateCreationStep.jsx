@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
   DESIGN_TEMPLATE,
@@ -9,11 +8,12 @@ import {
 import DesignTemplateStep from './DesignTemplateStep/DesignTemplateStep';
 import TemplateNameIconCategoryStep from './NameIconCategoryStep/TemplateNameIconCategoryStep';
 import SuccessBanner from '../../common/Molecules/SuccessPage/SuccessBanner';
-import { withRedirector } from '../../providers/withRedirector';
 import { templateCreationStepShape } from '../../../helpers/propShapes';
+import { useRedirector } from '../../../hooks/useRedirector';
 
-const TemplateCreationStep = ({ currentStep, redirector: { redirectToCredentialTemplates } }) => {
+const TemplateCreationStep = ({ currentStep }) => {
   const { t } = useTranslation();
+  const { redirectToCredentialTemplates } = useRedirector();
 
   switch (currentStep) {
     case DESIGN_TEMPLATE:
@@ -35,10 +35,7 @@ const TemplateCreationStep = ({ currentStep, redirector: { redirectToCredentialT
 };
 
 TemplateCreationStep.propTypes = {
-  currentStep: templateCreationStepShape.isRequired,
-  redirector: PropTypes.shape({
-    redirectToCredentialTemplates: PropTypes.func.isRequired
-  }).isRequired
+  currentStep: templateCreationStepShape.isRequired
 };
 
-export default withRedirector(TemplateCreationStep);
+export default TemplateCreationStep;

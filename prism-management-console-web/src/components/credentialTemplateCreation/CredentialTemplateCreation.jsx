@@ -11,8 +11,8 @@ import {
   TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
-import { withRedirector } from '../providers/withRedirector';
 import { useTemplateSketch } from '../../hooks/useTemplateSketch';
+import { useRedirector } from '../../hooks/useRedirector';
 import './_style.scss';
 
 const fieldsByStep = {
@@ -27,78 +27,77 @@ const fieldsByStep = {
   ]
 };
 
-const CredentialTemplateCreation = observer(
-  ({ currentStep, changeStep, redirector: { redirectToCredentialTemplates } }) => {
-    const { t } = useTranslation();
-    const { form, createTemplateFromSketch } = useTemplateSketch();
-    const [loadingNext, setLoadingNext] = useState(false);
+const CredentialTemplateCreation = observer(({ currentStep, changeStep }) => {
+  const { t } = useTranslation();
+  const { redirectToCredentialTemplates } = useRedirector();
 
-    const validateByStep = () =>
-      form
-        .validateFields()
-        .then(() => ({ errors: [] }))
-        .catch(({ errorFields }) => {
-          const stepFields = fieldsByStep[currentStep];
-          const partialErrorsFields = errorFields.filter(errField =>
-            stepFields.includes(...errField.name)
-          );
-          const errors = partialErrorsFields.map(errorField => errorField.errors);
-          return { errors };
-        });
+  const { form, createTemplateFromSketch } = useTemplateSketch();
+  const [loadingNext, setLoadingNext] = useState(false);
 
-    const advanceStep = () => changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
+  const validateByStep = () =>
+    form
+      .validateFields()
+      .then(() => ({ errors: [] }))
+      .catch(({ errorFields }) => {
+        const stepFields = fieldsByStep[currentStep];
+        const partialErrorsFields = errorFields.filter(errField =>
+          stepFields.includes(...errField.name)
+        );
+        const errors = partialErrorsFields.map(errorField => errorField.errors);
+        return { errors };
+      });
 
-    const validateAndAdvance = async () => (await validate()) && advanceStep();
+  const advanceStep = () => changeStep(currentStep + NEW_TEMPLATE_STEP_UNIT);
 
-    const validate = async () => {
-      const { errors } = await validateByStep();
-      const hasPartialErrors = Boolean(errors.length);
-      if (hasPartialErrors) errors.forEach(msg => message.error(t(msg)));
-      return !hasPartialErrors;
-    };
+  const validateAndAdvance = async () => (await validate()) && advanceStep();
 
-    const createTemplateAndAdvance = async () => {
-      setLoadingNext(true);
-      const isPartiallyValid = await validate();
-      if (isPartiallyValid) {
-        await createTemplateFromSketch();
-        advanceStep();
-      }
-      setLoadingNext(false);
-    };
+  const validate = async () => {
+    const { errors } = await validateByStep();
+    const hasPartialErrors = Boolean(errors.length);
+    if (hasPartialErrors) errors.forEach(msg => message.error(t(msg)));
+    return !hasPartialErrors;
+  };
 
-    const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
+  const createTemplateAndAdvance = async () => {
+    setLoadingNext(true);
+    const isPartiallyValid = await validate();
+    if (isPartiallyValid) {
+      await createTemplateFromSketch();
+      advanceStep();
+    }
+    setLoadingNext(false);
+  };
 
-    const steps = [
-      { key: '0', back: redirectToCredentialTemplates, next: validateAndAdvance },
-      { key: '1', back: goBack, next: createTemplateAndAdvance },
-      { key: '2', back: goBack, next: redirectToCredentialTemplates }
-    ];
+  const goBack = () => changeStep(currentStep - NEW_TEMPLATE_STEP_UNIT);
 
-    const defaultStepText = {
-      title: t(`credentialTemplateCreation.step${currentStep + 1}.title`),
-      subtitle: t(`credentialTemplateCreation.step${currentStep + 1}.subtitle`)
-    };
+  const steps = [
+    { key: '0', back: redirectToCredentialTemplates, next: validateAndAdvance },
+    { key: '1', back: goBack, next: createTemplateAndAdvance },
+    { key: '2', back: goBack, next: redirectToCredentialTemplates }
+  ];
 
-    const getStepText = {
-      [TEMPLATE_NAME_ICON_CATEGORY]: defaultStepText,
-      [DESIGN_TEMPLATE]: defaultStepText,
-      [TEMPLATE_CREATION_RESULT]: {}
-    };
+  const defaultStepText = {
+    title: t(`credentialTemplateCreation.step${currentStep + 1}.title`),
+    subtitle: t(`credentialTemplateCreation.step${currentStep + 1}.subtitle`)
+  };
 
-    return (
-      <div className="TitleContainer">
-        <GenericStepsButtons steps={steps} currentStep={currentStep} loading={loadingNext} />
-        <WizardTitle {...getStepText[currentStep]} />
-      </div>
-    );
-  }
-);
+  const getStepText = {
+    [TEMPLATE_NAME_ICON_CATEGORY]: defaultStepText,
+    [DESIGN_TEMPLATE]: defaultStepText,
+    [TEMPLATE_CREATION_RESULT]: {}
+  };
+
+  return (
+    <div className="TitleContainer">
+      <GenericStepsButtons steps={steps} currentStep={currentStep} loading={loadingNext} />
+      <WizardTitle {...getStepText[currentStep]} />
+    </div>
+  );
+});
 
 CredentialTemplateCreation.propTypes = {
   currentStep: PropTypes.number.isRequired,
-  changeStep: PropTypes.func.isRequired,
-  redirector: PropTypes.shape({ redirectToCredentialTemplates: PropTypes.func }).isRequired
+  changeStep: PropTypes.func.isRequired
 };
 
-export default withRedirector(CredentialTemplateCreation);
+export default CredentialTemplateCreation;

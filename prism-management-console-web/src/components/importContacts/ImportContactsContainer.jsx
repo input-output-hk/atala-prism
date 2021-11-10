@@ -5,18 +5,19 @@ import { useTranslation } from 'react-i18next';
 import { omit } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import ImportDataContainer from '../importContactData/ImportDataContainer';
-import { withRedirector } from '../providers/withRedirector';
 import { COMMON_CONTACT_HEADERS, IMPORT_CONTACTS } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 import { validateContactsBulk } from '../../helpers/contactValidations';
 import { DynamicFormProvider } from '../providers/DynamicFormProvider';
 import { useAllContacts } from '../../hooks/useContactStore';
 import { useApi } from '../../hooks/useApi';
+import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
 
-const ImportContactsContainer = observer(({ redirector: { redirectToContacts } }) => {
+const ImportContactsContainer = observer(() => {
   const { t } = useTranslation();
+  const { redirectToContacts } = useRedirector();
   const { groupsManager, contactsManager } = useApi();
 
   const { allContacts } = useAllContacts();
@@ -82,4 +83,4 @@ ImportContactsContainer.propTypes = {
   redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
 };
 
-export default withRedirector(ImportContactsContainer);
+export default ImportContactsContainer;

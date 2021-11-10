@@ -1,12 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { withRedirector } from '../../../providers/withRedirector';
+import { useRedirector } from '../../../../hooks/useRedirector';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
-const CreateTemplatesButtons = ({ redirector: { redirectToCredentialTemplateCreation } }) => {
+const CreateTemplatesButtons = () => {
   const { t } = useTranslation();
+  const { redirectToCredentialTemplateCreation } = useRedirector();
 
   return (
     <div className="MainOption">
@@ -21,10 +21,4 @@ const CreateTemplatesButtons = ({ redirector: { redirectToCredentialTemplateCrea
   );
 };
 
-CreateTemplatesButtons.propTypes = {
-  redirector: PropTypes.shape({
-    redirectToCredentialTemplateCreation: PropTypes.func
-  }).isRequired
-};
-
-export default withRedirector(CreateTemplatesButtons);
+export default CreateTemplatesButtons;

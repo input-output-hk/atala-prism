@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +7,6 @@ import NewCredential from './NewCredential';
 import TypeSelection from './Organism/TypeSelection/TypeSelection';
 import RecipientsSelection from './Organism/RecipientsSelection/RecipientsSelection';
 import CredentialsPreview from './Organism/CredentialsPreview/CredentialsPreview';
-import { withRedirector } from '../providers/withRedirector';
 import {
   SELECT_CREDENTIAL_TYPE_STEP,
   SELECT_RECIPIENTS_STEP,
@@ -24,9 +22,11 @@ import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 import { useApi } from '../../hooks/useApi';
+import { useRedirector } from '../../hooks/useRedirector';
 
-const NewCredentialContainer = observer(({ redirector: { redirectToCredentials } }) => {
+const NewCredentialContainer = observer(() => {
   const { t } = useTranslation();
+  const { redirectToCredentials } = useRedirector();
   const { groupsManager, contactsManager, credentialsManager, credentialsViewManager } = useApi();
   const { session } = useSession();
 
@@ -274,10 +274,4 @@ const NewCredentialContainer = observer(({ redirector: { redirectToCredentials }
   );
 });
 
-NewCredentialContainer.propTypes = {
-  redirector: PropTypes.shape({
-    redirectToCredentials: PropTypes.func
-  }).isRequired
-};
-
-export default withRedirector(NewCredentialContainer);
+export default NewCredentialContainer;

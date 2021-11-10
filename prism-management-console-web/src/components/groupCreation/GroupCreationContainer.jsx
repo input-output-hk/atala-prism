@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import GroupCreation from './GroupCreation';
-import { withRedirector } from '../providers/withRedirector';
 import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 import { useGroupStore } from '../../hooks/useGroupStore';
+import { useRedirector } from '../../hooks/useRedirector';
 
-const GroupCreationContainer = ({ redirector: { redirectToGroups } }) => {
+const GroupCreationContainer = () => {
+  const { redirectToGroups } = useRedirector();
   useContactUiState({ reset: true });
   useContactStore({ reset: true, fetch: true });
   const { createGroup, isSaving } = useGroupStore();
@@ -32,8 +32,4 @@ const GroupCreationContainer = ({ redirector: { redirectToGroups } }) => {
   );
 };
 
-GroupCreationContainer.propTypes = {
-  redirector: PropTypes.shape({ redirectToGroups: PropTypes.func.isRequired }).isRequired
-};
-
-export default withRedirector(GroupCreationContainer);
+export default GroupCreationContainer;
