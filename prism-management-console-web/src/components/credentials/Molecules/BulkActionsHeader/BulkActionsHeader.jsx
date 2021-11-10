@@ -4,26 +4,24 @@ import { useTranslation } from 'react-i18next';
 import CredentialButtons from '../../Atoms/Buttons/CredentialButtons';
 import { credentialTypeShape } from '../../../../helpers/propShapes';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
+import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
 
-const BulkActionsHeader = ({
-  bulkActionsProps,
-  loadingSelection,
-  selectedRowKeys,
-  filterProps
-}) => {
+const BulkActionsHeader = ({ bulkActionsProps, selectedRowKeys }) => {
   const { t } = useTranslation();
-  const disableActions = !selectedRowKeys?.length || loadingSelection;
+  const disableActions =
+    !selectedRowKeys?.length || bulkActionsProps.selectAllProps.loadingSelection;
+
+  const { nameFilter, setFilterValue } = useCredentialIssuedUiState();
 
   return (
     <div className="BulkActionsRow">
       <SearchBar
-        searchText={filterProps.name}
-        setSearchText={filterProps.setName}
-        placeholder={t('credentials.filters.search')}
+        searchText={nameFilter}
+        setSearchText={value => setFilterValue('searchTextFilter', value)}
+        placeholder={t('credentials.filters.searchTextPlaceholder')}
       />
       <CredentialButtons
         {...bulkActionsProps}
-        filterProps={filterProps}
         disableRevoke={disableActions}
         disableSign={disableActions}
         disableSend={disableActions}
@@ -46,7 +44,8 @@ BulkActionsHeader.propTypes = {
       checked: PropTypes.bool,
       indeterminate: PropTypes.bool,
       disabled: PropTypes.bool,
-      onChange: PropTypes.func
+      onChange: PropTypes.func,
+      loadingSelection: PropTypes.bool
     })
   }).isRequired,
   loadingSelection: PropTypes.bool,

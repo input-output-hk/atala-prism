@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, action } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -31,18 +31,6 @@ export default class CurrentGroupState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      isLoadingGroup: observable,
-      isLoadingMembers: observable,
-      isLoadingContactsNotInGroup: observable,
-      isSaving: observable,
-      id: observable,
-      name: observable,
-      members: observable,
-      numberOfContacts: observable,
-      init: action,
-      refreshGroupMembers: action,
-      updateGroupName: action,
-      updateGroupMembers: action,
       rootStore: false
     });
   }

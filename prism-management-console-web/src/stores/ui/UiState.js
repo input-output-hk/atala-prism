@@ -5,6 +5,7 @@ import GroupUiState from './GroupUiState';
 import CurrentGroupState from './CurrentGroupState';
 import TemplateUiState from './TemplateUiState';
 import TemplateSketchState from './TemplateSketchState';
+import CredentialIssuedUiState from './CredentialIssuedUiState';
 
 export class UiState {
   constructor(api, rootStore) {
@@ -12,6 +13,7 @@ export class UiState {
     this.contactUiState = new ContactUiState(rootStore);
     this.groupUiState = new GroupUiState(rootStore);
     this.currentGroupState = new CurrentGroupState(rootStore);
+    this.credentialIssuedUiState = new CredentialIssuedUiState(rootStore);
     this.templateUiState = new TemplateUiState(rootStore);
     this.templateSketchState = new TemplateSketchState(rootStore);
   }

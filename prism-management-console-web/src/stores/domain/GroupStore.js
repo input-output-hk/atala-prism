@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, flow, computed, action, runInAction } from 'mobx';
+import { makeAutoObservable, flow, runInAction } from 'mobx';
 import { GROUP_PAGE_SIZE, MAX_GROUP_PAGE_SIZE } from '../../helpers/constants';
 
 const defaultValues = {
@@ -30,27 +30,12 @@ export default class GroupStore {
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
-      isFetching: observable,
-      isSaving: observable,
-      groups: observable,
-      searchResults: observable,
-      isLoadingFirstPage: computed,
-      hasMore: computed,
-      hasMoreGroups: computed,
-      hasMoreResults: computed,
-      fetchMoreData: computed,
-      resetGroups: action,
-      getGroupById: action,
-      fetchGroupById: action,
       fetchGroupsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
-      updateFetchedResults: action,
       getGroupsToSelect: flow.bound,
-      fetchGroups: action,
       updateGroupName: flow.bound,
       updateGroupMembers: flow.bound,
-      updateGroup: action,
       fetchRecursively: false,
       rootStore: false
     });

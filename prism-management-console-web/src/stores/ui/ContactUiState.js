@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, computed, action } from 'mobx';
 import _ from 'lodash';
 import {
   filterByDateRange,
@@ -47,30 +47,9 @@ export default class ContactUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      isSearching: observable,
-      isSorting: observable,
-      textFilter: observable,
-      statusFilter: observable,
-      dateFilter: observable,
-      sortDirection: observable,
-      sortingBy: observable,
-      fetchedResults: observable,
-      sortingKey: computed,
-      hasFiltersApplied: computed,
-      hasTextFilterApplied: computed,
-      hasDateFilterApplied: computed,
-      hasCustomSorting: computed,
-      displayedContacts: computed,
       sortedFilteredContacts: computed({ requiresReaction: true }),
-      triggerSearch: action,
       triggerBackendSearch: action.bound,
-      applyFilters: action,
-      applySorting: action,
       sortingIsCaseSensitive: false,
-      resetState: action,
-      setFilterValue: action,
-      toggleSortDirection: action,
-      setSortingBy: action,
       rootStore: false
     });
   }

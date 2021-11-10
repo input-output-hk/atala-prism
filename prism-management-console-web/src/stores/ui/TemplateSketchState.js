@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 import { CREDENTIAL_TYPE_STATUSES } from '../../helpers/constants';
 import { defaultTemplateSketch, insertFormChangeIntoArray } from '../../helpers/templateHelpers';
@@ -15,14 +15,6 @@ export default class TemplateSketchState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      templateSketch: observable,
-      form: observable,
-      preview: computed,
-      setSketchState: action,
-      resetSketch: action,
-      setForm: action,
-      setTemplatePreview: action,
-      createTemplateFromSketch: action,
       updateCredentialBody: false,
       rootStore: false
     });

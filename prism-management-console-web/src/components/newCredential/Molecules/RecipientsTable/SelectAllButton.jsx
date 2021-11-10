@@ -28,9 +28,13 @@ const SelectAllButton = ({ loadingSelection, selectedEntities, checkboxProps }) 
   );
 };
 
+SelectAllButton.defaultProps = {
+  selectedEntities: []
+};
+
 SelectAllButton.propTypes = {
   loadingSelection: PropTypes.bool.isRequired,
-  selectedEntities: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedEntities: PropTypes.arrayOf(PropTypes.string),
   checkboxProps: checkboxPropShape.isRequired
 };
 
