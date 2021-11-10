@@ -1,5 +1,5 @@
-$header-height: 56px;
-$description-height: 124px;
+$header-height: 3.5em;
+$description-height: 7.75em;
 
 .Wrapper {
   .ant-btn.custom {
@@ -9,7 +9,10 @@ $description-height: 124px;
   .GroupEditingContent {
     display: flex;
     flex-direction: column;
-    height: calc(100% - #{$header-height});
+    width: 100%;
+    padding-top: 0.5em;
+    height: calc(100vh -  #{$header-height});
+    overflow-y: auto;
     .filterContainer {
       display: flex;
       align-items: center;
@@ -20,7 +23,7 @@ $description-height: 124px;
       }
       .connectionFilter {
         .FilterControls {
-          margin: 0 !important;
+          margin: 0;
           .ant-input-affix-wrapper {
             width: 200px;
             margin-right: 2em;

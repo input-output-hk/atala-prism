@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, computed, action } from 'mobx';
 import _ from 'lodash';
 import { filterByDateRange, filterByInclusion } from '../../helpers/filterHelpers';
 import {
@@ -37,29 +37,11 @@ export default class GroupUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      isSearching: observable,
-      isSorting: observable,
-      nameFilter: observable,
-      dateFilter: observable,
-      sortDirection: observable,
-      sortingBy: observable,
-      fetchedResults: observable,
-      sortingKey: computed,
-      hasFiltersApplied: computed,
-      hasNameFilterApplied: computed,
-      hasDateFilterApplied: computed,
-      hasCustomSorting: computed,
-      displayedGroups: computed,
       sortedFilteredGroups: computed({ requiresReaction: true }),
-      triggerSearch: action,
       triggerBackendSearch: action.bound,
       applyFilters: false,
       applySorting: false,
       sortingIsCaseSensitive: false,
-      resetState: action,
-      setFilterValue: action,
-      toggleSortDirection: action,
-      setSortingBy: action,
       rootStore: false
     });
   }

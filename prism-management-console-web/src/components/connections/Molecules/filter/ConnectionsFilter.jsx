@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { Input, Select } from 'antd';
+import { observer } from 'mobx-react-lite';
 import {
   PENDING_CONNECTION,
   CONNECTED,
@@ -11,18 +12,19 @@ import {
 } from '../../../../helpers/constants';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
+import { useContactUiState } from '../../../../hooks/useContactStore';
+import './_style.scss';
 
-const ConnectionsFilter = ({
-  searchText,
-  setSearchText,
-  setStatus,
-  fullFilters,
-  sortingDirection,
-  setSortingDirection,
-  setSortingField,
-  setCreatedAt
-}) => {
+const ConnectionsFilter = observer(({ showFullFilter, localStateFilter }) => {
   const { t } = useTranslation();
+  const {
+    sortingDirection,
+    setSortingBy,
+    setFilterValue: setGlobalFilterValue,
+    toggleSortDirection
+  } = useContactUiState();
+
+  const setFilterValue = localStateFilter ? localStateFilter.setValue : setGlobalFilterValue;
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
   const isAscending = sortingDirection === SORTING_DIRECTIONS.ascending;
@@ -30,7 +32,7 @@ const ConnectionsFilter = ({
   const datePickerProps = {
     placeholder: t('contacts.filters.createdAt'),
     suffixIcon: <DownOutlined />,
-    onChange: (_, selectedDate) => setCreatedAt(selectedDate)
+    onChange: (_, selectedDate) => setFilterValue('dateFilter', selectedDate)
   };
 
   return (
@@ -39,12 +41,14 @@ const ConnectionsFilter = ({
         <Input
           placeholder={t('contacts.filters.search')}
           prefix={<SearchOutlined />}
-          onChange={({ target: { value } }) => setSearchText(value)}
-          allowClear
-          value={searchText}
+          onChange={({ target: { value } }) => setFilterValue('textFilter', value)}
         />
-        {fullFilters && [
-          <Select allowClear onChange={setStatus} placeholder={t('contacts.filters.status')}>
+        {showFullFilter && [
+          <Select
+            allowClear
+            onChange={value => setFilterValue('statusFilter', value)}
+            placeholder={t('contacts.filters.status')}
+          >
             {statuses.map(statusType => (
               <Select.Option key={statusType} value={statusType}>
                 {t(`holders.status.${statusType}`)}
@@ -55,14 +59,10 @@ const ConnectionsFilter = ({
             <CustomDatePicker {...datePickerProps} />
           </CustomInputGroup>,
           <CustomInputGroup
-            onClick={() =>
-              setSortingDirection(
-                isAscending ? SORTING_DIRECTIONS.descending : SORTING_DIRECTIONS.ascending
-              )
-            }
+            onClick={toggleSortDirection}
             prefixIcon={isAscending ? 'sort-ascending' : 'sort-descending'}
           >
-            <Select defaultValue={CONTACT_SORTING_KEYS.name} onChange={key => setSortingField(key)}>
+            <Select defaultValue={CONTACT_SORTING_KEYS.name} onChange={setSortingBy}>
               <Select.Option value={CONTACT_SORTING_KEYS.name}>
                 {t('contacts.filters.name')}
               </Select.Option>
@@ -78,18 +78,18 @@ const ConnectionsFilter = ({
       </div>
     </div>
   );
-};
+});
 
 ConnectionsFilter.defaultProps = {
   searchText: undefined,
   setStatus: undefined,
-  fullFilters: true
+  showFullFilter: true
 };
 
 ConnectionsFilter.propTypes = {
   setSearchText: PropTypes.func.isRequired,
   searchText: PropTypes.string,
-  fullFilters: PropTypes.bool,
+  showFullFilter: PropTypes.bool,
   setStatus: PropTypes.func,
   sortingDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
     .isRequired,

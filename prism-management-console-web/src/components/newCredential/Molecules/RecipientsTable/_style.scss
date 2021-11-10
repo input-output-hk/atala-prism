@@ -1,0 +1,14 @@
+@import "../../../../css/general_styling";
+
+.SelectAllCheckbox {
+  display: flex !important;
+}
+
+.SelectAllCheckboxContainer {
+  height: 1em;
+  display: flex;
+  flex-direction: row-reverse;
+  span {
+    @include primary-text($label, $black);
+  }
+}

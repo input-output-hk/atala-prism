@@ -3,9 +3,11 @@ import Logger from '../../helpers/Logger';
 import {
   CONNECTED,
   CONTACT_PAGE_SIZE,
+  CONTACT_SORTING_KEYS,
   MAX_CONTACT_PAGE_SIZE,
   PENDING_CONNECTION,
-  REQUEST_AUTH_TIMEOUT_MS
+  REQUEST_AUTH_TIMEOUT_MS,
+  SORTING_DIRECTIONS
 } from '../../helpers/constants';
 import {
   CreateContactRequest,
@@ -32,7 +34,7 @@ const sortByDirection = {
   DESCENDING: 2
 };
 
-const connectionStatus = {
+const statusKeys = {
   [PENDING_CONNECTION]: 2,
   [CONNECTED]: 3
 };
@@ -93,25 +95,25 @@ async function createContacts(groups, contacts) {
 }
 
 async function getContacts({
-  limit = CONTACT_PAGE_SIZE,
-  groupName,
+  pageSize = CONTACT_PAGE_SIZE,
   scrollId,
-  createdAt,
-  field,
-  direction,
-  searchText,
-  status
+  filter = {},
+  sort = { field: CONTACT_SORTING_KEYS.name, direction: SORTING_DIRECTIONS.ascending }
 }) {
+  const { searchText, connectionStatus, createdAt, groupName } = filter;
+  const { field, direction } = sort;
+
   const groupMessage = groupName ? ` from ${groupName}` : '';
-  Logger.info(`Getting up to ${limit} contacts${groupMessage}`);
+  Logger.info(`Getting up to ${pageSize} contacts${groupMessage}`);
+
   const req = new GetContactsRequest();
-  req.setLimit(limit);
+  req.setLimit(pageSize);
   if (scrollId) req.setScrollId(scrollId);
 
   const filterBy = new FilterBy();
   filterBy.setGroupName(groupName);
   filterBy.setNameOrExternalId(searchText);
-  filterBy.setConnectionStatus(connectionStatus[status]);
+  filterBy.setConnectionStatus(statusKeys[connectionStatus]);
 
   if (createdAt) {
     const createdAtDate = getProtoDate(createdAt);
@@ -125,7 +127,7 @@ async function getContacts({
   sortBy.setDirection(sortByDirection[direction]);
   req.setSortBy(sortBy);
 
-  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(limit);
+  const timeout = REQUEST_AUTH_TIMEOUT_MS + getAditionalTimeout(pageSize);
 
   const { metadata, sessionError } = await this.auth.getMetadata(req, timeout);
   if (sessionError) return { contactsList: [] };

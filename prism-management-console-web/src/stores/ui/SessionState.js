@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { makeAutoObservable, observable, action, flow } from 'mobx';
+import { makeAutoObservable, flow } from 'mobx';
 import i18n from 'i18next';
 import { CONFIRMED, LOADING, LOCKED, SESSION, UNCONFIRMED } from '../../helpers/constants';
 
@@ -16,15 +16,7 @@ export default class SessionState {
     this.api = api;
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      session: observable,
-      accountStatus: observable,
-      acceptedModal: observable,
-      modalIsVisible: observable,
       login: flow.bound,
-      logout: action,
-      showUnconfirmedAccountError: action,
-      removeUnconfirmedAccountError: action,
-      hideModal: action,
       setSession: false,
       storeSession: false,
       rootStore: false

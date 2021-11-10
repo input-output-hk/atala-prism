@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import CreateCredentialsButton from '../../Atoms/Buttons/CreateCredentialsButton';
-import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CONFIRMED, CREDENTIALS_ISSUED } from '../../../../helpers/constants';
@@ -11,27 +10,28 @@ import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../../hooks/useSession';
 import TableOptions from '../../Molecules/BulkActionsHeader/TableOptions';
+import {
+  useCredentialIssuedStore,
+  useCredentialIssuedUiState
+} from '../../../../hooks/useCredentialIssuedStore';
 
 const CredentialsIssued = observer(
   ({
     tableProps,
     bulkActionsProps,
     showCredentialData,
-    fetchCredentials,
-    loadingSelection,
     initialLoading,
-    searchDueGeneralScroll,
-    filterProps,
-    credentialTypes
+    searchDueGeneralScroll
   }) => {
     const { t } = useTranslation();
-    const [loading, setLoading] = useState(false);
     const [selectedLength, setSelectedLength] = useState();
+    const { credentials, isFetching, fetchMoreData } = useCredentialIssuedStore();
+    const { hasFiltersApplied, isSearching, isSorting } = useCredentialIssuedUiState();
 
     const { accountStatus } = useSession();
 
-    const { name, date, credentialType, credentialStatus, contactStatus } = filterProps;
-    const { credentials, selectionType, searching, sortingProps } = tableProps;
+    const { selectionType } = tableProps;
+
     const { selectedRowKeys } = selectionType || {};
 
     useEffect(() => {
@@ -39,38 +39,37 @@ const CredentialsIssued = observer(
       setSelectedLength(keys.length);
     }, [selectedRowKeys]);
 
-    const getMoreData = useCallback(async () => {
-      setLoading(true);
-      await fetchCredentials();
-      setLoading(false);
-    }, [fetchCredentials]);
+    useEffect(() => {
+      fetchMoreData();
+    }, [fetchMoreData]);
 
     const expandedTableProps = {
       ...tableProps,
+      credentials,
       tab: CREDENTIALS_ISSUED,
       onView: showCredentialData,
-      searchDueGeneralScroll
+      searchDueGeneralScroll,
+      isFetching,
+      loading: isSearching || isSorting
     };
 
     const emptyProps = {
       photoSrc: noCredentialsPicture,
       model: t('credentials.title'),
-      isFilter: name || date || credentialType || credentialStatus || contactStatus,
+      isFilter: hasFiltersApplied,
       button: accountStatus === CONFIRMED && <CreateCredentialsButton />
     };
 
     const renderContent = () => {
-      if (initialLoading || searching) return <SimpleLoading size="md" />;
-      if (!credentials.length) return <EmptyComponent {...emptyProps} />;
+      if (initialLoading) return <SimpleLoading size="md" />;
       return (
         <>
-          <TableOptions
-            bulkActionsProps={bulkActionsProps}
-            loadingSelection={loadingSelection}
-            selectedLength={selectedLength}
-            sortingProps={sortingProps}
+          <TableOptions bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
+          <CredentialsTable
+            getMoreData={fetchMoreData}
+            emptyProps={emptyProps}
+            {...expandedTableProps}
           />
-          <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />;
         </>
       );
     };
@@ -79,10 +78,8 @@ const CredentialsIssued = observer(
       <>
         <BulkActionsHeader
           bulkActionsProps={bulkActionsProps}
-          loadingSelection={loadingSelection}
           selectedLength={selectedLength}
           selectedRowKeys={selectedRowKeys}
-          filterProps={{ ...filterProps, credentialTypes }}
         />
         {renderContent()}
       </>

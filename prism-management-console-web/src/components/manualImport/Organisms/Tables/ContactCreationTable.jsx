@@ -1,7 +1,5 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
-import { useAllContacts } from '../../../../hooks/useContacts';
-import { withApi } from '../../../providers/withApi';
+import { observer } from 'mobx-react-lite';
 import { IMPORT_CONTACTS } from '../../../../helpers/constants';
 import {
   getContactFormSkeleton,
@@ -10,10 +8,12 @@ import {
 } from '../../../../helpers/formDefinitions/contacts';
 import { DynamicFormContext } from '../../../providers/DynamicFormProvider';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
+import { useAllContacts } from '../../../../hooks/useContactStore';
 
-const ContactCreationTable = ({ api }) => {
-  const { allContacts } = useAllContacts(api.contactsManager);
+const ContactCreationTable = observer(() => {
   const { form } = useContext(DynamicFormContext);
+
+  const { allContacts } = useAllContacts();
 
   const contactFormColumns = getContactFormColumns();
   const contactFormSkeleton = getContactFormSkeleton(allContacts, form);
@@ -23,17 +23,9 @@ const ContactCreationTable = ({ api }) => {
       columns={contactFormColumns}
       skeleton={contactFormSkeleton}
       initialValues={CONTACT_INITIAL_VALUE}
-      preExistingEntries={allContacts}
       useCase={IMPORT_CONTACTS}
     />
   );
-};
+});
 
-ContactCreationTable.propTypes = {
-  api: PropTypes.shape({
-    contactsManager: PropTypes.shape({ getContact: PropTypes.func })
-  }).isRequired,
-  tableProps: PropTypes.shape({}).isRequired
-};
-
-export default withApi(ContactCreationTable);
+export default ContactCreationTable;

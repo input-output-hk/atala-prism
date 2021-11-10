@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import Checkbox from 'antd/lib/checkbox/Checkbox';
-import { PulseLoader } from 'react-spinners';
 import {
   DownOutlined,
   RedoOutlined,
@@ -10,24 +8,25 @@ import {
   SortDescendingOutlined
 } from '@ant-design/icons';
 import { Button, Dropdown, Menu } from 'antd';
-
-import './_style.scss';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
+import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
+import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
+import { checkboxPropShape } from '../../../../helpers/propShapes';
 
-const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sortingProps }) => {
+import './_style.scss';
+
+const TableOptions = ({ bulkActionsProps }) => {
   const { t } = useTranslation();
-  const { selectAllProps, refreshCredentials } = bulkActionsProps;
-  const { sortingBy, setSortingBy, sortDirection, setSortDirection } = sortingProps;
+  const { selectedCredentials, selectAllProps, refreshCredentials } = bulkActionsProps;
+  const {
+    sortingBy,
+    setSortingBy,
+    sortDirection,
+    toggleSortDirection
+  } = useCredentialIssuedUiState();
 
-  // FIXME: remove frontend sorting when backend is ready:
-  // CREDENTIAL_SORTING_KEYS contains the sorting options currently supported by the backend
-  // For the remaining options, the sorting is done by the frontend
-  const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS).concat(
-    'contactName',
-    'externalId',
-    'dateSigned'
-  );
+  const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS);
 
   const sortingOptionsMenu = (
     <Menu onClick={({ key }) => setSortingBy(key)}>
@@ -39,17 +38,12 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
 
   const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
-  const toggleSorting = () =>
-    setSortDirection(sortAscending ? SORTING_DIRECTIONS.descending : SORTING_DIRECTIONS.ascending);
-
-  const selectedLabel = selectedLength ? `  (${selectedLength})  ` : null;
-
   return (
     <div className="TableOptions">
       <div className="LeftOptions">
         <Button
           className="TableOptionButton no-border"
-          onClick={toggleSorting}
+          onClick={toggleSortDirection}
           icon={
             sortAscending ? (
               <SortAscendingOutlined style={{ fontSize: '16px' }} />
@@ -58,16 +52,7 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
             )
           }
         />
-        <Checkbox className="TableOptionButton" {...selectAllProps}>
-          {loadingSelection ? (
-            <PulseLoader size={3} color="#FFAEB3" />
-          ) : (
-            <span>
-              {t('credentials.actions.selectAll')}
-              {selectedLabel}
-            </span>
-          )}
-        </Checkbox>
+        <SelectAllButton selectedEntities={selectedCredentials} {...selectAllProps} />
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
           <CustomButton
             overrideClassName="theme-link TableOptionButton"
@@ -87,23 +72,14 @@ const TableOptions = ({ bulkActionsProps, loadingSelection, selectedLength, sort
   );
 };
 
-TableOptions.defaultProps = {
-  loadingSelection: false,
-  selectedLength: 0
-};
-
 TableOptions.propTypes = {
   bulkActionsProps: PropTypes.shape({
+    selectedCredentials: PropTypes.arrayOf(PropTypes.string).isRequired,
     refreshCredentials: PropTypes.func.isRequired,
-    selectAllProps: PropTypes.shape()
-  }).isRequired,
-  loadingSelection: PropTypes.bool,
-  selectedLength: PropTypes.number,
-  sortingProps: PropTypes.shape({
-    sortingBy: PropTypes.string,
-    setSortingBy: PropTypes.func,
-    sortDirection: PropTypes.string,
-    setSortDirection: PropTypes.func
+    selectAllProps: PropTypes.shape({
+      loadingSelection: PropTypes.bool.isRequired,
+      checkboxProps: checkboxPropShape.isRequired
+    })
   }).isRequired
 };
 

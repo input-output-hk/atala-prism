@@ -1,11 +1,10 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { withRedirector } from '../../../providers/withRedirector';
 
-const AddUsersButtons = ({ redirector: { redirectToImportContacts } }) => {
+const AddUsersButton = ({ onClick }) => {
   const { t } = useTranslation();
 
   return (
@@ -13,7 +12,7 @@ const AddUsersButtons = ({ redirector: { redirectToImportContacts } }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-secondary',
-          onClick: redirectToImportContacts,
+          onClick,
           icon: <PlusOutlined />
         }}
         buttonText={t('contacts.buttons.import')}
@@ -22,10 +21,8 @@ const AddUsersButtons = ({ redirector: { redirectToImportContacts } }) => {
   );
 };
 
-AddUsersButtons.propTypes = {
-  redirector: PropTypes.shape({
-    redirectToImportContacts: PropTypes.func
-  }).isRequired
+AddUsersButton.propTypes = {
+  onClick: PropTypes.func.isRequired
 };
 
-export default withRedirector(AddUsersButtons);
+export default AddUsersButton;

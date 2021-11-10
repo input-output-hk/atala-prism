@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, computed, action } from 'mobx';
+import { makeAutoObservable, computed } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import _ from 'lodash';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
@@ -28,16 +28,7 @@ export default class TemplateUiState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
-      nameFilter: observable,
-      categoryFilter: observable,
-      lastEditedFilter: observable,
-      hasFiltersApplied: computed,
-      hasNameFilterApplied: computed,
-      hasAditionalFiltersApplied: computed,
       filteredTemplates: computed({ requiresReaction: true }),
-      toggleSortDirection: action,
-      setNameFilter: action,
-      resetState: action,
       applyFilters: false,
       applySorting: false,
       sortingIsCaseSensitive: false,

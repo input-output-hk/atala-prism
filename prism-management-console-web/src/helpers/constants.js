@@ -255,8 +255,13 @@ export const GROUP_SORTING_KEYS_TRANSLATOR = __.invert(GROUP_SORTING_KEYS);
 // Credentials
 export const CREDENTIAL_SORTING_KEYS = {
   credentialType: 'CREDENTIAL_TYPE',
-  createdOn: 'CREATED_ON'
+  createdOn: 'CREATED_ON',
+  contactName: 'CONTACT_NAME',
+  externalId: 'EXTERNAL_ID',
+  dateSigned: 'DATE_SIGNED'
 };
+
+export const CREDENTIAL_SORTING_KEYS_TRANSLATION = __.invert(CREDENTIAL_SORTING_KEYS);
 
 // Contacts
 export const CONTACT_SORTING_KEYS = {
@@ -264,6 +269,8 @@ export const CONTACT_SORTING_KEYS = {
   createdAt: 'CREATED_AT',
   externalId: 'EXTERNAL_ID'
 };
+
+export const CONTACT_SORTING_KEYS_TRANSLATION = __.invert(CONTACT_SORTING_KEYS);
 
 // Templates
 export const TEMPLATES_SORTING_KEYS = {

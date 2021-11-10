@@ -1,13 +1,19 @@
 import { createContext } from 'react';
+import SessionState from './SessionState';
+import ContactUiState from './ContactUiState';
+import GroupUiState from './GroupUiState';
+import CurrentGroupState from './CurrentGroupState';
 import TemplateUiState from './TemplateUiState';
 import TemplateSketchState from './TemplateSketchState';
-import SessionState from './SessionState';
-import GroupUiState from './GroupUiState';
+import CredentialIssuedUiState from './CredentialIssuedUiState';
 
 export class UiState {
   constructor(api, rootStore) {
     this.sessionState = new SessionState(api, rootStore);
+    this.contactUiState = new ContactUiState(rootStore);
     this.groupUiState = new GroupUiState(rootStore);
+    this.currentGroupState = new CurrentGroupState(rootStore);
+    this.credentialIssuedUiState = new CredentialIssuedUiState(rootStore);
     this.templateUiState = new TemplateUiState(rootStore);
     this.templateSketchState = new TemplateSketchState(rootStore);
   }

@@ -9,7 +9,8 @@ import {
   arrayOf,
   element,
   objectOf,
-  instanceOf
+  instanceOf,
+  node
 } from 'prop-types';
 import __ from 'lodash';
 import {
@@ -202,6 +203,7 @@ export const templateCreationStepShape = oneOf([
   DESIGN_TEMPLATE,
   TEMPLATE_CREATION_RESULT
 ]);
+
 export const templateFiltersShape = {
   name: string,
   category: string,
@@ -215,3 +217,17 @@ export const templateSortingShape = {
   sortingBy: string,
   setSortingBy: func
 };
+
+export const checkboxPropShape = shape({
+  checked: bool.isRequired,
+  indeterminate: bool,
+  disabled: bool,
+  onChange: func.isRequired
+});
+
+export const emptyPropsShape = shape({
+  photoSrc: string,
+  model: string,
+  isFilter: bool,
+  button: node
+});

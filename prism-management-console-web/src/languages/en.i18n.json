@@ -279,14 +279,18 @@
     },
     "filters": {
       "ID": "ID",
-      "credentialType": "Credential Type",
-      "credentialStatus": "Credential Status",
-      "contactStatus": "Contact Status",
-      "category": "Category",
-      "group": "Group",
-      "dateSigned": "Date Signed",
-      "dateReceived": "Date Received",
-      "search": "Search",
+      "credentialTypePlaceholder": "Credential Type",
+      "credentialStatusPlaceholder": "Credential Status",
+      "connectionStatusPlaceholder": "Contact Status",
+      "searchTextPlaceholder": "Search",
+      "dateSignedPlaceholder": "Date Signed",
+      "dateReceivedPlaceholder": "Date Received",
+      "credentialTypeFilter": "Credential Type",
+      "credentialStatusFilter": "Credential Status",
+      "connectionStatusFilter": "Contact Status",
+      "searchTextFilter": "Text",
+      "dateSignedFilter": "Date Signed",
+      "dateReceivedFilter": "Date Received",
       "types": {
         "credentialType": {
           "Mock Credentials": "Mock Credential"
@@ -466,7 +470,7 @@
     "targetsSelection": {
       "groups": "Select group(s)",
       "subjects": "Select contact(s)",
-      "selectGroup": "You can select multiple groups and contacts to assign recipients",
+      "helpText": "You can select multiple groups and contacts to assign recipients",
       "selectAll": "Select all",
       "checkbox": "Do not select any group or contact"
     },
@@ -1075,7 +1079,9 @@
       "info": "We are working to create your profile, please wait 10 minutes and try again!",
       "action": "Accept",
       "alt": "Wait image"
-    }
+    },
+    "filtersNotSupported": "Filtering by {{key}} is not supported yet",
+    "sortingNotSupported": "Sorting by {{key}} is not supported yet"
   },
   "importCredentialsData": {
     "importTypeSelection": {

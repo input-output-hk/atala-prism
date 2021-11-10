@@ -12,7 +12,13 @@ export const filterByInclusion = (filter, field) =>
 
 export const filterByExactMatch = (filter, field) => !filter || filter === field;
 
-export const filterByDateRange = (filter, field) => {
+export const filterByDateRange = (
+  filter,
+  field = {
+    nanos: 0,
+    seconds: 0
+  }
+) => {
   if (!filter?.length) return false;
   const fieldDate = backendDateFormat(field.seconds);
   const fieldDateMoment = moment(fieldDate, DEFAULT_DATE_FORMAT);
@@ -28,8 +34,14 @@ export const filterByNewerDate = (filter, field) => !filter || filter < field;
 export const filterByUnixDate = (filter, field) => !filter || filter === dateFormat(field);
 
 export const filterByManyFields = (toFilter, filterValue, keys) =>
-  toFilter.filter(item =>
-    keys.reduce((matches, key) => matches || filterByInclusion(filterValue, item[key]), false)
+  toFilter.filter(item => filterByMultipleKeys(filterValue, item, keys));
+
+// filters by a series of keys:
+// where only the items that include the `filterValue` on any of it's keys will return true
+export const filterByMultipleKeys = (filterValue, item, keys) =>
+  keys.reduce(
+    (partiallyMatches, key) => partiallyMatches || filterByInclusion(filterValue, item[key]),
+    false
   );
 
 export const exactValueExists = (list, filter, key) => list.some(item => item[key] === filter);

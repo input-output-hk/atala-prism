@@ -3,20 +3,22 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { omit } from 'lodash';
+import { observer } from 'mobx-react-lite';
 import ImportDataContainer from '../importContactData/ImportDataContainer';
 import { withRedirector } from '../providers/withRedirector';
 import { COMMON_CONTACT_HEADERS, IMPORT_CONTACTS } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { validateContactsBulk } from '../../helpers/contactValidations';
-import { useAllContacts } from '../../hooks/useContacts';
 import { DynamicFormProvider } from '../providers/DynamicFormProvider';
+import { useAllContacts } from '../../hooks/useContactStore';
 
 import './_style.scss';
 
-const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) => {
+const ImportContactsContainer = observer(({ api, redirector: { redirectToContacts } }) => {
   const { t } = useTranslation();
-  const { allContacts } = useAllContacts(api.contactsManager);
+
+  const { allContacts } = useAllContacts();
 
   const [loading, setLoading] = useState(false);
 
@@ -76,7 +78,7 @@ const ImportContactsContainer = ({ api, redirector: { redirectToContacts } }) =>
       />
     </DynamicFormProvider>
   );
-};
+});
 
 ImportContactsContainer.propTypes = {
   api: PropTypes.shape({
