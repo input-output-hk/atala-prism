@@ -45,7 +45,7 @@ export default class CredentialReceivedStore {
       const credentialsWithContactsData = response.credentialsList.map(credential =>
         this.api.contactsManager
           .getContact(credential.individualId)
-          .then(contactData => Object.assign({ contactData }, credential))
+          .then(contactData => ({ contactData, ...credential }))
       );
       const credentialsWithIssuanceProof = await Promise.all(credentialsWithContactsData);
 

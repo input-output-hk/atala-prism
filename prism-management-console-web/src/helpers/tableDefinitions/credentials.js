@@ -4,9 +4,17 @@ import CellRenderer from '../../components/common/Atoms/CellRenderer/CellRendere
 import CustomButton from '../../components/common/Atoms/CustomButton/CustomButton';
 import PopOver from '../../components/common/Organisms/Detail/PopOver';
 import StatusBadge from '../../components/connections/Atoms/StatusBadge/StatusBadge';
-import { CONTACT_STATUS, CREDENTIAL_STATUS, CREDENTIAL_STATUSES } from '../constants';
+import {
+  CONTACT_STATUS,
+  CREDENTIAL_STATUS,
+  CREDENTIAL_STATUSES,
+  REVOKE_CREDENTIALS,
+  SEND_CREDENTIALS,
+  SIGN_CREDENTIALS
+} from '../constants';
 import { backendDateFormat } from '../formatters';
 import freeUniLogo from '../../images/free-uni-logo.png';
+import { credentialRequiredStatus, hasRequiredStatus } from '../credentialActions';
 
 const translationKeyPrefix = 'credentials.table.columns';
 
