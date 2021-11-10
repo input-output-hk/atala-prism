@@ -51,6 +51,9 @@ ManualImportContainer.defaultProps = {
 };
 
 ManualImportContainer.propTypes = {
+  useCaseProps: PropTypes.shape({
+    showGroupSelection: PropTypes.bool
+  }).isRequired,
   credentialType: credentialTypeShape,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
