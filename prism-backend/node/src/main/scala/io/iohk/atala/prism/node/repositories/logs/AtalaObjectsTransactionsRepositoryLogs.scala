@@ -147,7 +147,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
   private def logRetrieveResult(in: List[Either[NodeError, Option[AtalaObjectInfo]]]): F[List[Unit]] = {
     in.traverse(
       _.fold(
-        err => error"Encountered an error while retrieving object $err",
+        err => error"encountered an error while retrieving object $err",
         info => info"retrieving object - successfully done, object found - ${info.isDefined}"
       )
     )
