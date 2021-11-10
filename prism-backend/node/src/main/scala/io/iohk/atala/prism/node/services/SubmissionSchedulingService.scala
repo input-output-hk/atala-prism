@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.effect.IO
+import cats.syntax.functor._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
@@ -52,9 +53,6 @@ class SubmissionSchedulingService private (
         .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
-        .recover { err =>
-          logger.error("Could not retry old pending transactions", err)
-        }
         .onComplete { _ =>
           scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
         }
@@ -72,12 +70,7 @@ class SubmissionSchedulingService private (
         .submitReceivedObjects()
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
-        .map { submissionResult =>
-          submissionResult.left.foreach { err =>
-            logger.error("Could not submit received objects", err)
-          }
-          ()
-        }
+        .void
         .onComplete { _ =>
           scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
         }

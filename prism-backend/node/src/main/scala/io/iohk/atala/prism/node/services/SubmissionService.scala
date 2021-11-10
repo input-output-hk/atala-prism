@@ -140,6 +140,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
           ledgerPendingTransactionTimeout,
           atalaReferenceLedger.getType
         )
+        .map(_.toList.flatten)
 
     for {
       // Query old pending transactions
@@ -176,7 +177,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
       atalaObjects <-
         atalaObjectsTransactionsRepository
           .retrieveObjects(deletedTransactions)
-          .map(_.flatten)
+          .map(_.flatMap(_.toOption.flatten))
       atalaObjectsMerged <- mergeAtalaObjects(atalaObjects)
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
         (obj, parseObjectContent(obj))

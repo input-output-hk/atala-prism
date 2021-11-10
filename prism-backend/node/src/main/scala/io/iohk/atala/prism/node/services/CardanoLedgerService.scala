@@ -19,7 +19,6 @@ import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
-import org.slf4j.LoggerFactory
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.lift.Lift
@@ -47,7 +46,6 @@ class CardanoLedgerService[F[_]] private[services] (
     liftToFuture: Lift[F, Future]
 ) extends UnderlyingLedger[F] {
   private val MAX_SYNC_BLOCKS = 100
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   // Minimum amount that can be deposited in Cardano, from
   // https://github.com/input-output-hk/cardano-node/blob/1f0171d96443eaf7a77072397e790b514b670414/configuration/cardano/shelley-genesis.json#L18
@@ -99,8 +97,7 @@ class CardanoLedgerService[F[_]] private[services] (
     liftToFuture.lift(
       timer.sleep(delay) >>
         syncAtalaObjects()
-          .recover { case e =>
-            logger.error("Could not sync Atala objects", e)
+          .recover { case _ =>
             false
           }
           .map { pendingBlocksToSync =>
@@ -184,12 +181,6 @@ class CardanoLedgerService[F[_]] private[services] (
         )
       )
     } yield notification
-
-    if (notifications.nonEmpty) {
-      logger.info(
-        s"Found ${notifications.size} Atala objects in block ${block.header.blockNo}"
-      )
-    }
 
     for {
       _ <- ex.deferFuture(notifications.traverse(onAtalaObject))

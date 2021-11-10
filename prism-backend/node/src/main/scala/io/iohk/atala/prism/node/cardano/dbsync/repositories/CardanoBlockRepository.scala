@@ -14,7 +14,6 @@ import io.iohk.atala.prism.node.cardano.dbsync.repositories.daos.{BlockDAO, Tran
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.logs.CardanoBlockRepositoryLogs
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.metrics.CardanoBlockRepositoryMetrics
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -54,9 +53,6 @@ object CardanoBlockRepository {
 private final class CardanoBlockRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CardanoBlockRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] = {
     val query = for {
       header <- BlockDAO.find(blockNo)
@@ -64,7 +60,7 @@ private final class CardanoBlockRepositoryImpl[F[_]: MonadCancelThrow](
     } yield header.map(Block.Full(_, transactions))
 
     query
-      .logSQLErrors("getting full block", logger)
+      .logSQLErrorsV2("getting full block")
       .transact(xa)
       .map(_.toRight(BlockError.NotFound(blockNo)))
   }
@@ -72,7 +68,7 @@ private final class CardanoBlockRepositoryImpl[F[_]: MonadCancelThrow](
   def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] = {
     BlockDAO
       .latest()
-      .logSQLErrors("getting latest block", logger)
+      .logSQLErrorsV2("getting latest block")
       .transact(xa)
       .map(
         _.fold[Either[BlockError.NoneAvailable.type, Block.Canonical]](

@@ -13,20 +13,13 @@ import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionStatus}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectInfo,
-  AtalaObjectStatus,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
-}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.repositories.logs.AtalaObjectsTransactionsRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.AtalaObjectsTransactionsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -41,11 +34,11 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
   def getOldPendingTransactions(
       ledgerPendingTransactionTimeout: Duration,
       ledger: Ledger
-  ): F[List[AtalaObjectTransactionSubmission]]
+  ): F[Either[NodeError, List[AtalaObjectTransactionSubmission]]]
 
   def retrieveObjects(
       transactions: List[AtalaObjectTransactionSubmission]
-  ): F[List[Option[AtalaObjectInfo]]]
+  ): F[List[Either[NodeError, Option[AtalaObjectInfo]]]]
 
   def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]]
 
@@ -106,38 +99,20 @@ object AtalaObjectsTransactionsRepository {
 private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends AtalaObjectsTransactionsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def retrieveObjects(
       transactions: List[AtalaObjectTransactionSubmission]
-  ): F[List[Option[AtalaObjectInfo]]] =
+  ): F[List[Either[NodeError, Option[AtalaObjectInfo]]]] = {
     transactions.traverse { transaction =>
       val query = AtalaObjectsDAO.get(transaction.atalaObjectId)
-
-      val opDescription =
-        s"Getting atala object by atalaObjectId = ${transaction.atalaObjectId}"
-      connectionIOSafe(query.logSQLErrors(opDescription, logger))
-        .map {
-          case Left(err) =>
-            logger.error(
-              s"Could not retrieve atala object ${transaction.atalaObjectId}",
-              err
-            )
-            None
-          case Right(None) =>
-            logger.error(s"Atala object ${transaction.atalaObjectId} not found")
-            None
-          case Right(result) =>
-            result
-        }
-        .transact(xa)
+      val opDescription = s"Getting atala object by atalaObjectId = ${transaction.atalaObjectId}"
+      connectionIOSafe(query.logSQLErrorsV2(opDescription)).transact(xa)
     }
+  }
 
   def getOldPendingTransactions(
       ledgerPendingTransactionTimeout: Duration,
       ledger: Ledger
-  ): F[List[AtalaObjectTransactionSubmission]] = {
+  ): F[Either[NodeError, List[AtalaObjectTransactionSubmission]]] = {
     val olderThan = Instant.now.minus(ledgerPendingTransactionTimeout)
     val query = AtalaObjectTransactionSubmissionsDAO
       .getBy(
@@ -145,30 +120,14 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
         status = AtalaObjectTransactionSubmissionStatus.Pending,
         ledger = ledger
       )
-      .logSQLErrors("retry old pending transactions", logger)
+      .logSQLErrorsV2("retry old pending transactions")
 
-    connectionIOSafe(query)
-      .map(
-        _.left
-          .map { err =>
-            logger.error(
-              s"Could not get pending transactions older than $olderThan.",
-              err
-            )
-          }
-          .getOrElse(List())
-      )
-      .transact(xa)
+    connectionIOSafe(query).transact(xa)
   }
 
   def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]] = {
     val opDescription = "Extract not submitted objects."
-    connectionIOSafe(
-      AtalaObjectsDAO.getNotPublishedObjectInfos.logSQLErrors(
-        opDescription,
-        logger
-      )
-    ).transact(xa)
+    connectionIOSafe(AtalaObjectsDAO.getNotPublishedObjectInfos.logSQLErrorsV2(opDescription)).transact(xa)
   }
 
   def updateSubmissionStatus(
@@ -184,7 +143,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
         )
       val opDescription =
         s"Setting status $newSubmissionStatus for transaction ${submission.transactionId}"
-      connectionIOSafe(query.logSQLErrors(opDescription, logger).void)
+      connectionIOSafe(query.logSQLErrorsV2(opDescription).void)
         .transact(xa)
     } else ().asRight[NodeError].pure[F]
 
@@ -197,7 +156,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
       .updateStatusIfTxExists(ledger, transactionId, newSubmissionStatus)
     val opDescription =
       s"Setting status $newSubmissionStatus for transaction ${transactionId}"
-    connectionIOSafe(query.logSQLErrors(opDescription, logger).void)
+    connectionIOSafe(query.logSQLErrorsV2(opDescription).void)
       .transact(xa)
   }
 
@@ -217,7 +176,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
           toAtalaObjectTransactionSubmissionStatus(publication.status)
         )
       )
-      .logSQLErrors(opDescription, logger)
+      .logSQLErrorsV2(opDescription)
 
     connectionIOSafe(query).transact(xa)
   }
@@ -262,7 +221,7 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
     } yield obj
 
     query
-      .logSQLErrors("setting object transaction details", logger)
+      .logSQLErrorsV2("setting object transaction details")
       .transact(xa)
       .recover { case _: AtalaObjectCannotBeModified =>
         None
