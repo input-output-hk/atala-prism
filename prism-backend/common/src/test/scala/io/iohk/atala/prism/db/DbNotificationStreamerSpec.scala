@@ -68,7 +68,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
         case Outcome.Canceled() => IO(Assertions.fail("Background effect was cancelled"))
       }
   }
-
+// Todo, Kamil fix it
   "dbNotificationStreamer" should {
     "stream DB notifications" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
