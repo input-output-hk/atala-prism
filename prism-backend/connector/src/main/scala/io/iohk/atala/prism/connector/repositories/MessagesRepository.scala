@@ -170,7 +170,7 @@ private final class MessagesRepositoryImpl[F[_]: MonadCancelThrow](
     } yield messageId
 
     query.value
-      .logSQLErrors(s"insert messages, connection id - $connectionId", logger)
+      .logSQLErrorsV2(s"insert messages, connection id - $connectionId")
       .transact(xa)
   }
 
@@ -309,10 +309,7 @@ private final class MessagesRepositoryImpl[F[_]: MonadCancelThrow](
     else
       MessagesDAO
         .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
-        .logSQLErrors(
-          s"getting messages paginated, recipient id - $recipientId",
-          logger
-        )
+        .logSQLErrorsV2(s"getting messages paginated, recipient id - $recipientId")
         .map(_.asRight[GetMessagesPaginatedError])
         .transact(xa)
   }
@@ -329,9 +326,6 @@ private final class MessagesRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[Message]] =
     MessagesDAO
       .getConnectionMessages(recipientId, connectionId)
-      .logSQLErrors(
-        s"getting connection messages, connection id - $connectionId",
-        logger
-      )
+      .logSQLErrorsV2(s"getting connection messages, connection id - $connectionId")
       .transact(xa)
 }

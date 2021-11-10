@@ -13,7 +13,6 @@ import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
 import io.iohk.atala.prism.vault.repositories.daos.PayloadsDAO
-import org.slf4j.{Logger, LoggerFactory}
 import derevo.derive
 import derevo.tagless.applyK
 import tofu.higherKind.Mid
@@ -63,13 +62,10 @@ object PayloadsRepository {
 private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
     br: MonadCancel[F, Throwable]
 ) extends PayloadsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   override def create(payloadData: CreatePayload): F[Payload] =
     PayloadsDAO
       .createPayload(payloadData)
-      .logSQLErrors("creating", logger)
+      .logSQLErrorsV2("creating")
       .transact(xa)
 
   def getByPaginated(
@@ -79,7 +75,7 @@ private class PayloadsRepositoryImpl[F[_]](xa: Transactor[F])(implicit
   ): F[List[Payload]] =
     PayloadsDAO
       .getByPaginated(did, lastSeenIdOpt, limit)
-      .logSQLErrors("getting by paginated", logger)
+      .logSQLErrorsV2("getting by paginated")
       .transact(xa)
 }
 

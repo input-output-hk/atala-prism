@@ -21,7 +21,6 @@ import io.iohk.atala.prism.management.console.repositories.logs.CredentialTypeRe
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialTypeRepositoryMetrics
 
 import scala.util.Try
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -103,9 +102,6 @@ object CredentialTypeRepository {
 private final class CredentialTypeRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends CredentialTypeRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def create(
       participantId: ParticipantId,
       createCredentialType: CreateCredentialType
@@ -133,10 +129,7 @@ private final class CredentialTypeRepositoryImpl[F[_]: MonadCancelThrow](
             .create(participantId, createCredentialType)
             .map(Right(_))
       )
-      .logSQLErrors(
-        s"creating credential type, participant id - $participantId",
-        logger
-      )
+      .logSQLErrorsV2(s"creating credential type, participant id - $participantId")
       .transact(xa)
   }
 
@@ -236,10 +229,7 @@ private final class CredentialTypeRepositoryImpl[F[_]: MonadCancelThrow](
             callback(credentialType)
       }
     } yield result)
-      .logSQLErrors(
-        s"getting something with credential type id - $credentialTypeId",
-        logger
-      )
+      .logSQLErrorsV2(s"getting something with credential type id - $credentialTypeId")
       .transact(xa)
 
   private def validateMustacheTemplate(
@@ -279,7 +269,7 @@ private final class CredentialTypeRepositoryImpl[F[_]: MonadCancelThrow](
   def findByInstitution(institution: ParticipantId): F[List[CredentialType]] =
     CredentialTypeDao
       .findCredentialTypes(institution)
-      .logSQLErrors(s"finding, institution id - $institution", logger)
+      .logSQLErrorsV2(s"finding, institution id - $institution")
       .transact(xa)
 
   private def withRequiredFields(
@@ -287,7 +277,7 @@ private final class CredentialTypeRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Option[CredentialTypeWithRequiredFields]] =
     CredentialTypeDao
       .withRequiredFields(credentialTypeQuery)
-      .logSQLErrors("getting with required field", logger)
+      .logSQLErrorsV2("getting with required field")
       .transact(xa)
 
 }

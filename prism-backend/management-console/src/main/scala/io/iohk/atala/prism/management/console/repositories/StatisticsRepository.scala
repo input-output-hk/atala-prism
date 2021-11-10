@@ -14,7 +14,6 @@ import io.iohk.atala.prism.management.console.repositories.logs.StatisticsReposi
 import io.iohk.atala.prism.management.console.repositories.metrics.StatisticsRepositoryMetrics
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -61,18 +60,12 @@ object StatisticsRepository {
 private final class StatisticsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends StatisticsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def query(
       participantId: ParticipantId,
       timeIntervalMaybe: Option[TimeInterval]
   ): F[Statistics] =
     StatisticsDAO
       .query(participantId, timeIntervalMaybe)
-      .logSQLErrors(
-        s"getting statistics, participant id - $participantId",
-        logger
-      )
+      .logSQLErrorsV2(s"getting statistics, participant id - $participantId")
       .transact(xa)
 }

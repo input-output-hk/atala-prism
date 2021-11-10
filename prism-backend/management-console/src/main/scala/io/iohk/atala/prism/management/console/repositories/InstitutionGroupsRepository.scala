@@ -21,7 +21,6 @@ import io.iohk.atala.prism.management.console.repositories.logs.InstitutionGroup
 import io.iohk.atala.prism.management.console.repositories.metrics.InstitutionGroupsRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import org.slf4j.{Logger, LoggerFactory}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
@@ -103,9 +102,6 @@ object InstitutionGroupsRepository {
 private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends InstitutionGroupsRepository[F] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-
   def create(
       institutionId: ParticipantId,
       name: InstitutionGroup.Name,
@@ -126,7 +122,7 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield institutionGroup
 
     transaction.value
-      .logSQLErrors(s"creating, institution id - $institutionId", logger)
+      .logSQLErrorsV2(s"creating, institution id - $institutionId")
       .transact(xa)
   }
 
@@ -141,7 +137,7 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
         query
       )
     } yield groups -> totalNumberOfRecords)
-      .logSQLErrors(s"getting, institution id - $institutionId", logger)
+      .logSQLErrorsV2(s"getting, institution id - $institutionId")
       .map(GetGroupsResult.tupled)
       .transact(xa)
 
@@ -158,7 +154,7 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield contacts
 
     connectionIo
-      .logSQLErrors(s"list contacts, institution id - $institutionId", logger)
+      .logSQLErrorsV2(s"list contacts, institution id - $institutionId")
       .transact(xa)
   }
 
@@ -204,7 +200,7 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield ()
 
     transaction.value
-      .logSQLErrors(s"updating, group id - $groupId", logger)
+      .logSQLErrorsV2(s"updating, group id - $groupId")
       .transact(xa)
   }
 
@@ -231,7 +227,7 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield createdGroup
 
     connectionIo.value
-      .logSQLErrors(s"copying group, institution id - $institutionId", logger)
+      .logSQLErrorsV2(s"copying group, institution id - $institutionId")
       .transact(xa)
   }
 
@@ -265,7 +261,7 @@ private final class InstitutionGroupsRepositoryImpl[F[_]: MonadCancelThrow](
     } yield ()
 
     connectionIo.value
-      .logSQLErrors(s"deleting, group id - $groupId", logger)
+      .logSQLErrorsV2(s"deleting, group id - $groupId")
       .transact(xa)
   }
 }
