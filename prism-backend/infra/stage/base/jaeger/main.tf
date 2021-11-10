@@ -51,7 +51,7 @@ locals {
   user_data_vals = {
     authorized_keys = module.ssh_keys.authorized_keys
     aws_region      = var.aws_region
-    zone_id          = var.atala_prism_zoneid
+    zone_id         = var.atala_prism_zoneid
   }
   user_data = templatefile("${path.module}/user_data.sh.tmpl", local.user_data_vals)
 }
