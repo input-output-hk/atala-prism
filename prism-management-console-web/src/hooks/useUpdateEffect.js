@@ -9,5 +9,6 @@ export const useUpdateEffect = (effect, dependencies = []) => {
     } else {
       effect();
     }
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...dependencies]);
 };

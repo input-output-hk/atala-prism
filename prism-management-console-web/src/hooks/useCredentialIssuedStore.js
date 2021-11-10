@@ -44,7 +44,7 @@ export const useCredentialIssuedUiState = ({ reset } = { reset: false }) => {
 
   useUpdateEffect(() => {
     triggerSearch();
-  }, [...sortingAndFiltersDependencies, triggerSearch]);
+  }, [triggerSearch, ...sortingAndFiltersDependencies]);
 
   return credentialIssuedUiState;
 };
