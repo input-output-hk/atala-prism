@@ -24,7 +24,7 @@ export const useSelectAll = ({
   entityKey,
   selectedEntities,
   setSelectedEntities,
-  shouldSelectRecipients,
+  shouldSelectRecipients = true,
   isFetching
 }) => {
   const [loadingSelection, setLoadingSelection] = useState(false);

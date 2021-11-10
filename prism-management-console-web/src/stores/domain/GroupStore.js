@@ -31,6 +31,7 @@ export default class GroupStore {
 
     makeAutoObservable(this, {
       isFetching: observable,
+      isSaving: observable,
       groups: observable,
       searchResults: observable,
       isLoadingFirstPage: computed,
@@ -39,12 +40,17 @@ export default class GroupStore {
       hasMoreResults: computed,
       fetchMoreData: computed,
       resetGroups: action,
+      getGroupById: action,
+      fetchGroupById: action,
       fetchGroupsNextPage: flow.bound,
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       updateFetchedResults: action,
       getGroupsToSelect: flow.bound,
       fetchGroups: action,
+      updateGroupName: flow.bound,
+      updateGroupMembers: flow.bound,
+      updateGroup: action,
       fetchRecursively: false,
       rootStore: false
     });
@@ -80,6 +86,19 @@ export default class GroupStore {
     this.numberOfGroups = defaultValues.numberOfGroups;
     this.searchResults = defaultValues.searchResults;
     this.numberOfResults = defaultValues.numberOfResults;
+  };
+
+  getGroupById = async id => {
+    this.isFetching = true;
+    const foundLocally = this.groups.find(g => g.id === id);
+    const found = foundLocally || (await this.fetchGroupById(id));
+    this.isFetching = false;
+    return found;
+  };
+
+  fetchGroupById = async id => {
+    const response = await this.fetchRecursively(this.groups);
+    return response.groupsList.find(g => g.id === id);
   };
 
   *fetchGroupsNextPage() {
@@ -183,5 +202,33 @@ export default class GroupStore {
       });
       return fallback;
     }
+  };
+
+  updateGroup = async (id, change) => {
+    this.isSaving = true;
+    try {
+      const response = await this.api.groupsManager.updateGroup(id, change);
+      runInAction(() => {
+        this.rootStore.handleTransportLayerSuccess();
+        this.isSaving = false;
+      });
+      return response;
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'updateGroup',
+        verb: 'saving',
+        model: 'Group'
+      };
+      runInAction(() => {
+        this.rootStore.handleTransportLayerError(error, metadata);
+        this.isSaving = false;
+      });
+    }
+  };
+
+  createGroup = async ({ name, members }) => {
+    const newGroup = await this.api.groupsManager.createGroup(name);
+    if (members) await this.updateGroup(newGroup.id, { contactIdsToAdd: members });
   };
 }

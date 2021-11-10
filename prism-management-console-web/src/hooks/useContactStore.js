@@ -1,5 +1,5 @@
 import { reaction } from 'mobx';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
 
@@ -47,4 +47,22 @@ export const useContactUiState = ({ reset } = { reset: false }) => {
   }, [contactUiState.sortDirection, triggerSearch]);
 
   return contactUiState;
+};
+
+export const useAllContacts = () => {
+  const [allContacts, setAllContacts] = useState([]);
+  const { fetchAllContacts, isFetching } = useContactStore();
+
+  useEffect(() => {
+    const triggerFetch = async () => {
+      const fetchedContacts = await fetchAllContacts();
+      setAllContacts(fetchedContacts);
+    };
+    triggerFetch();
+  }, [fetchAllContacts]);
+
+  return {
+    isLoading: isFetching,
+    allContacts
+  };
 };

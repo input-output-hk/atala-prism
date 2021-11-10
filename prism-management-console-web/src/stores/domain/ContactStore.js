@@ -47,6 +47,7 @@ export default class ContactStore {
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       updateStoredContacts: action,
+      fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
       fetchContacts: action,
       fetchRecursively: false,
@@ -121,6 +122,11 @@ export default class ContactStore {
     updateFetchedResults();
   }
 
+  *fetchAllContacts(groupName) {
+    const response = yield this.fetchRecursively(this.contacts, this.contactsScrollId, groupName);
+    return response.contactsList;
+  }
+
   *getContactsToSelect() {
     const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
     const alreadyFetched = hasFiltersApplied ? this.searchResults : this.contacts;
@@ -145,18 +151,19 @@ export default class ContactStore {
     }
   };
 
-  fetchRecursively = async (acc = [], scrollId) => {
+  fetchRecursively = async (acc = [], scrollId, groupName) => {
     const response = await this.fetchContacts({
       scrollId,
-      pageSize: MAX_CONTACT_PAGE_SIZE
+      pageSize: MAX_CONTACT_PAGE_SIZE,
+      groupName
     });
     const updatedAcc = acc.concat(response.contactsList);
     return response.newScrollId
-      ? this.fetchRecursively(updatedAcc, response.newScrollId)
+      ? this.fetchRecursively(updatedAcc, response.newScrollId, groupName)
       : { contactsList: updatedAcc };
   };
 
-  fetchContacts = async ({ scrollId, pageSize = CONTACT_PAGE_SIZE } = {}) => {
+  fetchContacts = async ({ scrollId, groupName, pageSize = CONTACT_PAGE_SIZE } = {}) => {
     this.isFetching = true;
     try {
       const {
@@ -174,7 +181,8 @@ export default class ContactStore {
         filter: {
           searchText: textFilter,
           createdAt: dateFilter,
-          connectionStatus: statusFilter
+          connectionStatus: statusFilter,
+          groupName
         }
       });
       runInAction(() => {
@@ -183,7 +191,7 @@ export default class ContactStore {
       });
       const contactsWithKey = response.contactsList.map(contactMapper);
       const mappedResponse = { ...response, contactsList: contactsWithKey };
-      return mappedResponse || fallback;
+      return mappedResponse;
     } catch (error) {
       const metadata = {
         store: this.storeName,
@@ -195,6 +203,7 @@ export default class ContactStore {
         this.rootStore.handleTransportLayerError(error, metadata);
         this.isFetching = false;
       });
+      return fallback;
     }
   };
 }

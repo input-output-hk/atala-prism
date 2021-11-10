@@ -207,16 +207,6 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
       .finally(() => setIsLoading(false));
   };
 
-  const groupsProps = {
-    selectedGroups,
-    setSelectedGroups
-  };
-
-  const contactsProps = {
-    setSelectedContacts,
-    selectedContacts
-  };
-
   const handleToggleShouldSelectRecipients = ev => {
     const { checked } = ev.target;
     setShouldSelectRecipients(!checked);
@@ -240,8 +230,10 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
       case SELECT_RECIPIENTS_STEP:
         return (
           <RecipientsSelection
-            groupsProps={groupsProps}
-            contactsProps={contactsProps}
+            selectedGroups={selectedGroups}
+            setSelectedGroups={setSelectedGroups}
+            selectedContacts={selectedContacts}
+            setSelectedContacts={setSelectedContacts}
             toggleShouldSelectRecipients={handleToggleShouldSelectRecipients}
             shouldSelectRecipients={shouldSelectRecipients}
           />

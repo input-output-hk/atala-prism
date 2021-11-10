@@ -11,7 +11,7 @@ import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import AddUsersButton from './Atoms/AddUsersButtons/AddUsersButton';
-import { useContactStore } from '../../hooks/useContactStore';
+import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 
 import './_style.scss';
 
@@ -19,11 +19,18 @@ const Connections = observer(
   ({ redirector: { redirectToContactDetails, redirectToImportContacts } }) => {
     const { t } = useTranslation();
 
-    const { contacts, refreshContacts } = useContactStore();
-
     const [connectionToken, setConnectionToken] = useState('');
     const [QRModalIsOpen, showQRModal] = useState(false);
     const { accountStatus } = useSession();
+    const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
+    const {
+      contacts,
+      refreshContacts,
+      isLoadingFirstPage,
+      fetchMoreData,
+      isFetching,
+      hasMore
+    } = useContactStore();
 
     const inviteContactAndShowQR = async contactId => {
       const contactToInvite = contacts.find(c => c.contactId === contactId);
@@ -52,6 +59,12 @@ const Connections = observer(
         </div>
         <div className="ConnectionsTable InfiniteScrollTableContainer">
           <ConnectionsTable
+            contacts={displayedContacts}
+            fetchMoreData={fetchMoreData}
+            hasMore={hasMore}
+            hasFiltersApplied={hasFiltersApplied}
+            isLoading={isLoadingFirstPage || isLoadingFirstPage || isSorting}
+            isFetchingMore={isFetching || isSearching}
             inviteContact={inviteContactAndShowQR}
             viewContactDetail={redirectToContactDetails}
             searchDueGeneralScroll

@@ -20,6 +20,7 @@ const defaultValues = {
   textFilter: '',
   statusFilter: '',
   dateFilter: '',
+  groupNameFilter: '',
   sortDirection: ascending,
   sortingBy: CONTACT_SORTING_KEYS.name,
   fetchedResults: null
@@ -34,6 +35,8 @@ export default class ContactUiState {
   statusFilter = defaultValues.statusFilter;
 
   dateFilter = defaultValues.dateFilter;
+
+  groupNameFilter = defaultValues.groupNameFilter;
 
   sortDirection = defaultValues.sortDirection;
 
@@ -61,8 +64,8 @@ export default class ContactUiState {
       sortedFilteredContacts: computed({ requiresReaction: true }),
       triggerSearch: action,
       triggerBackendSearch: action.bound,
-      applyFilters: false,
-      applySorting: false,
+      applyFilters: action,
+      applySorting: action,
       sortingIsCaseSensitive: false,
       resetState: action,
       setFilterValue: action,

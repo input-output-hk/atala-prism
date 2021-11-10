@@ -8,6 +8,8 @@ import { checkboxPropShape } from '../../../../helpers/propShapes';
 const SelectAllButton = ({ loadingSelection, selectedEntities, checkboxProps }) => {
   const { t } = useTranslation();
 
+  const selectedLabel = selectedEntities.length ? `  (${selectedEntities.length})  ` : null;
+
   return (
     <div className="SelectAllCheckboxContainer">
       <Checkbox className="SelectAllCheckbox" {...checkboxProps}>
@@ -18,7 +20,7 @@ const SelectAllButton = ({ loadingSelection, selectedEntities, checkboxProps }) 
         ) : (
           <span>
             {t('newCredential.targetsSelection.selectAll')}
-            {selectedEntities.length ? `  (${selectedEntities.length})  ` : null}
+            {selectedLabel}
           </span>
         )}
       </Checkbox>
