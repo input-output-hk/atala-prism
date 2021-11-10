@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e
+
+# Add team SSH keys
+cat << EOF >> /home/ubuntu/.ssh/authorized_keys
+${authorized_keys}
+EOF
+
+chown ubuntu /home/ubuntu/.ssh/authorized_keys
+chmod 600 /home/ubuntu/.ssh/authorized_keys
+
+
+# Install docker
+
+apt update
+apt -y install apt-transport-https ca-certificates curl software-properties-common
+apt -y install awscli
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable'
+apt update
+
+apt -y install docker-ce
+
+
+# Start jaeger
+ docker run -d --name jaeger \
+  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \
+  -p 16686:16686 \
+  -p 9411:9411 \
+  jaegertracing/all-in-one:1.24
+
+echo "=> Creating/Updating route53 records"
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html#concepts-private-addresses
+EC2_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+ZONE_ID=${zone_id}
+RECORD_NAME="jaeger-collector.atalaprism.io"
+echo "=> ZONE_ID  $ZONE_ID"
+echo "=> PrivateIpAddress $EC2_IP"
+/usr/bin/aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{"Changes":[{"Action":"UPSERT","ResourceRecordSet":{"Name":"'$RECORD_NAME'","Type":"A","TTL":300,"ResourceRecords":[{"Value":"'$EC2_IP'"}]}}]}'
