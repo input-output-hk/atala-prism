@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Landing from '../landing/Landing';
 import Loading from '../common/Atoms/Loading/Loading';
-import { withApi } from './withApi';
 import { useSession } from '../../hooks/useSession';
 import { LOADING, UNLOCKED } from '../../helpers/constants';
 
@@ -22,4 +21,4 @@ const withLoggedValidationComponent = Component =>
     return <Landing />;
   });
 
-export const withLoggedValidation = Component => withApi(withLoggedValidationComponent(Component));
+export const withLoggedValidation = Component => withLoggedValidationComponent(Component);

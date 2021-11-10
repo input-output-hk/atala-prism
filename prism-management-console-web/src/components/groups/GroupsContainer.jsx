@@ -1,21 +1,21 @@
 import React from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
 import Groups from './Groups';
-import { withApi } from '../providers/withApi';
 import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
+import { useApi } from '../../hooks/useApi';
 
-const GroupsContainer = observer(({ api }) => {
+const GroupsContainer = observer(() => {
+  const { groupsManager, contactsManager } = useApi();
   useGroupStore({ fetch: true, reset: true });
   useGroupUiState({ reset: true });
 
   const { t } = useTranslation();
 
   const handleGroupDeletion = group =>
-    api.groupsManager
+    groupsManager
       .deleteGroup(group.id)
       .then(() => {
         message.success(t('groups.deletionSuccess', { groupName: group.name }));
@@ -26,13 +26,13 @@ const GroupsContainer = observer(({ api }) => {
       });
 
   const copyGroup = ({ numberOfContacts, name: groupName }, copyName) =>
-    api.groupsManager
+    groupsManager
       .createGroup(copyName)
       .then(({ id }) =>
-        api.contactsManager
+        contactsManager
           .getContacts({ limit: numberOfContacts, groupName })
           .then(({ contactsList }) =>
-            api.groupsManager.updateGroup(id, {
+            groupsManager.updateGroup(id, {
               contactIdsToAdd: contactsList.map(({ contactId }) => contactId)
             })
           )
@@ -48,8 +48,4 @@ const GroupsContainer = observer(({ api }) => {
   return <Groups copyGroup={copyGroup} handleGroupDeletion={handleGroupDeletion} />;
 });
 
-GroupsContainer.propTypes = {
-  api: PropTypes.shape().isRequired
-};
-
-export default withApi(GroupsContainer);
+export default GroupsContainer;

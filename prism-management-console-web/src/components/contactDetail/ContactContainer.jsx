@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useLocation } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import { message } from 'antd';
-import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import Contact from './Contact';
 import {
@@ -11,9 +9,18 @@ import {
   DRAFT_CREDENTIAL_VERIFICATION_RESULT,
   PENDING_CREDENTIAL_VERIFICATION_RESULT
 } from '../../helpers/constants';
+import { useApi } from '../../hooks/useApi';
 
-const ContactContainer = ({ api }) => {
+const ContactContainer = () => {
   const { t } = useTranslation();
+  const {
+    wallet,
+    contactsManager,
+    groupsManager,
+    credentialsManager,
+    credentialsReceivedManager
+  } = useApi();
+
   const { id } = useParams();
   const { search } = useLocation();
   const query = new URLSearchParams(search);
@@ -33,7 +40,7 @@ const ContactContainer = ({ api }) => {
   const getContact = useCallback(() => {
     if (loading.contact) return;
     setLoadingByKey('contact', true);
-    api.contactsManager
+    contactsManager
       .getContact(id)
       .then(({ jsonData, ...rest }) => {
         const contactData = Object.assign(JSON.parse(jsonData), rest);
@@ -44,12 +51,12 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'contact' }));
       })
       .finally(() => setLoadingByKey('contact', false));
-  }, [loading.contact, api.contactsManager, id, t, setLoadingByKey]);
+  }, [loading.contact, contactsManager, id, t, setLoadingByKey]);
 
   const getGroups = useCallback(() => {
     if (loading.groups) return;
     setLoadingByKey('groups', true);
-    api.groupsManager
+    groupsManager
       .getGroups({ contactId: id })
       .then(({ groupsList }) => setGroups(groupsList))
       .catch(error => {
@@ -60,12 +67,12 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'groups' }));
       })
       .finally(() => setLoadingByKey('groups', false));
-  }, [loading.groups, api.groupsManager, id, t, setLoadingByKey]);
+  }, [loading.groups, groupsManager, id, t, setLoadingByKey]);
 
   const getIssuedCredentials = useCallback(() => {
     if (loading.issuedCredentials) return;
     setLoadingByKey('issuedCredentials', true);
-    api.credentialsManager
+    credentialsManager
       .getContactCredentials(id)
       .then(setIssuedCredentials)
       .catch(error => {
@@ -76,7 +83,7 @@ const ContactContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: 'issued credentials' }));
       })
       .finally(() => setLoadingByKey('issuedCredentials', false));
-  }, [loading.issuedCredentials, api.credentialsManager, id, t, setLoadingByKey]);
+  }, [loading.issuedCredentials, credentialsManager, id, t, setLoadingByKey]);
 
   useEffect(() => {
     if (!contact) getContact();
@@ -87,11 +94,11 @@ const ContactContainer = ({ api }) => {
   const getReceivedCredentials = useCallback(() => {
     if (loading.receivedCredentials) return;
     setLoadingByKey('receivedCredentials', true);
-    api.credentialsReceivedManager
+    credentialsReceivedManager
       .getReceivedCredentials(id)
       .then(credentials => {
         const credentialPromises = credentials.map(credential =>
-          api.credentialsManager
+          credentialsManager
             .getBlockchainData(credential.encodedSignedCredential)
             .then(issuanceProof => ({ issuanceProof, ...credential }))
         );
@@ -108,8 +115,8 @@ const ContactContainer = ({ api }) => {
       .finally(() => setLoadingByKey('receivedCredentials', false));
   }, [
     loading.receivedCredentials,
-    api.credentialsReceivedManager,
-    api.credentialsManager,
+    credentialsReceivedManager,
+    credentialsManager,
     id,
     t,
     setLoadingByKey
@@ -123,7 +130,7 @@ const ContactContainer = ({ api }) => {
 
   const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
     batchInclusionProof
-      ? api.wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
+      ? wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
           Logger.error('There has been an error verifiying the credential', error);
           const pendingPublication = error.message.includes('Missing publication date');
           if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;
@@ -133,7 +140,7 @@ const ContactContainer = ({ api }) => {
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
   const onDeleteGroup = (groupId, contactIdsToRemove) =>
-    api.groupsManager
+    groupsManager
       .updateGroup(groupId, { contactIdsToRemove })
       .then(() => {
         getGroups();
@@ -148,7 +155,7 @@ const ContactContainer = ({ api }) => {
       });
 
   const updateContact = (contactId, newContactData) =>
-    api.contactsManager
+    contactsManager
       .updateContact(contactId, newContactData)
       .then(() => {
         getContact();
@@ -179,17 +186,4 @@ const ContactContainer = ({ api }) => {
   );
 };
 
-ContactContainer.propTypes = {
-  api: PropTypes.shape({
-    contactsManager: PropTypes.shape({ getContact: PropTypes.func, updateContact: PropTypes.func }),
-    groupsManager: PropTypes.shape({ getGroups: PropTypes.func, updateGroup: PropTypes.func }),
-    credentialsManager: PropTypes.shape({
-      getContactCredentials: PropTypes.func,
-      getBlockchainData: PropTypes.func
-    }),
-    credentialsReceivedManager: PropTypes.shape({ getReceivedCredentials: PropTypes.func }),
-    wallet: PropTypes.shape({ verifyCredential: PropTypes.func })
-  }).isRequired
-};
-
-export default withApi(ContactContainer);
+export default ContactContainer;

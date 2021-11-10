@@ -12,34 +12,36 @@ import {
 } from '../helpers/constants';
 import { credentialRequiredStatus, getTargetCredentials } from '../helpers/credentialActions';
 import Logger from '../helpers/Logger';
+import { useApi } from './useApi';
 
-export const useCredentialActions = (api, credentialsIssued, refreshCredentialsIssued) => {
+export const useCredentialActions = (credentialsIssued, refreshCredentialsIssued) => {
+  const { wallet, connector, contactsManager, credentialsManager } = useApi();
   const [selectedCredentials, setSelectedCredentials] = useState([]);
   const [confirmationModal, setConfirmationModal] = useState(false);
 
-  const revokeCredentials = credentials => api.wallet.revokeCredentials(credentials);
+  const revokeCredentials = credentials => wallet.revokeCredentials(credentials);
 
-  const signCredentials = credentials => api.wallet.signCredentials(credentials);
+  const signCredentials = credentials => wallet.signCredentials(credentials);
 
   const sendCredential = async ([{ contactData, ...cred }]) => {
-    const { connectionId } = await api.contactsManager.getContact(contactData.contactId);
-    const credentialBinary = api.credentialsManager.getCredentialBinary(cred);
-    await api.connector.sendCredential(credentialBinary, connectionId);
-    await api.credentialsManager.markAsSent(cred.credentialId);
+    const { connectionId } = await contactsManager.getContact(contactData.contactId);
+    const credentialBinary = credentialsManager.getCredentialBinary(cred);
+    await connector.sendCredential(credentialBinary, connectionId);
+    await credentialsManager.markAsSent(cred.credentialId);
     setConfirmationModal(false);
   };
 
   const gatherPayloadFromCredential = async c => ({
-    atalaMessage: await api.credentialsManager.generateAtalaMessage(c),
-    connectionToken: (await api.contactsManager.getContact(c.contactId)).connectionToken
+    atalaMessage: await credentialsManager.generateAtalaMessage(c),
+    connectionToken: (await contactsManager.getContact(c.contactId)).connectionToken
   });
 
   const markCredentialsAsSent = credentials =>
-    Promise.all(credentials.map(c => api.credentialsManager.markAsSent(c.credentialId)));
+    Promise.all(credentials.map(c => credentialsManager.markAsSent(c.credentialId)));
 
   const sendCredentialsBulk = credentials =>
     Promise.all(credentials.map(gatherPayloadFromCredential))
-      .then(payload => api.connector.sendCredentialsBulk(payload))
+      .then(payload => connector.sendCredentialsBulk(payload))
       .then(() => markCredentialsAsSent(credentials))
       .then(() => setConfirmationModal(false));
 

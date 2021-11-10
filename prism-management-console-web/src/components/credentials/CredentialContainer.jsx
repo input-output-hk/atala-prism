@@ -1,12 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
 import CredentialTabs from './CredentialTabs';
 import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
-import { withApi } from '../providers/withApi';
 import {
   DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
   CREDENTIAL_ID_KEY,
@@ -21,9 +19,11 @@ import {
   useCredentialIssuedUiState
 } from '../../hooks/useCredentialIssuedStore';
 import { useSelectAll } from '../../hooks/useSelectAll';
+import { useApi } from '../../hooks/useApi';
 
-const CredentialContainer = observer(({ api }) => {
+const CredentialContainer = observer(() => {
   const { t } = useTranslation();
+  const { wallet } = useApi();
   useCredentialIssuedUiState({ reset: true });
   const {
     credentials: credentialsIssued,
@@ -44,7 +44,7 @@ const CredentialContainer = observer(({ api }) => {
     setSelectedCredentials,
     actions,
     confirmationModalProps
-  } = useCredentialActions(api, credentialsIssued, refreshCredentialsIssued);
+  } = useCredentialActions(credentialsIssued, refreshCredentialsIssued);
 
   const selectAllCredentialsIssuedProps = useSelectAll({
     displayedEntities: credentialsIssued,
@@ -57,7 +57,7 @@ const CredentialContainer = observer(({ api }) => {
 
   const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
     batchInclusionProof
-      ? api.wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
+      ? wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
           Logger.error('There has been an error verifiying the credential', error);
           const pendingPublication = error.message.includes('Missing publication date');
           if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;
@@ -108,36 +108,4 @@ const CredentialContainer = observer(({ api }) => {
   );
 });
 
-CredentialContainer.propTypes = {
-  api: PropTypes.shape({
-    contactsManager: PropTypes.shape({ getContact: PropTypes.func.isRequired }).isRequired,
-    credentialsManager: PropTypes.shape({
-      getCredentialBinary: PropTypes.func.isRequired,
-      getCredentials: PropTypes.func.isRequired,
-      getCredentialTypes: PropTypes.func.isRequired,
-      markAsSent: PropTypes.func.isRequired,
-      getBlockchainData: PropTypes.func.isRequired
-    }).isRequired,
-    credentialsReceivedManager: PropTypes.shape({
-      getReceivedCredentials: PropTypes.func.isRequired
-    }),
-    credentialTypesManager: PropTypes.shape({
-      getCredentialTypes: PropTypes.func.isRequired,
-      getCredentialTypeDetails: PropTypes.func.isRequired
-    }),
-    wallet: PropTypes.shape({
-      signCredentials: PropTypes.func.isRequired,
-      verifyCredential: PropTypes.func.isRequired,
-      revokeCredentials: PropTypes.func.isRequired
-    }).isRequired,
-    connector: PropTypes.shape({
-      sendCredential: PropTypes.func.isRequired
-    }).isRequired,
-    getCredentialTypes: PropTypes.func.isRequired,
-    getCategoryTypes: PropTypes.func.isRequired,
-    getCredentialsGroups: PropTypes.func.isRequired,
-    getTotalCredentials: PropTypes.func.isRequired
-  }).isRequired
-};
-
-export default withApi(CredentialContainer);
+export default CredentialContainer;

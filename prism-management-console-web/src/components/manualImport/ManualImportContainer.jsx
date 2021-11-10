@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { withApi } from '../providers/withApi';
 import ManualImport from './ManualImport';
 import Logger from '../../helpers/Logger';
-import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { credentialShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
+import { useApi } from '../../hooks/useApi';
 
 const ManualImportContainer = ({
-  api: { groupsManager },
   useCaseProps,
   credentialType,
   recipients,
@@ -18,6 +16,7 @@ const ManualImportContainer = ({
   addEntity
 }) => {
   const { t } = useTranslation();
+  const { groupsManager } = useApi();
   const [groups, setGroups] = useState([]);
   const { showGroupSelection } = useCaseProps;
 
@@ -52,16 +51,6 @@ ManualImportContainer.defaultProps = {
 };
 
 ManualImportContainer.propTypes = {
-  api: PropTypes.shape({
-    groupsManager: PropTypes.shape({
-      getGroups: PropTypes.func.isRequired
-    }).isRequired
-  }).isRequired,
-  useCaseProps: PropTypes.shape({
-    useCase: PropTypes.oneOf([IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA]).isRequired,
-    showGroupSelection: PropTypes.func.isRequired,
-    isEmbedded: PropTypes.bool.isRequired
-  }).isRequired,
   credentialType: credentialTypeShape,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
@@ -71,4 +60,4 @@ ManualImportContainer.propTypes = {
   addEntity: PropTypes.func.isRequired
 };
 
-export default withApi(ManualImportContainer);
+export default ManualImportContainer;

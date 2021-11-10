@@ -5,7 +5,6 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import Logger from '../../../../helpers/Logger';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
-import { withApi } from '../../../providers/withApi';
 import { useDebounce } from '../../../../hooks/useDebounce';
 import { colors } from '../../../../helpers/colors';
 import { GROUP_NAME_STATES } from '../../../../helpers/constants';
@@ -13,21 +12,15 @@ import GroupForm from './GroupForm';
 
 import './_style.scss';
 import { refPropShape } from '../../../../helpers/propShapes';
+import { useApi } from '../../../../hooks/useApi';
 
-const GroupName = ({
-  api,
-  updateForm,
-  formValues,
-  formRef,
-  nameState,
-  setNameState,
-  className
-}) => {
+const GroupName = ({ updateForm, formValues, formRef, nameState, setNameState, className }) => {
   const { t } = useTranslation();
+  const { groupsManager } = useApi();
 
   const groupExists = async value => {
     try {
-      const groups = await api.groupsManager.getAllGroups();
+      const groups = await groupsManager.getAllGroups();
       if (exactValueExists(groups, value, 'name')) {
         setNameState(GROUP_NAME_STATES.failed);
       } else {
@@ -88,11 +81,6 @@ GroupName.defaultProps = {
 };
 
 GroupName.propTypes = {
-  api: PropTypes.shape({
-    groupsManager: PropTypes.shape({
-      getAllGroups: PropTypes.func.isRequired
-    }).isRequired
-  }).isRequired,
   className: PropTypes.string,
   formRef: refPropShape.isRequired,
   updateForm: PropTypes.func.isRequired,
@@ -101,4 +89,4 @@ GroupName.propTypes = {
   formValues: PropTypes.shape().isRequired
 };
 
-export default withApi(GroupName);
+export default GroupName;

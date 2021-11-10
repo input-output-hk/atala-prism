@@ -5,7 +5,6 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import NewCredential from './NewCredential';
-import { withApi } from '../providers/withApi';
 import TypeSelection from './Organism/TypeSelection/TypeSelection';
 import RecipientsSelection from './Organism/RecipientsSelection/RecipientsSelection';
 import CredentialsPreview from './Organism/CredentialsPreview/CredentialsPreview';
@@ -24,9 +23,11 @@ import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
 import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
+import { useApi } from '../../hooks/useApi';
 
-const NewCredentialContainer = observer(({ api, redirector: { redirectToCredentials } }) => {
+const NewCredentialContainer = observer(({ redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
+  const { groupsManager, contactsManager, credentialsManager, credentialsViewManager } = useApi();
   const { session } = useSession();
 
   const [currentStep, setCurrentStep] = useState(SELECT_CREDENTIAL_TYPE_STEP);
@@ -59,20 +60,14 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
 
   useEffect(() => {
     if (!credentialViewTemplates.length)
-      api.credentialsViewManager
+      credentialsViewManager
         .getCredentialViewTemplates()
         .then(setCredentialViewTemplates)
         .catch(error => {
           Logger.error('[NewCredentailContainer.getCredentialViewTemplates] Error: ', error);
           message.error(t('errors.errorGettingCredentialViewTemplates'));
         });
-  }, [
-    credentialViewTemplates.length,
-    groups.length,
-    api.credentialsViewManager,
-    api.groupsManager,
-    t
-  ]);
+  }, [credentialViewTemplates.length, groups.length, credentialsViewManager, groupsManager, t]);
 
   useEffect(() => {
     if (!credentialTypeDetails && currentStep === SELECT_RECIPIENTS_STEP) {
@@ -94,10 +89,10 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
 
   const getRecipients = async () => {
     const groupContactsPromises = selectedGroups.map(group =>
-      api.contactsManager.getAllContacts(group)
+      contactsManager.getAllContacts(group)
     );
 
-    const allContacts = await api.contactsManager.getAllContacts();
+    const allContacts = await contactsManager.getAllContacts();
     const promisesList = await Promise.all(groupContactsPromises);
 
     const targetsFromGroups = promisesList.flat();
@@ -152,7 +147,7 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
 
   const getContactsFromGroups = () => {
     const groupContactsPromises = selectedGroups.map(group =>
-      api.contactsManager.getAllContacts(group)
+      contactsManager.getAllContacts(group)
     );
 
     return Promise.all(groupContactsPromises);
@@ -175,7 +170,7 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
             issuer: session.organisationName
           });
         });
-        const createCredentialsResponse = await api.credentialsManager.createBatchOfCredentials(
+        const createCredentialsResponse = await credentialsManager.createBatchOfCredentials(
           credentialsData,
           credentialTypeDetails,
           selectedGroups.map(sg => groups.find(g => g.name === sg))
@@ -195,7 +190,7 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
       }
     };
 
-    return api.contactsManager.getAllContacts().then(onFinish);
+    return contactsManager.getAllContacts().then(onFinish);
   };
 
   const changeStep = nextStep => {
@@ -280,27 +275,9 @@ const NewCredentialContainer = observer(({ api, redirector: { redirectToCredenti
 });
 
 NewCredentialContainer.propTypes = {
-  api: PropTypes.shape({
-    groupsManager: PropTypes.shape({ getGroups: PropTypes.func }),
-    credentialsManager: PropTypes.shape({
-      getCredentialTypes: PropTypes.func,
-      createBatchOfCredentials: PropTypes.func
-    }).isRequired,
-    credentialsViewManager: PropTypes.shape({ getCredentialViewTemplates: PropTypes.func })
-      .isRequired,
-    contactsManager: PropTypes.shape({
-      getContacts: PropTypes.func,
-      getAllContacts: PropTypes.func
-    }).isRequired,
-    credentialTypesManager: PropTypes.shape({
-      getCredentialTypes: PropTypes.func,
-      getCredentialTypeDetails: PropTypes.func
-    }).isRequired,
-    wallet: PropTypes.shape({ signCredentials: PropTypes.func })
-  }).isRequired,
   redirector: PropTypes.shape({
     redirectToCredentials: PropTypes.func
   }).isRequired
 };
 
-export default withApi(withRedirector(NewCredentialContainer));
+export default withRedirector(NewCredentialContainer);
