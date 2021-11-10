@@ -5,11 +5,7 @@ import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeaderParser,
-  GrpcAuthenticatorInterceptor,
-  TraceExposeInterceptor
-}
+import io.iohk.atala.prism.auth.grpc._
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
@@ -24,20 +20,20 @@ import io.iohk.atala.prism.intdemo.protos.intdemo_api.{
 }
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_api.ContactConnectionServiceGrpc
 import io.iohk.atala.prism.protos.cviews_api.CredentialViewsServiceGrpc
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import io.iohk.atala.prism.metrics.UptimeReporter
 import io.iohk.atala.prism.utils.IOUtils._
 import kamon.Kamon
 import kamon.module.Module
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object ConnectorApp extends IOApp {
   private val port = 50051
@@ -213,6 +209,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
       configLoader.nodeClientConfig(config.getConfig("node"))
     val nodeChannel = ManagedChannelBuilder
       .forAddress(nodeConfig.host, nodeConfig.port)
+      .intercept(new ClientTraceReadInterceptor)
       .usePlaintext()
       .build()
     NodeServiceGrpc.stub(nodeChannel)
@@ -232,6 +229,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
     val server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new TraceExposeInterceptor)
+      .intercept(new TraceReadInterceptor)
       .intercept(new GrpcAuthenticatorInterceptor)
       .addService(
         _root_.grpc.health.v1.health.HealthGrpc
