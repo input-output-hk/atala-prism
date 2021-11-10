@@ -158,6 +158,15 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
+  def revokeKey(didSuffix: DidSuffix, keyId: String, ledgerData: LedgerData)(implicit
+      xa: Transactor[IO]
+  ): Unit = {
+    val _ = PublicKeysDAO
+      .revoke(didSuffix, keyId, ledgerData)
+      .transact(xa)
+      .unsafeRunSync()
+  }
+
   // ***************************************
   // Credential batches (slayer 0.3)
   // ***************************************
