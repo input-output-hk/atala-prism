@@ -44,21 +44,6 @@ object syntax {
   implicit class DBConnectionOps[T](val connection: doobie.ConnectionIO[T]) extends AnyVal {
 
     /** logs SQL errors from DB, to not expose them to the user */
-    def logSQLErrors(
-        operationDescription: => String,
-        logger: Logger,
-        onError: => doobie.ConnectionIO[T] = new RuntimeException(
-          "Unexpected DB error, please contact support"
-        ).raiseError[doobie.ConnectionIO, T]
-    ): doobie.ConnectionIO[T] =
-      ConnectionIOErrorHandlers.handleSQLErrors(
-        connection,
-        logger,
-        operationDescription,
-        onError
-      )
-
-    /** logs SQL errors from DB, to not expose them to the user */
     def logSQLErrorsV2(
         operationDescription: => String,
         onError: => doobie.ConnectionIO[T] = new RuntimeException(
