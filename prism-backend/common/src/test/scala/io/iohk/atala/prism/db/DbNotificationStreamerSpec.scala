@@ -11,8 +11,6 @@ import fs2.INothing
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
 import org.scalatest.{Assertion, Assertions}
-import org.slf4j.{Logger, LoggerFactory}
-
 import scala.concurrent.duration._
 
 class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
