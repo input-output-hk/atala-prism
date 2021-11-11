@@ -69,6 +69,22 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       result.revokedOn mustBe None
     }
 
+    "retrieve the correct revocation details" in {
+      val revocationTimestamp = new TimestampInfo(Instant.ofEpochMilli(1000).toEpochMilli, 10, 1)
+      val revocationLedgerData = LedgerData(
+        TransactionId.from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(1)).value,
+        Ledger.InMemory,
+        revocationTimestamp
+      )
+      val keyId = "issuing"
+
+      DataPreparation.createDID(didData, dummyLedgerData)
+      DataPreparation.revokeKey(didSuffix, keyId, revocationLedgerData)
+      val result = DataPreparation.findKey(didSuffix, keyId).value
+
+      result.revokedOn.value mustBe revocationLedgerData
+    }
+
     "retrieve all previously inserted DID key for given suffix" in {
       DataPreparation.createDID(didData, dummyLedgerData)
       val results = DataPreparation.findByDidSuffix(didSuffix).keys
