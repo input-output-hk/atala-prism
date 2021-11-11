@@ -3,6 +3,15 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 
+const items = [
+  { title: 'landing.trust.titlebenefit1', description: 'landing.trust.benefit1' },
+  { title: 'landing.trust.titlebenefit2', description: 'landing.trust.benefit2' },
+  { title: 'landing.trust.titlebenefit3', description: 'landing.trust.benefit3' },
+  { title: 'landing.trust.titlebenefit4', description: 'landing.trust.benefit4' },
+  { title: 'landing.trust.titlebenefit5', description: 'landing.trust.benefit5' },
+  { title: 'landing.trust.titlebenefit6', description: 'landing.trust.benefit6' }
+];
+
 const TrustSection = () => {
   const { t } = useTranslation();
 
@@ -12,30 +21,12 @@ const TrustSection = () => {
         <h1>{t('landing.trust.predownloadText')}</h1>
       </div>
       <div className="BenefitsContainer">
-        <div className="BenefitItem">
-          <h3>{t('landing.trust.titlebenefit1')}</h3>
-          <p>{t('landing.trust.benefit1')}</p>
-        </div>
-        <div className="BenefitItem">
-          <h3>{t('landing.trust.titlebenefit2')}</h3>
-          <p>{t('landing.trust.benefit2')}</p>
-        </div>
-        <div className="BenefitItem">
-          <h3>{t('landing.trust.titlebenefit3')}</h3>
-          <p>{t('landing.trust.benefit3')}</p>
-        </div>
-        <div className="BenefitItem">
-          <h3>{t('landing.trust.titlebenefit4')}</h3>
-          <p>{t('landing.trust.benefit4')}</p>
-        </div>
-        <div className="BenefitItem">
-          <h3>{t('landing.trust.titlebenefit5')}</h3>
-          <p>{t('landing.trust.benefit5')}</p>
-        </div>
-        <div className="BenefitItem">
-          <h3>{t('landing.trust.titlebenefit6')}</h3>
-          <p>{t('landing.trust.benefit6')}</p>
-        </div>
+        {items.map(({ title, description }) => (
+          <div className="BenefitItem">
+            <h3>{t(title)}</h3>
+            <p>{t(description)}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
