@@ -31,6 +31,17 @@
   }
 }
 
+.theme-border {
+  background-color: transparent;
+  border-color: $primary-color;
+  color: $primary-color;
+  &:hover,
+  &:focus {
+    background-color: $primary-color-darker;
+    color: $white;
+  }
+}
+
 .theme-secondary {
   background-color: $secondary-color;
   border-color: $secondary-color;

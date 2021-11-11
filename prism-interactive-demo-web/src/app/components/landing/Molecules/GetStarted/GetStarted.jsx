@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Link } from 'gatsby';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 import { CONTACT_US_NAME } from '../../../../../helpers/constants';
 
 import './_style.scss';

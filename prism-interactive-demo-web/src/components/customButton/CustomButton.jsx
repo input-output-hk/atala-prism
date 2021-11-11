@@ -1,16 +1,19 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
+import { LEFT, RIGHT } from '../../helpers/constants';
 
 import './_style.scss';
 
-const CustomButton = ({ icon: img, buttonText, buttonProps, optImg }) => {
+const CustomButton = ({ icon: { icon, side }, img, buttonText, buttonProps, optImg }) => {
   const { t } = useTranslation();
   return (
     <Button {...buttonProps}>
       {img.src && <img src={img.src} alt={t(img.alt)} className="CredentialIcon" />}
+      {side === LEFT && icon}
       {buttonText}
+      {side === RIGHT && icon}
       {optImg.src && <img src={optImg.src} alt={t(optImg.alt)} className="VerifiedIcon" />}
     </Button>
   );

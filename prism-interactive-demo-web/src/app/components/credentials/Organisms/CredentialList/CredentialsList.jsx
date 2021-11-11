@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 import ContactButton from '../../Atoms/ContactButton/ContactButton';
 import { CREDENTIAL_TYPES } from '../../../../../helpers/constants';
 import checkIcon from '../../../../images/icon-verified.svg';

@@ -3,8 +3,9 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 import QRCode from 'qrcode.react';
 import { Modal } from 'antd';
+import CustomButton from '../../../../../../components/customButton/CustomButton';
+
 import './_style.scss';
-import CustomButton from '../../../Atoms/CustomButton/CustomButton';
 
 const QRModal = ({ tPrefix, visible, onCancel, qrValue }) => {
   const { t } = useTranslation();

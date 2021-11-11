@@ -3,7 +3,7 @@ import { Col, Row, Icon } from 'antd';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import Contact from './Organisms/Contact/Contact';
 import { LEFT } from '../../../helpers/constants';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../components/customButton/CustomButton';
 import { withRedirector } from '../providers/withRedirector';
 import SupportButton from '../common/Atoms/SupportButton/SupportButton';
 

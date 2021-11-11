@@ -1,6 +1,6 @@
 import React from 'react';
 import firebase from 'gatsby-plugin-firebase';
-import CustomButton from '../CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 import { SUPPORT_EVENT } from '../../../../../helpers/constants';
 
 import './_style.scss';
