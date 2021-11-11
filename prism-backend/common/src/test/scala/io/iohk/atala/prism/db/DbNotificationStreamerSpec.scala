@@ -16,9 +16,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.duration._
 
 class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
-
-  val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
   private val CHANNEL = "test_channel"
 
   private def usingDbNotificationStreamer[A](
@@ -62,34 +59,26 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
       .compile
       .toList
       .background
-      .use(streamOutcomeIo => IO.sleep(200.millis) *> f(streamOutcomeIo))
+      .use(streamOutcomeIo => IO.sleep(2.seconds) *> f(streamOutcomeIo))
 
   private implicit class OutcomeIOOps[A](outcomeIO: OutcomeIO[A]) {
     def mustBeIO(a: A): IO[Assertion] =
       outcomeIO match {
         case Succeeded(fa) => fa.map(_ mustBe a)
-        case Outcome.Errored(e) =>
-          IO {
-            logger.error("An Error occurred", e)
-            Assertions.fail("Background effect was not completed successfully", e)
-          }
+        case Outcome.Errored(e) => Assertions.fail("Background effect was not completed successfully", e)
         case Outcome.Canceled() => IO(Assertions.fail("Background effect was cancelled"))
       }
   }
 // Todo, Kamil fix it
   "dbNotificationStreamer" should {
     "stream DB notifications" in {
-      logger.info("starting stream")
       usingDbNotificationStreamer { dbNotificationStreamer =>
-        logger.info("using stream")
         streamSome(dbNotificationStreamer, some = 2) { streamOutcomeIo =>
-          logger.info("at this moment stream should sleep")
           val notificationPayload1 = "Notification payload #1"
           val notificationPayload2 = "Notification payload #2"
           for {
             _ <- notify(notificationPayload1)
             _ <- notify(notificationPayload2)
-            _ = logger.info("notify is done, the next step is flatmap")
             actual <- streamOutcomeIo
             expected = List(DbNotification(notificationPayload1), DbNotification(notificationPayload2))
             _ <- actual mustBeIO expected
