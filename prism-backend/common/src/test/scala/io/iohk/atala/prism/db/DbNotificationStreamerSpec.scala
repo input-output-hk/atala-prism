@@ -48,7 +48,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
       .compile
       .toList
       .background
-      .use(streamOutcomeIo => IO.sleep(200.millis) *> f(streamOutcomeIo))
+      .use(streamOutcomeIo => IO.sleep(2.seconds) *> f(streamOutcomeIo))
 
   private def streamAll[A](
       dbNotificationStreamer: DbNotificationStreamer
@@ -58,7 +58,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
       .compile
       .toList
       .background
-      .use(streamOutcomeIo => IO.sleep(200.millis) *> f(streamOutcomeIo))
+      .use(streamOutcomeIo => IO.sleep(2.seconds) *> f(streamOutcomeIo))
 
   private implicit class OutcomeIOOps[A](outcomeIO: OutcomeIO[A]) {
     def mustBeIO(a: A): IO[Assertion] =
