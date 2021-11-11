@@ -173,6 +173,19 @@ the attributes that the user is willing to share (or a function of them).
     predicate encryption requires a
     set of attributes for encryption, rather than another predicate. I have
     reached out to the authors to see if they can help me clarify this.}
+\item[\cite{fhs19}:] Based on Structure Preserving Signatures from equivalence
+  classes (SPS-EQ). The approach resembles that of \cite{ckl+15} in that it
+  uses a structure preserving primitive, and signs (commitments of) sets of
+  messages. However, they aim to avoid (as they claim) costly zero-knowledge
+  proofs. Basically, upon setup, a set commitment scheme is set up. Each user
+  generates a keypair. To obtain a credential on a set of attributes $A$, the
+  user proves knowledge of the user secret key, which is used as randomness
+  for a set commitment over $A$. The issuer (proves knowledge of the secret
+  key and) returns a SPS-EQ signature over $A$. To show the credential, the
+  user randomizes the commitment set and the signature, reveals the required
+  subset $D$ of $A$, and computes a witness that indeed $D \subset A$, as well
+  as a proof knowledge of the randomness used to randomize the credential (to
+  prevent replays). 
 \item[\cite{sms+19}:] The Coconut system follows a similar approach than the previous
   works with respect to the representation and showing protocol for credentials.
   Namely, credentials are randomizable signatures issued blindly. In this case,
@@ -262,6 +275,53 @@ the attributes that the user is willing to share (or a function of them).
   properties of unforgeability, anonymity, and policy-hiding. The latter
   means that, for delegated verification, the verifier is oblivious to the
   policy being verified.
+\item[\cite{fhs19}:] Gives a game-based security model, with anonymity and
+  unforgeability being the main security properties (besides correctness).
+  Unforgeability resembles the traceability property of group signatures,
+  which are recognised as an influence in their modelling -- more specifically,
+  \cite{bmw03} (the model -- and the oracles therein -- definitely resembles
+  the BMW model for GSs). The authors claim to be the firsts to give a well defined and
+  formal model for ACs, besides \cite{ckl+15} (which gives game-based properties
+  in the simulation paradigm) and \cite{cdhk15} (which follows the UC framework).
+  However, \cite{fhs19} claims that adopting non-simulation based definitions
+  allows them to reach a more efficient construction. They also support malicious
+  issuer key generation, as issuers have to prove knowledge of their secret keys
+  (which allows extraction in the games).
+  An interesting aspect of their model is that all attributes in their
+  credentials are learned by the issuer -- i.e., there are no blindly signed
+  attributes. This implies that it is not possible to sign secret keys owned
+  by the users (as in the conventional CL credentials). Then, for showing a
+  credential, all the user has to do is reveal the attributes s/he is required
+  to show. This has the disadvantage that, depending on the use case, this may
+  be trivial to attack. For instance, assume a COVID-like pandemic situation,
+  in which citizens have to prove being vaccinated. An AC system for this use
+  could be naively defined as: { Type of vaccine, Date of vaccination }. But
+  this is very susceptible to dictionary attacks, and leaves much to the
+  engineering/implementation level. E.g., if it is easy for an eavesdroper
+  to get hold of a credential (not even the plaintext attributes), s/he can
+  just iterate through the small list of possible values, and then take
+  advantage of the ``stolen'' credential. This is certainly secure under the
+  model defined in \cite{fhs19}, but it is definitely easy for implementations
+  following this model to go wrong...
+  They also model only interactive show processes. Furthermore, to prevent
+  replay attacks, the user has to prove knowledge of some randomness included
+  in the credential. However (\textbf{cross-check this!}), since signatures
+  are randomizable without knowledge of any secret value, any adversary that
+  learns a credential (not necessarily any plaintext attribute associated to
+  it), would be capable of authenticating through a dictionary attack in case
+  of small attribute ranges.
+  Note: this may just be a modelling issue (or not even that, cross-check later
+  in case I misunderstood something). In their construction, they include
+  a secret key of the user in the credentials, of which the user has to prove
+  knowledge during the issue protocol. They do this by ``reusing'' the user
+  secret key as the randomness employed for the set commitment scheme, and
+  requiring the user to prove knowledge of the corresponding public key.
+  However, I am not sure of whether or not this somehow thwarts the previously
+  mentioned ``attack'', which affects the show protocol (\todo{i.e., the user does
+    not need to prove knowledge of the usk during show, no?} \note{Actually, it
+    should not, as it would probably prevent anonymity}) In any case, even if
+  the specific construction and instantiation thwarts this attack, I think their
+  model allows it.
 \item[\cite{sms+19}:] No security model is given nor adopted.
 \end{enumerate}
 
@@ -324,7 +384,11 @@ the attributes that the user is willing to share (or a function of them).
 
 \cite{sms+19} seems to be the most efficient one (note: relies on the
 Fiat-Shamir heuristic). Credentials are only composed by two G1 elements,
-independently on the number of attributes.
+independently on the number of attributes. \todo{Cross-check this after
+  review.}
+
+\cite{cdhk15} and \cite{fhs19} achieve credential showings of size independent
+of the number of attributes.
 
 \paragraph{Main challenges.}
 
@@ -374,12 +438,34 @@ Signal's AC \needcite
 \subsection{TODO}
 
 \begin{itemize}
-\item \cite{bcc+09}: Delegation.
-\item \cite{fhs19}: Structure-preserving signatures for AC.
+\item \cite{bcc+09,cklm14}: Delegation (\cite{cklm14} relies on \cite{cklm12}).
 \item \cite{aks12}: ACs with revocation.
+\item \cite{asm06}: This seems to be the origin of the BBS+ branch of ACs (also,
+  probably \cite{aks12} is in this family).
+\item \cite{cgm16} An AC system that builds ACs from existing (conventional,
+  such as ECDSA) signatures.
+\item \cite{cl11}: ACs from aggregate signatures.
 \end{itemize}
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
+
+Concepts in ACs: multishow, one-show (Brands et al); interactive vs non-interactive
+showings (differentiation made in \cite[p.6]{fhs19} but, why would one want interactive,
+in the real world?)
+
+Which schemes support comibning credentials from multiple issuers? I think this
+is directly obtained in the schemes following the CL approach; but others?
+
+A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
+of some attributes being included in a credential is that these proofs are costly
+(like, linear in the number of attributes). Yet, they resort to other primitives
+that may also be costly (e.g., predicate encryption \cite{dmm+18}) or somehow move
+the cost to some other place (e.g., \cite{fhs19} uses a vector commitment scheme
+that requires a public key with size that grows with the number of attributes
+that \emph{can} be committed). It would be nice to have a detailed and complete
+(e.g., not skipping the data that makes one scheme look bad, like the size of
+the public keys) comparison. And, ideally, with concrete instantiations (not only
+theoretical analysis)?
 
 
 %%% Local Variables:
