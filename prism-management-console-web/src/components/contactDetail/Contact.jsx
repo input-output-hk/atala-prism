@@ -3,53 +3,56 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Tabs } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
 import DetailBox from './molecules/detailBox/DetailBox';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import contactIcon from '../../images/holder-default-avatar.svg';
 import CredentialDetail from './molecules/detailBox/CredentialDetails/CredentialDetail';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
-import { credentialShape } from '../../helpers/propShapes';
 import EditContactModal from './organisms/EditContactModal/EditContactModal';
+import { useRedirector } from '../../hooks/useRedirector';
+import { useCurrentContactState } from '../../hooks/useCurrentContactState';
 
 import './_style.scss';
-import { useRedirector } from '../../hooks/useRedirector';
 
 const { TabPane } = Tabs;
 
 const ISSUED = 'issued';
 const RECEIVED = 'received';
 
-const Contact = ({
-  contact: { name, externalId, contactId },
-  groups,
-  loading,
-  editing,
-  issuedCredentials,
-  receivedCredentials,
-  verifyCredential,
-  onDeleteGroup,
-  updateContact
-}) => {
+const Contact = observer(({ isEditing, verifyCredential, deleteGroup, updateContact }) => {
   const { t } = useTranslation();
   const { redirectToContacts } = useRedirector();
+  const {
+    contactId,
+    contactName,
+    externalId,
+    groups,
+    credentialsIssued,
+    credentialsReceived,
+    isLoadingContact,
+    isLoadingGroups,
+    isLoadingCredentialsIssued,
+    isLoadingCredentialsReceived
+  } = useCurrentContactState();
 
   const tp = useTranslationWithPrefix('contacts.detail');
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   useEffect(() => {
-    setModalIsOpen(editing);
-  }, [editing]);
+    setModalIsOpen(isEditing);
+  }, [isEditing]);
 
   return (
     <div className="contactDetail">
       <EditContactModal
         visible={modalIsOpen}
         externalId={externalId}
-        name={name}
+        name={contactName}
         groups={groups}
         contactId={contactId}
-        onDeleteGroup={onDeleteGroup}
+        onDeleteGroup={deleteGroup}
         onClose={() => setModalIsOpen(false)}
         updateContact={updateContact}
       />
@@ -75,11 +78,11 @@ const Contact = ({
             </div>
             <div className="title">
               <p>{t('contacts.table.columns.contactName')}</p>
-              <span>{loading.contact ? <SimpleLoading size="xs" /> : name}</span>
+              <span>{isLoadingContact ? <SimpleLoading size="xs" /> : contactName}</span>
             </div>
             <div className="title">
               <p>{t('contacts.table.columns.externalId')}</p>
-              <span>{loading.contact ? <SimpleLoading size="xs" /> : externalId}</span>
+              <span>{isLoadingContact ? <SimpleLoading size="xs" /> : externalId}</span>
             </div>
             <CustomButton
               buttonText={t('groups.table.buttons.edit')}
@@ -90,16 +93,16 @@ const Contact = ({
             />
           </div>
           <p className="subtitleCredentials">{tp('detailSection.groupsSubtitle')}</p>
-          <DetailBox groups={groups} loading={loading.groups} />
+          <DetailBox groups={groups} loading={isLoadingGroups} />
         </div>
         <Tabs defaultActiveKey={ISSUED} className="CredentialInfo">
-          <TabPane key={ISSUED} tab={`${tp('credIssued')} (${issuedCredentials.length})`}>
+          <TabPane key={ISSUED} tab={`${tp('credIssued')} (${credentialsIssued.length})`}>
             <p>{tp('detailSection.credentialsIssuedSubtitle')}</p>
             <div className="CredentialsContainer">
-              {loading.issuedCredentials ? (
+              {isLoadingCredentialsIssued ? (
                 <SimpleLoading size="xs" />
               ) : (
-                issuedCredentials.map(credential => (
+                credentialsIssued.map(credential => (
                   <CredentialDetail
                     credential={credential}
                     isCredentialIssued
@@ -109,13 +112,13 @@ const Contact = ({
               )}
             </div>
           </TabPane>
-          <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${receivedCredentials.length})`}>
+          <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${credentialsReceived.length})`}>
             <p>{tp('detailSection.credentialsReceivedSubtitle')}</p>
             <div className="CredentialsContainer">
-              {loading.receivedCredentials ? (
+              {isLoadingCredentialsReceived ? (
                 <SimpleLoading size="xs" />
               ) : (
-                receivedCredentials.map(credential => (
+                credentialsReceived.map(credential => (
                   <CredentialDetail credential={credential} verifyCredential={verifyCredential} />
                 ))
               )}
@@ -125,54 +128,16 @@ const Contact = ({
       </div>
     </div>
   );
-};
+});
 
 Contact.defaultProps = {
-  contact: {},
-  groups: [],
-  issuedCredentials: [],
-  receivedCredentials: [],
-  loading: {
-    contact: false,
-    groups: false,
-    issuedCredentials: false,
-    receivedCredentials: false
-  },
-  editing: false
+  isEditing: false
 };
 
 Contact.propTypes = {
-  contact: PropTypes.shape({
-    contactId: PropTypes.string,
-    externalId: PropTypes.string,
-    name: PropTypes.string,
-    creationDate: PropTypes.shape({
-      day: PropTypes.number,
-      month: PropTypes.number,
-      year: PropTypes.number
-    }),
-    connectionStatus: PropTypes.number,
-    connectionToken: PropTypes.string,
-    connectionId: PropTypes.string,
-    createdAt: PropTypes.number
-  }),
-  groups: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      numberOfContacts: PropTypes.number
-    })
-  ),
-  loading: PropTypes.shape({
-    contact: PropTypes.bool,
-    groups: PropTypes.bool,
-    issuedCredentials: PropTypes.bool,
-    receivedCredentials: PropTypes.bool
-  }),
-  editing: PropTypes.bool,
-  issuedCredentials: PropTypes.arrayOf(credentialShape),
-  receivedCredentials: PropTypes.arrayOf(credentialShape),
+  isEditing: PropTypes.bool,
   verifyCredential: PropTypes.func.isRequired,
-  onDeleteGroup: PropTypes.func.isRequired,
+  deleteGroup: PropTypes.func.isRequired,
   updateContact: PropTypes.func.isRequired
 };
 

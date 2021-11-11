@@ -216,4 +216,24 @@ export default class GroupStore {
     const newGroup = await this.api.groupsManager.createGroup(name);
     if (members) await this.updateGroup(newGroup.id, { contactIdsToAdd: members });
   };
+
+  getContactGroups = async contactId => {
+    try {
+      const response = await this.api.groupsManager.getGroups({ contactId });
+      runInAction(() => {
+        this.rootStore.handleTransportLayerSuccess();
+      });
+      return response.groupsList;
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'getGroupsByContact',
+        verb: 'getting',
+        model: 'Groups'
+      };
+      runInAction(() => {
+        this.rootStore.handleTransportLayerError(error, metadata);
+      });
+    }
+  };
 }

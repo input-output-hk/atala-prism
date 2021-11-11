@@ -8,7 +8,7 @@ async function getReceivedCredentials(contactId) {
   const contactMessage = contactId ? ` for contact ${contactId}` : '';
   Logger.info(`Getting received credentials${contactMessage}`);
   const req = new GetStoredCredentialsForRequest();
-  if (contactId) req.setIndividualid(contactId);
+  if (contactId) req.setIndividualId(contactId);
   const { metadata, sessionError } = await this.auth.getMetadata(
     req,
     BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS

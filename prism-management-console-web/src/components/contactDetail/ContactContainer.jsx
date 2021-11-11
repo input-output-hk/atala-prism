@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useLocation } from 'react-router-dom';
 import { message } from 'antd';
+import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
 import Contact from './Contact';
 import {
@@ -10,123 +11,18 @@ import {
   PENDING_CREDENTIAL_VERIFICATION_RESULT
 } from '../../helpers/constants';
 import { useApi } from '../../hooks/useApi';
+import { useCurrentContactState } from '../../hooks/useCurrentContactState';
 
-const ContactContainer = () => {
+const ContactContainer = observer(() => {
   const { t } = useTranslation();
-  const {
-    wallet,
-    contactsManager,
-    groupsManager,
-    credentialsManager,
-    credentialsReceivedManager
-  } = useApi();
+  const { wallet, groupsManager, contactsManager } = useApi();
 
   const { id } = useParams();
+  const { isLoadingContact, isLoadingGroups, loadContact, loadGroups } = useCurrentContactState(id);
+
   const { search } = useLocation();
   const query = new URLSearchParams(search);
   const editing = query.get('editing');
-
-  const [contact, setContact] = useState();
-  const [groups, setGroups] = useState();
-  const [issuedCredentials, setIssuedCredentials] = useState();
-  const [receivedCredentials, setReceivedCredentials] = useState();
-
-  const [loading, setLoading] = useState({});
-  const setLoadingByKey = useCallback(
-    (key, value) => setLoading(previousLoading => ({ ...previousLoading, [key]: value })),
-    []
-  );
-
-  const getContact = useCallback(() => {
-    if (loading.contact) return;
-    setLoadingByKey('contact', true);
-    contactsManager
-      .getContact(id)
-      .then(({ jsonData, ...rest }) => {
-        const contactData = Object.assign(JSON.parse(jsonData), rest);
-        setContact(contactData);
-      })
-      .catch(error => {
-        Logger.error(`[ContactContainer.getContact] Error while getting contact ${id}`, error);
-        message.error(t('errors.errorGetting', { model: 'contact' }));
-      })
-      .finally(() => setLoadingByKey('contact', false));
-  }, [loading.contact, contactsManager, id, t, setLoadingByKey]);
-
-  const getGroups = useCallback(() => {
-    if (loading.groups) return;
-    setLoadingByKey('groups', true);
-    groupsManager
-      .getGroups({ contactId: id })
-      .then(({ groupsList }) => setGroups(groupsList))
-      .catch(error => {
-        Logger.error(
-          `[ContactContainer.getGroups] Error while getting groups for contact ${id}`,
-          error
-        );
-        message.error(t('errors.errorGetting', { model: 'groups' }));
-      })
-      .finally(() => setLoadingByKey('groups', false));
-  }, [loading.groups, groupsManager, id, t, setLoadingByKey]);
-
-  const getIssuedCredentials = useCallback(() => {
-    if (loading.issuedCredentials) return;
-    setLoadingByKey('issuedCredentials', true);
-    credentialsManager
-      .getContactCredentials(id)
-      .then(setIssuedCredentials)
-      .catch(error => {
-        Logger.error(
-          `[ContactContainer.getIssuedCredentials] Error while getting issued credentials for contact ${id}`,
-          error
-        );
-        message.error(t('errors.errorGetting', { model: 'issued credentials' }));
-      })
-      .finally(() => setLoadingByKey('issuedCredentials', false));
-  }, [loading.issuedCredentials, credentialsManager, id, t, setLoadingByKey]);
-
-  useEffect(() => {
-    if (!contact) getContact();
-    if (!groups) getGroups();
-    if (!issuedCredentials) getIssuedCredentials();
-  }, [contact, groups, issuedCredentials, getContact, getGroups, getIssuedCredentials]);
-
-  const getReceivedCredentials = useCallback(() => {
-    if (loading.receivedCredentials) return;
-    setLoadingByKey('receivedCredentials', true);
-    credentialsReceivedManager
-      .getReceivedCredentials(id)
-      .then(credentials => {
-        const credentialPromises = credentials.map(credential =>
-          credentialsManager
-            .getBlockchainData(credential.encodedSignedCredential)
-            .then(issuanceProof => ({ issuanceProof, ...credential }))
-        );
-        return Promise.all(credentialPromises);
-      })
-      .then(setReceivedCredentials)
-      .catch(error => {
-        Logger.error(
-          `[ContactContainer.getReceivedCredentials] Error while getting received credentials for contact ${id}`,
-          error
-        );
-        message.error(t('errors.errorGetting', { model: 'received credentials' }));
-      })
-      .finally(() => setLoadingByKey('receivedCredentials', false));
-  }, [
-    loading.receivedCredentials,
-    credentialsReceivedManager,
-    credentialsManager,
-    id,
-    t,
-    setLoadingByKey
-  ]);
-
-  useEffect(() => {
-    if (!contact) return;
-    if (contact.connectionId) getReceivedCredentials();
-    else setLoadingByKey('receivedCredentials', false);
-  }, [contact, getReceivedCredentials, setLoadingByKey]);
 
   const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
     batchInclusionProof
@@ -139,11 +35,11 @@ const ContactContainer = () => {
         })
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
-  const onDeleteGroup = (groupId, contactIdsToRemove) =>
+  const deleteGroup = (groupId, contactIdsToRemove) =>
     groupsManager
       .updateGroup(groupId, { contactIdsToRemove })
       .then(() => {
-        getGroups();
+        loadGroups();
         message.success(t('contacts.edit.success.removingFromGroup'));
       })
       .catch(error => {
@@ -158,7 +54,7 @@ const ContactContainer = () => {
     contactsManager
       .updateContact(contactId, newContactData)
       .then(() => {
-        getContact();
+        loadContact();
         message.success(t('contacts.edit.success.updating'));
       })
       .catch(error => {
@@ -169,21 +65,15 @@ const ContactContainer = () => {
         message.error(t('contacts.edit.error.updating'));
       });
 
-  const isEditing = contact && groups && editing;
-
+  const isEditing = !isLoadingContact && !isLoadingGroups && editing;
   return (
     <Contact
-      loading={loading}
-      contact={contact}
-      groups={groups}
-      editing={isEditing}
-      issuedCredentials={issuedCredentials}
-      receivedCredentials={receivedCredentials}
+      isEditing={isEditing}
       verifyCredential={verifyCredential}
-      onDeleteGroup={onDeleteGroup}
+      deleteGroup={deleteGroup}
       updateContact={updateContact}
     />
   );
-};
+});
 
 export default ContactContainer;

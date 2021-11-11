@@ -39,10 +39,10 @@ export default class CredentialReceivedStore {
     this.credentials = this.credentials.concat(response.credentialsList);
   }
 
-  *fetchCredentials() {
+  *fetchCredentials(contactId) {
     this.isFetching = true;
     try {
-      const response = yield this.api.credentialsReceivedManager.getReceivedCredentials();
+      const response = yield this.api.credentialsReceivedManager.getReceivedCredentials(contactId);
       const credentialsWithContactsData = response.credentialsList.map(credential =>
         this.api.contactsManager
           .getContact(credential.individualId)

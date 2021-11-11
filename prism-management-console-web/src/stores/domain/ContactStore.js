@@ -192,4 +192,21 @@ export default class ContactStore {
       return fallback;
     }
   };
+
+  fetchContactById = async contactId => {
+    try {
+      const response = await this.api.contactsManager.getContact(contactId);
+      return contactMapper(response);
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'fetchContactById',
+        verb: 'getting',
+        model: 'Contact'
+      };
+      runInAction(() => {
+        this.rootStore.handleTransportLayerError(error, metadata);
+      });
+    }
+  };
 }

@@ -22,7 +22,7 @@ const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) 
     setShowDrawer(true);
   };
 
-  const { name, logo: credentialLogo } = credential.credentialData.credentialTypeDetails;
+  const { name, icon: credentialLogo } = credential.credentialData.credentialTypeDetails;
 
   const renderDateSigned = () => (
     <div className="credentialData">
