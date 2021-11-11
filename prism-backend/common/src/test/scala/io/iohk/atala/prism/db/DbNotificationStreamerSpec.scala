@@ -11,6 +11,7 @@ import fs2.INothing
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
 import org.scalatest.{Assertion, Assertions}
+
 import scala.concurrent.duration._
 
 class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
@@ -63,11 +64,11 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
     def mustBeIO(a: A): IO[Assertion] =
       outcomeIO match {
         case Succeeded(fa) => fa.map(_ mustBe a)
-        case Outcome.Errored(e) => Assertions.fail("Background effect was not completed successfully", e)
+        case Outcome.Errored(e) => IO(Assertions.fail("Background effect was not completed successfully", e))
         case Outcome.Canceled() => IO(Assertions.fail("Background effect was cancelled"))
       }
   }
-// Todo, Kamil fix it
+
   "dbNotificationStreamer" should {
     "stream DB notifications" in {
       usingDbNotificationStreamer { dbNotificationStreamer =>
