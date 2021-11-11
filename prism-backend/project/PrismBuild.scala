@@ -57,10 +57,14 @@ object PrismBuild {
         assembly / assemblyMergeStrategy := {
           // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
           case PathList("META-INF", "services", _*) => MergeStrategy.concat
-          case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.concat
+          case PathList("META-INF", "io.netty.versions.properties") =>
+            MergeStrategy.concat
           // It is safe to discard when building an uber-jar according to https://stackoverflow.com/a/55557287
           case x if x.endsWith("module-info.class") => MergeStrategy.discard
-          case "logback.xml" => MergeStrategy.concat
+          case "logback.xml"                        => MergeStrategy.concat
+          case "scala-collection-compat.properties" => MergeStrategy.last
+          // org.bitcoin classes are coming from both bitcoinj and fr.acinq.secp256k1-jni
+          case PathList("org", "bitcoin", _*) => MergeStrategy.last
           case x =>
             val oldStrategy = (assembly / assemblyMergeStrategy).value
             oldStrategy(x)
