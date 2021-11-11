@@ -169,7 +169,7 @@ export const getCredentialsReceivedColumns = (viewText, onView) => [
   {
     key: 'dateReceived',
     // eslint-disable-next-line react/prop-types
-    render: ({ storedAt }) => (
+    render: ({ credentialData: { storedAt } }) => (
       <CellRenderer title={tp('dateReceived')} value={backendDateFormat(storedAt?.seconds)} />
     )
   },
