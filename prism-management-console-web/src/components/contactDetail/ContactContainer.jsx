@@ -18,7 +18,7 @@ const ContactContainer = observer(() => {
   const { wallet } = useApi();
 
   const { id } = useParams();
-  const { removeFromGroup, updateContact } = useCurrentContactState(id);
+  const { contactIsLoaded, removeFromGroup, updateContact } = useCurrentContactState(id);
 
   const { search } = useLocation();
   const query = new URLSearchParams(search);
@@ -35,7 +35,7 @@ const ContactContainer = observer(() => {
         })
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
-  const isEditing = editing;
+  const isEditing = contactIsLoaded && editing;
 
   return (
     <Contact

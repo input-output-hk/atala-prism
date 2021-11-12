@@ -54,6 +54,10 @@ export default class CurrentContactState {
     });
   }
 
+  get contactIsLoaded() {
+    return this.contactName;
+  }
+
   // initialization
 
   init = contactId => {
