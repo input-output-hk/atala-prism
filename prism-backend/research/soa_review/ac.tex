@@ -403,6 +403,43 @@ BBS/BBS+ \cite{asm06,cdl16b}, and Pointcheval Sanders \cite{ps16}, with the
 exception of \cite{cdhk15} that leverages their own signature scheme, called
 Unlinkable Randomizable Signatures.
 
+The ``family'' of AC systems known in the industry as BBS+ originates from
+\cite{asm06} (or, probably, from the BBS+ variant in \cite{cdl16b}, which
+introduces several improvements). \cite{asm06} presents a GS-like system that
+lets users obtain a credential from a Group Manager. This credential is a
+BBS+ signature. BBS+ signatures are a digital signature scheme, based on
+\cite{bbs04} and following the modification guidelines put forward in
+\cite{cl04}\footnote{Essentially, the authors of \cite{asm06} acknowledge
+  \cite{cl04} as those who proposed the BBS+ scheme -- but without security
+  proofs, which are provided in (the full version of) \cite{asm06}.}. On top
+of the signature scheme, they add efficient protocols for obtaining a signature
+over a set of committed messages, and proving -- in zero knowledge -- knowledge
+of a signature. Users can then be authorized by Application Providers (APs) to
+access their services: for this, APs maintain a list of the users they have
+granted/revoked access to, using a dynamic accumulator. APs also allow users to
+authenticate anonymously up to $k$ times. In order to access the services of APs,
+users have to derive a value using a VRF, and further prove that the value used
+to seed the VRF is a number within $[1,k]$ -- in addition to, of course, proving
+knowledge of a valid BBS+ signature (their credential). APs keep a record of the
+accesses. Thus, if a user accesses more than $k$ times a given AP, anyone with
+access to the record will be able to learn that a user has accessed more than
+$k$ times, as there will be more than one matching VRF-derived values.
+Furthermore, these two (or more) values let anyone extract a ``pseudonymous''
+identity of the user. The model (only informally presented, formal definitions
+appear in \cite{ts06} and proofs are deferred to a full version) seems to be
+used in $k$-TAA systems ($k$ Times Anonymous Authentication), and defines
+properties for:
+
+\begin{itemize}
+\item D-Detectability: Adversaries authenticating more than $k$ times are
+  detected.  
+\item D-Anonymity: Honest users authenticating less than $k$ times remain
+  anonymous.
+\item D-Exculpability: No honest user can be framed as having authenticated
+  more than $k$ times. The GM cannot be framed as dishonest if that is not
+  the case.
+\end{itemize}
+
 \subsubsection{Pseudonym Systems}
 \label{sssec:pseudonyms}
 
@@ -439,9 +476,7 @@ Signal's AC \needcite
 
 \begin{itemize}
 \item \cite{bcc+09,cklm14}: Delegation (\cite{cklm14} relies on \cite{cklm12}).
-\item \cite{aks12}: ACs with revocation.
-\item \cite{asm06}: This seems to be the origin of the BBS+ branch of ACs (also,
-  probably \cite{aks12} is in this family).
+\item \cite{aks12}: BBS+-based ACs with revocation.
 \item \cite{cgm16} An AC system that builds ACs from existing (conventional,
   such as ECDSA) signatures.
 \item \cite{cl11}: ACs from aggregate signatures.
