@@ -193,10 +193,8 @@ export default class GroupStore {
     this.isSaving = true;
     try {
       const response = yield this.api.groupsManager.updateGroup(id, change);
-      runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
-        this.isSaving = false;
-      });
+      this.rootStore.handleTransportLayerSuccess();
+      this.isSaving = false;
       return response;
     } catch (error) {
       const metadata = {

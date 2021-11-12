@@ -39,6 +39,8 @@ export default class ContactStore {
       fetchSearchResultsNextPage: flow.bound,
       fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
+      fetchContactById: flow.bound,
+      updateContact: flow.bound,
       fetchRecursively: false,
       rootStore: false
     });
@@ -196,9 +198,9 @@ export default class ContactStore {
     }
   };
 
-  fetchContactById = async contactId => {
+  *fetchContactById(contactId) {
     try {
-      const response = await this.api.contactsManager.getContact(contactId);
+      const response = yield this.api.contactsManager.getContact(contactId);
       return contactMapper(response);
     } catch (error) {
       const metadata = {
@@ -211,16 +213,14 @@ export default class ContactStore {
         this.rootStore.handleTransportLayerError(error, metadata);
       });
     }
-  };
+  }
 
-  updateContact = async (contactId, newContactData) => {
+  *updateContact(contactId, newContactData) {
     try {
       this.isSaving = true;
-      const response = await this.api.contactsManager.updateContact(contactId, newContactData);
-      runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
-        this.isSaving = false;
-      });
+      const response = yield this.api.contactsManager.updateContact(contactId, newContactData);
+      this.rootStore.handleTransportLayerSuccess();
+      this.isSaving = false;
       return response;
     } catch (error) {
       const metadata = {
@@ -229,9 +229,7 @@ export default class ContactStore {
         verb: 'saving',
         model: 'Contact'
       };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-      });
+      this.rootStore.handleTransportLayerError(error, metadata);
     }
-  };
+  }
 }
