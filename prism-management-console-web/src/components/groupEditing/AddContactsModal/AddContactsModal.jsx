@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Modal, Row, Col } from 'antd';
-import { withApi } from '../../providers/withApi';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
@@ -124,4 +123,4 @@ AddContactsModal.propTypes = {
   visible: PropTypes.bool.isRequired
 };
 
-export default withApi(AddContactsModal);
+export default AddContactsModal;

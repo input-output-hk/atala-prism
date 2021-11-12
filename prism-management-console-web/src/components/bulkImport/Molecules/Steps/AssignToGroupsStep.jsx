@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Select, message, Checkbox } from 'antd';
+import { useApi } from '../../../../hooks/useApi';
 import GenericStep from './GenericStep';
 import { ASSIGN_TO_GROUPS } from '../../../../helpers/constants';
-import { withApi } from '../../../providers/withApi';
 import Logger from '../../../../helpers/Logger';
 
 const AssignToGroupsStep = ({
-  api,
   currentStep,
   setCurrentStep,
   showGroupSelection,
@@ -18,6 +17,7 @@ const AssignToGroupsStep = ({
   disabled
 }) => {
   const { t } = useTranslation();
+  const { groupsManager } = useApi();
 
   const { Option } = Select;
 
@@ -25,7 +25,7 @@ const AssignToGroupsStep = ({
 
   useEffect(() => {
     if (showGroupSelection) {
-      api.groupsManager
+      groupsManager
         .getGroups({})
         .then(({ groupsList }) => setGroups(groupsList))
         .catch(error => {
@@ -33,7 +33,7 @@ const AssignToGroupsStep = ({
           message.error(t('errors.errorGetting', { model: t('groups.title') }));
         });
     }
-  }, [showGroupSelection, api.groupsManager, t]);
+  }, [showGroupSelection, groupsManager, t]);
 
   const toggleSkipStep = e => setSkipGroupsAssignment(e.target.checked);
 
@@ -91,4 +91,4 @@ AssignToGroupsStep.propTypes = {
   disabled: PropTypes.bool
 };
 
-export default withApi(AssignToGroupsStep);
+export default AssignToGroupsStep;

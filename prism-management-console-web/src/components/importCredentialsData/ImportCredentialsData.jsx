@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import ImportDataContainer from '../importContactData/ImportDataContainer';
-import { withRedirector } from '../providers/withRedirector';
-import { withApi } from '../providers/withApi';
 import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpers/constants';
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
@@ -74,4 +72,4 @@ ImportCredentialsData.propTypes = {
   hasSelectedRecipients: PropTypes.bool
 };
 
-export default withApi(withRedirector(ImportCredentialsData));
+export default ImportCredentialsData;

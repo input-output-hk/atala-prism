@@ -1,7 +1,6 @@
-import React from 'react';
 import { useHistory } from 'react-router-dom';
 
-export const withRedirector = Component => props => {
+export const useRedirector = () => {
   const history = useHistory();
 
   const redirectTo = route => history.push(`/${route}`);
@@ -37,7 +36,7 @@ export const withRedirector = Component => props => {
 
   const redirectToCredentialTemplateCreation = () => redirectTo('templates/create');
 
-  const redirector = {
+  return {
     redirectToHome,
     redirectToNewCredential,
     redirectToRegistration,
@@ -54,6 +53,4 @@ export const withRedirector = Component => props => {
     redirectToCredentialTemplates,
     redirectToCredentialTemplateCreation
   };
-
-  return <Component {...props} redirector={redirector} />;
 };

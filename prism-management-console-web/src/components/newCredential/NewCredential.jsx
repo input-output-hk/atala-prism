@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { withRedirector } from '../providers/withRedirector';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
 import {
@@ -12,6 +11,7 @@ import {
   SELECT_CREDENTIAL_TYPE_STEP
 } from '../../helpers/constants';
 import TemplateFiltersContainer from '../credentialTemplates/Molecules/Filters/TemplateFiltersContainer';
+import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
 
@@ -23,10 +23,10 @@ const NewCredential = ({
   selectedCredentialTypeId,
   hasSelectedRecipients,
   goToCredentialsPreview,
-  onSuccess,
-  redirector: { redirectToCredentials }
+  onSuccess
 }) => {
   const { t } = useTranslation();
+  const { redirectToCredentials } = useRedirector();
 
   const goToSelectTargets = () => {
     if (selectedCredentialTypeId) changeStep(SELECT_RECIPIENTS_STEP);
@@ -104,9 +104,8 @@ NewCredential.propTypes = {
   renderStep: PropTypes.func.isRequired,
   selectedCredentialTypeId: PropTypes.string,
   hasSelectedRecipients: PropTypes.bool.isRequired,
-  redirector: PropTypes.shape({ redirectToCredentials: PropTypes.func }).isRequired,
   goToCredentialsPreview: PropTypes.func.isRequired,
   onSuccess: PropTypes.func.isRequired
 };
 
-export default withRedirector(NewCredential);
+export default NewCredential;
