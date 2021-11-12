@@ -13,9 +13,9 @@ const EditContactModal = ({
   name,
   groups,
   contactId,
-  onDeleteGroup,
+  selectGroupsToRemove,
   onClose,
-  updateContact
+  onFinish
 }) => {
   const { t } = useTranslation();
 
@@ -41,7 +41,7 @@ const EditContactModal = ({
         name="editContact"
         autoComplete="off"
         initialValues={{ externalId, name }}
-        onFinish={newContactData => updateContact(contactId, newContactData).then(onClose)}
+        onFinish={onFinish}
       >
         <h1 className="modalTitle">{t('contacts.edit.title')}</h1>
         <div className="modalContainer">
@@ -67,7 +67,7 @@ const EditContactModal = ({
           <strong>{t('contacts.edit.groups')}</strong>
         </p>
         <div className="boxContainer">
-          <DetailBox groups={groups} onDelete={onDeleteGroup} contactId={contactId} />
+          <DetailBox groups={groups} onDelete={selectGroupsToRemove} contactId={contactId} />
           <CustomButton
             buttonProps={{
               className: 'theme-secondary',
@@ -92,9 +92,9 @@ EditContactModal.propTypes = {
     })
   ).isRequired,
   contactId: PropTypes.string.isRequired,
-  onDeleteGroup: PropTypes.func.isRequired,
+  selectGroupsToRemove: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  updateContact: PropTypes.func.isRequired
+  onFinish: PropTypes.func.isRequired
 };
 
 export default EditContactModal;

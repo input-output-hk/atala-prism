@@ -21,7 +21,7 @@ const { TabPane } = Tabs;
 const ISSUED = 'issued';
 const RECEIVED = 'received';
 
-const Contact = observer(({ isEditing, verifyCredential, deleteGroup, updateContact }) => {
+const Contact = observer(({ isEditing, verifyCredential, removeFromGroup, updateContact }) => {
   const { t } = useTranslation();
   const { redirectToContacts } = useRedirector();
   const {
@@ -39,10 +39,38 @@ const Contact = observer(({ isEditing, verifyCredential, deleteGroup, updateCont
 
   const tp = useTranslationWithPrefix('contacts.detail');
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [groupsToRemove, setGroupsToRemove] = useState([]);
 
   useEffect(() => {
     setModalIsOpen(isEditing);
   }, [isEditing]);
+
+  const handleUpdateContact = async newContactData => {
+    handleUpdateContactData(newContactData);
+    await handleRemoveFromGroups();
+    setModalIsOpen(false);
+  };
+
+  const handleUpdateContactData = newContactData => {
+    const shouldUpdateContactData =
+      newContactData.name !== contactName || newContactData.externalId !== externalId;
+
+    if (shouldUpdateContactData) updateContact(contactId, newContactData);
+  };
+
+  const handleRemoveFromGroups = async () => {
+    if (!groupsToRemove.length) return;
+    const updateGroupsPromises = groupsToRemove.map(groupId => removeFromGroup(groupId, contactId));
+    return Promise.all(updateGroupsPromises);
+  };
+
+  const handleSelectGroupsToRemove = group => {
+    setGroupsToRemove(groupsToRemove.concat(group));
+  };
+  const handleCancel = () => {
+    setModalIsOpen(false);
+    setGroupsToRemove([]);
+  };
 
   return (
     <div className="contactDetail">
@@ -50,11 +78,11 @@ const Contact = observer(({ isEditing, verifyCredential, deleteGroup, updateCont
         visible={modalIsOpen}
         externalId={externalId}
         name={contactName}
-        groups={groups}
+        groups={groups.filter(g => !groupsToRemove.includes(g.id))}
         contactId={contactId}
-        onDeleteGroup={deleteGroup}
-        onClose={() => setModalIsOpen(false)}
-        updateContact={updateContact}
+        selectGroupsToRemove={handleSelectGroupsToRemove}
+        onClose={handleCancel}
+        onFinish={handleUpdateContact}
       />
       <div className="ContentHeader headerSection">
         <div className="buttonSection">
@@ -137,7 +165,7 @@ Contact.defaultProps = {
 Contact.propTypes = {
   isEditing: PropTypes.bool,
   verifyCredential: PropTypes.func.isRequired,
-  deleteGroup: PropTypes.func.isRequired,
+  removeFromGroup: PropTypes.func.isRequired,
   updateContact: PropTypes.func.isRequired
 };
 

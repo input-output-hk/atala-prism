@@ -3,6 +3,7 @@ import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
 
 const defaultValues = {
+  isSaving: false,
   isFetching: false,
   contacts: [],
   searchResults: [],
@@ -15,6 +16,8 @@ const fallback = {
   newScrollId: undefined
 };
 export default class ContactStore {
+  isSaving = defaultValues.isSaving;
+
   isFetching = defaultValues.isFetching;
 
   contacts = defaultValues.contacts;
@@ -202,6 +205,28 @@ export default class ContactStore {
         store: this.storeName,
         method: 'fetchContactById',
         verb: 'getting',
+        model: 'Contact'
+      };
+      runInAction(() => {
+        this.rootStore.handleTransportLayerError(error, metadata);
+      });
+    }
+  };
+
+  updateContact = async (contactId, newContactData) => {
+    try {
+      this.isSaving = true;
+      const response = await this.api.contactsManager.updateContact(contactId, newContactData);
+      runInAction(() => {
+        this.rootStore.handleTransportLayerSuccess();
+        this.isSaving = false;
+      });
+      return response;
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'updateContact',
+        verb: 'saving',
         model: 'Contact'
       };
       runInAction(() => {

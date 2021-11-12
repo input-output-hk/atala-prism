@@ -1,3 +1,5 @@
+import { message } from 'antd';
+import i18n from 'i18next';
 import { makeAutoObservable } from 'mobx';
 
 const defaultValues = {
@@ -94,5 +96,21 @@ export default class CurrentContactState {
 
     this.credentialsReceived = credentialsList;
     this.isLoadingCredentialsReceived = false;
+  };
+
+  // actions
+
+  removeFromGroup = async (groupId, contactId) => {
+    const { updateGroup } = this.rootStore.prismStore.groupStore;
+    await updateGroup(groupId, { contactIdsToRemove: [contactId] });
+    message.success(i18n.t('contacts.edit.success.removingFromGroup'));
+    await this.loadGroups();
+  };
+
+  updateContact = async (contactId, newContactData) => {
+    const { updateContact } = this.rootStore.prismStore.contactStore;
+    await updateContact(contactId, newContactData);
+    message.success(i18n.t('contacts.edit.success.updating'));
+    await this.loadContact();
   };
 }
