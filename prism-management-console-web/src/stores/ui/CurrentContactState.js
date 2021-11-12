@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import i18n from 'i18next';
-import { makeAutoObservable } from 'mobx';
+import { flow, makeAutoObservable } from 'mobx';
 
 const defaultValues = {
   isLoadingContact: false,
@@ -44,6 +44,12 @@ export default class CurrentContactState {
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
+      loadContact: flow.bound,
+      loadGroups: flow.bound,
+      loadCredentialsIssued: flow.bound,
+      loadCredentialsReceived: flow.bound,
+      removeFromGroup: flow.bound,
+      updateContact: flow.bound,
       rootStore: false
     });
   }
@@ -58,59 +64,59 @@ export default class CurrentContactState {
     this.loadCredentialsReceived();
   };
 
-  loadContact = async () => {
+  *loadContact() {
     this.isLoadingContact = true;
     const { fetchContactById } = this.rootStore.prismStore.contactStore;
 
-    const contact = await fetchContactById(this.contactId);
+    const contact = yield fetchContactById(this.contactId);
 
     this.contactName = contact.contactName;
     this.externalId = contact.externalId;
     this.isLoadingContact = false;
-  };
+  }
 
-  loadGroups = async () => {
+  *loadGroups() {
     this.isLoadingGroups = true;
     const { getContactGroups } = this.rootStore.prismStore.groupStore;
-    const groups = await getContactGroups(this.contactId);
+    const groups = yield getContactGroups(this.contactId);
 
     this.groups = groups;
     this.isLoadingGroups = false;
-  };
+  }
 
-  loadCredentialsIssued = async () => {
+  *loadCredentialsIssued() {
     this.isLoadingCredentialsIssued = true;
     const { getContactCredentials } = this.rootStore.prismStore.credentialIssuedStore;
 
-    const credentials = await getContactCredentials(this.contactId);
+    const credentials = yield getContactCredentials(this.contactId);
 
     this.credentialsIssued = credentials;
     this.isLoadingCredentialsIssued = false;
-  };
+  }
 
-  loadCredentialsReceived = async () => {
+  *loadCredentialsReceived() {
     this.isLoadingCredentialsReceived = true;
     const { fetchCredentials } = this.rootStore.prismStore.credentialReceivedStore;
 
-    const { credentialsList } = await fetchCredentials(this.contactId);
+    const { credentialsList } = yield fetchCredentials(this.contactId);
 
     this.credentialsReceived = credentialsList;
     this.isLoadingCredentialsReceived = false;
-  };
+  }
 
   // actions
 
-  removeFromGroup = async (groupId, contactId) => {
+  *removeFromGroup(groupId, contactId) {
     const { updateGroup } = this.rootStore.prismStore.groupStore;
-    await updateGroup(groupId, { contactIdsToRemove: [contactId] });
+    yield updateGroup(groupId, { contactIdsToRemove: [contactId] });
     message.success(i18n.t('contacts.edit.success.removingFromGroup'));
-    await this.loadGroups();
-  };
+    yield this.loadGroups();
+  }
 
-  updateContact = async (contactId, newContactData) => {
+  *updateContact(contactId, newContactData) {
     const { updateContact } = this.rootStore.prismStore.contactStore;
-    await updateContact(contactId, newContactData);
+    yield updateContact(contactId, newContactData);
     message.success(i18n.t('contacts.edit.success.updating'));
-    await this.loadContact();
-  };
+    yield this.loadContact();
+  }
 }

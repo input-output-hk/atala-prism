@@ -34,8 +34,8 @@ export default class GroupStore {
       fetchSearchResults: flow.bound,
       fetchSearchResultsNextPage: flow.bound,
       getGroupsToSelect: flow.bound,
-      updateGroupName: flow.bound,
-      updateGroupMembers: flow.bound,
+      updateGroup: flow.bound,
+      getContactGroups: flow.bound,
       fetchRecursively: false,
       rootStore: false
     });
@@ -189,10 +189,10 @@ export default class GroupStore {
     }
   };
 
-  updateGroup = async (id, change) => {
+  *updateGroup(id, change) {
     this.isSaving = true;
     try {
-      const response = await this.api.groupsManager.updateGroup(id, change);
+      const response = yield this.api.groupsManager.updateGroup(id, change);
       runInAction(() => {
         this.rootStore.handleTransportLayerSuccess();
         this.isSaving = false;
@@ -205,24 +205,20 @@ export default class GroupStore {
         verb: 'saving',
         model: 'Group'
       };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-        this.isSaving = false;
-      });
+      this.rootStore.handleTransportLayerError(error, metadata);
+      this.isSaving = false;
     }
-  };
+  }
 
   createGroup = async ({ name, members }) => {
     const newGroup = await this.api.groupsManager.createGroup(name);
     if (members) await this.updateGroup(newGroup.id, { contactIdsToAdd: members });
   };
 
-  getContactGroups = async contactId => {
+  *getContactGroups(contactId) {
     try {
-      const response = await this.api.groupsManager.getGroups({ contactId });
-      runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
-      });
+      const response = yield this.api.groupsManager.getGroups({ contactId });
+      this.rootStore.handleTransportLayerSuccess();
       return response.groupsList;
     } catch (error) {
       const metadata = {
@@ -231,9 +227,7 @@ export default class GroupStore {
         verb: 'getting',
         model: 'Groups'
       };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-      });
+      this.rootStore.handleTransportLayerError(error, metadata);
     }
-  };
+  }
 }
