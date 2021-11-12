@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
-import { credentialTabShape } from '../../helpers/propShapes';
 import CreateCredentialsButton from './Atoms/Buttons/CreateCredentialsButton';
 import CredentialsIssued from './Organisms/Tabs/CredentialsIssued';
 import CredentialsReceived from './Organisms/Tabs/CredentialsReceived';
@@ -21,7 +20,7 @@ import './_style.scss';
 
 const { TabPane } = Tabs;
 
-const Credentials = observer(({ tabProps, setActiveTab, loading, verifyCredential }) => {
+const CredentialTabs = observer(({ credentialsIssuedProps, verifyCredential }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState();
   const [showDrawer, setShowDrawer] = useState(false);
@@ -55,21 +54,15 @@ const Credentials = observer(({ tabProps, setActiveTab, loading, verifyCredentia
         {accountStatus === CONFIRMED && <CreateCredentialsButton />}
       </div>
       <div className="tabContent">
-        <Tabs defaultActiveKey={CREDENTIALS_ISSUED} onChange={setActiveTab}>
+        <Tabs defaultActiveKey={CREDENTIALS_ISSUED}>
           <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>
             <CredentialsIssued
-              {...tabProps[CREDENTIALS_ISSUED]}
+              {...credentialsIssuedProps}
               showCredentialData={showCredentialData}
-              initialLoading={loading.issued}
-              searchDueGeneralScroll
             />
           </TabPane>
           <TabPane key={CREDENTIALS_RECEIVED} tab={t('credentials.tabs.credentialsReceived')}>
-            <CredentialsReceived
-              {...tabProps[CREDENTIALS_RECEIVED]}
-              showCredentialData={showCredentialData}
-              initialLoading={loading.received}
-            />
+            <CredentialsReceived showCredentialData={showCredentialData} />
           </TabPane>
         </Tabs>
       </div>
@@ -77,21 +70,26 @@ const Credentials = observer(({ tabProps, setActiveTab, loading, verifyCredentia
   );
 });
 
-Credentials.defaultProps = {
-  loading: {
-    issued: false,
-    received: false
-  }
-};
-
-Credentials.propTypes = {
-  tabProps: PropTypes.shape({
-    [CREDENTIALS_ISSUED]: PropTypes.shape(credentialTabShape),
-    [CREDENTIALS_RECEIVED]: PropTypes.shape(credentialTabShape)
+CredentialTabs.propTypes = {
+  credentialsIssuedProps: PropTypes.shape({
+    revokeSingleCredential: PropTypes.func.isRequired,
+    signSingleCredential: PropTypes.func.isRequired,
+    sendSingleCredential: PropTypes.func.isRequired,
+    selectionType: PropTypes.shape({
+      selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
+      type: PropTypes.string,
+      onChange: PropTypes.func
+    }),
+    bulkActionsProps: {
+      refreshCredentials: PropTypes.func.isRequired,
+      revokeSelectedCredentials: PropTypes.func.isRequired,
+      signSelectedCredentials: PropTypes.func.isRequired,
+      sendSelectedCredentials: PropTypes.func.isRequired,
+      selectedCredentials: PropTypes.arrayOf(PropTypes.string),
+      selectAllProps: PropTypes.func.isRequired
+    }
   }).isRequired,
-  loading: PropTypes.shape({ issued: PropTypes.bool, received: PropTypes.bool }),
-  setActiveTab: PropTypes.func.isRequired,
   verifyCredential: PropTypes.func.isRequired
 };
 
-export default Credentials;
+export default CredentialTabs;
