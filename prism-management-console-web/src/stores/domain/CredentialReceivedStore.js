@@ -1,4 +1,4 @@
-import { makeAutoObservable, flow, runInAction } from 'mobx';
+import { makeAutoObservable, flow } from 'mobx';
 import { credentialReceivedMapper } from '../../APIs/helpers/credentialHelpers';
 
 const defaultValues = {
@@ -21,6 +21,7 @@ export default class CredentialReceivedStore {
 
     makeAutoObservable(this, {
       fetchMoreData: flow.bound,
+      fetchCredentials: flow.bound,
       rootStore: false
     });
   }
@@ -38,25 +39,23 @@ export default class CredentialReceivedStore {
     this.credentials = this.credentials.concat(response.credentialsList);
   }
 
-  fetchCredentials = async () => {
+  *fetchCredentials() {
     this.isFetching = true;
     try {
-      const response = await this.api.credentialsReceivedManager.getReceivedCredentials();
+      const response = yield this.api.credentialsReceivedManager.getReceivedCredentials();
       const credentialsWithContactsData = response.credentialsList.map(credential =>
         this.api.contactsManager
           .getContact(credential.individualId)
           .then(contactData => ({ contactData, ...credential }))
       );
-      const credentialsWithIssuanceProof = await Promise.all(credentialsWithContactsData);
+      const credentialsWithIssuanceProof = yield Promise.all(credentialsWithContactsData);
 
       const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
         credentialReceivedMapper(cred)
       );
 
-      runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
-        this.isFetching = false;
-      });
+      this.rootStore.handleTransportLayerSuccess();
+      this.isFetching = false;
       const mappedResponse = { ...response, credentialsList: mappedCredentials };
       return mappedResponse;
     } catch (error) {
@@ -66,11 +65,9 @@ export default class CredentialReceivedStore {
         verb: 'getting',
         model: 'Credentials'
       };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-        this.isFetching = false;
-      });
+      this.rootStore.handleTransportLayerError(error, metadata);
+      this.isFetching = false;
       return fallback;
     }
-  };
+  }
 }
