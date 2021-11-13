@@ -399,9 +399,14 @@ signatures, with the possibility of signing committed values, that also support
 efficient proofs of knowledge.
 
 The most recurrent signature schemes are Camenisch-Lysyanskaya \cite{cl02,cl04},
-BBS/BBS+ \cite{asm06,cdl16b}, and Pointcheval Sanders \cite{ps16}, with the
-exception of \cite{cdhk15} that leverages their own signature scheme, called
-Unlinkable Randomizable Signatures.
+BBS/BBS+ \cite{asm06,cdl16b}, and Pointcheval Sanders \cite{ps16}.
+\cite{cdhk15} leverages their own signature scheme, called Unlinkable
+Randomizable Signatures, which lets users obtain a signature on a set of
+(committed) messages and then prove knowledge of (a subset of) these
+messages, introducing rerandomization to prevent linking. \cite{fhs19}
+follows a similar approach, using vector commitments. Both schemes
+\cite{cdhk15,fhs19} seem to be the most efficient AC instantiations to date.
+\cite{cdhk15} follows the UC framework; \cite{fhs19} a game-based definition.
 
 The ``family'' of AC systems known in the industry as BBS+ originates from
 \cite{asm06} (or, probably, from the BBS+ variant in \cite{cdl16b}, which
@@ -440,6 +445,56 @@ properties for:
   the case.
 \end{itemize}
 
+The system in \cite{aks12} also uses BBS+ signatures as a main building block
+to design a system with accountable anonymity, although it is not ``strictly''
+an anonymous credentials system: users receive a credential that lets them
+authenticate anonymously against service providers, but this credential does
+not include attributes, which seems to be the common case in ACs (however,
+with BBS+ it is trivial to add attributes, although this should be modelled).
+The main contribution of \cite{aks12} is the design and incorporation of
+protocols to block misbehaving users depending on their behaviour, without
+relying on trusted third parties. This is based on ``reputation lists'',
+maintained by each service provider. Uses that have previously registered
+with a Group Manager can authenticate against service providers by proving
+knowledge of a valid credential. Depending on how these users behave during
+the session with the service provider, the latter adds the interaction to
+either a \emph{good behaviour} list, or a \emph{misbehaviour list}. For
+subsequent authentications, users prove (in an ``almost unlinkable'' way
+w.r.t. previous authentications) that they have a certain reputation,
+computed as a weighted sum of their presence in the good/bad behaviour
+lists. Moreover, each service provider can maintain multiple thematic lists,
+and then require users to satisfy arbitrary boolean policies based on these
+lists (e.g., reputation $\gt X_1$ on $list_1$ and reputation $\lt X_2$ on
+$list_2$ or reputation $\eq X_3$ on $list_3$) so that only users meeting
+the defined policy can access their system. These proves have though a linear
+dependency on the number of authentications that each user has done in
+the past. To reduce the impact of this, the authors create epochs. When a
+user authenticates successfully against a service provider, at a given epoch
+$i$, the service provider gives the user a token that authenticates the
+reputation that the user had at epoch $i$. Then, when this user tries to
+authenticate again, he only needs to give that token, and prove his reputation
+since epoch $i$ (this is why authentication is ``almost unlinkable'', as
+service providers may learn when the user authenticated for the last time).
+Note that no trusted party is involved in the blacklisting process, as
+correctness of all tokens exchanged between users and service providers to prove
+meeting certain policy, is ensured via the corresponing proof protocols.
+Concerning security, the system is proven secure in the simulation paradigm,
+claiming to meet (informally defined) properties of:
+
+\begin{itemize}
+\item Anonymity: All the SPs can infer from authenticating users is that they
+  meet the predefined policy, and that they authenticated at a certain epoch.
+\item Authenticity: Only users meeting the defined policies can authenticate.
+\item Mis-authentication resistance: Un-registered users cannot authenticate
+  successfully.
+\item Non-frameability: No coalition of users can cause that another user
+  meeting the required policy, cannot authenticate successfully.
+\end{itemize}
+
+Somehow, these properties resemble those in the group signatures model in
+\cite{kty04}. Probably, the addition of non-frameability is a consequence
+of adding a variant of revocation.
+
 \subsubsection{Pseudonym Systems}
 \label{sssec:pseudonyms}
 
@@ -476,7 +531,6 @@ Signal's AC \needcite
 
 \begin{itemize}
 \item \cite{bcc+09,cklm14}: Delegation (\cite{cklm14} relies on \cite{cklm12}).
-\item \cite{aks12}: BBS+-based ACs with revocation.
 \item \cite{cgm16} An AC system that builds ACs from existing (conventional,
   such as ECDSA) signatures.
 \item \cite{cl11}: ACs from aggregate signatures.
