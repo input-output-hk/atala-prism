@@ -116,6 +116,22 @@ the attributes that the user is willing to share (or a function of them).
   the user). Otherwise, the user has to encrypt the attributes and prove
   they are correct. Presentation only requires one message from the user
   to the verifier.
+\item[\cite{cl11}:] The approach differs from the conventional ones. In this
+  case, the focus is on settings where users may want to combine multiple
+  credentials from different issuers. Thus, interest is on reducing the size
+  of the resulting credentials, and the efficiency of associated processes.
+  The approach is based on aggregate signatures. As usual, each credential
+  may contain several attributes. Each attribute is independently signed
+  by the issuer. Then, users can combine an arbitrary number of signed
+  attributes (by the same or different issuers) into a single aggregate
+  signature. Verification only needs the aggregated signature and the set
+  of public keys of all the involved issuers. To prevent different users
+  from aggregating their credentials, the authors resort to \emph{indexed}
+  aggregate signatures: an index is added to each signature, such that only
+  signatures that have the same index can be aggregated. In their instantiation,
+  the signature is a BGLS signature \cite{bgls03}, and the index is a BB
+  signature \cite{bb04}. The actual instantiation seems impractical (too many
+  linear costs, see the table in the paper).
 \item[\cite{cdhk15}:] The approach to build anonymous credentials is roughly
   the same as in the previous works \cite{cl01,cl02,cl04}, although with
   relevant differences that make it more efficient. Basically, users create
@@ -218,6 +234,8 @@ the attributes that the user is willing to share (or a function of them).
   the adversary (including a corrupt issuer) does not learn any information
   about the blindly signed messages. \doubt{Not sure I get the utility of
     signer privacy. The original property seems to come from \cite{bckl08}.}
+\item[\cite{cl11}:] The security properties in this work are unforgeability
+  and anonymity, for which the authors give game-based definitions.
 \item[\cite{cmz14}:] The security properties proven in this work are:
   \begin{itemize}
   \item \emph{Unforgeability}: The adversary cannot produce a valid proof for a
@@ -464,8 +482,8 @@ w.r.t. previous authentications) that they have a certain reputation,
 computed as a weighted sum of their presence in the good/bad behaviour
 lists. Moreover, each service provider can maintain multiple thematic lists,
 and then require users to satisfy arbitrary boolean policies based on these
-lists (e.g., reputation $\gt X_1$ on $list_1$ and reputation $\lt X_2$ on
-$list_2$ or reputation $\eq X_3$ on $list_3$) so that only users meeting
+lists (e.g., reputation $\ge X_1$ on $list_1$ and reputation $\le X_2$ on
+$list_2$ or reputation $= X_3$ on $list_3$) so that only users meeting
 the defined policy can access their system. These proves have though a linear
 dependency on the number of authentications that each user has done in
 the past. To reduce the impact of this, the authors create epochs. When a
@@ -533,7 +551,6 @@ Signal's AC \needcite
 \item \cite{bcc+09,cklm14}: Delegation (\cite{cklm14} relies on \cite{cklm12}).
 \item \cite{cgm16} An AC system that builds ACs from existing (conventional,
   such as ECDSA) signatures.
-\item \cite{cl11}: ACs from aggregate signatures.
 \end{itemize}
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
@@ -557,6 +574,8 @@ the public keys) comparison. And, ideally, with concrete instantiations (not onl
 theoretical analysis)?
 
 \cite{fhs19} has a nice comparison table.
+
+How to compare efficiency of AC systems?
 
 
 %%% Local Variables:
