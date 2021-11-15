@@ -128,24 +128,4 @@ export default class CredentialIssuedStore {
       return fallback;
     }
   };
-
-  getContactCredentials = async contactId => {
-    try {
-      const response = await this.api.credentialsManager.getContactCredentials(contactId);
-      runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
-      });
-      return response;
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'getContactCredentials',
-        verb: 'getting',
-        model: 'Credentials'
-      };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-      });
-    }
-  };
 }

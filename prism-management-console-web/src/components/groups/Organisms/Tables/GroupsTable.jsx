@@ -23,12 +23,12 @@ const GroupsTable = observer(
   }) => {
     const { t } = useTranslation();
     const { accountStatus } = useSession();
-    const { groups, fetchMoreData, isLoadingFirstPage, isFetching, hasMore } = useGroupStore();
+    const { groups, initGroupStore, fetchMoreData, isFetching, hasMore } = useGroupStore();
     const { hasFiltersApplied, isSearching, isSorting } = useGroupUiState();
 
     useEffect(() => {
-      fetchMoreData();
-    }, [fetchMoreData]);
+      initGroupStore();
+    }, [initGroupStore]);
 
     const emptyProps = {
       photoSrc: noGroups,

@@ -39,7 +39,6 @@ export default class ContactStore {
       fetchSearchResultsNextPage: flow.bound,
       fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
-      fetchContactById: flow.bound,
       updateContact: flow.bound,
       fetchRecursively: false,
       rootStore: false
@@ -197,23 +196,6 @@ export default class ContactStore {
       return fallback;
     }
   };
-
-  *fetchContactById(contactId) {
-    try {
-      const response = yield this.api.contactsManager.getContact(contactId);
-      return contactMapper(response);
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'fetchContactById',
-        verb: 'getting',
-        model: 'Contact'
-      };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-      });
-    }
-  }
 
   *updateContact(contactId, newContactData) {
     try {

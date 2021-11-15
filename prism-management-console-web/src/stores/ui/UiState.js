@@ -13,7 +13,7 @@ export class UiState {
   constructor(api, rootStore) {
     this.sessionState = new SessionState(api, rootStore);
     this.contactUiState = new ContactUiState(rootStore);
-    this.currentContactState = new CurrentContactState(rootStore);
+    this.currentContactState = new CurrentContactState(api, rootStore);
     this.groupUiState = new GroupUiState(rootStore);
     this.currentGroupState = new CurrentGroupState(rootStore);
     this.credentialIssuedUiState = new CredentialIssuedUiState(rootStore);

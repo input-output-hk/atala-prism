@@ -4,12 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import Logger from '../../helpers/Logger';
 import Groups from './Groups';
-import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
+import { useGroupUiState } from '../../hooks/useGroupStore';
 import { useApi } from '../../hooks/useApi';
 
 const GroupsContainer = observer(() => {
   const { groupsManager, contactsManager } = useApi();
-  useGroupStore({ reset: true });
   useGroupUiState({ reset: true });
 
   const { t } = useTranslation();
