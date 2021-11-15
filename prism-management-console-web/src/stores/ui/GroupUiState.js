@@ -32,8 +32,6 @@ export default class GroupUiState {
 
   sortingBy = defaultValues.sortingBy;
 
-  fetchedResults = defaultValues.fetchedResults;
-
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
@@ -69,21 +67,6 @@ export default class GroupUiState {
     );
   }
 
-  get displayedGroups() {
-    const { groups } = this.rootStore.prismStore.groupStore;
-    return this.hasFiltersApplied || this.hasCustomSorting ? this.sortedFilteredGroups : groups;
-  }
-
-  get sortedFilteredGroups() {
-    if (this.fetchedResults) return this.fetchedResults;
-    const { groups, searchResults } = this.rootStore.prismStore.groupStore;
-    const allFetchedGroups = groups.concat(searchResults);
-    const groupsToFilter = _.uniqBy(allFetchedGroups, g => g.name);
-    const unsortedFilteredGroups = this.applyFilters(groupsToFilter);
-    const sortedFilteredGroups = this.applySorting(unsortedFilteredGroups);
-    return sortedFilteredGroups;
-  }
-
   triggerSearch = () => {
     this.isSearching = this.hasFiltersApplied;
     this.isSorting = this.hasCustomSorting;
@@ -94,35 +77,7 @@ export default class GroupUiState {
   triggerBackendSearch = _.debounce(async () => {
     const { fetchSearchResults } = this.rootStore.prismStore.groupStore;
     await fetchSearchResults();
-    this.updateFetchedResults();
   }, SEARCH_DELAY_MS);
-
-  updateFetchedResults = () => {
-    const { searchResults } = this.rootStore.prismStore.groupStore;
-    this.fetchedResults = searchResults;
-    this.isSearching = false;
-    this.isSorting = false;
-  };
-
-  applyFilters = groups =>
-    groups.filter(item => {
-      const matchName = !this.hasNameFilterApplied || filterByInclusion(this.nameFilter, item.name);
-      const matchDate =
-        !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.createdAt);
-
-      return matchName && matchDate;
-    });
-
-  applySorting = groups =>
-    _.orderBy(
-      groups,
-      [
-        o => (this.sortingIsCaseSensitive() ? o[this.sortingKey].toLowerCase() : o[this.sortingKey])
-      ],
-      this.sortDirection === ascending ? 'asc' : 'desc'
-    );
-
-  sortingIsCaseSensitive = () => this.sortingBy === GROUP_SORTING_KEYS.name;
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
@@ -130,7 +85,6 @@ export default class GroupUiState {
     this.dateFilter = defaultValues.lastEditedFilter;
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
-    this.fetchedResults = defaultValues.fetchedResults;
   };
 
   setFilterValue = (key, value) => {

@@ -39,7 +39,7 @@ const NewCredentialContainer = observer(() => {
 
   const [selectedGroups, setSelectedGroups] = useState([]);
 
-  const { groups } = useGroupStore({ fetch: true, reset: true });
+  const { groups } = useGroupStore({ reset: true });
   useGroupUiState({ reset: true });
 
   const { contacts } = useContactStore({ fetch: true, reset: true });

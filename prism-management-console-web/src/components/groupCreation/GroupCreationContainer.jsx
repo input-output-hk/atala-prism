@@ -7,7 +7,7 @@ import { useRedirector } from '../../hooks/useRedirector';
 const GroupCreationContainer = () => {
   const { redirectToGroups } = useRedirector();
   useContactUiState({ reset: true });
-  useContactStore({ reset: true, fetch: true });
+  useContactStore({ reset: true });
   const { createGroup, isSaving } = useGroupStore();
 
   const [groupName, setGroupName] = useState('');

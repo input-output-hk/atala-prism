@@ -9,7 +9,7 @@ import { useApi } from '../../hooks/useApi';
 
 const GroupsContainer = observer(() => {
   const { groupsManager, contactsManager } = useApi();
-  useGroupStore({ fetch: true, reset: true });
+  useGroupStore({ reset: true });
   useGroupUiState({ reset: true });
 
   const { t } = useTranslation();

@@ -84,21 +84,17 @@ const CredentialsTable = ({
 
   return (
     <div className={`CredentialsTable InfiniteScrollTableContainer ${tableClassName[tab]}`}>
-      {emptyProps.isEmpty ? (
-        <EmptyComponent {...emptyProps} />
-      ) : (
-        <InfiniteScrollTable
-          columns={columns[tab]}
-          data={credentials}
-          loading={loading}
-          getMoreData={handleGetMoreData}
-          hasMore={hasMore}
-          rowKey="credentialId"
-          selectionType={selectionType}
-          fetchingMore={isFetching}
-          renderEmpty={() => <EmptyComponent {...emptyProps} />}
-        />
-      )}
+      <InfiniteScrollTable
+        columns={columns[tab]}
+        data={credentials}
+        loading={loading}
+        getMoreData={handleGetMoreData}
+        hasMore={hasMore}
+        rowKey="credentialId"
+        selectionType={selectionType}
+        fetchingMore={isFetching}
+        renderEmpty={() => <EmptyComponent {...emptyProps} />}
+      />
     </div>
   );
 };
