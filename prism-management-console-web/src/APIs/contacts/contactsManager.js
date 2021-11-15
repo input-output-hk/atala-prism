@@ -20,6 +20,7 @@ import {
 import { GenerateConnectionTokenRequest } from '../../protos/connector_api_pb';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
 import { getProtoDate } from '../../helpers/formatters';
+import { contactMapper } from '../helpers/contactHelpers';
 
 const { FilterBy, SortBy } = GetContactsRequest;
 
@@ -153,9 +154,11 @@ async function getContact(contactId) {
 
   const res = await this.client.getContact(req, metadata);
   const { contact } = res.toObject();
-  Logger.info('Got contact:', contact);
+  const mappedContact = contactMapper(contact);
 
-  return contact;
+  Logger.info('Got contact:', mappedContact);
+
+  return mappedContact;
 }
 
 async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) {

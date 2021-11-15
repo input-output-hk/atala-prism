@@ -3,13 +3,8 @@ import { PrismStoreContext } from '../stores/domain/PrismStore';
 import { UiStateContext } from '../stores/ui/UiState';
 import { useUpdateEffect } from './useUpdateEffect';
 
-export const useGroupStore = ({ reset } = { reset: false }) => {
+export const useGroupStore = () => {
   const { groupStore } = useContext(PrismStoreContext);
-  const { resetGroups } = groupStore;
-
-  useEffect(() => {
-    if (reset) resetGroups();
-  }, [reset, resetGroups]);
 
   return groupStore;
 };

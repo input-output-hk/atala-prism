@@ -41,7 +41,8 @@ export default class CurrentContactState {
 
   credentialsReceived = defaultValues.credentialsReceived;
 
-  constructor(rootStore) {
+  constructor(api, rootStore) {
+    this.api = api;
     this.rootStore = rootStore;
     makeAutoObservable(this, {
       loadContact: flow.bound,
@@ -70,9 +71,8 @@ export default class CurrentContactState {
 
   *loadContact() {
     this.isLoadingContact = true;
-    const { fetchContactById } = this.rootStore.prismStore.contactStore;
 
-    const contact = yield fetchContactById(this.contactId);
+    const contact = yield this.api.contactsManager.getContact(this.contactId);
 
     this.contactName = contact.contactName;
     this.externalId = contact.externalId;
@@ -81,18 +81,16 @@ export default class CurrentContactState {
 
   *loadGroups() {
     this.isLoadingGroups = true;
-    const { getContactGroups } = this.rootStore.prismStore.groupStore;
-    const groups = yield getContactGroups(this.contactId);
+    const { groupsList } = yield this.api.groupsManager.getGroups({ contactId: this.contactId });
 
-    this.groups = groups;
+    this.groups = groupsList;
     this.isLoadingGroups = false;
   }
 
   *loadCredentialsIssued() {
     this.isLoadingCredentialsIssued = true;
-    const { getContactCredentials } = this.rootStore.prismStore.credentialIssuedStore;
 
-    const credentials = yield getContactCredentials(this.contactId);
+    const credentials = yield this.api.credentialsManager.getContactCredentials(this.contactId);
 
     this.credentialsIssued = credentials;
     this.isLoadingCredentialsIssued = false;
@@ -100,9 +98,10 @@ export default class CurrentContactState {
 
   *loadCredentialsReceived() {
     this.isLoadingCredentialsReceived = true;
-    const { fetchCredentials } = this.rootStore.prismStore.credentialReceivedStore;
 
-    const { credentialsList } = yield fetchCredentials(this.contactId);
+    const { credentialsList } = yield this.api.credentialsReceivedManager.getReceivedCredentials(
+      this.contactId
+    );
 
     this.credentialsReceived = credentialsList;
     this.isLoadingCredentialsReceived = false;
@@ -111,15 +110,13 @@ export default class CurrentContactState {
   // actions
 
   *removeFromGroup(groupId, contactId) {
-    const { updateGroup } = this.rootStore.prismStore.groupStore;
-    yield updateGroup(groupId, { contactIdsToRemove: [contactId] });
+    yield this.api.groupsManager.updateGroup(groupId, { contactIdsToRemove: [contactId] });
     message.success(i18n.t('contacts.edit.success.removingFromGroup'));
     yield this.loadGroups();
   }
 
   *updateContact(contactId, newContactData) {
-    const { updateContact } = this.rootStore.prismStore.contactStore;
-    yield updateContact(contactId, newContactData);
+    yield this.api.contactsManager.updateContact(contactId, newContactData);
     message.success(i18n.t('contacts.edit.success.updating'));
     yield this.loadContact();
   }

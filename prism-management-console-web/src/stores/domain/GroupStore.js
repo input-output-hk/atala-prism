@@ -28,7 +28,6 @@ export default class GroupStore {
       fetchSearchResults: flow.bound,
       getGroupsToSelect: flow.bound,
       updateGroup: flow.bound,
-      getContactGroups: flow.bound,
       fetchGroups: flow.bound,
       fetchRecursively: false,
       rootStore: false
@@ -43,15 +42,19 @@ export default class GroupStore {
     return this.numberOfGroups > this.groups.length;
   }
 
+  initGroupStore = () => {
+    this.resetGroups();
+    this.fetchMoreData({ isInitialLoading: true });
+  };
+
   resetGroups = () => {
     this.groups = defaultValues.groups;
     this.numberOfGroups = defaultValues.numberOfGroups;
   };
 
-  *fetchMoreData() {
-    if (!this.hasMore) return;
-
-    const response = yield this.fetchGroups({ offset: this.groups.length });
+  *fetchMoreData({ isInitialLoading }) {
+    if (!isInitialLoading && !this.hasMore) return;
+    const response = yield this.fetchGroups({ offset: isInitialLoading ? 0 : this.groups.length });
     this.groups = this.groups.concat(response.groupsList);
   }
 
@@ -156,20 +159,4 @@ export default class GroupStore {
     const newGroup = await this.api.groupsManager.createGroup(name);
     if (members) await this.updateGroup(newGroup.id, { contactIdsToAdd: members });
   };
-
-  *getContactGroups(contactId) {
-    try {
-      const response = yield this.api.groupsManager.getGroups({ contactId });
-      this.rootStore.handleTransportLayerSuccess();
-      return response.groupsList;
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'getGroupsByContact',
-        verb: 'getting',
-        model: 'Groups'
-      };
-      this.rootStore.handleTransportLayerError(error, metadata);
-    }
-  }
 }
