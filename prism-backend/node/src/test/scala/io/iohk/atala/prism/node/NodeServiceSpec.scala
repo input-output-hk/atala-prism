@@ -76,7 +76,7 @@ class NodeServiceSpec
       .addService(
         node_api.NodeServiceGrpc
           .bindService(
-            new NodeServiceImpl(
+            new NodeGrpcServiceImpl(
               didDataRepository,
               objectManagementService,
               submissionSchedulingService,

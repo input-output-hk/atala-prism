@@ -121,7 +121,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       credentialBatchesRepository <-
         CredentialBatchesRepository.resource(liftedTransactor, logs)
       nodeService =
-        new NodeServiceImpl(
+        new NodeGrpcServiceImpl(
           didDataRepository,
           objectManagementService,
           submissionSchedulingService,
@@ -217,7 +217,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         InMemoryLedgerService.resource(onAtalaObject, logs)
     }
 
-  private def startServer(nodeService: NodeServiceImpl): Resource[IO, Server] =
+  private def startServer(nodeService: NodeGrpcServiceImpl): Resource[IO, Server] =
     Resource.make[IO, Server](IO {
       logger.info("Starting server")
       import io.grpc.protobuf.services.ProtoReflectionService

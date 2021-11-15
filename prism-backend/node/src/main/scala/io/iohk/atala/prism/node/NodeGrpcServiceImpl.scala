@@ -41,7 +41,7 @@ import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class NodeServiceImpl(
+class NodeGrpcServiceImpl(
     didDataRepository: DIDDataRepository[IOWithTraceIdContext],
     objectManagement: ObjectManagementService[IOWithTraceIdContext],
     submissionSchedulingService: SubmissionSchedulingService,
@@ -51,7 +51,7 @@ class NodeServiceImpl(
 )(implicit ec: ExecutionContext, runtime: IORuntime)
     extends node_api.NodeServiceGrpc.NodeService {
 
-  import NodeServiceImpl._
+  import NodeGrpcServiceImpl._
 
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -562,7 +562,7 @@ class NodeServiceImpl(
   }
 }
 
-object NodeServiceImpl {
+object NodeGrpcServiceImpl {
 
   val serviceName = "node-service"
 

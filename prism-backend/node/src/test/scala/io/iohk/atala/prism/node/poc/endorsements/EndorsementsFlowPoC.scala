@@ -18,12 +18,25 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  CredentialBatchesRepository,
+  DIDDataRepository,
+  KeyValuesRepository,
+  ProtocolVersionRepository
+}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceImpl,
+  InMemoryLedgerService,
+  ObjectManagementService,
+  SubmissionSchedulingService,
+  SubmissionService
+}
+import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.node.poc.Wallet
 import io.iohk.atala.prism.node.poc.endorsements.EndorsementsService.SignedKey
-import io.iohk.atala.prism.node.repositories._
-import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.endorsements_api.{
   EndorseInstitutionRequest,
   GetEndorsementsRequest,
@@ -119,7 +132,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       .addService(
         node_api.NodeServiceGrpc
           .bindService(
-            new NodeServiceImpl(
+            new NodeGrpcServiceImpl(
               didDataRepository,
               objectManagementService,
               submissionSchedulingService,
