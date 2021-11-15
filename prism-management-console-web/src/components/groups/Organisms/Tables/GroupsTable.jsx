@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
@@ -9,7 +9,6 @@ import noGroups from '../../../../images/noGroups.svg';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED } from '../../../../helpers/constants';
-import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
@@ -24,8 +23,12 @@ const GroupsTable = observer(
   }) => {
     const { t } = useTranslation();
     const { accountStatus } = useSession();
-    const { fetchMoreData, isLoadingFirstPage, isFetching, hasMore } = useGroupStore();
-    const { displayedGroups, hasFiltersApplied, isSearching, isSorting } = useGroupUiState();
+    const { groups, fetchMoreData, isLoadingFirstPage, isFetching, hasMore } = useGroupStore();
+    const { hasFiltersApplied, isSearching, isSorting } = useGroupUiState();
+
+    useEffect(() => {
+      fetchMoreData();
+    }, [fetchMoreData]);
 
     const emptyProps = {
       photoSrc: noGroups,
@@ -40,7 +43,7 @@ const GroupsTable = observer(
 
     const tableProps = {
       columns: getGroupColumns({ onCopy, setGroupToDelete, setSelectedGroups }),
-      data: displayedGroups,
+      data: groups,
       selectionType: !setSelectedGroups
         ? null
         : {
@@ -53,13 +56,13 @@ const GroupsTable = observer(
           },
       rowKey: 'name',
       getMoreData: fetchMoreData,
-      loading: isLoadingFirstPage || isSorting,
-      fetchingMore: isFetching || isSearching,
+      loading: isSearching || isSorting,
+      fetchingMore: isFetching,
       hasMore,
       renderEmpty
     };
 
-    return isLoadingFirstPage ? <SimpleLoading /> : <InfiniteScrollTable {...tableProps} />;
+    return <InfiniteScrollTable {...tableProps} emptyProps={emptyProps} />;
   }
 );
 
