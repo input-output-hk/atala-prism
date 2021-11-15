@@ -9,7 +9,7 @@ import { credentialShape } from '../../../../../helpers/propShapes';
 
 import './style.scss';
 
-const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) => {
+const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }) => {
   const { credentialType, publicationstoredat } = credential;
   const { t } = useTranslation();
 
@@ -17,7 +17,7 @@ const CredentialDetail = ({ credential, isCredentialIssued, verifyCredential }) 
   const [showDrawer, setShowDrawer] = useState(false);
 
   const showCredentialData = async clickedCredential => {
-    const verificationResult = await verifyCredential(clickedCredential);
+    const verificationResult = await onVerifyCredential(clickedCredential);
     setCurrentCredential({ verificationResult, ...clickedCredential });
     setShowDrawer(true);
   };
@@ -86,7 +86,7 @@ CredentialDetail.defaultProps = {
 CredentialDetail.propTypes = {
   credential: credentialShape,
   isCredentialIssued: PropTypes.bool,
-  verifyCredential: PropTypes.func.isRequired
+  onVerifyCredential: PropTypes.func.isRequired
 };
 
 export default CredentialDetail;

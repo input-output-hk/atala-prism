@@ -18,13 +18,17 @@ const ContactContainer = observer(() => {
   const { wallet } = useApi();
 
   const { id } = useParams();
-  const { contactIsLoaded, removeFromGroup, updateContact } = useCurrentContactState(id);
+  const {
+    contactIsLoaded,
+    removeFromGroup: handleRemoveFromGroup,
+    updateContact: handleUpdateContact
+  } = useCurrentContactState(id);
 
   const { search } = useLocation();
   const query = new URLSearchParams(search);
   const editing = query.get('editing');
 
-  const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
+  const handleVerifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
     batchInclusionProof
       ? wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
           Logger.error('There has been an error verifiying the credential', error);
@@ -40,9 +44,9 @@ const ContactContainer = observer(() => {
   return (
     <Contact
       isEditing={isEditing}
-      verifyCredential={verifyCredential}
-      removeFromGroup={removeFromGroup}
-      updateContact={updateContact}
+      onVerifyCredential={handleVerifyCredential}
+      onRemoveFromGroup={handleRemoveFromGroup}
+      onUpdateContact={handleUpdateContact}
     />
   );
 });
