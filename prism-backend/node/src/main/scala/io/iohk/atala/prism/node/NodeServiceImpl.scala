@@ -96,8 +96,8 @@ class NodeServiceImpl(
               .findByDid(canon)
               .map(_.fold(countAndThrowNodeError(methodName, _), toDidDataProto(_, canon)))
               .run(tid)
-              .unsafeToFuture()
-              .flatMap(succeedWith)
+              .map(succeedWith)
+              .unsafeRunSync()
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
             didDataRepository
