@@ -513,6 +513,22 @@ Somehow, these properties resemble those in the group signatures model in
 \cite{kty04}. Probably, the addition of non-frameability is a consequence
 of adding a variant of revocation.
 
+\paragraph{Primitives for credentials with generic policies.} \cite{cgm16}
+describes techniques to be able to create efficient proofs that combine both
+algebraic and non-algebraic relations. For instance, proving knowledge of an
+ECDSA or RSA-FDH signature (both of which include computation of a hash
+function); but also being able to prove any arbitrary (non-algebraic) funcion
+$f$. This may be very useful to achieve compatibility with traditional
+credentials/signature schemes, that mostly do not follow the algorithms
+used in anonymous credentials systems. In fact, that is one of the main
+motivations in the paper. The approach in \cite{cgm16} builds on committing
+Oblivious Transfer and Garbled Circuits (not necessarily with privacy).
+A closely related work seems to be \cite{dfkp16},
+which achieves the same goal but using SNARKS, which results in different
+tradeoffs -- hence, it may be interesting, as the SNARK domain has improved
+significantly since 2016. \cite{kkl+16} also allows building anonymous
+credentials for arbitrary policies, but using a different approach too.
+
 \subsubsection{Pseudonym Systems}
 \label{sssec:pseudonyms}
 
@@ -535,6 +551,12 @@ Main approaches to build ACs (from ToPS paper I reviewed):
 \item Predicate encryption: \cite{dmm+18}.
 \end{itemize}
 
+Also:
+
+\begin{itemize}
+  \item ACs based on aggregate signatures: \cite{cl11}.
+\end{itemize}
+
 PS: Tokenization.
 
 \subsubsection{Real World Deployments}
@@ -550,7 +572,8 @@ Signal's AC \needcite
 \begin{itemize}
 \item \cite{bcc+09,cklm14}: Delegation (\cite{cklm14} relies on \cite{cklm12}).
 \item \cite{cgm16} An AC system that builds ACs from existing (conventional,
-  such as ECDSA) signatures.
+  such as ECDSA) signatures. \cite{kkl+16} achieves similar results with a
+  different approach?
 \end{itemize}
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
