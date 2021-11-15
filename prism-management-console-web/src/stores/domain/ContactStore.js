@@ -209,9 +209,7 @@ export default class ContactStore {
         verb: 'getting',
         model: 'Contact'
       };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-      });
+      this.rootStore.handleTransportLayerError(error, metadata);
     }
   }
 
