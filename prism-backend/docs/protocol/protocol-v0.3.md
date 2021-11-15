@@ -473,7 +473,7 @@ So, given an operation:
 }
 ```
  
-which posts a Merkle tree root hash, we opdate the state as follows:
+which posts a Merkle tree root hash, we update the state as follows:
 
 ```scala
 state'.didTimestamps      = state.didTimestamps + { operation.timestampDIDBatch.markleRoot -> TX_TIMESTAMP }
