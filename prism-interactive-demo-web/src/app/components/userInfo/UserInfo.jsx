@@ -3,7 +3,7 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Icon, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { withRedirector } from '../providers/withRedirector';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../components/customButton/CustomButton';
 import { LEFT } from '../../../helpers/constants';
 
 import './_style.scss';

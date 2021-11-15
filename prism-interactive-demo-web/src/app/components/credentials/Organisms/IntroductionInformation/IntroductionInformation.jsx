@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 import CredentialItemLanding from '../../../common/Molecules/CredentialItemLanding/CredentialItemLanding';
 import './_style.scss';
 
