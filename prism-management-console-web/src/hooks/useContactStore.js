@@ -1,38 +1,43 @@
 import { useContext, useEffect, useState } from 'react';
 import { GlobalStateContext } from '../stores/index';
+import { useUpdateEffect } from './useUpdateEffect';
 
-export const useContactStore = ({ fetch, reset } = { fetch: false, reset: false }) => {
-  const { contactStore } = useContext(GlobalStateContext);
-  const { fetchContactsNextPage, resetContacts } = contactStore;
+export const useContactStore = () => {
+  const { rootContactStore } = useContext(GlobalStateContext);
 
-  useEffect(() => {
-    if (reset) resetContacts();
-  }, [reset, resetContacts]);
-
-  useEffect(() => {
-    if (fetch) fetchContactsNextPage();
-  }, [fetch, fetchContactsNextPage]);
-
-  return contactStore;
+  return rootContactStore.contactStore;
 };
 
 export const useContactUiState = ({ reset } = { reset: false }) => {
-  const { contactUiState } = useContext(GlobalStateContext);
-  const { triggerSearch, resetState, statusFilter, sortingKey, sortDirection } = contactUiState;
+  const { rootContactStore } = useContext(GlobalStateContext);
+  const {
+    triggerSearch,
+    textFilter,
+    dateFilter,
+    resetState,
+    statusFilter,
+    sortingKey,
+    sortDirection
+  } = rootContactStore.contactUiState;
 
   useEffect(() => {
     if (reset) resetState();
   }, [reset, resetState]);
 
-  useEffect(() => {
-    if (reset) resetState();
-  }, [reset, resetState]);
+  const sortingAndFiltersDependencies = [
+    textFilter,
+    dateFilter,
+    statusFilter,
+    sortingKey,
+    sortDirection,
+    sortDirection
+  ];
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     triggerSearch();
-  }, [statusFilter, sortingKey, sortDirection, sortDirection, triggerSearch]);
+  }, [...sortingAndFiltersDependencies, triggerSearch]);
 
-  return contactUiState;
+  return rootContactStore.contactUiState;
 };
 
 export const useAllContacts = () => {

@@ -21,7 +21,7 @@ import { useContactUiState } from '../../hooks/useContactStore';
 import './_style.scss';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
-  const { applyFilters, hasFiltersApplied } = useContactUiState({ reset: true });
+  const { hasFiltersApplied } = useContactUiState({ reset: true });
   const {
     isLoadingGroup,
     isLoadingMembers,
@@ -42,7 +42,9 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
   const formValues = { groupName };
 
-  const filteredContacts = applyFilters(members);
+  // FIXME: how can we apply the filters here?
+  // const filteredContacts = applyFilters(members);
+  const filteredContacts = members;
 
   const { loadingSelection, checkboxProps } = useSelectAll({
     displayedEntities: filteredContacts,

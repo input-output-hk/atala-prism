@@ -26,8 +26,10 @@ const GroupCreation = observer(
       updateMembers(selectedContacts);
     }, [selectedContacts, updateMembers]);
 
-    const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
+    const { hasFiltersApplied, isSearching, isSorting } = useContactUiState();
     const {
+      contacts,
+      initContactStore,
       getContactsToSelect,
       isLoadingFirstPage,
       fetchMoreData,
@@ -35,8 +37,12 @@ const GroupCreation = observer(
       hasMore
     } = useContactStore();
 
+    useEffect(() => {
+      initContactStore();
+    }, [initContactStore]);
+
     const { loadingSelection, checkboxProps } = useSelectAll({
-      displayedEntities: displayedContacts,
+      displayedEntities: contacts,
       entitiesFetcher: getContactsToSelect,
       entityKey: CONTACT_ID_KEY,
       selectedEntities: selectedContacts,
@@ -90,7 +96,7 @@ const GroupCreation = observer(
             </div>
             <div className="ConnectionsTable InfiniteScrollTableContainer">
               <ConnectionsTable
-                contacts={displayedContacts}
+                contacts={contacts}
                 fetchMoreData={fetchMoreData}
                 hasMore={hasMore}
                 hasFiltersApplied={hasFiltersApplied}

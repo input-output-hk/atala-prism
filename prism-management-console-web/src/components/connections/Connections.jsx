@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
@@ -19,15 +19,20 @@ const Connections = observer(() => {
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
   const { accountStatus } = useSession();
-  const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
+  const { hasFiltersApplied, isSearching, isSorting } = useContactUiState();
   const {
     contacts,
+    initContactStore,
     refreshContacts,
     isLoadingFirstPage,
     fetchMoreData,
     isFetching,
     hasMore
   } = useContactStore();
+
+  useEffect(() => {
+    initContactStore();
+  }, [initContactStore]);
 
   const inviteContactAndShowQR = async contactId => {
     const contactToInvite = contacts.find(c => c.contactId === contactId);
@@ -56,7 +61,7 @@ const Connections = observer(() => {
       </div>
       <div className="ConnectionsTable InfiniteScrollTableContainer">
         <ConnectionsTable
-          contacts={displayedContacts}
+          contacts={contacts}
           fetchMoreData={fetchMoreData}
           hasMore={hasMore}
           hasFiltersApplied={hasFiltersApplied}

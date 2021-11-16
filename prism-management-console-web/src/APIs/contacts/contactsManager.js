@@ -138,10 +138,11 @@ async function getContacts({
   const { dataList, scrollId: newScrollId } = res.toObject();
 
   const contactsList = dataList.map(({ contact, ...rest }) => ({ ...contact, ...rest }));
+  const mappedContacts = contactsList.map(contactMapper);
 
-  Logger.info('Got contacts:', contactsList);
+  Logger.info('Got contacts:', mappedContacts);
 
-  return { contactsList, newScrollId };
+  return { contactsList: mappedContacts, newScrollId };
 }
 
 async function getContact(contactId) {

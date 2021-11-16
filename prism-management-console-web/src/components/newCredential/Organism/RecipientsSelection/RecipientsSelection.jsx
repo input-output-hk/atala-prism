@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { Tabs } from 'antd';
@@ -27,8 +27,19 @@ const RecipientsSelection = observer(
   }) => {
     const { t } = useTranslation();
 
-    const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
-    const { isLoadingFirstPage, fetchMoreData, isFetching, hasMore } = useContactStore();
+    const { hasFiltersApplied, isSearching, isSorting } = useContactUiState();
+    const {
+      contacts,
+      initContactStore,
+      isLoadingFirstPage,
+      fetchMoreData,
+      isFetching,
+      hasMore
+    } = useContactStore();
+
+    useEffect(() => {
+      initContactStore();
+    }, [initContactStore]);
 
     const renderHelpText = () => (
       <div className="helperTextContainer">
@@ -64,7 +75,7 @@ const RecipientsSelection = observer(
               toggleShouldSelectRecipients={toggleShouldSelectRecipients}
             />
             <ConnectionsTable
-              contacts={displayedContacts}
+              contacts={contacts}
               fetchMoreData={fetchMoreData}
               hasMore={hasMore}
               hasFiltersApplied={hasFiltersApplied}
