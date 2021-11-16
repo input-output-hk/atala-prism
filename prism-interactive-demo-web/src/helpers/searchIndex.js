@@ -1,4 +1,4 @@
-import JsSearch from 'js-search';
+import * as JsSearch from 'js-search';
 
 export const buildSearchIndex = documents => {
   const dataToSearch = new JsSearch.Search('id');

@@ -7,8 +7,18 @@ import doobie.implicits._
 import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories._
-import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
-import io.iohk.atala.prism.connector.services.{ConnectionsService, MessageNotificationService, MessagesService, RegistrationService}
+import io.iohk.atala.prism.connector.repositories.daos.{
+  ConnectionTokensDAO,
+  ConnectionsDAO,
+  MessagesDAO,
+  ParticipantsDAO
+}
+import io.iohk.atala.prism.connector.services.{
+  ConnectionsService,
+  MessageNotificationService,
+  MessagesService,
+  RegistrationService
+}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId

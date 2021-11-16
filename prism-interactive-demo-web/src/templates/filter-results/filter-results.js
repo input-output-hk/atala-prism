@@ -1,13 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link, graphql } from 'gatsby';
+import { graphql } from 'gatsby';
 import HeaderBlog from '../../components/headerBlog/headerBlog';
 import FooterBlog from '../../components/footer/BlogFooter';
-import calendarIcon from '../../images/calendar.svg';
-import authorIcon from '../../images/author.svg';
-import clockIcon from '../../images/clock.svg';
 import SEO from '../../components/seo/seo';
 import Sidebar from '../../components/sidebar/sidebar';
+import BlogEntry from '../../components/blogEntry/BlogEntry';
 import { groupedPostsShape, postsShape, recentPostsShape } from '../../helpers/propTypes';
 
 const FilterResults = ({ data, pageContext }) => {
@@ -26,80 +24,9 @@ const FilterResults = ({ data, pageContext }) => {
       <div className="container-middle-section">
         <div className="SectionContainer">
           <div className="containerEntry">
-            {allPosts.map(post => {
-              const title = post.frontmatter.title || post.fields.slug;
-
-              return (
-                <div className="mainSectionContainer">
-                  <div className="articlesContainer">
-                    <article
-                      className="post-list-item"
-                      itemScope
-                      itemType="https://schema.org/Article"
-                      key={post.fields.slug}
-                    >
-                      <header className="entryHeader">
-                        <Link to={post.fields.slug} itemProp="url">
-                          <h2 className="h2" itemProp="headline">
-                            {title}
-                          </h2>
-                        </Link>
-                      </header>
-                      <div className="blog-post-container">
-                        <section className="blog-post">
-                          <p className="copete" itemProp="description">
-                            {post.frontmatter.description}
-                          </p>
-                          <div className="postInfoContainer">
-                            <div className="postInfo">
-                              <div className="postInfoImgContainer">
-                                <img src={calendarIcon} alt="date" />
-                              </div>
-                              <div>
-                                <p>{post.frontmatter.date}</p>
-                              </div>
-                            </div>
-                            <div className="postInfo">
-                              <div className="postInfoImgContainer">
-                                <img src={authorIcon} alt="author" />
-                              </div>
-                              <div>
-                                <p>{post.frontmatter.author}</p>
-                              </div>
-                            </div>
-                            <div className="postInfo">
-                              <div className="postInfoImgContainer">
-                                <img src={clockIcon} alt="readingTime" />
-                              </div>
-                              <div>
-                                <p>{post.frontmatter.readingTime} mins read</p>
-                              </div>
-                            </div>
-                          </div>
-                          {post.frontmatter.image && (
-                            <img
-                              className="imgBlogPost"
-                              src={post.frontmatter.image.publicURL}
-                              alt="thumbnail"
-                            />
-                          )}
-                          <section
-                            className="post-article"
-                            // eslint-disable-next-line react/no-danger
-                            dangerouslySetInnerHTML={{ __html: post.html }}
-                            itemProp="articleBody"
-                          />
-                          <Link to={post.fields.slug} itemProp="url">
-                            <p className="viewMore">Read More</p>
-                          </Link>
-                        </section>
-                        <section className="sideBar" />
-                      </div>
-                    </article>
-                  </div>
-                </div>
-              );
-            })}
+            {allPosts.map(post => (
+              <BlogEntry post={post} />
+            ))}
           </div>
         </div>
         <Sidebar

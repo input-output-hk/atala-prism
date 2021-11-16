@@ -16,7 +16,13 @@ import {
 } from '../../../../hooks/useCredentialIssuedStore';
 
 const CredentialsIssued = observer(
-  ({ selectionType, bulkActionsProps, showCredentialData, searchDueGeneralScroll }) => {
+  ({
+    selectionType,
+    bulkActionsProps,
+    showCredentialData,
+    searchDueGeneralScroll,
+    ...credentialsIssuedProps
+  }) => {
     const { t } = useTranslation();
     const [selectedLength, setSelectedLength] = useState();
 
@@ -43,6 +49,7 @@ const CredentialsIssued = observer(
     }, [fetchMoreData]);
 
     const expandedTableProps = {
+      ...credentialsIssuedProps,
       selectionType,
       credentials,
       tab: CREDENTIALS_ISSUED,
