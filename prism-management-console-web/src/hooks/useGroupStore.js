@@ -1,16 +1,16 @@
 import { useContext, useEffect } from 'react';
-import { PrismStoreContext } from '../stores/domain/PrismStore';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
+
 import { useUpdateEffect } from './useUpdateEffect';
 
 export const useGroupStore = () => {
-  const { groupStore } = useContext(PrismStoreContext);
+  const { rootGroupStore } = useContext(GlobalStateContext);
 
-  return groupStore;
+  return rootGroupStore.groupStore;
 };
 
 export const useGroupUiState = ({ reset } = { reset: false }) => {
-  const { groupUiState } = useContext(UiStateContext);
+  const { rootGroupStore } = useContext(GlobalStateContext);
   const {
     triggerSearch,
     resetState,
@@ -18,7 +18,7 @@ export const useGroupUiState = ({ reset } = { reset: false }) => {
     dateFilter,
     sortingKey,
     sortDirection
-  } = groupUiState;
+  } = rootGroupStore.groupUiState;
 
   useEffect(() => {
     if (reset) resetState();
@@ -30,5 +30,5 @@ export const useGroupUiState = ({ reset } = { reset: false }) => {
     triggerSearch();
   }, [...sortingAndFiltersDependencies, triggerSearch]);
 
-  return groupUiState;
+  return rootGroupStore.groupUiState;
 };

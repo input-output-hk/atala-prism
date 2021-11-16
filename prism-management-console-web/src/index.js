@@ -7,23 +7,19 @@ import * as serviceWorker from './serviceWorker';
 import { config } from './APIs/config';
 import { DIDBased } from './APIs/auth';
 import Api, { hardcodedApi } from './APIs';
-import { PrismStoreContext } from './stores/domain/PrismStore';
 import { APIContext } from './components/providers/ApiContext';
-import { RootStore } from './stores/RootStore';
-import { UiStateContext } from './stores/ui/UiState';
+import { GlobalStateContext, createStores } from './stores';
 
 const supremeApi = Object.assign(new Api(config, DIDBased), hardcodedApi);
-const rootStore = new RootStore(supremeApi);
+const stores = createStores(supremeApi);
 
 ReactDOM.render(
   <APIContext.Provider value={supremeApi}>
-    <PrismStoreContext.Provider value={rootStore.prismStore}>
-      <UiStateContext.Provider value={rootStore.uiState}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </UiStateContext.Provider>
-    </PrismStoreContext.Provider>
+    <GlobalStateContext.Provider value={stores}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </GlobalStateContext.Provider>
   </APIContext.Provider>,
   document.getElementById('root')
 );
