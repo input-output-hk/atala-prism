@@ -77,6 +77,8 @@ export default class GroupUiState {
   triggerBackendSearch = _.debounce(async () => {
     const { fetchSearchResults } = this.rootStore.prismStore.groupStore;
     await fetchSearchResults();
+    this.isSearching = false;
+    this.isSorting = false;
   }, SEARCH_DELAY_MS);
 
   resetState = () => {
