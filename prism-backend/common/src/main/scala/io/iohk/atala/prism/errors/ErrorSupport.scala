@@ -55,12 +55,12 @@ trait ErrorSupport[E <: PrismError] {
     }
   }
 
-  implicit class FutureEitherErrorOps[T](v: FutureEither[E, T]) {
+  implicit class FutureEitherErrorOps[T](v: FutureEither[PrismError, T]) {
     def wrapAndRegisterExceptions(serviceName: String, methodName: String)(implicit
         ec: ExecutionContext,
         lc: LoggingContext
-    ): FutureEither[E, T] = {
-      def logAndRegisterIfPrismServerError(error: E): E = {
+    ): FutureEither[PrismError, T] = {
+      def logAndRegisterIfPrismServerError(error: PrismError): PrismError = {
         error match {
           case serverError: PrismServerError =>
             serverError.logErr

@@ -1,9 +1,13 @@
 package io.iohk.atala.prism.auth
 
+import derevo.derive
 import io.grpc.Status
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
+import tofu.logging.derivation.loggable
+import errors.grpcStatusLoggable._
 
 package object errors {
+  @derive(loggable)
   sealed trait AuthError extends PrismError
 
   final case class SignatureVerificationError() extends AuthError {
