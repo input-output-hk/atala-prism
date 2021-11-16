@@ -42,7 +42,7 @@ object PrismBuild {
         addCompilerPlugin(
           "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
         ),
-        coverageScalacPluginVersion := "1.4.9",
+        coverageScalacPluginVersion := "1.4.10",
         Test / fork := true,
         Test / parallelExecution := false,
         Test / testForkedParallel := false,
