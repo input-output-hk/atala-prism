@@ -1,7 +1,24 @@
 import React from 'react';
+import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
-import { useTranslation } from 'gatsby-plugin-react-i18next';
+
+const items = [
+  { title: 'landing.credential.titlecomponent1', description: 'landing.credential.component1' },
+  { title: 'landing.credential.titlecomponent3', description: 'landing.credential.component3' },
+  { title: 'landing.credential.titlecomponent2', description: 'landing.credential.component2' },
+  { title: 'landing.credential.titlecomponent4', description: 'landing.credential.component4' },
+  {
+    title: 'landing.credential.titlecomponent5',
+    description: 'landing.credential.component5',
+    extra: 'landing.credential.title7'
+  },
+  {
+    title: 'landing.credential.titlecomponent6',
+    description: 'landing.credential.component6',
+    extra: 'landing.credential.title7'
+  }
+];
 
 const CredentialSection = () => {
   const { t } = useTranslation();
@@ -12,32 +29,13 @@ const CredentialSection = () => {
         <div className="TextContainer">
           <h1>{t('landing.credential.title')}</h1>
           <div className="ComponentsContainer">
-            <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent1')}</h3>
-              <p>{t('landing.credential.component1')}</p>
-            </div>
-            <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent3')}</h3>
-              <p>{t('landing.credential.component3')}</p>
-            </div>
-            <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent2')}</h3>
-              <p>{t('landing.credential.component2')}</p>
-            </div>
-            <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent4')}</h3>
-              <p>{t('landing.credential.component4')}</p>
-            </div>
-            <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent5')}</h3>
-              <p className="ComingSoon">{t('landing.credential.title7')}</p>
-              <p>{t('landing.credential.component5')}</p>
-            </div>
-            <div className="ComponentItem">
-              <h3>{t('landing.credential.titlecomponent6')}</h3>
-              <p className="ComingSoon">{t('landing.credential.title7')}</p>
-              <p>{t('landing.credential.component6')}</p>
-            </div>
+            {items.map(({ title, description, extra }) => (
+              <div className="ComponentItem">
+                <h3>{t(title)}</h3>
+                {extra && <p className="ComingSoon">{t(extra)}</p>}
+                <p>{t(description)}</p>
+              </div>
+            ))}
           </div>
         </div>
         <div className="ImageContainer">

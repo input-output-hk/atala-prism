@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Tabs } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
-import { withRedirector } from '../providers/withRedirector';
 import DetailBox from './molecules/detailBox/DetailBox';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import contactIcon from '../../images/holder-default-avatar.svg';
@@ -14,6 +13,7 @@ import { credentialShape } from '../../helpers/propShapes';
 import EditContactModal from './organisms/EditContactModal/EditContactModal';
 
 import './_style.scss';
+import { useRedirector } from '../../hooks/useRedirector';
 
 const { TabPane } = Tabs;
 
@@ -29,10 +29,11 @@ const Contact = ({
   receivedCredentials,
   verifyCredential,
   onDeleteGroup,
-  updateContact,
-  redirector: { redirectToContacts }
+  updateContact
 }) => {
   const { t } = useTranslation();
+  const { redirectToContacts } = useRedirector();
+
   const tp = useTranslationWithPrefix('contacts.detail');
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -172,8 +173,7 @@ Contact.propTypes = {
   receivedCredentials: PropTypes.arrayOf(credentialShape),
   verifyCredential: PropTypes.func.isRequired,
   onDeleteGroup: PropTypes.func.isRequired,
-  updateContact: PropTypes.func.isRequired,
-  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func }).isRequired
+  updateContact: PropTypes.func.isRequired
 };
 
-export default withRedirector(Contact);
+export default Contact;

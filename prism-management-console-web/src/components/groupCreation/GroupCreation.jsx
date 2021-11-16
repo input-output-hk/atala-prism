@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { CONTACT_ID_KEY, GROUP_NAME_STATES } from '../../helpers/constants';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
@@ -122,4 +121,4 @@ GroupCreation.propTypes = {
   updateMembers: PropTypes.func.isRequired
 };
 
-export default withRedirector(GroupCreation);
+export default GroupCreation;

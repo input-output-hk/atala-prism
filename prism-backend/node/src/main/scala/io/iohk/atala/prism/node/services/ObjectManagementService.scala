@@ -77,6 +77,8 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     blockProcessing: BlockProcessingService,
     xa: Transactor[F]
 ) extends ObjectManagementService[F] {
+
+  // Processes AtalaObjects retrieved from transaction metadata during the Node syncing with Cardano Ledger
   def saveObject(
       notification: AtalaObjectNotification
   ): F[Either[SaveObjectError, Boolean]] = {
@@ -86,13 +88,17 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       .flatMap {
         case Some(obj) =>
           for {
+            // Update transaction submission status to InLedger
             _ <- atalaObjectsTransactionsRepository
               .updateSubmissionStatusIfExists(
                 obj.transaction.get.ledger,
                 obj.transaction.get.transactionId,
                 InLedger
               )
+            // Retrieve all operations from the object and apply them to the state.
+            // After this method every operation should have whether APPROVED_AND_APPLIED or APPROVED_AND_REJECTED status.
             transaction <- Monad[F].pure(processObject(obj))
+            // Save the error if processObject failed
             result <- transaction flatTraverse {
               _.logSQLErrorsV2("saving object").attemptSql
                 .transact(xa)
@@ -109,6 +115,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
 
       }
 
+    // Apply operations from the AtalaObject only if Node supports the protocol version corresponding to the public ledger
     protocolVersionsRepository
       .ifNodeSupportsCurrentProtocol()
       .flatMap {
@@ -129,6 +136,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
   ): F[Either[NodeError, AtalaOperationId]] =
     scheduleAtalaOperations(op).map(_.head)
 
+  // User calls this rpc method to send new operations. All operations are initially stored with the status RECEIVED.
   def scheduleAtalaOperations(
       ops: node_models.SignedAtalaOperation*
   ): F[List[Either[NodeError, AtalaOperationId]]] = {
@@ -150,11 +158,13 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
 
     val resultEitherT: EitherT[F, NodeError, List[Either[NodeError, AtalaOperationId]]] =
       for {
+        // don't schedule new operations if the version of the Node is outdated
         _ <- EitherT(
           protocolVersionsRepository
             .ifNodeSupportsCurrentProtocol()
             .map(_.left.map(UnsupportedProtocolVersion))
         )
+        // save operations to the database with status RECEIVED
         operationInsertions <- EitherT.liftF(queryIO)
       } yield {
         opsWithObjects.zip(operationInsertions).map {
@@ -199,24 +209,29 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       .getOperationInfo(atalaOperationId)
       .map(_.toOption.flatten)
 
+  // Retrieves operations from the object, and applies them to the state
   private def processObject(
       obj: AtalaObjectInfo
   ): Either[SaveObjectError, ConnectionIO[Boolean]] = {
     for {
+      // Deserialize object
       protobufObject <-
         Either
           .fromTry(node_internal.AtalaObject.validate(obj.byteContent))
           .leftMap(err => SaveObjectError(err.getMessage))
       block = protobufObject.blockContent.get
+      // Retrieve transaction info (transaction identifier, name of the ledger)
       transactionInfo <- Either.fromOption(
         obj.transaction,
         SaveObjectError("AtalaObject has no transaction info")
       )
+      // Retrieve block of operations
       transactionBlock <-
         Either.fromOption(
           transactionInfo.block,
           SaveObjectError("AtalaObject has no transaction block")
         )
+      // Apply operations from the block, update statuses according to the ledger information
       blockProcessed = blockProcessing.processBlock(
         block,
         transactionInfo.transactionId,

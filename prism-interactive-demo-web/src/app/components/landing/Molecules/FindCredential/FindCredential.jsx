@@ -3,7 +3,7 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 import PropTypes from 'prop-types';
 import firebase from 'gatsby-plugin-firebase';
 import InteractiveMap from '../../../common/Organisms/InteractiveMap/InteractiveMap';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 import { withRedirector } from '../../../providers/withRedirector';
 import DownloadButtons from '../DownloadButtons/DownloadButtons';
 import { GET_CREDENTIALS_EVENT } from '../../../../../helpers/constants';

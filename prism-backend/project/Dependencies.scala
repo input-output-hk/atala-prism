@@ -12,10 +12,10 @@ object versions {
   val doobie = "1.0.0-RC1"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
-  val flyway = "8.0.3"
-  val grpc = "1.41.1"
+  val flyway = "8.0.4"
+  val grpc = "1.42.1"
   val kamon = "2.3.1"
-  val logback = "1.2.6"
+  val logback = "1.2.7"
   val logbackLogstash = "6.6"
   val jaxb = "2.3.1"
   val mockito = "1.16.46"
@@ -27,11 +27,11 @@ object versions {
   val slf4j = "1.7.32"
   val sttp = "3.3.16"
   val tofu = "0.10.6"
-  val tofuDerevo = "0.12.6"
+  val tofuDerevo = "0.12.7"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "1.3.0-build-17-e3c559b8"
+  val prismSdk = "1.3.0-build-18-a349c8c6"
 }
 
 object Dependencies {

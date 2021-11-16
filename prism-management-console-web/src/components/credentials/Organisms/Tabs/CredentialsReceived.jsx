@@ -1,45 +1,61 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { PropTypes } from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
-import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CREDENTIALS_RECEIVED } from '../../../../helpers/constants';
-import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
+import {
+  useCredentialReceivedStore,
+  useCredentialReceivedUiState
+} from '../../../../hooks/useCredentialReceivedStore';
 
-const CredentialsReceived = ({ showEmpty, tableProps, showCredentialData, initialLoading }) => {
+const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
   const { t } = useTranslation();
+  const {
+    credentials,
+    isFetching,
+    hasMore,
+    fetchMoreData,
+    isLoadingFirstPage
+  } = useCredentialReceivedStore();
+  const { hasFiltersApplied } = useCredentialReceivedUiState({
+    reset: true
+  });
 
-  const { credentials } = tableProps;
-
-  const emptyProps = {
-    photoSrc: noCredentialsPicture,
-    model: t('credentials.title'),
-    isFilter: !showEmpty && !credentials.length
-  };
+  useEffect(() => {
+    fetchMoreData();
+  }, [fetchMoreData]);
 
   const expandedTableProps = {
-    ...tableProps,
+    credentials,
+    getMoreData: fetchMoreData,
     tab: CREDENTIALS_RECEIVED,
-    onView: showCredentialData
+    onView: showCredentialData,
+    searchDueGeneralScroll: true,
+    hasMore,
+    loading: isFetching
   };
 
-  const renderEmptyComponent = !credentials.length || showEmpty;
-
-  const renderContent = () => {
-    if (!credentials.length && initialLoading) return <SimpleLoading size="md" />;
-    if (renderEmptyComponent) return <EmptyComponent {...emptyProps} />;
-    return <CredentialsTable {...expandedTableProps} />;
+  const emptyProps = {
+    isEmpty: !credentials.length || showEmpty,
+    photoSrc: noCredentialsPicture,
+    model: t('credentials.title'),
+    isFilter: hasFiltersApplied
   };
 
-  return renderContent();
-};
+  if (isLoadingFirstPage) return <SimpleLoading size="md" />;
+  return <CredentialsTable {...expandedTableProps} emptyProps={emptyProps} />;
+});
 
 CredentialsReceived.defaultProps = {
-  showEmpty: false,
-  initialLoading: false
+  showEmpty: false
 };
 
-CredentialsReceived.propTypes = credentialTabShape;
+CredentialsReceived.propTypes = {
+  showEmpty: PropTypes.bool,
+  showCredentialData: PropTypes.func.isRequired
+};
 
 export default CredentialsReceived;

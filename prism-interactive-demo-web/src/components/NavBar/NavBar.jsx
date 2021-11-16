@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Menu } from 'antd';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import { Link } from 'gatsby';
-import CustomButton from '../../app/components/common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../customButton/CustomButton';
 import {
   VISION_NAME,
   DEMO_NAME,

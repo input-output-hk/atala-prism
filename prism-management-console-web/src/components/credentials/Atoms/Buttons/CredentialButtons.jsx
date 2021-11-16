@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { withRedirector } from '../../../providers/withRedirector';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import CredentialsFilter from '../../Molecules/Filters/CredentialsFilter/CredentialsFilter';
 import {
@@ -126,4 +125,4 @@ CredentialButtons.propTypes = {
   }).isRequired
 };
 
-export default withRedirector(CredentialButtons);
+export default CredentialButtons;

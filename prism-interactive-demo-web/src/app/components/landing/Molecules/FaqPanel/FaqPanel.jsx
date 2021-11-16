@@ -3,6 +3,19 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 
+const faqs = [
+  { title: 'landing.faqPanel.titlefaq1', description: 'landing.faqPanel.faq1' },
+  { title: 'landing.faqPanel.titlefaq2', description: 'landing.faqPanel.faq2' },
+  { title: 'landing.faqPanel.titlefaq3', description: 'landing.faqPanel.faq3' },
+  { title: 'landing.faqPanel.titlefaq4', description: 'landing.faqPanel.faq4' },
+  { title: 'landing.faqPanel.titlefaq5', description: 'landing.faqPanel.faq5' },
+  { title: 'landing.faqPanel.titlefaq6', description: 'landing.faqPanel.faq6' },
+  { title: 'landing.faqPanel.titlefaq7', description: 'landing.faqPanel.faq7' },
+  { title: 'landing.faqPanel.titlefaq8', description: 'landing.faqPanel.faq8' },
+  { title: 'landing.faqPanel.titlefaq9', description: 'landing.faqPanel.faq9' },
+  { title: 'landing.faqPanel.titlefaq10', description: 'landing.faqPanel.faq10' }
+];
+
 const FaqPanel = () => {
   const { t } = useTranslation();
 
@@ -11,46 +24,12 @@ const FaqPanel = () => {
       <div className="TextContainer">
         <h1>{t('landing.faqPanel.title')}</h1>
         <div className="FaqContainer">
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq1')}</h3>
-            <p>{t('landing.faqPanel.faq1')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq2')}</h3>
-            <p>{t('landing.faqPanel.faq2')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq3')}</h3>
-            <p>{t('landing.faqPanel.faq3')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq4')}</h3>
-            <p>{t('landing.faqPanel.faq4')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq5')}</h3>
-            <p>{t('landing.faqPanel.faq5')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq6')}</h3>
-            <p>{t('landing.faqPanel.faq6')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq7')}</h3>
-            <p>{t('landing.faqPanel.faq7')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq8')}</h3>
-            <p>{t('landing.faqPanel.faq8')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq9')}</h3>
-            <p>{t('landing.faqPanel.faq9')}</p>
-          </div>
-          <div className="FaqItem">
-            <h3>{t('landing.faqPanel.titlefaq10')}</h3>
-            <p>{t('landing.faqPanel.faq10')}</p>
-          </div>
+          {faqs.map(({ title, description }) => (
+            <div className="FaqItem">
+              <h3>{t(title)}</h3>
+              <p>{t(description)}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

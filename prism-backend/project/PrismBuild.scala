@@ -23,7 +23,7 @@ object PrismBuild {
         git.baseVersion := "1.2",
         git.formattedShaVersion := git.gitHeadCommit.value
           .map(git.baseVersion.value + "-" + _.take(8)),
-        scalaVersion := "2.13.6",
+        scalaVersion := "2.13.7",
         scalacOptions ~= (options =>
           options.filterNot(
             Set(
@@ -42,15 +42,14 @@ object PrismBuild {
         addCompilerPlugin(
           "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
         ),
-        coverageScalacPluginVersion := "1.4.9",
+        coverageScalacPluginVersion := "1.4.10",
         Test / fork := true,
         Test / parallelExecution := false,
         Test / testForkedParallel := false,
         assembly / test := {},
-        commands += Command.args("testOnlyUntilFailed", "<testOnly params>") {
-          (state, args) =>
-            val argsString = args.mkString(" ")
-            ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
+        commands += Command.args("testOnlyUntilFailed", "<testOnly params>") { (state, args) =>
+          val argsString = args.mkString(" ")
+          ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
         },
         assembly / assemblyExcludedJars := {
           val cp = (assembly / fullClasspath).value
@@ -74,7 +73,7 @@ object PrismBuild {
             MergeStrategy.concat
           // It is safe to discard when building an uber-jar according to https://stackoverflow.com/a/55557287
           case x if x.endsWith("module-info.class") => MergeStrategy.discard
-          case "logback.xml"                        => MergeStrategy.concat
+          case "logback.xml" => MergeStrategy.first
           case "scala-collection-compat.properties" => MergeStrategy.last
           // org.bitcoin classes are coming from both bitcoinj and fr.acinq.secp256k1-jni
           case PathList("org", "bitcoin", _*) => MergeStrategy.last
@@ -92,8 +91,7 @@ object PrismBuild {
         // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
         // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
         Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
-          case externalSrc
-              if externalSrc.toPath.endsWith("protobuf_external_src") =>
+          case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") =>
             externalSrc / "proto"
           case other => other
         },

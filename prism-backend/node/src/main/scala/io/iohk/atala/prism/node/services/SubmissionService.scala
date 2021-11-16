@@ -113,15 +113,22 @@ private class SubmissionServiceImpl[F[_]: Monad](
     config: Config
 ) extends SubmissionService[F] {
 
+  // gets all pending operations from the database and merges them into bigger AtalaObjects
+  // then publishes these objects to the ledger as transaction metadata.
+  // every AtalaObject corresponds to one transaction metadata
   def submitReceivedObjects(): F[Either[NodeError, Int]] = {
     val submissionET = for {
+      // execute SQL query to get all pending objects
       atalaObjects <- EitherT(
         atalaObjectsTransactionsRepository.getNotPublishedObjects
       )
+      // merge AtalaObjects into bigger AtalaObjects in order to reduce amount of created transactions
       atalaObjectsMerged <- EitherT.right(mergeAtalaObjects(atalaObjects))
+      // deserialize resulting AtalaObjects from bytes
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
         (obj, parseObjectContent(obj))
       }
+      // publish AtalaObjects to the ledger. every AtalaObject represents one transaction metadata
       publishedTransactions <-
         EitherT.right[NodeError](
           publishObjectsAndRecordTransaction(atalaObjectsWithParsedContent)
@@ -199,12 +206,14 @@ private class SubmissionServiceImpl[F[_]: Monad](
       keep
     }
 
+    // take no more than config.maxNumberTransactionsToSubmit objects, so it means that we limit amount of transactions per one submission.
+    // then, sequentially publish objects one by one and aggregate results
     atalaObjectsWithParsedContent
       .take(config.maxNumberTransactionsToSubmit)
       .foldLeft(Monad[F].pure(List.empty[TransactionInfo])) { case (accF, (obj, objContent)) =>
         for {
-          acc <- accF
-          transactionInfoE <- publishAndRecordTransaction(obj, objContent)
+          acc <- accF // accumulated transaction information from previous publications
+          transactionInfoE <- publishAndRecordTransaction(obj, objContent) // the next publication info
         } yield {
           transactionInfoE.fold(justKeep(acc), _ :: acc)
         }
@@ -262,6 +271,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
   private def mergeAtalaObjects(
       atalaObjects: List[AtalaObjectInfo]
   ): F[List[AtalaObjectInfo]] = {
+    // Iterate over objects and merge when the size of the resulting object fits into transaction metadata
     val atalaObjectsMerged =
       atalaObjects
         .foldRight(
@@ -277,6 +287,8 @@ private class SubmissionServiceImpl[F[_]: Monad](
               }
         }
 
+    // For every operation we store the corresponding AtalaObject containing this operation.
+    // Here we look into merged objects and update the object identifier for the operations inside this object.
     val objects = atalaObjectsMerged.traverse { case (atalaObject, oldObjects) =>
       if (oldObjects.size != 1) {
         val changedBlockE = atalaObject.getAndValidateAtalaObject
@@ -327,6 +339,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
       publication <- EitherT(atalaReferenceLedger.publish(atalaObject))
         .leftMap(NodeError.InternalCardanoWalletError)
 
+      // Store the resulting publication information into the Node's database.
       _ <- EitherT(
         atalaObjectsTransactionsRepository
           .storeTransactionSubmission(atalaObjectInfo, publication)

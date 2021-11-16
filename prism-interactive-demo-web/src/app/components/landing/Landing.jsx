@@ -25,7 +25,7 @@ import FaqPanel from './Molecules/FaqPanel/FaqPanel';
 import ContactPanel from './Organisms/ContactPanel/ContactPanel';
 import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
 import SupportButton from '../common/Atoms/SupportButton/SupportButton';
-import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../components/customButton/CustomButton';
 
 import './_style.scss';
 

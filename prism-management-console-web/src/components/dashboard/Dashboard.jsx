@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
-import { withApi } from '../providers/withApi';
 import Welcome from './Atoms/Welcome/Welcome';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
@@ -24,15 +23,15 @@ import TutorialTool from '../tutorial/tutorialTool/tutorialTool';
 import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
 
 import './_style.scss';
+import { useApi } from '../../hooks/useApi';
 
-const Dashboard = observer(({ api, name }) => {
+const Dashboard = observer(({ name }) => {
   const { t } = useTranslation();
   const tp = useTranslationWithPrefix('dashboard');
-
   const {
+    summaryManager,
     configuration: { tutorialProgress: storedTutorialProgress, saveTutorialProgress }
-  } = api;
-
+  } = useApi();
   const [tutorialProgress, setTutorialProgress] = useState(storedTutorialProgress);
   const [, setContactsStats] = useState();
   const [groupsStats, setGroupsStats] = useState();
@@ -49,7 +48,7 @@ const Dashboard = observer(({ api, name }) => {
     const getStatistics = async () => {
       setLoading(true);
       try {
-        const statistics = await api.summaryManager.getStatistics();
+        const statistics = await summaryManager.getStatistics();
         setContactsStats(statistics.contacts);
         setGroupsStats(statistics.groups);
         setCredentialsStats(statistics.credentials);
@@ -68,7 +67,7 @@ const Dashboard = observer(({ api, name }) => {
     };
 
     getStatistics();
-  }, [api.summaryManager, removeUnconfirmedAccountError, showUnconfirmedAccountError, t]);
+  }, [summaryManager, removeUnconfirmedAccountError, showUnconfirmedAccountError, t]);
 
   useEffect(() => {
     saveTutorialProgress(tutorialProgress);
@@ -124,24 +123,7 @@ Dashboard.defaultProps = {
 };
 
 Dashboard.propTypes = {
-  api: PropTypes.shape({
-    summaryManager: PropTypes.shape({
-      getStatistics: PropTypes.func.isRequired
-    }).isRequired,
-    configuration: PropTypes.shape({
-      tutorialProgress: PropTypes.shape({
-        started: PropTypes.bool.isRequired,
-        paused: PropTypes.bool.isRequired,
-        finished: PropTypes.bool.isRequired,
-        basicSteps: PropTypes.number.isRequired,
-        contacts: PropTypes.number.isRequired,
-        groups: PropTypes.number.isRequired,
-        credentials: PropTypes.number.isRequired
-      }).isRequired,
-      saveTutorialProgress: PropTypes.func.isRequired
-    }).isRequired
-  }).isRequired,
   name: PropTypes.string
 };
 
-export default withApi(Dashboard);
+export default Dashboard;

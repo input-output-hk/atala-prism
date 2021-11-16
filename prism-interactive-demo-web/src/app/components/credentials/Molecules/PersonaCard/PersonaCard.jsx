@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 
 import './_style.scss';
 
@@ -44,7 +44,7 @@ const PersonaCard = ({
           buttonProps={{
             className: 'theme-primary',
             onClick: () => selectPersona({ firstName: completeName, dateOfBirth }),
-            disabled: disabled
+            disabled
           }}
           buttonText={
             disabled

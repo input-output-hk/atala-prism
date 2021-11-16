@@ -5,7 +5,7 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 import CredentialData from '../../../common/Atoms/CredentialData/CredentialData';
 import { UserContext } from '../../../providers/userContext';
 import CredentialIDTemplate from '../../Molecules/CredentialIdTemplate/CredentialIdTemplate';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../../../components/customButton/CustomButton';
 import {
   CARD_UNIVERSITY_TITLE,
   CARD_UNIVERSITY_UNIVERSITY,

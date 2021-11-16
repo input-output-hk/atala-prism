@@ -44,6 +44,7 @@ class SubmissionSchedulingService private (
     }
   }
 
+  // Every `delay` units of time, calls submissionService.retryOldPendingTransactions
   private def scheduleRetryOldPendingTransactions(
       delay: FiniteDuration
   ): Unit = {
@@ -59,6 +60,8 @@ class SubmissionSchedulingService private (
     )).unsafeRunAndForget()
   }
 
+  // Every delay calls submissionService.submitReceivedObjects
+  // if immediate is set, then call submissionService.submitReceivedObjects without waiting
   private def scheduleSubmitReceivedObjects(
       delay: FiniteDuration,
       immediate: Boolean = false

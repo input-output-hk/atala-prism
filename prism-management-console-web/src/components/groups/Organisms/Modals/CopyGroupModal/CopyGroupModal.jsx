@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -12,7 +12,7 @@ import './_style.scss';
 
 const CopyGroupModal = ({ open, closeModal, group, onSave }) => {
   const { t } = useTranslation();
-  const formRef = React.createRef();
+  const formRef = createRef();
   const [copyName, setCopyName] = useState('');
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
 

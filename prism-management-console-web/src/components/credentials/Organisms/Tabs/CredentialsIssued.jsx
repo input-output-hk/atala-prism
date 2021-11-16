@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { PropTypes } from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import CreateCredentialsButton from '../../Atoms/Buttons/CreateCredentialsButton';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CONFIRMED, CREDENTIALS_ISSUED } from '../../../../helpers/constants';
-import { credentialTabShape } from '../../../../helpers/propShapes';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../../hooks/useSession';
@@ -17,20 +17,25 @@ import {
 
 const CredentialsIssued = observer(
   ({
-    tableProps,
+    selectionType,
     bulkActionsProps,
     showCredentialData,
-    initialLoading,
-    searchDueGeneralScroll
+    searchDueGeneralScroll,
+    ...credentialsIssuedProps
   }) => {
     const { t } = useTranslation();
     const [selectedLength, setSelectedLength] = useState();
-    const { credentials, isFetching, fetchMoreData } = useCredentialIssuedStore();
+
+    const {
+      credentials,
+      isFetching,
+      hasMore,
+      fetchMoreData,
+      isLoadingFirstPage
+    } = useCredentialIssuedStore();
     const { hasFiltersApplied, isSearching, isSorting } = useCredentialIssuedUiState();
 
     const { accountStatus } = useSession();
-
-    const { selectionType } = tableProps;
 
     const { selectedRowKeys } = selectionType || {};
 
@@ -44,12 +49,14 @@ const CredentialsIssued = observer(
     }, [fetchMoreData]);
 
     const expandedTableProps = {
-      ...tableProps,
+      ...credentialsIssuedProps,
+      selectionType,
       credentials,
       tab: CREDENTIALS_ISSUED,
       onView: showCredentialData,
       searchDueGeneralScroll,
       isFetching,
+      hasMore,
       loading: isSearching || isSorting
     };
 
@@ -61,7 +68,7 @@ const CredentialsIssued = observer(
     };
 
     const renderContent = () => {
-      if (initialLoading) return <SimpleLoading size="md" />;
+      if (isLoadingFirstPage) return <SimpleLoading size="md" />;
       return (
         <>
           <TableOptions bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
@@ -88,10 +95,30 @@ const CredentialsIssued = observer(
 );
 
 CredentialsIssued.defaultProps = {
-  initialLoading: false,
-  searchDueGeneralScroll: false
+  initialLoading: false
 };
 
-CredentialsIssued.propTypes = credentialTabShape;
+CredentialsIssued.propTypes = {
+  credentials: PropTypes.arrayOf(PropTypes.shape()),
+  selectionType: PropTypes.shape({
+    selectedRowKeys: PropTypes.arrayOf(PropTypes.string)
+  }),
+  hasMore: PropTypes.bool,
+  searching: PropTypes.bool,
+  sortingProps: PropTypes.shape({
+    sortingBy: PropTypes.string,
+    setSortingBy: PropTypes.func,
+    sortDirection: PropTypes.string,
+    setSortDirection: PropTypes.func
+  }).isRequired,
+  bulkActionsProps: PropTypes.shape({
+    signSelectedCredentials: PropTypes.func,
+    sendSelectedCredentials: PropTypes.func,
+    toggleSelectAll: PropTypes.func,
+    selectAll: PropTypes.bool,
+    indeterminateSelectAll: PropTypes.bool
+  }).isRequired,
+  showEmpty: PropTypes.bool
+};
 
 export default CredentialsIssued;

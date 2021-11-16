@@ -24,6 +24,7 @@ export default class CredentialIssuedStore {
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
+      refreshCredentials: flow.bound,
       fetchMoreData: flow.bound,
       fetchSearchResults: flow.bound,
       getCredentialsToSelect: flow.bound,
@@ -37,9 +38,14 @@ export default class CredentialIssuedStore {
   }
 
   resetCredentials = () => {
-    this.hasMoreCredentials = defaultValues.hasMoreCredentials;
+    this.hasMore = defaultValues.hasMore;
     this.credentials = defaultValues.credentials;
   };
+
+  *refreshCredentials() {
+    const response = yield this.fetchRecursively({ limit: this.credentials.length });
+    this.credentials = response.credentialsList;
+  }
 
   *fetchMoreData() {
     if (!this.hasMore) return;
@@ -59,21 +65,12 @@ export default class CredentialIssuedStore {
 
     if (!this.hasMore) return alreadyFetched;
 
-    const response = yield this.fetchRecursively(alreadyFetched);
+    const response = yield this.fetchRecursively({ acc: alreadyFetched });
     this.credentials = response.credentialsList;
     return response.credentialsList;
   }
 
-  updateStoredCredentials = credentialsList => {
-    const { hasFiltersApplied } = this.rootStore.uiState.credentialIssuedUiState;
-    if (hasFiltersApplied) {
-      this.searchResults = credentialsList;
-    } else {
-      this.credentials = credentialsList;
-    }
-  };
-
-  fetchRecursively = async (acc = [], limit) => {
+  fetchRecursively = async ({ acc = [], limit } = {}) => {
     const pageSize = Math.min(limit || Infinity, MAX_CREDENTIAL_PAGE_SIZE);
     const response = await this.fetchCredentials({
       offset: acc.length,
@@ -84,14 +81,12 @@ export default class CredentialIssuedStore {
       return {
         credentialsList: updatedAcc
       };
-    return this.fetchRecursively(updatedAcc, limit);
+    return this.fetchRecursively({ acc: updatedAcc, limit });
   };
 
   updateHasMoreState = (credentialsList, pageSize) => {
-    const { hasFiltersApplied } = this.rootStore.uiState.credentialIssuedUiState;
     if (credentialsList.length < pageSize) {
-      if (hasFiltersApplied) this.hasMoreResults = false;
-      else this.hasMoreCredentials = false;
+      this.hasMore = false;
     }
   };
 
