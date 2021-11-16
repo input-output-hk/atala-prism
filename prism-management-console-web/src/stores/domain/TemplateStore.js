@@ -17,6 +17,7 @@ export default class TemplateStore {
   constructor(api, rootStore) {
     this.api = api;
     this.rootStore = rootStore;
+    this.transportLayerErrorHandler = rootStore.sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
     makeAutoObservable(this, {
       fetchTemplates: flow.bound,
@@ -37,7 +38,7 @@ export default class TemplateStore {
     try {
       const response = yield this.api.credentialTypesManager.getCredentialTypes();
       this.credentialTemplates = response.concat(this.mockedCredentialTemplates);
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
         store: this.storeName,
@@ -45,7 +46,7 @@ export default class TemplateStore {
         verb: 'getting',
         model: 'Templates'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
     this.isLoadingTemplates = false;
   }
@@ -53,7 +54,7 @@ export default class TemplateStore {
   *getCredentialTemplateDetails(id) {
     try {
       const result = yield this.api.credentialTypesManager.getCredentialTypeDetails(id);
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
       return result;
     } catch (error) {
       const metadata = {
@@ -62,7 +63,7 @@ export default class TemplateStore {
         verb: 'getting',
         model: 'Template Details'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
   }
 
@@ -70,7 +71,7 @@ export default class TemplateStore {
     try {
       this.mockedCredentialTemplates.push(newTemplate);
       yield this.api.credentialTypesManager.createTemplate(newTemplate);
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
         store: this.storeName,
@@ -78,7 +79,7 @@ export default class TemplateStore {
         verb: 'saving',
         model: 'Template'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
   }
 
@@ -86,7 +87,7 @@ export default class TemplateStore {
     this.isLoadingCategories = true;
     try {
       const response = yield this.api.credentialTypesManager.getTemplateCategories();
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
       this.templateCategories = response.concat(this.mockedTemplateCategories);
     } catch (error) {
       const metadata = {
@@ -95,7 +96,7 @@ export default class TemplateStore {
         verb: 'getting',
         model: 'Template Categories'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
     this.isLoadingCategories = false;
   }
@@ -106,7 +107,7 @@ export default class TemplateStore {
       const { categoryName } = newCategoryData;
       const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
       const response = yield this.api.credentialTypesManager.createCategory(newCategory);
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
       this.mockedTemplateCategories.push(newCategory);
       this.fetchCategories();
       return response;
@@ -117,7 +118,7 @@ export default class TemplateStore {
         verb: 'saving',
         model: 'Template Category'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
     this.isLoadingCategories = false;
   }

@@ -1,4 +1,3 @@
-import SessionState from './SessionState';
 import ContactUiState from './ContactUiState';
 import TemplateUiState from './TemplateUiState';
 import TemplateSketchState from './TemplateSketchState';
@@ -8,7 +7,6 @@ import CurrentContactState from './CurrentContactState';
 
 export class UiState {
   constructor(api, rootStore) {
-    this.sessionState = new SessionState(api, rootStore);
     this.contactUiState = new ContactUiState(rootStore);
     this.currentContactState = new CurrentContactState(api, rootStore);
     this.credentialIssuedUiState = new CredentialIssuedUiState(rootStore);

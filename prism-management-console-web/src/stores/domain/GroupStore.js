@@ -18,9 +18,10 @@ export default class GroupStore {
 
   numberOfGroups = defaultValues.numberOfGroups;
 
-  constructor(api, rootGroupStore) {
+  constructor(api, sessionState, rootGroupStore) {
     this.api = api;
     this.rootGroupStore = rootGroupStore;
+    this.transportLayerStateHandler = sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
@@ -110,7 +111,7 @@ export default class GroupStore {
           createdAfter
         }
       });
-      this.rootGroupStore.handleTransportLayerSuccess();
+      this.transportLayerStateHandler.handleTransportLayerSuccess();
       this.isFetching = false;
       return response || fallback;
     } catch (error) {
@@ -120,7 +121,7 @@ export default class GroupStore {
         verb: 'getting',
         model: 'Groups'
       };
-      this.rootGroupStore.handleTransportLayerError(error, metadata);
+      this.transportLayerStateHandler.handleTransportLayerError(error, metadata);
       this.isFetching = false;
       return fallback;
     }
@@ -130,7 +131,7 @@ export default class GroupStore {
     this.isSaving = true;
     try {
       const response = yield this.api.groupsManager.updateGroup(id, change);
-      this.rootGroupStore.handleTransportLayerSuccess();
+      this.transportLayerStateHandler.handleTransportLayerSuccess();
       this.isSaving = false;
       return response;
     } catch (error) {
@@ -140,7 +141,7 @@ export default class GroupStore {
         verb: 'saving',
         model: 'Group'
       };
-      this.rootGroupStore.handleTransportLayerError(error, metadata);
+      this.transportLayerStateHandler.handleTransportLayerError(error, metadata);
       this.isSaving = false;
     }
   }

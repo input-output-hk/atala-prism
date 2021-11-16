@@ -31,6 +31,7 @@ export default class ContactStore {
   constructor(api, rootStore) {
     this.api = api;
     this.rootStore = rootStore;
+    this.transportLayerErrorHandler = rootStore.sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
@@ -176,7 +177,7 @@ export default class ContactStore {
         }
       });
       runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
+        this.transportLayerErrorHandler.handleTransportLayerSuccess();
         this.isFetching = false;
       });
       const contactsWithKey = response.contactsList.map(contactMapper);
@@ -190,7 +191,7 @@ export default class ContactStore {
         model: 'Contacts'
       };
       runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
+        this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
         this.isFetching = false;
       });
       return fallback;
@@ -201,7 +202,7 @@ export default class ContactStore {
     try {
       this.isSaving = true;
       const response = yield this.api.contactsManager.updateContact(contactId, newContactData);
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
       this.isSaving = false;
       return response;
     } catch (error) {
@@ -211,7 +212,7 @@ export default class ContactStore {
         verb: 'saving',
         model: 'Contact'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
   }
 }
