@@ -4,7 +4,6 @@ import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
-import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.auth.grpc._
