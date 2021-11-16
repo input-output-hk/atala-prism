@@ -32,7 +32,8 @@ Tickets
 
    Description:
 
-   This should be done the same way it is done on mobile wallet side, the counter will be used to generate a key derivation path for key agreement key
+   This should be done the same way it is done on mobile wallet side, the counter will be used to generate a key derivation path for key agreement key.
+   Wallet will also have an api to get the next available key derivation path, to increment a key derivation path and to get a public key by the key derivation path
 
    Codebase - Web wallet
 
@@ -73,22 +74,9 @@ Tickets
    Issuer should parse the received message, validate MAC and update the database (management_console_db/contacts) with received public key, in case MAC is authentic. In order to validate mac Issuer will need a secret, Issuer will be able to obtain secret by querying the row by connection_id that is attached to the message, or by connection token that can be retrieved by connection_id
 
    Codebase - Management console frontend
-   Blocked by - 7, 9
+   Blocked by - 7
 
-
-9. **Add functionality management console to query messages to the issuer via connector**
-
-   Description:
-
-   Right now, mobile apps are periodically queuing for new messages from connector that are sent to them, that is how they are able to "receive" messages, management console should be able to do the similar thing because issuer is receiving messages from the holder as well, such functionality is not present on management console side right now and should be implemented.
-
-   new messages should be queries only for new contact that have started the key agreement process but have not finished it yet, that will be contact that has `secret` and `key_agreement_derivation_path`, which means QR code has been shared to them, but don't have `recipient_pk` and `connection_id` in database yet, which means he is looking for the new message from the holder.
-
-   Codebase - Management console frontend
-   Blocked by - 2
-
-
-10. **Add ECIES to SDK**
+9. **Add ECIES to SDK**
 
     Description:
 
@@ -98,53 +86,32 @@ Tickets
     Codebase - SDK
 
 
-11. **Extend prism-api connector module with `EncryptedAtalaMessage`**
+10. **Extend prism-api connector module with `EncryptedAtalaMessage`**
 
     Description:
 
-    SDK should have a functionality to `EncryptedAtalaMessage`, which includes encrypting and signing `AtalaMessage` with provided public and private keys
-
-    SDK should also be able deconstruct `EncryptedAtalaMessage`, which includes decrypting it and extracting raw `AtalaMessage` out of it, as well as verifying a signature.
+    SDK should have a functionality to construct `EncryptedAtalaMessage`, which includes encrypting and signing `AtalaMessage` with provided public and private keys.
+    SDK should also be able to deconstruct `EncryptedAtalaMessage`, which includes decrypting it and extracting raw `AtalaMessage` out of it, as well as verifying a signature.
 
     Codebase - SDK
     Blocked by - 10
 
 
-12. **Implement part 3,4,5 and 6 of [encryption protocol](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/connector/e2e-encryption.md#steps-1)**
+11. **Implement part 3,4,5 and 6 of [encryption protocol](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/connector/e2e-encryption.md#steps-1)**
 
     Description:
 
     Utilize SDK to construct and send `EncryptedAtalaMessage`
 
     Codebase - Management console frontend
-    Blocked by - 11
+    Blocked by - 10
 
 
-13. **Extend Issuer database to add `rValue`**
-
-    Description:
-
-    Add a migration to connector backend that will add the field `rValue` to messages table, this value will be nullable and will be used to decrypt this messages
-
-    Codebase - Prism backend (connector)
-    Blocked by - 12
-
-
-14. **Add functionality to backend to parse `EncryptedAtalaMessage` and store it into database**
-
-    Description:
-
-    since `EncryptedAtalaMessage` is a oneof of `AtalaMessage`, there already is a handler that accepts a message and stores it into database, this functionality should be expended to accommodate new type of message, including extracting `rValue` and storing it separately
-
-    Codebase - Prism backend (connector)
-    Blocked by - 13
-
-
-15. **implement part 8,9,10 and 11 of [encryption protocol](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/connector/e2e-encryption.md#steps-1)**
+12. **implement part 8,9,10 and 11 of [encryption protocol](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/connector/e2e-encryption.md#steps-1)**
 
     Description:
 
     Mobile wallet should parse `EncryptedAtalaMessage` extract `AtalaMessage` and handle them in the same way they are handling other messages of type `AtalaMessage`
 
     Codebase - Android app and IOS app. (there will be 2 tickets in Jira for each)
-    Blocked by - 11
+
