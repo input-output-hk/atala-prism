@@ -1,19 +1,27 @@
-import React, { useEffect } from 'react';
-import { navigate } from 'gatsby';
+import React from 'react';
+import { graphql } from 'gatsby';
 import SEO from '../components/seo/seo';
+import Landing from '../components/landing/Landing';
 
-// This is a work around to allow the main app to be rendered client side and be the default route
-
-const Main = () => {
-  useEffect(() => {
-    navigate('/app');
-  }, []);
-
-  return (
-    <div>
-      <SEO />
-    </div>
-  );
-};
+const Main = () => (
+  <div>
+    <SEO />
+    <Landing />
+  </div>
+);
 
 export default Main;
+
+export const pageQuery = graphql`
+  query {
+    locales: allLocale(filter: { language: { eq: "en" } }) {
+      edges {
+        node {
+          ns
+          data
+          language
+        }
+      }
+    }
+  }
+`;

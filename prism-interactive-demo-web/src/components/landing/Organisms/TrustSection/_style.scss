@@ -1,0 +1,82 @@
+@import '../../../../css/general_styling';
+
+.TrustSection {
+  background: $black;
+  width: 100%;
+  padding: 8em;
+  margin-top: -30px;
+
+  .DownloadContainer {
+    .MiniDetailText {
+      color: $white;
+    }
+
+    h1 {
+      @include secondary-text($h1, $primary-color);
+      line-height: 32px;
+      width: 360px;
+      margin-bottom: 2.5em;
+    }
+  }
+
+  .BenefitsContainer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    .BenefitItem {
+      width: 30%;
+      border-left: 1px solid $primary-color;
+      padding: 0 1em;
+      margin-bottom: 3em;
+
+      h3 {
+        @include primary-text($h3, $white);
+        font-weight: 600;
+      }
+
+      p {
+        @include primary-text($label, $white);
+
+        &.ComingSoon {
+          color: $dark-grey;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .TrustSection {
+    padding: 8em 4em 4em 4em;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .TrustSection {
+    .DownloadContainer {
+      h1 {
+        margin-left: 0;
+      }
+    }
+
+    .BenefitsContainer {
+      margin-left: 0;
+      .BenefitItem {
+        width: 33%;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .TrustSection {
+    padding: 8em 2em 2em 2em;
+    .BenefitsContainer {
+      .BenefitItem {
+        width: 100%;
+      }
+    }
+  }
+}

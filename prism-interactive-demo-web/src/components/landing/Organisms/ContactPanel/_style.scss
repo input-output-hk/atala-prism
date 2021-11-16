@@ -1,0 +1,150 @@
+@import '../../../../css/general_styling';
+
+.ContactPanel {
+  background: $white;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8em 0;
+  display: flex;
+  flex-direction: column;
+
+  .ContactPanelContainer {
+    .MiniDetailText {
+      color: $black;
+    }
+
+    .paragraphContent {
+      width: 65%;
+      h1 {
+        @include secondary-text($h1, $black);
+        line-height: 32px;
+        margin-bottom: 1.5em;
+      }
+      h3 {
+        @include primary-text($body, $black);
+        margin-bottom: 2em;
+
+        a {
+          color: $primary-color;
+          font-weight: 600;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  .ContactPanelForm {
+    width: 65%;
+    margin-top: 1em;
+
+    .contactInformation {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+
+      p {
+        @include primary-text($label, $secondary-color);
+        margin-bottom: 0.5em;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid $medium-grey;
+        width: 100%;
+        margin-bottom: 1em;
+      }
+
+      .FAQContainer {
+        display: none;
+      }
+
+      button {
+        margin: 1em 0;
+      }
+
+      .ant-form {
+        width: 100%;
+        .itemFormInfo {
+          width: 48%;
+          margin-bottom: 1.5em;
+
+          &:last-child {
+            width: 100%;
+          }
+        }
+      }
+
+      .ant-checkbox-wrapper {
+        margin-bottom: 1em;
+        span {
+          @include secondary-text($label, $secondary-color);
+        }
+
+        .ant-checkbox-checked .ant-checkbox-inner {
+          background-color: $primary-color;
+          border-color: $primary-color;
+        }
+
+        .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+        .ant-checkbox:hover .ant-checkbox-inner,
+        .ant-checkbox-input:focus + .ant-checkbox-inner,
+        .ant-checkbox-checked::after {
+          border-color: $primary-color;
+        }
+      }
+    }
+  }
+
+  .IllustrationFooter {
+    align-self: flex-end;
+    margin-right: 5em;
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .ContactPanel {
+    padding: 8em 4em 0 4em;
+
+    .ContactPanelContainer {
+      .paragraphContent {
+        width: 80%;
+      }
+    }
+    .ContactPanelForm {
+      width: 80%;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .ContactPanel {
+    .ContactPanelContainer {
+      .paragraphContent {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+    .ContactPanelForm {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .IllustrationFooter {
+      align-self: flex-end;
+      margin-right: 1em;
+      width: 100px;
+    }
+  }
+}
+
+@media only screen and (max-width: 650px) {
+  .ContactPanel {
+    padding: 8em 2em 0 2em;
+    .ContactPanelForm .contactInformation button {
+      margin: 1em auto;
+    }
+  }
+  .contactInformation .ant-form .itemFormInfo {
+    width: 100%;
+  }
+}

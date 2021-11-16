@@ -6,7 +6,7 @@ export const withRedirector = Component => props => {
 
   const redirectToAskCredential = () => redirectTo('askCredential');
 
-  const redirectToHome = () => redirectTo('');
+  const redirectToHome = () => navigate('/');
 
   const redirector = { redirectToAskCredential, redirectToHome };
 
