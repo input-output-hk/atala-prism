@@ -22,8 +22,11 @@ import org.slf4j.LoggerFactory
 import scala.collection.BuildFrom
 import scala.util.control.NonFatal
 
+// This service syncs Node state with the underlying ledger
 trait BlockProcessingService {
 
+  // Iterates over transactions in the Cardano block, retrieves operations from transaction metadata,
+  // applies every operation to the Node state (e.g. update DID Document stored in the database)
   def processBlock(
       block: node_internal.AtalaBlock,
       transactionId: TransactionId,
@@ -48,6 +51,8 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     val methodName = "processBlock"
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
+
+    // parse serialized operations using the ledger data into Operation structure
     val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) { case (signedOperation, osn) =>
       parseOperation(
         signedOperation,
@@ -71,7 +76,9 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
             AtalaOperationStatus.REJECTED
           )
           .as(false)
-      case Right(parsedOperations) =>
+      case Right(
+            parsedOperations
+          ) => // iterate over the list of parsed operations, and update Node's databases representing the Node state
         (parsedOperations zip operations)
           .traverse { case (parsedOperation, protoOperation) =>
             val atalaOperationId = AtalaOperationId.of(protoOperation)
@@ -82,6 +89,8 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
               atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(
                 atalaOperationId
               )
+              // verify signature, validate operation, and update the Node state by applied the operation
+              // see BlockProcessingServiceImpl.processOperation for more details
               _ <- processOperation(
                 parsedOperation,
                 protoOperation,
@@ -111,10 +120,11 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                       atalaOperationId.toString,
                       protoOperation
                     )
+                    // atomically rollback the operation
                     connection
                       .rollback(savepoint)
                       .flatMap { _ =>
-                        if (
+                        if ( // check that this operation wasn't applied before (so this is a duplicate)
                           atalaOperationInfo.exists(
                             _.operationStatus != AtalaOperationStatus.APPLIED
                           )
@@ -136,23 +146,29 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     }
   }
 
+  // Apply operation and update the status of this operation
   def processOperation(
       operation: Operation,
       protoOperation: node_models.SignedAtalaOperation,
       atalaOperationId: AtalaOperationId
   ): ConnectionIO[Either[StateError, Unit]] = {
     val result = for {
+      // Fetch key information and previous hash information
       correctnessData <- operation.getCorrectnessData(protoOperation.signedWith)
       CorrectnessData(key, previousOperation) = correctnessData
+      // Verify that operation has the correct hash of the previous operation
       _ <- EitherT.cond[ConnectionIO](
         operation.linkedPreviousOperation == previousOperation,
         (),
         StateError.InvalidPreviousOperation(): StateError
       )
+      // Verify signature of the operation
       _ <- EitherT.fromEither[ConnectionIO](
         verifySignature(key, protoOperation)
       )
+      // Update Node's state
       _ <- operation.applyState()
+      // Set operation status to APPLIED
       _ <- EitherT.right[StateError](
         AtalaOperationsDAO.updateAtalaOperationStatus(
           atalaOperationId,
