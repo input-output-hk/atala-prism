@@ -53,16 +53,18 @@ export default class GroupStore {
     this.numberOfGroups = defaultValues.numberOfGroups;
   };
 
-  *fetchMoreData({ isInitialLoading }) {
+  *fetchMoreData({ isInitialLoading } = {}) {
     if (!isInitialLoading && !this.hasMore) return;
     const response = yield this.fetchGroups({ offset: isInitialLoading ? 0 : this.groups.length });
     this.groups = isInitialLoading ? response.groupsList : this.groups.concat(response.groupsList);
+    this.numberOfGroups = response.numberOfGroups;
   }
 
   *fetchSearchResults() {
     const response = yield this.fetchGroups({ offset: 0 });
     this.resetGroups();
     this.groups = this.groups.concat(response.groupsList);
+    this.numberOfGroups = response.numberOfGroups;
   }
 
   *getGroupsToSelect() {
