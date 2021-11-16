@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
 import cats.syntax.applicative._
+import cats.syntax.option._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
@@ -23,7 +24,7 @@ import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDa
 import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
@@ -84,27 +85,26 @@ class NodeServiceImpl(
       didRequestStr: String,
       methodName: String,
       didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  ) = {
+  ): Future[GetDidDocumentResponse] = {
     val didTry = Try(PrismDid.fromString(didRequestStr))
     val tid = TraceId.generateYOLO
     didTry match {
       case Success(did) =>
         did match {
           case canon: CanonicalPrismDid =>
-            resolve(canon, tid, didDataRepository) orElse (countAndThrowNodeError(methodName, _))
+            didDataRepository
+              .findByDid(canon)
+              .map(_.fold(countAndThrowNodeError(methodName, _), toDidDataProto(_, canon)))
+              .run(tid)
+              .map(succeedWith)
+              .unsafeRunSync()
           case longForm: LongFormPrismDid => // we received a long form DID
             // we check if the DID was published
-            resolve(did.asCanonical(), did, tid, didDataRepository).orReturn {
-              // if it was not published, we return the encoded initial state
-              succeedWith(
-                Some(
-                  ProtoCodecs.atalaOperationToDIDDataProto(
-                    DidSuffix(did.getSuffix),
-                    longForm.getInitialState.asScala
-                  )
-                )
-              )
-            }
+            didDataRepository
+              .findByDid(did.asCanonical())
+              .map(handleFindByDidResult(_, longForm, did))
+              .run(tid)
+              .unsafeRunSync()
           case _ => failWith(s"Invalid DID: $didRequestStr", methodName)
         }
       case Failure(_) => failWith(s"Invalid DID: $didRequestStr", methodName)
@@ -642,58 +642,25 @@ object NodeServiceImpl {
     Future.failed(new RuntimeException(msg))
   }
 
-  private case class OrElse(
-      did: DID,
-      state: Future[Either[NodeError, Option[DIDDataState]]]
-  ) {
-    def orReturn(
-        initialState: => Future[node_api.GetDidDocumentResponse]
-    )(implicit
-        ec: ExecutionContext,
-        logger: Logger
-    ): Future[node_api.GetDidDocumentResponse] =
-      state.flatMap {
-        case Right(stMaybe) =>
-          stMaybe.fold(initialState)(st => succeedWith(Some(ProtoCodecs.toDIDDataProto(did.getSuffix, st))))
-        case Left(err: NodeError) =>
-          logger.info(err.toStatus.asRuntimeException().getMessage)
-          initialState
-      }
-
-    def orElse(
-        ifFailed: NodeError => Future[node_api.GetDidDocumentResponse]
-    )(implicit
-        ec: ExecutionContext,
-        logger: Logger
-    ): Future[node_api.GetDidDocumentResponse] =
-      state.flatMap {
-        case Right(stMaybe) =>
-          val didData =
-            stMaybe.map(st => ProtoCodecs.toDIDDataProto(did.getSuffix, st))
-          succeedWith(didData)
-        case Left(err: NodeError) => ifFailed(err)
-      }
-  }
-
-  private def resolve(
-      did: CanonicalPrismDid,
-      butShowInDIDDocument: DID,
-      tId: TraceId,
-      didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  )(implicit runtime: IORuntime): OrElse = {
-    OrElse(
-      butShowInDIDDocument,
-      didDataRepository.findByDid(did).run(tId).unsafeToFuture()
+  private def handleFindByDidResult(
+      result: Either[NodeError, Option[DIDDataState]],
+      longForm: LongFormPrismDid,
+      did: DID
+  )(implicit
+      logger: Logger
+  ): Future[GetDidDocumentResponse] = {
+    def returnInitialState: Future[node_api.GetDidDocumentResponse] = succeedWith(
+      ProtoCodecs.atalaOperationToDIDDataProto(DidSuffix(did.getSuffix), longForm.getInitialState.asScala).some
+    )
+    // if it was not published or we have an error, we return the encoded initial state
+    result.fold(
+      _ => returnInitialState,
+      _.fold(returnInitialState)(state => succeedWith(ProtoCodecs.toDIDDataProto(did.getSuffix, state).some))
     )
   }
 
-  private def resolve(
-      did: CanonicalPrismDid,
-      tId: TraceId,
-      didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  )(implicit runtime: IORuntime): OrElse = {
-    OrElse(did, didDataRepository.findByDid(did).run(tId).unsafeToFuture())
-  }
+  private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[DIDData] =
+    in.map(didDataState => ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState))
 
   private def getOperationOutput(
       operation: SignedAtalaOperation
