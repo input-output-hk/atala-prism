@@ -163,11 +163,12 @@ async function getContact(contactId) {
 
 async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) {
   const { contactsList, newScrollId } = await this.getContacts({
-    groupName,
+    filter: { groupName },
     scrollId,
     limit: MAX_CONTACT_PAGE_SIZE
   });
-  const partialContactsArray = acc.concat(contactsList);
+  const mappedContacts = contactsList.map(contactMapper);
+  const partialContactsArray = acc.concat(mappedContacts);
   if (contactsList.length < MAX_CONTACT_PAGE_SIZE) return onFinish(partialContactsArray);
   return this.fetchMoreContactsRecursively(newScrollId, groupName, partialContactsArray, onFinish);
 }

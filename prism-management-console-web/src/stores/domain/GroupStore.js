@@ -64,19 +64,6 @@ export default class GroupStore {
     this.groups = this.groups.concat(response.groupsList);
   }
 
-  getGroupById = async id => {
-    this.isFetching = true;
-    const foundLocally = this.groups.find(g => g.id === id);
-    const found = foundLocally || (await this.fetchGroupById(id));
-    this.isFetching = false;
-    return found;
-  };
-
-  fetchGroupById = async id => {
-    const response = await this.fetchRecursively(this.groups);
-    return response.groupsList.find(g => g.id === id);
-  };
-
   *getGroupsToSelect() {
     const alreadyFetched = this.groups;
 

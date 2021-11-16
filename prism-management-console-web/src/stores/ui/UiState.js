@@ -15,7 +15,7 @@ export class UiState {
     this.contactUiState = new ContactUiState(rootStore);
     this.currentContactState = new CurrentContactState(api, rootStore);
     this.groupUiState = new GroupUiState(rootStore);
-    this.currentGroupState = new CurrentGroupState(rootStore);
+    this.currentGroupState = new CurrentGroupState(api, rootStore);
     this.credentialIssuedUiState = new CredentialIssuedUiState(rootStore);
     this.credentialReceivedUiState = new CredentialReceivedUiState(rootStore);
     this.templateUiState = new TemplateUiState(rootStore);
