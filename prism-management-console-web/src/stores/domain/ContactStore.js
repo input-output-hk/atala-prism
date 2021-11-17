@@ -1,5 +1,6 @@
 import { makeAutoObservable, flow } from 'mobx';
 import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
+import ContactUiState from '../ui/ContactUiState';
 
 const defaultValues = {
   isSaving: false,
@@ -21,9 +22,8 @@ export default class ContactStore {
 
   scrollId = defaultValues.scrollId;
 
-  constructor(api, sessionState, rootContactStore) {
+  constructor(api, sessionState) {
     this.api = api;
-    this.rootContactStore = rootContactStore;
     this.transportLayerErrorHandler = sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
@@ -37,6 +37,9 @@ export default class ContactStore {
       fetchRecursively: false,
       rootStore: false
     });
+    // has to be declared after `fetchSearchResults` has been bound.
+    // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
+    this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
   }
 
   get isLoadingFirstPage() {
@@ -118,7 +121,7 @@ export default class ContactStore {
         statusFilter,
         sortDirection,
         sortingBy
-      } = this.rootContactStore.contactUiState;
+      } = this.contactUiState;
 
       const response = yield this.api.contactsManager.getContacts({
         scrollId,

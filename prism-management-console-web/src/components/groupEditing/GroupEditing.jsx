@@ -16,20 +16,21 @@ import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAl
 import { useSelectAll } from '../../hooks/useSelectAll';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
-import { useCurrentGroupState } from '../../hooks/useCurrentGroupState';
+import { useCurrentGroupStore } from '../../hooks/useCurrentGroupStore';
 import { useContactUiState } from '../../hooks/useContactStore';
 import './_style.scss';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
-  const { hasFiltersApplied } = useContactUiState({ reset: true });
   const {
+    contactUiState,
     isLoadingGroup,
     isLoadingMembers,
     isSaving,
     name,
     members,
     getMembersToSelect
-  } = useCurrentGroupState();
+  } = useCurrentGroupStore();
+  const { hasFiltersApplied } = useContactUiState({ instance: contactUiState, reset: true });
 
   const { t } = useTranslation();
   const formRef = createRef();
@@ -180,7 +181,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         <h3>{t('groupEditing.contacts')}</h3>
         <div className="filterContainer">
           <div className="connectionFilter">
-            <ConnectionsFilter showFullFilter={false} />
+            <ConnectionsFilter instance={contactUiState} showFullFilter={false} />
           </div>
           <SelectAllButton
             loadingSelection={loadingSelection}

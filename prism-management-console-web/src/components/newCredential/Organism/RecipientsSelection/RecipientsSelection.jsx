@@ -7,9 +7,9 @@ import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
 import GroupsTableHeader from '../../Molecules/RecipientsTable/GroupsTableHeader';
 import ContactsTableHeader from '../../Molecules/RecipientsTable/ContactsTableHeader';
+import { useContactStore } from '../../../../hooks/useContactStore';
 
 import './_style.scss';
-import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
 
 const { TabPane } = Tabs;
 
@@ -27,9 +27,9 @@ const RecipientsSelection = observer(
   }) => {
     const { t } = useTranslation();
 
-    const { hasFiltersApplied, isSearching, isSorting } = useContactUiState();
     const {
       contacts,
+      contactUiState: { hasFiltersApplied, isSearching, isSorting },
       initContactStore,
       isLoadingFirstPage,
       fetchMoreData,

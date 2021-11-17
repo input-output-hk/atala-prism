@@ -3,13 +3,12 @@ import { GlobalStateContext } from '../stores/index';
 import { useUpdateEffect } from './useUpdateEffect';
 
 export const useContactStore = () => {
-  const { rootContactStore } = useContext(GlobalStateContext);
+  const { contactStore } = useContext(GlobalStateContext);
 
-  return rootContactStore.contactStore;
+  return contactStore;
 };
 
-export const useContactUiState = ({ reset } = { reset: false }) => {
-  const { rootContactStore } = useContext(GlobalStateContext);
+export const useContactUiState = ({ instance, reset } = { reset: false }) => {
   const {
     triggerSearch,
     textFilter,
@@ -18,7 +17,7 @@ export const useContactUiState = ({ reset } = { reset: false }) => {
     statusFilter,
     sortingKey,
     sortDirection
-  } = rootContactStore.contactUiState;
+  } = instance;
 
   useEffect(() => {
     if (reset) resetState();
@@ -37,7 +36,7 @@ export const useContactUiState = ({ reset } = { reset: false }) => {
     triggerSearch();
   }, [...sortingAndFiltersDependencies, triggerSearch]);
 
-  return rootContactStore.contactUiState;
+  return instance;
 };
 
 export const useAllContacts = () => {

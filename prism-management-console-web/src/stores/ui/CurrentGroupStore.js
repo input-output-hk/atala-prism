@@ -1,6 +1,7 @@
 import { message } from 'antd';
 import i18n from 'i18next';
 import { flow, makeAutoObservable } from 'mobx';
+import ContactUiState from './ContactUiState';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -13,7 +14,7 @@ const defaultValues = {
   numberOfContacts: undefined
 };
 
-export default class CurrentGroupState {
+export default class CurrentGroupStore {
   isLoadingGroup = defaultValues.isLoadingGroup;
 
   isLoadingMembers = defaultValues.isLoadingMembers;
@@ -30,16 +31,19 @@ export default class CurrentGroupState {
 
   numberOfContacts = defaultValues.numberOfContacts;
 
-  constructor(api, groupStore) {
+  constructor(api, sessionState) {
     this.api = api;
-    this.groupStore = groupStore;
+    this.sessionState = sessionState;
+
     makeAutoObservable(this, {
       loadGroup: flow.bound,
       loadMembers: flow.bound,
       updateGroupName: flow.bound,
-      updateGroupMembers: flow.bound,
-      groupStore: false
+      updateGroupMembers: flow.bound
     });
+    // has to be declared after `fetchSearchResults` has been bound.
+    // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
+    this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
   }
 
   init = async id => {
@@ -61,6 +65,10 @@ export default class CurrentGroupState {
     this.members = yield this.api.contactsManager.getAllContacts(this.name);
     this.isLoadingMembers = false;
   }
+
+  fetchSearchResults = () => {
+    message.warn('not implemented yet');
+  };
 
   // FIXME: select only filtered members
   getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);

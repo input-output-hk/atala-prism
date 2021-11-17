@@ -6,7 +6,7 @@ import { Modal, Row, Col } from 'antd';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import { useCurrentGroupState } from '../../../hooks/useCurrentGroupState';
+import { useCurrentGroupStore } from '../../../hooks/useCurrentGroupStore';
 import SelectAllButton from '../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useSelectAll } from '../../../hooks/useSelectAll';
 import { CONTACT_ID_KEY } from '../../../helpers/constants';
@@ -20,7 +20,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [isNewModal, setIsNewModal] = useState(true);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const { isLoadingContactsNotInGroup, getContactsNotInGroup } = useCurrentGroupState();
+  const { isLoadingContactsNotInGroup, getContactsNotInGroup } = useCurrentGroupStore();
 
   useEffect(() => {
     const handleGetContacts = async () => {

@@ -4,8 +4,8 @@ import Connections from './Connections';
 import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 
 const ConnectionsContainer = observer(() => {
-  useContactStore();
-  useContactUiState({ reset: true });
+  const { contactUiState } = useContactStore();
+  useContactUiState({ instance: contactUiState, reset: true });
 
   return <Connections />;
 });

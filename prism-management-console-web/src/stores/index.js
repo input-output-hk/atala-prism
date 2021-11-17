@@ -1,22 +1,28 @@
 import { createContext } from 'react';
-import { RootGroupStore } from './RootGroupStore';
-import { RootContactStore } from './RootContactStore';
 import { RootStore } from './RootStore';
 import SessionState from './ui/SessionState';
+import GroupStore from './domain/GroupStore';
+import CurrentGroupStore from './ui/CurrentGroupStore';
+import ContactStore from './domain/ContactStore';
+import CurrentContactState from './ui/CurrentContactState';
 
 export const createStores = api => {
   const sessionState = new SessionState(api);
   // TODO: spread the rest of the entity stores into separate Root<Entity>Store
   const rootStore = new RootStore(api, sessionState);
-  const rootGroupStore = new RootGroupStore(api, sessionState);
-  const rootContactStore = new RootContactStore(api, sessionState);
+  const groupStore = new GroupStore(api, sessionState);
+  const currentGroupStore = new CurrentGroupStore(api, sessionState);
+  const contactStore = new ContactStore(api, sessionState);
+  const currentContactState = new CurrentContactState(api, sessionState);
 
   return {
     ...rootStore.uiState,
     ...rootStore.prismStore,
     sessionState,
-    rootGroupStore,
-    rootContactStore
+    groupStore,
+    currentGroupStore,
+    contactStore,
+    currentContactState
   };
 };
 

@@ -2,11 +2,11 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import GroupEditing from './GroupEditing';
-import { useCurrentGroupState } from '../../hooks/useCurrentGroupState';
+import { useCurrentGroupStore } from '../../hooks/useCurrentGroupStore';
 
 const GroupEditingContainer = observer(() => {
   const { id } = useParams();
-  const { updateGroupName, updateGroupMembers } = useCurrentGroupState(id);
+  const { updateGroupName, updateGroupMembers } = useCurrentGroupStore(id);
 
   const handleRemoveContacts = async contactIdsToRemove =>
     updateGroupMembers({ contactIdsToRemove });

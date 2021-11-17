@@ -8,7 +8,7 @@ import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import AddUsersButton from './Atoms/AddUsersButtons/AddUsersButton';
-import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
+import { useContactStore } from '../../hooks/useContactStore';
 import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
@@ -19,9 +19,9 @@ const Connections = observer(() => {
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
   const { accountStatus } = useSession();
-  const { hasFiltersApplied, isSearching, isSorting } = useContactUiState();
   const {
     contacts,
+    contactUiState,
     initContactStore,
     refreshContacts,
     isLoadingFirstPage,
@@ -29,6 +29,7 @@ const Connections = observer(() => {
     isFetching,
     hasMore
   } = useContactStore();
+  const { hasFiltersApplied, isSearching, isSorting } = contactUiState;
 
   useEffect(() => {
     initContactStore();
@@ -55,7 +56,7 @@ const Connections = observer(() => {
           <h1>{t('contacts.title')}</h1>
         </div>
         <div className="flex spaceBetween fullWidth">
-          <ConnectionsFilter />
+          <ConnectionsFilter instance={contactUiState} />
           {accountStatus === CONFIRMED && newGroupButton}
         </div>
       </div>

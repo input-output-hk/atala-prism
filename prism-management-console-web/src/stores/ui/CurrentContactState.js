@@ -41,9 +41,10 @@ export default class CurrentContactState {
 
   credentialsReceived = defaultValues.credentialsReceived;
 
-  constructor(api, rootStore) {
+  constructor(api, sessionState) {
     this.api = api;
-    this.rootStore = rootStore;
+    this.sessionState = sessionState;
+
     makeAutoObservable(this, {
       loadContact: flow.bound,
       loadGroups: flow.bound,
