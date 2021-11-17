@@ -1,8 +1,8 @@
 import { useContext, useEffect } from 'react';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
 
 export const useCurrentContactState = contactId => {
-  const { currentContactState } = useContext(UiStateContext);
+  const { currentContactState } = useContext(GlobalStateContext);
   const { init } = currentContactState;
 
   useEffect(() => {

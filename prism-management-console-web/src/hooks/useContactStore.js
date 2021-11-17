@@ -1,9 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import { PrismStoreContext } from '../stores/domain/PrismStore';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores/index';
 
 export const useContactStore = ({ fetch, reset } = { fetch: false, reset: false }) => {
-  const { contactStore } = useContext(PrismStoreContext);
+  const { contactStore } = useContext(GlobalStateContext);
   const { fetchContactsNextPage, resetContacts } = contactStore;
 
   useEffect(() => {
@@ -18,7 +17,7 @@ export const useContactStore = ({ fetch, reset } = { fetch: false, reset: false 
 };
 
 export const useContactUiState = ({ reset } = { reset: false }) => {
-  const { contactUiState } = useContext(UiStateContext);
+  const { contactUiState } = useContext(GlobalStateContext);
   const { triggerSearch, resetState, statusFilter, sortingKey, sortDirection } = contactUiState;
 
   useEffect(() => {

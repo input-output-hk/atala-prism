@@ -1,10 +1,9 @@
 import { useContext, useEffect } from 'react';
 import { useUpdateEffect } from './useUpdateEffect';
-import { PrismStoreContext } from '../stores/domain/PrismStore';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
 
 export const useCredentialIssuedStore = ({ reset } = { reset: false }) => {
-  const { credentialIssuedStore } = useContext(PrismStoreContext);
+  const { credentialIssuedStore } = useContext(GlobalStateContext);
   const { resetCredentials } = credentialIssuedStore;
 
   useEffect(() => {
@@ -15,7 +14,7 @@ export const useCredentialIssuedStore = ({ reset } = { reset: false }) => {
 };
 
 export const useCredentialIssuedUiState = ({ reset } = { reset: false }) => {
-  const { credentialIssuedUiState } = useContext(UiStateContext);
+  const { credentialIssuedUiState } = useContext(GlobalStateContext);
   const {
     triggerSearch,
     resetState,

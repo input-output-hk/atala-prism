@@ -30,21 +30,21 @@ export default class CurrentGroupState {
 
   numberOfContacts = defaultValues.numberOfContacts;
 
-  constructor(api, rootStore) {
+  constructor(api, groupStore) {
     this.api = api;
-    this.rootStore = rootStore;
+    this.groupStore = groupStore;
     makeAutoObservable(this, {
       loadGroup: flow.bound,
       loadMembers: flow.bound,
       updateGroupName: flow.bound,
       updateGroupMembers: flow.bound,
-      rootStore: false
+      groupStore: false
     });
   }
 
   init = async id => {
     this.id = id;
-    await this.loadGroup();
+    this.loadGroup();
     this.loadMembers();
   };
 
