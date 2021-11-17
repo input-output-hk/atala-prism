@@ -3,6 +3,7 @@ import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
 
 const defaultValues = {
+  isSaving: false,
   isFetching: false,
   contacts: [],
   searchResults: [],
@@ -15,6 +16,8 @@ const fallback = {
   newScrollId: undefined
 };
 export default class ContactStore {
+  isSaving = defaultValues.isSaving;
+
   isFetching = defaultValues.isFetching;
 
   contacts = defaultValues.contacts;
@@ -36,6 +39,8 @@ export default class ContactStore {
       fetchSearchResultsNextPage: flow.bound,
       fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
+      fetchContactById: flow.bound,
+      updateContact: flow.bound,
       fetchRecursively: false,
       rootStore: false
     });
@@ -192,4 +197,37 @@ export default class ContactStore {
       return fallback;
     }
   };
+
+  *fetchContactById(contactId) {
+    try {
+      const response = yield this.api.contactsManager.getContact(contactId);
+      return contactMapper(response);
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'fetchContactById',
+        verb: 'getting',
+        model: 'Contact'
+      };
+      this.rootStore.handleTransportLayerError(error, metadata);
+    }
+  }
+
+  *updateContact(contactId, newContactData) {
+    try {
+      this.isSaving = true;
+      const response = yield this.api.contactsManager.updateContact(contactId, newContactData);
+      this.rootStore.handleTransportLayerSuccess();
+      this.isSaving = false;
+      return response;
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'updateContact',
+        verb: 'saving',
+        model: 'Contact'
+      };
+      this.rootStore.handleTransportLayerError(error, metadata);
+    }
+  }
 }

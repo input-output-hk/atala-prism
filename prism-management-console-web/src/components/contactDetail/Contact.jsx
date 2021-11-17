@@ -3,176 +3,176 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Tabs } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
 import DetailBox from './molecules/detailBox/DetailBox';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import contactIcon from '../../images/holder-default-avatar.svg';
 import CredentialDetail from './molecules/detailBox/CredentialDetails/CredentialDetail';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import { useTranslationWithPrefix } from '../../hooks/useTranslationWithPrefix';
-import { credentialShape } from '../../helpers/propShapes';
 import EditContactModal from './organisms/EditContactModal/EditContactModal';
+import { useRedirector } from '../../hooks/useRedirector';
+import { useCurrentContactState } from '../../hooks/useCurrentContactState';
 
 import './_style.scss';
-import { useRedirector } from '../../hooks/useRedirector';
 
 const { TabPane } = Tabs;
 
 const ISSUED = 'issued';
 const RECEIVED = 'received';
 
-const Contact = ({
-  contact: { name, externalId, contactId },
-  groups,
-  loading,
-  editing,
-  issuedCredentials,
-  receivedCredentials,
-  verifyCredential,
-  onDeleteGroup,
-  updateContact
-}) => {
-  const { t } = useTranslation();
-  const { redirectToContacts } = useRedirector();
+const Contact = observer(
+  ({ isEditing, onVerifyCredential, onRemoveFromGroup, onUpdateContact }) => {
+    const { t } = useTranslation();
+    const { redirectToContacts } = useRedirector();
+    const {
+      contactId,
+      contactName,
+      externalId,
+      groups,
+      credentialsIssued,
+      credentialsReceived,
+      isLoadingContact,
+      isLoadingGroups,
+      isLoadingCredentialsIssued,
+      isLoadingCredentialsReceived
+    } = useCurrentContactState();
 
-  const tp = useTranslationWithPrefix('contacts.detail');
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+    const tp = useTranslationWithPrefix('contacts.detail');
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [groupsToRemove, setGroupsToRemove] = useState([]);
 
-  useEffect(() => {
-    setModalIsOpen(editing);
-  }, [editing]);
+    useEffect(() => {
+      setModalIsOpen(isEditing);
+    }, [isEditing]);
 
-  return (
-    <div className="contactDetail">
-      <EditContactModal
-        visible={modalIsOpen}
-        externalId={externalId}
-        name={name}
-        groups={groups}
-        contactId={contactId}
-        onDeleteGroup={onDeleteGroup}
-        onClose={() => setModalIsOpen(false)}
-        updateContact={updateContact}
-      />
-      <div className="ContentHeader headerSection">
-        <div className="buttonSection">
-          <CustomButton
-            buttonText={t('actions.back')}
-            buttonProps={{
-              icon: <LeftOutlined />,
-              className: 'theme-grey',
-              onClick: redirectToContacts
-            }}
-          />
-        </div>
-        <h1>{tp('detailSection.title')}</h1>
-      </div>
-      <div className="detailSection">
-        <div className="ContactInfo">
-          <h3>{tp('detailSection.subtitle')}</h3>
-          <div className="header">
-            <div className="img">
-              <img className="ContactIcon" src={contactIcon} alt="ContactIcon" />
-            </div>
-            <div className="title">
-              <p>{t('contacts.table.columns.contactName')}</p>
-              <span>{loading.contact ? <SimpleLoading size="xs" /> : name}</span>
-            </div>
-            <div className="title">
-              <p>{t('contacts.table.columns.externalId')}</p>
-              <span>{loading.contact ? <SimpleLoading size="xs" /> : externalId}</span>
-            </div>
+    const handleUpdateContact = async newContactData => {
+      handleUpdateContactData(newContactData);
+      await handleRemoveFromGroups();
+      setModalIsOpen(false);
+    };
+
+    const handleUpdateContactData = newContactData => {
+      const shouldUpdateContactData =
+        newContactData.name !== contactName || newContactData.externalId !== externalId;
+
+      if (shouldUpdateContactData) onUpdateContact(contactId, newContactData);
+    };
+
+    const handleRemoveFromGroups = async () => {
+      if (!groupsToRemove.length) return;
+      const updateGroupsPromises = groupsToRemove.map(groupId =>
+        onRemoveFromGroup(groupId, contactId)
+      );
+      return Promise.all(updateGroupsPromises);
+    };
+
+    const handleSelectGroupsToRemove = group => {
+      setGroupsToRemove(groupsToRemove.concat(group));
+    };
+    const handleCancel = () => {
+      setModalIsOpen(false);
+      setGroupsToRemove([]);
+    };
+
+    return (
+      <div className="contactDetail">
+        <EditContactModal
+          visible={modalIsOpen}
+          externalId={externalId}
+          name={contactName}
+          groups={groups.filter(g => !groupsToRemove.includes(g.id))}
+          contactId={contactId}
+          selectGroupsToRemove={handleSelectGroupsToRemove}
+          onClose={handleCancel}
+          onFinish={handleUpdateContact}
+        />
+        <div className="ContentHeader headerSection">
+          <div className="buttonSection">
             <CustomButton
-              buttonText={t('groups.table.buttons.edit')}
+              buttonText={t('actions.back')}
               buttonProps={{
-                className: 'theme-link buttonEdit',
-                onClick: () => setModalIsOpen(true)
+                icon: <LeftOutlined />,
+                className: 'theme-grey',
+                onClick: redirectToContacts
               }}
             />
           </div>
-          <p className="subtitleCredentials">{tp('detailSection.groupsSubtitle')}</p>
-          <DetailBox groups={groups} loading={loading.groups} />
+          <h1>{tp('detailSection.title')}</h1>
         </div>
-        <Tabs defaultActiveKey={ISSUED} className="CredentialInfo">
-          <TabPane key={ISSUED} tab={`${tp('credIssued')} (${issuedCredentials.length})`}>
-            <p>{tp('detailSection.credentialsIssuedSubtitle')}</p>
-            <div className="CredentialsContainer">
-              {loading.issuedCredentials ? (
-                <SimpleLoading size="xs" />
-              ) : (
-                issuedCredentials.map(credential => (
-                  <CredentialDetail
-                    credential={credential}
-                    isCredentialIssued
-                    verifyCredential={verifyCredential}
-                  />
-                ))
-              )}
+        <div className="detailSection">
+          <div className="ContactInfo">
+            <h3>{tp('detailSection.subtitle')}</h3>
+            <div className="header">
+              <div className="img">
+                <img className="ContactIcon" src={contactIcon} alt="ContactIcon" />
+              </div>
+              <div className="title">
+                <p>{t('contacts.table.columns.contactName')}</p>
+                <span>{isLoadingContact ? <SimpleLoading size="xs" /> : contactName}</span>
+              </div>
+              <div className="title">
+                <p>{t('contacts.table.columns.externalId')}</p>
+                <span>{isLoadingContact ? <SimpleLoading size="xs" /> : externalId}</span>
+              </div>
+              <CustomButton
+                buttonText={t('groups.table.buttons.edit')}
+                buttonProps={{
+                  className: 'theme-link buttonEdit',
+                  onClick: () => setModalIsOpen(true)
+                }}
+              />
             </div>
-          </TabPane>
-          <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${receivedCredentials.length})`}>
-            <p>{tp('detailSection.credentialsReceivedSubtitle')}</p>
-            <div className="CredentialsContainer">
-              {loading.receivedCredentials ? (
-                <SimpleLoading size="xs" />
-              ) : (
-                receivedCredentials.map(credential => (
-                  <CredentialDetail credential={credential} verifyCredential={verifyCredential} />
-                ))
-              )}
-            </div>
-          </TabPane>
-        </Tabs>
+            <p className="subtitleCredentials">{tp('detailSection.groupsSubtitle')}</p>
+            <DetailBox groups={groups} loading={isLoadingGroups} />
+          </div>
+          <Tabs defaultActiveKey={ISSUED} className="CredentialInfo">
+            <TabPane key={ISSUED} tab={`${tp('credIssued')} (${credentialsIssued.length})`}>
+              <p>{tp('detailSection.credentialsIssuedSubtitle')}</p>
+              <div className="CredentialsContainer">
+                {isLoadingCredentialsIssued ? (
+                  <SimpleLoading size="xs" />
+                ) : (
+                  credentialsIssued.map(credential => (
+                    <CredentialDetail
+                      credential={credential}
+                      isCredentialIssued
+                      onVerifyCredential={onVerifyCredential}
+                    />
+                  ))
+                )}
+              </div>
+            </TabPane>
+            <TabPane key={RECEIVED} tab={`${tp('credReceived')} (${credentialsReceived.length})`}>
+              <p>{tp('detailSection.credentialsReceivedSubtitle')}</p>
+              <div className="CredentialsContainer">
+                {isLoadingCredentialsReceived ? (
+                  <SimpleLoading size="xs" />
+                ) : (
+                  credentialsReceived.map(credential => (
+                    <CredentialDetail
+                      credential={credential}
+                      onVerifyCredential={onVerifyCredential}
+                    />
+                  ))
+                )}
+              </div>
+            </TabPane>
+          </Tabs>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
 
 Contact.defaultProps = {
-  contact: {},
-  groups: [],
-  issuedCredentials: [],
-  receivedCredentials: [],
-  loading: {
-    contact: false,
-    groups: false,
-    issuedCredentials: false,
-    receivedCredentials: false
-  },
-  editing: false
+  isEditing: false
 };
 
 Contact.propTypes = {
-  contact: PropTypes.shape({
-    contactId: PropTypes.string,
-    externalId: PropTypes.string,
-    name: PropTypes.string,
-    creationDate: PropTypes.shape({
-      day: PropTypes.number,
-      month: PropTypes.number,
-      year: PropTypes.number
-    }),
-    connectionStatus: PropTypes.number,
-    connectionToken: PropTypes.string,
-    connectionId: PropTypes.string,
-    createdAt: PropTypes.number
-  }),
-  groups: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      numberOfContacts: PropTypes.number
-    })
-  ),
-  loading: PropTypes.shape({
-    contact: PropTypes.bool,
-    groups: PropTypes.bool,
-    issuedCredentials: PropTypes.bool,
-    receivedCredentials: PropTypes.bool
-  }),
-  editing: PropTypes.bool,
-  issuedCredentials: PropTypes.arrayOf(credentialShape),
-  receivedCredentials: PropTypes.arrayOf(credentialShape),
+  isEditing: PropTypes.bool,
   verifyCredential: PropTypes.func.isRequired,
-  onDeleteGroup: PropTypes.func.isRequired,
+  removeFromGroup: PropTypes.func.isRequired,
   updateContact: PropTypes.func.isRequired
 };
 
