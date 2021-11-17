@@ -10,7 +10,6 @@ import org.postgresql.util.PSQLException
 import java.time.Instant
 import java.util.UUID
 
-
 class V18MigrationSpec extends PostgresMigrationSpec("V18") with BaseDAO {
   val credentialTypeCategoryId = UUID.randomUUID()
   val issuerId = UUID.randomUUID()
@@ -42,15 +41,15 @@ class V18MigrationSpec extends PostgresMigrationSpec("V18") with BaseDAO {
       .runUnique[UUID]()
   }
 
-
-
   test(
     beforeApply = {
       prepare()
       val thrown = intercept[PSQLException] {
         createCredentialType()
       }
-      thrown.getMessage.contains("column \"credential_type_category_id\" of relation \"credential_types\" does not exist") mustBe true
+      thrown.getMessage.contains(
+        "column \"credential_type_category_id\" of relation \"credential_types\" does not exist"
+      ) mustBe true
     },
     afterApplied = {
       createCredentialType()
@@ -59,4 +58,3 @@ class V18MigrationSpec extends PostgresMigrationSpec("V18") with BaseDAO {
   )
 
 }
-
