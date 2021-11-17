@@ -1,4 +1,6 @@
-import { makeAutoObservable } from 'mobx';
+import { message } from 'antd';
+import i18n from 'i18next';
+import { flow, makeAutoObservable } from 'mobx';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -28,60 +30,63 @@ export default class CurrentGroupState {
 
   numberOfContacts = defaultValues.numberOfContacts;
 
-  constructor(rootStore) {
-    this.rootStore = rootStore;
+  constructor(api, groupStore) {
+    this.api = api;
+    this.groupStore = groupStore;
     makeAutoObservable(this, {
-      rootStore: false
+      loadGroup: flow.bound,
+      loadMembers: flow.bound,
+      updateGroupName: flow.bound,
+      updateGroupMembers: flow.bound,
+      groupStore: false
     });
   }
 
   init = async id => {
-    this.isLoadingGroup = true;
     this.id = id;
-    const { getGroupById } = this.rootStore.prismStore.groupStore;
+    this.loadGroup();
+    this.loadMembers();
+  };
 
-    const group = await getGroupById(id);
+  *loadGroup() {
+    this.isLoadingGroup = true;
+    const group = yield this.api.groupsManager.getGroupById(this.id);
     this.name = group.name;
     this.numberOfContacts = group.numberOfContacts;
-    this.refreshGroupMembers();
     this.isLoadingGroup = false;
-  };
+  }
 
-  refreshGroupMembers = async () => {
-    this.members = await this.getAllGroupMembers();
-  };
-
-  getAllGroupMembers = async () => {
+  *loadMembers() {
     this.isLoadingMembers = true;
-    const { fetchAllContacts } = this.rootStore.prismStore.contactStore;
-    const members = await fetchAllContacts(this.name);
+    this.members = yield this.api.contactsManager.getAllContacts(this.name);
     this.isLoadingMembers = false;
-    return members;
-  };
+  }
+
+  // FIXME: select only filtered members
+  getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);
 
   getContactsNotInGroup = async () => {
     this.isLoadingContactsNotInGroup = true;
-    const { fetchAllContacts } = this.rootStore.prismStore.contactStore;
-    const allContacts = await fetchAllContacts();
+    const allContacts = await this.api.contactsManager.getAllContacts();
     const contactIdsInGroup = new Set(this.members.map(item => item.contactId));
     const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
     this.isLoadingContactsNotInGroup = false;
     return contactsNotInGroup;
   };
 
-  updateGroupName = async newName => {
+  *updateGroupName(newName) {
     this.isSaving = true;
-    const { updateGroup } = this.rootStore.prismStore.groupStore;
-    await updateGroup(this.id, { newName });
-    this.refreshGroupMembers();
+    yield this.api.groupsManager.updateGroup(this.id, { newName });
+    message.success(i18n.t('groupEditing.success'));
+    yield this.loadGroup();
     this.isSaving = false;
-  };
+  }
 
-  updateGroupMembers = async membersUpdate => {
+  *updateGroupMembers(membersUpdate) {
     this.isSaving = true;
-    const { updateGroup } = this.rootStore.prismStore.groupStore;
-    await updateGroup(this.id, membersUpdate);
-    this.refreshGroupMembers();
+    yield this.api.groupsManager.updateGroup(this.id, membersUpdate);
+    message.success(i18n.t('groupEditing.success'));
+    yield this.loadMembers();
     this.isSaving = false;
-  };
+  }
 }

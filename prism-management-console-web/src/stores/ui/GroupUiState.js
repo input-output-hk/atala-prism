@@ -1,4 +1,4 @@
-import { makeAutoObservable, computed, action } from 'mobx';
+import { makeAutoObservable, action } from 'mobx';
 import _ from 'lodash';
 
 import {
@@ -32,15 +32,11 @@ export default class GroupUiState {
 
   sortingBy = defaultValues.sortingBy;
 
-  constructor(rootStore) {
-    this.rootStore = rootStore;
+  constructor(groupStore) {
+    this.groupStore = groupStore;
     makeAutoObservable(this, {
-      sortedFilteredGroups: computed({ requiresReaction: true }),
       triggerBackendSearch: action.bound,
-      applyFilters: false,
-      applySorting: false,
-      sortingIsCaseSensitive: false,
-      rootStore: false
+      groupStore: false
     });
   }
 
@@ -68,15 +64,14 @@ export default class GroupUiState {
   }
 
   triggerSearch = () => {
-    this.isSearching = this.hasFiltersApplied;
-    this.isSorting = this.hasCustomSorting;
+    this.isSearching = true;
+    this.isSorting = true;
     this.fetchedResults = null;
     this.triggerBackendSearch();
   };
 
   triggerBackendSearch = _.debounce(async () => {
-    const { fetchSearchResults } = this.rootStore.prismStore.groupStore;
-    await fetchSearchResults();
+    await this.groupStore.fetchSearchResults();
     this.isSearching = false;
     this.isSorting = false;
   }, SEARCH_DELAY_MS);

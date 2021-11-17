@@ -110,14 +110,18 @@ export default class CurrentContactState {
   // actions
 
   *removeFromGroup(groupId, contactId) {
+    this.isSaving = true;
     yield this.api.groupsManager.updateGroup(groupId, { contactIdsToRemove: [contactId] });
     message.success(i18n.t('contacts.edit.success.removingFromGroup'));
     yield this.loadGroups();
+    this.isSaving = false;
   }
 
   *updateContact(contactId, newContactData) {
+    this.isSaving = true;
     yield this.api.contactsManager.updateContact(contactId, newContactData);
     message.success(i18n.t('contacts.edit.success.updating'));
     yield this.loadContact();
+    this.isSaving = false;
   }
 }

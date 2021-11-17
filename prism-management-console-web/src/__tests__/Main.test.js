@@ -6,23 +6,19 @@ import { mockApi } from '../APIs/__mocks__';
 import { isDevEnv } from '../APIs/env';
 import { APIContext } from '../components/providers/ApiContext';
 import App from '../App';
-import { RootStore } from '../stores/RootStore';
-import { PrismStoreContext } from '../stores/domain/PrismStore';
-import { UiStateContext } from '../stores/ui/UiState';
+import { createStores, GlobalStateContext } from '../stores';
 
 test('act works in this case', async () => {
-  const rootStore = new RootStore(mockApi);
+  const stores = createStores(mockApi);
   const div = document.createElement('div');
   await act(async () => {
     ReactDOM.render(
       <APIContext.Provider value={mockApi}>
-        <PrismStoreContext.Provider value={rootStore.prismStore}>
-          <UiStateContext.Provider value={rootStore.uiState}>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
-          </UiStateContext.Provider>
-        </PrismStoreContext.Provider>
+        <GlobalStateContext.Provider value={stores}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </GlobalStateContext.Provider>
       </APIContext.Provider>,
       div
     );

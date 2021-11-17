@@ -1,13 +1,13 @@
 import { useContext, useEffect } from 'react';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
 
 export const useCurrentGroupState = id => {
-  const { currentGroupState } = useContext(UiStateContext);
-  const { init } = currentGroupState;
+  const { rootGroupStore } = useContext(GlobalStateContext);
+  const { init } = rootGroupStore.currentGroupState;
 
   useEffect(() => {
     if (id) init(id);
   }, [id, init]);
 
-  return currentGroupState;
+  return rootGroupStore.currentGroupState;
 };

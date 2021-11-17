@@ -78,11 +78,19 @@ async function getGroups({
   return { groupsList, totalNumberOfGroups };
 }
 
+/* TODO: refactor getAllGroups
+ * The responded totalNumberOfGroups might be bigger than maximum page size.
+ */
 async function getAllGroups() {
   const { totalNumberOfGroups } = await this.getGroups({});
   const { groupsList } = await this.getGroups({ limit: totalNumberOfGroups });
 
   return groupsList;
+}
+
+async function getGroupById(groupId) {
+  const allGroups = await this.getAllGroups();
+  return allGroups.find(g => g.id === groupId);
 }
 
 async function createGroup(groupName) {
@@ -134,6 +142,7 @@ function GroupsManager(config, auth) {
 
 GroupsManager.prototype.getGroups = getGroups;
 GroupsManager.prototype.getAllGroups = getAllGroups;
+GroupsManager.prototype.getGroupById = getGroupById;
 GroupsManager.prototype.createGroup = createGroup;
 GroupsManager.prototype.updateGroup = updateGroup;
 GroupsManager.prototype.deleteGroup = deleteGroup;

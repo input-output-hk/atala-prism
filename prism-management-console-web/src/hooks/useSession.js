@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
 
 export const useSession = () => {
-  const { sessionState } = useContext(UiStateContext);
+  const { sessionState } = useContext(GlobalStateContext);
 
   return sessionState;
 };

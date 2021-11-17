@@ -28,7 +28,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     isSaving,
     name,
     members,
-    getAllGroupMembers
+    getMembersToSelect
   } = useCurrentGroupState();
 
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
 
   const { loadingSelection, checkboxProps } = useSelectAll({
     displayedEntities: filteredContacts,
-    entitiesFetcher: getAllGroupMembers,
+    entitiesFetcher: getMembersToSelect,
     entityKey: CONTACT_ID_KEY,
     selectedEntities: selectedGroupContacts,
     setSelectedEntities: setSelectedGroupContacts,

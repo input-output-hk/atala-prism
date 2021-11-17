@@ -18,9 +18,9 @@ export default class GroupStore {
 
   numberOfGroups = defaultValues.numberOfGroups;
 
-  constructor(api, rootStore) {
+  constructor(api, rootGroupStore) {
     this.api = api;
-    this.rootStore = rootStore;
+    this.rootGroupStore = rootGroupStore;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
@@ -30,7 +30,8 @@ export default class GroupStore {
       updateGroup: flow.bound,
       fetchGroups: flow.bound,
       fetchRecursively: false,
-      rootStore: false
+      groupUiState: false,
+      currentGroupState: false
     });
   }
 
@@ -55,7 +56,7 @@ export default class GroupStore {
   *fetchMoreData({ isInitialLoading }) {
     if (!isInitialLoading && !this.hasMore) return;
     const response = yield this.fetchGroups({ offset: isInitialLoading ? 0 : this.groups.length });
-    this.groups = this.groups.concat(response.groupsList);
+    this.groups = isInitialLoading ? response.groupsList : this.groups.concat(response.groupsList);
   }
 
   *fetchSearchResults() {
@@ -63,19 +64,6 @@ export default class GroupStore {
     this.resetGroups();
     this.groups = this.groups.concat(response.groupsList);
   }
-
-  getGroupById = async id => {
-    this.isFetching = true;
-    const foundLocally = this.groups.find(g => g.id === id);
-    const found = foundLocally || (await this.fetchGroupById(id));
-    this.isFetching = false;
-    return found;
-  };
-
-  fetchGroupById = async id => {
-    const response = await this.fetchRecursively(this.groups);
-    return response.groupsList.find(g => g.id === id);
-  };
 
   *getGroupsToSelect() {
     const alreadyFetched = this.groups;
@@ -107,7 +95,7 @@ export default class GroupStore {
         dateFilter = [],
         sortDirection,
         sortingBy
-      } = this.rootStore.uiState.groupUiState;
+      } = this.rootGroupStore.groupUiState;
       const [createdAfter, createdBefore] = dateFilter;
 
       const response = yield this.api.groupsManager.getGroups({
@@ -120,7 +108,7 @@ export default class GroupStore {
           createdAfter
         }
       });
-      this.rootStore.handleTransportLayerSuccess();
+      this.rootGroupStore.handleTransportLayerSuccess();
       this.isFetching = false;
       return response || fallback;
     } catch (error) {
@@ -130,7 +118,7 @@ export default class GroupStore {
         verb: 'getting',
         model: 'Groups'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.rootGroupStore.handleTransportLayerError(error, metadata);
       this.isFetching = false;
       return fallback;
     }
@@ -140,7 +128,7 @@ export default class GroupStore {
     this.isSaving = true;
     try {
       const response = yield this.api.groupsManager.updateGroup(id, change);
-      this.rootStore.handleTransportLayerSuccess();
+      this.rootGroupStore.handleTransportLayerSuccess();
       this.isSaving = false;
       return response;
     } catch (error) {
@@ -150,7 +138,7 @@ export default class GroupStore {
         verb: 'saving',
         model: 'Group'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.rootGroupStore.handleTransportLayerError(error, metadata);
       this.isSaving = false;
     }
   }
