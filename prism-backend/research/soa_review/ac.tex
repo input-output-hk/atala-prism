@@ -86,6 +86,30 @@ the attributes that the user is willing to share (or a function of them).
   scheme, for which protocols are known to prove knowledge and equality of
   committed values. This lets them follow the same approach to \cite{cl02},
   which is in turn the one in \cite{cl01}.
+\item[\cite{bcc+09}:] This is mostly a theoretical work, which is relevant
+  since it is (one of) the first to propose a delegatable anonymous
+  credentials systems. The building blocks are randomizable proofs of
+  knowledge that randomize both the proof and the statement (which the authors
+  build on top of Groth-Sahai proofs), and message authenticators (a variant
+  of signatures that require a special notion of unforgeability). Each user
+  can create pseudonyms, which are commitments to his secret key, and use
+  these commitments to prove ownership of and delegate credentials. These
+  pseudonyms are essentially as in the CL line of work (user with pseudonym
+  $N^A_U$ w.r.t. organization $A$ and $^B_U$ w.r.t. orgainzation $B$, can
+  prove to $B$ (resp. $A$) that $N^A_U$ and $N^B_U$ are related to the
+  same secret key). Delegations here follow a sequential order: i.e., if
+  a credential has level $L$, then its owner can further delegate this
+  credential, and the result would be a credential with level $L+1$. To
+  delegate, essentially, the delegator (with pseudonym $N_I$) and delegatee
+  (with pseudonym $N_D$) perform an interactive protocol
+  through which the delegatee receives a randomizable NIZKP that lets him
+  prove knowledge of an authenticator over $N_D$, issued by $N_I$. Since
+  both the proof and the statement can be randomized, verifiers do not
+  learn the chain of delegation.  Although this is informally mentioned,
+  ``attributes'' can be added to the delegation process too (besides to the
+  credentials themselves). This is suggested by adding the attributes -- which
+  would be visible to the verifier -- to the application of a hash function
+  used to derive the authenticator). 
 \item[\cite{cks10}:] The system proposed here follows the conventional
   approach to anonymous credentials based on randomizable signatures (with
   the possibility to sign committed values) over vectors of messages.
@@ -226,6 +250,16 @@ the attributes that the user is willing to share (or a function of them).
   based on the Strong RSA and Diffie-Hellman assumptions.
 \item[\cite{cl04}:] Same as in \cite{cl02} (no actual security model for the
   AC system). The custom proofs are based on the DDH and LRSW assumptions.
+\item[\cite{bcc+09}:] The article follows a game-based definition approach,
+  with two security properties (besides correctness): anonymity and
+  unforgeability, which are the usual, but extended to the scenario with
+  delegation. Basically, the anonymity (in the ideal/real world paradigm)
+  property requires that the adversary should not distinguish real credentials
+  from simulated ones. Moreover, the adversary should not learn the delegation
+  chain of an honest credential (even if it was issued by himself). For
+  unforgeability, the requirement is that the adversary should not create
+  a delegation chain that includes a delegation by an honest user, if the
+  user did not actually perform that delegation.
 \item[\cite{cks10}:] Signer privacy and user privacy properties are required
   for the underlying signature scheme (thus, inherited by the credential system,
   although I have not found explicit model). Signer privacy captures that the
