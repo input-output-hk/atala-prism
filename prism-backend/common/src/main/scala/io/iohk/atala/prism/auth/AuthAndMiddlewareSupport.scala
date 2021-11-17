@@ -153,7 +153,7 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
       ec: ExecutionContext,
       protoConverter: ProtoConverter[Proto, Query]
   ): Future[Query] = {
-    protoConverter.fromProto(request) match {
+    protoConverter.fromProto(request, None) match {
       case Failure(exception) =>
         val response = invalidRequest(exception.getMessage)
         respondWith(request, response, serviceName, methodName)
@@ -191,7 +191,7 @@ object AuthAndMiddlewareSupport {
   // a Product, we can't use the Unit type but an empty case-class.
   final case object EmptyQuery
 
-  implicit def emptyQueryProtoConverter[T <: scalapb.GeneratedMessage]: ProtoConverter[T, EmptyQuery.type] = { _ =>
+  implicit def emptyQueryProtoConverter[T <: scalapb.GeneratedMessage]: ProtoConverter[T, EmptyQuery.type] = { (_, _) =>
     Try(EmptyQuery)
   }
 }

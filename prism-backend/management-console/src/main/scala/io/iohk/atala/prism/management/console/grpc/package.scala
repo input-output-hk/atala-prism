@@ -88,7 +88,7 @@ package object grpc {
     }
 
   implicit val getStatisticsConverter: ProtoConverter[GetStatisticsRequest, GetStatistics] =
-    (request: GetStatisticsRequest) => {
+    (request: GetStatisticsRequest, _) => {
       request.interval match {
         case Some(protoInterval) =>
           toTimestamp(protoInterval).map(timeInterval => GetStatistics(Some(timeInterval)))
@@ -97,7 +97,7 @@ package object grpc {
       }
     }
 
-  implicit val registerDIDConverted: ProtoConverter[RegisterConsoleDIDRequest, RegisterDID] = { request =>
+  implicit val registerDIDConverted: ProtoConverter[RegisterConsoleDIDRequest, RegisterDID] = { (request, _) =>
     {
       for {
         did <- Try {
@@ -121,7 +121,7 @@ package object grpc {
   }
 
   implicit val createGroupConverter: ProtoConverter[CreateGroupRequest, CreateInstitutionGroup] =
-    (request: CreateGroupRequest) => {
+    (request: CreateGroupRequest, _) => {
       for {
         contactIds <- request.contactIds.toList.map(Contact.Id.from).sequence
         contactIdsSet <- checkListUniqueness(contactIds)
@@ -153,7 +153,7 @@ package object grpc {
   }
 
   implicit val getGroupsConverter: ProtoConverter[GetGroupsRequest, InstitutionGroup.PaginatedQuery] =
-    (request: GetGroupsRequest) => {
+    (request: GetGroupsRequest, _) => {
       val createdAfterTry = Try {
         request.filterBy
           .flatMap(_.createdAfter)
@@ -223,7 +223,7 @@ package object grpc {
     }
 
   implicit val updateGroupConverter: ProtoConverter[UpdateGroupRequest, UpdateInstitutionGroup] =
-    (request: UpdateGroupRequest) => {
+    (request: UpdateGroupRequest, _) => {
       for {
         groupId <- InstitutionGroup.Id.from(request.groupId)
         contactIdsToAdd <- request.contactIdsToAdd.toList
@@ -244,7 +244,7 @@ package object grpc {
     }
 
   implicit val copyGroupConverter: ProtoConverter[CopyGroupRequest, CopyInstitutionGroup] =
-    (request: CopyGroupRequest) =>
+    (request: CopyGroupRequest, _) =>
       for {
         groupToCopyId <- InstitutionGroup.Id.from(request.groupId)
         newName <-
@@ -255,12 +255,12 @@ package object grpc {
       } yield CopyInstitutionGroup(groupToCopyId, newName)
 
   implicit val deleteGroupConverter: ProtoConverter[DeleteGroupRequest, DeleteInstitutionGroup] =
-    (request: DeleteGroupRequest) => {
+    (request: DeleteGroupRequest, _) => {
       InstitutionGroup.Id.from(request.groupId).map(DeleteInstitutionGroup)
     }
 
   implicit val createContactConverter: ProtoConverter[CreateContactRequest, CreateContact] =
-    (request: CreateContactRequest) => {
+    (request: CreateContactRequest, _) => {
       for {
         json <- JsonValidator.jsonData(request.jsonData)
         externalId <- Contact.ExternalId.validated(request.externalId)
@@ -317,7 +317,7 @@ package object grpc {
   }
 
   implicit val getContactsConverter: ProtoConverter[GetContactsRequest, Contact.PaginatedQuery] =
-    (request: GetContactsRequest) => {
+    (request: GetContactsRequest, _) => {
       val scrollIdT = Contact.Id.optional(request.scrollId)
       val createdAtT = Try {
         request.filterBy
@@ -380,12 +380,12 @@ package object grpc {
     }
 
   implicit val getContactConverter: ProtoConverter[GetContactRequest, GetContact] =
-    (request: GetContactRequest) => {
+    (request: GetContactRequest, _) => {
       Contact.Id.from(request.contactId).map(GetContact)
     }
 
   implicit val updateContactConverter: ProtoConverter[UpdateContactRequest, UpdateContact] =
-    (request: UpdateContactRequest) => {
+    (request: UpdateContactRequest, _) => {
       for {
         contactId <- Contact.Id.from(request.contactId)
         newExternalId <- Contact.ExternalId.validated(request.newExternalId)
@@ -434,7 +434,7 @@ package object grpc {
   }
 
   implicit val createContactsConverter: ProtoConverter[CreateContactsRequest, CreateContact.Batch] =
-    (request: CreateContactsRequest) => {
+    (request: CreateContactsRequest, _) => {
       for {
         validatedGroups <- toGroupIdSet(request.groups)
         validatedContacts <- toCreateContacts(request.contacts)
@@ -451,7 +451,7 @@ package object grpc {
     }
 
   implicit val deleteContactConverter: ProtoConverter[DeleteContactRequest, DeleteContact] =
-    (request: DeleteContactRequest) => {
+    (request: DeleteContactRequest, _) => {
       Contact.Id.from(request.contactId).map(DeleteContact)
     }
 
@@ -459,7 +459,7 @@ package object grpc {
     CreateCredentialIssuanceRequest,
     CreateCredentialIssuance
   ] =
-    (request: CreateCredentialIssuanceRequest) => {
+    (request: CreateCredentialIssuanceRequest, _) => {
       for {
         credentialTypeId <- CredentialTypeId.from(request.credentialTypeId)
         contacts <-
@@ -495,7 +495,7 @@ package object grpc {
     }
 
   implicit val getCredentialIssuanceConverter: ProtoConverter[GetCredentialIssuanceRequest, GetCredentialIssuance] =
-    (request: GetCredentialIssuanceRequest) => {
+    (request: GetCredentialIssuanceRequest, _) => {
       CredentialIssuance.Id
         .from(request.credentialIssuanceId)
         .map(GetCredentialIssuance)
@@ -505,7 +505,7 @@ package object grpc {
     CreateGenericCredentialRequest,
     CreateGenericCredential
   ] =
-    (request: CreateGenericCredentialRequest) => {
+    (request: CreateGenericCredentialRequest, _) => {
       for {
         contactId <- maybeEmpty(request.contactId, Contact.Id.from)
         credentialData <- io.circe.parser.parse(request.credentialData).toTry
@@ -552,7 +552,7 @@ package object grpc {
     GetGenericCredentialsRequest,
     GenericCredential.PaginatedQuery
   ] =
-    (request: GetGenericCredentialsRequest) => {
+    (request: GetGenericCredentialsRequest, _) => {
       val createdAfterT = Try {
         request.filterBy
           .flatMap(_.createdAfter)
@@ -621,19 +621,19 @@ package object grpc {
     }
 
   implicit val getContactCredentialConverter: ProtoConverter[GetContactCredentialsRequest, GetContactCredentials] =
-    (request: GetContactCredentialsRequest) => {
+    (request: GetContactCredentialsRequest, _) => {
       Contact.Id.from(request.contactId).map(GetContactCredentials)
     }
 
   implicit val shareCredentialConverter: ProtoConverter[ShareCredentialRequest, ShareCredential] =
-    (request: ShareCredentialRequest) => {
+    (request: ShareCredentialRequest, _) => {
       GenericCredential.Id
         .from(request.cmanagerCredentialId)
         .map(ShareCredential)
     }
 
   implicit val shareCredentialsConverter: ProtoConverter[ShareCredentialsRequest, ShareCredentials] =
-    (request: ShareCredentialsRequest) => {
+    (request: ShareCredentialsRequest, _) => {
       for {
         idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
         connectorRequestMetadata <- toConnectorRequestMetadata(
@@ -664,7 +664,7 @@ package object grpc {
     }
 
   implicit val deleteCredentialsConverter: ProtoConverter[DeleteCredentialsRequest, DeleteCredentials] =
-    (request: DeleteCredentialsRequest) => {
+    (request: DeleteCredentialsRequest, _) => {
       for {
         idsNonEmptyList <- toCredentialsIds(request.credentialsIds)
       } yield DeleteCredentials(
@@ -726,7 +726,7 @@ package object grpc {
   }
 
   implicit val getLedgerDataConverter: ProtoConverter[GetLedgerDataRequest, GetLedgerData] =
-    (request: GetLedgerDataRequest) => {
+    (request: GetLedgerDataRequest, _) => {
       for {
         batchId <- Try(CredentialBatchId.fromString(request.batchId))
         credentialHash = Sha256Digest.fromBytes(
@@ -736,7 +736,7 @@ package object grpc {
     }
 
   implicit val publishBatchConverter: ProtoConverter[PublishBatchRequest, PublishBatch] =
-    (request: PublishBatchRequest) => {
+    (request: PublishBatchRequest, _) => {
       for {
         signedOperation <- Try(
           request.issueCredentialBatchOperation.getOrElse(
@@ -761,7 +761,7 @@ package object grpc {
     StorePublishedCredentialRequest,
     StorePublishedCredential
   ] =
-    (request: StorePublishedCredentialRequest) => {
+    (request: StorePublishedCredentialRequest, _) => {
       for {
         encodedSignedCredential <- Try {
           require(
@@ -794,7 +794,7 @@ package object grpc {
     RevokePublishedCredentialRequest,
     RevokePublishedCredential
   ] =
-    (request: RevokePublishedCredentialRequest) => {
+    (request: RevokePublishedCredentialRequest, _) => {
       for {
         credentialId <- GenericCredential.Id.from(request.credentialId)
         operation =
@@ -827,7 +827,7 @@ package object grpc {
     node_api.RevokeCredentialsResponse,
     NodeRevocationResponse
   ] =
-    (response: node_api.RevokeCredentialsResponse) =>
+    (response: node_api.RevokeCredentialsResponse, _) =>
       Try {
         NodeRevocationResponse(
           AtalaOperationId.fromVectorUnsafe(
@@ -840,7 +840,7 @@ package object grpc {
     node_api.IssueCredentialBatchResponse,
     IssueCredentialBatchNodeResponse
   ] =
-    (response: node_api.IssueCredentialBatchResponse) => {
+    (response: node_api.IssueCredentialBatchResponse, _) => {
       for {
         batchId <- Try(
           Option(
@@ -862,7 +862,7 @@ package object grpc {
     CreateGenericCredentialBulkRequest,
     CreateCredentialBulk
   ] =
-    (request: CreateGenericCredentialBulkRequest) => {
+    (request: CreateGenericCredentialBulkRequest, _) => {
       for {
         json <- io.circe.parser.parse(request.credentialsJson).toTry
         draftsJson <- JsonValidator.extractField[List[Json]](json)("drafts")
@@ -909,7 +909,7 @@ package object grpc {
     }
 
   implicit val storeCredentialConverter: ProtoConverter[StoreCredentialRequest, StoreCredential] =
-    (request: StoreCredentialRequest) => {
+    (request: StoreCredentialRequest, _) => {
       for {
         credentialExternalId <- CredentialExternalId.from(
           request.credentialExternalId
@@ -926,12 +926,12 @@ package object grpc {
     GetLatestCredentialExternalIdRequest,
     GetLatestCredential
   ] =
-    (_: GetLatestCredentialExternalIdRequest) => {
+    (_: GetLatestCredentialExternalIdRequest, _) => {
       Success(GetLatestCredential())
     }
 
   implicit val getStoredCredentialsConverter: ProtoConverter[GetStoredCredentialsForRequest, GetStoredCredentials] =
-    (request: GetStoredCredentialsForRequest) => {
+    (request: GetStoredCredentialsForRequest, _) => {
       Contact.Id
         .optional(request.individualId)
         .map(GetStoredCredentials.FilterBy.apply)
@@ -939,15 +939,15 @@ package object grpc {
     }
 
   implicit val getCredentialTypesConverter: ProtoConverter[GetCredentialTypesRequest, GetCredentialTypes] =
-    (_: GetCredentialTypesRequest) => Success(GetCredentialTypes())
+    (_: GetCredentialTypesRequest, _) => Success(GetCredentialTypes())
 
   implicit val getCredentialTypeConverter: ProtoConverter[GetCredentialTypeRequest, GetCredentialType] =
-    (request: GetCredentialTypeRequest) => {
+    (request: GetCredentialTypeRequest, _) => {
       CredentialTypeId.from(request.credentialTypeId).map(GetCredentialType)
     }
 
   implicit val createCredentialTypeConverter: ProtoConverter[CreateCredentialTypeRequest, CreateCredentialType] =
-    (request: CreateCredentialTypeRequest) => {
+    (request: CreateCredentialTypeRequest, _) => {
       request.credentialType
         .toRight(new IllegalArgumentException("Empty credentialType field"))
         .toTry
@@ -957,7 +957,7 @@ package object grpc {
     }
 
   implicit val updateCredentialTypeConverter: ProtoConverter[UpdateCredentialTypeRequest, UpdateCredentialType] =
-    (request: UpdateCredentialTypeRequest) => {
+    (request: UpdateCredentialTypeRequest, _) => {
       for {
         updateCredentialType <-
           request.credentialType
@@ -977,7 +977,7 @@ package object grpc {
     MarkAsReadyCredentialTypeRequest,
     MarkAsReadyCredentialType
   ] =
-    (request: MarkAsReadyCredentialTypeRequest) => {
+    (request: MarkAsReadyCredentialTypeRequest, _) => {
       CredentialTypeId
         .from(request.credentialTypeId)
         .map(MarkAsReadyCredentialType)
@@ -987,7 +987,7 @@ package object grpc {
     MarkAsArchivedCredentialTypeRequest,
     MarkAsArchivedCredentialType
   ] =
-    (request: MarkAsArchivedCredentialTypeRequest) => {
+    (request: MarkAsArchivedCredentialTypeRequest, _) => {
       CredentialTypeId
         .from(request.credentialTypeId)
         .map(MarkAsArchivedCredentialType)
@@ -996,7 +996,7 @@ package object grpc {
   implicit val participantProfileConverter: ProtoConverter[
     ConsoleUpdateProfileRequest,
     UpdateParticipantProfile
-  ] = { request =>
+  ] = { (request, _) =>
     {
       for {
         name <- Try {

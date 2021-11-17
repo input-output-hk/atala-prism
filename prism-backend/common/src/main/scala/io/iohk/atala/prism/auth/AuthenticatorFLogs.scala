@@ -2,6 +2,8 @@ package io.iohk.atala.prism.auth
 
 import cats.MonadThrow
 import cats.syntax.applicativeError._
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import io.iohk.atala.prism.identity.PrismDid
 import scalapb.GeneratedMessage
 import tofu.higherKind.Mid
@@ -17,23 +19,22 @@ private[auth] final class AuthenticatorFLogs[Id: Loggable, F[_]: ServiceLogging[
   def whitelistedDid[Request <: GeneratedMessage, Response](
       whitelist: Set[PrismDid],
       methodName: String,
-      request: Request
+      request: Request,
+      header: Option[GrpcAuthenticationHeader]
   ): Mid[F, Either[errors.AuthError, PrismDid]] = fa =>
     info"starting $methodName request = ${request.toProtoString}" *> fa
       .flatTap(
         _.fold(
           err => error"$methodName FAILED request = ${request.toProtoString} - failed cause: $err",
-          {
-            case res: GeneratedMessage => info"request = ${request.toProtoString}, response = ${res.toProtoString}"
-            case res => info"request = ${request.toProtoString}, response = ${res.toString}"
-          }
+          res => info"request = ${request.toProtoString}, prismDid = $res"
         )
       )
       .onError(errorCause"Encountered an error while $methodName" (_))
 
   def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
-      request: Request
+      request: Request,
+      header: Option[GrpcAuthenticationHeader]
   ): Mid[F, Either[errors.AuthError, Id]] = fa =>
     info"starting $methodName request = ${request.toProtoString}" *> fa
       .flatTap(

@@ -4,7 +4,7 @@ import derevo.derive
 import io.grpc.Status
 import io.iohk.atala.prism.errors.{PrismError, PrismServerError}
 import tofu.logging.derivation.loggable
-import errors.grpcStatusLoggable._
+import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 
 package object errors {
   @derive(loggable)

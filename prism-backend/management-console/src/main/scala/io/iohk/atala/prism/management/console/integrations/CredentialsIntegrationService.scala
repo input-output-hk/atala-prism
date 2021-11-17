@@ -155,7 +155,7 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
       ProtoConverter[
         node_api.RevokeCredentialsResponse,
         NodeRevocationResponse
-      ].fromProto
+      ].fromProto(_, None)
     ).map(_.toEither.left.map(wrapAsServerError))
   }
 

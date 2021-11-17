@@ -8,8 +8,7 @@ import scala.concurrent.Future
 
 object Tracing {
   def trace[A](fa: TraceId => Future[A]): Future[A] = {
-    val ctx = Context.current()
-    val traceId = GrpcAuthenticationHeaderParser.getTraceId(ctx)
+    val traceId = GrpcAuthenticationHeaderParser.getTraceId(Context.current())
     fa(traceId)
   }
 }

@@ -2,15 +2,14 @@ package io.iohk.atala.prism.auth
 
 import cats.data.EitherT
 import cats.effect.Resource
-import cats.syntax.either._
 import cats.syntax.comonad._
+import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.{Applicative, Comonad, Functor, Monad, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
-import io.grpc.Context
 import io.iohk.atala.prism.auth.errors._
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, SignedRequestsHelper}
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
@@ -32,12 +31,14 @@ trait AuthenticatorF[Id, F[_]] {
   def whitelistedDid[Request <: GeneratedMessage, Response](
       whitelist: Set[DID],
       methodName: String,
-      request: Request
+      request: Request,
+      header: Option[GrpcAuthenticationHeader]
   ): F[Either[AuthError, DID]]
 
   def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
-      request: Request
+      request: Request,
+      header: Option[GrpcAuthenticationHeader]
   ): F[Either[AuthError, Id]]
 
   def public[Request <: GeneratedMessage, Response](
@@ -200,13 +201,10 @@ private[auth] class AuthenticatorFImpl[Id, F[_]: Monad: Execute](
 
   override def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
-      request: Request
+      request: Request,
+      grpcHeader: Option[GrpcAuthenticationHeader]
   ): F[Either[AuthError, Id]] = {
     try {
-      val ctx = Context.current()
-      val grpcHeader = GrpcAuthenticationHeaderParser
-        .parse(ctx)
-
       grpcHeader match {
         case Some(header) => authenticate(request.toByteArray, header)
         case None =>
@@ -238,11 +236,10 @@ private[auth] class AuthenticatorFImpl[Id, F[_]: Monad: Execute](
   override def whitelistedDid[Request <: GeneratedMessage, Response](
       whitelist: Set[DID],
       methodName: String,
-      request: Request
+      request: Request,
+      grpcHeader: Option[GrpcAuthenticationHeader]
   ): F[Either[AuthError, DID]] = {
-    val ctx = Context.current()
-    val result = GrpcAuthenticationHeaderParser.parse(ctx)
-    result match {
+    grpcHeader match {
       case Some(
             GrpcAuthenticationHeader.UnpublishedDIDBased(
               requestNonce,
@@ -325,20 +322,7 @@ object AuthenticatorF {
       nodeClient: node_api.NodeServiceGrpc.NodeService,
       burnAuth: AuthHelper[Id, F],
       logs: Logs[I, F]
-  ): AuthenticatorF[Id, F] = {
-    for {
-      serviceLogs <- logs.service[AuthenticatorF[Id, F]]
-    } yield {
-      implicit val implicitLogs: ServiceLogging[F, AuthenticatorF[Id, F]] =
-        serviceLogs
-      val logs: AuthenticatorF[Id, Mid[F, *]] = new AuthenticatorFLogs[Id, F]
-      val mid = logs
-      mid attach new AuthenticatorFImpl[Id, F](
-        nodeClient,
-        burnAuth
-      )
-    }
-  }.extract
+  ): AuthenticatorF[Id, F] = AuthenticatorF.make(nodeClient, burnAuth, logs).extract
 
   def resource[Id: Loggable, F[_]: MonadThrow: Execute, I[_]: Functor](
       nodeClient: node_api.NodeServiceGrpc.NodeService,

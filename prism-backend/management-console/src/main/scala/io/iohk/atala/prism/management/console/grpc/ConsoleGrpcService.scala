@@ -62,7 +62,7 @@ class ConsoleGrpcService(
     val methodName = "registerDID"
     val codec =
       implicitly[ProtoConverter[RegisterConsoleDIDRequest, RegisterDID]]
-    codec.fromProto(request) match {
+    codec.fromProto(request, None) match {
       case Failure(exception) =>
         val response = invalidRequest(exception.getMessage)
         respondWith(request, response, serviceName, methodName)
