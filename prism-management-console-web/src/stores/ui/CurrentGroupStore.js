@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import i18n from 'i18next';
-import { flow, makeAutoObservable } from 'mobx';
+import { flow, makeAutoObservable, reaction } from 'mobx';
 import ContactUiState from './ContactUiState';
 
 const defaultValues = {
@@ -44,12 +44,22 @@ export default class CurrentGroupStore {
     // has to be declared after `fetchSearchResults` has been bound.
     // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
     this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
+    reaction(() => this.contactUiState.textFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.statusFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.dateFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.sortDirection, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.sortingBy, () => this.contactUiState.triggerSearch());
   }
 
   init = async id => {
     this.id = id;
     this.loadGroup();
     this.loadMembers();
+    this.resetUiState();
+  };
+
+  resetUiState = () => {
+    this.contactUiState.resetState();
   };
 
   *loadGroup() {
@@ -67,6 +77,7 @@ export default class CurrentGroupStore {
   }
 
   fetchSearchResults = () => {
+    // FIXME: add fetching group members
     message.warn('not implemented yet');
   };
 

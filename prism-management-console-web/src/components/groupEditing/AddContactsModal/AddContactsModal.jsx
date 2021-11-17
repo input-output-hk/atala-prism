@@ -88,6 +88,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
         </Col>
         <Col span={17}>
           <ConnectionsFilter
+            // FIXME: hook with gsm
             showFullFilter={false}
             localStateFilter={{
               value: textFilter,

@@ -61,7 +61,7 @@ const GroupCreation = observer(
 
           <div className="flex">
             <div className="SearchBar">
-              <ConnectionsFilter instance={contactUiState} showFullFilter={false} />
+              <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
             </div>
 
             <div className="groupsButtonContainer">

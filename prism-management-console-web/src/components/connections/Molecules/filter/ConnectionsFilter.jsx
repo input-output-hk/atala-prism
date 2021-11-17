@@ -12,17 +12,16 @@ import {
 } from '../../../../helpers/constants';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { useContactUiState } from '../../../../hooks/useContactStore';
 import './_style.scss';
 
-const ConnectionsFilter = observer(({ instance, showFullFilter, localStateFilter }) => {
+const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localStateFilter }) => {
   const { t } = useTranslation();
   const {
     sortingDirection,
     setSortingBy,
     setFilterValue: setGlobalFilterValue,
     toggleSortDirection
-  } = useContactUiState({ instance });
+  } = filterSortingProps;
 
   const setFilterValue = localStateFilter ? localStateFilter.setValue : setGlobalFilterValue;
 

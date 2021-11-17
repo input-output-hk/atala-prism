@@ -17,12 +17,12 @@ import { useSelectAll } from '../../hooks/useSelectAll';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
 import { useCurrentGroupStore } from '../../hooks/useCurrentGroupStore';
-import { useContactUiState } from '../../hooks/useContactStore';
 import './_style.scss';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
   const {
     contactUiState,
+    resetUiState,
     isLoadingGroup,
     isLoadingMembers,
     isSaving,
@@ -30,7 +30,9 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     members,
     getMembersToSelect
   } = useCurrentGroupStore();
-  const { hasFiltersApplied } = useContactUiState({ instance: contactUiState, reset: true });
+  resetUiState();
+
+  const { hasFiltersApplied } = contactUiState;
 
   const { t } = useTranslation();
   const formRef = createRef();
@@ -43,12 +45,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
   const formValues = { groupName };
 
-  // FIXME: how can we apply the filters here?
-  // const filteredContacts = applyFilters(members);
-  const filteredContacts = members;
-
   const { loadingSelection, checkboxProps } = useSelectAll({
-    displayedEntities: filteredContacts,
+    displayedEntities: members,
     entitiesFetcher: getMembersToSelect,
     entityKey: CONTACT_ID_KEY,
     selectedEntities: selectedGroupContacts,
@@ -181,7 +179,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         <h3>{t('groupEditing.contacts')}</h3>
         <div className="filterContainer">
           <div className="connectionFilter">
-            <ConnectionsFilter instance={contactUiState} showFullFilter={false} />
+            <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
           </div>
           <SelectAllButton
             loadingSelection={loadingSelection}
@@ -192,7 +190,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         <div className="ConnectionsTable">
           <ConnectionsTable
             // TODO: add pagination for getting group members (ATA-5701)
-            contacts={filteredContacts}
+            contacts={members}
             hasFiltersApplied={hasFiltersApplied}
             isFetchingMore={isLoadingMembers}
             columns={getGroupContactColumns(handleDelete)}

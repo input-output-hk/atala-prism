@@ -1,4 +1,4 @@
-import { makeAutoObservable, flow } from 'mobx';
+import { makeAutoObservable, flow, reaction } from 'mobx';
 import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
 import ContactUiState from '../ui/ContactUiState';
 
@@ -40,6 +40,11 @@ export default class ContactStore {
     // has to be declared after `fetchSearchResults` has been bound.
     // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
     this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
+    reaction(() => this.contactUiState.textFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.statusFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.dateFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.sortDirection, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.sortingBy, () => this.contactUiState.triggerSearch());
   }
 
   get isLoadingFirstPage() {
@@ -53,6 +58,11 @@ export default class ContactStore {
   initContactStore = () => {
     this.resetContacts();
     this.fetchMoreData({ isInitialLoading: true });
+    this.resetUiState();
+  };
+
+  resetUiState = () => {
+    this.contactUiState.resetState();
   };
 
   resetContacts = () => {
