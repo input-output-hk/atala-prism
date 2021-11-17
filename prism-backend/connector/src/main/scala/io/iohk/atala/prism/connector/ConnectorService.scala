@@ -7,8 +7,6 @@ import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser._
-import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
 import io.iohk.atala.prism.connector.errors._
@@ -75,45 +73,35 @@ class ConnectorService(
     */
   override def getConnectionByToken(
       request: connector_api.GetConnectionByTokenRequest
-  ): Future[connector_api.GetConnectionByTokenResponse] = {
-    trace { traceId =>
-      grpcHeader { header =>
-        unitAuth("getConnectionByToken", request, header, traceId) { (_, _) =>
-          connections
-            .getConnectionByToken(new TokenString(request.token))
-            .map(maybeConnection =>
-              connector_api.GetConnectionByTokenResponse(
-                maybeConnection.map(_.toProto)
-              )
-            )
-            .run(traceId)
-            .unsafeToFuture()
-            .lift[ConnectorError]
-        }
-      }
+  ): Future[connector_api.GetConnectionByTokenResponse] =
+    unitAuth("getConnectionByToken", request) { (_, _, traceId) =>
+      connections
+        .getConnectionByToken(new TokenString(request.token))
+        .map(maybeConnection =>
+          connector_api.GetConnectionByTokenResponse(
+            maybeConnection.map(_.toProto)
+          )
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .lift[ConnectorError]
     }
-  }
 
   override def getConnectionById(
       request: connector_api.GetConnectionByIdRequest
-  ): Future[connector_api.GetConnectionByIdResponse] = {
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[GetConnectionByIdRequest]("getConnectionById", request, header, traceId) { (participantId, typedRequest) =>
-          connections
-            .getConnectionById(participantId, typedRequest.id)
-            .map(maybeConnection =>
-              connector_api.GetConnectionByIdResponse(
-                maybeConnection.map(_.toProto)
-              )
-            )
-            .run(traceId)
-            .unsafeToFuture()
-            .lift[ConnectorError]
-        }
-      }
+  ): Future[connector_api.GetConnectionByIdResponse] =
+    auth[GetConnectionByIdRequest]("getConnectionById", request) { (participantId, typedRequest, traceId) =>
+      connections
+        .getConnectionById(participantId, typedRequest.id)
+        .map(maybeConnection =>
+          connector_api.GetConnectionByIdResponse(
+            maybeConnection.map(_.toProto)
+          )
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .lift[ConnectorError]
     }
-  }
 
   /** Get active connections for current participant
     *
@@ -122,23 +110,19 @@ class ConnectorService(
   override def getConnectionsPaginated(
       request: connector_api.GetConnectionsPaginatedRequest
   ): Future[connector_api.GetConnectionsPaginatedResponse] =
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[ConnectionsPaginatedRequest]("getConnectionsPaginated", request, header, traceId) {
-          (participantId, connectionsPaginatedRequest) =>
-            connections
-              .getConnectionsPaginated(
-                participantId,
-                connectionsPaginatedRequest.limit,
-                connectionsPaginatedRequest.lastSeenConnectionId
-              )
-              .run(traceId)
-              .unsafeToFuture()
-              .toFutureEither
-              .mapLeft(_.unify)
-              .map(conns => connector_api.GetConnectionsPaginatedResponse(conns.map(_.toProto)))
-        }
-      }
+    auth[ConnectionsPaginatedRequest]("getConnectionsPaginated", request) {
+      (participantId, connectionsPaginatedRequest, traceId) =>
+        connections
+          .getConnectionsPaginated(
+            participantId,
+            connectionsPaginatedRequest.limit,
+            connectionsPaginatedRequest.lastSeenConnectionId
+          )
+          .run(traceId)
+          .unsafeToFuture()
+          .toFutureEither
+          .mapLeft(_.unify)
+          .map(conns => connector_api.GetConnectionsPaginatedResponse(conns.map(_.toProto)))
     }
 
   /** Return info about connection token such as creator info
@@ -150,24 +134,22 @@ class ConnectorService(
   override def getConnectionTokenInfo(
       request: connector_api.GetConnectionTokenInfoRequest
   ): Future[connector_api.GetConnectionTokenInfoResponse] = {
-    trace { traceId =>
-      unitPublic("getConnectionTokenInfo", request, None, traceId) { _ =>
-        connections
-          .getTokenInfo(new model.TokenString(request.token))
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .mapLeft(_.unify)
-          .map { participantInfo =>
-            connector_api.GetConnectionTokenInfoResponse(
-              creatorName = participantInfo.name,
-              creatorLogo = ByteString.copyFrom(
-                participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray
-              ),
-              creatorDid = participantInfo.did.map(_.getValue).getOrElse("")
-            )
-          }
-      }
+    unitPublic("getConnectionTokenInfo", request) { (_, traceId) =>
+      connections
+        .getTokenInfo(new model.TokenString(request.token))
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .mapLeft(_.unify)
+        .map { participantInfo =>
+          connector_api.GetConnectionTokenInfoResponse(
+            creatorName = participantInfo.name,
+            creatorLogo = ByteString.copyFrom(
+              participantInfo.logo.map(_.bytes).getOrElse(Vector.empty).toArray
+            ),
+            creatorDid = participantInfo.did.map(_.getValue).getOrElse("")
+          )
+        }
     }
   }
 
@@ -261,26 +243,22 @@ class ConnectorService(
           } yield ()
       }
 
-    trace { traceId =>
-      grpcHeader { header =>
-        publicCo[AddConnectionRequest]("addConnectionFromToken", request, header, traceId) { addConnectionRequest =>
-          for {
-            _ <- verifyRequestSignature(addConnectionRequest)
-            connectionInfo <- connections
-              .addConnectionFromToken(
-                addConnectionRequest.token,
-                addConnectionRequest.didOrPublicKey
-              )
-              .run(traceId)
-              .unsafeToFuture()
-              .toFutureEither
-              .mapLeft(_.embed[AddConnectionFromTokenFullError])
-          } yield {
-            println(connectionInfo)
-            connector_api
-              .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
-          }
-        }
+    publicCo[AddConnectionRequest]("addConnectionFromToken", request) { (addConnectionRequest, traceId) =>
+      for {
+        _ <- verifyRequestSignature(addConnectionRequest)
+        connectionInfo <- connections
+          .addConnectionFromToken(
+            addConnectionRequest.token,
+            addConnectionRequest.didOrPublicKey
+          )
+          .run(traceId)
+          .unsafeToFuture()
+          .toFutureEither
+          .mapLeft(_.embed[AddConnectionFromTokenFullError])
+      } yield {
+        println(connectionInfo)
+        connector_api
+          .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
       }
     }
   }
@@ -293,21 +271,15 @@ class ConnectorService(
     */
   override def revokeConnection(
       request: connector_api.RevokeConnectionRequest
-  ): Future[connector_api.RevokeConnectionResponse] = {
-    trace { traceId =>
-      grpcHeader { header =>
-        authCo[RevokeConnectionRequest]("revokeConnection", request, header, traceId) {
-          (participantId, revokeConnectionRequest) =>
-            connections
-              .revokeConnection(participantId, revokeConnectionRequest.connectionId)
-              .run(traceId)
-              .unsafeToFuture()
-              .toFutureEither
-              .as(connector_api.RevokeConnectionResponse())
-        }
-      }
+  ): Future[connector_api.RevokeConnectionResponse] =
+    authCo[RevokeConnectionRequest]("revokeConnection", request) { (participantId, revokeConnectionRequest, traceId) =>
+      connections
+        .revokeConnection(participantId, revokeConnectionRequest.connectionId)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .as(connector_api.RevokeConnectionResponse())
     }
-  }
 
   /** Bind DID to issuer
     *
@@ -318,32 +290,29 @@ class ConnectorService(
     */
   override def registerDID(
       request: connector_api.RegisterDIDRequest
-  ): Future[connector_api.RegisterDIDResponse] = {
-    trace { traceId =>
-      public[RegisterDIDRequest]("registerDID", request, None, traceId) { registerDidRequest =>
-        registrationService
-          .register(
-            registerDidRequest.tpe,
-            registerDidRequest.name,
-            registerDidRequest.logo,
-            registerDidRequest.didOrOperation
-          )
-          .run(traceId)
-          .unsafeToFuture()
-          .toFutureEither
-          .mapLeft(_.unify)
-          .map { registerResult =>
-            val response = connector_api
-              .RegisterDIDResponse(
-                did = registerResult.did.getValue
-              )
-            registerResult.operationId
-              .map(_.toProtoByteString)
-              .fold(response)(response.withOperationId)
-          }
-      }
+  ): Future[connector_api.RegisterDIDResponse] =
+    public[RegisterDIDRequest]("registerDID", request) { (registerDidRequest, traceId) =>
+      registrationService
+        .register(
+          registerDidRequest.tpe,
+          registerDidRequest.name,
+          registerDidRequest.logo,
+          registerDidRequest.didOrOperation
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .mapLeft(_.unify)
+        .map { registerResult =>
+          val response = connector_api
+            .RegisterDIDResponse(
+              did = registerResult.did.getValue
+            )
+          registerResult.operationId
+            .map(_.toProtoByteString)
+            .fold(response)(response.withOperationId)
+        }
     }
-  }
 
   /** Generate connection token that can be used to instantiate connection
     *
@@ -353,27 +322,22 @@ class ConnectorService(
     */
   override def generateConnectionToken(
       request: connector_api.GenerateConnectionTokenRequest
-  ): Future[connector_api.GenerateConnectionTokenResponse] = {
-    trace { traceId =>
-      grpcHeader { header =>
-        unitAuth("generateConnectionToken", request, header, traceId) { (participantId, _) =>
-          connections
-            .generateTokens(
-              participantId,
-              if (request.count == 0) 1 else request.count
-            )
-            .run(traceId)
-            .unsafeToFuture()
-            .lift
-            .map(tokenStrings =>
-              connector_api.GenerateConnectionTokenResponse(
-                tokenStrings.map(_.token)
-              )
-            )
-        }
-      }
+  ): Future[connector_api.GenerateConnectionTokenResponse] =
+    unitAuth("generateConnectionToken", request) { (participantId, _, traceId) =>
+      connections
+        .generateTokens(
+          participantId,
+          if (request.count == 0) 1 else request.count
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .lift
+        .map(tokenStrings =>
+          connector_api.GenerateConnectionTokenResponse(
+            tokenStrings.map(_.token)
+          )
+        )
     }
-  }
 
   /** Return messages received after given time moment, sorted in ascending order by receive time
     *
@@ -382,23 +346,19 @@ class ConnectorService(
   override def getMessagesPaginated(
       request: connector_api.GetMessagesPaginatedRequest
   ): Future[connector_api.GetMessagesPaginatedResponse] =
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[MessagesPaginatedRequest]("getMessagesPaginated", request, header, traceId) {
-          (participantId, messagesPaginatedRequest) =>
-            messages
-              .getMessagesPaginated(
-                participantId,
-                messagesPaginatedRequest.limit,
-                messagesPaginatedRequest.lastSeenMessageId
-              )
-              .run(traceId)
-              .unsafeToFuture()
-              .toFutureEither
-              .mapLeft(_.unify)
-              .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
-        }
-      }
+    auth[MessagesPaginatedRequest]("getMessagesPaginated", request) {
+      (participantId, messagesPaginatedRequest, traceId) =>
+        messages
+          .getMessagesPaginated(
+            participantId,
+            messagesPaginatedRequest.limit,
+            messagesPaginatedRequest.lastSeenMessageId
+          )
+          .run(traceId)
+          .unsafeToFuture()
+          .toFutureEither
+          .mapLeft(_.unify)
+          .map(msgs => connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto)))
     }
 
   override def getMessageStream(
@@ -441,42 +401,34 @@ class ConnectorService(
         }
     }
 
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[GetMessageStreamRequest]("getMessageStream", request, header, traceId) {
-          (participantId, getMessageStreamRequest) =>
-            FutureEither.right(
-              streamMessages(
-                participantId,
-                getMessageStreamRequest.lastSeenMessageId,
-                traceId
-              )
-            )
-        }
-      }
+    auth[GetMessageStreamRequest]("getMessageStream", request) { (participantId, getMessageStreamRequest, traceId) =>
+      FutureEither.right(
+        streamMessages(
+          participantId,
+          getMessageStreamRequest.lastSeenMessageId,
+          traceId
+        )
+      )
     }
     ()
   }
 
   override def getMessagesForConnection(
       request: connector_api.GetMessagesForConnectionRequest
-  ): Future[connector_api.GetMessagesForConnectionResponse] = trace { traceId =>
-    grpcHeader { header =>
-      auth[GetMessagesForConnectionRequest]("getMessagesForConnection", request, header, traceId) {
-        (participantId, getMessagesForConnectionRequest) =>
-          messages
-            .getConnectionMessages(
-              participantId,
-              getMessagesForConnectionRequest.connectionId
-            )
-            .map(msgs => connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto)))
-            .run(traceId)
-            .unsafeToFuture()
-            .map(_.asRight)
-            .toFutureEither
-      }
+  ): Future[connector_api.GetMessagesForConnectionResponse] =
+    auth[GetMessagesForConnectionRequest]("getMessagesForConnection", request) {
+      (participantId, getMessagesForConnectionRequest, traceId) =>
+        messages
+          .getConnectionMessages(
+            participantId,
+            getMessagesForConnectionRequest.connectionId
+          )
+          .map(msgs => connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto)))
+          .run(traceId)
+          .unsafeToFuture()
+          .map(_.asRight)
+          .toFutureEither
     }
-  }
 
   /** Returns public keys that can be used for secure communication with the other end of connection
     */
@@ -498,27 +450,22 @@ class ConnectorService(
         }
       )
 
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[GetConnectionCommunicationKeysRequest](
-          "getConnectionCommunicationKeys",
-          request,
-          header,
-          traceId
-        ) { (participantId, getConnectionCommunicationKeysRequest) =>
-          connections
-            .getConnectionCommunicationKeys(
-              getConnectionCommunicationKeysRequest.connectionId,
-              participantId
-            )
-            .run(traceId)
-            .unsafeToFuture()
-            .toFutureEither
-            .mapLeft(_.unify)
-            .map(toResponse)
-        }
-      }
+    auth[GetConnectionCommunicationKeysRequest](
+      "getConnectionCommunicationKeys",
+      request
+    ) { (participantId, getConnectionCommunicationKeysRequest, traceId) =>
+      connections
+        .getConnectionCommunicationKeys(
+          getConnectionCommunicationKeysRequest.connectionId,
+          participantId
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .mapLeft(_.unify)
+        .map(toResponse)
     }
+
   }
 
   /** Send message over a connection
@@ -530,22 +477,18 @@ class ConnectorService(
   override def sendMessage(
       request: connector_api.SendMessageRequest
   ): Future[connector_api.SendMessageResponse] =
-    trace { traceId =>
-      grpcHeader { header =>
-        authCo[SendMessageRequest]("sendMessage", request, header, traceId) { (participantId, sendMessageRequest) =>
-          messages
-            .insertMessage(
-              sender = participantId,
-              connection = sendMessageRequest.connectionId,
-              content = sendMessageRequest.message,
-              messageId = sendMessageRequest.id
-            )
-            .run(traceId)
-            .unsafeToFuture()
-            .toFutureEither
-            .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
-        }
-      }
+    authCo[SendMessageRequest]("sendMessage", request) { (participantId, sendMessageRequest, traceId) =>
+      messages
+        .insertMessage(
+          sender = participantId,
+          connection = sendMessageRequest.connectionId,
+          content = sendMessageRequest.message,
+          messageId = sendMessageRequest.id
+        )
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .map(messageId => connector_api.SendMessageResponse(id = messageId.uuid.toString))
     }
 
   override def getBuildInfo(
@@ -566,54 +509,45 @@ class ConnectorService(
   override def getCurrentUser(
       request: connector_api.GetCurrentUserRequest
   ): Future[connector_api.GetCurrentUserResponse] =
-    trace { traceId =>
-      grpcHeader { header =>
-        unitAuth("getCurrentUser", request, header, traceId) { (participantId, _) =>
-          participantsRepository
-            .findBy(participantId)
-            .run(traceId)
-            .unsafeToFuture()
-            .toFutureEither
-            .mapLeft(_.unify)
-            .map { info =>
-              val role = info.tpe match {
-                case ParticipantType.Holder =>
-                  throw new NotImplementedError(
-                    "This method is not available for holders right now"
-                  )
+    unitAuth("getCurrentUser", request) { (participantId, _, traceId) =>
+      participantsRepository
+        .findBy(participantId)
+        .run(traceId)
+        .unsafeToFuture()
+        .toFutureEither
+        .mapLeft(_.unify)
+        .map { info =>
+          val role = info.tpe match {
+            case ParticipantType.Holder =>
+              throw new NotImplementedError(
+                "This method is not available for holders right now"
+              )
 
-                case ParticipantType.Issuer =>
-                  connector_api.GetCurrentUserResponse.Role.issuer
-                case ParticipantType.Verifier =>
-                  connector_api.GetCurrentUserResponse.Role.verifier
-              }
-              val logo = info.logo.map(_.bytes).getOrElse(Vector.empty).toArray
-              connector_api
-                .GetCurrentUserResponse()
-                .withName(info.name)
-                .withRole(role)
-                .withLogo(ByteString.copyFrom(logo))
-            }
+            case ParticipantType.Issuer =>
+              connector_api.GetCurrentUserResponse.Role.issuer
+            case ParticipantType.Verifier =>
+              connector_api.GetCurrentUserResponse.Role.verifier
+          }
+          val logo = info.logo.map(_.bytes).getOrElse(Vector.empty).toArray
+          connector_api
+            .GetCurrentUserResponse()
+            .withName(info.name)
+            .withRole(role)
+            .withLogo(ByteString.copyFrom(logo))
         }
-      }
     }
 
   override def updateParticipantProfile(
       request: connector_api.UpdateProfileRequest
   ): Future[connector_api.UpdateProfileResponse] =
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[UpdateParticipantProfile]("updateParticipantProfile", request, header, traceId) {
-          (participantId, updateProfile) =>
-            participantsRepository
-              .updateParticipantProfileBy(participantId, updateProfile)
-              .run(traceId)
-              .unsafeToFuture()
-              .as(connector_api.UpdateProfileResponse())
-              .map(_.asRight)
-              .toFutureEither
-        }
-      }
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, updateProfile, traceId) =>
+      participantsRepository
+        .updateParticipantProfileBy(participantId, updateProfile)
+        .run(traceId)
+        .unsafeToFuture()
+        .as(connector_api.UpdateProfileResponse())
+        .map(_.asRight)
+        .toFutureEither
     }
 
   /** Send messages over many connections
@@ -625,27 +559,24 @@ class ConnectorService(
   override def sendMessages(
       request: connector_api.SendMessagesRequest
   ): Future[connector_api.SendMessagesResponse] =
-    trace { traceId =>
-      grpcHeader { header =>
-        auth[SendMessagesRequest]("sendMessages", request, header, traceId) { (participantId, query) =>
-          query.messages.fold(
-            FutureEither
-              .right[ConnectorError, connector_api.SendMessagesResponse](
-                connector_api.SendMessagesResponse()
-              )
-          ) { messagesToInsert =>
-            messages
-              .insertMessages(participantId, messagesToInsert)
-              .run(traceId)
-              .unsafeToFuture()
-              .toFutureEither
-              .mapLeft(_.unify)
-              .map(messageIds =>
-                connector_api
-                  .SendMessagesResponse(ids = messageIds.map(_.uuid.toString))
-              )
-          }
-        }
+    auth[SendMessagesRequest]("sendMessages", request) { (participantId, query, traceId) =>
+      query.messages.fold(
+        FutureEither
+          .right[ConnectorError, connector_api.SendMessagesResponse](
+            connector_api.SendMessagesResponse()
+          )
+      ) { messagesToInsert =>
+        messages
+          .insertMessages(participantId, messagesToInsert)
+          .run(traceId)
+          .unsafeToFuture()
+          .toFutureEither
+          .mapLeft(_.unify)
+          .map(messageIds =>
+            connector_api
+              .SendMessagesResponse(ids = messageIds.map(_.uuid.toString))
+          )
       }
     }
+
 }

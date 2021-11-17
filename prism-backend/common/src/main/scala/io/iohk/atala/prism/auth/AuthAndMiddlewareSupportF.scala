@@ -2,11 +2,13 @@ package io.iohk.atala.prism.auth
 
 import cats.effect.unsafe.IORuntime
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
 import io.iohk.atala.prism.errors.{ErrorSupport, LoggingContext, PrismError}
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
+import io.iohk.atala.prism.tracing.Tracing.trace
 import io.iohk.atala.prism.utils.FutureEither
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import scalapb.GeneratedMessage
@@ -28,139 +30,147 @@ trait AuthAndMiddlewareSupportF[Err <: PrismError, Id] {
   final class AuthPartiallyApplied[Query <: Product] {
     def apply[Proto <: GeneratedMessage, Result](
         methodName: String,
-        request: Proto,
-        grpcHeader: Option[GrpcAuthenticationHeader],
-        traceId: TraceId
-    )(f: (Id, Query) => FutureEither[Err, Result])(implicit
+        request: Proto
+    )(f: (Id, Query, TraceId) => FutureEither[Err, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query]
-    ): Future[Result] = {
-      for {
-        participantId <- authenticator
-          .authenticated(methodName, request, grpcHeader)
-          .run(traceId)
-          .unsafeToFuture()(IOruntime)
-          .toFutureEither
-        res <- convertFromRequest[Proto, Result, Query](request, methodName, grpcHeader).flatMap { query =>
-          implicit val lc: LoggingContext = LoggingContext(
-            (0 until query.productArity)
-              .map(i =>
-                query
-                  .productElementName(i) -> query.productElement(i).toString
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            participantId <- authenticator
+              .authenticated(methodName, request, header)
+              .run(traceId)
+              .unsafeToFuture()(IOruntime)
+              .toFutureEither
+            res <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap + ("participantId" -> participantId.toString)
               )
-              .toMap + ("participantId" -> participantId.toString)
-          )
-          measureRequestFuture(serviceName, methodName)(
-            f(participantId, query)
-              .wrapAndRegisterExceptions(serviceName, methodName)
-              .value
-          )
-        }.toFutureEither
-      } yield res
-    }.flatten
+              measureRequestFuture(serviceName, methodName)(
+                f(participantId, query, traceId)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .value
+              )
+            }.toFutureEither
+          } yield res
+        }.flatten
+      }
+    }
   }
 
   final class AuthCoproductPartiallyApplied[Query <: Product] {
     def apply[C <: Coproduct, Proto <: GeneratedMessage, Result](
         methodName: String,
-        request: Proto,
-        grpcHeader: Option[GrpcAuthenticationHeader],
-        traceId: TraceId
-    )(f: (Id, Query) => FutureEither[C, Result])(implicit
+        request: Proto
+    )(f: (Id, Query, TraceId) => FutureEither[C, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query],
         unifier: Unifier.Aux[C, Err]
-    ): Future[Result] = {
-      for {
-        participantId <- authenticator
-          .authenticated(methodName, request, grpcHeader)
-          .run(traceId)
-          .unsafeToFuture()(IOruntime)
-          .toFutureEither
-        result <- convertFromRequest[Proto, Result, Query](request, methodName, grpcHeader).flatMap { query =>
-          implicit val lc: LoggingContext = LoggingContext(
-            (0 until query.productArity)
-              .map(i =>
-                query
-                  .productElementName(i) -> query.productElement(i).toString
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            participantId <- authenticator
+              .authenticated(methodName, request, header)
+              .run(traceId)
+              .unsafeToFuture()(IOruntime)
+              .toFutureEither
+            result <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap + ("participantId" -> participantId.toString)
               )
-              .toMap + ("participantId" -> participantId.toString)
-          )
-          measureRequestFuture(serviceName, methodName)(
-            f(participantId, query)
-              .mapLeft(_.unify)
-              .wrapAndRegisterExceptions(serviceName, methodName)
-              .value
-          )
-        }.toFutureEither
-      } yield result
-    }.flatten
+              measureRequestFuture(serviceName, methodName)(
+                f(participantId, query, traceId)
+                  .mapLeft(_.unify)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .value
+              )
+            }.toFutureEither
+          } yield result
+        }.flatten
+      }
+    }
   }
 
   final class WithoutAuthPartiallyApplied[Query <: Product] {
     def apply[Proto <: GeneratedMessage, Result](
         methodName: String,
-        request: Proto,
-        grpcHeader: Option[GrpcAuthenticationHeader] = None,
-        traceId: TraceId
-    )(f: Query => FutureEither[Err, Result])(implicit
+        request: Proto
+    )(f: (Query, TraceId) => FutureEither[Err, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query]
-    ): Future[Result] = {
-      for {
-        _ <- authenticator.public(methodName, request).run(traceId).unsafeToFuture()(IOruntime).lift[Err]
-        result <- convertFromRequest[Proto, Result, Query](request, methodName, grpcHeader).flatMap { query =>
-          // Assemble LoggingContext out of the case class fields
-          implicit val lc: LoggingContext = LoggingContext(
-            (0 until query.productArity)
-              .map(i =>
-                query
-                  .productElementName(i) -> query.productElement(i).toString
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            _ <- authenticator.public(methodName, request).run(traceId).unsafeToFuture()(IOruntime).lift[Err]
+            result <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
+              // Assemble LoggingContext out of the case class fields
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap
               )
-              .toMap
-          )
-          measureRequestFuture(serviceName, methodName)(
-            f(query)
-              .wrapAndRegisterExceptions(serviceName, methodName)
-              .value
-          )
-        }.toFutureEither
-      } yield result
-    }.flatten
+              measureRequestFuture(serviceName, methodName)(
+                f(query, traceId)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .value
+              )
+            }.toFutureEither
+          } yield result
+        }.flatten
+      }
+    }
   }
 
   final class WithoutAuthCoproductPartiallyApplied[Query <: Product] {
     def apply[C <: Coproduct, Proto <: GeneratedMessage, Result](
         methodName: String,
-        request: Proto,
-        grpcHeader: Option[GrpcAuthenticationHeader] = None,
-        traceId: TraceId
-    )(f: Query => FutureEither[C, Result])(implicit
+        request: Proto
+    )(f: (Query, TraceId) => FutureEither[C, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query],
         unifier: Unifier.Aux[C, Err]
-    ): Future[Result] = {
-      for {
-        _ <- authenticator.public(methodName, request).run(traceId).unsafeToFuture()(IOruntime).lift[Err]
-        result <- convertFromRequest[Proto, Result, Query](request, methodName, grpcHeader).flatMap { query =>
-          // Assemble LoggingContext out of the case class fields
-          implicit val lc: LoggingContext = LoggingContext(
-            (0 until query.productArity)
-              .map(i =>
-                query
-                  .productElementName(i) -> query.productElement(i).toString
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            _ <- authenticator.public(methodName, request).run(traceId).unsafeToFuture()(IOruntime).lift[Err]
+            result <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
+              // Assemble LoggingContext out of the case class fields
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap
               )
-              .toMap
-          )
-          measureRequestFuture(serviceName, methodName)(
-            f(query)
-              .mapLeft(_.unify)
-              .wrapAndRegisterExceptions(serviceName, methodName)
-              .value
-          )
-        }.toFutureEither
-      } yield result
-    }.flatten
+              measureRequestFuture(serviceName, methodName)(
+                f(query, traceId)
+                  .mapLeft(_.unify)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .value
+              )
+            }.toFutureEither
+          } yield result
+        }.flatten
+      }
+    }
   }
 
   // Just converts query from proto in our representation, on failure, responds with a thrown error

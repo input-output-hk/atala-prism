@@ -221,7 +221,7 @@ private[auth] class AuthenticatorFImpl[Id, F[_]: Monad: Execute](
       case NonFatal(ex) =>
         Either
           .left[AuthError, Id](
-            InvalidRequest(s"$methodName - FATAL ERROR ${ex.getMessage}, request = ${request.toProtoString}")
+            InvalidRequest(s"$methodName - NonFatal ERROR ${ex.getMessage}, request = ${request.toProtoString}")
           )
           .pure[F]
 
