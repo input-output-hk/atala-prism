@@ -53,6 +53,14 @@ export default class CurrentGroupStore {
     return this.contactsBaseStore.filterSortingProps;
   }
 
+  get isSearching() {
+    return this.contactsBaseStore.isSearching;
+  }
+
+  get isFetching() {
+    return this.contactsBaseStore.isFetching;
+  }
+
   init = async id => {
     this.id = id;
     this.isLoadingMembers = true;

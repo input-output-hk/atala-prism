@@ -82,7 +82,7 @@ const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localS
 ConnectionsFilter.defaultProps = {
   filterSortingProps: {},
   showFullFilter: true,
-  localStateFilter: {}
+  localStateFilter: null
 };
 
 ConnectionsFilter.propTypes = {

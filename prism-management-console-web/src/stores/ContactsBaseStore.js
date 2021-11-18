@@ -1,8 +1,10 @@
+import _ from 'lodash';
 import { flow, makeAutoObservable, reaction } from 'mobx';
 import {
   CONTACT_PAGE_SIZE,
   CONTACT_SORTING_KEYS,
   CONTACT_SORTING_KEYS_TRANSLATION,
+  SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
 } from '../helpers/constants';
 
@@ -17,6 +19,7 @@ const defaultValues = {
   contacts: [],
   scrollId: undefined,
   isFetching: false,
+  isSearching: false,
   textFilter: '',
   statusFilter: '',
   dateFilter: '',
@@ -30,10 +33,10 @@ export default class ContactsBaseStore {
 
   scrollId = defaultValues.scrollId;
 
-  // TODO: can we use isFetching instead of isSorting and isSearching
   isFetching = defaultValues.isFetching;
 
-  /// FROM UI STORE
+  isSearching = defaultValues.isSearching;
+
   textFilter = defaultValues.textFilter;
 
   statusFilter = defaultValues.statusFilter;
@@ -59,11 +62,11 @@ export default class ContactsBaseStore {
       transportLayerErrorHandler: false
     });
 
-    reaction(() => this.textFilter, () => this.fetchSearchResults());
-    reaction(() => this.statusFilter, () => this.fetchSearchResults());
-    reaction(() => this.dateFilter, () => this.fetchSearchResults());
-    reaction(() => this.sortDirection, () => this.fetchSearchResults());
-    reaction(() => this.sortingBy, () => this.fetchSearchResults());
+    reaction(() => this.textFilter, () => this.triggerDebouncedSearch());
+    reaction(() => this.statusFilter, () => this.triggerSearch());
+    reaction(() => this.dateFilter, () => this.triggerSearch());
+    reaction(() => this.sortDirection, () => this.triggerSearch());
+    reaction(() => this.sortingBy, () => this.triggerSearch());
   }
 
   get isLoadingFirstPage() {
@@ -72,16 +75,6 @@ export default class ContactsBaseStore {
 
   get hasMore() {
     return this.scrollId;
-  }
-
-  get filterSortingProps() {
-    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
-    return {
-      sortDirection,
-      setSortingBy,
-      setFilterValue,
-      toggleSortDirection
-    };
   }
 
   initContactStore = groupName => {
@@ -97,6 +90,7 @@ export default class ContactsBaseStore {
 
   resetContactsAndFilters = () => {
     this.resetContacts();
+    this.isFetching = defaultValues.isFetching;
     this.isSearching = defaultValues.isSearching;
     this.textFilter = defaultValues.textFilter;
     this.dateFilter = defaultValues.lastEditedFilter;
@@ -140,6 +134,16 @@ export default class ContactsBaseStore {
     );
   }
 
+  get filterSortingProps() {
+    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
+    return {
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      toggleSortDirection
+    };
+  }
+
   toggleSortDirection = () => {
     this.sortDirection = this.sortDirection === ascending ? descending : ascending;
   };
@@ -147,6 +151,22 @@ export default class ContactsBaseStore {
   setSortingBy = value => {
     this.sortingBy = value;
   };
+
+  triggerSearch = async () => {
+    this.isSearching = true;
+    await this.fetchSearchResults();
+    this.isSearching = false;
+  };
+
+  triggerDebouncedSearch = () => {
+    this.isSearching = true;
+    this.debouncedFetchSearchResults();
+  };
+
+  debouncedFetchSearchResults = _.debounce(async () => {
+    await this.fetchSearchResults();
+    this.isSearching = false;
+  }, SEARCH_DELAY_MS);
 
   // ********************** //
   // DATA AND FETCHING

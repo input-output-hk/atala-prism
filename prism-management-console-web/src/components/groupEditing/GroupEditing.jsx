@@ -25,6 +25,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     hasFiltersApplied,
     isLoadingGroup,
     isLoadingMembers,
+    isFetching,
+    isSearching,
     isSaving,
     name,
     members,
@@ -189,7 +191,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
             // TODO: add pagination for getting group members (ATA-5701)
             contacts={members}
             hasFiltersApplied={hasFiltersApplied}
-            isLoading={isLoadingMembers}
+            isLoading={isLoadingMembers || isSearching}
+            isFetchingMore={isFetching}
             columns={getGroupContactColumns(handleDelete)}
             selectedContacts={selectedGroupContacts}
             setSelectedContacts={setSelectedGroupContacts}
