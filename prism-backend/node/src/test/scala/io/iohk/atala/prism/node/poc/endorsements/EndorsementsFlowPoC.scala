@@ -29,6 +29,7 @@ import io.iohk.atala.prism.node.repositories.{
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   InMemoryLedgerService,
+  NodeServiceImpl,
   ObjectManagementService,
   SubmissionSchedulingService,
   SubmissionService
@@ -133,10 +134,12 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
         node_api.NodeServiceGrpc
           .bindService(
             new NodeGrpcServiceImpl(
-              didDataRepository,
-              objectManagementService,
-              submissionSchedulingService,
-              credentialBatchesRepository
+              new NodeServiceImpl(
+                didDataRepository,
+                objectManagementService,
+                credentialBatchesRepository,
+                submissionSchedulingService
+              )
             ),
             executionContext
           )
