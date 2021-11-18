@@ -74,9 +74,10 @@ export default class ContactsBaseStore {
     return this.scrollId;
   }
 
-  initContactStore = () => {
+  initContactStore = groupName => {
     this.resetContactsAndFilters();
-    this.fetchMoreData({ isInitialLoading: true });
+    this.groupNameFilter = groupName;
+    return this.fetchMoreData({ isInitialLoading: true });
   };
 
   resetContacts = () => {
@@ -141,11 +142,18 @@ export default class ContactsBaseStore {
   // DATA AND FETCHING
   // ********************** //
 
-  *fetchContacts({ scrollId, groupName, pageSize = CONTACT_PAGE_SIZE } = {}) {
+  *fetchContacts({ scrollId, pageSize = CONTACT_PAGE_SIZE } = {}) {
     this.isFetching = true;
 
     try {
-      const { textFilter, dateFilter, statusFilter, sortDirection, sortingBy } = this;
+      const {
+        groupNameFilter,
+        textFilter,
+        dateFilter,
+        statusFilter,
+        sortDirection,
+        sortingBy
+      } = this;
 
       const response = yield this.api.contactsManager.getContacts({
         scrollId,
@@ -155,7 +163,7 @@ export default class ContactsBaseStore {
           searchText: textFilter,
           createdAt: dateFilter,
           connectionStatus: statusFilter,
-          groupName
+          groupName: groupNameFilter
         }
       });
       this.transportLayerErrorHandler.handleTransportLayerSuccess();

@@ -10,7 +10,6 @@ const defaultValues = {
   isSaving: false,
   id: undefined,
   name: undefined,
-  // members: [],
   numberOfContacts: undefined
 };
 
@@ -27,13 +26,12 @@ export default class CurrentGroupStore {
 
   name = defaultValues.name;
 
-  // members = defaultValues.members;
-
   numberOfContacts = defaultValues.numberOfContacts;
 
   constructor(api, sessionState) {
     this.api = api;
     this.sessionState = sessionState;
+    this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
 
     makeAutoObservable(this, {
       loadGroup: flow.bound,
@@ -41,71 +39,19 @@ export default class CurrentGroupStore {
       updateGroupName: flow.bound,
       updateGroupMembers: flow.bound
     });
-    // has to be declared after `fetchSearchResults` has been bound.
-    // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
-    // this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
-    this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
-
-    // reaction(() => this.contactUiState.textFilter, () => this.contactUiState.triggerSearch());
-    // reaction(() => this.contactUiState.statusFilter, () => this.contactUiState.triggerSearch());
-    // reaction(() => this.contactUiState.dateFilter, () => this.contactUiState.triggerSearch());
-    // reaction(() => this.contactUiState.sortDirection, () => this.contactUiState.triggerSearch());
-    // reaction(() => this.contactUiState.sortingBy, () => this.contactUiState.triggerSearch());
   }
 
   get members() {
     return this.contactsBaseStore.contacts;
   }
 
-  // TODO: should we hide contactsBaseStore or just use it where needed directly!?
-  // get memberFilters() {
-  //   let {
-  //     sortingBy,
-  //     sortingKey,
-  //     sortDirection,
-  //     textFilter,
-  //     statusFilter,
-  //     dateFilter,
-  //     groupNameFilter
-  //   } = this.contactsUniversalStore;
-  //
-  //   return {
-  //     sortingBy,
-  //     sortingKey,
-  //     sortDirection,
-  //     textFilter,
-  //     statusFilter,
-  //     dateFilter,
-  //     groupNameFilter
-  //   };
-  // }
-  // get memberFilterActions() {
-  //   let {
-  //     hasFiltersApplied,
-  //     hasMore
-  //   } = this.contactsUniversalStore;
-  //
-  //   return {
-  //     sortingBy,
-  //     sortingKey,
-  //     sortDirection,
-  //     textFilter,
-  //     statusFilter,
-  //     dateFilter,
-  //     groupNameFilter
-  //   };
-  // }
-
   init = async id => {
     this.id = id;
-    this.loadGroup();
-    // this.loadMembers();
-    this.contactsBaseStore.initContactStore();
+    this.isLoadingMembers = true;
+    await this.loadGroup();
+    await this.contactsBaseStore.initContactStore(this.name);
+    this.isLoadingMembers = false;
   };
-
-  // resetUiState = () => {
-  //   this.contactUiState.resetState();
-  // };
 
   *loadGroup() {
     this.isLoadingGroup = true;
@@ -115,18 +61,7 @@ export default class CurrentGroupStore {
     this.isLoadingGroup = false;
   }
 
-  // *loadMembers() {
-  //   this.isLoadingMembers = true;
-  //   this.members = yield this.api.contactsManager.getAllContacts(this.name);
-  //   this.isLoadingMembers = false;
-  // }
-
   reloadMembers = () => this.contactsBaseStore.refreshContacts();
-
-  // fetchSearchResults = () => {
-  //   FIXME: add fetching group members
-  // message.warn('not implemented yet');
-  // };
 
   // FIXME: select only filtered members
   getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);
