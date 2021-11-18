@@ -80,21 +80,22 @@ const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localS
 });
 
 ConnectionsFilter.defaultProps = {
-  searchText: undefined,
-  setStatus: undefined,
-  showFullFilter: true
+  filterSortingProps: {},
+  showFullFilter: true,
+  localStateFilter: {}
 };
 
 ConnectionsFilter.propTypes = {
-  setSearchText: PropTypes.func.isRequired,
-  searchText: PropTypes.string,
+  filterSortingProps: PropTypes.shape({
+    sortDirection: PropTypes.string,
+    setSortingBy: PropTypes.func,
+    setFilterValue: PropTypes.func,
+    toggleSortDirection: PropTypes.func
+  }),
   showFullFilter: PropTypes.bool,
-  setStatus: PropTypes.func,
-  sortDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
-    .isRequired,
-  setSortDirection: PropTypes.func.isRequired,
-  setSortingField: PropTypes.func.isRequired,
-  setCreatedAt: PropTypes.func.isRequired
+  localStateFilter: PropTypes.shape({
+    setValue: PropTypes.func
+  })
 };
 
 export default ConnectionsFilter;
