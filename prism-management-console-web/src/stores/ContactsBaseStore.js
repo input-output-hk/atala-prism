@@ -74,6 +74,16 @@ export default class ContactsBaseStore {
     return this.scrollId;
   }
 
+  get filterSortingProps() {
+    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
+    return {
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      toggleSortDirection
+    };
+  }
+
   initContactStore = groupName => {
     this.resetContactsAndFilters();
     this.groupNameFilter = groupName;

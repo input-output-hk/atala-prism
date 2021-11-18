@@ -45,6 +45,14 @@ export default class CurrentGroupStore {
     return this.contactsBaseStore.contacts;
   }
 
+  get hasFiltersApplied() {
+    return this.contactsBaseStore.hasFiltersApplied;
+  }
+
+  get filterSortingProps() {
+    return this.contactsBaseStore.filterSortingProps;
+  }
+
   init = async id => {
     this.id = id;
     this.isLoadingMembers = true;
