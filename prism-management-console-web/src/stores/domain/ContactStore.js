@@ -48,7 +48,7 @@ export default class ContactStore {
   }
 
   get isLoadingFirstPage() {
-    return this.isFetching && this.contactsScrollId === undefined;
+    return this.isFetching && this.scrollId === undefined;
   }
 
   get hasMore() {
@@ -93,7 +93,7 @@ export default class ContactStore {
   }
 
   *fetchAllContacts(groupName) {
-    const response = yield this.fetchRecursively(this.contacts, this.contactsScrollId, groupName);
+    const response = yield this.fetchRecursively(this.contacts, this.scrollId, groupName);
     return response.contactsList;
   }
 
@@ -105,7 +105,7 @@ export default class ContactStore {
 
     const response = yield this.fetchRecursively(alreadyFetched, currentScrollId);
     this.contacts = response.contactsList;
-    this.contactsScrollId = '';
+    this.scrollId = '';
 
     return response.contactsList;
   }
