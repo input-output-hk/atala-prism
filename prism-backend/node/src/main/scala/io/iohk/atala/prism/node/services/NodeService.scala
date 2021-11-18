@@ -1,8 +1,11 @@
 package io.iohk.atala.prism.node.services
 
+import cats.effect.Resource
 import cats.effect.kernel.Sync
-import cats.Applicative
+import cats.{Applicative, Comonad, Functor}
 import cats.implicits._
+import derevo.derive
+import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
@@ -14,11 +17,16 @@ import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaOperationInfo
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{DIDData, SignedAtalaOperation}
+import tofu.higherKind.Mid
+import tofu.logging.{Logs, ServiceLogging}
+import tofu.logging.derivation.loggable
 
 import java.time.Instant
 
+@derive(applyK)
 trait NodeService[F[_]] {
 
   def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]]
@@ -43,7 +51,7 @@ trait NodeService[F[_]] {
 }
 // Please forgive me for that Sync here -_-
 // It's needed for delaying of submissionSchedulingService.flushOperationsBuffer() call
-class NodeServiceImpl[F[_]: Sync](
+private final class NodeServiceImpl[F[_]: Sync](
     didDataRepository: DIDDataRepository[F],
     objectManagement: ObjectManagementService[F],
     credentialBatchesRepository: CredentialBatchesRepository[F],
@@ -117,6 +125,51 @@ class NodeServiceImpl[F[_]: Sync](
   override def getLastSyncedTimestamp: F[Instant] = objectManagement.getLastSyncedTimestamp
 }
 
+object NodeService {
+
+  def make[I[_]: Functor, F[_]: Sync](
+      didDataRepository: DIDDataRepository[F],
+      objectManagement: ObjectManagementService[F],
+      credentialBatchesRepository: CredentialBatchesRepository[F],
+      submissionSchedulingService: SubmissionSchedulingService,
+      logs: Logs[I, F]
+  ): I[NodeService[F]] = {
+    for {
+      serviceLogs <- logs.service[NodeService[F]]
+    } yield {
+      implicit val implicitLogs: ServiceLogging[F, NodeService[F]] = serviceLogs
+      val logs: NodeService[Mid[F, *]] = new NodeServiceLogging[F]
+      val mid: NodeService[Mid[F, *]] = logs
+      mid attach new NodeServiceImpl[F](
+        didDataRepository,
+        objectManagement,
+        credentialBatchesRepository,
+        submissionSchedulingService
+      )
+    }
+  }
+
+  def resource[I[_]: Comonad, F[_]: Sync](
+      didDataRepository: DIDDataRepository[F],
+      objectManagement: ObjectManagementService[F],
+      credentialBatchesRepository: CredentialBatchesRepository[F],
+      submissionSchedulingService: SubmissionSchedulingService,
+      logs: Logs[I, F]
+  ): Resource[I, NodeService[F]] = Resource.eval(
+    make(didDataRepository, objectManagement, credentialBatchesRepository, submissionSchedulingService, logs)
+  )
+
+  def unsafe[I[_]: Comonad, F[_]: Sync](
+      didDataRepository: DIDDataRepository[F],
+      objectManagement: ObjectManagementService[F],
+      credentialBatchesRepository: CredentialBatchesRepository[F],
+      submissionSchedulingService: SubmissionSchedulingService,
+      logs: Logs[I, F]
+  ): NodeService[F] =
+    make(didDataRepository, objectManagement, credentialBatchesRepository, submissionSchedulingService, logs).extract
+
+}
+
 final case class BatchData(maybeBatchState: Option[CredentialBatchState], lastSyncedTimestamp: Instant)
 
 final case class CredentialRevocationTime(maybeLedgerData: Option[LedgerData], lastSyncedTimestamp: Instant)
@@ -125,6 +178,7 @@ final case class DidDocument(maybeData: Option[DIDData], lastSyncedTimeStamp: In
 
 final case class OperationInfo(maybeOperationInfo: Option[AtalaOperationInfo], lastSyncedTimestamp: Instant)
 
+@derive(loggable)
 sealed trait GettingDidError
 
 final case class GettingCanonicalPrismDidError(node: NodeError) extends GettingDidError

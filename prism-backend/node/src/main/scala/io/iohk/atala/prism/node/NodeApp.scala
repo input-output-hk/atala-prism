@@ -120,11 +120,12 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       )
       credentialBatchesRepository <-
         CredentialBatchesRepository.resource(liftedTransactor, logs)
-      nodeService = new NodeServiceImpl[IOWithTraceIdContext](
+      nodeService <- NodeService.resource(
         didDataRepository,
         objectManagementService,
         credentialBatchesRepository,
-        submissionSchedulingService
+        submissionSchedulingService,
+        logs
       )
       nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
       server <- startServer(nodeGrpcService)

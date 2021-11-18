@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceImpl,
   InMemoryLedgerService,
-  NodeServiceImpl,
+  NodeService,
   ObjectManagementService,
   SubmissionSchedulingService,
   SubmissionService
@@ -105,11 +105,12 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
         node_api.NodeServiceGrpc
           .bindService(
             new NodeGrpcServiceImpl(
-              new NodeServiceImpl(
+              NodeService.unsafe(
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
-                submissionSchedulingService
+                submissionSchedulingService,
+                flowPocTestLogs
               )
             ),
             executionContext
