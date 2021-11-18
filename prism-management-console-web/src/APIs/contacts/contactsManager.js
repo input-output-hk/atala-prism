@@ -166,7 +166,7 @@ async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) 
   const { contactsList, newScrollId } = await this.getContacts({
     filter: { groupName },
     scrollId,
-    limit: MAX_CONTACT_PAGE_SIZE
+    pageSize: MAX_CONTACT_PAGE_SIZE
   });
   const mappedContacts = contactsList.map(contactMapper);
   const partialContactsArray = acc.concat(mappedContacts);

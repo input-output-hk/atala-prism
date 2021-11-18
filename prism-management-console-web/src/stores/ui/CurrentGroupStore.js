@@ -49,6 +49,10 @@ export default class CurrentGroupStore {
     return this.contactsBaseStore.hasFiltersApplied;
   }
 
+  get hasMoreMembers() {
+    return this.contactsBaseStore.hasMore;
+  }
+
   get filterSortingProps() {
     return this.contactsBaseStore.filterSortingProps;
   }
@@ -77,6 +81,10 @@ export default class CurrentGroupStore {
     this.isLoadingGroup = false;
   }
 
+  fetchMoreGroupMembers = () => {
+    this.contactsBaseStore.fetchMoreData();
+  };
+
   reloadMembers = () => this.contactsBaseStore.refreshContacts();
 
   // FIXME: select only filtered members
@@ -85,7 +93,8 @@ export default class CurrentGroupStore {
   getContactsNotInGroup = async () => {
     this.isLoadingContactsNotInGroup = true;
     const allContacts = await this.api.contactsManager.getAllContacts();
-    const contactIdsInGroup = new Set(this.members.map(item => item.contactId));
+    const allMembers = await this.api.contactsManager.getAllContacts(this.name);
+    const contactIdsInGroup = new Set(allMembers.map(item => item.contactId));
     const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
     this.isLoadingContactsNotInGroup = false;
     return contactsNotInGroup;

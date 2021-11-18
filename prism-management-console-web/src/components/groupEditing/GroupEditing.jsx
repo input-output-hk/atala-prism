@@ -30,6 +30,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     isSaving,
     name,
     members,
+    fetchMoreGroupMembers,
+    hasMoreMembers,
     getMembersToSelect
   } = useCurrentGroupStore();
 
@@ -188,14 +190,15 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         </div>
         <div className="ConnectionsTable">
           <ConnectionsTable
-            // TODO: add pagination for getting group members (ATA-5701)
             contacts={members}
             hasFiltersApplied={hasFiltersApplied}
             isLoading={isLoadingMembers || isSearching}
             isFetchingMore={isFetching}
+            fetchMoreData={fetchMoreGroupMembers}
             columns={getGroupContactColumns(handleDelete)}
             selectedContacts={selectedGroupContacts}
             setSelectedContacts={setSelectedGroupContacts}
+            hasMore={hasMoreMembers}
             size="md"
             searchDueGeneralScroll
           />

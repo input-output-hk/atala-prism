@@ -18,7 +18,6 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
   const [contactsNotInGroup, setContactsNotInGroup] = useState([]);
   const [textFilter, setTextFilter] = useState('');
   const [filteredContacts, setFilteredContacts] = useState([]);
-  const [isNewModal, setIsNewModal] = useState(true);
   const [selectedContacts, setSelectedContacts] = useState([]);
   const { isLoadingContactsNotInGroup, getContactsNotInGroup } = useCurrentGroupStore();
 
@@ -28,11 +27,11 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       setContactsNotInGroup(fetchedContacts);
     };
 
-    if (isNewModal && visible) {
-      setIsNewModal(false);
+    if (visible) {
       handleGetContacts();
+      setSelectedContacts([]);
     }
-  }, [visible, isNewModal, getContactsNotInGroup]);
+  }, [visible, getContactsNotInGroup]);
 
   useEffect(() => {
     const applyFilters = contacts =>
@@ -50,10 +49,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     isFetching: isLoadingContactsNotInGroup
   });
 
-  const handleConfirm = () => {
-    setIsNewModal(true);
-    return onConfirm(selectedContacts).finally(() => setIsNewModal(true));
-  };
+  const handleConfirm = () => onConfirm(selectedContacts);
 
   const confirmButton = (
     <Row>
