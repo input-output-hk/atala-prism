@@ -21,8 +21,8 @@ import './_style.scss';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
   const {
-    contactUiState,
-    resetUiState,
+    // contactUiState,
+    contactsBaseStore,
     isLoadingGroup,
     isLoadingMembers,
     isSaving,
@@ -30,9 +30,9 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     members,
     getMembersToSelect
   } = useCurrentGroupStore();
-  resetUiState();
 
-  const { hasFiltersApplied } = contactUiState;
+  // const { hasFiltersApplied } = contactUiState;
+  const { hasFiltersApplied } = contactsBaseStore; // TODO: maybe keep this data in groupUIStore
 
   const { t } = useTranslation();
   const formRef = createRef();
@@ -179,7 +179,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         <h3>{t('groupEditing.contacts')}</h3>
         <div className="filterContainer">
           <div className="connectionFilter">
-            <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
+            <ConnectionsFilter filterSortingProps={contactsBaseStore} showFullFilter={false} />
           </div>
           <SelectAllButton
             loadingSelection={loadingSelection}

@@ -17,7 +17,7 @@ import './_style.scss';
 const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localStateFilter }) => {
   const { t } = useTranslation();
   const {
-    sortingDirection,
+    sortDirection,
     setSortingBy,
     setFilterValue: setGlobalFilterValue,
     toggleSortDirection
@@ -26,7 +26,7 @@ const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localS
   const setFilterValue = localStateFilter ? localStateFilter.setValue : setGlobalFilterValue;
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
-  const isAscending = sortingDirection === SORTING_DIRECTIONS.ascending;
+  const isAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
   const datePickerProps = {
     placeholder: t('contacts.filters.createdAt'),
@@ -90,9 +90,9 @@ ConnectionsFilter.propTypes = {
   searchText: PropTypes.string,
   showFullFilter: PropTypes.bool,
   setStatus: PropTypes.func,
-  sortingDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
+  sortDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
     .isRequired,
-  setSortingDirection: PropTypes.func.isRequired,
+  setSortDirection: PropTypes.func.isRequired,
   setSortingField: PropTypes.func.isRequired,
   setCreatedAt: PropTypes.func.isRequired
 };

@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import i18n from 'i18next';
-import { flow, makeAutoObservable, reaction } from 'mobx';
-import ContactUiState from './ContactUiState';
+import { flow, makeAutoObservable } from 'mobx';
+import ContactsBaseStore from '../ContactsBaseStore';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -10,7 +10,7 @@ const defaultValues = {
   isSaving: false,
   id: undefined,
   name: undefined,
-  members: [],
+  // members: [],
   numberOfContacts: undefined
 };
 
@@ -27,7 +27,7 @@ export default class CurrentGroupStore {
 
   name = defaultValues.name;
 
-  members = defaultValues.members;
+  // members = defaultValues.members;
 
   numberOfContacts = defaultValues.numberOfContacts;
 
@@ -43,24 +43,69 @@ export default class CurrentGroupStore {
     });
     // has to be declared after `fetchSearchResults` has been bound.
     // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
-    this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
-    reaction(() => this.contactUiState.textFilter, () => this.contactUiState.triggerSearch());
-    reaction(() => this.contactUiState.statusFilter, () => this.contactUiState.triggerSearch());
-    reaction(() => this.contactUiState.dateFilter, () => this.contactUiState.triggerSearch());
-    reaction(() => this.contactUiState.sortDirection, () => this.contactUiState.triggerSearch());
-    reaction(() => this.contactUiState.sortingBy, () => this.contactUiState.triggerSearch());
+    // this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
+    this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
+
+    // reaction(() => this.contactUiState.textFilter, () => this.contactUiState.triggerSearch());
+    // reaction(() => this.contactUiState.statusFilter, () => this.contactUiState.triggerSearch());
+    // reaction(() => this.contactUiState.dateFilter, () => this.contactUiState.triggerSearch());
+    // reaction(() => this.contactUiState.sortDirection, () => this.contactUiState.triggerSearch());
+    // reaction(() => this.contactUiState.sortingBy, () => this.contactUiState.triggerSearch());
   }
+
+  get members() {
+    return this.contactsBaseStore.contacts;
+  }
+
+  // TODO: should we hide contactsBaseStore or just use it where needed directly!?
+  // get memberFilters() {
+  //   let {
+  //     sortingBy,
+  //     sortingKey,
+  //     sortDirection,
+  //     textFilter,
+  //     statusFilter,
+  //     dateFilter,
+  //     groupNameFilter
+  //   } = this.contactsUniversalStore;
+  //
+  //   return {
+  //     sortingBy,
+  //     sortingKey,
+  //     sortDirection,
+  //     textFilter,
+  //     statusFilter,
+  //     dateFilter,
+  //     groupNameFilter
+  //   };
+  // }
+  // get memberFilterActions() {
+  //   let {
+  //     hasFiltersApplied,
+  //     hasMore
+  //   } = this.contactsUniversalStore;
+  //
+  //   return {
+  //     sortingBy,
+  //     sortingKey,
+  //     sortDirection,
+  //     textFilter,
+  //     statusFilter,
+  //     dateFilter,
+  //     groupNameFilter
+  //   };
+  // }
 
   init = async id => {
     this.id = id;
     this.loadGroup();
-    this.loadMembers();
-    this.resetUiState();
+    // this.loadMembers();
+    this.contactsBaseStore.initContactStore();
   };
 
-  resetUiState = () => {
-    this.contactUiState.resetState();
-  };
+  // resetUiState = () => {
+  //   this.contactUiState.resetState();
+  // };
 
   *loadGroup() {
     this.isLoadingGroup = true;
@@ -70,16 +115,18 @@ export default class CurrentGroupStore {
     this.isLoadingGroup = false;
   }
 
-  *loadMembers() {
-    this.isLoadingMembers = true;
-    this.members = yield this.api.contactsManager.getAllContacts(this.name);
-    this.isLoadingMembers = false;
-  }
+  // *loadMembers() {
+  //   this.isLoadingMembers = true;
+  //   this.members = yield this.api.contactsManager.getAllContacts(this.name);
+  //   this.isLoadingMembers = false;
+  // }
 
-  fetchSearchResults = () => {
-    // FIXME: add fetching group members
-    message.warn('not implemented yet');
-  };
+  reloadMembers = () => this.contactsBaseStore.refreshContacts();
+
+  // fetchSearchResults = () => {
+  //   FIXME: add fetching group members
+  // message.warn('not implemented yet');
+  // };
 
   // FIXME: select only filtered members
   getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);
@@ -105,7 +152,7 @@ export default class CurrentGroupStore {
     this.isSaving = true;
     yield this.api.groupsManager.updateGroup(this.id, membersUpdate);
     message.success(i18n.t('groupEditing.success'));
-    yield this.loadMembers();
+    yield this.reloadMembers();
     this.isSaving = false;
   }
 }
