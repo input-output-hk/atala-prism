@@ -94,7 +94,7 @@ Tickets
     SDK should also be able to deconstruct `EncryptedAtalaMessage`, which includes decrypting it and extracting raw `AtalaMessage` out of it, as well as verifying a signature.
 
     Codebase - SDK
-    Blocked by - 10
+    Blocked by - 9
 
 
 11. **Implement part 3,4,5 and 6 of [encryption protocol](https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/connector/e2e-encryption.md#steps-1)**
@@ -113,5 +113,5 @@ Tickets
 
     Mobile wallet should parse `EncryptedAtalaMessage` extract `AtalaMessage` and handle them in the same way they are handling other messages of type `AtalaMessage`
 
-    Codebase - Android app and IOS app. (there will be 2 tickets in Jira for each)
-
+    Codebase - Android app and IOS app. (there will be 2 tickets in Jira for each
+    Blocked by - 9
