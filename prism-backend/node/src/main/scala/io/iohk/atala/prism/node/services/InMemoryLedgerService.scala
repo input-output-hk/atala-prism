@@ -1,33 +1,22 @@
 package io.iohk.atala.prism.node.services
 
-import cats.{Applicative, Comonad, Functor}
 import cats.effect.Resource
 import cats.implicits._
-
-import java.time.Instant
+import cats.{Applicative, Comonad, Functor, MonadThrow}
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
-import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
-import cats.MonadThrow
+
+import java.time.Instant
 
 private final class InMemoryLedgerService[F[_]: MonadThrow](
-    onAtalaObject: AtalaObjectNotificationHandler
-)(implicit
-    ex: Execute[F]
+    onAtalaObject: AtalaObjectNotificationHandler[F]
 ) extends UnderlyingLedger[F] {
 
   override def getType: Ledger = Ledger.InMemory
@@ -48,10 +37,8 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](
         // Used for informational purposes only, so fine to hard-code for testing
         block = Some(BlockInfo(number = 1, timestamp = Instant.now(), index = 1))
       )
-      _ <- ex.deferFuture(
-        onAtalaObject(
-          AtalaObjectNotification(obj, transactionInfo)
-        )
+      _ <- onAtalaObject(
+        AtalaObjectNotification(obj, transactionInfo)
       )
     } yield PublicationInfo(transactionInfo, TransactionStatus.InLedger)
     publcationInfoF
@@ -82,8 +69,8 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](
 }
 
 object InMemoryLedgerService {
-  def apply[F[_]: MonadThrow: Execute, R[_]: Functor](
-      onAtalaObject: AtalaObjectNotificationHandler,
+  def apply[F[_]: MonadThrow, R[_]: Functor](
+      onAtalaObject: AtalaObjectNotificationHandler[F],
       logs: Logs[R, F]
   ): R[UnderlyingLedger[F]] =
     for {
@@ -96,14 +83,14 @@ object InMemoryLedgerService {
       mid attach new InMemoryLedgerService[F](onAtalaObject)
     }
 
-  def resource[F[_]: MonadThrow: Execute, R[_]: Applicative](
-      onAtalaObject: AtalaObjectNotificationHandler,
+  def resource[F[_]: MonadThrow, R[_]: Applicative](
+      onAtalaObject: AtalaObjectNotificationHandler[F],
       logs: Logs[R, F]
   ): Resource[R, UnderlyingLedger[F]] =
     Resource.eval(InMemoryLedgerService(onAtalaObject, logs))
 
-  def unsafe[F[_]: MonadThrow: Execute, R[_]: Comonad](
-      onAtalaObject: AtalaObjectNotificationHandler,
+  def unsafe[F[_]: MonadThrow, R[_]: Comonad](
+      onAtalaObject: AtalaObjectNotificationHandler[F],
       logs: Logs[R, F]
   ): UnderlyingLedger[F] = InMemoryLedgerService(onAtalaObject, logs).extract
 }

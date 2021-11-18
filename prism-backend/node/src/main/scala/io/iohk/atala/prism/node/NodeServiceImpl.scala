@@ -8,11 +8,18 @@ import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid => DID}
+import io.iohk.atala.prism.interop.toScalaProtos._
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
+import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
@@ -26,21 +33,13 @@ import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheck
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import io.iohk.atala.prism.interop.toScalaProtos._
-import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
-import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
-import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
-import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 
 class NodeServiceImpl(
     didDataRepository: DIDDataRepository[IOWithTraceIdContext],
@@ -67,10 +66,10 @@ class NodeServiceImpl(
     val methodName = "getDidDocument"
 
     measureRequestFuture(serviceName, methodName) {
-      withLog(methodName, request) { _ =>
+      withLog(methodName, request) { traceId =>
         for {
           lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
           response <- getDidDocument(request.did, methodName, didDataRepository)
         } yield response.withLastSyncedBlockTimestamp(
@@ -85,9 +84,8 @@ class NodeServiceImpl(
       didRequestStr: String,
       methodName: String,
       didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  ): Future[GetDidDocumentResponse] = {
-    val didTry = Try(PrismDid.fromString(didRequestStr))
-    val tid = TraceId.generateYOLO
+  ): Future[GetDidDocumentResponse] = trace { tid =>
+    val didTry = Try(DID.fromString(didRequestStr))
     didTry match {
       case Success(did) =>
         did match {
@@ -139,7 +137,7 @@ class NodeServiceImpl(
             .scheduleSingleAtalaOperation(
               operation
             )
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
         } yield {
           val response = node_api.CreateDIDResponse(id = parsedOp.id.getValue)
@@ -182,7 +180,7 @@ class NodeServiceImpl(
             .scheduleSingleAtalaOperation(
               operation
             )
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
         } yield {
           val response = node_api.UpdateDIDResponse()
@@ -226,7 +224,7 @@ class NodeServiceImpl(
             .scheduleSingleAtalaOperation(
               operation
             )
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
         } yield {
           val response = node_api.IssueCredentialBatchResponse(batchId = parsedOp.credentialBatchId.getId)
@@ -268,7 +266,7 @@ class NodeServiceImpl(
             .scheduleSingleAtalaOperation(
               operation
             )
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
         } yield {
           val response = node_api.RevokeCredentialsResponse()
@@ -300,7 +298,7 @@ class NodeServiceImpl(
       withLog(methodName, request) { traceId =>
         for {
           lastSyncedTimestamp <- lastSyncedTimestampF
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
@@ -311,7 +309,7 @@ class NodeServiceImpl(
           stateEither <-
             credentialBatchesRepository
               .getBatchState(batchId)
-              .run(TraceId.generateYOLO)
+              .run(traceId)
               .unsafeToFuture()
         } yield stateEither.fold(
           countAndThrowNodeError(methodName, _),
@@ -345,7 +343,7 @@ class NodeServiceImpl(
       withLog(methodName, request) { traceId =>
         for {
           lastSyncedTimestamp <- lastSyncedTimestampF
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
@@ -362,7 +360,7 @@ class NodeServiceImpl(
           timeEither <-
             credentialBatchesRepository
               .getCredentialRevocationTime(batchId, credentialHash)
-              .run(TraceId.generateYOLO)
+              .run(traceId)
               .unsafeToFuture()
         } yield timeEither match {
           case Left(error) => countAndThrowNodeError(methodName, error)
@@ -427,7 +425,7 @@ class NodeServiceImpl(
           operationIds <-
             objectManagement
               .scheduleAtalaOperations(operations: _*)
-              .run(TraceId.generateYOLO)
+              .run(traceId)
               .unsafeToFuture()
           outputsWithOperationIds = outputs.zip(operationIds).map {
             case (out, Right(opId)) =>
@@ -466,7 +464,7 @@ class NodeServiceImpl(
     withLog(methodName, request) { traceId =>
       for {
         lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
         atalaOperationId = AtalaOperationId.fromVectorUnsafe(
           request.operationId.toByteArray.toVector
@@ -478,7 +476,7 @@ class NodeServiceImpl(
         )
         operationInfo <- objectManagement
           .getOperationInfo(atalaOperationId)
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
       } yield {
         val operationStatus = operationInfo
@@ -528,7 +526,7 @@ class NodeServiceImpl(
   ): Future[node_api.GetLastSyncedBlockTimestampResponse] = {
     val methodName = "lastSyncedTimestamp"
     measureRequestFuture(serviceName, methodName)(
-      withLog(methodName, request) { _ =>
+      withLog(methodName, request) { traceId =>
         objectManagement.getLastSyncedTimestamp
           .map { lastSyncedBlockTimestamp =>
             node_api
@@ -537,7 +535,7 @@ class NodeServiceImpl(
                 lastSyncedBlockTimestamp.toProtoTimestamp
               )
           }
-          .run(TraceId.generateYOLO)
+          .run(traceId)
           .unsafeToFuture()
       }
     )

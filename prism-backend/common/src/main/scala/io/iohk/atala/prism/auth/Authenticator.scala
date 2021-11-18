@@ -28,7 +28,7 @@ trait Authenticator[Id] {
       whitelist: Set[DID],
       methodName: String,
       request: Request
-  )(f: DID => Future[Response])(implicit ec: ExecutionContext): Future[Response]
+  )(f: (DID, TraceId) => Future[Response])(implicit ec: ExecutionContext): Future[Response]
 
   def authenticated[Request <: GeneratedMessage, Response](
       methodName: String,
@@ -341,7 +341,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
       methodName: String,
       request: Request
   )(
-      f: DID => Future[Response]
+      f: (DID, TraceId) => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response] = {
     val ctx = Context.current()
     val result = grpcAuthenticationHeaderParser.parse(ctx)
@@ -370,7 +370,7 @@ abstract class SignedRequestsAuthenticatorBase[Id](
               )
             } yield did
           }
-          .as(f(did))
+          .as(f(did, traceId))
           .flatten
           .flatten
 
