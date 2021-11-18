@@ -38,6 +38,9 @@ object PrismBuild {
         githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
         resolvers += Resolver
           .githubPackages("input-output-hk", "atala-prism-sdk"),
+        // Needed for Kotlin coroutines that support new memory management mode
+        resolvers +=
+          "JetBrains Space Maven Repository" at "https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven",
         libraryDependencies ++= scalatestDependencies,
         addCompilerPlugin(
           "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
