@@ -1,6 +1,5 @@
 import { makeAutoObservable, action } from 'mobx';
 import _ from 'lodash';
-
 import {
   GROUP_SORTING_KEYS,
   GROUP_SORTING_KEYS_TRANSLATOR,
@@ -16,8 +15,7 @@ const defaultValues = {
   nameFilter: '',
   dateFilter: [],
   sortDirection: ascending,
-  sortingBy: GROUP_SORTING_KEYS.name,
-  fetchedResults: null
+  sortingBy: GROUP_SORTING_KEYS.name
 };
 export default class GroupUiState {
   isSearching = defaultValues.isSearching;
@@ -32,8 +30,8 @@ export default class GroupUiState {
 
   sortingBy = defaultValues.sortingBy;
 
-  constructor(groupStore) {
-    this.groupStore = groupStore;
+  constructor({ triggerFetchResults }) {
+    this.triggerFetchResults = triggerFetchResults;
     makeAutoObservable(this, {
       triggerBackendSearch: action.bound,
       groupStore: false
@@ -66,12 +64,11 @@ export default class GroupUiState {
   triggerSearch = () => {
     this.isSearching = true;
     this.isSorting = true;
-    this.fetchedResults = null;
     this.triggerBackendSearch();
   };
 
   triggerBackendSearch = _.debounce(async () => {
-    await this.groupStore.fetchSearchResults();
+    await this.triggerFetchResults();
     this.isSearching = false;
     this.isSorting = false;
   }, SEARCH_DELAY_MS);

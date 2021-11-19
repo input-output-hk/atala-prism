@@ -2,16 +2,10 @@ import { message } from 'antd';
 import i18n from 'i18next';
 import { UNKNOWN_DID_SUFFIX_ERROR_CODE } from '../helpers/constants';
 import Logger from '../helpers/Logger';
-import GroupStore from './domain/GroupStore';
-import CurrentGroupState from './ui/CurrentGroupState';
-import GroupUiState from './ui/GroupUiState';
 
-export class RootGroupStore {
-  constructor(api, sessionState) {
+export default class TransportLayerErrorHandler {
+  constructor(sessionState) {
     this.sessionState = sessionState;
-    this.groupStore = new GroupStore(api, this);
-    this.groupUiState = new GroupUiState(this.groupStore);
-    this.currentGroupState = new CurrentGroupState(api, this.groupStore);
   }
 
   handleTransportLayerSuccess = logMessage => {

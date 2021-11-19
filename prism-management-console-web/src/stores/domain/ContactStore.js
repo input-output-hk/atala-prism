@@ -1,14 +1,12 @@
-import { makeAutoObservable, flow, runInAction } from 'mobx';
-import { contactMapper } from '../../APIs/helpers/contactHelpers';
+import { makeAutoObservable, flow, reaction } from 'mobx';
 import { CONTACT_PAGE_SIZE, MAX_CONTACT_PAGE_SIZE } from '../../helpers/constants';
+import ContactUiState from '../ui/ContactUiState';
 
 const defaultValues = {
   isSaving: false,
   isFetching: false,
   contacts: [],
-  searchResults: [],
-  contactsScrollId: undefined,
-  resultsScrollId: undefined
+  scrollId: undefined
 };
 
 const fallback = {
@@ -22,124 +20,95 @@ export default class ContactStore {
 
   contacts = defaultValues.contacts;
 
-  contactsScrollId = defaultValues.contactsScrollId;
+  scrollId = defaultValues.scrollId;
 
-  searchResults = defaultValues.searchResults;
-
-  resultsScrollId = defaultValues.resultsScrollId;
-
-  constructor(api, rootStore) {
+  constructor(api, sessionState) {
     this.api = api;
-    this.rootStore = rootStore;
+    this.transportLayerErrorHandler = sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
-      fetchContactsNextPage: flow.bound,
+      fetchMoreData: flow.bound,
       fetchSearchResults: flow.bound,
-      fetchSearchResultsNextPage: flow.bound,
       fetchAllContacts: flow.bound,
       getContactsToSelect: flow.bound,
+      fetchContacts: flow.bound,
       updateContact: flow.bound,
       fetchRecursively: false,
       rootStore: false
     });
+    // has to be declared after `fetchSearchResults` has been bound.
+    // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
+    this.contactUiState = new ContactUiState({ triggerFetchResults: this.fetchSearchResults });
+    reaction(() => this.contactUiState.textFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.statusFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.dateFilter, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.sortDirection, () => this.contactUiState.triggerSearch());
+    reaction(() => this.contactUiState.sortingBy, () => this.contactUiState.triggerSearch());
   }
 
   get isLoadingFirstPage() {
-    return this.isFetching && this.contactsScrollId === undefined;
-  }
-
-  get scrollId() {
-    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.contactUiState;
-    return hasFiltersApplied || hasCustomSorting ? this.resultsScrollId : this.contactsScrollId;
+    return this.isFetching && this.scrollId === undefined;
   }
 
   get hasMore() {
-    const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
-    return hasFiltersApplied ? this.hasMoreResults : this.hasMoreContacts;
+    return this.scrollId;
   }
 
-  get hasMoreContacts() {
-    return Boolean(this.contactsScrollId);
-  }
+  initContactStore = () => {
+    this.resetContacts();
+    this.fetchMoreData({ isInitialLoading: true });
+    this.resetUiState();
+  };
 
-  get hasMoreResults() {
-    return Boolean(this.resultsScrollId);
-  }
-
-  get fetchMoreData() {
-    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.contactUiState;
-    return hasFiltersApplied || hasCustomSorting
-      ? this.fetchSearchResultsNextPage
-      : this.fetchContactsNextPage;
-  }
+  resetUiState = () => {
+    this.contactUiState.resetState();
+  };
 
   resetContacts = () => {
-    this.isFetching = defaultValues.isFetching;
     this.contacts = defaultValues.contacts;
-    this.searchResults = defaultValues.searchResults;
+    this.scrollId = defaultValues.scrollId;
   };
+
+  *fetchMoreData({ isInitialLoading } = {}) {
+    if (!isInitialLoading && !this.hasMore) return;
+    const response = yield this.fetchContacts({
+      scrollId: !isInitialLoading && this.scrollId
+    });
+    this.contacts = isInitialLoading
+      ? response.contactsList
+      : this.contacts.concat(response.contactsList);
+    this.scrollId = response.newScrollId;
+  }
 
   refreshContacts = () => {
     // TODO: implement
   };
 
-  *fetchContactsNextPage() {
-    if (!this.hasMoreContacts && this.isLoadingFirstPage) return;
-    const response = yield this.fetchContacts({ scrollId: this.contactsScrollId });
-    this.contacts = this.contacts.concat(response.contactsList);
-    this.contactsScrollId = response.newScrollId;
-  }
-
   *fetchSearchResults() {
-    const { hasFiltersApplied, hasCustomSorting } = this.rootStore.uiState.contactUiState;
-    if (!hasFiltersApplied && !hasCustomSorting) return;
-
-    this.searchResults = [];
-    this.numberOfResults = 0;
-    const response = yield this.fetchContacts({ scrollId: '' });
-    this.searchResults = response.contactsList;
-    this.resultsScrollId = response.newScrollId;
-    return this.searchResults;
-  }
-
-  *fetchSearchResultsNextPage() {
-    if (!this.hasMoreResults) return;
-    const response = yield this.fetchContacts({ scrollId: this.resultsScrollId });
-    const { updateFetchedResults } = this.rootStore.uiState.contactUiState;
-    this.searchResults = this.searchResults.concat(response.contactsList);
-    this.resultsScrollId = response.newScrollId;
-    updateFetchedResults();
+    const response = yield this.fetchContacts({ scrollId: null });
+    this.resetContacts();
+    this.contacts = this.contacts.concat(response.contactsList);
+    this.scrollId = response.newScrollId;
   }
 
   *fetchAllContacts(groupName) {
-    const response = yield this.fetchRecursively(this.contacts, this.contactsScrollId, groupName);
+    const response = yield this.fetchRecursively(this.contacts, this.scrollId, groupName);
     return response.contactsList;
   }
 
   *getContactsToSelect() {
-    const { hasFiltersApplied } = this.rootStore.uiState.contactUiState;
-    const alreadyFetched = hasFiltersApplied ? this.searchResults : this.contacts;
-    const currentScrollId = hasFiltersApplied ? this.resultsScrollId : this.contactsScrollId;
+    const alreadyFetched = this.contacts;
+    const currentScrollId = this.scrollId;
 
     if (!this.hasMore) return alreadyFetched;
 
     const response = yield this.fetchRecursively(alreadyFetched, currentScrollId);
-    this.updateStoredContacts(response);
+    this.contacts = response.contactsList;
+    this.scrollId = '';
+
     return response.contactsList;
   }
-
-  updateStoredContacts = response => {
-    const { hasFiltersApplied, updateFetchedResults } = this.rootStore.uiState.contactUiState;
-    if (hasFiltersApplied) {
-      this.searchResults = response.contactsList;
-      this.resultsScrollId = '';
-      updateFetchedResults();
-    } else {
-      this.contacts = response.contactsList;
-      this.contactsScrollId = '';
-    }
-  };
 
   fetchRecursively = async (acc = [], scrollId, groupName) => {
     const response = await this.fetchContacts({
@@ -153,7 +122,7 @@ export default class ContactStore {
       : { contactsList: updatedAcc };
   };
 
-  fetchContacts = async ({ scrollId, groupName, pageSize = CONTACT_PAGE_SIZE } = {}) => {
+  *fetchContacts({ scrollId, groupName, pageSize = CONTACT_PAGE_SIZE } = {}) {
     this.isFetching = true;
     try {
       const {
@@ -162,9 +131,9 @@ export default class ContactStore {
         statusFilter,
         sortDirection,
         sortingBy
-      } = this.rootStore.uiState.contactUiState;
+      } = this.contactUiState;
 
-      const response = await this.api.contactsManager.getContacts({
+      const response = yield this.api.contactsManager.getContacts({
         scrollId,
         pageSize,
         sort: { field: sortingBy, direction: sortDirection },
@@ -175,13 +144,9 @@ export default class ContactStore {
           groupName
         }
       });
-      runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
-        this.isFetching = false;
-      });
-      const contactsWithKey = response.contactsList.map(contactMapper);
-      const mappedResponse = { ...response, contactsList: contactsWithKey };
-      return mappedResponse;
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
+      this.isFetching = false;
+      return response;
     } catch (error) {
       const metadata = {
         store: this.storeName,
@@ -189,19 +154,17 @@ export default class ContactStore {
         verb: 'getting',
         model: 'Contacts'
       };
-      runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
-        this.isFetching = false;
-      });
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
+      this.isFetching = false;
       return fallback;
     }
-  };
+  }
 
   *updateContact(contactId, newContactData) {
     try {
       this.isSaving = true;
       const response = yield this.api.contactsManager.updateContact(contactId, newContactData);
-      this.rootStore.handleTransportLayerSuccess();
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
       this.isSaving = false;
       return response;
     } catch (error) {
@@ -211,7 +174,7 @@ export default class ContactStore {
         verb: 'saving',
         model: 'Contact'
       };
-      this.rootStore.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }
   }
 }

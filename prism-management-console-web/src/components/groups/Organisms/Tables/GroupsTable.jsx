@@ -67,7 +67,6 @@ const GroupsTable = observer(
 );
 
 GroupsTable.defaultProps = {
-  groups: [],
   selectedGroups: [],
   setSelectedGroups: null,
   setGroupToDelete: null,
@@ -75,16 +74,12 @@ GroupsTable.defaultProps = {
 };
 
 GroupsTable.propTypes = {
-  setGroupToDelete: PropTypes.func,
   onCopy: PropTypes.func.isRequired,
-  groups: PropTypes.arrayOf(PropTypes.object),
-  onPageChange: PropTypes.func.isRequired,
+  setGroupToDelete: PropTypes.func,
+  newGroupButton: PropTypes.node,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
   setSelectedGroups: PropTypes.func,
-  hasMore: PropTypes.bool.isRequired,
-  searching: PropTypes.bool.isRequired,
-  shouldSelectRecipients: PropTypes.bool,
-  getMoreGroups: PropTypes.func.isRequired
+  shouldSelectRecipients: PropTypes.bool
 };
 
 export default GroupsTable;

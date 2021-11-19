@@ -4,13 +4,13 @@ import { GlobalStateContext } from '../stores';
 import { useUpdateEffect } from './useUpdateEffect';
 
 export const useGroupStore = () => {
-  const { rootGroupStore } = useContext(GlobalStateContext);
+  const { groupStore } = useContext(GlobalStateContext);
 
-  return rootGroupStore.groupStore;
+  return groupStore;
 };
 
 export const useGroupUiState = ({ reset } = { reset: false }) => {
-  const { rootGroupStore } = useContext(GlobalStateContext);
+  const { groupUiState } = useGroupStore();
   const {
     triggerSearch,
     resetState,
@@ -18,7 +18,7 @@ export const useGroupUiState = ({ reset } = { reset: false }) => {
     dateFilter,
     sortingKey,
     sortDirection
-  } = rootGroupStore.groupUiState;
+  } = groupUiState;
 
   useEffect(() => {
     if (reset) resetState();
@@ -30,5 +30,5 @@ export const useGroupUiState = ({ reset } = { reset: false }) => {
     triggerSearch();
   }, [...sortingAndFiltersDependencies, triggerSearch]);
 
-  return rootGroupStore.groupUiState;
+  return groupUiState;
 };

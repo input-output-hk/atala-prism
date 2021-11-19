@@ -1,6 +1,7 @@
 import { message } from 'antd';
 import i18n from 'i18next';
 import { flow, makeAutoObservable } from 'mobx';
+import ContactsBaseStore from '../ContactsBaseStore';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -9,11 +10,10 @@ const defaultValues = {
   isSaving: false,
   id: undefined,
   name: undefined,
-  members: [],
   numberOfContacts: undefined
 };
 
-export default class CurrentGroupState {
+export default class CurrentGroupStore {
   isLoadingGroup = defaultValues.isLoadingGroup;
 
   isLoadingMembers = defaultValues.isLoadingMembers;
@@ -26,26 +26,50 @@ export default class CurrentGroupState {
 
   name = defaultValues.name;
 
-  members = defaultValues.members;
-
   numberOfContacts = defaultValues.numberOfContacts;
 
-  constructor(api, groupStore) {
+  constructor(api, sessionState) {
     this.api = api;
-    this.groupStore = groupStore;
+    this.sessionState = sessionState;
+    this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
+
     makeAutoObservable(this, {
       loadGroup: flow.bound,
-      loadMembers: flow.bound,
       updateGroupName: flow.bound,
-      updateGroupMembers: flow.bound,
-      groupStore: false
+      updateGroupMembers: flow.bound
     });
+  }
+
+  get members() {
+    return this.contactsBaseStore.contacts;
+  }
+
+  get hasFiltersApplied() {
+    return this.contactsBaseStore.hasFiltersApplied;
+  }
+
+  get hasMoreMembers() {
+    return this.contactsBaseStore.hasMore;
+  }
+
+  get filterSortingProps() {
+    return this.contactsBaseStore.filterSortingProps;
+  }
+
+  get isSearching() {
+    return this.contactsBaseStore.isSearching;
+  }
+
+  get isFetching() {
+    return this.contactsBaseStore.isFetching;
   }
 
   init = async id => {
     this.id = id;
-    this.loadGroup();
-    this.loadMembers();
+    this.isLoadingMembers = true;
+    await this.loadGroup();
+    await this.contactsBaseStore.initContactStore(this.name);
+    this.isLoadingMembers = false;
   };
 
   *loadGroup() {
@@ -56,11 +80,11 @@ export default class CurrentGroupState {
     this.isLoadingGroup = false;
   }
 
-  *loadMembers() {
-    this.isLoadingMembers = true;
-    this.members = yield this.api.contactsManager.getAllContacts(this.name);
-    this.isLoadingMembers = false;
-  }
+  fetchMoreGroupMembers = () => {
+    this.contactsBaseStore.fetchMoreData();
+  };
+
+  reloadMembers = () => this.contactsBaseStore.refreshContacts();
 
   // FIXME: select only filtered members
   getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);
@@ -68,7 +92,8 @@ export default class CurrentGroupState {
   getContactsNotInGroup = async () => {
     this.isLoadingContactsNotInGroup = true;
     const allContacts = await this.api.contactsManager.getAllContacts();
-    const contactIdsInGroup = new Set(this.members.map(item => item.contactId));
+    const allMembers = await this.api.contactsManager.getAllContacts(this.name);
+    const contactIdsInGroup = new Set(allMembers.map(item => item.contactId));
     const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
     this.isLoadingContactsNotInGroup = false;
     return contactsNotInGroup;
@@ -86,7 +111,7 @@ export default class CurrentGroupState {
     this.isSaving = true;
     yield this.api.groupsManager.updateGroup(this.id, membersUpdate);
     message.success(i18n.t('groupEditing.success'));
-    yield this.loadMembers();
+    yield this.reloadMembers();
     this.isSaving = false;
   }
 }

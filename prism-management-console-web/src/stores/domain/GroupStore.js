@@ -1,5 +1,6 @@
 import { makeAutoObservable, flow } from 'mobx';
 import { GROUP_PAGE_SIZE, MAX_GROUP_PAGE_SIZE } from '../../helpers/constants';
+import GroupUiState from '../ui/GroupUiState';
 
 const defaultValues = {
   isFetching: true,
@@ -18,9 +19,9 @@ export default class GroupStore {
 
   numberOfGroups = defaultValues.numberOfGroups;
 
-  constructor(api, rootGroupStore) {
+  constructor(api, sessionState) {
     this.api = api;
-    this.rootGroupStore = rootGroupStore;
+    this.transportLayerStateHandler = sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
@@ -33,6 +34,9 @@ export default class GroupStore {
       groupUiState: false,
       currentGroupState: false
     });
+    // has to be declared after `fetchSearchResults` has been bound.
+    // otherwise binding can be forced by passing this.fetchSearchResults.bind(this)
+    this.groupUiState = new GroupUiState({ triggerFetchResults: this.fetchSearchResults });
   }
 
   get isLoadingFirstPage() {
@@ -53,16 +57,18 @@ export default class GroupStore {
     this.numberOfGroups = defaultValues.numberOfGroups;
   };
 
-  *fetchMoreData({ isInitialLoading }) {
+  *fetchMoreData({ isInitialLoading } = {}) {
     if (!isInitialLoading && !this.hasMore) return;
     const response = yield this.fetchGroups({ offset: isInitialLoading ? 0 : this.groups.length });
     this.groups = isInitialLoading ? response.groupsList : this.groups.concat(response.groupsList);
+    this.numberOfGroups = response.numberOfGroups;
   }
 
   *fetchSearchResults() {
     const response = yield this.fetchGroups({ offset: 0 });
     this.resetGroups();
     this.groups = this.groups.concat(response.groupsList);
+    this.numberOfGroups = response.numberOfGroups;
   }
 
   *getGroupsToSelect() {
@@ -90,12 +96,7 @@ export default class GroupStore {
   *fetchGroups({ offset = 0, pageSize = GROUP_PAGE_SIZE } = {}) {
     this.isFetching = true;
     try {
-      const {
-        nameFilter,
-        dateFilter = [],
-        sortDirection,
-        sortingBy
-      } = this.rootGroupStore.groupUiState;
+      const { nameFilter, dateFilter = [], sortDirection, sortingBy } = this.groupUiState;
       const [createdAfter, createdBefore] = dateFilter;
 
       const response = yield this.api.groupsManager.getGroups({
@@ -108,7 +109,7 @@ export default class GroupStore {
           createdAfter
         }
       });
-      this.rootGroupStore.handleTransportLayerSuccess();
+      this.transportLayerStateHandler.handleTransportLayerSuccess();
       this.isFetching = false;
       return response || fallback;
     } catch (error) {
@@ -118,7 +119,7 @@ export default class GroupStore {
         verb: 'getting',
         model: 'Groups'
       };
-      this.rootGroupStore.handleTransportLayerError(error, metadata);
+      this.transportLayerStateHandler.handleTransportLayerError(error, metadata);
       this.isFetching = false;
       return fallback;
     }
@@ -128,7 +129,7 @@ export default class GroupStore {
     this.isSaving = true;
     try {
       const response = yield this.api.groupsManager.updateGroup(id, change);
-      this.rootGroupStore.handleTransportLayerSuccess();
+      this.transportLayerStateHandler.handleTransportLayerSuccess();
       this.isSaving = false;
       return response;
     } catch (error) {
@@ -138,7 +139,7 @@ export default class GroupStore {
         verb: 'saving',
         model: 'Group'
       };
-      this.rootGroupStore.handleTransportLayerError(error, metadata);
+      this.transportLayerStateHandler.handleTransportLayerError(error, metadata);
       this.isSaving = false;
     }
   }

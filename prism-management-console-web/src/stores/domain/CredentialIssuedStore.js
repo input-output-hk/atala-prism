@@ -21,6 +21,7 @@ export default class CredentialIssuedStore {
   constructor(api, rootStore) {
     this.api = api;
     this.rootStore = rootStore;
+    this.transportLayerErrorHandler = rootStore.sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
     makeAutoObservable(this, {
@@ -113,7 +114,7 @@ export default class CredentialIssuedStore {
         }
       });
       runInAction(() => {
-        this.rootStore.handleTransportLayerSuccess();
+        this.transportLayerErrorHandler.handleTransportLayerSuccess();
         this.isFetching = false;
       });
       const mappedCredentials = response.credentialsList.map(credentialMapper);
@@ -128,7 +129,7 @@ export default class CredentialIssuedStore {
         model: 'Credentials'
       };
       runInAction(() => {
-        this.rootStore.handleTransportLayerError(error, metadata);
+        this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
         this.isFetching = false;
       });
       return fallback;

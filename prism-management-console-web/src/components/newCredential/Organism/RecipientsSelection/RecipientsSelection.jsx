@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { Tabs } from 'antd';
@@ -7,9 +7,9 @@ import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
 import GroupsTableHeader from '../../Molecules/RecipientsTable/GroupsTableHeader';
 import ContactsTableHeader from '../../Molecules/RecipientsTable/ContactsTableHeader';
+import { useContactStore } from '../../../../hooks/useContactStore';
 
 import './_style.scss';
-import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
 
 const { TabPane } = Tabs;
 
@@ -27,8 +27,19 @@ const RecipientsSelection = observer(
   }) => {
     const { t } = useTranslation();
 
-    const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
-    const { isLoadingFirstPage, fetchMoreData, isFetching, hasMore } = useContactStore();
+    const {
+      contacts,
+      contactUiState: { hasFiltersApplied, isSearching, isSorting },
+      initContactStore,
+      isLoadingFirstPage,
+      fetchMoreData,
+      isFetching,
+      hasMore
+    } = useContactStore();
+
+    useEffect(() => {
+      initContactStore();
+    }, [initContactStore]);
 
     const renderHelpText = () => (
       <div className="helperTextContainer">
@@ -64,7 +75,7 @@ const RecipientsSelection = observer(
               toggleShouldSelectRecipients={toggleShouldSelectRecipients}
             />
             <ConnectionsTable
-              contacts={displayedContacts}
+              contacts={contacts}
               fetchMoreData={fetchMoreData}
               hasMore={hasMore}
               hasFiltersApplied={hasFiltersApplied}
