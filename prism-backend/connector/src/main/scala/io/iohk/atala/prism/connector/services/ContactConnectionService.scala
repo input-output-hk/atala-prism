@@ -38,7 +38,7 @@ class ContactConnectionService(
       request: ConnectionsStatusRequest
   ): Future[ConnectionsStatusResponse] = {
     val methodName = "getConnectionStatus"
-    def f(did: DID): Future[ConnectionsStatusResponse] = {
+    def f(did: DID, traceId: TraceId): Future[ConnectionsStatusResponse] = {
       implicit val loggingContext: LoggingContext =
         LoggingContext("request" -> request, "did" -> did)
 
@@ -46,7 +46,7 @@ class ContactConnectionService(
         .getConnectionsByConnectionTokens(
           request.connectionTokens.map(TokenString(_)).to(List)
         )
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight[ConnectorError])
         .toFutureEither
@@ -59,8 +59,8 @@ class ContactConnectionService(
         }
     }
 
-    authenticator.whitelistedDid(didWhitelist, methodName, request) { did =>
-      measureRequestFuture("contact-connection-service", methodName)(f(did))
+    authenticator.whitelistedDid(didWhitelist, methodName, request) { (did, traceId) =>
+      measureRequestFuture("contact-connection-service", methodName)(f(did, traceId))
     }
   }
 }

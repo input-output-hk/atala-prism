@@ -1,17 +1,17 @@
 package io.iohk.atala.prism.node.services
 
+import cats.Id
 import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 import cats.syntax.functor._
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
+import io.iohk.atala.prism.tracing.Tracing._
 import org.slf4j.LoggerFactory
 
 import java.time.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-import cats.effect.unsafe.IORuntime
-
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
 class SubmissionSchedulingService private (
@@ -47,12 +47,12 @@ class SubmissionSchedulingService private (
   // Every `delay` units of time, calls submissionService.retryOldPendingTransactions
   private def scheduleRetryOldPendingTransactions(
       delay: FiniteDuration
-  ): Unit = {
+  ): Unit = trace[Id, Unit] { traceId =>
     (IO.sleep(delay) *> IO(
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
         .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .onComplete { _ =>
           scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
@@ -66,18 +66,17 @@ class SubmissionSchedulingService private (
       delay: FiniteDuration,
       immediate: Boolean = false
   ): Unit = {
-    def run(): Unit = {
+    def run(): Unit = trace { traceId =>
       submitReceivedObjectsCancellationToken = None
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
         .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
-        .void
-        .onComplete { _ =>
-          scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
-        }
-    }
+    }.void
+      .onComplete { _ =>
+        scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
+      }
 
     if (immediate) {
       run()

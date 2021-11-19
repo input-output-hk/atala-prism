@@ -1,36 +1,49 @@
 package io.iohk.atala.prism.auth
 
+import cats.effect.unsafe.IORuntime
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
 import io.iohk.atala.prism.errors.{ErrorSupport, LoggingContext, PrismError}
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
+import io.iohk.atala.prism.tracing.Tracing.trace
 import io.iohk.atala.prism.utils.FutureEither
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import scalapb.GeneratedMessage
 import shapeless.Coproduct
 import shapeless.ops.coproduct.Unifier
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
-trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
+trait AuthAndMiddlewareSupportF[Err <: PrismError, Id] {
   self: ErrorSupport[Err] =>
+
   import AuthAndMiddlewareSupport._
 
-  protected val authenticator: Authenticator[Id]
+  protected val authenticator: AuthenticatorF[Id, IOWithTraceIdContext]
   protected val serviceName: String
+  protected val IOruntime: IORuntime
 
   final class AuthPartiallyApplied[Query <: Product] {
     def apply[Proto <: GeneratedMessage, Result](
         methodName: String,
         request: Proto
-    )(f: (Id, TraceId, Query) => FutureEither[Err, Result])(implicit
+    )(f: (Id, Query, TraceId) => FutureEither[Err, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query]
-    ): Future[Result] = {
-      authenticator
-        .authenticated(methodName, request) { (participantId, traceId) =>
-          convertFromRequest[Proto, Result, Query](request, methodName)
-            .flatMap { query =>
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            participantId <- authenticator
+              .authenticated(methodName, request, header)
+              .run(traceId)
+              .unsafeToFuture()(IOruntime)
+              .toFutureEither
+            res <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
               implicit val lc: LoggingContext = LoggingContext(
                 (0 until query.productArity)
                   .map(i =>
@@ -40,12 +53,14 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
                   .toMap + ("participantId" -> participantId.toString)
               )
               measureRequestFuture(serviceName, methodName)(
-                f(participantId, traceId, query)
+                f(participantId, query, traceId)
                   .wrapAndRegisterExceptions(serviceName, methodName)
-                  .flatten
+                  .value
               )
-            }
-        }
+            }.toFutureEither
+          } yield res
+        }.flatten
+      }
     }
   }
 
@@ -53,15 +68,20 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     def apply[C <: Coproduct, Proto <: GeneratedMessage, Result](
         methodName: String,
         request: Proto
-    )(f: (Id, TraceId, Query) => FutureEither[C, Result])(implicit
+    )(f: (Id, Query, TraceId) => FutureEither[C, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query],
         unifier: Unifier.Aux[C, Err]
-    ): Future[Result] = {
-      authenticator
-        .authenticated(methodName, request) { (participantId, traceId) =>
-          convertFromRequest[Proto, Result, Query](request, methodName)
-            .flatMap { query =>
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            participantId <- authenticator
+              .authenticated(methodName, request, header)
+              .run(traceId)
+              .unsafeToFuture()(IOruntime)
+              .toFutureEither
+            result <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
               implicit val lc: LoggingContext = LoggingContext(
                 (0 until query.productArity)
                   .map(i =>
@@ -71,13 +91,15 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
                   .toMap + ("participantId" -> participantId.toString)
               )
               measureRequestFuture(serviceName, methodName)(
-                f(participantId, traceId, query)
+                f(participantId, query, traceId)
                   .mapLeft(_.unify)
                   .wrapAndRegisterExceptions(serviceName, methodName)
-                  .flatten
+                  .value
               )
-            }
-        }
+            }.toFutureEither
+          } yield result
+        }.flatten
+      }
     }
   }
 
@@ -85,27 +107,32 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     def apply[Proto <: GeneratedMessage, Result](
         methodName: String,
         request: Proto
-    )(f: (TraceId, Query) => FutureEither[Err, Result])(implicit
+    )(f: (Query, TraceId) => FutureEither[Err, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query]
-    ): Future[Result] = {
-      authenticator.public(methodName, request) { traceId =>
-        convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
-          // Assemble LoggingContext out of the case class fields
-          implicit val lc: LoggingContext = LoggingContext(
-            (0 until query.productArity)
-              .map(i =>
-                query
-                  .productElementName(i) -> query.productElement(i).toString
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            _ <- authenticator.public(methodName, request).run(traceId).unsafeToFuture()(IOruntime).lift[Err]
+            result <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
+              // Assemble LoggingContext out of the case class fields
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap
               )
-              .toMap
-          )
-          measureRequestFuture(serviceName, methodName)(
-            f(traceId, query)
-              .wrapAndRegisterExceptions(serviceName, methodName)
-              .flatten
-          )
-        }
+              measureRequestFuture(serviceName, methodName)(
+                f(query, traceId)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .value
+              )
+            }.toFutureEither
+          } yield result
+        }.flatten
       }
     }
   }
@@ -114,29 +141,34 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
     def apply[C <: Coproduct, Proto <: GeneratedMessage, Result](
         methodName: String,
         request: Proto
-    )(f: (TraceId, Query) => FutureEither[C, Result])(implicit
+    )(f: (Query, TraceId) => FutureEither[C, Result])(implicit
         ec: ExecutionContext,
         protoConverter: ProtoConverter[Proto, Query],
         unifier: Unifier.Aux[C, Err]
-    ): Future[Result] = {
-      authenticator.public(methodName, request) { traceId =>
-        convertFromRequest[Proto, Result, Query](request, methodName).flatMap { query =>
-          // Assemble LoggingContext out of the case class fields
-          implicit val lc: LoggingContext = LoggingContext(
-            (0 until query.productArity)
-              .map(i =>
-                query
-                  .productElementName(i) -> query.productElement(i).toString
+    ): Future[Result] = trace { traceId =>
+      grpcHeader { header =>
+        {
+          for {
+            _ <- authenticator.public(methodName, request).run(traceId).unsafeToFuture()(IOruntime).lift[Err]
+            result <- convertFromRequest[Proto, Result, Query](request, methodName, header).flatMap { query =>
+              // Assemble LoggingContext out of the case class fields
+              implicit val lc: LoggingContext = LoggingContext(
+                (0 until query.productArity)
+                  .map(i =>
+                    query
+                      .productElementName(i) -> query.productElement(i).toString
+                  )
+                  .toMap
               )
-              .toMap
-          )
-          measureRequestFuture(serviceName, methodName)(
-            f(traceId, query)
-              .mapLeft(_.unify)
-              .wrapAndRegisterExceptions(serviceName, methodName)
-              .flatten
-          )
-        }
+              measureRequestFuture(serviceName, methodName)(
+                f(query, traceId)
+                  .mapLeft(_.unify)
+                  .wrapAndRegisterExceptions(serviceName, methodName)
+                  .value
+              )
+            }.toFutureEither
+          } yield result
+        }.flatten
       }
     }
   }
@@ -148,12 +180,13 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
       Query <: Product
   ](
       request: Proto,
-      methodName: String
+      methodName: String,
+      header: Option[GrpcAuthenticationHeader]
   )(implicit
       ec: ExecutionContext,
       protoConverter: ProtoConverter[Proto, Query]
   ): Future[Query] = {
-    protoConverter.fromProto(request, None) match {
+    protoConverter.fromProto(request, header) match {
       case Failure(exception) =>
         val response = invalidRequest(exception.getMessage)
         respondWith(request, response, serviceName, methodName)
@@ -184,14 +217,5 @@ trait AuthAndMiddlewareSupport[Err <: PrismError, Id] {
 
   def unitPublic: WithoutAuthPartiallyApplied[EmptyQuery.type] =
     public[EmptyQuery.type]
-}
 
-object AuthAndMiddlewareSupport {
-  // Sometimes we need to authenticate a request that requires no arguments, as the interface requires
-  // a Product, we can't use the Unit type but an empty case-class.
-  final case object EmptyQuery
-
-  implicit def emptyQueryProtoConverter[T <: scalapb.GeneratedMessage]: ProtoConverter[T, EmptyQuery.type] = { (_, _) =>
-    Try(EmptyQuery)
-  }
 }

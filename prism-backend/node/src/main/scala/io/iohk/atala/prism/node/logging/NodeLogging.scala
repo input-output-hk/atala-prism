@@ -1,12 +1,13 @@
 package io.iohk.atala.prism.node.logging
 
 import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.node_internal.AtalaObject
 import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.Logger
 import scalapb.GeneratedMessage
+import io.iohk.atala.prism.tracing.Tracing._
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -16,30 +17,31 @@ object NodeLogging {
       methodName: String,
       request: Req
   )(
-      code: String => Future[Response]
+      code: TraceId => Future[Response]
   )(implicit ec: ExecutionContext, logger: Logger): Future[Response] = {
-    val traceId = UUID.randomUUID().toString
-    logger.info(
-      s"methodName:$methodName traceId = $traceId request = ${request.toProtoString}",
-      kv("methodName", methodName),
-      kv("traceId", traceId)
-    )
-    try {
-      code(traceId).map(resp => logAndReturnResponse(methodName, traceId, resp))
-    } catch {
-      case NonFatal(ex) =>
-        logger.error(
-          s"methodName:$methodName Error: Non Fatal Error traceId = $traceId \n Exception : $ex",
-          kv("methodName", methodName),
-          kv("traceId", traceId)
-        )
-        throw new RuntimeException(ex)
+    trace { traceId =>
+      logger.info(
+        s"methodName:$methodName traceId = $traceId request = ${request.toProtoString}",
+        kv("methodName", methodName),
+        kv("traceId", traceId)
+      )
+      try {
+        code(traceId).map(resp => logAndReturnResponse(methodName, traceId, resp))
+      } catch {
+        case NonFatal(ex) =>
+          logger.error(
+            s"methodName:$methodName Error: Non Fatal Error traceId = $traceId \n Exception : $ex",
+            kv("methodName", methodName),
+            kv("traceId", traceId)
+          )
+          throw new RuntimeException(ex)
+      }
     }
   }
 
   def logWithTraceId(
       methodName: String,
-      traceId: String,
+      traceId: TraceId,
       argsToLog: (String, String)*
   )(implicit
       logger: Logger
@@ -67,7 +69,7 @@ object NodeLogging {
 
   def logAndReturnResponse[Response <: GeneratedMessage](
       methodName: String,
-      traceId: String,
+      traceId: TraceId,
       response: Response
   )(implicit
       logger: Logger

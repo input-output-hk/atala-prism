@@ -2,11 +2,11 @@ package io.iohk.atala.prism.node.metrics
 
 import cats.effect.unsafe.IORuntime
 import com.typesafe.config.Config
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
 import io.iohk.atala.prism.node.cardano.models.WalletId
+import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
 import io.iohk.atala.prism.node.services.{CardanoLedgerService, KeyValueService}
+import io.iohk.atala.prism.tracing.Tracing._
 import kamon.Kamon
 import kamon.metric.{Gauge, PeriodSnapshot}
 import kamon.module.MetricReporter
@@ -42,36 +42,38 @@ class NodeReporter(
 
   override def reconfigure(newConfig: Config): Unit = ()
 
-  private def reportWalletFunds(): Unit =
+  private def reportWalletFunds(): Unit = trace { traceId =>
     cardanoClient
       .getWalletDetails(walletId)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
-      .foreach(
-        _.foreach(details => walletFunds.update(details.balance.available.doubleValue))
-      )
+  }
+    .foreach(
+      _.foreach(details => walletFunds.update(details.balance.available.doubleValue))
+    )
 
-  private def postNextBlockToSync(): Unit =
+  private def postNextBlockToSync(): Unit = trace { traceId =>
     keyValueService
       .getInt(LAST_SYNCED_BLOCK_NO)
-      .run(TraceId.generateYOLO)
+      .run(traceId)
       .unsafeToFuture()
-      .foreach { maybeNumber =>
-        val nextBlockToSync = CardanoLedgerService.calculateLastSyncedBlockNo(
-          maybeNumber,
-          blockNumberSyncStart
-        ) + 1
-        updateGauge(nextBlockToSyncGauge, nextBlockToSync)
-      }
-
-  private def postWalletLastBlock(): Unit = {
-    cardanoClient.getLatestBlock
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
-      .foreach(
-        _.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo))
-      )
   }
+    .foreach { maybeNumber =>
+      val nextBlockToSync = CardanoLedgerService.calculateLastSyncedBlockNo(
+        maybeNumber,
+        blockNumberSyncStart
+      ) + 1
+      updateGauge(nextBlockToSyncGauge, nextBlockToSync)
+    }
+
+  private def postWalletLastBlock(): Unit = trace { traceId =>
+    cardanoClient.getLatestBlock
+      .run(traceId)
+      .unsafeToFuture()
+  }
+    .foreach(
+      _.foreach(block => updateGauge(lastSyncedBlockByWallet, block.header.blockNo))
+    )
 
   private def updateGauge(gauge: Gauge, newValue: Int): Unit =
     Try(gauge.update(newValue.doubleValue())).toEither.left.foreach(er =>

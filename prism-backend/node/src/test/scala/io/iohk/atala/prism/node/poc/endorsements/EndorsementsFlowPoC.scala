@@ -1,45 +1,29 @@
 package io.iohk.atala.prism.node.poc.endorsements
 
-import java.time.Duration
-import java.util.concurrent.TimeUnit
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
+import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.credentials.content.CredentialContent
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.api.CredentialBatches
+import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository,
-  ProtocolVersionRepository
-}
-import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceImpl,
-  InMemoryLedgerService,
-  ObjectManagementService,
-  SubmissionSchedulingService,
-  SubmissionService
-}
-import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
-import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.node.poc.Wallet
 import io.iohk.atala.prism.node.poc.endorsements.EndorsementsService.SignedKey
+import io.iohk.atala.prism.node.repositories._
+import io.iohk.atala.prism.node.services._
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.endorsements_api.{
   EndorseInstitutionRequest,
   GetEndorsementsRequest,
@@ -47,13 +31,15 @@ import io.iohk.atala.prism.protos.endorsements_api.{
   RevokeEndorsementRequest
 }
 import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
-import io.iohk.atala.prism.utils.NodeClientUtils.{issueBatchOperation, revokeCredentialsOperation}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.utils.NodeClientUtils.{issueBatchOperation, revokeCredentialsOperation}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
-import scala.concurrent.{Future, Promise}
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
@@ -75,7 +61,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
-  protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
@@ -91,18 +76,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs
     )
-
-    objectManagementServicePromise = Promise()
-
-    def onAtalaReference(
-        notification: AtalaObjectNotification
-    ): Future[Unit] = {
-      objectManagementServicePromise.future.futureValue
-        .saveObject(notification)
-        .run(TraceId.generateYOLO)
-        .void
-        .unsafeToFuture()
-    }
 
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, endorsementsFlowPoCLogs)
     blockProcessingService = new BlockProcessingServiceImpl
@@ -122,6 +95,11 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs
     )
+    def onAtalaReference(notification: AtalaObjectNotification): IOWithTraceIdContext[Unit] =
+      objectManagementService
+        .saveObject(notification)
+        .void
+
     submissionService = SubmissionService.unsafe(
       atalaReferenceLedger,
       atalaOperationsRepository,
@@ -132,7 +110,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
       submissionService
     )
-    objectManagementServicePromise.success(objectManagementService)
 
     serverName = InProcessServerBuilder.generateName()
 

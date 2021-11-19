@@ -1,18 +1,13 @@
 package io.iohk.atala.prism.node.services
 
+import cats.data.ReaderT
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.{
-  BlockInfo,
-  Ledger,
-  TransactionDetails,
-  TransactionId,
-  TransactionInfo,
-  TransactionStatus
-}
+import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -31,9 +26,6 @@ import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
-import scala.concurrent.Future
-import cats.effect.unsafe.implicits.global
-
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
@@ -46,8 +38,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   )
   private val blockConfirmationsToWait = 31
 
-  private val noOpObjectHandler: AtalaObjectNotificationHandler = _ => Future.unit
-  private val noOpBlockHandler: CardanoBlockHandler = _ => Future.unit
+  private val noOpObjectHandler: AtalaObjectNotificationHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
+  private val noOpBlockHandler: CardanoBlockHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
   private lazy val keyValueService = KeyValueService.unsafe(
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
     logs
@@ -281,7 +273,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         totalBlockCount - blockConfirmationsToWait
       )
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaHandlers()
+      val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
       val cardanoLedgerService =
         createCardanoLedgerService(
           FakeCardanoWalletApiClient.NotFound(),
@@ -301,7 +293,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       val totalBlockCount = 200
       val allNotifications = createNotificationsInDb(totalBlockCount, 100, 101)
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaHandlers()
+      val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
       val cardanoLedgerService =
         createCardanoLedgerService(
           FakeCardanoWalletApiClient.NotFound(),
@@ -330,7 +322,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         blockNumberSyncStart
       )
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaHandlers()
+      val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
       val cardanoLedgerService =
         createCardanoLedgerService(
           FakeCardanoWalletApiClient.NotFound(),
@@ -358,7 +350,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         totalBlockCount - blockConfirmationsToWait + 1
       )
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaHandlers()
+      val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
       val cardanoLedgerService =
         createCardanoLedgerService(
           FakeCardanoWalletApiClient.NotFound(),
@@ -383,7 +375,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         totalBlockCount - blockConfirmationsToWait + 1
       )
       // Configure the service to capture received notifications
-      val notificationHandler = new TestAtalaHandlers()
+      val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
       val cardanoLedgerService =
         createCardanoLedgerService(
           FakeCardanoWalletApiClient.NotFound[IOWithTraceIdContext](),
@@ -421,7 +413,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private def createCardanoLedgerService(
       cardanoWalletApiClient: CardanoWalletApiClient[IOWithTraceIdContext],
       blockNumberSyncStart: Int = 0,
-      onAtalaObject: AtalaObjectNotificationHandler = noOpObjectHandler
+      onAtalaObject: AtalaObjectNotificationHandler[IOWithTraceIdContext] = noOpObjectHandler
   ): CardanoLedgerService[IOWithTraceIdContext] = {
     val cardanoClient = createCardanoClient(cardanoWalletApiClient)
     new CardanoLedgerService(

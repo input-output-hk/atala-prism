@@ -5,6 +5,7 @@ import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
+import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.auth.grpc._
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
@@ -85,6 +86,16 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
         node,
         GrpcAuthenticationHeaderParser
       )
+
+      // authenticatorF
+      authenticatorF <- AuthenticatorF.resource(
+        node,
+        new ConnectorAuthenticatorF(
+          participantsRepository,
+          requestNoncesRepository
+        ),
+        connectorLogs
+      )
       // Background services
       messageNotificationService <- MessageNotificationService.resourceAndStart(tx)
       // connector services
@@ -113,7 +124,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
         messagesService,
         registrationService,
         messageNotificationService,
-        authenticator,
+        authenticatorF,
         node,
         participantsRepository
       )

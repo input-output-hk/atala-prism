@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.connector
 
 import cats.effect.std.Queue
-import cats.effect.{IO, Ref}
 import cats.effect.unsafe.implicits.global
+import cats.effect.{IO, Ref}
 import doobie.implicits._
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.repositories.daos.{
@@ -23,8 +23,8 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api
-import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 
 import java.time.Instant
@@ -65,13 +65,14 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
 
   lazy val nodeMock =
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  lazy val authenticator =
-    new ConnectorAuthenticator(
+  lazy val authenticator = AuthenticatorF.unsafe(
+    nodeMock,
+    new ConnectorAuthenticatorF(
       participantsRepository,
-      requestNoncesRepository,
-      nodeMock,
-      GrpcAuthenticationHeaderParser
-    )
+      requestNoncesRepository
+    ),
+    testLogs
+  )
 
   lazy val messagesService =
     MessagesService.unsafe(messagesRepository, testLogs)

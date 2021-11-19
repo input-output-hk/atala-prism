@@ -256,7 +256,7 @@ private final class CredentialsServiceImpl[F[_]: Monad](
           ProtoConverter[
             IssueCredentialBatchResponse,
             IssueCredentialBatchNodeResponse
-          ].fromProto
+          ].fromProto(_, None)
         ).map[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]](
           _.toEither.left.map(wrapAsServerError)
         )

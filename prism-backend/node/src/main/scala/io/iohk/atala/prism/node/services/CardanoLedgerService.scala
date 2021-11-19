@@ -1,13 +1,13 @@
 package io.iohk.atala.prism.node.services
 
-import cats.{Applicative, Comonad, Functor}
-import cats.effect.Resource
+import cats.effect.{Resource, Temporal}
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import cats.{Applicative, Comonad, Functor, Monad}
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
@@ -19,14 +19,12 @@ import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_internal
-import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.lift.Lift
 import tofu.logging.{Logs, ServiceLogging}
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
-import cats.effect.Temporal
 
 class CardanoLedgerService[F[_]] private[services] (
     network: CardanoNetwork,
@@ -37,11 +35,9 @@ class CardanoLedgerService[F[_]] private[services] (
     blockConfirmationsToWait: Int,
     cardanoClient: CardanoClient[F],
     keyValueService: KeyValueService[F],
-    onCardanoBlock: CardanoBlockHandler,
-    onAtalaObject: AtalaObjectNotificationHandler
+    onCardanoBlock: CardanoBlockHandler[F],
+    onAtalaObject: AtalaObjectNotificationHandler[F]
 )(implicit
-    ec: ExecutionContext,
-    ex: Execute[F],
     timer: Temporal[F],
     liftToFuture: Lift[F, Future]
 ) extends UnderlyingLedger[F] {
@@ -152,11 +148,10 @@ class CardanoLedgerService[F[_]] private[services] (
     for {
       blockEit <- cardanoClient
         .getFullBlock(blockNo)
-      _ <- ex.deferFuture(
+      _ <-
         blockEit
           .map(block => onCardanoBlock(block.toCanonical))
-          .getOrElse(Future.failed(new Exception("syncBlock failed")))
-      )
+          .getOrElse(Monad[F].pure(new Exception("syncBlock failed")))
       _ <- blockEit.traverse(processAtalaObjects)
     } yield ()
   }
@@ -183,7 +178,7 @@ class CardanoLedgerService[F[_]] private[services] (
     } yield notification
 
     for {
-      _ <- ex.deferFuture(notifications.traverse(onAtalaObject))
+      _ <- notifications.traverse(onAtalaObject)
       _ <- updateLastSyncedBlock(block)
     } yield ()
   }
@@ -205,7 +200,7 @@ class CardanoLedgerService[F[_]] private[services] (
 
 object CardanoLedgerService {
 
-  type CardanoBlockHandler = Canonical => Future[Unit]
+  type CardanoBlockHandler[F[_]] = Canonical => F[Unit]
 
   sealed trait CardanoNetwork extends EnumEntry
   object CardanoNetwork extends Enum[CardanoNetwork] {
@@ -225,7 +220,7 @@ object CardanoLedgerService {
       cardanoClientConfig: CardanoClient.Config
   )
 
-  def apply[F[_]: Execute: Lift[*[_], Future]: Temporal, R[_]: Functor](
+  def apply[F[_]: Lift[*[_], Future]: Temporal, R[_]: Functor](
       network: CardanoNetwork,
       walletId: WalletId,
       walletPassphrase: String,
@@ -234,10 +229,10 @@ object CardanoLedgerService {
       blockConfirmationsToWait: Int,
       cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
-      onCardanoBlock: CardanoBlockHandler,
-      onAtalaObject: AtalaObjectNotificationHandler,
+      onCardanoBlock: CardanoBlockHandler[F],
+      onAtalaObject: AtalaObjectNotificationHandler[F],
       logs: Logs[R, F]
-  )(implicit ec: ExecutionContext): R[UnderlyingLedger[F]] =
+  ): R[UnderlyingLedger[F]] =
     for {
       serviceLogs <- logs.service[UnderlyingLedger[F]]
     } yield {
@@ -259,14 +254,14 @@ object CardanoLedgerService {
       )
     }
 
-  def resource[F[_]: Temporal: Execute: Lift[*[_], Future], R[_]: Applicative](
+  def resource[F[_]: Temporal: Lift[*[_], Future], R[_]: Applicative](
       config: Config,
       cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
-      onCardanoBlock: CardanoBlockHandler,
-      onAtalaObject: AtalaObjectNotificationHandler,
+      onCardanoBlock: CardanoBlockHandler[F],
+      onAtalaObject: AtalaObjectNotificationHandler[F],
       logs: Logs[R, F]
-  )(implicit ec: ExecutionContext): Resource[R, UnderlyingLedger[F]] = {
+  ): Resource[R, UnderlyingLedger[F]] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(
@@ -294,14 +289,14 @@ object CardanoLedgerService {
     )
   }
 
-  def unsafe[F[_]: Execute: Lift[*[_], Future]: Temporal, R[_]: Comonad](
+  def unsafe[F[_]: Lift[*[_], Future]: Temporal, R[_]: Comonad](
       config: Config,
       cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
-      onCardanoBlock: CardanoBlockHandler,
-      onAtalaObject: AtalaObjectNotificationHandler,
+      onCardanoBlock: CardanoBlockHandler[F],
+      onAtalaObject: AtalaObjectNotificationHandler[F],
       logs: Logs[R, F]
-  )(implicit ec: ExecutionContext): UnderlyingLedger[F] = {
+  ): UnderlyingLedger[F] = {
     val walletId = WalletId
       .from(config.walletId)
       .getOrElse(
