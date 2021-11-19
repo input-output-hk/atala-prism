@@ -3,47 +3,33 @@ package io.iohk.atala.prism.node.poc.batch
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.scalatest.ValidatedValues.convertValidatedToValidatable
+import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository,
-  ProtocolVersionRepository
-}
+import io.iohk.atala.prism.node.repositories._
+import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceImpl,
-  InMemoryLedgerService,
-  ObjectManagementService,
-  SubmissionSchedulingService,
-  SubmissionService
-}
 import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.utils.NodeClientUtils._
 import org.scalatest.BeforeAndAfterEach
+import tofu.logging.Logs
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
-import io.iohk.atala.prism.credentials.json.JsonBasedCredential
-import io.iohk.atala.prism.api.CredentialBatches
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
-import io.iohk.atala.prism.utils.IOUtils._
-import tofu.logging.Logs
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
@@ -62,7 +48,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     _
-  protected var objectManagementServicePromise: Promise[ObjectManagementService[IOWithTraceIdContext]] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
@@ -72,18 +57,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     credentialBatchesRepository = CredentialBatchesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
-
-    objectManagementServicePromise = Promise()
-
-    def onAtalaReference(
-        notification: AtalaObjectNotification
-    ): Future[Unit] = {
-      objectManagementServicePromise.future.futureValue
-        .saveObject(notification)
-        .run(TraceId.generateYOLO)
-        .void
-        .unsafeToFuture()
-    }
 
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, flowPocTestLogs)
     blockProcessingService = new BlockProcessingServiceImpl
@@ -110,7 +83,11 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       dbLiftedToTraceIdIO,
       flowPocTestLogs
     )
-    objectManagementServicePromise.success(objectManagementService)
+    def onAtalaReference(
+        notification: AtalaObjectNotification
+    ): IOWithTraceIdContext[Unit] = objectManagementService
+      .saveObject(notification)
+      .void
 
     serverName = InProcessServerBuilder.generateName()
 

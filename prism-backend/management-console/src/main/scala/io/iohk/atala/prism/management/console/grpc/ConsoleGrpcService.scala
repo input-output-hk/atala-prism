@@ -2,12 +2,11 @@ package io.iohk.atala.prism.management.console.grpc
 
 import cats.effect.unsafe.IORuntime
 import cats.implicits.catsSyntaxEitherId
-import com.google.protobuf.ByteString
 import cats.syntax.functor._
+import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.grpc.ProtoConverter
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
@@ -17,6 +16,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api._
+import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -58,7 +58,7 @@ class ConsoleGrpcService(
 
   override def registerDID(
       request: RegisterConsoleDIDRequest
-  ): Future[RegisterConsoleDIDResponse] = {
+  ): Future[RegisterConsoleDIDResponse] = trace { traceId =>
     val methodName = "registerDID"
     val codec =
       implicitly[ProtoConverter[RegisterConsoleDIDRequest, RegisterDID]]
@@ -77,7 +77,7 @@ class ConsoleGrpcService(
         measureRequestFuture(serviceName, methodName)(
           consoleService
             .registerDID(query)
-            .run(TraceId.generateYOLO)
+            .run(traceId)
             .unsafeToFuture()
             .toFutureEither
             .as(RegisterConsoleDIDResponse())

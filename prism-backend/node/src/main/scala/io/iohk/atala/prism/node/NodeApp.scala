@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
@@ -18,15 +19,14 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.utils.IOUtils._
-import kamon.module.Module
 import kamon.Kamon
+import kamon.module.Module
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
 import java.util.concurrent.TimeUnit
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import cats.effect.unsafe.IORuntime
 
 object NodeApp extends IOApp {
 
@@ -57,15 +57,28 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         liftedTransactor,
         logs
       )
-      objectManagementServicePromise = Promise[ObjectManagementService[
-        IOWithTraceIdContext
-      ]]()
-      onCardanoBlock = onCardanoBlockOp(protocolVersionRepository)
-      onAtalaObject = onAtalaObjectOp(objectManagementServicePromise)
       keyValuesRepository <- KeyValuesRepository.resource(
         liftedTransactor,
         logs
       )
+      blockProcessingService = new BlockProcessingServiceImpl
+      atalaOperationsRepository <- AtalaOperationsRepository.resource(
+        liftedTransactor,
+        logs
+      )
+      atalaObjectsTransactionsRepository <- AtalaObjectsTransactionsRepository
+        .resource(liftedTransactor, logs)
+      objectManagementService <- ObjectManagementService.resource(
+        atalaOperationsRepository,
+        atalaObjectsTransactionsRepository,
+        keyValuesRepository,
+        protocolVersionRepository,
+        blockProcessingService,
+        liftedTransactor,
+        logs
+      )
+      onCardanoBlock = onCardanoBlockOp(protocolVersionRepository)
+      onAtalaObject = onAtalaObjectOp(objectManagementService)
       keyValueService <- KeyValueService.resource(keyValuesRepository, logs)
       ledger <- createLedger(
         globalConfig,
@@ -74,14 +87,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         onAtalaObject,
         logs
       )
-      blockProcessingService = new BlockProcessingServiceImpl
       didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
-      atalaOperationsRepository <- AtalaOperationsRepository.resource(
-        liftedTransactor,
-        logs
-      )
-      atalaObjectsTransactionsRepository <- AtalaObjectsTransactionsRepository
-        .resource(liftedTransactor, logs)
       ledgerPendingTransactionTimeout = globalConfig.getDuration(
         "ledgerPendingTransactionTimeout"
       )
@@ -112,16 +118,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         ),
         submissionService
       )
-      objectManagementService <- ObjectManagementService.resource(
-        atalaOperationsRepository,
-        atalaObjectsTransactionsRepository,
-        keyValuesRepository,
-        protocolVersionRepository,
-        blockProcessingService,
-        liftedTransactor,
-        logs
-      )
-      _ = objectManagementServicePromise.success(objectManagementService)
       credentialBatchesRepository <-
         CredentialBatchesRepository.resource(liftedTransactor, logs)
       nodeService =
@@ -149,8 +145,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def initializeCardano(
       keyValueService: KeyValueService[IOWithTraceIdContext],
       globalConfig: Config,
-      onCardanoBlock: CardanoBlockHandler,
-      onAtalaObject: AtalaObjectNotification => Future[Unit],
+      onCardanoBlock: CardanoBlockHandler[IOWithTraceIdContext],
+      onAtalaObject: AtalaObjectNotification => IOWithTraceIdContext[Unit],
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
@@ -189,30 +185,22 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def onCardanoBlockOp(
       in: ProtocolVersionRepository[IOWithTraceIdContext]
-  ): CardanoBlockHandler = block =>
-    in.markEffective(block.header.blockNo)
-      .void
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
+  ): CardanoBlockHandler[IOWithTraceIdContext] = block => in.markEffective(block.header.blockNo).void
 
   private def onAtalaObjectOp(
-      objectManagementServicePromise: Promise[
-        ObjectManagementService[IOWithTraceIdContext]
-      ]
-  ): AtalaObjectNotification => Future[Unit] = notification => {
-    objectManagementServicePromise.future.flatMap { objectManagementService =>
-      objectManagementService
-        .saveObject(notification)
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-    }.void
+      objectManagementService: ObjectManagementService[IOWithTraceIdContext]
+  ): AtalaObjectNotification => IOWithTraceIdContext[Unit] = notification => {
+    objectManagementService
+      .saveObject(notification)
+      .void
+
   }
 
   private def createLedger(
       config: Config,
       keyValueService: KeyValueService[IOWithTraceIdContext],
-      onCardanoBlock: CardanoBlockHandler,
-      onAtalaObject: AtalaObjectNotification => Future[Unit],
+      onCardanoBlock: CardanoBlockHandler[IOWithTraceIdContext],
+      onAtalaObject: AtalaObjectNotification => IOWithTraceIdContext[Unit],
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] =
     config.getString("ledger") match {

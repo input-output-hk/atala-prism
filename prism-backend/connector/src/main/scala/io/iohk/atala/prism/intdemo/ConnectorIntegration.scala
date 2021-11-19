@@ -5,11 +5,11 @@ import cats.implicits.catsSyntaxEitherId
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, MessagesService}
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.credential_models
 import io.iohk.atala.prism.protos.credential_models.AtalaMessage
+import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -84,31 +84,33 @@ object ConnectorIntegration {
         senderId: ParticipantId,
         connectionId: ConnectionId,
         message: Array[Byte]
-    ): Future[MessageId] =
+    ): Future[MessageId] = trace { traceId =>
       messagesService
         .insertMessage(senderId, connectionId, message)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .toFutureEither
         .toFuture(toRuntimeException(senderId, connectionId))
+    }
 
     override def getConnectionByToken(
         token: TokenString
-    ): Future[Option[Connection]] =
+    ): Future[Option[Connection]] = trace { traceId =>
       connectionsService
         .getConnectionByToken(token)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
         .toFuture(toRuntimeException)
+    }
 
     override def generateConnectionToken(
         senderId: ParticipantId
-    ): Future[TokenString] =
+    ): Future[TokenString] = trace { traceId =>
       connectionsService
         .generateTokens(senderId, tokensCount = 1)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
         .map(_.asRight)
         .toFutureEither
@@ -124,15 +126,17 @@ object ConnectorIntegration {
               )
             )
         )
+    }
 
     override def getMessages(
         recipientId: ParticipantId,
         connectionId: ConnectionId
-    ): Future[Seq[Message]] =
+    ): Future[Seq[Message]] = trace { traceId =>
       messagesService
         .getConnectionMessages(recipientId, connectionId)
-        .run(TraceId.generateYOLO)
+        .run(traceId)
         .unsafeToFuture()
+    }
 
     private def toRuntimeException(
         senderId: ParticipantId,

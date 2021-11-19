@@ -58,7 +58,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
         logs
       )
-      val notificationHandler = new TestAtalaHandlers()
+      val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
 
       val cardanoLedgerService = new CardanoLedgerService(
         CardanoNetwork.Testnet,

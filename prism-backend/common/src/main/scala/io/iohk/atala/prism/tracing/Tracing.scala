@@ -4,10 +4,8 @@ import io.grpc.Context
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId
 
-import scala.concurrent.Future
-
 object Tracing {
-  def trace[A](fa: TraceId => Future[A]): Future[A] = {
+  def trace[F[_], A](fa: TraceId => F[A]): F[A] = {
     val traceId = GrpcAuthenticationHeaderParser.getTraceId(Context.current())
     fa(traceId)
   }

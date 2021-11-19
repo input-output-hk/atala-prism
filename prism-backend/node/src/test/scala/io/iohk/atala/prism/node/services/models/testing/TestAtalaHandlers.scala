@@ -1,27 +1,27 @@
 package io.iohk.atala.prism.node.services.models.testing
 
+import cats.Applicative
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 
 import scala.collection.mutable
-import scala.concurrent.Future
 
-class TestAtalaHandlers {
+class TestAtalaHandlers[F[_]: Applicative] {
 
   val receivedNotifications: mutable.Buffer[AtalaObjectNotification] =
     mutable.ArrayBuffer()
 
   def asAtalaObjectHandler(
       notification: AtalaObjectNotification
-  ): Future[Unit] = {
+  ): F[Unit] = {
     receivedNotifications += notification
-    Future.unit
+    Applicative[F].unit
   }
 
   val receivedCardanoBlocks: mutable.Buffer[Canonical] = mutable.ArrayBuffer()
 
-  def asCardanoBlockHandler(block: Canonical): Future[Unit] = {
+  def asCardanoBlockHandler(block: Canonical): F[Unit] = {
     receivedCardanoBlocks += block
-    Future.unit
+    Applicative[F].unit
   }
 }
