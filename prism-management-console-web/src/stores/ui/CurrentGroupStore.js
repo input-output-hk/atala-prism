@@ -35,7 +35,6 @@ export default class CurrentGroupStore {
 
     makeAutoObservable(this, {
       loadGroup: flow.bound,
-      loadMembers: flow.bound,
       updateGroupName: flow.bound,
       updateGroupMembers: flow.bound
     });
