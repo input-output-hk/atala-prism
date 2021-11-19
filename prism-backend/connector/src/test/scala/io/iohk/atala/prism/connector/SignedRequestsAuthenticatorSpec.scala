@@ -15,12 +15,6 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.utils.IOUtils._
-//import io.iohk.atala.prism.connector.model._
-//import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.{DIDUtil, auth}
-//import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
-//import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -30,6 +24,8 @@ import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
 import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.util.KeyUtils.createNodePublicKey
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{DIDUtil, auth}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.mockito.matchers.DefaultValueProvider
