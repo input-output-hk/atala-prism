@@ -9,7 +9,7 @@ import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import AddUsersButton from './Atoms/AddUsersButtons/AddUsersButton';
-import { useContactStore } from '../../hooks/useContactStore';
+import { useContactsPageStore } from '../../hooks/useContactsPageStore';
 import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
@@ -21,13 +21,14 @@ const Connections = observer(
     const { accountStatus } = useSession();
     const {
       contacts,
-      contactUiState,
+      filterSortingProps,
+      hasFiltersApplied,
+      isSearching,
       isLoadingFirstPage,
       fetchMoreData,
       isFetching,
       hasMore
-    } = useContactStore();
-    const { hasFiltersApplied, isSearching, isSorting } = contactUiState;
+    } = useContactsPageStore();
 
     const newGroupButton = <AddUsersButton onClick={redirectToImportContacts} />;
 
@@ -39,7 +40,7 @@ const Connections = observer(
             <h1>{t('contacts.title')}</h1>
           </div>
           <div className="flex spaceBetween fullWidth">
-            <ConnectionsFilter filterSortingProps={contactUiState} />
+            <ConnectionsFilter filterSortingProps={filterSortingProps} />
             {accountStatus === CONFIRMED && newGroupButton}
           </div>
         </div>
@@ -49,8 +50,8 @@ const Connections = observer(
             fetchMoreData={fetchMoreData}
             hasMore={hasMore}
             hasFiltersApplied={hasFiltersApplied}
-            isLoading={isLoadingFirstPage || isLoadingFirstPage || isSorting}
-            isFetchingMore={isFetching || isSearching}
+            isLoading={isLoadingFirstPage || isSearching}
+            isFetchingMore={isFetching}
             inviteContact={onInviteContact}
             viewContactDetail={redirectToContactDetails}
             searchDueGeneralScroll

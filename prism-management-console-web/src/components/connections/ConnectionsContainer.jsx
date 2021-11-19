@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
-import { useContactStore } from '../../hooks/useContactStore';
+import { useContactsPageStore } from '../../hooks/useContactsPageStore';
 import Connections from './Connections';
 
 const ConnectionsContainer = observer(() => {
   const [connectionToken, setConnectionToken] = useState('');
   const [qrModalIsVisible, setQrModalIsVisible] = useState(false);
-  const { contacts, initContactStore, refreshContacts } = useContactStore();
+  const { contacts, initContactStore, refreshContacts } = useContactsPageStore();
 
   useEffect(() => {
     initContactStore();

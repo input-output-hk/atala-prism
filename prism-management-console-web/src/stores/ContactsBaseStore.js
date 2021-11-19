@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { flow, makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import {
   CONTACT_PAGE_SIZE,
   CONTACT_SORTING_KEYS,
@@ -54,13 +54,14 @@ export default class ContactsBaseStore {
     this.transportLayerErrorHandler = sessionState.transportLayerErrorHandler;
     this.storeName = this.constructor.name;
 
-    makeAutoObservable(this, {
-      fetchContacts: flow.bound,
-      fetchMoreData: flow.bound,
-      fetchSearchResults: flow.bound,
-      api: false,
-      transportLayerErrorHandler: false
-    });
+    makeAutoObservable(
+      this,
+      {
+        api: false,
+        transportLayerErrorHandler: false
+      },
+      { autoBind: true }
+    );
 
     reaction(() => this.textFilter, () => this.triggerDebouncedSearch());
     reaction(() => this.statusFilter, () => this.triggerSearch());
@@ -80,7 +81,7 @@ export default class ContactsBaseStore {
   initContactStore = groupName => {
     this.resetContactsAndFilters();
     this.groupNameFilter = groupName;
-    return this.fetchMoreData({ isInitialLoading: true });
+    return this.fetchMoreData({ startFromTheTop: true });
   };
 
   resetContacts = () => {
@@ -154,7 +155,7 @@ export default class ContactsBaseStore {
 
   triggerSearch = async () => {
     this.isSearching = true;
-    await this.fetchSearchResults();
+    await this.fetchMoreData({ startFromTheTop: true });
     this.isSearching = false;
   };
 
@@ -164,7 +165,7 @@ export default class ContactsBaseStore {
   };
 
   debouncedFetchSearchResults = _.debounce(async () => {
-    await this.fetchSearchResults();
+    await this.fetchMoreData({ startFromTheTop: true });
     this.isSearching = false;
   }, SEARCH_DELAY_MS);
 
@@ -213,27 +214,15 @@ export default class ContactsBaseStore {
   }
 
   // Initial load and load more
-  *fetchMoreData({ isInitialLoading } = {}) {
-    if (!isInitialLoading && !this.hasMore) return;
+  *fetchMoreData({ startFromTheTop } = {}) {
+    if (!startFromTheTop && !this.hasMore) return;
 
     const response = yield this.fetchContacts({
-      scrollId: !isInitialLoading && this.scrollId
+      scrollId: !startFromTheTop && this.scrollId
     });
-    this.contacts = isInitialLoading
+    this.contacts = startFromTheTop
       ? response.contactsList
       : this.contacts.concat(response.contactsList);
-    this.scrollId = response.newScrollId;
-  }
-
-  *fetchSearchResults() {
-    // this is just used to trigger initial search, later load more is performed in fetchMoreData
-
-    // TODO: let it stay like this, I would rather find a way to unify search
-    //  and load more, but it's better to wait for it until we finish 1 phase of refactoring.
-    //  Maybe this is good as it is, just to add more comments, but let's review later
-    const response = yield this.fetchContacts({ scrollId: null });
-    this.resetContacts();
-    this.contacts = this.contacts.concat(response.contactsList);
     this.scrollId = response.newScrollId;
   }
 
