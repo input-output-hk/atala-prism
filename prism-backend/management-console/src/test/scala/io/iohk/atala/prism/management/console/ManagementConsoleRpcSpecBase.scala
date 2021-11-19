@@ -2,14 +2,16 @@ package io.iohk.atala.prism.management.console
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
-import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
-import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
-import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
-import io.iohk.atala.prism.management.console.grpc.CredentialsGrpcService
-import io.iohk.atala.prism.management.console.grpc.ConsoleGrpcService
+import io.iohk.atala.prism.management.console.grpc.{
+  ConsoleGrpcService,
+  ContactsGrpcService,
+  CredentialIssuanceGrpcService,
+  CredentialTypesGrpcService,
+  CredentialsGrpcService
+}
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -19,8 +21,8 @@ import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
 import io.iohk.atala.prism.protos.console_api.CredentialIssuanceServiceGrpc
-import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
 import tofu.logging.Logs
 
@@ -90,11 +92,13 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val nodeMock =
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  lazy val authenticator = new ManagementConsoleAuthenticator(
-    participantsRepository,
-    requestNoncesRepository,
+  lazy val authenticator = AuthenticatorF.unsafe(
     nodeMock,
-    GrpcAuthenticationHeaderParser
+    new ManagementConsoleAuthenticator(
+      participantsRepository,
+      requestNoncesRepository
+    ),
+    managementConsoleTestLogs
   )
 
   lazy val connectorMock = mock[ConnectorClient[IOWithTraceIdContext]]

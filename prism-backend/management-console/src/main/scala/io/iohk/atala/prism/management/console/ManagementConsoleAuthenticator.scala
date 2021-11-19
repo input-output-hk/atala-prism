@@ -1,72 +1,43 @@
 package io.iohk.atala.prism.management.console
 
-import cats.effect.unsafe.IORuntime
+import cats.data.ReaderT
 import cats.syntax.either._
+import io.iohk.atala.prism.auth.AuthHelper
 import io.iohk.atala.prism.auth.errors.{AuthError, UnexpectedError, UnsupportedAuthMethod}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.models.ParticipantId
 import io.iohk.atala.prism.management.console.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
-
-import scala.concurrent.{ExecutionContext, Future}
 
 class ManagementConsoleAuthenticator(
     participantsRepository: ParticipantsRepository[IOWithTraceIdContext],
-    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
-    nodeClient: node_api.NodeServiceGrpc.NodeService,
-    grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-)(implicit runtime: IORuntime)
-    extends SignedRequestsAuthenticatorBase[ParticipantId](
-      nodeClient,
-      grpcAuthenticationHeaderParser
-    ) {
+    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext]
+) extends AuthHelper[ParticipantId, IOWithTraceIdContext] {
 
   override def burnNonce(
       id: ParticipantId,
-      requestNonce: RequestNonce,
-      traceId: TraceId
-  )(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, Unit] =
+      requestNonce: RequestNonce
+  ): IOWithTraceIdContext[Unit] =
     requestNoncesRepository
       .burn(id, requestNonce)
-      .run(traceId)
-      .unsafeToFuture()
-      .map(_.asRight)
-      .toFutureEither
 
   override def burnNonce(
       did: DID,
-      requestNonce: RequestNonce,
-      traceId: TraceId
-  )(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, Unit] =
+      requestNonce: RequestNonce
+  ): IOWithTraceIdContext[Unit] =
     throw new NotImplementedError()
 
-  override def findByPublicKey(publicKey: ECPublicKey, traceId: TraceId)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, ParticipantId] =
-    Future
-      .successful(UnsupportedAuthMethod().asLeft[ParticipantId])
-      .toFutureEither
+  override def findByPublicKey(publicKey: ECPublicKey): IOWithTraceIdContext[Either[AuthError, ParticipantId]] =
+    ReaderT.pure(UnsupportedAuthMethod().asLeft[ParticipantId])
 
-  override def findByDid(did: DID, traceId: TraceId)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, ParticipantId] =
+  override def findByDid(did: DID): IOWithTraceIdContext[Either[AuthError, ParticipantId]] =
     participantsRepository
       .findBy(did)
-      .run(traceId)
-      .unsafeToFuture()
-      .toFutureEither
-      .map(_.id)
-      .mapLeft(e => UnexpectedError(e.toStatus))
+      .map(
+        _.map(_.id)
+          .leftMap(e => UnexpectedError(e.toStatus))
+      )
+
 }

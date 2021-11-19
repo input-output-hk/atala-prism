@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.management.console.grpc
 
 import cats.effect.unsafe.IORuntime
-import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
+import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService
 import io.iohk.atala.prism.management.console.models._
@@ -18,22 +17,23 @@ class ContactsGrpcService(
     contactsIntegrationService: ContactsIntegrationService[
       IOWithTraceIdContext
     ],
-    val authenticator: ManagementConsoleAuthenticator
+    val authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext]
 )(implicit
     ec: ExecutionContext,
     runtime: IORuntime
 ) extends console_api.ContactsServiceGrpc.ContactsService
     with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupportF[ManagementConsoleError, ParticipantId] {
 
   override protected val serviceName: String = "contacts-service"
+  override val IOruntime: IORuntime = runtime
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createContact(
       request: CreateContactRequest
   ): Future[CreateContactResponse] =
-    auth[CreateContact]("createContact", request) { (participantId, traceId, query) =>
+    auth[CreateContact]("createContact", request) { (participantId, query, traceId) =>
       val maybeGroupName = InstitutionGroup.Name.optional(request.groupName)
       contactsIntegrationService
         .createContact(participantId, query, maybeGroupName)
@@ -47,7 +47,7 @@ class ContactsGrpcService(
   override def getContacts(
       request: GetContactsRequest
   ): Future[GetContactsResponse] =
-    auth[Contact.PaginatedQuery]("getContacts", request) { (participantId, traceId, query) =>
+    auth[Contact.PaginatedQuery]("getContacts", request) { (participantId, query, traceId) =>
       contactsIntegrationService
         .getContacts(participantId, query)
         .run(traceId)
@@ -81,7 +81,7 @@ class ContactsGrpcService(
   override def getContact(
       request: GetContactRequest
   ): Future[GetContactResponse] =
-    auth[GetContact]("getContact", request) { (participantId, traceId, query) =>
+    auth[GetContact]("getContact", request) { (participantId, query, traceId) =>
       contactsIntegrationService
         .getContact(participantId, query.contactId)
         .run(traceId)
@@ -93,7 +93,7 @@ class ContactsGrpcService(
   override def updateContact(
       request: UpdateContactRequest
   ): Future[UpdateContactResponse] =
-    auth[UpdateContact]("updateContact", request) { (participantId, traceId, query) =>
+    auth[UpdateContact]("updateContact", request) { (participantId, query, traceId) =>
       contactsIntegrationService
         .updateContact(participantId, query)
         .run(traceId)
@@ -112,7 +112,7 @@ class ContactsGrpcService(
   override def createContacts(
       request: CreateContactsRequest
   ): Future[CreateContactsResponse] =
-    auth[CreateContact.Batch]("createContacts", request) { (participantId, traceId, query) =>
+    auth[CreateContact.Batch]("createContacts", request) { (participantId, query, traceId) =>
       contactsIntegrationService
         .createContacts(participantId, query)
         .run(traceId)
@@ -126,7 +126,7 @@ class ContactsGrpcService(
   override def deleteContact(
       request: DeleteContactRequest
   ): Future[DeleteContactResponse] =
-    auth[DeleteContact]("deleteContact", request) { (participantId, traceId, query) =>
+    auth[DeleteContact]("deleteContact", request) { (participantId, query, traceId) =>
       contactsIntegrationService
         .deleteContact(
           participantId,

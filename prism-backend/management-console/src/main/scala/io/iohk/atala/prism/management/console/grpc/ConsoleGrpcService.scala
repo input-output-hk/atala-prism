@@ -4,11 +4,10 @@ import cats.effect.unsafe.IORuntime
 import cats.implicits.catsSyntaxEitherId
 import cats.syntax.functor._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
+import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.services.ConsoleService
@@ -25,15 +24,16 @@ import scala.util.{Failure, Success}
 
 class ConsoleGrpcService(
     consoleService: ConsoleService[IOWithTraceIdContext],
-    val authenticator: ManagementConsoleAuthenticator
+    val authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext]
 )(implicit
     ec: ExecutionContext,
     runtime: IORuntime
 ) extends console_api.ConsoleServiceGrpc.ConsoleService
     with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupportF[ManagementConsoleError, ParticipantId] {
 
   override protected val serviceName: String = "console-service"
+  override val IOruntime: IORuntime = runtime
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -47,7 +47,7 @@ class ConsoleGrpcService(
   override def getStatistics(
       request: GetStatisticsRequest
   ): Future[GetStatisticsResponse] =
-    auth[GetStatistics]("getStatistics", request) { (participantId, traceId, getStatistics) =>
+    auth[GetStatistics]("getStatistics", request) { (participantId, getStatistics, traceId) =>
       consoleService
         .getStatistics(participantId, getStatistics)
         .run(traceId)
@@ -90,7 +90,7 @@ class ConsoleGrpcService(
   override def getCurrentUser(
       request: GetConsoleCurrentUserRequest
   ): Future[GetConsoleCurrentUserResponse] = {
-    unitAuth("getCurrentUser", request) { (participantId, traceId, _) =>
+    unitAuth("getCurrentUser", request) { (participantId, _, traceId) =>
       consoleService
         .getCurrentUser(participantId)
         .run(traceId)
@@ -108,7 +108,7 @@ class ConsoleGrpcService(
   override def updateParticipantProfile(
       request: ConsoleUpdateProfileRequest
   ): Future[ConsoleUpdateProfileResponse] = {
-    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, traceId, _) =>
+    auth[UpdateParticipantProfile]("updateParticipantProfile", request) { (participantId, _, traceId) =>
       val logo = ParticipantLogo(request.logo.toByteArray.toVector)
       val participantProfile =
         UpdateParticipantProfile(request.name, Option(logo))

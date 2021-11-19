@@ -4,8 +4,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.implicits._
-import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.{AuthenticatorF, SignedRpcRequest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
@@ -22,8 +21,8 @@ import io.iohk.atala.prism.management.console.repositories.{
 }
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import tofu.logging.Logs
 
@@ -59,11 +58,13 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
   protected lazy val nodeMock =
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val authenticator = new ManagementConsoleAuthenticator(
-    participantsRepository,
-    requestNoncesRepository,
+  private lazy val authenticator = AuthenticatorF.unsafe(
     nodeMock,
-    GrpcAuthenticationHeaderParser
+    new ManagementConsoleAuthenticator(
+      participantsRepository,
+      requestNoncesRepository
+    ),
+    managementConsoleTestLogs
   )
   lazy val verifierId =
     ParticipantId.unsafeFrom("af45a4da-65b8-473e-aadc-aa6b346250a3")
