@@ -1,25 +1,35 @@
 package io.iohk.atala.prism.cviews
 
+import cats.effect.unsafe.IORuntime
 import io.circe.Json
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.auth.errors.AuthErrorSupport
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
+import io.iohk.atala.prism.intdemo.DegreeServiceImpl.DegreeCredentialHtmlTemplateData
+import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.EmploymentCredentialHtmlTemplateData
+import io.iohk.atala.prism.intdemo.IdServiceImpl.IdCredentialHtmlTemplateData
+import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.InsuranceCredentialHtmlTemplateData
 import io.iohk.atala.prism.intdemo.html._
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.cviews_api.{GetCredentialViewTemplatesRequest, GetCredentialViewTemplatesResponse}
 import io.iohk.atala.prism.protos.{cviews_api, cviews_models}
+import io.iohk.atala.prism.tracing.Tracing.trace
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.view.HtmlViewImage
-import io.iohk.atala.prism.intdemo.IdServiceImpl.IdCredentialHtmlTemplateData
-import io.iohk.atala.prism.intdemo.DegreeServiceImpl.DegreeCredentialHtmlTemplateData
-import io.iohk.atala.prism.intdemo.EmploymentServiceImpl.EmploymentCredentialHtmlTemplateData
-import io.iohk.atala.prism.intdemo.InsuranceServiceImpl.InsuranceCredentialHtmlTemplateData
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit
-    ec: ExecutionContext
-) extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService {
+class CredentialViewsService(authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext])(implicit
+    ec: ExecutionContext,
+    runtime: IORuntime
+) extends cviews_api.CredentialViewsServiceGrpc.CredentialViewsService
+    with AuthErrorSupport {
 
+  val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val getCredsViewTemplatesMethodName = "getCredentialViewTemplates"
 
   override def getCredentialViewTemplates(
@@ -39,14 +49,21 @@ class CredentialViewsService(authenticator: ConnectorAuthenticator)(implicit
       request: Request
   )(
       block: ParticipantId => Future[Response]
-  ): Future[Response] = {
-    authenticator.authenticated(methodName, request) { (participantId, _) =>
-      measureRequestFuture(
-        "credential-views-service-service",
-        getCredsViewTemplatesMethodName
-      )(
-        block(participantId)
-      )
+  ): Future[Response] = trace { traceId =>
+    grpcHeader { header =>
+      (for {
+        participantId <- authenticator
+          .authenticated(methodName, request, header)
+          .run(traceId)
+          .unsafeToFuture()
+          .toFutureEither
+        result <- measureRequestFuture(
+          "credential-views-service-service",
+          getCredsViewTemplatesMethodName
+        )(
+          block(participantId)
+        ).lift
+      } yield result).flatten
     }
   }
 }

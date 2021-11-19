@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.connector
 
 import cats.effect.unsafe.implicits.global
-import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.{AuthenticatorF, SignedRpcRequest}
 import io.iohk.atala.prism.connector.model.ConnectionStatus
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services.{ConnectionsService, ContactConnectionService}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.{connector_api, connector_models, console_models}
-import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar.mock
 
 import scala.concurrent.ExecutionContext
@@ -41,13 +40,14 @@ class ContactConnectionServiceSpec extends RpcSpecBase with DIDUtil with Connect
   lazy val connectionsService =
     ConnectionsService.unsafe(connectionsRepository, nodeMock, testLogs)
 
-  private lazy val authenticator =
+  private lazy val authenticator = AuthenticatorF.unsafe(
+    nodeMock,
     new ConnectorAuthenticator(
       participantsRepository,
-      requestNoncesRepository,
-      nodeMock,
-      GrpcAuthenticationHeaderParser
-    )
+      requestNoncesRepository
+    ),
+    testLogs
+  )
 
   override def services =
     Seq(

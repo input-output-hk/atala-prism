@@ -3,8 +3,6 @@ package io.iohk.atala.prism.auth.grpc
 import io.grpc.Context
 import io.iohk.atala.prism.logging.TraceId
 
-import scala.concurrent.Future
-
 trait GrpcAuthenticationHeaderParser {
 
   /** Get the authentication header from the current context.
@@ -21,7 +19,7 @@ trait GrpcAuthenticationHeaderParser {
 }
 
 object GrpcAuthenticationHeaderParser extends GrpcAuthenticationHeaderParser {
-  def grpcHeader[A](fa: Option[GrpcAuthenticationHeader] => Future[A]): Future[A] = {
+  def grpcHeader[F[_], A](fa: Option[GrpcAuthenticationHeader] => F[A]): F[A] = {
     val grpcHeaderOp = GrpcAuthenticationHeaderParser.parse(Context.current())
     fa(grpcHeaderOp)
   }

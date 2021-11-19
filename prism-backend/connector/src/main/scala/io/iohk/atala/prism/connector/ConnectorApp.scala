@@ -79,14 +79,6 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
         txTraceIdLifted,
         connectorLogs
       )
-      // authenticator
-      authenticator = new ConnectorAuthenticator(
-        participantsRepository,
-        requestNoncesRepository,
-        node,
-        GrpcAuthenticationHeaderParser
-      )
-
       // authenticatorF
       authenticatorF <- AuthenticatorF.resource(
         node,
@@ -116,7 +108,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
         )
       contactConnectionService = new ContactConnectionService(
         connectionsService,
-        authenticator,
+        authenticatorF,
         whitelistDid
       )
       connectorService = new ConnectorService(
@@ -128,8 +120,9 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
         node,
         participantsRepository
       )
-      credentialViewsService = new CredentialViewsService(authenticator)(
-        executionContext
+      credentialViewsService = new CredentialViewsService(authenticatorF)(
+        executionContext,
+        runtime
       )
       // interactive demo services
       intDemoRepository = new IntDemoRepository(tx)
