@@ -213,12 +213,13 @@ export default class ContactsBaseStore {
     }
   }
 
-  // Initial load and load more
-  *fetchMoreData({ startFromTheTop } = {}) {
+  // Controls contacts fetching
+  *fetchMoreData({ startFromTheTop, pageSize } = {}) {
     if (!startFromTheTop && !this.hasMore) return;
 
     const response = yield this.fetchContacts({
-      scrollId: !startFromTheTop && this.scrollId
+      scrollId: !startFromTheTop && this.scrollId,
+      pageSize
     });
     this.contacts = startFromTheTop
       ? response.contactsList
@@ -226,6 +227,6 @@ export default class ContactsBaseStore {
     this.scrollId = response.newScrollId;
   }
 
-  // TODO: implement
-  refreshContacts = () => this.fetchSearchResults();
+  refreshContacts = () =>
+    this.fetchMoreData({ startFromTheTop: true, pageSize: this.contacts.length });
 }

@@ -84,7 +84,7 @@ export default class CurrentGroupStore {
     this.contactsBaseStore.fetchMoreData();
   };
 
-  reloadMembers = () => this.contactsBaseStore.refreshContacts();
+  reloadMembers = () => this.contactsBaseStore.fetchMoreData({ startFromTheTop: true });
 
   // FIXME: select only filtered members
   getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);
