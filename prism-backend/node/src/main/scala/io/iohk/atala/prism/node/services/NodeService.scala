@@ -42,6 +42,7 @@ trait NodeService[F[_]] {
 
 }
 // Please forgive me for that Sync here -_-
+// It's needed for delaying of submissionSchedulingService.flushOperationsBuffer() call
 class NodeServiceImpl[F[_]: Sync](
     didDataRepository: DIDDataRepository[F],
     objectManagement: ObjectManagementService[F],
@@ -57,8 +58,9 @@ class NodeServiceImpl[F[_]: Sync](
       case _ => Applicative[F].pure(UnsupportedDidFormat.asLeft)
     }
     for {
+      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       getDidResult <- getDidResultF
-      res <- getDidResult.traverse(maybeData => objectManagement.getLastSyncedTimestamp.map(DidDocument(maybeData, _)))
+      res = getDidResult.map(DidDocument(_, lastSyncedTimestamp))
     } yield res
   }
 
@@ -86,29 +88,27 @@ class NodeServiceImpl[F[_]: Sync](
 
   override def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]] =
     for {
+      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       maybeBatchStateE <- credentialBatchesRepository.getBatchState(batchId)
-      result <- maybeBatchStateE.traverse(maybeBatchState =>
-        objectManagement.getLastSyncedTimestamp.map(BatchData(maybeBatchState, _))
-      )
-    } yield result
+      batchData = maybeBatchStateE.map(BatchData(_, lastSyncedTimestamp))
+    } yield batchData
 
   override def getCredentialRevocationData(
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
   ): F[Either[NodeError, CredentialRevocationTime]] =
     for {
+      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       maybeTime <- credentialBatchesRepository.getCredentialRevocationTime(batchId, credentialHash)
-      lastSyncedTimestamp <- maybeTime.traverse(maybeLedgerData =>
-        objectManagement.getLastSyncedTimestamp.map(CredentialRevocationTime(maybeLedgerData, _))
-      )
-    } yield lastSyncedTimestamp
+      credentialRevocationTime = maybeTime.map(CredentialRevocationTime(_, lastSyncedTimestamp))
+    } yield credentialRevocationTime
 
   override def scheduleAtalaOperations(ops: SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]] =
     objectManagement.scheduleAtalaOperations(ops: _*)
 
   override def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo] = for {
-    maybeOperationInfo <- objectManagement.getOperationInfo(atalaOperationId)
     lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
+    maybeOperationInfo <- objectManagement.getOperationInfo(atalaOperationId)
     result = OperationInfo(maybeOperationInfo, lastSyncedTimestamp)
   } yield result
 
