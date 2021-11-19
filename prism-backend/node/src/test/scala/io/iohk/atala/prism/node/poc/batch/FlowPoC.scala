@@ -18,9 +18,16 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories._
-import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.{DataPreparation, NodeServiceImpl, UnderlyingLedger}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceImpl,
+  InMemoryLedgerService,
+  NodeServiceImpl,
+  ObjectManagementService,
+  SubmissionSchedulingService,
+  SubmissionService
+}
+import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.utils.NodeClientUtils._
@@ -97,11 +104,13 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       .addService(
         node_api.NodeServiceGrpc
           .bindService(
-            new NodeServiceImpl(
-              didDataRepository,
-              objectManagementService,
-              submissionSchedulingService,
-              credentialBatchesRepository
+            new NodeGrpcServiceImpl(
+              new NodeServiceImpl(
+                didDataRepository,
+                objectManagementService,
+                credentialBatchesRepository,
+                submissionSchedulingService
+              )
             ),
             executionContext
           )

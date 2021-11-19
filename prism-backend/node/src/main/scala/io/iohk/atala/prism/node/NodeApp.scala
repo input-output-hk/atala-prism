@@ -120,14 +120,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       )
       credentialBatchesRepository <-
         CredentialBatchesRepository.resource(liftedTransactor, logs)
-      nodeService =
-        new NodeServiceImpl(
-          didDataRepository,
-          objectManagementService,
-          submissionSchedulingService,
-          credentialBatchesRepository
-        )
-      server <- startServer(nodeService)
+      nodeService = new NodeServiceImpl[IOWithTraceIdContext](
+        didDataRepository,
+        objectManagementService,
+        credentialBatchesRepository,
+        submissionSchedulingService
+      )
+      nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
+      server <- startServer(nodeGrpcService)
     } yield server
   }
 
@@ -217,7 +217,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         InMemoryLedgerService.resource(onAtalaObject, logs)
     }
 
-  private def startServer(nodeService: NodeServiceImpl): Resource[IO, Server] =
+  private def startServer(nodeService: NodeGrpcServiceImpl): Resource[IO, Server] =
     Resource.make[IO, Server](IO {
       logger.info("Starting server")
       import io.grpc.protobuf.services.ProtoReflectionService

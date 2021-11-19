@@ -2,56 +2,54 @@ package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
 import cats.syntax.applicative._
-import cats.syntax.option._
+import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
-import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid => DID}
-import io.iohk.atala.prism.interop.toScalaProtos._
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
-import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
-import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
-import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
   AtalaOperationStatus
 }
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.{ObjectManagementService, SubmissionSchedulingService}
+import io.iohk.atala.prism.node.services.{
+  BatchData,
+  DidDocument,
+  GettingCanonicalPrismDidError,
+  GettingDidError,
+  NodeService,
+  ObjectManagementService,
+  UnsupportedDidFormat
+}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
-import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
+import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
+import io.iohk.atala.prism.identity.PrismDid
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 
-class NodeServiceImpl(
-    didDataRepository: DIDDataRepository[IOWithTraceIdContext],
-    objectManagement: ObjectManagementService[IOWithTraceIdContext],
-    submissionSchedulingService: SubmissionSchedulingService,
-    credentialBatchesRepository: CredentialBatchesRepository[
-      IOWithTraceIdContext
-    ]
-)(implicit ec: ExecutionContext, runtime: IORuntime)
-    extends node_api.NodeServiceGrpc.NodeService {
+class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implicit
+    ec: ExecutionContext,
+    runtime: IORuntime
+) extends node_api.NodeServiceGrpc.NodeService {
 
-  import NodeServiceImpl._
+  import NodeGrpcServiceImpl._
 
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -67,46 +65,10 @@ class NodeServiceImpl(
 
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
-        for {
-          lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-            .run(traceId)
-            .unsafeToFuture()
-          response <- getDidDocument(request.did, methodName, didDataRepository)
-        } yield response.withLastSyncedBlockTimestamp(
-          lastSyncedTimestamp.toProtoTimestamp
-        )
+        getDidDocument(request.did, methodName, traceId)
       }
     }
 
-  }
-
-  private def getDidDocument(
-      didRequestStr: String,
-      methodName: String,
-      didDataRepository: DIDDataRepository[IOWithTraceIdContext]
-  ): Future[GetDidDocumentResponse] = trace { tid =>
-    val didTry = Try(DID.fromString(didRequestStr))
-    didTry match {
-      case Success(did) =>
-        did match {
-          case canon: CanonicalPrismDid =>
-            didDataRepository
-              .findByDid(canon)
-              .map(_.fold(countAndThrowNodeError(methodName, _), toDidDataProto(_, canon)))
-              .run(tid)
-              .map(succeedWith)
-              .unsafeRunSync()
-          case longForm: LongFormPrismDid => // we received a long form DID
-            // we check if the DID was published
-            didDataRepository
-              .findByDid(did.asCanonical())
-              .map(handleFindByDidResult(_, longForm, did))
-              .run(tid)
-              .unsafeRunSync()
-          case _ => failWith(s"Invalid DID: $didRequestStr", methodName)
-        }
-      case Failure(_) => failWith(s"Invalid DID: $didRequestStr", methodName)
-    }
   }
 
   override def createDID(
@@ -133,10 +95,8 @@ class NodeServiceImpl(
             methodName,
             CreateDIDOperation.parseWithMockedLedgerData(operation)
           )
-          operationIdE <- objectManagement
-            .scheduleSingleAtalaOperation(
-              operation
-            )
+          operationIdE <- nodeService
+            .scheduleOperation(operation)
             .run(traceId)
             .unsafeToFuture()
         } yield {
@@ -176,10 +136,8 @@ class NodeServiceImpl(
             methodName,
             UpdateDIDOperation.validate(operation)
           )
-          operationIdE <- objectManagement
-            .scheduleSingleAtalaOperation(
-              operation
-            )
+          operationIdE <- nodeService
+            .scheduleOperation(operation)
             .run(traceId)
             .unsafeToFuture()
         } yield {
@@ -220,10 +178,8 @@ class NodeServiceImpl(
               methodName,
               IssueCredentialBatchOperation.parseWithMockedLedgerData(operation)
             )
-          operationIdE <- objectManagement
-            .scheduleSingleAtalaOperation(
-              operation
-            )
+          operationIdE <- nodeService
+            .scheduleOperation(operation)
             .run(traceId)
             .unsafeToFuture()
         } yield {
@@ -262,10 +218,8 @@ class NodeServiceImpl(
             methodName,
             RevokeCredentialsOperation.validate(operation)
           )
-          operationIdE <- objectManagement
-            .scheduleSingleAtalaOperation(
-              operation
-            )
+          operationIdE <- nodeService
+            .scheduleOperation(operation)
             .run(traceId)
             .unsafeToFuture()
         } yield {
@@ -287,7 +241,6 @@ class NodeServiceImpl(
   ): Future[GetBatchStateResponse] = {
     val methodName = "getBatchState"
 
-    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
       Option(CredentialBatchId.fromString(request.batchId)),
       s"Invalid batch id: ${request.batchId}",
@@ -297,23 +250,19 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
         for {
-          lastSyncedTimestamp <- lastSyncedTimestampF
-            .run(traceId)
-            .unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
             methodName,
             traceId,
             "batchId" -> s"${batchId.getId}"
           )
-          stateEither <-
-            credentialBatchesRepository
-              .getBatchState(batchId)
-              .run(traceId)
-              .unsafeToFuture()
+          stateEither <- nodeService
+            .getBatchState(batchId)
+            .run(traceId)
+            .unsafeToFuture()
         } yield stateEither.fold(
           countAndThrowNodeError(methodName, _),
-          toGetBatchResponse(_, lastSyncedTimestamp)
+          toGetBatchResponse
         )
       }
 
@@ -325,7 +274,6 @@ class NodeServiceImpl(
   ): Future[GetCredentialRevocationTimeResponse] = {
     val methodName = "getCredentialRevocationTime"
 
-    val lastSyncedTimestampF = objectManagement.getLastSyncedTimestamp
     val batchIdF = getFromOptionOrFailF(
       Option(CredentialBatchId.fromString(request.batchId)),
       s"Invalid batch id: ${request.batchId}",
@@ -342,9 +290,6 @@ class NodeServiceImpl(
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
         for {
-          lastSyncedTimestamp <- lastSyncedTimestampF
-            .run(traceId)
-            .unsafeToFuture()
           batchId <- batchIdF
           _ = logWithTraceId(
             methodName,
@@ -358,16 +303,16 @@ class NodeServiceImpl(
             "credentialHash" -> s"${credentialHash.getHexValue}"
           )
           timeEither <-
-            credentialBatchesRepository
-              .getCredentialRevocationTime(batchId, credentialHash)
+            nodeService
+              .getCredentialRevocationData(batchId, credentialHash)
               .run(traceId)
               .unsafeToFuture()
         } yield timeEither match {
           case Left(error) => countAndThrowNodeError(methodName, error)
           case Right(ledgerData) =>
             GetCredentialRevocationTimeResponse(
-              revocationLedgerData = ledgerData.map(ProtoCodecs.toLedgerData)
-            ).withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+              revocationLedgerData = ledgerData.maybeLedgerData.map(ProtoCodecs.toLedgerData)
+            ).withLastSyncedBlockTimestamp(ledgerData.lastSyncedTimestamp.toProtoTimestamp)
         }
       }
     }
@@ -423,7 +368,7 @@ class NodeServiceImpl(
             }
           )
           operationIds <-
-            objectManagement
+            nodeService
               .scheduleAtalaOperations(operations: _*)
               .run(traceId)
               .unsafeToFuture()
@@ -448,10 +393,10 @@ class NodeServiceImpl(
     val methodName = "flushOperationsBuffer"
 
     withLog(methodName, request) { _ =>
-      Future.successful {
-        submissionSchedulingService.flushOperationsBuffer()
-        node_api.FlushOperationsBufferResponse()
-      }
+      nodeService.flushOperationsBuffer
+        .as(node_api.FlushOperationsBufferResponse())
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
     }
   }
 
@@ -462,24 +407,22 @@ class NodeServiceImpl(
     val methodName = "getOperationInfo"
 
     withLog(methodName, request) { traceId =>
+      val atalaOperationId = AtalaOperationId.fromVectorUnsafe(
+        request.operationId.toByteArray.toVector
+      )
+      logWithTraceId(
+        methodName,
+        traceId,
+        "atalaOperationId" -> s"${atalaOperationId.toString}"
+      )
       for {
-        lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-          .run(traceId)
-          .unsafeToFuture()
-        atalaOperationId = AtalaOperationId.fromVectorUnsafe(
-          request.operationId.toByteArray.toVector
-        )
-        _ = logWithTraceId(
-          methodName,
-          traceId,
-          "atalaOperationId" -> s"${atalaOperationId.toString}"
-        )
-        operationInfo <- objectManagement
+        operationInfo <- nodeService
           .getOperationInfo(atalaOperationId)
           .run(traceId)
           .unsafeToFuture()
+        maybeOperationInfo = operationInfo.maybeOperationInfo
       } yield {
-        val operationStatus = operationInfo
+        val operationStatus = maybeOperationInfo
           .fold[common_models.OperationStatus](
             common_models.OperationStatus.UNKNOWN_OPERATION
           ) { case AtalaOperationInfo(_, _, opStatus, maybeTxStatus, _) =>
@@ -488,8 +431,8 @@ class NodeServiceImpl(
         val response = node_api
           .GetOperationInfoResponse()
           .withOperationStatus(operationStatus)
-          .withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
-        val responseWithTransactionId = operationInfo
+          .withLastSyncedBlockTimestamp(operationInfo.lastSyncedTimestamp.toProtoTimestamp)
+        val responseWithTransactionId = maybeOperationInfo
           .flatMap(_.transactionId)
           .map(_.toString)
           .fold(response)(response.withTransactionId)
@@ -497,6 +440,22 @@ class NodeServiceImpl(
         responseWithTransactionId
       }
     }
+  }
+
+  private def getDidDocument(
+      didRequestStr: String,
+      methodName: String,
+      traceId: TraceId
+  ): Future[GetDidDocumentResponse] = {
+    val didTry = Try(PrismDid.fromString(didRequestStr))
+    didTry.fold(
+      _ => failWith(s"Invalid DID: $didRequestStr", methodName),
+      nodeService
+        .getDidDocumentByDid(_)
+        .map(_.fold(handleGetDidDocumentError(methodName, didRequestStr, _), succeedWithV2))
+        .run(traceId)
+        .unsafeRunSync()
+    )
   }
 
   // This method returns statuses only for operations
@@ -527,7 +486,7 @@ class NodeServiceImpl(
     val methodName = "lastSyncedTimestamp"
     measureRequestFuture(serviceName, methodName)(
       withLog(methodName, request) { traceId =>
-        objectManagement.getLastSyncedTimestamp
+        nodeService.getLastSyncedTimestamp
           .map { lastSyncedBlockTimestamp =>
             node_api
               .GetLastSyncedBlockTimestampResponse()
@@ -562,7 +521,7 @@ class NodeServiceImpl(
   }
 }
 
-object NodeServiceImpl {
+object NodeGrpcServiceImpl {
 
   val serviceName = "node-service"
 
@@ -581,10 +540,9 @@ object NodeServiceImpl {
     }.toFuture
 
   private def toGetBatchResponse(
-      in: Option[models.nodeState.CredentialBatchState],
-      lastSyncedTimestamp: Instant
+      in: BatchData
   ) = {
-    val response = in.fold(GetBatchStateResponse()) { state =>
+    val response = in.maybeBatchState.fold(GetBatchStateResponse()) { state =>
       val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
       val responseBase = GetBatchStateResponse()
         .withIssuerDid(state.issuerDIDSuffix.getValue)
@@ -594,15 +552,15 @@ object NodeServiceImpl {
         responseBase.withRevocationLedgerData
       )
     }
-    response.withLastSyncedBlockTimestamp(lastSyncedTimestamp.toProtoTimestamp)
+    response.withLastSyncedBlockTimestamp(in.lastSyncedTimestamp.toProtoTimestamp)
   }
 
-  private def succeedWith(
-      didData: Option[node_models.DIDData]
+  private def succeedWithV2(
+      didData: DidDocument
   )(implicit logger: Logger): Future[node_api.GetDidDocumentResponse] = {
-    val response = node_api.GetDidDocumentResponse(document = didData)
+    val response = node_api.GetDidDocumentResponse(document = didData.maybeData)
     logger.info(s"response = ${response.toProtoString}")
-    Future.successful(response)
+    Future.successful(response.withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp))
   }
 // We need to rewrite the node service
   private def countAndThrowNodeError(
@@ -616,6 +574,20 @@ object NodeServiceImpl {
       asStatus.getCode.value()
     )
     throw asStatus.asRuntimeException()
+  }
+
+  private def handleGetDidDocumentError[I](methodName: String, didRequestStr: String, error: GettingDidError)(implicit
+      logger: Logger
+  ): Future[I] = error match {
+    case GettingCanonicalPrismDidError(nodeError) =>
+      val asStatus = nodeError.toStatus
+      RequestMeasureUtil.increaseErrorCounter(
+        serviceName,
+        methodName,
+        asStatus.getCode.value()
+      )
+      throw asStatus.asRuntimeException()
+    case UnsupportedDidFormat => failWith(s"Invalid DID: $didRequestStr", methodName)
   }
 
   private def getFromOptionOrFailF[I](
@@ -639,26 +611,6 @@ object NodeServiceImpl {
     )
     Future.failed(new RuntimeException(msg))
   }
-
-  private def handleFindByDidResult(
-      result: Either[NodeError, Option[DIDDataState]],
-      longForm: LongFormPrismDid,
-      did: DID
-  )(implicit
-      logger: Logger
-  ): Future[GetDidDocumentResponse] = {
-    def returnInitialState: Future[node_api.GetDidDocumentResponse] = succeedWith(
-      ProtoCodecs.atalaOperationToDIDDataProto(DidSuffix(did.getSuffix), longForm.getInitialState.asScala).some
-    )
-    // if it was not published or we have an error, we return the encoded initial state
-    result.fold(
-      _ => returnInitialState,
-      _.fold(returnInitialState)(state => succeedWith(ProtoCodecs.toDIDDataProto(did.getSuffix, state).some))
-    )
-  }
-
-  private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[DIDData] =
-    in.map(didDataState => ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState))
 
   private def getOperationOutput(
       operation: SignedAtalaOperation

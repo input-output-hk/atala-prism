@@ -27,6 +27,7 @@ import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceSpec,
+  NodeServiceImpl,
   ObjectManagementService,
   SubmissionSchedulingService
 }
@@ -76,11 +77,13 @@ class NodeServiceSpec
       .addService(
         node_api.NodeServiceGrpc
           .bindService(
-            new NodeServiceImpl(
-              didDataRepository,
-              objectManagementService,
-              submissionSchedulingService,
-              credentialBatchesRepository
+            new NodeGrpcServiceImpl(
+              new NodeServiceImpl(
+                didDataRepository,
+                objectManagementService,
+                credentialBatchesRepository,
+                submissionSchedulingService
+              )
             ),
             executionContext
           )
