@@ -20,7 +20,7 @@ const ContactsTableHeader = observer(
   }) => {
     const { t } = useTranslation();
 
-    const { contacts, getContactsToSelect, isFetching } = useContactStore();
+    const { contacts, contactUiState, getContactsToSelect, isFetching } = useContactStore();
 
     const { loadingSelection, checkboxProps } = useSelectAll({
       displayedEntities: contacts,
@@ -34,7 +34,7 @@ const ContactsTableHeader = observer(
 
     return (
       <div className="RecipientsSelectionTableHeader">
-        <ConnectionsFilter showFullFilter={false} />
+        <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
         <SelectAllButton
           loadingSelection={loadingSelection}
           selectedEntities={selectedContacts}

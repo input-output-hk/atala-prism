@@ -20,6 +20,7 @@ const defaultValues = {
   sortingBy: CONTACT_SORTING_KEYS.name,
   fetchedResults: null
 };
+
 export default class ContactUiState {
   isSearching = defaultValues.isSearching;
 
@@ -37,8 +38,8 @@ export default class ContactUiState {
 
   sortingBy = defaultValues.sortingBy;
 
-  constructor(contactStore) {
-    this.contactStore = contactStore;
+  constructor({ triggerFetchResults }) {
+    this.triggerFetchResults = triggerFetchResults;
     makeAutoObservable(this, {
       triggerBackendSearch: action.bound,
       rootStore: false
@@ -79,7 +80,7 @@ export default class ContactUiState {
   };
 
   triggerBackendSearch = _.debounce(async () => {
-    await this.contactStore.fetchSearchResults();
+    await this.triggerFetchResults();
     this.isSearching = false;
     this.isSorting = false;
   }, SEARCH_DELAY_MS);

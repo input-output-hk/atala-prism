@@ -9,7 +9,7 @@ import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useSelectAll } from '../../hooks/useSelectAll';
-import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
+import { useContactStore } from '../../hooks/useContactStore';
 import { refPropShape } from '../../helpers/propShapes';
 
 import './_style.scss';
@@ -26,9 +26,9 @@ const GroupCreation = observer(
       updateMembers(selectedContacts);
     }, [selectedContacts, updateMembers]);
 
-    const { hasFiltersApplied, isSearching, isSorting } = useContactUiState();
     const {
       contacts,
+      contactUiState,
       initContactStore,
       getContactsToSelect,
       isLoadingFirstPage,
@@ -36,6 +36,7 @@ const GroupCreation = observer(
       isFetching,
       hasMore
     } = useContactStore();
+    const { hasFiltersApplied, isSearching, isSorting } = contactUiState;
 
     useEffect(() => {
       initContactStore();
@@ -60,7 +61,7 @@ const GroupCreation = observer(
 
           <div className="flex">
             <div className="SearchBar">
-              <ConnectionsFilter showFullFilter={false} />
+              <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
             </div>
 
             <div className="groupsButtonContainer">

@@ -13,7 +13,7 @@ import './_style.scss';
 const GroupFilters = observer(({ showFullFilter }) => {
   const { t } = useTranslation();
 
-  const { sortingDirection, setSortingBy, setFilterValue, toggleSortDirection } = useGroupUiState();
+  const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = useGroupUiState();
 
   const datePickerProps = {
     placeholder: [t('groups.filters.createdAfter'), t('groups.filters.createdBefore')],
@@ -21,7 +21,7 @@ const GroupFilters = observer(({ showFullFilter }) => {
     onChange: (_, selectedRange) => setFilterValue('dateFilter', selectedRange || [])
   };
 
-  const isAscending = sortingDirection === SORTING_DIRECTIONS.ascending;
+  const isAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
   return (
     <div className="FilterControls">

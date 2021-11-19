@@ -20,7 +20,7 @@ import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
-import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
+import { useContactStore } from '../../hooks/useContactStore';
 import { useApi } from '../../hooks/useApi';
 import { useRedirector } from '../../hooks/useRedirector';
 
@@ -42,8 +42,7 @@ const NewCredentialContainer = observer(() => {
   const { groups } = useGroupStore({ reset: true });
   useGroupUiState({ reset: true });
 
-  const { contacts } = useContactStore({ fetch: true, reset: true });
-  useContactUiState({ reset: true });
+  const { contacts } = useContactStore();
 
   const [selectedContacts, setSelectedContacts] = useState([]);
 
