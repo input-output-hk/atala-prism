@@ -27,7 +27,7 @@ object versions {
   val slf4j = "1.7.32"
   val sttp = "3.3.16"
   val tofu = "0.10.6"
-  val tofuDerevo = "0.12.7"
+  val tofuDerevo = "0.12.8"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
