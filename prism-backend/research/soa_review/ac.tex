@@ -156,6 +156,27 @@ the attributes that the user is willing to share (or a function of them).
   the signature is a BGLS signature \cite{bgls03}, and the index is a BB
   signature \cite{bb04}. The actual instantiation seems impractical (too many
   linear costs, see the table in the paper).
+\item[\cite{cklm14}:] This work is, in essence, a generalization of \cite{bcc+09}.
+  The main novel building block are controlled-malleability NIZKs. Basically,
+  these are NIZKs that can be re-randomized, but only for a pre-defined set of
+  (NP) transformations. From this cm-NIZKs, malleable signatures are built.
+  From malleable signatures and commitments, delegatable credentials are built
+  as follows. Credentials are basically a tuple $(nym, l, flag)$, where $nym$
+  is a commitment to the user's private key, $l$ is the length of the credential
+  in the delegation chain, and $flag$ is either $cred$ or $proof$. Credentials
+  are accompanied with a malleable signature (which, for level 1 credentials,
+  it is a signature by the issuer). To create ``proofs'' or to delegate, the
+  credential owner has to apply one of the two allowed transformations. For
+  ``proofs'', basically the transformation that has to be applied to the original
+  proof (malleable signature) converts it to a proof showing that the prover
+  knows the secret in the ``source'' pseudonym and ``target'' pseudonym, and
+  both are the same. In the case of delegations, flag is set to ``cred'', and
+  the transformation converts the cm-NIZK proof into one that lets the prover
+  prove knowledge of the secret key in the ``source'' pseudonym, and allows
+  only to produce a new credential with structure $(nym', l+1, cred)$ -- i.e.,
+  from a credential of level $l$, only a credential of level $l+1$ can be
+  derived. On the delegation topic, the type of delegation this work ``supports'',
+  at least by default, is the simple one of hierarchical delegation.
 \item[\cite{cdhk15}:] The approach to build anonymous credentials is roughly
   the same as in the previous works \cite{cl01,cl02,cl04}, although with
   relevant differences that make it more efficient. Basically, users create
@@ -270,6 +291,8 @@ the attributes that the user is willing to share (or a function of them).
     signer privacy. The original property seems to come from \cite{bckl08}.}
 \item[\cite{cl11}:] The security properties in this work are unforgeability
   and anonymity, for which the authors give game-based definitions.
+\item[\cite{cklm14}:] Defines security of the DAC scheme using simulation-based
+  notions of anonymity and unforgeability.
 \item[\cite{cmz14}:] The security properties proven in this work are:
   \begin{itemize}
   \item \emph{Unforgeability}: The adversary cannot produce a valid proof for a
@@ -604,7 +627,7 @@ Signal's AC \needcite
 \subsection{TODO}
 
 \begin{itemize}
-\item \cite{bcc+09,cklm14}: Delegation (\cite{cklm14} relies on \cite{cklm12}).
+\item : Delegation (\cite{cklm14} relies on \cite{cklm12}).
 \item \cite{cgm16} An AC system that builds ACs from existing (conventional,
   such as ECDSA) signatures. \cite{kkl+16} achieves similar results with a
   different approach?
