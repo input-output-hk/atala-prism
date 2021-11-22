@@ -31,7 +31,6 @@ import io.iohk.atala.prism.node.services.{
   InMemoryLedgerService,
   NodeService,
   ObjectManagementService,
-  SubmissionSchedulingService,
   SubmissionService
 }
 import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
@@ -75,7 +74,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
-  protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
   override def beforeEach(): Unit = {
@@ -120,10 +118,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       atalaObjectsTransactionsRepository,
       logs = endorsementsFlowPoCLogs
     )
-    submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
-      submissionService
-    )
 
     serverName = InProcessServerBuilder.generateName()
 
@@ -138,7 +132,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
-                submissionSchedulingService,
                 endorsementsFlowPoCLogs
               )
             ),
@@ -212,7 +205,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
           freshKeyProto.signingKeyId
         )
 
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         createDIDResponse.operationId
       )
@@ -265,7 +258,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
         )
       )
       scheduleOperationsResponse.outputs.size must be(2)
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         scheduleOperationsResponse.outputs.map(
           _.operationMaybe.operationId.value

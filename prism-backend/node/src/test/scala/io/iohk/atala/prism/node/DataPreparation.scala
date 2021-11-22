@@ -360,13 +360,10 @@ object DataPreparation {
       .unsafeRunSync()
   }
 
-  def flushOperationsAndWaitConfirmation(
+  def waitConfirmation(
       nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub,
       waitOperations: ByteString*
-  ): Unit = {
-    nodeServiceStub
-      .flushOperationsBuffer(node_api.FlushOperationsBufferRequest())
-
+  ): Unit =
     waitOperations.foreach { operationId =>
       val operationIdHex =
         AtalaOperationId.fromVectorUnsafe(operationId.toByteArray.toVector)
@@ -374,7 +371,6 @@ object DataPreparation {
         println(s"Waiting until operation [$operationIdHex] is applied...")
       }
     }
-  }
 
   def isOperationConfirmed(
       nodeServiceStub: node_api.NodeServiceGrpc.NodeServiceBlockingStub,

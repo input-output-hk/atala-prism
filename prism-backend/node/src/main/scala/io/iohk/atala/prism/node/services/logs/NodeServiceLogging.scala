@@ -80,11 +80,6 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       .flatTap(_ => info"getting operation info - done")
       .onError(errorCause"encountered an error while getting operation info" (_))
 
-  override def flushOperationsBuffer: Mid[F, Unit] = in =>
-    info"flushing operations buffer" *> in
-      .flatTap(_ => info"flushing operations buffer - done")
-      .onError(errorCause"encountered an error while flushing operations buffer" (_))
-
   override def getLastSyncedTimestamp: Mid[F, Instant] = in =>
     info"flushing operations buffer" *> in
       .flatTap(_ => info"flushing operations buffer - done")

@@ -44,18 +44,14 @@ trait NodeService[F[_]] {
 
   def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo]
 
-  def flushOperationsBuffer: F[Unit]
-
   def getLastSyncedTimestamp: F[Instant]
 
 }
-// Please forgive me for that Sync here -_-
-// It's needed for delaying of submissionSchedulingService.flushOperationsBuffer() call
-private final class NodeServiceImpl[F[_]: Sync](
+
+private final class NodeServiceImpl[F[_]](
     didDataRepository: DIDDataRepository[F],
     objectManagement: ObjectManagementService[F],
-    credentialBatchesRepository: CredentialBatchesRepository[F],
-    submissionSchedulingService: SubmissionSchedulingService
+    credentialBatchesRepository: CredentialBatchesRepository[F]
 ) extends NodeService[F] {
   override def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]] = {
     val getDidResultF: F[Either[GettingDidError, Option[DIDData]]] = did match {
@@ -120,8 +116,6 @@ private final class NodeServiceImpl[F[_]: Sync](
     result = OperationInfo(maybeOperationInfo, lastSyncedTimestamp)
   } yield result
 
-  override def flushOperationsBuffer: F[Unit] = Sync[F].delay(submissionSchedulingService.flushOperationsBuffer())
-
   override def getLastSyncedTimestamp: F[Instant] = objectManagement.getLastSyncedTimestamp
 }
 
@@ -131,7 +125,6 @@ object NodeService {
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
-      submissionSchedulingService: SubmissionSchedulingService,
       logs: Logs[I, F]
   ): I[NodeService[F]] = {
     for {
@@ -143,8 +136,7 @@ object NodeService {
       mid attach new NodeServiceImpl[F](
         didDataRepository,
         objectManagement,
-        credentialBatchesRepository,
-        submissionSchedulingService
+        credentialBatchesRepository
       )
     }
   }
@@ -153,20 +145,18 @@ object NodeService {
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
-      submissionSchedulingService: SubmissionSchedulingService,
       logs: Logs[I, F]
   ): Resource[I, NodeService[F]] = Resource.eval(
-    make(didDataRepository, objectManagement, credentialBatchesRepository, submissionSchedulingService, logs)
+    make(didDataRepository, objectManagement, credentialBatchesRepository, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: Sync](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
-      submissionSchedulingService: SubmissionSchedulingService,
       logs: Logs[I, F]
   ): NodeService[F] =
-    make(didDataRepository, objectManagement, credentialBatchesRepository, submissionSchedulingService, logs).extract
+    make(didDataRepository, objectManagement, credentialBatchesRepository, logs).extract
 
 }
 

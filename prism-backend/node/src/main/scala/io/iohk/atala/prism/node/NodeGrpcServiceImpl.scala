@@ -387,19 +387,6 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     }
   }
 
-  override def flushOperationsBuffer(
-      request: node_api.FlushOperationsBufferRequest
-  ): Future[node_api.FlushOperationsBufferResponse] = {
-    val methodName = "flushOperationsBuffer"
-
-    withLog(methodName, request) { _ =>
-      nodeService.flushOperationsBuffer
-        .as(node_api.FlushOperationsBufferResponse())
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-    }
-  }
-
   override def getOperationInfo(
       request: node_api.GetOperationInfoRequest
   ): Future[node_api.GetOperationInfoResponse] = {
