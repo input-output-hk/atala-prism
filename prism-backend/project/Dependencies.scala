@@ -31,7 +31,8 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "0.1.0-build-4-b40f44fc" // TODO: use 1.3.0-build-x version in the next version
+  val prismSdk = "1.3.0-build-24-65991596"
+  val vaultSdk = "0.1.0-build-1-d914b564"
 }
 
 object Dependencies {
@@ -97,6 +98,8 @@ object Dependencies {
     )
   val prismProtos =
     "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
+  val vaultProtos =
+    "io.iohk.atala" % "vault-api-jvm" % versions.vaultSdk % "protobuf-src" intransitive ()
   // Can be used only in tests!
   val prismApi =
     "io.iohk.atala" % "prism-api-jvm" % versions.prismSdk % Test excludeAll ExclusionRule(
@@ -146,7 +149,7 @@ object Dependencies {
     Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
   val prismDependencies =
-    Seq(prismCredentials, prismProtos, prismApi)
+    Seq(prismCredentials, prismProtos, prismApi, vaultProtos)
   val scalapbDependencies = Seq(
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
