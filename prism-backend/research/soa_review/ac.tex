@@ -253,6 +253,16 @@ the attributes that the user is willing to share (or a function of them).
   the authors rely on Pointcheval Sanders signatures \cite{ps16} as main
   building block, to which they incorporate techniques from other schemes to
   support threshold issuance.
+\item[\cite{halp20}:] Builds on Coconut credentials and a blockchain -- in theory,
+  any blockchain with smart-contract capability, although it seems they are building
+  their own blockchain. This paper is in the frontier of academic and industry
+  work. On the cryptographic side, the credentials they build are essentially an
+  extension of Coconut credentials (although the extension is not described, nor
+  formalized). Users can combine multiple Coconut credentials into one Nym
+  Credential. In order to control Sybil attacks, Nym Credentials are obtained
+  in exchange of Nym Tokens (how users get hold of these, is not described).
+  Service Providers receive Nym Tokens in exchange of offering their services
+  through the network.
 \end{enumerate}
 
 \paragraph{Main security models.}
@@ -398,6 +408,10 @@ the attributes that the user is willing to share (or a function of them).
   the specific construction and instantiation thwarts this attack, I think their
   model allows it.
 \item[\cite{sms+19}:] No security model is given nor adopted.
+\item[\cite{halp20}:] No formal definition is given. The following properties
+  are claimed: undetectability (this seems similar to traceability in group sigs),
+  unlinkability, selective attributes disclosure, unforgeability, persistent
+  accounts, sybil resistance, extensibility, availability, decentralization.
 \end{enumerate}
 
 \paragraph{Variations in functionality.}
