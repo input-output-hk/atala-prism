@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node.services.logs
 
 import cats.MonadThrow
+import cats.implicits.toTraverseOps
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
@@ -34,7 +35,7 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       .flatTap(
         _.fold(
           err => error"encountered an error while scheduling operation $err",
-          _ => info"scheduling operation - successfully done"
+          operationId => info"scheduling operation $operationId - successfully done"
         )
       )
       .onError(errorCause"encountered an error while scheduling operation" (_))
@@ -53,7 +54,7 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
   ): Mid[F, Either[errors.NodeError, CredentialRevocationTime]] = in =>
-    info"getting credential revocation data $batchId" *> in
+    info"getting credential revocation data [batchId=$batchId, credentialHash=${credentialHash.getHexValue}]" *> in
       .flatTap(
         _.fold(
           err => error"encountered an error while getting credential revocation data $err",
@@ -66,11 +67,16 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] = in =>
     info"scheduling atala operations" *> in
-      .flatTap(_ => info"scheduling atala operations - done")
+      .flatTap(_.traverse {
+        _.fold(
+          err => error"encountered an error while scheduling operation $err",
+          operationId => info"scheduling operation $operationId - successfully done"
+        )
+      })
       .onError(errorCause"encountered an error while scheduling atala operations" (_))
 
   override def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, OperationInfo] = in =>
-    info"getting operation info" *> in
+    info"getting operation info $atalaOperationId" *> in
       .flatTap(_ => info"getting operation info - done")
       .onError(errorCause"encountered an error while getting operation info" (_))
 
