@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.effect.Resource
-import cats.effect.kernel.Sync
-import cats.{Applicative, Comonad, Functor}
+import cats.{Applicative, Comonad, Functor, MonadThrow}
 import cats.implicits._
 import derevo.derive
 import derevo.tagless.applyK
@@ -48,7 +47,7 @@ trait NodeService[F[_]] {
 
 }
 
-private final class NodeServiceImpl[F[_]](
+private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
     objectManagement: ObjectManagementService[F],
     credentialBatchesRepository: CredentialBatchesRepository[F]
@@ -121,7 +120,7 @@ private final class NodeServiceImpl[F[_]](
 
 object NodeService {
 
-  def make[I[_]: Functor, F[_]: Sync](
+  def make[I[_]: Functor, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
@@ -141,7 +140,7 @@ object NodeService {
     }
   }
 
-  def resource[I[_]: Comonad, F[_]: Sync](
+  def resource[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
@@ -150,7 +149,7 @@ object NodeService {
     make(didDataRepository, objectManagement, credentialBatchesRepository, logs)
   )
 
-  def unsafe[I[_]: Comonad, F[_]: Sync](
+  def unsafe[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],

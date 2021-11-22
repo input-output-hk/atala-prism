@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
 import cats.syntax.applicative._
-import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo

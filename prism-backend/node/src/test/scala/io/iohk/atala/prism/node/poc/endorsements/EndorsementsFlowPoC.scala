@@ -51,7 +51,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
-import java.time.Duration
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 

@@ -33,7 +33,6 @@ import io.iohk.atala.prism.utils.NodeClientUtils._
 import org.scalatest.BeforeAndAfterEach
 import tofu.logging.Logs
 
-import java.time.Duration
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
