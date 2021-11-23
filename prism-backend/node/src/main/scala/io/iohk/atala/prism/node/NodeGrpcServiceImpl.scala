@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
 import cats.syntax.applicative._
-import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
@@ -384,19 +383,6 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
             .withOutputs(outputsWithOperationIds)
         }
       }
-    }
-  }
-
-  override def flushOperationsBuffer(
-      request: node_api.FlushOperationsBufferRequest
-  ): Future[node_api.FlushOperationsBufferResponse] = {
-    val methodName = "flushOperationsBuffer"
-
-    withLog(methodName, request) { _ =>
-      nodeService.flushOperationsBuffer
-        .as(node_api.FlushOperationsBufferResponse())
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
     }
   }
 

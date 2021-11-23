@@ -44,7 +44,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private def start(): Resource[IO, Server] = {
+  private def start(): Resource[IO, (SubmissionSchedulingService, Server)] = {
     for {
       globalConfig <- loadConfig()
       _ <- startMetrics(globalConfig)
@@ -124,12 +124,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         didDataRepository,
         objectManagementService,
         credentialBatchesRepository,
-        submissionSchedulingService,
         logs
       )
       nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
       server <- startServer(nodeGrpcService)
-    } yield server
+    } yield (submissionSchedulingService, server)
   }
 
   private def startMetrics(config: Config): Resource[IO, Module.Registration] =

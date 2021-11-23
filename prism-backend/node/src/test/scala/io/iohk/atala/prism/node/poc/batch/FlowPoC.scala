@@ -36,6 +36,7 @@ import tofu.logging.Logs
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._
 
 class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
@@ -52,10 +53,10 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
+  protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     _
-  protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
   override def beforeEach(): Unit = {
@@ -76,8 +77,13 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       atalaObjectsTransactionsRepository,
       logs = flowPocTestLogs
     )
+    // this service needs to pull operations from the database and to send them to the ledger
     submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      SubmissionSchedulingService.Config(
+        ledgerPendingTransactionTimeout = Duration.ZERO,
+        transactionRetryPeriod = 1.days, // no retries during this test
+        operationSubmissionPeriod = 1.second
+      ),
       submissionService
     )
     keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
@@ -109,7 +115,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
-                submissionSchedulingService,
                 flowPocTestLogs
               )
             ),
@@ -168,7 +173,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val registerDIDOperationId = connector
         .registerDID(signedAtalaOperation = signedCreateDIDOp)
         .operationId
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         registerDIDOperationId
       )
@@ -212,7 +217,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
         console.issueCredentialBatch(signedIssueBatch1Op).operationId
       val issueCredentialBatchOperationId2 =
         console.issueCredentialBatch(signedIssueBatch2Op).operationId
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         issueCredentialBatchOperationId1,
         issueCredentialBatchOperationId2
@@ -267,7 +272,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val revokeSpecificCredentialsOperationId =
         console.revokeSpecificCredentials(signedRevokeC3Op).operationId
 
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         revokeCredentialBatchOperationId,
         revokeSpecificCredentialsOperationId

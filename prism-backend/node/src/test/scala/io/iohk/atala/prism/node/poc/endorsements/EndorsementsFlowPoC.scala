@@ -54,6 +54,7 @@ import tofu.logging.Logs
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
@@ -120,8 +121,13 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       atalaObjectsTransactionsRepository,
       logs = endorsementsFlowPoCLogs
     )
+    // this service needs to pull operations from the database and to send them to the ledger
     submissionSchedulingService = SubmissionSchedulingService(
-      SubmissionSchedulingService.Config(ledgerPendingTransactionTimeout = Duration.ZERO),
+      SubmissionSchedulingService.Config(
+        ledgerPendingTransactionTimeout = Duration.ZERO,
+        transactionRetryPeriod = 1.days, // no retries during this test
+        operationSubmissionPeriod = 1.second
+      ),
       submissionService
     )
 
@@ -138,7 +144,6 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
-                submissionSchedulingService,
                 endorsementsFlowPoCLogs
               )
             ),
@@ -212,7 +217,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
           freshKeyProto.signingKeyId
         )
 
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         createDIDResponse.operationId
       )
@@ -265,7 +270,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
         )
       )
       scheduleOperationsResponse.outputs.size must be(2)
-      DataPreparation.flushOperationsAndWaitConfirmation(
+      DataPreparation.waitConfirmation(
         nodeServiceStub,
         scheduleOperationsResponse.outputs.map(
           _.operationMaybe.operationId.value
