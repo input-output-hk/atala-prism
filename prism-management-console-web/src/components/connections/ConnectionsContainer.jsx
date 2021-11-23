@@ -6,11 +6,11 @@ import Connections from './Connections';
 const ConnectionsContainer = observer(() => {
   const [connectionToken, setConnectionToken] = useState('');
   const [qrModalIsVisible, setQrModalIsVisible] = useState(false);
-  const { contacts, initContactStore, refreshContacts } = useContactsPageStore();
+  const { contacts, initContactsPageStore, refreshContacts } = useContactsPageStore();
 
   useEffect(() => {
-    initContactStore();
-  }, [initContactStore]);
+    initContactsPageStore();
+  }, [initContactsPageStore]);
 
   const handleInviteContactAndShowQR = async contactId => {
     const contactToInvite = contacts.find(c => c.contactId === contactId);

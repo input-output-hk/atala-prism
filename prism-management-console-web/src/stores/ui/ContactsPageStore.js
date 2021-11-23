@@ -1,0 +1,56 @@
+import { makeAutoObservable } from 'mobx';
+import ContactsBaseStore from '../ContactsBaseStore';
+
+export default class ContactsPageStore {
+  constructor(api, sessionState) {
+    this.api = api;
+    this.sessionState = sessionState;
+    this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
+
+    makeAutoObservable(
+      this,
+      {
+        api: false,
+        sessionState: false,
+        contactsBaseStore: false
+      },
+      { autoBind: true }
+    );
+  }
+
+  get contacts() {
+    return this.contactsBaseStore.contacts;
+  }
+
+  get hasFiltersApplied() {
+    return this.contactsBaseStore.hasFiltersApplied;
+  }
+
+  get hasMore() {
+    return this.contactsBaseStore.hasMore;
+  }
+
+  get filterSortingProps() {
+    return this.contactsBaseStore.filterSortingProps;
+  }
+
+  get isSearching() {
+    return this.contactsBaseStore.isSearching;
+  }
+
+  get isFetching() {
+    return this.contactsBaseStore.isFetching;
+  }
+
+  fetchMoreData() {
+    return this.contactsBaseStore.fetchMoreData();
+  }
+
+  refreshContacts() {
+    return this.contactsBaseStore.refreshContacts();
+  }
+
+  initContactsPageStore() {
+    return this.contactsBaseStore.initContactStore();
+  }
+}
