@@ -13,6 +13,8 @@ import './_style.scss';
 const FindCredential = ({ redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
+  const isSsr = typeof window === 'undefined';
+
   const startDemo = () => {
     firebase.analytics().logEvent(GET_CREDENTIALS_EVENT);
     redirectToCredentials();
@@ -44,7 +46,7 @@ const FindCredential = ({ redirector: { redirectToCredentials } }) => {
           />
         </div>
       </div>
-      <InteractiveMap controlsEnabled={false} />
+      {!isSsr && <InteractiveMap controlsEnabled={false} />}
     </div>
   );
 };
