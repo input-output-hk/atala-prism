@@ -20,6 +20,7 @@ import {
 import { GenerateConnectionTokenRequest } from '../../protos/connector_api_pb';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
 import { getProtoDate } from '../../helpers/formatters';
+import { contactMapper } from '../helpers/contactHelpers';
 
 const { FilterBy, SortBy } = GetContactsRequest;
 
@@ -137,10 +138,11 @@ async function getContacts({
   const { dataList, scrollId: newScrollId } = res.toObject();
 
   const contactsList = dataList.map(({ contact, ...rest }) => ({ ...contact, ...rest }));
+  const mappedContacts = contactsList.map(contactMapper);
 
-  Logger.info('Got contacts:', contactsList);
+  Logger.info('Got contacts:', mappedContacts);
 
-  return { contactsList, newScrollId };
+  return { contactsList: mappedContacts, newScrollId };
 }
 
 async function getContact(contactId) {
@@ -153,18 +155,21 @@ async function getContact(contactId) {
 
   const res = await this.client.getContact(req, metadata);
   const { contact } = res.toObject();
-  Logger.info('Got contact:', contact);
+  const mappedContact = contactMapper(contact);
 
-  return contact;
+  Logger.info('Got contact:', mappedContact);
+
+  return mappedContact;
 }
 
 async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) {
   const { contactsList, newScrollId } = await this.getContacts({
-    groupName,
+    filter: { groupName },
     scrollId,
-    limit: MAX_CONTACT_PAGE_SIZE
+    pageSize: MAX_CONTACT_PAGE_SIZE
   });
-  const partialContactsArray = acc.concat(contactsList);
+  const mappedContacts = contactsList.map(contactMapper);
+  const partialContactsArray = acc.concat(mappedContacts);
   if (contactsList.length < MAX_CONTACT_PAGE_SIZE) return onFinish(partialContactsArray);
   return this.fetchMoreContactsRecursively(newScrollId, groupName, partialContactsArray, onFinish);
 }

@@ -1,10 +1,5 @@
-import { makeAutoObservable, computed, action } from 'mobx';
+import { makeAutoObservable, action } from 'mobx';
 import _ from 'lodash';
-import {
-  filterByDateRange,
-  filterByExactMatch,
-  filterByMultipleKeys
-} from '../../helpers/filterHelpers';
 import {
   CONTACT_SORTING_KEYS,
   CONTACT_SORTING_KEYS_TRANSLATION,
@@ -25,6 +20,7 @@ const defaultValues = {
   sortingBy: CONTACT_SORTING_KEYS.name,
   fetchedResults: null
 };
+
 export default class ContactUiState {
   isSearching = defaultValues.isSearching;
 
@@ -42,14 +38,10 @@ export default class ContactUiState {
 
   sortingBy = defaultValues.sortingBy;
 
-  fetchedResults = defaultValues.fetchedResults;
-
-  constructor(rootStore) {
-    this.rootStore = rootStore;
+  constructor({ triggerFetchResults }) {
+    this.triggerFetchResults = triggerFetchResults;
     makeAutoObservable(this, {
-      sortedFilteredContacts: computed({ requiresReaction: true }),
       triggerBackendSearch: action.bound,
-      sortingIsCaseSensitive: false,
       rootStore: false
     });
   }
@@ -81,68 +73,17 @@ export default class ContactUiState {
     );
   }
 
-  get displayedContacts() {
-    const { contacts } = this.rootStore.prismStore.contactStore;
-    return this.hasFiltersApplied || this.hasCustomSorting ? this.sortedFilteredContacts : contacts;
-  }
-
-  get sortedFilteredContacts() {
-    if (this.fetchedResults) return this.fetchedResults;
-    const { contacts, searchResults } = this.rootStore.prismStore.contactStore;
-    const allFetchedContacts = contacts.concat(searchResults);
-    const contactsToFilter = _.uniqBy(allFetchedContacts, c => c.contactId);
-    const unsortedFilteredContacts = this.applyFilters(contactsToFilter);
-    const sortedFilteredContacts = this.applySorting(unsortedFilteredContacts);
-    return sortedFilteredContacts;
-  }
-
   triggerSearch = () => {
-    this.isSearching = this.hasFiltersApplied;
-    this.isSorting = this.hasCustomSorting;
-    this.fetchedResults = null;
+    this.isSearching = true;
+    this.isSorting = true;
     this.triggerBackendSearch();
   };
 
   triggerBackendSearch = _.debounce(async () => {
-    const { fetchSearchResults } = this.rootStore.prismStore.contactStore;
-    await fetchSearchResults();
-    this.updateFetchedResults();
-  }, SEARCH_DELAY_MS);
-
-  updateFetchedResults = () => {
-    const { searchResults } = this.rootStore.prismStore.contactStore;
-    this.fetchedResults = searchResults;
+    await this.triggerFetchResults();
     this.isSearching = false;
     this.isSorting = false;
-  };
-
-  applyFilters = contacts =>
-    contacts.filter(item => {
-      const matchText =
-        !this.hasTextFilterApplied ||
-        filterByMultipleKeys(this.textFilter, item, ['name', 'externalId']);
-      const matchDate =
-        !this.hasDateFilterApplied || filterByDateRange(this.dateFilter, item.createdAt);
-      const matchStatus =
-        !this.hasStatusFilterApplied ||
-        filterByExactMatch(this.statusFilter, item.connectionStatus);
-
-      return matchText && matchDate && matchStatus;
-    });
-
-  applySorting = contacts =>
-    _.orderBy(
-      contacts,
-      [
-        contact =>
-          this.sortingIsCaseSensitive()
-            ? contact[this.sortingKey].toLowerCase()
-            : contact[this.sortingKey]
-      ],
-      this.sortDirection === ascending ? 'asc' : 'desc'
-    );
-
-  sortingIsCaseSensitive = () => this.sortingBy === CONTACT_SORTING_KEYS.name;
+  }, SEARCH_DELAY_MS);
 
   resetState = () => {
     this.isSearching = defaultValues.isSearching;
@@ -150,7 +91,6 @@ export default class ContactUiState {
     this.dateFilter = defaultValues.lastEditedFilter;
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
-    this.fetchedResults = defaultValues.fetchedResults;
   };
 
   setFilterValue = (key, value) => {

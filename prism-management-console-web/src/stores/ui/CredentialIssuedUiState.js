@@ -9,7 +9,8 @@ import {
 } from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
-const { CREATED_ON } = CREDENTIAL_SORTING_KEYS_TRANSLATION;
+const { CREATED_ON, CONTACT_NAME, EXTERNAL_ID, DATE_SIGNED } = CREDENTIAL_SORTING_KEYS_TRANSLATION;
+const unsupportedSorting = [CONTACT_NAME, EXTERNAL_ID, DATE_SIGNED];
 
 const defaultValues = {
   isSearching: false,
@@ -111,6 +112,16 @@ export default class CredentialIssuedUiState {
       );
   };
 
+  handleUnsupportedSorting = () => {
+    if (unsupportedSorting.includes(this.sortingBy)) {
+      message.warn(
+        i18n.t('errors.sortingNotSupported', {
+          key: i18n.t(`credentials.table.columns.${this.sortingBy}`)
+        })
+      );
+    }
+  };
+
   triggerSearch = () => {
     this.isSearching = true;
     this.isSorting = true;
@@ -120,6 +131,7 @@ export default class CredentialIssuedUiState {
   triggerBackendSearch = _.debounce(async () => {
     const { fetchSearchResults } = this.rootStore.prismStore.credentialIssuedStore;
     this.handleUnsupportedFilters();
+    this.handleUnsupportedSorting();
     await fetchSearchResults();
     runInAction(() => {
       this.isSearching = false;

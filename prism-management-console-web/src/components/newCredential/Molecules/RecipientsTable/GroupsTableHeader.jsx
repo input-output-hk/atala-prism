@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import GroupFilters from '../../../groups/Molecules/Filters/GroupFilters';
 import SelectAllButton from './SelectAllButton';
-import { useGroupStore, useGroupUiState } from '../../../../hooks/useGroupStore';
+import { useGroupStore } from '../../../../hooks/useGroupStore';
 import { GROUP_NAME_KEY } from '../../../../helpers/constants';
 import './_style.scss';
 import { useSelectAll } from '../../../../hooks/useSelectAll';
@@ -15,11 +15,10 @@ const GroupsTableHeader = observer(
   ({ selectedGroups, setSelectedGroups, shouldSelectRecipients, toggleShouldSelectRecipients }) => {
     const { t } = useTranslation();
 
-    const { getGroupsToSelect, isFetching } = useGroupStore();
-    const { displayedGroups } = useGroupUiState();
+    const { groups, getGroupsToSelect, isFetching } = useGroupStore();
 
     const { loadingSelection, checkboxProps } = useSelectAll({
-      displayedEntities: displayedGroups,
+      displayedEntities: groups,
       entitiesFetcher: getGroupsToSelect,
       entityKey: GROUP_NAME_KEY,
       selectedEntities: selectedGroups,

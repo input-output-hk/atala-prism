@@ -1,13 +1,11 @@
 import React, { createRef, useState } from 'react';
 import GroupCreation from './GroupCreation';
-import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
 import { useGroupStore } from '../../hooks/useGroupStore';
 import { useRedirector } from '../../hooks/useRedirector';
 
 const GroupCreationContainer = () => {
   const { redirectToGroups } = useRedirector();
-  useContactUiState({ reset: true });
-  useContactStore({ reset: true, fetch: true });
+
   const { createGroup, isSaving } = useGroupStore();
 
   const [groupName, setGroupName] = useState('');

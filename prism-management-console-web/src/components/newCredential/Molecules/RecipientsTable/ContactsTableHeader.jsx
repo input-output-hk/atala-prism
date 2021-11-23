@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import SelectAllButton from './SelectAllButton';
 import { CONTACT_ID_KEY } from '../../../../helpers/constants';
-import { useContactStore, useContactUiState } from '../../../../hooks/useContactStore';
+import { useContactStore } from '../../../../hooks/useContactStore';
 import ConnectionsFilter from '../../../connections/Molecules/filter/ConnectionsFilter';
 import { useSelectAll } from '../../../../hooks/useSelectAll';
 import './_style.scss';
@@ -20,11 +20,10 @@ const ContactsTableHeader = observer(
   }) => {
     const { t } = useTranslation();
 
-    const { getContactsToSelect, isFetching } = useContactStore();
-    const { displayedContacts } = useContactUiState();
+    const { contacts, contactUiState, getContactsToSelect, isFetching } = useContactStore();
 
     const { loadingSelection, checkboxProps } = useSelectAll({
-      displayedEntities: displayedContacts,
+      displayedEntities: contacts,
       entitiesFetcher: getContactsToSelect,
       entityKey: CONTACT_ID_KEY,
       selectedEntities: selectedContacts,
@@ -35,7 +34,7 @@ const ContactsTableHeader = observer(
 
     return (
       <div className="RecipientsSelectionTableHeader">
-        <ConnectionsFilter showFullFilter={false} />
+        <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
         <SelectAllButton
           loadingSelection={loadingSelection}
           selectedEntities={selectedContacts}

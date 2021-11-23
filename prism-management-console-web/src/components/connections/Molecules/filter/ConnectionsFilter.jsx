@@ -12,22 +12,21 @@ import {
 } from '../../../../helpers/constants';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { useContactUiState } from '../../../../hooks/useContactStore';
 import './_style.scss';
 
-const ConnectionsFilter = observer(({ showFullFilter, localStateFilter }) => {
+const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localStateFilter }) => {
   const { t } = useTranslation();
   const {
-    sortingDirection,
+    sortDirection,
     setSortingBy,
     setFilterValue: setGlobalFilterValue,
     toggleSortDirection
-  } = useContactUiState();
+  } = filterSortingProps;
 
   const setFilterValue = localStateFilter ? localStateFilter.setValue : setGlobalFilterValue;
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
-  const isAscending = sortingDirection === SORTING_DIRECTIONS.ascending;
+  const isAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
   const datePickerProps = {
     placeholder: t('contacts.filters.createdAt'),
@@ -81,21 +80,22 @@ const ConnectionsFilter = observer(({ showFullFilter, localStateFilter }) => {
 });
 
 ConnectionsFilter.defaultProps = {
-  searchText: undefined,
-  setStatus: undefined,
-  showFullFilter: true
+  filterSortingProps: {},
+  showFullFilter: true,
+  localStateFilter: null
 };
 
 ConnectionsFilter.propTypes = {
-  setSearchText: PropTypes.func.isRequired,
-  searchText: PropTypes.string,
+  filterSortingProps: PropTypes.shape({
+    sortDirection: PropTypes.string,
+    setSortingBy: PropTypes.func,
+    setFilterValue: PropTypes.func,
+    toggleSortDirection: PropTypes.func
+  }),
   showFullFilter: PropTypes.bool,
-  setStatus: PropTypes.func,
-  sortingDirection: PropTypes.oneOf([SORTING_DIRECTIONS.ascending, SORTING_DIRECTIONS.descending])
-    .isRequired,
-  setSortingDirection: PropTypes.func.isRequired,
-  setSortingField: PropTypes.func.isRequired,
-  setCreatedAt: PropTypes.func.isRequired
+  localStateFilter: PropTypes.shape({
+    setValue: PropTypes.func
+  })
 };
 
 export default ConnectionsFilter;

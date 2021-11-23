@@ -2,6 +2,7 @@ import { message } from 'antd';
 import { makeAutoObservable, flow } from 'mobx';
 import i18n from 'i18next';
 import { CONFIRMED, LOADING, LOCKED, SESSION, UNCONFIRMED } from '../../helpers/constants';
+import TransportLayerErrorHandler from '../TransportLayerErrorHandler';
 
 export default class SessionState {
   session = { sessionState: LOADING };
@@ -12,14 +13,14 @@ export default class SessionState {
 
   modalIsVisible = false;
 
-  constructor(api, rootStore) {
+  constructor(api) {
     this.api = api;
-    this.rootStore = rootStore;
+    this.transportLayerErrorHandler = new TransportLayerErrorHandler(this);
+
     makeAutoObservable(this, {
       login: flow.bound,
       setSession: false,
-      storeSession: false,
-      rootStore: false
+      storeSession: false
     });
     this.api.wallet.setSessionErrorHandler(this.handleSessionError);
     this.login();

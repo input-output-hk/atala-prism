@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
@@ -8,74 +9,71 @@ import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import AddUsersButton from './Atoms/AddUsersButtons/AddUsersButton';
-import { useContactStore, useContactUiState } from '../../hooks/useContactStore';
+import { useContactsPageStore } from '../../hooks/useContactsPageStore';
 import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
 
-const Connections = observer(() => {
-  const { t } = useTranslation();
-  const { redirectToContactDetails, redirectToImportContacts } = useRedirector();
-  const [connectionToken, setConnectionToken] = useState('');
-  const [QRModalIsOpen, showQRModal] = useState(false);
-  const { accountStatus } = useSession();
-  const { displayedContacts, hasFiltersApplied, isSearching, isSorting } = useContactUiState();
-  const {
-    contacts,
-    refreshContacts,
-    isLoadingFirstPage,
-    fetchMoreData,
-    isFetching,
-    hasMore
-  } = useContactStore();
+const Connections = observer(
+  ({ qrModalIsVisible, connectionToken, onCloseQR, onInviteContact }) => {
+    const { t } = useTranslation();
+    const { redirectToContactDetails, redirectToImportContacts } = useRedirector();
+    const { accountStatus } = useSession();
+    const {
+      contacts,
+      filterSortingProps,
+      hasFiltersApplied,
+      isSearching,
+      isLoadingFirstPage,
+      fetchMoreData,
+      isFetching,
+      hasMore
+    } = useContactsPageStore();
 
-  const inviteContactAndShowQR = async contactId => {
-    const contactToInvite = contacts.find(c => c.contactId === contactId);
-    setConnectionToken(contactToInvite.connectionToken);
-    showQRModal(true);
-  };
+    const newGroupButton = <AddUsersButton onClick={redirectToImportContacts} />;
 
-  const onQRClosed = () => {
-    showQRModal(false);
-    refreshContacts();
-  };
-
-  const newGroupButton = <AddUsersButton onClick={redirectToImportContacts} />;
-
-  return (
-    <div className="ConnectionsContainer Wrapper">
-      {accountStatus === UNCONFIRMED && <WaitBanner />}
-      <div className="ContentHeader">
-        <div className="title">
-          <h1>{t('contacts.title')}</h1>
+    return (
+      <div className="ConnectionsContainer Wrapper">
+        {accountStatus === UNCONFIRMED && <WaitBanner />}
+        <div className="ContentHeader">
+          <div className="title">
+            <h1>{t('contacts.title')}</h1>
+          </div>
+          <div className="flex spaceBetween fullWidth">
+            <ConnectionsFilter filterSortingProps={filterSortingProps} />
+            {accountStatus === CONFIRMED && newGroupButton}
+          </div>
         </div>
-        <div className="flex spaceBetween fullWidth">
-          <ConnectionsFilter />
-          {accountStatus === CONFIRMED && newGroupButton}
+        <div className="ConnectionsTable InfiniteScrollTableContainer">
+          <ConnectionsTable
+            contacts={contacts}
+            fetchMoreData={fetchMoreData}
+            hasMore={hasMore}
+            hasFiltersApplied={hasFiltersApplied}
+            isLoading={isLoadingFirstPage || isSearching}
+            isFetchingMore={isFetching}
+            inviteContact={onInviteContact}
+            viewContactDetail={redirectToContactDetails}
+            searchDueGeneralScroll
+            newContactButton={newGroupButton}
+          />
         </div>
-      </div>
-      <div className="ConnectionsTable InfiniteScrollTableContainer">
-        <ConnectionsTable
-          contacts={displayedContacts}
-          fetchMoreData={fetchMoreData}
-          hasMore={hasMore}
-          hasFiltersApplied={hasFiltersApplied}
-          isLoading={isLoadingFirstPage || isLoadingFirstPage || isSorting}
-          isFetchingMore={isFetching || isSearching}
-          inviteContact={inviteContactAndShowQR}
-          viewContactDetail={redirectToContactDetails}
-          searchDueGeneralScroll
-          newContactButton={newGroupButton}
+        <QRModal
+          visible={qrModalIsVisible}
+          onCancel={onCloseQR}
+          qrValue={connectionToken}
+          tPrefix="contacts"
         />
       </div>
-      <QRModal
-        visible={QRModalIsOpen}
-        onCancel={onQRClosed}
-        qrValue={connectionToken}
-        tPrefix="contacts"
-      />
-    </div>
-  );
-});
+    );
+  }
+);
+
+Connections.propTypes = {
+  qrModalIsVisible: PropTypes.bool.isRequired,
+  connectionToken: PropTypes.string.isRequired,
+  onCloseQR: PropTypes.func.isRequired,
+  onInviteContact: PropTypes.func.isRequired
+};
 
 export default Connections;

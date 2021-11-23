@@ -1,39 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
-import { PrismStoreContext } from '../stores/domain/PrismStore';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores/index';
 
-export const useContactStore = ({ fetch, reset } = { fetch: false, reset: false }) => {
-  const { contactStore } = useContext(PrismStoreContext);
-  const { fetchContactsNextPage, resetContacts } = contactStore;
-
-  useEffect(() => {
-    if (reset) resetContacts();
-  }, [reset, resetContacts]);
-
-  useEffect(() => {
-    if (fetch) fetchContactsNextPage();
-  }, [fetch, fetchContactsNextPage]);
+export const useContactStore = () => {
+  const { contactStore } = useContext(GlobalStateContext);
 
   return contactStore;
-};
-
-export const useContactUiState = ({ reset } = { reset: false }) => {
-  const { contactUiState } = useContext(UiStateContext);
-  const { triggerSearch, resetState, statusFilter, sortingKey, sortDirection } = contactUiState;
-
-  useEffect(() => {
-    if (reset) resetState();
-  }, [reset, resetState]);
-
-  useEffect(() => {
-    if (reset) resetState();
-  }, [reset, resetState]);
-
-  useEffect(() => {
-    triggerSearch();
-  }, [statusFilter, sortingKey, sortDirection, sortDirection, triggerSearch]);
-
-  return contactUiState;
 };
 
 export const useAllContacts = () => {

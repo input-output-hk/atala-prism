@@ -1,24 +1,16 @@
 import { useContext, useEffect } from 'react';
-import { PrismStoreContext } from '../stores/domain/PrismStore';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
 
-export const useGroupStore = ({ fetch, reset } = { fetch: false, reset: false }) => {
-  const { groupStore } = useContext(PrismStoreContext);
-  const { fetchGroupsNextPage, resetGroups } = groupStore;
+import { useUpdateEffect } from './useUpdateEffect';
 
-  useEffect(() => {
-    if (reset) resetGroups();
-  }, [reset, resetGroups]);
-
-  useEffect(() => {
-    if (fetch) fetchGroupsNextPage();
-  }, [fetch, fetchGroupsNextPage]);
+export const useGroupStore = () => {
+  const { groupStore } = useContext(GlobalStateContext);
 
   return groupStore;
 };
 
 export const useGroupUiState = ({ reset } = { reset: false }) => {
-  const { groupUiState } = useContext(UiStateContext);
+  const { groupUiState } = useGroupStore();
   const {
     triggerSearch,
     resetState,
@@ -32,9 +24,11 @@ export const useGroupUiState = ({ reset } = { reset: false }) => {
     if (reset) resetState();
   }, [reset, resetState]);
 
-  useEffect(() => {
+  const sortingAndFiltersDependencies = [nameFilter, dateFilter, sortingKey, sortDirection];
+
+  useUpdateEffect(() => {
     triggerSearch();
-  }, [nameFilter, dateFilter, sortingKey, sortDirection, triggerSearch]);
+  }, [...sortingAndFiltersDependencies, triggerSearch]);
 
   return groupUiState;
 };

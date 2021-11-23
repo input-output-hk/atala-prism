@@ -1,8 +1,8 @@
 import { useContext, useEffect } from 'react';
-import { UiStateContext } from '../stores/ui/UiState';
+import { GlobalStateContext } from '../stores';
 
 export const useTemplateSketch = ({ reset } = {}) => {
-  const { templateSketchState } = useContext(UiStateContext);
+  const { templateSketchState } = useContext(GlobalStateContext);
 
   const { resetSketch } = templateSketchState;
 
