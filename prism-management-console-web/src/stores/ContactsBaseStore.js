@@ -78,18 +78,18 @@ export default class ContactsBaseStore {
     return this.scrollId;
   }
 
-  initContactStore = groupName => {
+  initContactStore(groupName) {
     this.resetContactsAndFilters();
     this.groupNameFilter = groupName;
     return this.fetchMoreData({ startFromTheTop: true });
-  };
+  }
 
-  resetContacts = () => {
+  resetContacts() {
     this.contacts = defaultValues.contacts;
     this.scrollId = defaultValues.scrollId;
-  };
+  }
 
-  resetContactsAndFilters = () => {
+  resetContactsAndFilters() {
     this.resetContacts();
     this.isFetching = defaultValues.isFetching;
     this.isSearching = defaultValues.isSearching;
@@ -97,16 +97,16 @@ export default class ContactsBaseStore {
     this.dateFilter = defaultValues.lastEditedFilter;
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
-  };
+  }
 
   // ********************** //
   // FILTERS
   // ********************** //
 
-  setFilterValue = (key, value) => {
+  setFilterValue(key, value) {
     // TODO: check if filter is valid?
     this[key] = value;
-  };
+  }
 
   get sortingKey() {
     return CONTACT_SORTING_KEYS_TRANSLATION[this.sortingBy];
@@ -145,24 +145,24 @@ export default class ContactsBaseStore {
     };
   }
 
-  toggleSortDirection = () => {
+  toggleSortDirection() {
     this.sortDirection = this.sortDirection === ascending ? descending : ascending;
-  };
+  }
 
-  setSortingBy = value => {
+  setSortingBy(value) {
     this.sortingBy = value;
-  };
+  }
 
-  triggerSearch = async () => {
+  async triggerSearch() {
     this.isSearching = true;
     await this.fetchMoreData({ startFromTheTop: true });
     this.isSearching = false;
-  };
+  }
 
-  triggerDebouncedSearch = () => {
+  triggerDebouncedSearch() {
     this.isSearching = true;
     this.debouncedFetchSearchResults();
-  };
+  }
 
   debouncedFetchSearchResults = _.debounce(async () => {
     await this.fetchMoreData({ startFromTheTop: true });
@@ -229,6 +229,7 @@ export default class ContactsBaseStore {
     this.scrollId = response.newScrollId;
   }
 
-  refreshContacts = () =>
-    this.fetchMoreData({ startFromTheTop: true, pageSize: this.contacts.length });
+  refreshContacts() {
+    return this.fetchMoreData({ startFromTheTop: true, pageSize: this.contacts.length });
+  }
 }
