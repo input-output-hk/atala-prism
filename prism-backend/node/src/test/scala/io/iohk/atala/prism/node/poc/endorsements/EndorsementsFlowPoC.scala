@@ -31,6 +31,7 @@ import io.iohk.atala.prism.node.services.{
   InMemoryLedgerService,
   NodeService,
   ObjectManagementService,
+  SubmissionSchedulingService,
   SubmissionService
 }
 import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
@@ -51,7 +52,9 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._
 
 class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
@@ -73,6 +76,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
+  protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
 
   override def beforeEach(): Unit = {
@@ -116,6 +120,15 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       logs = endorsementsFlowPoCLogs
+    )
+    // this service needs to pull operations from the database and to send them to the ledger
+    submissionSchedulingService = SubmissionSchedulingService(
+      SubmissionSchedulingService.Config(
+        ledgerPendingTransactionTimeout = Duration.ZERO,
+        transactionRetryPeriod = 1.days, // no retries during this test
+        operationSubmissionPeriod = 1.second
+      ),
+      submissionService
     )
 
     serverName = InProcessServerBuilder.generateName()

@@ -365,10 +365,8 @@ object DataPreparation {
       waitOperations: ByteString*
   ): Unit =
     waitOperations.foreach { operationId =>
-      val operationIdHex =
-        AtalaOperationId.fromVectorUnsafe(operationId.toByteArray.toVector)
       while (!isOperationConfirmed(nodeServiceStub, operationId)) {
-        println(s"Waiting until operation [$operationIdHex] is applied...")
+        Thread.sleep(1000) // wait for one second
       }
     }
 
