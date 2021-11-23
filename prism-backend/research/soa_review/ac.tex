@@ -263,6 +263,34 @@ the attributes that the user is willing to share (or a function of them).
   in exchange of Nym Tokens (how users get hold of these, is not described).
   Service Providers receive Nym Tokens in exchange of offering their services
   through the network.
+\item[\cite{hs21}:] This work merges AC approaches based on SPS-EQ and aggregate
+  signatures, and also introduces the separation between a trusted but restricted
+  device, and a less trusted but powerful device typical in DAA systems. The
+  former is referred to as \emph{core}, and the latter as \emph{helper}, hence
+  the Core-Helper AC (CHAC) acronym. In addition to the previous basic building
+  blocks, the system uses a Signature with Flexible Public Keys (SFPK) scheme.
+  Roughly, these are signature schemes where the public keys can be randomized,
+  but in a manner that no adversary can decide whether two public keys are
+  related or not (i.e., if one is a randomization of the other). Users identities
+  are SFPK keypairs, where the public part gets signed by the issuer, using an
+  AAEQ scheme (Aggregatable Attribute-based Signature Scheme on Equivalence Classes).
+  Roughly, an AAEQ scheme is a combination of attribute-based signatures on
+  equivalence classes (which the authors combine with Tag-based Signatures on
+  Equivalence Classes), and aggregate signatures. In the proposed AAEQ scheme,
+  a tag is derived from an attribute an a nonce, which is then ``signed'' (note:
+  this tag resembles much the concept of nyms based on scopes). Since signatures
+  (and tags) are group elements sharing the same discrete log (the signer's key),
+  they can be aggregated easily via multiplication. Hence, for each attribute that
+  the issuer wants to grant to the user, it creates an independent signature where
+  the tag depends on the attribute to grant. Then, the user can just aggregate
+  all of them into one credential. In addition to this, the authors split the
+  operations (which are in the bilinear setting), in a way that requires the
+  core to perform only a few operations in $G_1$. The result seems to be quite
+  efficient. However, it only supports selective disclosure (no advanced
+  privacy-preserving policies), and even revocation is not considered from scratch,
+  although the authors sketch an approach to integrate it -- which probably
+  would require a more formal analysis and would incur in (possibly bad?)
+  added costs.
 \end{enumerate}
 
 \paragraph{Main security models.}
@@ -412,6 +440,16 @@ the attributes that the user is willing to share (or a function of them).
   are claimed: undetectability (this seems similar to traceability in group sigs),
   unlinkability, selective attributes disclosure, unforgeability, persistent
   accounts, sybil resistance, extensibility, availability, decentralization.
+\item[\cite{hs21}:] Security is given through game-based definitions of
+  unforgeability, anonymity, and dependability. The first two are the usual ones,
+  while the latter roughly requires that an adversarial helper cannot produce
+  successful showings without cooperation from the core. It would be interesting
+  to make a detailed comparison with security models of DAA (usually in the UC
+  framework, although some game-based (seemingly flawed) definitions exist).
+  The main argument that the authors give when comparing to DAA, is that the
+  latter does not support attributes, and it is essentially a group signature
+  scheme without revocation and optional linkability (this frontier is also
+  blurry, see \cite{dl21}).
 \end{enumerate}
 
 \paragraph{Variations in functionality.}
@@ -467,6 +505,8 @@ the attributes that the user is willing to share (or a function of them).
   of pseudonyms. I.e., credentials are just signed (blocks of) attributes. This
   probably lets them achieve better efficiency. \doubt{This makes the scheme
     to be practically like a group signature scheme (without revocation...)}
+\item[\cite{hs21}:] The main variation here is the application of the core-helper
+  division (typical of DAA) to the AC domain.
 \end{enumerate}
 
 \paragraph{Efficiency.}
@@ -634,9 +674,28 @@ PS: Tokenization.
 \label{sssec:acrwdeploy}
 
 PS: Tokenization.
-U-Prove.
-Idemix.
-Signal's AC \needcite
+Signal's AC \cite{cpz20}.
+
+\begin{itemize}
+\item U-Prove (see ref. 65 in \cite{hs21}):  This is largely based on Brands
+  thesis. There was a deployment by Microsoft, mostly concurrent to Idemix.
+  They are one-show credentials, but seemingly there is recent real-world
+  deployments based on them (references in p.1 of \cite{hs21}):
+  
+  \begin{itemize}
+  \item Privacy-Pass by Cloudflare.
+  \item Trust Tokens API by Google.
+  \item PrivateStats proposal by Facebook.
+  \end{itemize}
+  
+\item Idemix \cite{ch02}: This is largely based on CL signatures. It has been
+  deployed (or is being deployed) in Hyperledger Fabric, and I think there is
+  some of it in Indy too.
+\end{itemize}
+
+\cite{hs21} contains also many references to ``practical'' applications of
+ACs. However, these are mostly references to papers in cryptographic venues,
+so I suspect that they are more academic than real-world systems.
 
 \subsection{TODO}
 
