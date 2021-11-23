@@ -39,7 +39,7 @@ const NavBar = ({ currentSection }) => {
     <Menu selectedKeys={[currentSection]} mode="horizontal" className="ulMain">
       {keys.map(key => (
         <Menu.Item key={key}>
-          <Link to={`/app#${key}`}>{t(`navBar.menuItems.${key}`)}</Link>
+          <Link to={`/#${key}`}>{t(`navBar.menuItems.${key}`)}</Link>
         </Menu.Item>
       ))}
       <Menu.Item key={RESOURCES_NAME}>
@@ -54,7 +54,7 @@ const NavBar = ({ currentSection }) => {
         <Link to="/blog">{t(`navBar.menuItems.${BLOG_NAME}`)}</Link>
       </Menu.Item>
       <Menu.Item key={CONTACT_US_NAME}>
-        <Link to={`/app#${CONTACT_US_NAME}`}>
+        <Link to={`/#${CONTACT_US_NAME}`}>
           <CustomButton
             buttonProps={{
               className: 'theme-primary'

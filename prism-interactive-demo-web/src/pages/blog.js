@@ -26,7 +26,7 @@ const BlogIndex = ({ data }) => {
   return (
     <div className="BlogContainer fade">
       <SEO title="Blog" />
-      <HeaderBlog backTo="/app" />
+      <HeaderBlog backTo="/" />
       <div className="container-middle-section">
         <div className="SectionContainer">
           <div className="containerEntry">

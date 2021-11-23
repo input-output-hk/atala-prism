@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 
-const isSsr = typeof window === 'undefined';
-const dependencies = isSsr ? [] : [window.hbspt];
-
 const Contact = () => {
+  const isSsr = typeof window === 'undefined';
+  const dependencies = isSsr ? [] : [window.hbspt];
+
   useEffect(() => {
     if (!isSsr && window.hbspt)
       window.hbspt.forms.create({

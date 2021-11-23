@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import QRCode from 'qrcode.react';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
-import DownloadButtons from '../../../landing/Molecules/DownloadButtons/DownloadButtons';
+import DownloadButtons from '../../../../../components/landing/Molecules/DownloadButtons/DownloadButtons';
 
 import './_style.scss';
 

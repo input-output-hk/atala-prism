@@ -11,7 +11,7 @@ const Header = props => {
   return (
     <div className="Header">
       <div className="Logo">
-        <Link to="/app">
+        <Link to="/">
           <img src="/images/atala-prism-logo-suite.svg" alt={t('atalaLogo')} />
         </Link>
       </div>

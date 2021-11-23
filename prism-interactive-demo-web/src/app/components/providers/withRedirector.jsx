@@ -4,7 +4,7 @@ import { navigate } from 'gatsby';
 export const withRedirector = Component => props => {
   const redirectTo = route => navigate(`/app/${route}`);
 
-  const redirectToLanding = () => redirectTo('');
+  const redirectToLanding = () => navigate('/');
 
   const redirectToCredentials = () => redirectTo('credentials');
 

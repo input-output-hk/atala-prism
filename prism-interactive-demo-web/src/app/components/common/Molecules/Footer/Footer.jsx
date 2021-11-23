@@ -10,7 +10,7 @@ const Footer = () => {
   return (
     <div className="Footer">
       <div className="FooterContent">
-        <Link to="/app">
+        <Link to="/">
           <img src="/images/atala-prism-logo-suite.svg" alt={t('atalaLogo')} />
         </Link>
         <div className="FooterText">
