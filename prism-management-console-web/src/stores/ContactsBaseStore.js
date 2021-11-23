@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import {
   CONTACT_PAGE_SIZE,
   CONTACT_SORTING_KEYS,
@@ -166,7 +166,9 @@ export default class ContactsBaseStore {
 
   debouncedFetchSearchResults = _.debounce(async () => {
     await this.fetchMoreData({ startFromTheTop: true });
-    this.isSearching = false;
+    runInAction(() => {
+      this.isSearching = false;
+    });
   }, SEARCH_DELAY_MS);
 
   // ********************** //
