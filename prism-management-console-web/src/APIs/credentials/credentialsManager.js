@@ -22,15 +22,9 @@ import {
 } from '../../protos/console_api_pb';
 import { getProtoDate } from '../../helpers/formatters';
 import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
+import { credentialMapper } from '../helpers/credentialHelpers';
 
 const { FilterBy, SortBy } = GetGenericCredentialsRequest;
-
-function mapCredential(cred) {
-  const credential = cred.toObject();
-  const credentialString = cred.getCredentialData();
-  const credentialData = JSON.parse(credentialString);
-  return Object.assign(credential, { credentialData, credentialString });
-}
 
 const fieldKeys = {
   UNKNOWN: 0,
@@ -78,7 +72,8 @@ async function getCredentials({
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
   const credentialsList = result.getCredentialsList();
-  const mappedCredentialsList = credentialsList.map(mapCredential);
+  const mappedCredentialsList = credentialsList.map(credentialMapper);
+
   return { credentialsList: mappedCredentialsList };
 }
 
@@ -146,7 +141,7 @@ async function getContactCredentials(contactId) {
   if (sessionError) return [];
 
   const res = await this.client.getContactCredentials(req, metadata);
-  const credentialsList = res.getGenericCredentialsList().map(mapCredential);
+  const credentialsList = res.getGenericCredentialsList().map(credentialMapper);
   Logger.info('Got credentials:', credentialsList);
 
   return credentialsList;

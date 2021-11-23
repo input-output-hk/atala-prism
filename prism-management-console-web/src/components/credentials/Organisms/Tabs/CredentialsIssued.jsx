@@ -10,10 +10,7 @@ import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../../hooks/useSession';
 import TableOptions from '../../Molecules/BulkActionsHeader/TableOptions';
-import {
-  useCredentialIssuedStore,
-  useCredentialIssuedUiState
-} from '../../../../hooks/useCredentialIssuedStore';
+import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
 
 const CredentialsIssued = observer(
   ({
@@ -27,13 +24,13 @@ const CredentialsIssued = observer(
     const [selectedLength, setSelectedLength] = useState();
 
     const {
+      filterSortingProps: { hasFiltersApplied, isSearching, isSorting },
       credentials,
       isFetching,
       hasMore,
       fetchMoreData,
       isLoadingFirstPage
-    } = useCredentialIssuedStore();
-    const { hasFiltersApplied, isSearching, isSorting } = useCredentialIssuedUiState();
+    } = useCredentialsIssuedPageStore();
 
     const { accountStatus } = useSession();
 

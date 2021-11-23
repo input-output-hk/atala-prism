@@ -44,10 +44,6 @@ export default class CurrentGroupStore {
     return this.contactsBaseStore.contacts;
   }
 
-  get hasFiltersApplied() {
-    return this.contactsBaseStore.hasFiltersApplied;
-  }
-
   get hasMoreMembers() {
     return this.contactsBaseStore.hasMore;
   }

@@ -14,23 +14,19 @@ import {
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
-import {
-  useCredentialIssuedStore,
-  useCredentialIssuedUiState
-} from '../../hooks/useCredentialIssuedStore';
+import { useCredentialsIssuedPageStore } from '../../hooks/useCredentialsIssuedPageStore';
 import { useSelectAll } from '../../hooks/useSelectAll';
 import { useApi } from '../../hooks/useApi';
 
 const CredentialContainer = observer(() => {
   const { t } = useTranslation();
   const { wallet } = useApi();
-  useCredentialIssuedUiState({ reset: true });
   const {
     credentials: credentialsIssued,
     getCredentialsToSelect: getCredentialsIssuedToSelect,
     refreshCredentials: refreshCredentialsIssued,
     isFetching: isFetchingCredentialsIssued
-  } = useCredentialIssuedStore();
+  } = useCredentialsIssuedPageStore();
   useTemplateStore({ fetch: true });
 
   const {

@@ -11,7 +11,7 @@ import { Button, Dropdown, Menu } from 'antd';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
-import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
+import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
 import { checkboxPropShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
@@ -20,11 +20,8 @@ const TableOptions = ({ bulkActionsProps }) => {
   const { t } = useTranslation();
   const { selectedCredentials, selectAllProps, refreshCredentials } = bulkActionsProps;
   const {
-    sortingBy,
-    setSortingBy,
-    sortDirection,
-    toggleSortDirection
-  } = useCredentialIssuedUiState();
+    filterSortingProps: { sortingBy, setSortingBy, sortDirection, toggleSortDirection }
+  } = useCredentialsIssuedPageStore();
 
   const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS);
 

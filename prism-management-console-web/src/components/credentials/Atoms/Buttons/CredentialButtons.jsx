@@ -11,10 +11,10 @@ import {
   SEND_CREDENTIALS,
   SIGN_CREDENTIALS
 } from '../../../../helpers/constants';
+import { credentialTypeShape } from '../../../../helpers/propShapes';
+import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
 
 import './_style.scss';
-import { credentialTypeShape } from '../../../../helpers/propShapes';
-import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
 
 const CredentialButtons = observer(
   ({
@@ -26,7 +26,7 @@ const CredentialButtons = observer(
     disableSend
   }) => {
     const { t } = useTranslation();
-    const { hasAditionalFiltersApplied } = useCredentialIssuedUiState();
+    const { hasAditionalFiltersApplied } = useCredentialsIssuedPageStore();
 
     const [loadingByKey, setLoadingByKey] = useState(null);
 

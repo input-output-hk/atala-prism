@@ -5,8 +5,9 @@ import GroupStore from './domain/GroupStore';
 import CurrentGroupStore from './ui/CurrentGroupStore';
 import ContactStore from './domain/ContactStore';
 import CurrentContactState from './ui/CurrentContactState';
-import ContactsPageStore from './ui/ContactsPageStore';
+import ContactsPageStore from './ContactsPageStore';
 import GroupsPageStore from './GroupsPageStore';
+import CredentialsIssuedPageStore from './features/CredentialsIssuedPageStore';
 
 export const createStores = api => {
   const sessionState = new SessionState(api);
@@ -18,6 +19,7 @@ export const createStores = api => {
   const contactStore = new ContactStore(api, sessionState);
   const contactsPageStore = new ContactsPageStore(api, sessionState);
   const currentContactState = new CurrentContactState(api, sessionState);
+  const credentialsIssuedPageStore = new CredentialsIssuedPageStore(api, sessionState);
 
   return {
     ...rootStore.uiState,
@@ -28,7 +30,8 @@ export const createStores = api => {
     currentGroupStore,
     contactStore,
     contactsPageStore,
-    currentContactState
+    currentContactState,
+    credentialsIssuedPageStore
   };
 };
 
