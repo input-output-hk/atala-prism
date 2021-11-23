@@ -3,13 +3,8 @@ package io.iohk.atala.prism.node.poc.batch
 import java.time.LocalDate
 import java.util.UUID
 import io.iohk.atala.prism.protos.console_models.CManagerGenericCredential
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_api.{
-  IssueCredentialBatchRequest,
-  IssueCredentialBatchResponse,
-  RevokeCredentialsRequest,
-  RevokeCredentialsResponse
-}
+import io.iohk.atala.prism.protos.node_api.ScheduleOperationsRequest
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 case class ManagementConsole(
@@ -37,31 +32,40 @@ case class ManagementConsole(
   // this is a toy API to simulate what the console does
   def issueCredentialBatch(
       issueCredentialBatchOperation: SignedAtalaOperation
-  ): IssueCredentialBatchResponse = {
+  ): node_models.OperationOutput = {
     // First some storage stuff to mark a credential as stored
     // It then posts the operation to the node
-    node.issueCredentialBatch(
-      IssueCredentialBatchRequest(Some(issueCredentialBatchOperation))
-    )
+    node
+      .scheduleOperations(
+        ScheduleOperationsRequest(List(issueCredentialBatchOperation))
+      )
+      .outputs
+      .head
   }
 
   def revokeCredentialBatch(
       revokeCredentialBatchOperation: SignedAtalaOperation
-  ): RevokeCredentialsResponse = {
+  ): node_models.OperationOutput = {
     // First storage stuff
     // then, posting things on the blockchain through the node
-    node.revokeCredentials(
-      RevokeCredentialsRequest(Some(revokeCredentialBatchOperation))
-    )
+    node
+      .scheduleOperations(
+        ScheduleOperationsRequest(List(revokeCredentialBatchOperation))
+      )
+      .outputs
+      .head
   }
 
   def revokeSpecificCredentials(
       revokeCredentialBatchOperation: SignedAtalaOperation
-  ): RevokeCredentialsResponse = {
+  ): node_models.OperationOutput = {
     // First storage stuff
     // then, posting things on the blockchain through the node
-    node.revokeCredentials(
-      RevokeCredentialsRequest(Some(revokeCredentialBatchOperation))
-    )
+    node
+      .scheduleOperations(
+        ScheduleOperationsRequest(List(revokeCredentialBatchOperation))
+      )
+      .outputs
+      .head
   }
 }

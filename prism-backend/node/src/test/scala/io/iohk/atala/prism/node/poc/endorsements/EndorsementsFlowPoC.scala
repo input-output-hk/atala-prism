@@ -44,7 +44,7 @@ import io.iohk.atala.prism.protos.endorsements_api.{
   GetFreshMasterKeyRequest,
   RevokeEndorsementRequest
 }
-import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, GetDidDocumentRequest, ScheduleOperationsRequest}
+import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, ScheduleOperationsRequest}
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.utils.NodeClientUtils.{issueBatchOperation, revokeCredentialsOperation}
@@ -179,10 +179,12 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       val moeDID = DID.fromString(s"did:prism:${moeDIDSuffix.getValue}")
       val signedAtalaOperation =
         wallet.signOperation(createDIDOp, "master0", moeDIDSuffix)
-      val createDIDResponse = nodeServiceStub.createDID(
-        CreateDIDRequest()
-          .withSignedOperation(signedAtalaOperation)
-      )
+      val createDIDResponse = nodeServiceStub
+        .scheduleOperations(
+          ScheduleOperationsRequest(List(signedAtalaOperation))
+        )
+        .outputs
+        .head
 
       // 2. We create 100 signed keys (we will later define how to derive them properly)
       val issuanceKeyId = "issuance0"
@@ -219,7 +221,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
 
       DataPreparation.waitConfirmation(
         nodeServiceStub,
-        createDIDResponse.operationId
+        createDIDResponse.getOperationId
       )
       //  5. the MoE validates the key signature
       val moeIssuingKey = ProtoCodecs

@@ -54,10 +54,6 @@ trait ObjectManagementService[F[_]] {
       notification: AtalaObjectNotification
   ): F[Either[SaveObjectError, Boolean]]
 
-  def scheduleSingleAtalaOperation(
-      op: node_models.SignedAtalaOperation
-  ): F[Either[NodeError, AtalaOperationId]]
-
   def scheduleAtalaOperations(
       ops: node_models.SignedAtalaOperation*
   ): F[List[Either[NodeError, AtalaOperationId]]]
@@ -130,11 +126,6 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
         }
       }
   }
-
-  def scheduleSingleAtalaOperation(
-      op: node_models.SignedAtalaOperation
-  ): F[Either[NodeError, AtalaOperationId]] =
-    scheduleAtalaOperations(op).map(_.head)
 
   // User calls this rpc method to send new operations. All operations are initially stored with the status RECEIVED.
   def scheduleAtalaOperations(

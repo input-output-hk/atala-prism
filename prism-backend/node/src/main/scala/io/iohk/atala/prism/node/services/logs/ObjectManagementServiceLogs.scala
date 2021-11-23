@@ -33,18 +33,6 @@ private[services] class ObjectManagementServiceLogs[
         }
         .onError(errorCause"Encountered an error while saving object" (_))
 
-  def scheduleSingleAtalaOperation(
-      op: SignedAtalaOperation
-  ): Mid[F, Either[errors.NodeError, AtalaOperationId]] =
-    in =>
-      info"scheduling single atala operation" *> in
-        .flatTap(logScheduleOperationResult)
-        .onError(
-          errorCause"Encountered an error while scheduling single atala operation" (
-            _
-          )
-        )
-
   def scheduleAtalaOperations(
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] =

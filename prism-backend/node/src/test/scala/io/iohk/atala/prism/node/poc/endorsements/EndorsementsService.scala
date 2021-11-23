@@ -144,8 +144,8 @@ case class EndorsementsService(
 
         // if all checks are valid we issue the credential
         nodeServiceStub
-          .issueCredentialBatch(
-            IssueCredentialBatchRequest().withSignedOperation(signedOperation)
+          .scheduleOperations(
+            ScheduleOperationsRequest(List(signedOperation))
           )
 
         val interval = ValidInterval(
@@ -192,9 +192,8 @@ case class EndorsementsService(
       val revokeOperation = request.getRevokeBatch
 
       if (endorsedBy(childDID) == parentDID) {
-        nodeServiceStub.revokeCredentials(
-          RevokeCredentialsRequest()
-            .withSignedOperation(revokeOperation)
+        nodeServiceStub.scheduleOperations(
+          ScheduleOperationsRequest(List(revokeOperation))
         )
 
         val revocationTime = Instant.now()

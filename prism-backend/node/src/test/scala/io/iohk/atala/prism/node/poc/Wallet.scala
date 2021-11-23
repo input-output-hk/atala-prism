@@ -101,7 +101,7 @@ case class Wallet(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
       PrismDid.getDEFAULT_MASTER_KEY_ID,
       didSuffix
     )
-    node.updateDID(node_api.UpdateDIDRequest(Some(updateDidOpSigned)))
+    node.scheduleOperations(node_api.ScheduleOperationsRequest(List(updateDidOpSigned)))
     dids(didSuffix) += (revocationKeyId -> revocationKeyPair.getPrivateKey)
     ()
   }

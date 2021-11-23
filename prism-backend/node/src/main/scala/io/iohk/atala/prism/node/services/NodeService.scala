@@ -30,8 +30,6 @@ trait NodeService[F[_]] {
 
   def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]]
 
-  def scheduleOperation(op: SignedAtalaOperation): F[Either[NodeError, AtalaOperationId]]
-
   def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]]
 
   def getCredentialRevocationData(
@@ -44,7 +42,6 @@ trait NodeService[F[_]] {
   def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo]
 
   def getLastSyncedTimestamp: F[Instant]
-
 }
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
@@ -85,9 +82,6 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
 
   private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[DIDData] =
     in.map(didDataState => ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState))
-
-  override def scheduleOperation(op: SignedAtalaOperation): F[Either[NodeError, AtalaOperationId]] =
-    objectManagement.scheduleSingleAtalaOperation(op)
 
   override def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]] =
     for {
