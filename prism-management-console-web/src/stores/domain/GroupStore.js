@@ -12,6 +12,7 @@ const fallback = {
   groupsList: [],
   totalNumberOfGroups: undefined
 };
+
 export default class GroupStore {
   isFetching = defaultValues.isFetching;
 
