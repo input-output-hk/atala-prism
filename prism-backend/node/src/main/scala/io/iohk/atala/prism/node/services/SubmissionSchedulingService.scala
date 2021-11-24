@@ -12,11 +12,12 @@ import java.time.Duration
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Scheduler which calls submitReceivedObjects and retryOldPendingTransactions periodically.
+/** Scheduler which calls submitReceivedObjects and retryOldPendingTransactions periodically.
   *
-  * @param config configuration of waiting timeouts between submissions and retries
-  * @param submissionService service which implements submitReceivedObjects & retryOldPendingTransactions methods
+  * @param config
+  *   configuration of waiting timeouts between submissions and retries
+  * @param submissionService
+  *   service which implements submitReceivedObjects & retryOldPendingTransactions methods
   */
 class SubmissionSchedulingService private (
     config: Config,
