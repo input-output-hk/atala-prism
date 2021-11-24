@@ -1,12 +1,7 @@
 \section{Anonymous Credentials}
 \label{sec:ac}
 
-First proposed in \cite{chau85}.
-CL signatures (idemix) \cite{cl01,cl04}.
-UC formalisation in \cite{cdhk15}.
-Brands works (U-prove).
-Coconut paper, referenced in \cite[Section 1]{cdl+20}: anonymous credentials with
-threshold opening.
+\todo{Big: Brands's line of works (U-prove).}
 
 \begin{enumerate}
 \item Main intuition.
@@ -19,18 +14,99 @@ threshold opening.
 \end{enumerate}
 
 Anonymous Credentials (ACs) were first proposed by Chaum \cite{chau85}, and
-later formally treated and optimized in a series of papers by Camenisch and
-Lysyanskaya \cite{cl01,cl02,cl04}. Roughly speaking, users receive credentials
-from an issuing organization, which can then use to authenticate against some
-verifier. The main property is that this authentication process can be done
-in a privacy-preserving way. This typically means that the verifier cannot
-link different authentication processes by that same user. And, usually, in
-credentials composed by multiple attributes, that the verifier only learns
-the attributes that the user is willing to share (or a function of them).
+further studied, formally treated, and optimized, in a series of papers by
+Camenisch and Lysyanskaya \cite{cl01,cl02,cl04} and, independently, by Brands
+\needcite\footnote{Camenisch and Lysyanskaya line of work is well known for
+  IBM's Idemix system, and Brands's work for Microsoft's U-Prove. More detail
+  appears in the sequel.}. In an AC system, roughly speaking, users receive
+credentials from an issuing organization, which they can then use to
+authenticate against some verifier. The main property is that this
+authentication process can be done in a privacy-preserving way. This typically
+means that the verifier cannot link different authentication processes by that
+same user. Usually, credentials are composed by multiple attributes, such that
+the verifier only learns the attributes that the user is willing to share (or a
+function of them).
 
 \subsection{Approaches, Models, and Variations}
 
 \paragraph{Main approaches.} %
+The more fruitful line of work within the AC domain is the one initiated by
+Camenisch and Lysyanskaya \cite{cl01,cl02,cl04} (henceforth, CL credentials or,
+when referring to the underlying signature schemes defined in \cite{cl02,cl04},
+CL signatures). The core idea is simple: in order to build a (basic) AC
+system, all that is needed are a commitment scheme, and a signature scheme
+with efficient protocols for signing committed values, and proving knowledge
+of a signature. From this, a basic AC system can be derived as in \figref{XXX}.
+Essentially:
+
+\begin{itemize}
+\item User $A$ randomly produces a secret value $s_A$, and commits to it,
+  producing $c_A$.
+\item User $A$ interacts with issuer $I$ to get a signature on $s_A$. To
+  avoid leaking the secret to $I$, $A$ uses $c_A$, proving knowledge of the
+  associated secret. The produced signature $\sigma_A$, is $A$'s anonymous
+  credential.
+\item When $A$ needs to convince a verifier $B$ that she owns a valid credential
+  issued by $I$, she just has to create a zero-knowledge proof of knowledge
+  of $\sigma_A$.
+\end{itemize}
+
+Usually, the commitment to the user's secret key is known as a pseudonym, or
+in short form, \emph{nym}. These nyms have proven to be a useful component to
+ensure security and privacy properties -- and are also leveraged in many group
+signature and DAA works. 
+
+A large part of the academic works in the AC domain follow this approach, which
+is then extended to support enhanced functionality. For instance, in order to
+support multiple issuers (and, in some sense, multiple attributes)
+\cite{cl01,cl02,cl04} \todo{check if the references are correct} require an
+extra protocol for proving, in zero-knowledge, equality of two committed and signed values.
+This allows user $A$, with credential $\sigma_A^I$ obtained from issuer $I$ and
+credential $\sigma_A^J$ obtained from issuer $J$, to prove $J$ that she has a
+valid credential from $I$, by issuing a zero-knowledge proof of equality for
+both credentials. Now, if each credential is associated with a different set of
+attributes, this also lets to ``naively'' build multi-attribute AC systems.
+
+For multi-attribute ACs, though, much more efficient variants are possible. To
+begin with, CL signatures allow signing blocks of messages (and commitments),
+which can be seen as attributes signed by the issuer. BBS+ signatures
+\cite{am06,cdl16b}, and PS16 signatures \cite{ps16} also support similar
+functionality, and have been leveraged to build multi-attribute AC systems
+too (e.g., \cite{cks10} gives a construction with BBS+ credentials, and
+\cite{sms+19,halp20} are based on PS16). These family of signatures on blocks
+of messages have yet another very useful property: signatures are easily
+randomizable, which can be used (along with the previously mentioned
+zero-knowledge proofs) to make unlinkable showings of the same credential.
+AC systems achieving the latter property of unlinkable showings are said
+to offer \emph{multi-show} credentials.
+
+Most of these systems also have in common that, being based on building blocks
+leveraging discrete logarithm structures, they are easily extended to prove
+arbitrary statements on the credentials attributes -- such as the usual ``Over
+18'' claim. However, while it is certainly doable, the approach does not scale
+for complex statements involving multiple attributes \todo{some concrete
+  figures?}
+
+Restricting the expressiveness, and focusing on letting the credential holder
+reveal only a subset of the attributes in a credential, more efficient schemes
+have been proposed, leveraging algebraic tricks such as structure-preserving
+signatures on equivalence classes (SPS-EQ), along with vector commitment schemes
+\cite{cdhk15}, or set commitment schemes \cite{fhs19}. The former uses Lagrange
+interpolation to allow revealing only a subset of the committed messages;
+\todo{what was the specific technique of \cite{fhs19}?}. \cite{fhs19}, is more
+efficient, as avoids complex zero-knowledge proofs; however it does not support
+blind issuance of credentials, as opposed to \cite{cdhk15} \todo{confirm this
+  last part, and refine}.
+
+\todo{Mention the subline of delegatable credentials, with controlled
+  malleability.}
+
+All AC systems mentioned up to this point follow, up to small variations, the
+same approach: randomizable signatures on sets of (committed) messages, with
+(somehow) efficient proofs. \todo{Move to the ones based on predicate
+  encryption.}
+
+\todo{End with the MAC-based approach.}
 
 \begin{enumerate}
 \item[\cite{cl01}:]
@@ -291,6 +367,12 @@ the attributes that the user is willing to share (or a function of them).
   although the authors sketch an approach to integrate it -- which probably
   would require a more formal analysis and would incur in (possibly bad?)
   added costs.
+  \note{The concept of aggregation here is different than the one in \cite{cl11}.
+    In the latter, users can aggregate credentials from different issuers. Here,
+    this is not possible, as aggregation won't work for different signing keys
+    (i.e., issuer keys). Hence, aggregation rather refers to receiving multiple,
+    independently signed, attributes by the same issuer, and then combining them
+    into a single credential by that same issuer.}
 \end{enumerate}
 
 \paragraph{Main security models.}
@@ -700,10 +782,9 @@ so I suspect that they are more academic than real-world systems.
 \subsection{TODO}
 
 \begin{itemize}
-\item : Delegation (\cite{cklm14} relies on \cite{cklm12}).
-\item \cite{cgm16} An AC system that builds ACs from existing (conventional,
-  such as ECDSA) signatures. \cite{kkl+16} achieves similar results with a
-  different approach?
+\item \cite{bckl08}.
+\item \cite{sand20}.
+\item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different approach?
 \end{itemize}
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
