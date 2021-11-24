@@ -1,7 +1,17 @@
 import { makeAutoObservable } from 'mobx';
+import { CREDENTIAL_ID_KEY } from '../../helpers/constants';
 import CredentialsIssuedBaseStore from '../domain/CredentialsIssuedBaseStore';
 
+const defaultValues = {
+  selectedCredentials: [],
+  isLoadingSelection: false
+};
+
 export default class CredentialsIssuedPageStore {
+  selectedCredentials = defaultValues.selectedCredentials;
+
+  isLoadingSelection = defaultValues.isLoadingSelection;
+
   constructor(api, sessionState) {
     this.api = api;
     this.sessionState = sessionState;
@@ -42,6 +52,11 @@ export default class CredentialsIssuedPageStore {
     return this.credentialsIssuedBaseStore.isLoadingFirstPage;
   }
 
+  get invisibleSelectedCredentials() {
+    const credentialIds = this.credentials.map(c => c.credentialId);
+    return this.selectedCredentials.filter(sc => !credentialIds.includes(sc));
+  }
+
   fetchMoreData() {
     return this.credentialsIssuedBaseStore.fetchMoreData();
   }
@@ -52,5 +67,21 @@ export default class CredentialsIssuedPageStore {
 
   initCredentialsIssuedStore() {
     return this.credentialsIssuedBaseStore.initCredentialStore();
+  }
+
+  *selectAllCredentials(ev) {
+    this.isLoadingSelection = true;
+    const { checked } = ev.target;
+    const entitiesToSelect = yield this.credentialsIssuedBaseStore.fetchAllCredentials();
+    this.setSelection(checked, entitiesToSelect);
+    this.isLoadingSelection = false;
+  }
+
+  setSelection(checked, entitiesList) {
+    this.selectedCredentials = checked ? entitiesList.map(e => e[CREDENTIAL_ID_KEY]) : [];
+  }
+
+  handleCherryPickSelection(updatedPartialSelection) {
+    this.selectedCredentials = this.invisibleSelectedCredentials.concat(updatedPartialSelection);
   }
 }

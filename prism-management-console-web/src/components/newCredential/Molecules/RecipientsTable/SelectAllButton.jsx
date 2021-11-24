@@ -5,7 +5,7 @@ import { Checkbox } from 'antd';
 import { PulseLoader } from 'react-spinners';
 import { checkboxPropShape } from '../../../../helpers/propShapes';
 
-const SelectAllButton = ({ loadingSelection, selectedEntities, checkboxProps }) => {
+const SelectAllButton = ({ isLoadingSelection, selectedEntities, checkboxProps }) => {
   const { t } = useTranslation();
 
   const selectedLabel = selectedEntities.length ? `  (${selectedEntities.length})  ` : null;
@@ -13,7 +13,7 @@ const SelectAllButton = ({ loadingSelection, selectedEntities, checkboxProps }) 
   return (
     <div className="SelectAllCheckboxContainer">
       <Checkbox className="SelectAllCheckbox" {...checkboxProps}>
-        {loadingSelection ? (
+        {isLoadingSelection ? (
           <div className="LoadingSelection">
             <PulseLoader size={3} color="#FFAEB3" />
           </div>
@@ -33,7 +33,7 @@ SelectAllButton.defaultProps = {
 };
 
 SelectAllButton.propTypes = {
-  loadingSelection: PropTypes.bool.isRequired,
+  isLoadingSelection: PropTypes.bool.isRequired,
   selectedEntities: PropTypes.arrayOf(PropTypes.string),
   checkboxProps: checkboxPropShape.isRequired
 };

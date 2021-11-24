@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { isNumber } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import {
   CredentialsServicePromiseClient,
@@ -9,7 +9,8 @@ import {
   REQUEST_AUTH_TIMEOUT_MS,
   CREDENTIAL_PAGE_SIZE,
   CREDENTIAL_SORTING_KEYS,
-  SORTING_DIRECTIONS
+  SORTING_DIRECTIONS,
+  MAX_CREDENTIAL_PAGE_SIZE
 } from '../../helpers/constants';
 import hardcodedCredentialTypes from './mocks/hardcodedCredentialTypes';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
@@ -75,6 +76,38 @@ async function getCredentials({
   const mappedCredentialsList = credentialsList.map(credentialMapper);
 
   return { credentialsList: mappedCredentialsList };
+}
+
+async function fetchMoreCredentialsRecursively({ limit, filter, sort, acc = [], onFinish }) {
+  const pageSize = isNumber(limit)
+    ? Math.min(limit, MAX_CREDENTIAL_PAGE_SIZE)
+    : MAX_CREDENTIAL_PAGE_SIZE;
+  const { credentialsList } = await this.getCredentials({
+    offset: acc.length,
+    pageSize,
+    sort,
+    filter
+  });
+
+  const partialContactsArray = acc.concat(credentialsList);
+  if (credentialsList.length < pageSize) return onFinish(partialContactsArray);
+  return this.fetchMoreContactsRecursively({
+    limit,
+    filter,
+    sort,
+    acc: partialContactsArray,
+    onFinish
+  });
+}
+
+function getAllCredentials({
+  limit,
+  filter = {},
+  sort = { field: CREDENTIAL_SORTING_KEYS.createdOn, direction: SORTING_DIRECTIONS.ascending }
+}) {
+  return new Promise(resolve => {
+    this.fetchMoreCredentialsRecursively({ limit, filter, sort, onFinish: resolve });
+  });
 }
 
 async function createBatchOfCredentials(credentialsData, credentialType, groups) {
@@ -183,6 +216,8 @@ function CredentialsManager(config, auth) {
 }
 
 CredentialsManager.prototype.getCredentials = getCredentials;
+CredentialsManager.prototype.getAllCredentials = getAllCredentials;
+CredentialsManager.prototype.fetchMoreCredentialsRecursively = fetchMoreCredentialsRecursively;
 CredentialsManager.prototype.createBatchOfCredentials = createBatchOfCredentials;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.generateAtalaMessage = generateAtalaMessage;

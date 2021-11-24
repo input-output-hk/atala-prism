@@ -178,6 +178,7 @@ export default class CredentialsIssuedBaseStore {
 
   async triggerSearch() {
     this.isSearching = true;
+    this.hasMore = true;
     this.handleUnsupportedFilters();
     this.handleUnsupportedSorting();
     await this.fetchMoreData({ startFromTheTop: true });
@@ -212,6 +213,7 @@ export default class CredentialsIssuedBaseStore {
 
   triggerDebouncedSearch() {
     this.isSearching = true;
+    this.hasMore = true;
     this.debouncedFetchSearchResults();
   }
 
@@ -287,6 +289,31 @@ export default class CredentialsIssuedBaseStore {
   }
 
   refreshCredentials() {
+    this.hasMore = true;
     return this.fetchMoreData({ startFromTheTop: true, pageSize: this.credentials.length });
+  }
+
+  *fetchAllCredentials() {
+    const {
+      // TODO: implement missing filters on the backend
+      // nameFilter,
+      // credentialStatusFilter,
+      // connectionStatusFilter,
+      credentialTypeFilter,
+      dateFilter = [],
+      sortDirection,
+      sortingBy
+    } = this;
+    const allCredentials = yield this.api.credentialsManager.getAllCredentials({
+      limit: null,
+      sort: { field: sortingBy, direction: sortDirection },
+      filter: {
+        credentialType: credentialTypeFilter,
+        date: dateFilter
+      }
+    });
+    this.transportLayerErrorHandler.handleTransportLayerSuccess();
+    this.isFetching = false;
+    return allCredentials;
   }
 }
