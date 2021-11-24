@@ -1,0 +1,23 @@
+@import '../../../../css/general_styling';
+
+.ManualImportTab {
+  padding: 1em;
+  display: flex;
+  .TitleContainer {
+    h3 {
+      @include primary-text($h3, $secondary-color);
+      font-variant: normal;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+    p {
+      @include primary-text($body, $grey);
+      font-variant: normal;
+      margin-bottom: 1em;
+    }
+  }
+  .Col {
+    display: flex;
+    flex-direction: column;
+  }
+}

@@ -18,6 +18,7 @@ import {
   DEFAULT_DATE_FORMAT
 } from '../../helpers/constants';
 import GenericStepsButtons from '../common/Molecules/GenericStepsButtons/GenericStepsButtons';
+import ImportContactsTabs from './Molecules/importContactsTabs/ImportContactsTabs';
 import WizardTitle from '../common/Atoms/WizardTitle/WizardTitle';
 import { createBlankContact } from '../../helpers/importHelpers';
 import { DynamicFormContext } from '../providers/DynamicFormProvider';
@@ -265,7 +266,9 @@ const ImportDataContainer = ({
         />
         <WizardTitle title={title[useCase]} subtitle={subtitle[useCase]} />
       </div>
-      {renderStep()}
+      {/* 
+      {renderStep()} */}
+      <ImportContactsTabs />
     </div>
   );
 };

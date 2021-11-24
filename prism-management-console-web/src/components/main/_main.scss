@@ -16,6 +16,7 @@
       width: calc(100vw - #{$sidebar-width});
       background: $white;
       height: 100%;
+      padding: 0 2%;
       @include breakpoint(sm) {
         width: 100vw;
         overflow-y: auto;

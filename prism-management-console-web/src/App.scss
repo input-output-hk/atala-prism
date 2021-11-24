@@ -36,3 +36,23 @@
     @include secondary-text($h1, $secondary-color);
   }
 }
+
+/*Focus Border in Select*/
+
+.ant-select-focused .ant-select-selector,
+.ant-select-selector:focus,
+.ant-select-selector:active,
+.ant-select-open .ant-select-selector {
+  border-color: $primary-color !important;
+  box-shadow: none !important;
+}
+
+/* Tabs focus color */
+
+.ant-tabs-tab-btn:active {
+  color: $medium-grey;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: $medium-grey;
+}

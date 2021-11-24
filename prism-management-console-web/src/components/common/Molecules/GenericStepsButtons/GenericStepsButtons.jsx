@@ -7,7 +7,13 @@ import CustomButton from '../../Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
+{/*
+
+  @dbrosio ya no vamos a usar mas los steps que están entre los botones de back y next. Podrìas sacar esa lógica para limpiar el codigo?
+
 const { Step } = Steps;
+
+*/}
 
 const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loading }) => {
   const { t } = useTranslation();
@@ -38,13 +44,6 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
           }}
           buttonText={backButton}
         />
-      </div>
-      <div className="stepsContainer">
-        <Steps size="small" current={currentStep}>
-          {steps.map(({ key, title }) => (
-            <Step key={key} title={title} />
-          ))}
-        </Steps>
       </div>
       <div className="ControlButtons">
         <CustomButton

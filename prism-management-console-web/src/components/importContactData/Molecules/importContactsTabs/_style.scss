@@ -1,0 +1,20 @@
+@import '../../../../css/general_styling';
+
+.ImportContactsTabs {
+  .ant-tabs > .ant-tabs-nav .ant-tabs-nav-list, .ant-tabs > div > .ant-tabs-nav .ant-tabs-nav-list {
+    width: 100%;
+  }
+  .ant-tabs-tab {
+    width: 25%;
+    @include primary-text ($secondary-color, $h3);
+    font-variant: normal;
+    padding: 1em;
+    color: $medium-grey;
+  }
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: $primary-color;
+  }
+  .ant-tabs-ink-bar {
+    background: $primary-color;
+  }
+}

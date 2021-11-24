@@ -5,7 +5,6 @@
   flex-direction: column;
   justify-content: flex-start;
   .ContentHeader {
-    padding: 2em;
     display: block !important;
     h3 {
       @include primary-text($h3, $dark-grey);

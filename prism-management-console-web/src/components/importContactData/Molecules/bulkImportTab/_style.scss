@@ -1,0 +1,63 @@
+@import '../../../../css/general_styling';
+
+.BulkImportTab {
+  padding: 1em;
+  display: flex;
+  .TitleContainer {
+    h3 {
+      @include primary-text($h3, $secondary-color);
+      font-variant: normal;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+    p {
+      @include primary-text($body, $grey);
+      font-variant: normal;
+      margin-bottom: 1em;
+    }
+  }
+  .Col {
+    display: flex;
+    flex-direction: column;
+    .ant-select {
+      margin:0 0 1em 0;
+    }
+    .ant-checkbox-wrapper {
+      @include primary-text($label, $grey);
+      font-variant: normal;
+      width: 70%;
+    }
+    .row {
+      display: flex;
+      button {
+        width: 230px;
+        margin: 0 0.5em;
+      }
+    }
+  }
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    border-color: $primary-color;
+  }
+  .ant-select-selector:focus-within {
+    border: 1px solid $primary-color !important;
+    box-shadow: none;
+  }
+  .ant-tag-red {
+    color: $primary-color;
+    background: #ffccc9;
+    border-radius: 2em;
+    border-color: transparent;
+  }
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    border-radius: 0;
+  }
+  .ant-tag-close-icon {
+    color: $primary-color;
+  }
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
+    color: $primary-color!important;
+  }
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
+    color: $primary-color!important;
+  }
+}
