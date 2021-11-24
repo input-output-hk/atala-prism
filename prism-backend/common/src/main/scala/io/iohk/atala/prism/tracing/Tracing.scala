@@ -5,8 +5,11 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId
 
 object Tracing {
-  def trace[F[_], A](fa: TraceId => F[A]): F[A] = {
-    val traceId = GrpcAuthenticationHeaderParser.getTraceId(Context.current())
+  def trace[F[_], A](
+      fa: TraceId => F[A],
+      parser: GrpcAuthenticationHeaderParser = GrpcAuthenticationHeaderParser
+  ): F[A] = {
+    val traceId = parser.getTraceId(Context.current())
     fa(traceId)
   }
 }

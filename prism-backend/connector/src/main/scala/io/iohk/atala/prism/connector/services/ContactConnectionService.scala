@@ -2,7 +2,8 @@ package io.iohk.atala.prism.connector.services
 
 import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
-import io.iohk.atala.prism.auth.AuthenticatorWithGrpcHeaderParser
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.grpc.ProtoCodecs
 import io.iohk.atala.prism.connector.model.TokenString
@@ -17,14 +18,15 @@ import io.iohk.atala.prism.protos.connector_api.{
   ConnectionsStatusResponse,
   ContactConnectionServiceGrpc
 }
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.tracing.Tracing.trace
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ContactConnectionService(
     connectionsService: ConnectionsService[IOWithTraceIdContext],
-    authenticator: AuthenticatorWithGrpcHeaderParser[ParticipantId],
+    authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext],
     didWhitelist: Set[DID]
 )(implicit executionContext: ExecutionContext, runtime: IORuntime)
     extends ContactConnectionServiceGrpc.ContactConnectionService
@@ -59,8 +61,17 @@ class ContactConnectionService(
         }
     }
 
-    authenticator.whitelistedDid(didWhitelist, methodName, request) { (did, traceId) =>
-      measureRequestFuture("contact-connection-service", methodName)(f(did, traceId))
+    trace { traceId =>
+      grpcHeader { header =>
+        (for {
+          did <- authenticator
+            .whitelistedDid(didWhitelist, methodName, request, header)
+            .run(traceId)
+            .unsafeToFuture()
+            .toFutureEither
+          result <- measureRequestFuture("contact-connection-service", methodName)(f(did, traceId)).lift
+        } yield result).flatten
+      }
     }
   }
 }

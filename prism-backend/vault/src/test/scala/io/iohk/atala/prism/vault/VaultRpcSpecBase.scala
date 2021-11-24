@@ -2,8 +2,9 @@ package io.iohk.atala.prism.vault
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
@@ -32,12 +33,13 @@ class VaultRpcSpecBase extends RpcSpecBase {
     requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO, vaultTestLogs)
     payloadsRepository <- PayloadsRepository.create(dbLiftedToTraceIdIO, vaultTestLogs)
     nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-    authenticator =
+    authenticator = AuthenticatorF.unsafe(
+      nodeMock,
       new VaultAuthenticator(
-        requestNoncesRepository,
-        nodeMock,
-        GrpcAuthenticationHeaderParser
-      )
+        requestNoncesRepository
+      ),
+      vaultTestLogs
+    )
     encryptedDataVaultService <- EncryptedDataVaultService.create(payloadsRepository, vaultTestLogs)
     vaultGrpcService = new EncryptedDataVaultGrpcService(
       encryptedDataVaultService,

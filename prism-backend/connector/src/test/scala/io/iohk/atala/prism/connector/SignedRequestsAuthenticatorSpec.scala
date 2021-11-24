@@ -1,44 +1,53 @@
 package io.iohk.atala.prism.connector
 
+import cats.Id
 import cats.data.ReaderT
 import cats.effect.IO
 import cats.effect.unsafe.implicits.{global => globalRuntime}
-
-import java.util.UUID
 import io.grpc.Context
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.auth.errors.AuthErrorSupport
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.atala.prism.connector.errors.{UnknownValueError, co}
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.{DIDUtil, auth}
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{connector_api, node_api, node_models}
+import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.util.KeyUtils.createNodePublicKey
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{DIDUtil, auth}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.mockito.matchers.DefaultValueProvider
 import org.scalatest.Assertion
+import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.concurrent.ScalaFutures._
+import org.slf4j.{Logger, LoggerFactory}
+import tofu.logging.Logs
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
+class SignedRequestsAuthenticatorSpec extends AnyWordSpec with AuthErrorSupport {
   val defaultValueDID = new DefaultValueProvider[DID] {
     override def default: DID =
       DID.buildCanonical(Sha256.compute("default".getBytes("UTF-8")))
   }
+  val testLogs: Logs[IO, IOWithTraceIdContext] =
+    Logs.withContext[IO, IOWithTraceIdContext]
 
   private implicit def patienceConfig: PatienceConfig =
     PatienceConfig(20.seconds, 50.millis)
@@ -49,24 +58,31 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
   "public" should {
     "accept the request without authentication" in {
-      val authenticator = buildAuthenticator(getHeader = () => None)
-      val result = authenticator.public("test", request) { _ =>
-        Future.successful(response)
+      val authenticator = buildAuthenticator()
+      val result = {
+        for {
+          _ <- authenticator.public("test", request).run(testTraceId).unsafeToFuture()
+          resp <- Future.successful(response)
+        } yield resp
       }
       result.futureValue must be(response)
     }
 
     "parse trace id from header" in {
       val externalTraceId = TraceId("exactlyThisTraceId123")
-      val authenticator = buildAuthenticator(
-        getHeader = () => None,
-        getTraceIdFromHeader = () => externalTraceId
-      )
-      val result = authenticator.public("test", request) { traceId =>
-        Future.successful(traceId)
+
+      val customParser = new GrpcAuthenticationHeaderParser {
+        override def getTraceId(ctx: Context): TraceId = externalTraceId
       }
-      result.futureValue must be(externalTraceId)
+
+      val currentTraceId = trace[Id, TraceId](
+        traceId => traceId,
+        customParser
+      )
+
+      currentTraceId must be(externalTraceId)
     }
+
   }
 
   "authenticated" should {
@@ -122,14 +138,14 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
           signature = new ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header))
+      val authenticator = buildAuthenticator()
 
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[Exception] {
-        result.futureValue
-      }
+      val result = authenticator
+        .authenticated("test", request, Some(header))
+        .run(testTraceId)
+        .unsafeRunSync()
+
+      result.isLeft must be(true)
     }
 
     "reject wrong nonce with public key authentication" in {
@@ -146,14 +162,14 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
           signature = new ECSignature(signedRequest.signature)
         )
 
-      val authenticator = buildAuthenticator(getHeader = () => Some(header))
+      val authenticator = buildAuthenticator()
 
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[Exception] {
-        result.futureValue
-      }
+      val result = authenticator
+        .authenticated("test", request, Some(header))
+        .run(testTraceId)
+        .unsafeRunSync()
+
+      result.isLeft must be(true)
     }
 
     "reject public key authentication when reusing a nonce" in {
@@ -170,15 +186,12 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
       val authenticator =
         buildAuthenticator(
-          getHeader = () => Some(header),
           burnNonce = () => throw new RuntimeException("Nonce reused")
         )
 
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
+      def result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
       intercept[Exception] {
-        result.futureValue
+        result
       }
     }
 
@@ -209,14 +222,11 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(
-        getHeader = () => Some(header),
         getDidResponse = () => Some(nodeResponse)
       )
 
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      result.futureValue must be(response)
+      val result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
+      result.isRight must be(true)
     }
 
     "reject wrong DID authentication" in {
@@ -248,15 +258,11 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(
-        getHeader = () => Some(header),
         getDidResponse = () => Some(nodeResponse)
       )
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[RuntimeException] {
-        result.futureValue
-      }
+      val result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
+      result.isLeft must be(true)
+
     }
 
     "reject wrong nonce in DID authentication" in {
@@ -287,15 +293,12 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(
-        getHeader = () => Some(header),
         getDidResponse = () => Some(nodeResponse)
       )
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[RuntimeException] {
-        result.futureValue
-      }
+      val result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
+
+      result.isLeft must be(true)
+
     }
 
     "fail when the did is not in our database" in {
@@ -313,32 +316,27 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         ReaderT.liftF(IO.pure(Left(co(UnknownValueError("did", "not found")))))
       }
 
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          Some(
-            GrpcAuthenticationHeader
-              .PublishedDIDBased(
-                requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
-                did = did,
-                keyId = keyId,
-                signature = new ECSignature(signedRequest.signature)
-              )
+      val header = Some(
+        GrpcAuthenticationHeader
+          .PublishedDIDBased(
+            requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
+            did = did,
+            keyId = keyId,
+            signature = new ECSignature(signedRequest.signature)
           )
-        }
-      }
-      val authenticator = new ConnectorAuthenticator(
-        participantsRepository,
-        mock[RequestNoncesRepository[IOWithTraceIdContext]],
-        mock[NodeServiceGrpc.NodeService],
-        customParser
       )
 
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[RuntimeException] {
-        result.futureValue
-      }
+      val authenticator = AuthenticatorF.unsafe(
+        mock[NodeServiceGrpc.NodeService],
+        new ConnectorAuthenticator(
+          participantsRepository,
+          mock[RequestNoncesRepository[IOWithTraceIdContext]]
+        ),
+        testLogs
+      )
+
+      val result = authenticator.authenticated("test", request, header).run(testTraceId).unsafeRunSync()
+      result.isLeft must be(true)
     }
 
     "fail when the did is not in the node" in {
@@ -358,15 +356,12 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
           signature = new ECSignature(signedRequest.signature)
         )
       val authenticator = buildAuthenticator(
-        getHeader = () => Some(header),
         getDidResponse = () => None
       )
 
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
+      def result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
       intercept[RuntimeException] {
-        result.futureValue
+        result
       }
     }
 
@@ -397,15 +392,10 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(
-        getHeader = () => Some(header),
         getDidResponse = () => Some(nodeResponse)
       )
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[RuntimeException] {
-        result.futureValue
-      }
+      val result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
+      result.isLeft must be(true)
     }
 
     "fail when the nonce is reused" in {
@@ -435,48 +425,12 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         )
 
       val authenticator = buildAuthenticator(
-        getHeader = () => Some(header),
         getDidResponse = () => Some(nodeResponse),
         burnNonce = () => throw new RuntimeException("Nonce already used")
       )
-      val result = authenticator.authenticated("test", request) { (_, _) =>
-        Future.successful(response)
-      }
-      intercept[RuntimeException] {
-        result.futureValue
-      }
+      def result = authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeRunSync()
+      result.isLeft must be(true)
     }
-
-    "parse trace id from header" in {
-      val keys = EC.generateKeyPair()
-      // signed with the wrong key
-      val signedRequest =
-        requestAuthenticator.signConnectorRequest(
-          request.toByteArray,
-          keys.getPrivateKey
-        )
-      val header = GrpcAuthenticationHeader
-        .PublicKeyBased(
-          requestNonce = auth.model.RequestNonce(signedRequest.requestNonce.toVector),
-          publicKey = keys.getPublicKey,
-          signature = new ECSignature(signedRequest.signature)
-        )
-
-      val externalTraceId = TraceId("exactlyThisTraceId123")
-
-      val authenticator =
-        buildAuthenticator(
-          getHeader = () => Some(header),
-          getTraceIdFromHeader = () => externalTraceId
-        )
-
-      val currentTraceId = authenticator.authenticated("test", request) { (_, traceId) =>
-        Future.successful(traceId)
-      }
-
-      currentTraceId.futureValue must be(externalTraceId)
-    }
-
   }
 
   // NOTE: To meet the repository interface we need to return the whole participant details while the authenticator
@@ -495,11 +449,9 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
 
   private def buildAuthenticator(
       getuserId: () => Option[ParticipantId] = () => Some(ParticipantId.random()),
-      getHeader: () => Option[GrpcAuthenticationHeader],
-      getTraceIdFromHeader: () => TraceId = () => testTraceId,
       burnNonce: () => Unit = () => (),
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
-  ): ConnectorAuthenticator = {
+  ): AuthenticatorF[ParticipantId, IOWithTraceIdContext] = {
     val participantsRepository =
       mock[ParticipantsRepository[IOWithTraceIdContext]]
     participantsRepository.findBy(any[DID](defaultValueDID)).returns {
@@ -514,14 +466,6 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
         case Some(userId) => IO.pure(Right(dummyParticipantInfo(userId)))
         case None => IO.raiseError(new RuntimeException("Missing user"))
       })
-    }
-
-    val customParser = new GrpcAuthenticationHeaderParser {
-      override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-        getHeader()
-      }
-
-      override def getTraceId(ctx: Context): TraceId = getTraceIdFromHeader()
     }
 
     val requestNoncesRepository =
@@ -539,22 +483,28 @@ class SignedRequestsAuthenticatorSpec extends AnyWordSpec {
       }
     }
 
-    new ConnectorAuthenticator(
-      participantsRepository,
-      requestNoncesRepository,
+    AuthenticatorF.unsafe(
       customNode,
-      customParser
+      new ConnectorAuthenticator(
+        participantsRepository,
+        requestNoncesRepository
+      ),
+      testLogs
     )
   }
 
   private def testAuthentication(
       header: GrpcAuthenticationHeader
   ): Assertion = {
-    val authenticator = buildAuthenticator(getHeader = () => Some(header))
+    val authenticator = buildAuthenticator()
 
-    val result = authenticator.authenticated("test", request) { (_, _) =>
-      Future.successful(response)
-    }
+    val result = (for {
+      _ <- authenticator.authenticated("test", request, Some(header)).run(testTraceId).unsafeToFuture().toFutureEither
+      resp <- Future.successful(Right(response)).toFutureEither
+    } yield resp).flatten
+
     result.futureValue must be(response)
   }
+
+  override def logger: Logger = LoggerFactory.getLogger(this.getClass)
 }

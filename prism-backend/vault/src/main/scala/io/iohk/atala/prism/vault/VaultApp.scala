@@ -5,7 +5,8 @@ import cats.effect.unsafe.IORuntime
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
@@ -20,7 +21,7 @@ import kamon.module.Module
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object VaultApp extends IOApp {
 
@@ -34,6 +35,7 @@ object VaultApp extends IOApp {
 
 class VaultApp() {
   self =>
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val runtime: IORuntime = IORuntime.global
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -52,14 +54,16 @@ class VaultApp() {
       node = createNodeClient(config)
       payloadsRepository <- PayloadsRepository.resource(transactorWithIOContext, vaultLogs)
       requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.resource(transactorWithIOContext, vaultLogs)
-      authenticator = new VaultAuthenticator(
-        requestNoncesRepository,
+      authenticator <- AuthenticatorF.resource(
         node,
-        GrpcAuthenticationHeaderParser
+        new VaultAuthenticator(
+          requestNoncesRepository
+        ),
+        vaultLogs
       )
       encryptedDataVaultService <- EncryptedDataVaultService.resource(payloadsRepository, vaultLogs)
       encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
-        ExecutionContext.global,
+        ec,
         runtime
       )
       server <- startServer(encryptedDataVaultGrpcService)
@@ -99,7 +103,7 @@ class VaultApp() {
       val server: Server = ServerBuilder
         .forPort(VaultApp.port)
         .addService(
-          vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultGrpcService, ExecutionContext.global)
+          vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultGrpcService, ec)
         )
         .build()
         .start()

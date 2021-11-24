@@ -2,16 +2,14 @@ package io.iohk.atala.prism.cviews
 
 import cats.effect.unsafe.implicits.global
 import io.grpc.ServerServiceDefinition
-import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
-import io.iohk.atala.prism.connector.ConnectorAuthenticator
+import io.iohk.atala.prism.auth.{AuthenticatorF, SignedRpcRequest}
+import io.iohk.atala.prism.connector.{ConnectorAuthenticator, DataPreparation}
 import io.iohk.atala.prism.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.connector.DataPreparation
 import io.iohk.atala.prism.protos.connector_api.GetCurrentUserRequest
 import io.iohk.atala.prism.protos.cviews_api.{CredentialViewsServiceGrpc, GetCredentialViewTemplatesRequest}
+import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.view.HtmlViewImage.imageBase64
 import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
-import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
 
 import java.io.{File, PrintWriter}
@@ -27,11 +25,13 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
     RequestNoncesRepository.unsafe(dbLiftedToTraceIdIO, testLogs)
   protected lazy val nodeMock =
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator = new ConnectorAuthenticator(
-    participantsRepository,
-    requestNoncesRepository,
+  private lazy val authenticator = AuthenticatorF.unsafe(
     nodeMock,
-    GrpcAuthenticationHeaderParser
+    new ConnectorAuthenticator(
+      participantsRepository,
+      requestNoncesRepository
+    ),
+    testLogs
   )
 
   private val authenticatorLogger = org.slf4j.LoggerFactory

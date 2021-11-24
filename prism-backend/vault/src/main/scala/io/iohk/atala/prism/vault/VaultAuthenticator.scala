@@ -1,51 +1,28 @@
 package io.iohk.atala.prism.vault
 
-import cats.effect.unsafe.IORuntime
+import cats.data.ReaderT
+import io.iohk.atala.prism.auth.AuthHelper
 import io.iohk.atala.prism.auth.errors.{AuthError, UnsupportedAuthMethod}
-import io.iohk.atala.prism.auth.SignedRequestsAuthenticatorBase
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.utils.FutureEither
-import io.iohk.atala.prism.utils.FutureEither._
 import io.iohk.atala.prism.vault.repositories.RequestNoncesRepository
 
-import scala.concurrent.{ExecutionContext, Future}
-
 class VaultAuthenticator(
-    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext],
-    nodeClient: node_api.NodeServiceGrpc.NodeService,
-    grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
-)(implicit runtime: IORuntime)
-    extends SignedRequestsAuthenticatorBase[DID](
-      nodeClient,
-      grpcAuthenticationHeaderParser
-    ) {
+    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext]
+) extends AuthHelper[DID, IOWithTraceIdContext] {
 
   override def burnNonce(
       did: DID,
-      requestNonce: RequestNonce,
-      traceId: TraceId
-  )(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, Unit] =
+      requestNonce: RequestNonce
+  ): IOWithTraceIdContext[Unit] =
     requestNoncesRepository
       .burn(did, requestNonce)
-      .run(traceId)
-      .unsafeToFuture()
-      .lift
 
-  override def findByPublicKey(publicKey: ECPublicKey, traceId: TraceId)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, DID] =
-    Future(Left(UnsupportedAuthMethod())).toFutureEither
+  override def findByPublicKey(publicKey: ECPublicKey): IOWithTraceIdContext[Either[AuthError, DID]] =
+    ReaderT.pure(Left(UnsupportedAuthMethod()))
 
-  override def findByDid(did: DID, traceId: TraceId)(implicit
-      ec: ExecutionContext
-  ): FutureEither[AuthError, DID] =
-    Future.successful(Right(did)).toFutureEither
+  override def findByDid(did: DID): IOWithTraceIdContext[Either[AuthError, DID]] =
+    ReaderT.pure(Right(did))
 }

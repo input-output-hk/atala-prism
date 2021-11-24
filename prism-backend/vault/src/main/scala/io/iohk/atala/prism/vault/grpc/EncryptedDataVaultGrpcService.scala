@@ -1,26 +1,30 @@
 package io.iohk.atala.prism.vault.grpc
 
+import cats.data.EitherT
 import cats.effect.unsafe.IORuntime
 import cats.syntax.option._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.auth.errors.AuthErrorSupport
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.auth.errors.{AuthError, AuthErrorSupport}
+import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
 import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.vault_api
-import io.iohk.atala.prism.protos.vault_models
-import io.iohk.atala.prism.vault.VaultAuthenticator
+import io.iohk.atala.prism.protos.{vault_api, vault_models}
+import io.iohk.atala.prism.tracing.Tracing._
+import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.utils.syntax._
 import io.iohk.atala.prism.vault.model.Payload
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
-import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class EncryptedDataVaultGrpcService(
     service: EncryptedDataVaultService[IOWithTraceIdContext],
-    authenticator: VaultAuthenticator
+    authenticator: AuthenticatorF[DID, IOWithTraceIdContext]
 )(implicit ec: ExecutionContext, runtime: IORuntime)
     extends vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultService
     with AuthErrorSupport {
@@ -40,18 +44,23 @@ class EncryptedDataVaultGrpcService(
       request: vault_api.StoreDataRequest
   ): Future[vault_api.StoreDataResponse] = {
     val methodName = "storeData"
-    authenticator.authenticated(methodName, request) { (did, traceId) =>
-      measureRequestFuture(serviceName, methodName) {
-        service
-          .storeData(
-            Payload.ExternalId.unsafeFrom(request.externalId),
-            Sha256Digest.fromBytes(request.payloadHash.toByteArray),
-            did,
-            request.payload.toByteArray.toVector
-          )
-          .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
-          .run(traceId)
-          .unsafeToFuture()
+    trace { traceId =>
+      grpcHeader { header =>
+        measureRequestFuture(serviceName, methodName)({
+          for {
+            did <- EitherT(authenticator.authenticated(methodName, request, header))
+            result <- EitherT.right[AuthError](
+              service
+                .storeData(
+                  Payload.ExternalId.unsafeFrom(request.externalId),
+                  Sha256Digest.fromBytes(request.payloadHash.toByteArray),
+                  did,
+                  request.payload.toByteArray.toVector
+                )
+                .map(payload => vault_api.StoreDataResponse(payloadId = payload.id.toString))
+            )
+          } yield result
+        }.value.run(traceId).unsafeToFuture().toFutureEither.flatten)
       }
     }
   }
@@ -60,17 +69,22 @@ class EncryptedDataVaultGrpcService(
       request: vault_api.GetPaginatedDataRequest
   ): Future[vault_api.GetPaginatedDataResponse] = {
     val methodName = "getPaginatedData"
-    authenticator.authenticated(methodName, request) { (did, traceId) =>
-      measureRequestFuture(serviceName, methodName) {
-        service
-          .getByPaginated(
-            did,
-            parseOptionalLastSeenId(request.lastSeenId),
-            request.limit
-          )
-          .map(toGetPaginatedDataResponse)
-          .run(traceId)
-          .unsafeToFuture()
+    trace { traceId =>
+      grpcHeader { header =>
+        measureRequestFuture(serviceName, methodName) {
+          (for {
+            did <- EitherT(authenticator.authenticated(methodName, request, header))
+            result <- EitherT.right[AuthError](
+              service
+                .getByPaginated(
+                  did,
+                  parseOptionalLastSeenId(request.lastSeenId),
+                  request.limit
+                )
+                .map(toGetPaginatedDataResponse)
+            )
+          } yield result).value.run(traceId).unsafeToFuture().toFutureEither.flatten
+        }
       }
     }
   }
