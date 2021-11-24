@@ -1,12 +1,12 @@
 import React, { createRef, useState } from 'react';
 import GroupCreation from './GroupCreation';
-import { useGroupStore } from '../../hooks/useGroupStore';
 import { useRedirector } from '../../hooks/useRedirector';
+import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
 
 const GroupCreationContainer = () => {
   const { redirectToGroups } = useRedirector();
 
-  const { createGroup, isSaving } = useGroupStore();
+  const { createGroup, isSaving } = useGroupsPageStore();
 
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState([]);

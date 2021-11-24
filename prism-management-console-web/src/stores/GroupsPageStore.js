@@ -64,9 +64,15 @@ export default class GroupsPageStore {
     return this.groupsBaseStore.refreshGroups({ refreshCountDiff });
   }
 
-  async createGroup({ name, members }) {
-    const newGroup = await this.api.groupsManager.createGroup(name);
-    if (members) await this.updateGroup(newGroup.id, { contactIdsToAdd: members });
+  *createGroup({ name, members }) {
+    this.isSaving = true;
+    const newGroup = yield this.api.groupsManager.createGroup(name);
+
+    if (members) {
+      yield this.updateGroup(newGroup.id, { contactIdsToAdd: members });
+    }
+
+    this.isSaving = false;
   }
 
   *updateGroup(id, change) {
