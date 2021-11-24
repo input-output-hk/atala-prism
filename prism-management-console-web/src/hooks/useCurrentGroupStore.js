@@ -11,9 +11,3 @@ export const useCurrentGroupStore = id => {
 
   return currentGroupStore;
 };
-
-export const useCurrentGroupUiState = () => {
-  const { currentGroupUiState } = useCurrentGroupStore();
-
-  return currentGroupUiState;
-};

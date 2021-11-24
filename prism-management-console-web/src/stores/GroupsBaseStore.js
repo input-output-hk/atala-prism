@@ -11,7 +11,7 @@ import {
 const { ascending, descending } = SORTING_DIRECTIONS;
 
 const fallback = {
-  groups: [],
+  groupsList: [],
   totalNumberOfGroups: undefined
 };
 
@@ -21,7 +21,7 @@ const defaultValues = {
   isFetching: false,
   isSearching: false,
   nameFilter: '',
-  dateFilter: '',
+  dateFilter: [],
   sortDirection: ascending,
   sortingBy: GROUP_SORTING_KEYS.name
 };
@@ -64,6 +64,11 @@ export default class GroupsBaseStore {
     reaction(() => this.sortingBy, () => this.triggerSearch());
   }
 
+  init() {
+    this.resetGroupsAndFilters();
+    this.fetchMoreData({ startFromTheTop: true });
+  }
+
   get isLoadingFirstPage() {
     return this.isFetching && this.totalNumberOfGroups === undefined;
   }
@@ -72,22 +77,17 @@ export default class GroupsBaseStore {
     return this.totalNumberOfGroups > this.groups.length;
   }
 
-  initGroupStore = () => {
-    this.resetGroupsAndFilters();
-    this.fetchMoreData({ startFromTheTop: true });
-  };
-
-  resetGroups = () => {
+  resetGroups() {
     this.groups = defaultValues.groups;
     this.totalNumberOfGroups = defaultValues.totalNumberOfGroups;
-  };
+  }
 
   resetGroupsAndFilters() {
     this.resetGroups();
     this.isFetching = defaultValues.isFetching;
     this.isSearching = defaultValues.isSearching;
-    this.nameFilter = defaultValues.textFilter;
-    this.dateFilter = defaultValues.lastEditedFilter;
+    this.nameFilter = defaultValues.nameFilter;
+    this.dateFilter = defaultValues.dateFilter;
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
   }
@@ -105,7 +105,7 @@ export default class GroupsBaseStore {
   }
 
   get hasDateFilterApplied() {
-    return Boolean(this.dateFilter?.every(Boolean));
+    return Boolean(this.dateFilter.every(Boolean));
   }
 
   get hasCustomSorting() {
@@ -130,17 +130,17 @@ export default class GroupsBaseStore {
     };
   }
 
-  toggleSortDirection = () => {
+  toggleSortDirection() {
     this.sortDirection = this.sortDirection === ascending ? descending : ascending;
-  };
+  }
 
-  setSortingBy = value => {
+  setSortingBy(value) {
     this.sortingBy = value;
-  };
+  }
 
-  async triggerSearch() {
+  *triggerSearch() {
     this.isSearching = true;
-    await this.fetchMoreData({ startFromTheTop: true });
+    yield this.fetchMoreData({ startFromTheTop: true });
     this.isSearching = false;
   }
 
@@ -160,7 +160,7 @@ export default class GroupsBaseStore {
     this.isFetching = true;
 
     try {
-      const { nameFilter, dateFilter = [], sortDirection, sortingBy } = this.groupUiState;
+      const { nameFilter, dateFilter = [], sortDirection, sortingBy } = this;
       const [createdAfter, createdBefore] = dateFilter;
 
       const response = yield this.api.groupsManager.getGroups({
@@ -173,7 +173,8 @@ export default class GroupsBaseStore {
           createdAfter
         }
       });
-      this.transportLayerStateHandler.handleTransportLayerSuccess();
+
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
       this.isFetching = false;
       return response || fallback;
     } catch (error) {
@@ -183,7 +184,7 @@ export default class GroupsBaseStore {
         verb: 'getting',
         model: 'Groups'
       };
-      this.transportLayerStateHandler.handleTransportLayerError(error, metadata);
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
       this.isFetching = false;
       return fallback;
     }
@@ -200,7 +201,15 @@ export default class GroupsBaseStore {
     this.totalNumberOfGroups = response.totalNumberOfGroups;
   }
 
-  refreshGroups() {
-    return this.fetchMoreData({ startFromTheTop: true, pageSize: this.groups.length });
+  /**
+   *
+   * @param refreshCountDiff - when a group is deleted or copied, we have to increase/decrease the
+   * number of refreshed rows
+   */
+  refreshGroups({ refreshCountDiff = 0 } = {}) {
+    return this.fetchMoreData({
+      startFromTheTop: true,
+      pageSize: this.groups.length + refreshCountDiff
+    });
   }
 }

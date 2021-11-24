@@ -7,13 +7,14 @@ import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/CustomDateRangePicker';
 import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
-import { useGroupUiState } from '../../../../hooks/useGroupStore';
 import './_style.scss';
+import { useGroupsPageStore } from '../../../../hooks/useGroupsPageStore';
 
 const GroupFilters = observer(({ showFullFilter }) => {
   const { t } = useTranslation();
 
-  const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = useGroupUiState();
+  const { filterSortingProps } = useGroupsPageStore();
+  const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = filterSortingProps;
 
   const datePickerProps = {
     placeholder: [t('groups.filters.createdAfter'), t('groups.filters.createdBefore')],
