@@ -1,39 +1,39 @@
 package io.iohk.atala.prism.management.console.grpc
 
-import cats.syntax.functor._
 import cats.data.NonEmptyList
 import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
-import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupport, Authenticator}
+import cats.syntax.functor._
+import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.errors.{ManagementConsoleError, ManagementConsoleErrorSupport}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.genericCredentialToProto
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.protos.console_api._
+import io.iohk.atala.prism.management.console.services.CredentialsService
 import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherFOps
+import io.iohk.atala.prism.protos.console_api._
+import io.iohk.atala.prism.utils.FutureEither.{FutureEitherFOps, FutureEitherOps}
 import org.slf4j.{Logger, LoggerFactory}
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.management.console.services.CredentialsService
 
 class CredentialsGrpcService(
     credentialsService: CredentialsService[IOWithTraceIdContext],
-    val authenticator: Authenticator[ParticipantId]
+    val authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext]
 )(implicit ec: ExecutionContext, runtime: IORuntime)
     extends console_api.CredentialsServiceGrpc.CredentialsService
     with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupportF[ManagementConsoleError, ParticipantId] {
 
   override protected val serviceName: String = "credentials-service"
+  override val IOruntime: IORuntime = runtime
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def createGenericCredential(
       request: CreateGenericCredentialRequest
   ): Future[CreateGenericCredentialResponse] =
-    auth[CreateGenericCredential]("createGenericCredential", request) { (participantId, traceId, query) =>
+    auth[CreateGenericCredential]("createGenericCredential", request) { (participantId, query, traceId) =>
       credentialsService
         .createGenericCredential(participantId, query)
         .run(traceId)
@@ -55,7 +55,7 @@ class CredentialsGrpcService(
   override def getGenericCredentials(
       request: GetGenericCredentialsRequest
   ): Future[GetGenericCredentialsResponse] =
-    auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, traceId, query) =>
+    auth[GenericCredential.PaginatedQuery]("getGenericCredentials", request) { (participantId, query, traceId) =>
       credentialsService
         .getGenericCredentials(participantId, query)
         .run(traceId)
@@ -76,7 +76,7 @@ class CredentialsGrpcService(
   override def getContactCredentials(
       request: GetContactCredentialsRequest
   ): Future[GetContactCredentialsResponse] =
-    auth[GetContactCredentials]("getContactCredentials", request) { (participantId, traceId, query) =>
+    auth[GetContactCredentials]("getContactCredentials", request) { (participantId, query, traceId) =>
       credentialsService
         .getContactCredentials(participantId, query)
         .run(traceId)
@@ -97,7 +97,7 @@ class CredentialsGrpcService(
   override def shareCredential(
       request: ShareCredentialRequest
   ): Future[ShareCredentialResponse] =
-    auth[ShareCredential]("shareCredential", request) { (participantId, traceId, query) =>
+    auth[ShareCredential]("shareCredential", request) { (participantId, query, traceId) =>
       credentialsService
         .shareCredential(participantId, NonEmptyList.of(query.credentialId))
         .run(traceId)
@@ -116,7 +116,7 @@ class CredentialsGrpcService(
   override def publishBatch(
       request: PublishBatchRequest
   ): Future[PublishBatchResponse] = {
-    auth[PublishBatch]("publishBatch", request) { (_, traceId, query) =>
+    auth[PublishBatch]("publishBatch", request) { (_, query, traceId) =>
       credentialsService
         .publishBatch(query)
         .run(traceId)
@@ -133,7 +133,7 @@ class CredentialsGrpcService(
   override def revokePublishedCredential(
       request: RevokePublishedCredentialRequest
   ): Future[RevokePublishedCredentialResponse] = {
-    auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, traceId, query) =>
+    auth[RevokePublishedCredential]("revokePublishedCredential", request) { (participantId, query, traceId) =>
       credentialsService
         .revokePublishedCredential(participantId, query)
         .run(traceId)
@@ -150,7 +150,7 @@ class CredentialsGrpcService(
   override def deleteCredentials(
       request: DeleteCredentialsRequest
   ): Future[DeleteCredentialsResponse] = {
-    auth[DeleteCredentials]("deleteCredentials", request) { (participantId, traceId, query) =>
+    auth[DeleteCredentials]("deleteCredentials", request) { (participantId, query, traceId) =>
       credentialsService
         .deleteCredentials(participantId, query)
         .run(traceId)
@@ -163,7 +163,7 @@ class CredentialsGrpcService(
   override def storePublishedCredential(
       request: StorePublishedCredentialRequest
   ): Future[StorePublishedCredentialResponse] = {
-    auth[StorePublishedCredential]("storePublishedCredential", request) { (participantId, traceId, query) =>
+    auth[StorePublishedCredential]("storePublishedCredential", request) { (participantId, query, traceId) =>
       credentialsService
         .storePublishedCredential(participantId, query)
         .run(traceId)
@@ -176,7 +176,7 @@ class CredentialsGrpcService(
   override def getLedgerData(
       request: GetLedgerDataRequest
   ): Future[GetLedgerDataResponse] =
-    auth[GetLedgerData]("getLedgerData", request) { (_, traceId, query) =>
+    auth[GetLedgerData]("getLedgerData", request) { (_, query, traceId) =>
       credentialsService
         .getLedgerData(query)
         .run(traceId)
@@ -194,7 +194,7 @@ class CredentialsGrpcService(
   override def shareCredentials(
       request: console_api.ShareCredentialsRequest
   ): Future[console_api.ShareCredentialsResponse] = {
-    auth[ShareCredentials]("shareCredentials", request) { (participantId, traceId, query) =>
+    auth[ShareCredentials]("shareCredentials", request) { (participantId, query, traceId) =>
       credentialsService
         .shareCredentials(participantId, query)
         .run(traceId)

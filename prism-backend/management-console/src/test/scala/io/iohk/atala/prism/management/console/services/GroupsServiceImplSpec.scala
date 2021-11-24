@@ -4,16 +4,14 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser
+import io.iohk.atala.prism.auth.{AuthenticatorF, SignedRpcRequest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.management.console.repositories.daos.ParticipantsDAO
 import io.iohk.atala.prism.management.console.repositories.{
   InstitutionGroupsRepository,
@@ -21,9 +19,9 @@ import io.iohk.atala.prism.management.console.repositories.{
   RequestNoncesRepository
 }
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleAuthenticator}
-import io.iohk.atala.prism.protos.console_api
-import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
+import io.iohk.atala.prism.protos.{common_models, console_api}
 import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.{DIDUtil, RpcSpecBase}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
@@ -54,13 +52,14 @@ class GroupsServiceImplSpec extends RpcSpecBase with DIDUtil {
     )
   protected lazy val nodeMock =
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator =
+  private lazy val authenticator = AuthenticatorF.unsafe(
+    nodeMock,
     new ManagementConsoleAuthenticator(
       participantsRepository,
-      requestNoncesRepository,
-      nodeMock,
-      GrpcAuthenticationHeaderParser
-    )
+      requestNoncesRepository
+    ),
+    managementConsoleTestLogs
+  )
 
   override def services =
     Seq(

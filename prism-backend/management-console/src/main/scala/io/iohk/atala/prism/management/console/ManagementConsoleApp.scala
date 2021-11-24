@@ -4,23 +4,22 @@ import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.Server
-import io.iohk.atala.prism.auth.grpc.{
-  GrpcAuthenticationHeaderParser,
-  GrpcAuthenticatorInterceptor,
-  TraceExposeInterceptor
-}
+import io.iohk.atala.prism.auth.AuthenticatorF
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticatorInterceptor, TraceExposeInterceptor}
 import io.iohk.atala.prism.config.NodeConfig
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.management.console.grpc.GroupsGrpcService
-import io.iohk.atala.prism.management.console.grpc.CredentialTypesGrpcService
-import io.iohk.atala.prism.management.console.grpc.ContactsGrpcService
-import io.iohk.atala.prism.management.console.grpc.CredentialsStoreGrpcService
-import io.iohk.atala.prism.management.console.grpc.CredentialIssuanceGrpcService
-import io.iohk.atala.prism.management.console.grpc.CredentialsGrpcService
-import io.iohk.atala.prism.management.console.grpc.ConsoleGrpcService
+import io.iohk.atala.prism.management.console.grpc.{
+  ConsoleGrpcService,
+  ContactsGrpcService,
+  CredentialIssuanceGrpcService,
+  CredentialTypesGrpcService,
+  CredentialsGrpcService,
+  CredentialsStoreGrpcService,
+  GroupsGrpcService
+}
 import io.iohk.atala.prism.management.console.integrations.{
   ContactsIntegrationService,
   CredentialsIntegrationService,
@@ -186,11 +185,13 @@ object ManagementConsoleApp extends IOApp {
           managementConsoleLogs
         )
 
-      authenticator = new ManagementConsoleAuthenticator(
-        participantsRepository,
-        requestNoncesRepository,
+      authenticator <- AuthenticatorF.resource(
         node,
-        GrpcAuthenticationHeaderParser
+        new ManagementConsoleAuthenticator(
+          participantsRepository,
+          requestNoncesRepository
+        ),
+        managementConsoleLogs
       )
 
       groupsService <- GroupsService.makeResource(

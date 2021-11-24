@@ -3,9 +3,8 @@ package io.iohk.atala.prism.management.console.grpc
 import cats.data.EitherT
 import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
-import io.iohk.atala.prism.auth.AuthAndMiddlewareSupport
+import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.management.console.ManagementConsoleAuthenticator
 import io.iohk.atala.prism.management.console.errors.{
   ManagementConsoleError,
   ManagementConsoleErrorSupport,
@@ -33,20 +32,21 @@ import scala.concurrent.{ExecutionContext, Future}
 class CredentialsStoreGrpcService(
     credentialsStoreService: CredentialsStoreService[IOWithTraceIdContext],
     contactsRepository: ContactsRepository[IOWithTraceIdContext],
-    val authenticator: ManagementConsoleAuthenticator
+    val authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext]
 )(implicit ec: ExecutionContext, runtime: IORuntime)
     extends console_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ManagementConsoleErrorSupport
-    with AuthAndMiddlewareSupport[ManagementConsoleError, ParticipantId] {
+    with AuthAndMiddlewareSupportF[ManagementConsoleError, ParticipantId] {
 
   override protected val serviceName: String = "credentials-store-service"
+  override val IOruntime: IORuntime = runtime
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def storeCredential(
       request: console_api.StoreCredentialRequest
   ): Future[console_api.StoreCredentialResponse] =
-    auth[StoreCredential]("storeCredential", request) { (participantId, traceId, typedRequest) =>
+    auth[StoreCredential]("storeCredential", request) { (participantId, typedRequest, traceId) =>
       val flow = for {
         data <- EitherT {
           contactsRepository
@@ -80,12 +80,12 @@ class CredentialsStoreGrpcService(
   override def getLatestCredentialExternalId(
       request: GetLatestCredentialExternalIdRequest
   ): Future[GetLatestCredentialExternalIdResponse] =
-    auth[GetLatestCredential]("getLatestCredentialExternalId", request) { (participantId, traceId, _) =>
+    auth[GetLatestCredential]("getLatestCredentialExternalId", request) { (participantId, _, traceId) =>
       credentialsStoreService
         .getLatestCredentialExternalId(participantId)
         .map { maybeCredentialExternalId =>
           console_api.GetLatestCredentialExternalIdResponse(
-            latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value.toString)
+            latestCredentialExternalId = maybeCredentialExternalId.fold("")(_.value)
           )
         }
         .run(traceId)
@@ -97,7 +97,7 @@ class CredentialsStoreGrpcService(
   override def getStoredCredentialsFor(
       request: console_api.GetStoredCredentialsForRequest
   ): Future[console_api.GetStoredCredentialsForResponse] =
-    auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, traceId, query) =>
+    auth[GetStoredCredentials]("getStoredCredentialsFor", request) { (participantId, query, traceId) =>
       credentialsStoreService
         .getStoredCredentialsFor(participantId, query)
         .map { credentials =>
