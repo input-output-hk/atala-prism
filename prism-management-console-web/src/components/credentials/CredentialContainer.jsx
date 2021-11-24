@@ -24,8 +24,7 @@ const CredentialContainer = observer(() => {
   const {
     credentials: credentialsIssued,
     getCredentialsToSelect: getCredentialsIssuedToSelect,
-    refreshCredentials: refreshCredentialsIssued,
-    isFetching: isFetchingCredentialsIssued
+    refreshCredentials: refreshCredentialsIssued
   } = useCredentialsIssuedPageStore();
   useTemplateStore({ fetch: true });
 
@@ -48,7 +47,9 @@ const CredentialContainer = observer(() => {
     entityKey: CREDENTIAL_ID_KEY,
     selectedEntities: selectedCredentials,
     setSelectedEntities: setSelectedCredentials,
-    isFetchingCredentialsIssued
+    // FIXME: Select all feature.
+    // Keeping the `isFetching` attribute as true, disables the select all checkbox
+    isFetching: true
   });
 
   const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
