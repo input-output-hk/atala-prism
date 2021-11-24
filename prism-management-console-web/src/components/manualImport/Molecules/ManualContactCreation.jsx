@@ -8,8 +8,8 @@ import './_style.scss';
 const ManualContactCreation = ({ groupsProps, addEntity }) => (
   <div className="ManualImportWrapper ContactsImportWrapper">
     <div className="TitleContainer">
-    <h3>Assign to a Group</h3>
-    <p>Assign contacts to a single or multiple Group</p>
+      <h3>Assign to a Group</h3>
+      <p>Assign contacts to a single or multiple Group</p>
     </div>
     <div className="ContentHeader TitleAndSubtitle">
       <OptionsHeader groupsProps={groupsProps} addEntity={addEntity} />

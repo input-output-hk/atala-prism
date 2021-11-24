@@ -1,8 +1,8 @@
 import React from 'react';
 import { Tabs } from 'antd';
+import { useTranslation } from 'react-i18next';
 import BulkImportTab from '../bulkImportTab/BulkImportTab';
 import ManualImportTab from '../manualImportTab/ManualImportTab';
-import { useTranslation } from 'react-i18next';
 
 import './_style.scss';
 import { IMPORT_CONTACTS } from '../../../../helpers/constants';
@@ -20,7 +20,7 @@ const ImportContactsTabs = () => {
         </TabPane>
         <TabPane tab="Import Manually" key="2">
           <ManualImportTab useCase={IMPORT_CONTACTS} />
-          {/*CUANDO HAGA EL COMPONENTE DE CREDENTIALS EN EL USE CASE PONER IMPORT_CREDENTIALS*/}
+          {/* CUANDO HAGA EL COMPONENTE DE CREDENTIALS EN EL USE CASE PONER IMPORT_CREDENTIALS */}
         </TabPane>
       </Tabs>
     </div>

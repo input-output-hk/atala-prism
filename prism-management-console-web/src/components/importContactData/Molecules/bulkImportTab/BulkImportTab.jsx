@@ -1,8 +1,8 @@
 import React from 'react';
 import { Select, Tag, Checkbox } from 'antd';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { ArrowDownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 

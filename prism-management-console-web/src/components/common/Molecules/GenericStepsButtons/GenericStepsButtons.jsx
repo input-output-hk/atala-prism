@@ -7,13 +7,13 @@ import CustomButton from '../../Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
-{/*
+/*
 
   @dbrosio ya no vamos a usar mas los steps que están entre los botones de back y next. Podrìas sacar esa lógica para limpiar el codigo?
 
 const { Step } = Steps;
 
-*/}
+*/
 
 const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loading }) => {
   const { t } = useTranslation();

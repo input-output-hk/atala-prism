@@ -4,30 +4,25 @@ import { importUseCasePropType } from '../../../../helpers/propShapes';
 import ManualContactCreation from '../../../manualImport/Molecules/ManualContactCreation';
 import ManualCredentialCreation from '../../../manualImport/Molecules/ManualCredentialCreation';
 
-
-
 const ManualImportTab = ({ useCase, ...restProps }) => {
-
   const mockedRestProps = {
-  groupsProps: {
-    groups:[],
-    selectedGroups: [],
-    setSelectedGroups: () => {}
-  },
-  addEntity: () => {}
-};
+    groupsProps: {
+      groups: [],
+      selectedGroups: [],
+      setSelectedGroups: () => {}
+    },
+    addEntity: () => {}
+  };
 
-return (
-  useCase === IMPORT_CONTACTS ? (
+  return useCase === IMPORT_CONTACTS ? (
     <ManualContactCreation {...mockedRestProps} />
   ) : (
     <ManualCredentialCreation {...restProps} />
-  )
-);
-}
+  );
+};
 
 ManualImportTab.propTypes = {
-useCase: importUseCasePropType.isRequired
+  useCase: importUseCasePropType.isRequired
 };
 
 export default ManualImportTab;
