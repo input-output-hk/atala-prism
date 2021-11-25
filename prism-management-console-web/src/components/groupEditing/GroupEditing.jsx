@@ -69,9 +69,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
       setModalDeletionVisible(false);
       setSelectedGroupContacts([]);
     });
-
   const handleAddContactConfirm = aContactsList =>
-    onAddContacts(aContactsList).finally(() => setModalVisible(false));
+    onAddContacts(aContactsList).then(() => setModalVisible(false));
 
   const handleRemoveContactRequest = aContactsList => {
     setContactsToRemove(aContactsList);
@@ -115,7 +114,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
           className="GroupNameForm"
         />
       );
-    return <p>{groupName}</p>;
+    return <div>{groupName}</div>;
   };
 
   return (
@@ -189,19 +188,23 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
           />
         </div>
         <div className="ConnectionsTable">
-          <ConnectionsTable
-            contacts={members}
-            hasFiltersApplied={hasFiltersApplied}
-            isLoading={isLoadingMembers || isSearching}
-            isFetchingMore={isFetching}
-            fetchMoreData={fetchMoreGroupMembers}
-            columns={getGroupContactColumns(handleDelete)}
-            selectedContacts={selectedGroupContacts}
-            setSelectedContacts={setSelectedGroupContacts}
-            hasMore={hasMoreMembers}
-            size="md"
-            searchDueGeneralScroll
-          />
+          {isLoadingMembers ? (
+            <SimpleLoading />
+          ) : (
+            <ConnectionsTable
+              contacts={members}
+              hasFiltersApplied={hasFiltersApplied}
+              isLoading={isSearching}
+              isFetchingMore={isFetching}
+              fetchMoreData={fetchMoreGroupMembers}
+              columns={getGroupContactColumns(handleDelete)}
+              selectedContacts={selectedGroupContacts}
+              setSelectedContacts={setSelectedGroupContacts}
+              hasMore={hasMoreMembers}
+              size="md"
+              searchDueGeneralScroll
+            />
+          )}
         </div>
       </div>
     </div>

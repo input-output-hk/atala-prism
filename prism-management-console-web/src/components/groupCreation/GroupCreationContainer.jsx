@@ -1,10 +1,13 @@
 import React, { createRef, useState } from 'react';
-import GroupCreation from './GroupCreation';
+import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useRedirector } from '../../hooks/useRedirector';
 import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
+import GroupCreation from './GroupCreation';
 
 const GroupCreationContainer = () => {
   const { redirectToGroups } = useRedirector();
+  const { t } = useTranslation();
 
   const { createGroup, isSaving } = useGroupsPageStore();
 
@@ -13,9 +16,18 @@ const GroupCreationContainer = () => {
   const formRef = createRef();
   const formValues = { groupName };
 
-  const handleCreateGroup = async () => {
-    await createGroup({ name: groupName, members });
-    redirectToGroups();
+  const handleCreateGroup = () => {
+    createGroup({
+      name: groupName,
+      members,
+      onSuccess: () => {
+        redirectToGroups();
+        message.success(t('groupCreation.success', { groupName }));
+      },
+      onError: () => {
+        message.error(t('groupCreation.errors.grpc', { groupName }));
+      }
+    });
   };
 
   return (

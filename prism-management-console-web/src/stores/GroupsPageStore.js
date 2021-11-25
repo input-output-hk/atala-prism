@@ -64,15 +64,24 @@ export default class GroupsPageStore {
     return this.groupsBaseStore.refreshGroups({ refreshCountDiff });
   }
 
-  *createGroup({ name, members }) {
+  *createGroup({ name, members, onSuccess, onError }) {
     this.isSaving = true;
-    const newGroup = yield this.api.groupsManager.createGroup(name);
 
-    if (members) {
-      yield this.updateGroup(newGroup.id, { contactIdsToAdd: members });
+    try {
+      // TODO: better to do atomically on backend
+      const newGroup = yield this.api.groupsManager.createGroup(name);
+
+      if (members) {
+        yield this.updateGroup(newGroup.id, { contactIdsToAdd: members });
+      }
+
+      onSuccess();
+    } catch (error) {
+      Logger.error('[GroupsPageStore.createGroup] Error: ', error);
+      onError();
+    } finally {
+      this.isSaving = false;
     }
-
-    this.isSaving = false;
   }
 
   *updateGroup(id, change) {
@@ -103,7 +112,7 @@ export default class GroupsPageStore {
       yield this.refresh({ refreshCountDiff: -1 });
       onSuccess();
     } catch (error) {
-      Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
+      Logger.error('[GroupsPageStore.deleteGroup] Error: ', error);
       onError();
     } finally {
       this.isSaving = false;
@@ -128,7 +137,7 @@ export default class GroupsPageStore {
       yield this.refresh({ refreshCountDiff: 1 });
       onSuccess();
     } catch (error) {
-      Logger.error('[GroupsContainer.copyGroup] Error: ', error);
+      Logger.error('[GroupsPageStore.copyGroup] Error: ', error);
       onError();
     } finally {
       this.isSaving = false;

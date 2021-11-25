@@ -10,7 +10,7 @@ import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
-const CopyGroupModal = ({ open, closeModal, group, onSave }) => {
+const CopyGroupModal = ({ open, closeModal, group, onSave, isInProgress }) => {
   const { t } = useTranslation();
   const formRef = createRef();
   const [copyName, setCopyName] = useState('');
@@ -48,7 +48,8 @@ const CopyGroupModal = ({ open, closeModal, group, onSave }) => {
             buttonProps={{
               className: 'theme-primary',
               onClick: () => onSave(copyName),
-              disabled: nameState !== GROUP_NAME_STATES.possible
+              disabled: nameState !== GROUP_NAME_STATES.possible,
+              loading: isInProgress
             }}
           />
         </div>
@@ -65,7 +66,8 @@ CopyGroupModal.propTypes = {
   group: PropTypes.shape(groupShape),
   closeModal: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
-  onSave: PropTypes.func.isRequired
+  onSave: PropTypes.func.isRequired,
+  isInProgress: PropTypes.bool.isRequired
 };
 
 export default CopyGroupModal;
