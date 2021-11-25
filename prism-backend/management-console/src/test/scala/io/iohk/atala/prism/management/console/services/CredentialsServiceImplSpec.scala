@@ -41,6 +41,7 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
@@ -319,20 +320,19 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         )
 
         val mockRevocationOperationId = AtalaOperationId.of(revokeCredentialOp)
+        val mockRevocationResponse = OperationOutput(
+          OperationOutput.Result.RevokeCredentialsOutput(node_models.RevokeCredentialsOutput()),
+          OperationOutput.OperationMaybe.OperationId(mockRevocationOperationId.toProtoByteString)
+        )
 
-        val nodeRequest = node_api
-          .RevokeCredentialsRequest()
-          .withSignedOperation(revokeCredentialOp)
+        val nodeRequest = node_api.ScheduleOperationsRequest(List(revokeCredentialOp))
 
         nodeMock
-          .revokeCredentials(nodeRequest)
+          .scheduleOperations(nodeRequest)
           .returns(
-            Future
-              .successful(
-                node_api
-                  .RevokeCredentialsResponse()
-                  .withOperationId(mockRevocationOperationId.toProtoByteString)
-              )
+            Future.successful(
+              node_api.ScheduleOperationsResponse(List(mockRevocationResponse))
+            )
           )
 
         val request = console_api
@@ -553,20 +553,19 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         )
 
         val mockRevocationOperationId = AtalaOperationId.of(revokeCredentialOp)
+        val mockRevocationResponse = OperationOutput(
+          OperationOutput.Result.RevokeCredentialsOutput(node_models.RevokeCredentialsOutput()),
+          OperationOutput.OperationMaybe.OperationId(mockRevocationOperationId.toProtoByteString)
+        )
 
-        val nodeRequest = node_api
-          .RevokeCredentialsRequest()
-          .withSignedOperation(revokeCredentialOp)
+        val nodeRequest = node_api.ScheduleOperationsRequest(List(revokeCredentialOp))
 
         nodeMock
-          .revokeCredentials(nodeRequest)
+          .scheduleOperations(nodeRequest)
           .returns(
-            Future
-              .successful(
-                node_api
-                  .RevokeCredentialsResponse()
-                  .withOperationId(mockRevocationOperationId.toProtoByteString)
-              )
+            Future.successful(
+              node_api.ScheduleOperationsResponse(List(mockRevocationResponse))
+            )
           )
 
         val request = console_api
@@ -872,21 +871,19 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           new MerkleRoot(mockEncodedSignedCredentialHash)
         )
       val mockOperationId = AtalaOperationId.of(issuanceOp)
+      val mockIssueBatchResponse = OperationOutput(
+        OperationOutput.Result.BatchOutput(node_models.IssueCredentialBatchOutput(mockCredentialBatchId.getId)),
+        OperationOutput.OperationMaybe.OperationId(mockOperationId.toProtoByteString)
+      )
 
-      val nodeRequest = node_api
-        .IssueCredentialBatchRequest()
-        .withSignedOperation(issuanceOp)
+      val nodeRequest = node_api.ScheduleOperationsRequest(List(issuanceOp))
 
       nodeMock
-        .issueCredentialBatch(nodeRequest)
+        .scheduleOperations(nodeRequest)
         .returns(
-          Future
-            .successful(
-              node_api
-                .IssueCredentialBatchResponse()
-                .withOperationId(mockOperationId.toProtoByteString)
-                .withBatchId(mockCredentialBatchId.getId)
-            )
+          Future.successful(
+            node_api.ScheduleOperationsResponse(List(mockIssueBatchResponse))
+          )
         )
 
       val request = console_api
@@ -897,7 +894,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
 
       usingApiAsCredentials(rpcRequest) { serviceStub =>
         val publishResponse = serviceStub.publishBatch(request)
-        verify(nodeMock).issueCredentialBatch(nodeRequest)
+        verify(nodeMock).scheduleOperations(nodeRequest)
 
         publishResponse.batchId mustBe mockCredentialBatchId.getId
         publishResponse.operationId mustBe mockOperationId.toProtoByteString

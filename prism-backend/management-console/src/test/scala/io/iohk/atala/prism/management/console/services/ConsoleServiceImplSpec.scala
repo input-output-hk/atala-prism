@@ -14,6 +14,7 @@ import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
+import io.iohk.atala.prism.protos.node_models.{CreateDIDOutput, OperationOutput}
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.ArgumentMatchersSugar.*
@@ -185,12 +186,14 @@ class ConsoleServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
         operationId: AtalaOperationId,
         request: console_api.RegisterConsoleDIDRequest
     ) = {
+      val createDidResponse = OperationOutput(
+        OperationOutput.Result.CreateDidOutput(CreateDIDOutput(did.getSuffix)),
+        OperationOutput.OperationMaybe.OperationId(operationId.toProtoByteString)
+      )
       usingApiAsConsole.unlogged { serviceStub =>
-        nodeMock.createDID(*).returns {
+        nodeMock.scheduleOperations(*).returns {
           Future.successful(
-            node_api
-              .CreateDIDResponse(did.getSuffix)
-              .withOperationId(operationId.toProtoByteString)
+            node_api.ScheduleOperationsResponse(List(createDidResponse))
           )
         }
         serviceStub.registerDID(request)
