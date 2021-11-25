@@ -110,6 +110,11 @@ class NodeServiceSpec
 
   private val dummySyncTimestamp = Instant.ofEpochMilli(107)
 
+  private def mockOperationId(operationId: AtalaOperationId) =
+    doReturn(fake[List[Either[NodeError, AtalaOperationId]]](List(Right(operationId))))
+      .when(objectManagementService)
+      .scheduleAtalaOperations(*)
+
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
       val didDigest = Sha256.compute("test".getBytes())
@@ -300,23 +305,23 @@ class NodeServiceSpec
         CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
+      mockOperationId(operationId)
 
-      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
-        .when(objectManagementService)
-        .scheduleSingleAtalaOperation(*)
-
-      val response = service.createDID(
-        node_api.CreateDIDRequest().withSignedOperation(operation)
-      )
+      val response = service
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
+        )
+        .outputs
+        .head
 
       val expectedDIDSuffix =
         Sha256
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
           .getHexValue
 
-      response.id must be(expectedDIDSuffix)
-      response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
+      response.getCreateDidOutput.didSuffix must be(expectedDIDSuffix)
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -327,14 +332,14 @@ class NodeServiceSpec
         CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
+      mockOperationId(operationId)
 
-      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
-        .when(objectManagementService)
-        .scheduleSingleAtalaOperation(*)
-
-      val response = service.createDID(
-        node_api.CreateDIDRequest().withSignedOperation(operation)
-      )
+      val response = service
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
+        )
+        .outputs
+        .head
 
       val expectedDIDSuffix =
         Sha256
@@ -343,9 +348,9 @@ class NodeServiceSpec
           )
           .getHexValue
 
-      response.id must be(expectedDIDSuffix)
-      response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
+      response.getCreateDidOutput.didSuffix must be(expectedDIDSuffix)
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -359,8 +364,8 @@ class NodeServiceSpec
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.createDID(
-          node_api.CreateDIDRequest().withSignedOperation(operation)
+        service.scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
         )
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
@@ -375,17 +380,17 @@ class NodeServiceSpec
         UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
+      mockOperationId(operationId)
 
-      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
-        .when(objectManagementService)
-        .scheduleSingleAtalaOperation(*)
+      val response = service
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
+        )
+        .outputs
+        .head
 
-      val response = service.updateDID(
-        node_api.UpdateDIDRequest().withSignedOperation(operation)
-      )
-
-      response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -396,17 +401,17 @@ class NodeServiceSpec
         UpdateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
+      mockOperationId(operationId)
 
-      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
-        .when(objectManagementService)
-        .scheduleSingleAtalaOperation(*)
+      val response = service
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
+        )
+        .outputs
+        .head
 
-      val response = service.updateDID(
-        node_api.UpdateDIDRequest().withSignedOperation(operation)
-      )
-
-      response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -420,8 +425,8 @@ class NodeServiceSpec
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.updateDID(
-          node_api.UpdateDIDRequest().withSignedOperation(operation)
+        service.scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
         )
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
@@ -436,14 +441,14 @@ class NodeServiceSpec
         CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
+      mockOperationId(operationId)
 
-      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
-        .when(objectManagementService)
-        .scheduleSingleAtalaOperation(*)
-
-      val response = service.issueCredentialBatch(
-        node_api.IssueCredentialBatchRequest().withSignedOperation(operation)
-      )
+      val response = service
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
+        )
+        .outputs
+        .head
 
       val expectedBatchId = Sha256
         .compute(
@@ -451,9 +456,9 @@ class NodeServiceSpec
         )
         .getHexValue
 
-      response.batchId mustBe expectedBatchId
-      response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
+      response.getBatchOutput.batchId mustBe expectedBatchId
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -469,8 +474,8 @@ class NodeServiceSpec
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.issueCredentialBatch(
-          node_api.IssueCredentialBatchRequest().withSignedOperation(operation)
+        service.scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
         )
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
@@ -485,17 +490,17 @@ class NodeServiceSpec
         CreateDIDOperationSpec.masterKeys.getPrivateKey
       )
       val operationId = AtalaOperationId.of(operation)
+      mockOperationId(operationId)
 
-      doReturn(fake[Either[NodeError, AtalaOperationId]](Right(operationId)))
-        .when(objectManagementService)
-        .scheduleSingleAtalaOperation(*)
+      val response = service
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
+        )
+        .outputs
+        .head
 
-      val response = service.revokeCredentials(
-        node_api.RevokeCredentialsRequest().withSignedOperation(operation)
-      )
-
-      response.operationId mustEqual operationId.toProtoByteString
-      verify(objectManagementService).scheduleSingleAtalaOperation(operation)
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(operation)
       verifyNoMoreInteractions(objectManagementService)
     }
 
@@ -509,8 +514,8 @@ class NodeServiceSpec
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.revokeCredentials(
-          node_api.RevokeCredentialsRequest().withSignedOperation(operation)
+        service.scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(operation))
         )
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT

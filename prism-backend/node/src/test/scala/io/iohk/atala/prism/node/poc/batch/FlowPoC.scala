@@ -172,7 +172,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
         wallet.signOperation(createDIDOp, masterKeyId, didSuffix)
       val registerDIDOperationId = connector
         .registerDID(signedAtalaOperation = signedCreateDIDOp)
-        .operationId
+        .getOperationId
       DataPreparation.waitConfirmation(
         nodeServiceStub,
         registerDIDOperationId
@@ -214,9 +214,9 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val signedIssueBatch2Op =
         wallet.signOperation(issueBatch2Op, issuanceKeyId, didSuffix)
       val issueCredentialBatchOperationId1 =
-        console.issueCredentialBatch(signedIssueBatch1Op).operationId
+        console.issueCredentialBatch(signedIssueBatch1Op).getOperationId
       val issueCredentialBatchOperationId2 =
-        console.issueCredentialBatch(signedIssueBatch2Op).operationId
+        console.issueCredentialBatch(signedIssueBatch2Op).getOperationId
       DataPreparation.waitConfirmation(
         nodeServiceStub,
         issueCredentialBatchOperationId1,
@@ -260,7 +260,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val signedRevokeBatch1Op =
         wallet.signOperation(revokeBatch1Op, revocationKeyId, didSuffix)
       val revokeCredentialBatchOperationId =
-        console.revokeCredentialBatch(signedRevokeBatch1Op).operationId
+        console.revokeCredentialBatch(signedRevokeBatch1Op).getOperationId
 
       // 11. the issuer decides to revoke the first credential from the second batch
       val issueBatch2OpHash = Sha256.compute(issueBatch2Op.toByteArray)
@@ -270,7 +270,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       val signedRevokeC3Op =
         wallet.signOperation(revokeC3Op, revocationKeyId, didSuffix)
       val revokeSpecificCredentialsOperationId =
-        console.revokeSpecificCredentials(signedRevokeC3Op).operationId
+        console.revokeSpecificCredentials(signedRevokeC3Op).getOperationId
 
       DataPreparation.waitConfirmation(
         nodeServiceStub,

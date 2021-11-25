@@ -29,7 +29,7 @@ import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
-import io.iohk.atala.prism.protos.node_api.{IssueCredentialBatchResponse, NodeServiceGrpc}
+import io.iohk.atala.prism.protos.node_api.{NodeServiceGrpc, ScheduleOperationsResponse}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
@@ -247,14 +247,12 @@ private final class CredentialsServiceImpl[F[_]: Monad](
       response <-
         ex.deferFuture(
           nodeService
-            .issueCredentialBatch(
-              node_api
-                .IssueCredentialBatchRequest()
-                .withSignedOperation(publishBatch.signedOperation)
+            .scheduleOperations(
+              node_api.ScheduleOperationsRequest(List(publishBatch.signedOperation))
             )
         ).map(
           ProtoConverter[
-            IssueCredentialBatchResponse,
+            ScheduleOperationsResponse,
             IssueCredentialBatchNodeResponse
           ].fromProto(_, None)
         ).map[Either[ManagementConsoleError, IssueCredentialBatchNodeResponse]](

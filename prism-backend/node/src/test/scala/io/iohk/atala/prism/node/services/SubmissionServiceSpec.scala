@@ -5,6 +5,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -15,6 +16,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -551,16 +553,13 @@ class SubmissionServiceSpec
     }
   }
 
-  private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): Unit =
-    ops.zipWithIndex.foreach { case (atalaOperation, index) =>
-      withClue(s"scheduling operation #$index") {
-        objectManagementService
-          .scheduleSingleAtalaOperation(atalaOperation)
-          .run(TraceId.generateYOLO)
-          .unsafeToFuture()
-          .futureValue
-      }
-    }
+  private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): List[Either[NodeError, AtalaOperationId]] = {
+    objectManagementService
+      .scheduleAtalaOperations(ops: _*)
+      .run(TraceId.generateYOLO)
+      .unsafeToFuture()
+      .futureValue
+  }
 
   private def publishOpsSequentially(ops: List[SignedAtalaOperation]): Unit =
     ops.zipWithIndex.foreach { case (atalaOperation, index) =>

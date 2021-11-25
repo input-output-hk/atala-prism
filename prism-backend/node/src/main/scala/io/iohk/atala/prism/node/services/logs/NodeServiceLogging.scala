@@ -30,16 +30,6 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       )
       .onError(errorCause"encountered an error while getting document by the DID" (_))
 
-  override def scheduleOperation(op: SignedAtalaOperation): Mid[F, Either[errors.NodeError, AtalaOperationId]] = in =>
-    info"scheduling operation" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while scheduling operation $err",
-          operationId => info"scheduling operation $operationId - successfully done"
-        )
-      )
-      .onError(errorCause"encountered an error while scheduling operation" (_))
-
   override def getBatchState(batchId: CredentialBatchId): Mid[F, Either[errors.NodeError, BatchData]] = in =>
     info"getting batch state $batchId" *> in
       .flatTap(

@@ -2,17 +2,19 @@ package io.iohk.atala.prism.node.poc.batch
 
 import io.iohk.atala.prism.crypto.MerkleInclusionProof
 import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_api.{CreateDIDRequest, CreateDIDResponse}
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.atala.prism.protos.node_api.ScheduleOperationsRequest
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 
 case class Connector(node: node_api.NodeServiceGrpc.NodeServiceBlockingStub) {
   def registerDID(
       signedAtalaOperation: SignedAtalaOperation
-  ): CreateDIDResponse = {
+  ): OperationOutput = {
     node
-      .createDID(
-        CreateDIDRequest(Some(signedAtalaOperation))
+      .scheduleOperations(
+        ScheduleOperationsRequest(List(signedAtalaOperation))
       )
+      .outputs
+      .head
   }
 
   // a tiny simulation of sending the credential

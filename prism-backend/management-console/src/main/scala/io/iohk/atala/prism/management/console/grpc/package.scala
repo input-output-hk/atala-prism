@@ -20,7 +20,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   GetCredentialIssuance
 }
 import io.iohk.atala.prism.management.console.validations.JsonValidator
-import io.iohk.atala.prism.protos.{common_models, console_models, node_api}
+import io.iohk.atala.prism.protos.{common_models, console_models}
 import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.console_api._
 import io.scalaland.chimney.dsl._
@@ -34,7 +34,8 @@ import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
-import io.iohk.atala.prism.utils.Base64Utils
+import io.iohk.atala.prism.protos.node_api.ScheduleOperationsResponse
+import io.iohk.atala.prism.utils.{Base64Utils, GrpcUtils}
 
 import scala.util.{Failure, Success, Try}
 
@@ -824,28 +825,29 @@ package object grpc {
     }
 
   implicit val nodeRevocationResponse: ProtoConverter[
-    node_api.RevokeCredentialsResponse,
+    ScheduleOperationsResponse,
     NodeRevocationResponse
   ] =
-    (response: node_api.RevokeCredentialsResponse, _) =>
+    (response: ScheduleOperationsResponse, _) =>
       Try {
         NodeRevocationResponse(
           AtalaOperationId.fromVectorUnsafe(
-            response.operationId.toByteArray.toVector
+            GrpcUtils.extractSingleOperationOutput(response).getOperationId.toByteArray.toVector
           )
         )
       }
 
   implicit val issueCredentialBatchResponseConverter: ProtoConverter[
-    node_api.IssueCredentialBatchResponse,
+    ScheduleOperationsResponse,
     IssueCredentialBatchNodeResponse
   ] =
-    (response: node_api.IssueCredentialBatchResponse, _) => {
+    (response: ScheduleOperationsResponse, _) => {
+      val operationOutput = GrpcUtils.extractSingleOperationOutput(response)
       for {
         batchId <- Try(
           Option(
             CredentialBatchId
-              .fromString(response.batchId)
+              .fromString(operationOutput.getBatchOutput.batchId)
           ).getOrElse(
             throw new RuntimeException("Node returned an invalid batch id")
           )
@@ -853,7 +855,7 @@ package object grpc {
       } yield IssueCredentialBatchNodeResponse(
         batchId,
         AtalaOperationId.fromVectorUnsafe(
-          response.operationId.toByteArray.toVector
+          operationOutput.getOperationId.toByteArray.toVector
         )
       )
     }

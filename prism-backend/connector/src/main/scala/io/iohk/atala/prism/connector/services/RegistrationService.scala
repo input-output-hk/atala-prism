@@ -27,6 +27,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import cats.MonadThrow
 import cats.effect.MonadCancelThrow
+import io.iohk.atala.prism.utils.GrpcUtils
 
 @derive(applyK)
 trait RegistrationService[F[_]] {
@@ -82,12 +83,13 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
       createDIDOperation: SignedAtalaOperation
   ): F[ParticipantsRepository.CreateParticipantRequest] = {
     for {
-      createDIDResponse <- ex.deferFuture(
-        nodeService.createDID(
-          node_api.CreateDIDRequest().withSignedOperation(createDIDOperation)
+      scheduleOperationResponse <- ex.deferFuture(
+        nodeService.scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(createDIDOperation))
         )
       )
-      did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.id))
+      createDIDResponse = GrpcUtils.extractSingleOperationOutput(scheduleOperationResponse)
+      did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.getCreateDidOutput.didSuffix))
       createRequest =
         ParticipantsRepository
           .CreateParticipantRequest(
@@ -98,7 +100,7 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
             logo = logo,
             operationId = AtalaOperationId
               .fromVectorUnsafe(
-                createDIDResponse.operationId.toByteArray.toVector
+                createDIDResponse.getOperationId.toByteArray.toVector
               )
               .some
           )

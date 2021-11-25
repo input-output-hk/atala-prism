@@ -10,8 +10,17 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import java.io.File
 import scala.concurrent.blocking
 import io.grpc.stub.AbstractStub
+import io.iohk.atala.prism.protos.node_api.ScheduleOperationsResponse
+import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 object GrpcUtils {
+
+  def extractSingleOperationOutput(scheduleOperationsResponse: ScheduleOperationsResponse): OperationOutput =
+    scheduleOperationsResponse.outputs match {
+      case head :: Nil => head
+      case outputs =>
+        throw new RuntimeException(s"1 operation output expected but got ${outputs.size}")
+    }
 
   case class GrpcConfig(port: Int)
 
