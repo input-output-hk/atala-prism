@@ -1,0 +1,109 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+
+\title{PRISM node technical notes} 
+
+\author{Atala PRISM team - IOG} 
+
+\date{} 
+
+\begin{document}
+
+
+\maketitle 
+
+%\begin{abstract} 
+%This document describes implementation details about the PRISM node. 
+%\end{abstract}
+
+\setcounter{tocdepth}{3} 
+
+\tableofcontents 
+\newpage 
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\section{High level overview}
+
+This document provides a technical description of how the PRISM protocol has been implemented.
+
+We assume the reader has familiarity with the PRISM protocol, and understands some high level aspects about Cardano. The document makes focus on closing the gap between the PRISM protocol, and a practical implementation.
+
+At a very high level, the PRISM protocol establishes that each protocol participant will manage his own keys, publish their own events, and read the full underlying blockchain to be aware of the state of the system. The state of the system consists of:
+\begin{itemize}
+  \item An association of DIDs to their list of keys (and respective timestamps)
+  \item A set of merkle roots associated to their corresponding issuer, and the timestamp in which they where added on-chain
+  \item A set of revoked roots (or credentials hashes) associated with the timestamp in which they were added on-chain
+\end{itemize}
+
+Throughout this document we will use the term \emph{operation} to refer to protocol events. 
+
+The PRISM node is in charge of:
+\begin{itemize}
+  \item Receiving the user's signed operations (\emph{CreateDID, UpdateDID, IssueBatch, RevokeCredentials}), accom
+  \item Construct transactions to submit users' operations
+  \item Track the confirmation of submitted transactions
+  \item Read protocol operations from the blockchain, validate them and apply them
+  \item Reply to users' queries about the status of submitted operations
+  \item Reply to users' queries about the state of DIDs, batches and credentials
+\end{itemize}
+
+In the following sub-sections, we will describe how the node is structured, the trade-offs taken in order to provide a practical implementation, and the API plus core models that are related to the node.
+
+\subsection{Node sub-components}
+
+The PRISM node implementation is based upon Cardano. Our implementation is hence dependent on some Cardano components, namely, the Cardano wallet and db-sync. We use the Cardano wallet as part of the submission flow, the wallet exposes an HTTP API that the PRISM node uses to construct transactions with metadata and submit them to the blockchain. On the other side, we use db-sync, a component in the Cardano stack that indexes the blockchain information in a database. We use db-sync to obtain information of new blocks confirmed by the Cardano network, which allow us to process new events we retrieve from the blockchain.
+
+Outside of Cardano dependencies, the node structurally consists of two main sub-components. One could be described as an operations queue that contains the operations that the user has submitted along with some status representing whether the operation has been submitted, is waiting confirmation, has been applied, or other status we will describe later in this document. The operations queue is crucial to orchestrate the submission flow for operations. This queue also represents state that is local to the node instance, and is not known by other nodes in the PRISM network. 
+
+The other core component that builds-up the node is an operations' processing service. This component is the one responsible of processing the operations retrieved from db-sync, validate them apply their effect to the system state. This component is crucial in the operations' processing flow. The state updated by this component is what we consider to be the global state that all PRISM nodes that are up-to-date with the network will share.
+
+Putting all pieces together, the high level interaction between these component can be broken between two flows that we will describe in depth in future sections.
+\begin{itemize}
+  \item Submission flow: The user calls the PRISM node with an operation. The node adds it to a queue. A timeout triggers to gather operations in the queue and submit them. The submission mechanism calls the Cardano wallet, which actually submits the transaction carrying the operations. A separate node timeout periodically controls the status of the transactions submitted, and handles retries when needed.
+  \item Processing flow: The node receives a notification from db-sync announcing that a new block has reached a determined depth. The processing service is called with this new block, inspects every transaction in search of PRISM events, validates them and apply their effect on the node state.
+\end{itemize} 
+
+\subsection{Practical challenges and trade-offs selection}
+
+Now that we have a basic description of what the node does, and a high level intuition of how it is accomplishing it, we should expose some points to contrast the idealised protocol description with an actual implementation. 
+
+During the development process and based on some interactions with users of the node, we observed the following:
+\begin{enumerate}
+  \item Many participants may share a single node instance
+  \item The underlying blockchain fees may be costly for some use cases if each event is submitted in a separate transaction
+  \item The underlying blockchain wallet may not be available (UTxOs may be insufficient at times of high demand)
+  \item The underlying blockchain may suffer congestions
+  \item Blockchains may produce temporal forks. This is, a network may temporarily be split between two (or more) competing candidate chains. These 
+	forks are usually short-lasting, their frequency and extension is dependent on the consensus protocol of the underlying network
+\end{enumerate}
+
+In order to address part of these observations, we took some initial design directions:
+\begin{itemize}
+  \item The node optimizes fees by batching many operations in the metadata of a single transaction (on-chain batching)
+  \item The node provides a configurable timer for basic accumulation of operations
+  \item The node limits the requests made to the Cardano wallet to avoid overloading it
+  \item The node manages transaction retries
+  \item The node waits for enough depth to make fork-based rollbacks improbable
+\end{itemize}
+
+The above points allow for a relative efficient management of fees, time delays, submission complexity.
+
+The implications of sharing a node instance is dependent on use case. If the common node instance is used to submit operations on behalf of many (related) entities, then some coordinator is needed to handle the transaction costs, and submission rules. For instance, a company may use a single node to allow multiple employees issue credentials or manage DIDs on behalf of the company. It is responsibility of the company to administrate any limit on the number of operations that the node will accept/submit to balance fee costs. If unrelated parties aim to share a node, e.g. a third party decides to provide an operations' submission service, then this third party would be responsible of managing submission limits and/or a cost model per user.
+
+The node itself does not provide an authentication mechanism. In the same way a system does not expose openly a database server IP/Port, or a blockchain node nor wallet, we extend the recommendation to hide the PRISM node from public access from the internet.
+
+
+\subsection{API and core models}
+
+\section{Operations submission flow}
+
+\section{Operations procesing flow}
+
+\end{document}
