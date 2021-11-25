@@ -279,26 +279,37 @@ export default class CredentialsIssuedBaseStore {
   }
 
   *fetchAllCredentials() {
-    const {
-      // TODO: implement missing filters on the backend
-      // nameFilter,
-      // credentialStatusFilter,
-      // connectionStatusFilter,
-      credentialTypeFilter,
-      dateFilter = [],
-      sortDirection,
-      sortingBy
-    } = this;
-    const allCredentials = yield this.api.credentialsManager.getAllCredentials({
-      limit: null,
-      sort: { field: sortingBy, direction: sortDirection },
-      filter: {
-        credentialType: credentialTypeFilter,
-        date: dateFilter
-      }
-    });
-    this.transportLayerErrorHandler.handleTransportLayerSuccess();
-    this.isFetching = false;
-    return allCredentials;
+    try {
+      const {
+        // TODO: implement missing filters on the backend
+        // nameFilter,
+        // credentialStatusFilter,
+        // connectionStatusFilter,
+        credentialTypeFilter,
+        dateFilter = [],
+        sortDirection,
+        sortingBy
+      } = this;
+      const allCredentials = yield this.api.credentialsManager.getAllCredentials({
+        limit: null,
+        sort: { field: sortingBy, direction: sortDirection },
+        filter: {
+          credentialType: credentialTypeFilter,
+          date: dateFilter
+        }
+      });
+      this.transportLayerErrorHandler.handleTransportLayerSuccess();
+      this.isFetching = false;
+      return allCredentials;
+    } catch (error) {
+      const metadata = {
+        store: this.storeName,
+        method: 'fetchAllCredentials',
+        verb: 'getting',
+        model: 'Credentials'
+      };
+      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
+      return fallback.credentialsList;
+    }
   }
 }
