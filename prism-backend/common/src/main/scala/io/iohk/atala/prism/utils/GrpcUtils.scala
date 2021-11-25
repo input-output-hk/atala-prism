@@ -10,8 +10,15 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import java.io.File
 import scala.concurrent.blocking
 import io.grpc.stub.AbstractStub
+import io.iohk.atala.prism.protos.node_api.ScheduleOperationsResponse
+import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 object GrpcUtils {
+
+  def extractSingleOperationOutput(scheduleOperationsResponse: ScheduleOperationsResponse): OperationOutput =
+    scheduleOperationsResponse.outputs.headOption.getOrElse(
+      throw new RuntimeException(s"Invalid ScheduleOperationsResponse: $ScheduleOperationsResponse")
+    )
 
   case class GrpcConfig(port: Int)
 

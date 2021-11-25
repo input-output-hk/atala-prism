@@ -35,7 +35,7 @@ import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.protos.node_api.ScheduleOperationsResponse
-import io.iohk.atala.prism.utils.Base64Utils
+import io.iohk.atala.prism.utils.{Base64Utils, GrpcUtils}
 
 import scala.util.{Failure, Success, Try}
 
@@ -832,7 +832,7 @@ package object grpc {
       Try {
         NodeRevocationResponse(
           AtalaOperationId.fromVectorUnsafe(
-            response.outputs.head.getOperationId.toByteArray.toVector
+            GrpcUtils.extractSingleOperationOutput(response).getOperationId.toByteArray.toVector
           )
         )
       }
@@ -842,11 +842,12 @@ package object grpc {
     IssueCredentialBatchNodeResponse
   ] =
     (response: ScheduleOperationsResponse, _) => {
+      val operationOutput = GrpcUtils.extractSingleOperationOutput(response)
       for {
         batchId <- Try(
           Option(
             CredentialBatchId
-              .fromString(response.outputs.head.getBatchOutput.batchId)
+              .fromString(operationOutput.getBatchOutput.batchId)
           ).getOrElse(
             throw new RuntimeException("Node returned an invalid batch id")
           )
@@ -854,7 +855,7 @@ package object grpc {
       } yield IssueCredentialBatchNodeResponse(
         batchId,
         AtalaOperationId.fromVectorUnsafe(
-          response.outputs.head.getOperationId.toByteArray.toVector
+          operationOutput.getOperationId.toByteArray.toVector
         )
       )
     }

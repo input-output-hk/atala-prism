@@ -27,6 +27,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import cats.MonadThrow
 import cats.effect.MonadCancelThrow
+import io.iohk.atala.prism.utils.GrpcUtils
 
 @derive(applyK)
 trait RegistrationService[F[_]] {
@@ -87,7 +88,7 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
           node_api.ScheduleOperationsRequest(List(createDIDOperation))
         )
       )
-      createDIDResponse = scheduleOperationResponse.outputs.head
+      createDIDResponse = GrpcUtils.extractSingleOperationOutput(scheduleOperationResponse)
       did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.getCreateDidOutput.didSuffix))
       createRequest =
         ParticipantsRepository
