@@ -12,7 +12,6 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
-import { getCheckedAndIndeterminateProps } from '../../../../helpers/selectionHelpers';
 
 import './_style.scss';
 
@@ -20,6 +19,7 @@ const TableOptions = observer(() => {
   const { t } = useTranslation();
   const {
     credentials,
+    selectAllCheckboxStateProps,
     selectedCredentials,
     isLoadingSelection,
     refreshCredentials,
@@ -40,7 +40,7 @@ const TableOptions = observer(() => {
   const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
   const checkboxProps = {
-    ...getCheckedAndIndeterminateProps(credentials, selectedCredentials),
+    ...selectAllCheckboxStateProps,
     disabled: isLoadingSelection || !credentials.length,
     onChange: selectAllCredentials
   };

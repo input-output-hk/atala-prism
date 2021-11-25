@@ -2,10 +2,18 @@ import { makeAutoObservable, reaction } from 'mobx';
 import { CREDENTIAL_ID_KEY } from '../../helpers/constants';
 import CredentialsIssuedBaseStore from '../domain/CredentialsIssuedBaseStore';
 
+const checkboxStates = {
+  UNCHECKED: 'UNCHECKED',
+  CHECKED: 'CHECKED',
+  INDETERMINATE: 'INDETERMINATE'
+};
+
 export default class CredentialsIssuedPageStore {
   selectedCredentials = [];
 
   isLoadingSelection = false;
+
+  selectAllCheckboxState = checkboxStates.UNCHECKED;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -43,6 +51,13 @@ export default class CredentialsIssuedPageStore {
     return this.credentialsIssuedBaseStore.filterSortingProps;
   }
 
+  get selectAllCheckboxStateProps() {
+    return {
+      checked: this.selectAllCheckboxState === checkboxStates.CHECKED,
+      indeterminate: this.selectAllCheckboxState === checkboxStates.INDETERMINATE
+    };
+  }
+
   get isSearching() {
     return this.credentialsIssuedBaseStore.isSearching;
   }
@@ -75,6 +90,7 @@ export default class CredentialsIssuedPageStore {
   *selectAllCredentials(ev) {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
+    this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
     const entitiesToSelect = yield this.credentialsIssuedBaseStore.fetchAllCredentials();
     this.setSelection(checked, entitiesToSelect);
     this.isLoadingSelection = false;
@@ -86,10 +102,12 @@ export default class CredentialsIssuedPageStore {
 
   resetSelection() {
     this.selectedCredentials = [];
+    this.selectAllCheckboxState = checkboxStates.UNCHECKED;
     this.isLoadingSelection = false;
   }
 
   handleCherryPickSelection(updatedPartialSelection) {
+    this.selectAllCheckboxState = checkboxStates.INDETERMINATE;
     this.selectedCredentials = this.invisibleSelectedCredentials.concat(updatedPartialSelection);
   }
 }

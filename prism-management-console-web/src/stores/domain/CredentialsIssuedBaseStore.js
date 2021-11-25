@@ -107,15 +107,16 @@ export default class CredentialsIssuedBaseStore {
   }
 
   get hasFiltersApplied() {
-    return this.hasTextFilterApplied || this.hasAditionalFiltersApplied;
+    return this.hasTextFilterApplied || this.hasAdditionalFiltersApplied;
   }
 
-  get hasAditionalFiltersApplied() {
+  get hasAdditionalFiltersApplied() {
     return (
       this.hasDateFilterApplied ||
       this.hasCredentiaTypeFilter ||
       this.hasCredentialStatusFilterApplied ||
-      this.hasConnectionStatusFilterApplied
+      this.hasConnectionStatusFilterApplied ||
+      this.hasCredentiaTypeFilterApplied
     );
   }
 
@@ -135,7 +136,7 @@ export default class CredentialsIssuedBaseStore {
     return Boolean(this.connectionStatusFilter);
   }
 
-  get hasCredentiaTypeFilter() {
+  get hasCredentiaTypeFilterApplied() {
     return Boolean(this.credentialTypeFilter);
   }
 
@@ -144,8 +145,17 @@ export default class CredentialsIssuedBaseStore {
   }
 
   get filterSortingProps() {
-    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
+    const {
+      hasFiltersApplied,
+      hasAdditionalFiltersApplied,
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      toggleSortDirection
+    } = this;
     return {
+      hasFiltersApplied,
+      hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
