@@ -1006,9 +1006,9 @@
       "buttonText": "Save",
       "groupName": "Type Group Name"
     },
-    "success": "Successfully created",
+    "success": "Successfully created {{groupName}}",
     "errors": {
-      "grpc": "Error creating group",
+      "grpc": "Error creating group {{groupName}}",
       "gettingGroups": "Error getting groups"
     },
     "selectAll": "Select All",

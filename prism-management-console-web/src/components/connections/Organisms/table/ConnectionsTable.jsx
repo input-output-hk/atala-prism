@@ -6,7 +6,6 @@ import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScroll
 import { getContactColumns } from '../../../../helpers/tableDefinitions/contacts';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noContacts from '../../../../images/noConnections.svg';
-import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED } from '../../../../helpers/constants';
 
@@ -60,7 +59,7 @@ const ConnectionsTable = ({
     renderEmpty
   };
 
-  return isLoading ? <SimpleLoading /> : <InfiniteScrollTable {...tableProps} />;
+  return <InfiniteScrollTable {...tableProps} />;
 };
 ConnectionsTable.defaultProps = {
   contacts: [],

@@ -66,7 +66,7 @@ const GroupName = ({ updateForm, formValues, formRef, nameState, setNameState, c
   };
 
   return (
-    <div className={`ai-center mb-3 ${className}`}>
+    <div className={`GroupNameWrapper ai-center mb-3 ${className}`}>
       <div className="FormContainer">
         <GroupForm ref={formRef} updateForm={handleUpdateForm} formValues={formValues} />
       </div>

@@ -100,18 +100,31 @@ export default class CurrentGroupStore {
   };
 
   *updateGroupName(newName) {
-    this.isSaving = true;
-    yield this.api.groupsManager.updateGroup(this.id, { newName });
-    message.success(i18n.t('groupEditing.success'));
-    yield this.loadGroup();
-    this.isSaving = false;
+    try {
+      this.isSaving = true;
+      yield this.api.groupsManager.updateGroup(this.id, { newName });
+      // TODO: this logic belongs to views, here we should just set a flag.
+      //  This way, the store is coupled with antd lib.
+      message.success(i18n.t('groupEditing.success'));
+      yield this.loadGroup();
+      this.isSaving = false;
+    } catch {
+      message.error(i18n.t('groupEditing.errors.grpc'));
+      this.isSaving = false;
+    }
   }
 
   *updateGroupMembers(membersUpdate) {
-    this.isSaving = true;
-    yield this.api.groupsManager.updateGroup(this.id, membersUpdate);
-    message.success(i18n.t('groupEditing.success'));
-    yield this.reloadMembers();
-    this.isSaving = false;
+    try {
+      this.isSaving = true;
+      yield this.api.groupsManager.updateGroup(this.id, membersUpdate);
+      // TODO: same thing as for *updateGroupName
+      message.success(i18n.t('groupEditing.success'));
+      yield this.reloadMembers();
+      this.isSaving = false;
+    } catch {
+      message.error(i18n.t('groupEditing.errors.grpc'));
+      this.isSaving = false;
+    }
   }
 }
