@@ -82,12 +82,13 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
       createDIDOperation: SignedAtalaOperation
   ): F[ParticipantsRepository.CreateParticipantRequest] = {
     for {
-      createDIDResponse <- ex.deferFuture(
-        nodeService.createDID(
-          node_api.CreateDIDRequest().withSignedOperation(createDIDOperation)
+      scheduleOperationResponse <- ex.deferFuture(
+        nodeService.scheduleOperations(
+          node_api.ScheduleOperationsRequest(List(createDIDOperation))
         )
       )
-      did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.id))
+      createDIDResponse = scheduleOperationResponse.outputs.head
+      did = DID.fromString(DidSuffix.didFromStringSuffix(createDIDResponse.getCreateDidOutput.didSuffix))
       createRequest =
         ParticipantsRepository
           .CreateParticipantRequest(
@@ -98,7 +99,7 @@ private class RegistrationServiceImpl[F[_]: MonadThrow](
             logo = logo,
             operationId = AtalaOperationId
               .fromVectorUnsafe(
-                createDIDResponse.operationId.toByteArray.toVector
+                createDIDResponse.getOperationId.toByteArray.toVector
               )
               .some
           )

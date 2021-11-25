@@ -11,8 +11,8 @@ import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.models.ParticipantId
 import io.iohk.atala.prism.protos.connector_api.{RegisterDIDRequest, RegisterDIDResponse}
-import io.iohk.atala.prism.protos.node_api.{CreateDIDResponse, GetDidDocumentResponse}
-import io.iohk.atala.prism.protos.node_models.DIDData
+import io.iohk.atala.prism.protos.node_api.{GetDidDocumentResponse, ScheduleOperationsResponse}
+import io.iohk.atala.prism.protos.node_models.{CreateDIDOutput, DIDData, OperationOutput}
 import io.iohk.atala.prism.protos.{connector_api, node_models}
 import io.iohk.atala.prism.util.KeyUtils.createNodePublicKey
 import org.mockito.ArgumentMatchersSugar.*
@@ -40,13 +40,14 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         val name = "iohk"
         val logo = "none".getBytes()
         val operationId = AtalaOperationId.random()
+        val createDidResponse = OperationOutput(
+          OperationOutput.Result.CreateDidOutput(CreateDIDOutput(expectedDID.getSuffix)),
+          OperationOutput.OperationMaybe.OperationId(operationId.toProtoByteString)
+        )
         val request = createRequest(name, logo)
 
-        nodeMock.createDID(*).returns {
-          Future.successful(
-            CreateDIDResponse(expectedDID.getSuffix)
-              .withOperationId(operationId.toProtoByteString)
-          )
+        nodeMock.scheduleOperations(*).returns {
+          Future.successful(ScheduleOperationsResponse(List(createDidResponse)))
         }
         val response = blockingStub.registerDID(request)
         checkParticipantProperlyStored(
@@ -228,13 +229,14 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       val logo = "none".getBytes()
       val operationId = Sha256.compute("id".getBytes).getValue
       val request = createRequest(name, logo)
+      val createDidResponse = OperationOutput(
+        OperationOutput.Result.CreateDidOutput(CreateDIDOutput(expectedDID.getSuffix)),
+        OperationOutput.OperationMaybe.OperationId(ByteString.copyFrom(operationId))
+      )
 
       usingApiAs.unlogged { blockingStub =>
-        nodeMock.createDID(*).returns {
-          Future.successful(
-            CreateDIDResponse(expectedDID.getSuffix)
-              .withOperationId(ByteString.copyFrom(operationId))
-          )
+        nodeMock.scheduleOperations(*).returns {
+          Future.successful(ScheduleOperationsResponse(List(createDidResponse)))
         }
         val response1 = blockingStub.registerDID(request)
         val response2 = Try(blockingStub.registerDID(request))
