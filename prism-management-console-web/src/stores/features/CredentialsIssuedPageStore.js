@@ -1,16 +1,11 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { CREDENTIAL_ID_KEY } from '../../helpers/constants';
 import CredentialsIssuedBaseStore from '../domain/CredentialsIssuedBaseStore';
 
-const defaultValues = {
-  selectedCredentials: [],
-  isLoadingSelection: false
-};
-
 export default class CredentialsIssuedPageStore {
-  selectedCredentials = defaultValues.selectedCredentials;
+  selectedCredentials = [];
 
-  isLoadingSelection = defaultValues.isLoadingSelection;
+  isLoadingSelection = false;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -26,6 +21,14 @@ export default class CredentialsIssuedPageStore {
       },
       { autoBind: true }
     );
+
+    reaction(() => this.credentialsIssuedBaseStore.textFilter, this.resetSelection);
+    reaction(() => this.credentialsIssuedBaseStore.credentialStatusFilter, this.resetSelection);
+    reaction(() => this.credentialsIssuedBaseStore.connectionStatusFilter, this.resetSelection);
+    reaction(() => this.credentialsIssuedBaseStore.credentialTypeFilter, this.resetSelection);
+    reaction(() => this.credentialsIssuedBaseStore.dateFilter, this.resetSelection);
+    reaction(() => this.credentialsIssuedBaseStore.sortDirection, this.resetSelection);
+    reaction(() => this.credentialsIssuedBaseStore.sortingBy, this.resetSelection);
   }
 
   get credentials() {
@@ -79,6 +82,11 @@ export default class CredentialsIssuedPageStore {
 
   setSelection(checked, entitiesList) {
     this.selectedCredentials = checked ? entitiesList.map(e => e[CREDENTIAL_ID_KEY]) : [];
+  }
+
+  resetSelection() {
+    this.selectedCredentials = [];
+    this.isLoadingSelection = false;
   }
 
   handleCherryPickSelection(updatedPartialSelection) {

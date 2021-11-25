@@ -18,42 +18,30 @@ const fallback = {
   credentialsList: []
 };
 
-const defaultValues = {
-  credentials: [],
-  isFetching: false,
-  isSearching: false,
-  hasMore: true,
-  textFilter: '',
-  statusFilter: '',
-  dateFilter: '',
-  contactIdFilter: '',
-  sortDirection: ascending,
-  sortingBy: CREDENTIAL_SORTING_KEYS.createdOn
-};
 export default class CredentialsIssuedBaseStore {
-  credentials = defaultValues.credentials;
+  credentials = [];
 
-  hasMore = defaultValues.hasMore;
+  hasMore = true;
 
-  isFetching = defaultValues.isFetching;
+  isFetching = false;
 
-  isSearching = defaultValues.isSearching;
+  isSearching = false;
 
-  textFilter = defaultValues.textFilter;
+  textFilter = '';
 
-  credentialStatusFilter = defaultValues.credentialStatusFilter;
+  credentialStatusFilter = '';
 
-  connectionStatusFilter = defaultValues.connectionStatusFilter;
+  connectionStatusFilter = '';
 
-  dateFilter = defaultValues.dateFilter;
+  dateFilter = '';
 
-  credentialTypeFilter = defaultValues.credentialTypeFilter;
+  credentialTypeFilter = '';
 
-  contactIdFilter = defaultValues.contactIdFilter;
+  contactIdFilter = '';
 
-  sortDirection = defaultValues.sortDirection;
+  sortDirection = ascending;
 
-  sortingBy = defaultValues.sortingBy;
+  sortingBy = CREDENTIAL_SORTING_KEYS.createdOn;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -71,13 +59,13 @@ export default class CredentialsIssuedBaseStore {
       }
     );
 
-    reaction(() => this.textFilter, () => this.triggerDebouncedSearch());
-    reaction(() => this.credentialStatusFilter, () => this.triggerSearch());
-    reaction(() => this.connectionStatusFilter, () => this.triggerSearch());
-    reaction(() => this.credentialTypeFilter, () => this.triggerSearch());
-    reaction(() => this.dateFilter, () => this.triggerSearch());
-    reaction(() => this.sortDirection, () => this.triggerSearch());
-    reaction(() => this.sortingBy, () => this.triggerSearch());
+    reaction(() => this.textFilter, this.triggerDebouncedSearch);
+    reaction(() => this.credentialStatusFilter, this.triggerSearch);
+    reaction(() => this.connectionStatusFilter, this.triggerSearch);
+    reaction(() => this.credentialTypeFilter, this.triggerSearch);
+    reaction(() => this.dateFilter, this.triggerSearch);
+    reaction(() => this.sortDirection, this.triggerSearch);
+    reaction(() => this.sortingBy, this.triggerSearch);
   }
 
   get isLoadingFirstPage() {
@@ -91,22 +79,22 @@ export default class CredentialsIssuedBaseStore {
   }
 
   resetCredentials() {
-    this.hasMore = defaultValues.hasMore;
-    this.credentials = defaultValues.credentials;
+    this.hasMore = true;
+    this.credentials = [];
   }
 
   resetContactsAndFilters() {
     this.resetCredentials();
-    this.isFetching = defaultValues.isFetching;
-    this.isSearching = defaultValues.isSearching;
-    this.textFilter = defaultValues.textFilter;
-    this.dateFilter = defaultValues.lastEditedFilter;
-    this.credentialStatusFilter = defaultValues.credentialStatusFilter;
-    this.connectionStatusFilter = defaultValues.connectionStatusFilter;
-    this.credentialTypeFilter = defaultValues.credentialTypeFilter;
-    this.contactIdFilter = defaultValues.contactIdFilter;
-    this.sortDirection = defaultValues.sortDirection;
-    this.sortingBy = defaultValues.sortingBy;
+    this.isFetching = false;
+    this.isSearching = false;
+    this.textFilter = '';
+    this.dateFilter = '';
+    this.credentialStatusFilter = '';
+    this.connectionStatusFilter = '';
+    this.credentialTypeFilter = '';
+    this.contactIdFilter = '';
+    this.sortDirection = ascending;
+    this.sortingBy = CREDENTIAL_SORTING_KEYS.createdOn;
   }
 
   // ********************** //
@@ -152,10 +140,7 @@ export default class CredentialsIssuedBaseStore {
   }
 
   get hasCustomSorting() {
-    return (
-      this.sortingBy !== defaultValues.sortingBy ||
-      this.sortDirection !== defaultValues.sortDirection
-    );
+    return this.sortingBy !== CREDENTIAL_SORTING_KEYS.createdOn || this.sortDirection !== ascending;
   }
 
   get filterSortingProps() {
@@ -176,12 +161,12 @@ export default class CredentialsIssuedBaseStore {
     this.sortingBy = value;
   }
 
-  async triggerSearch() {
+  *triggerSearch() {
     this.isSearching = true;
     this.hasMore = true;
     this.handleUnsupportedFilters();
     this.handleUnsupportedSorting();
-    await this.fetchMoreData({ startFromTheTop: true });
+    yield this.fetchMoreData({ startFromTheTop: true });
     this.isSearching = false;
   }
 

@@ -15,7 +15,8 @@ import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsI
 const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData }) => {
   const { t } = useTranslation();
   const {
-    filterSortingProps: { hasFiltersApplied, isSearching, isSorting },
+    filterSortingProps: { hasFiltersApplied },
+    isSearching,
     credentials,
     selectedCredentials,
     handleCherryPickSelection,
@@ -47,7 +48,7 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
     onView: showCredentialData,
     isFetching,
     hasMore,
-    loading: isSearching || isSorting
+    loading: isSearching
   };
 
   const emptyProps = {
