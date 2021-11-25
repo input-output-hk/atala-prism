@@ -88,7 +88,7 @@ const GroupCreation = observer(
               nameState={nameState}
             />
             <h3>{t('groupCreation.addContacts')}</h3>
-            <div className="UtilsContainer mb-0">
+            <div className="UtilsContainer">
               <SelectAllButton
                 loadingSelection={loadingSelection}
                 selectedEntities={selectedContacts}

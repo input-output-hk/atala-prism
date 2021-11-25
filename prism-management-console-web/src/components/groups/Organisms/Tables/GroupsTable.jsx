@@ -1,16 +1,16 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 import { getGroupColumns } from '../../../../helpers/tableDefinitions/groups';
-import { useGroupStore, useGroupUiState } from '../../../../hooks/useGroupStore';
 import noGroups from '../../../../images/noGroups.svg';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED } from '../../../../helpers/constants';
 
 import './_style.scss';
+import { useGroupsPageStore } from '../../../../hooks/useGroupsPageStore';
 
 const GroupsTable = observer(
   ({
@@ -23,12 +23,15 @@ const GroupsTable = observer(
   }) => {
     const { t } = useTranslation();
     const { accountStatus } = useSession();
-    const { groups, initGroupStore, fetchMoreData, isFetching, hasMore } = useGroupStore();
-    const { hasFiltersApplied, isSearching, isSorting } = useGroupUiState();
-
-    useEffect(() => {
-      initGroupStore();
-    }, [initGroupStore]);
+    const {
+      groups,
+      fetchMoreData,
+      isFetching,
+      hasMore,
+      hasFiltersApplied,
+      isSearching,
+      isSaving
+    } = useGroupsPageStore();
 
     const emptyProps = {
       photoSrc: noGroups,
@@ -56,7 +59,7 @@ const GroupsTable = observer(
           },
       rowKey: 'name',
       getMoreData: fetchMoreData,
-      loading: isSearching || isSorting,
+      loading: isSearching || isSaving,
       fetchingMore: isFetching,
       hasMore,
       renderEmpty

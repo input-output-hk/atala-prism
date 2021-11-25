@@ -14,6 +14,7 @@ import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
+import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ const NewGroupButton = ({ onClick }) => {
 const Groups = observer(({ handleGroupDeletion, copyGroup }) => {
   const { t } = useTranslation();
   const { redirectToGroupCreation } = useRedirector();
+  const { isSaving } = useGroupsPageStore();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
@@ -69,7 +71,8 @@ const Groups = observer(({ handleGroupDeletion, copyGroup }) => {
     closeModal: closeCopyModal,
     prefix: 'groups',
     group: selectedGroup,
-    onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal)
+    onSave: copyName => copyGroup(selectedGroup, copyName).then(closeCopyModal),
+    isInProgress: isSaving
   };
 
   const handleCopy = group => {

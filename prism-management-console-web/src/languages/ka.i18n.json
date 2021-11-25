@@ -200,7 +200,8 @@
       "subtitle": "Group names must be unique, please use a different name for the new group",
       "label": "Insert a new name",
       "copyOf": "Copy of {{name}}",
-      "success": "Successfully copied the group"
+      "success": "Successfully copied the group",
+      "error": "An error occurred while copying the group"
     }
   },
   "holders": {

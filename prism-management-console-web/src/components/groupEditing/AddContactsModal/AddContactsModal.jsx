@@ -57,7 +57,8 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
         <CustomButton
           buttonProps={{
             className: 'theme-secondary',
-            onClick: handleConfirm
+            onClick: handleConfirm,
+            disabled: selectedContacts.length === 0
           }}
           buttonText={t('groupEditing.buttons.addContacts')}
         />
@@ -74,7 +75,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       className="AddContactsModal"
       footer={confirmButton}
     >
-      <Row type="flex" align="middle" className="mb-2">
+      <Row type="flex" align="middle" className="mb-3">
         <Col span={5}>
           <SelectAllButton
             loadingSelection={loadingSelection}

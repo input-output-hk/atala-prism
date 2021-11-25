@@ -1,48 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
-import Logger from '../../helpers/Logger';
 import Groups from './Groups';
-import { useGroupUiState } from '../../hooks/useGroupStore';
-import { useApi } from '../../hooks/useApi';
+import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
 
 const GroupsContainer = observer(() => {
-  const { groupsManager, contactsManager } = useApi();
-  useGroupUiState({ reset: true });
+  const groupsPageStore = useGroupsPageStore();
+  const { init } = groupsPageStore;
 
   const { t } = useTranslation();
 
+  useEffect(() => {
+    init();
+  }, [init]);
+
   const handleGroupDeletion = group =>
-    groupsManager
-      .deleteGroup(group.id)
-      .then(() => {
-        message.success(t('groups.deletionSuccess', { groupName: group.name }));
-      })
-      .catch(error => {
-        Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
+    groupsPageStore.deleteGroup({
+      groupId: group.id,
+      onError: () => {
         message.error(t('errors.errorDeletingGroup', { groupName: group.name }));
-      });
+      },
+      onSuccess: () => {
+        message.success(t('groups.deletionSuccess', { groupName: group.name }));
+      }
+    });
 
   const copyGroup = ({ numberOfContacts, name: groupName }, copyName) =>
-    groupsManager
-      .createGroup(copyName)
-      .then(({ id }) =>
-        contactsManager
-          .getContacts({ limit: numberOfContacts, groupName })
-          .then(({ contactsList }) =>
-            groupsManager.updateGroup(id, {
-              contactIdsToAdd: contactsList.map(({ contactId }) => contactId)
-            })
-          )
-      )
-      .then(() => {
+    groupsPageStore.copyGroup({
+      groupName,
+      copyName,
+      numberOfContacts,
+      onError: () => {
+        message.error(t('groups.copy.error'));
+      },
+      onSuccess: () => {
         message.success(t('groups.copy.success'));
-      })
-      .catch(error => {
-        Logger.error('[GroupsContainer.copyGroup] Error: ', error);
-        message.error(t('errors.errorCopyingGroup'));
-      });
+      }
+    });
 
   return <Groups copyGroup={copyGroup} handleGroupDeletion={handleGroupDeletion} />;
 });

@@ -58,7 +58,8 @@ export default class ContactsBaseStore {
       this,
       {
         api: false,
-        transportLayerErrorHandler: false
+        transportLayerErrorHandler: false,
+        storeName: false
       },
       { autoBind: true }
     );
