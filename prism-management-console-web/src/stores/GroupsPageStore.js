@@ -16,7 +16,7 @@ export default class GroupsPageStore {
       {
         api: false,
         transportLayerErrorHandler: false,
-        // groupsBaseStore: false,
+        groupsBaseStore: false,
         storeName: false
       },
       { autoBind: true }
