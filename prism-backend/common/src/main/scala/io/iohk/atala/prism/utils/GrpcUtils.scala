@@ -16,9 +16,11 @@ import io.iohk.atala.prism.protos.node_models.OperationOutput
 object GrpcUtils {
 
   def extractSingleOperationOutput(scheduleOperationsResponse: ScheduleOperationsResponse): OperationOutput =
-    scheduleOperationsResponse.outputs.headOption.getOrElse(
-      throw new RuntimeException(s"Invalid ScheduleOperationsResponse: $ScheduleOperationsResponse")
-    )
+    scheduleOperationsResponse.outputs match {
+      case head :: Nil => head
+      case outputs =>
+        throw new RuntimeException(s"1 operation output expected but got ${outputs.size}")
+    }
 
   case class GrpcConfig(port: Int)
 
