@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import i18n from 'i18next';
 import { flow, makeAutoObservable } from 'mobx';
-import ContactsBaseStore from '../ContactsBaseStore';
+import ContactsBaseStore from '../domain/ContactsBaseStore';
 
 const defaultValues = {
   isLoadingGroup: false,

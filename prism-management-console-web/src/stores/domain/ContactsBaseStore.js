@@ -6,7 +6,7 @@ import {
   CONTACT_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
-} from '../helpers/constants';
+} from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
 

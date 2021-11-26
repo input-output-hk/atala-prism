@@ -2,11 +2,11 @@ import { createContext } from 'react';
 import { RootStore } from './RootStore';
 import SessionState from './ui/SessionState';
 import GroupStore from './domain/GroupStore';
-import CurrentGroupStore from './ui/CurrentGroupStore';
+import CurrentGroupStore from './features/CurrentGroupStore';
 import ContactStore from './domain/ContactStore';
-import CurrentContactState from './ui/CurrentContactState';
-import ContactsPageStore from './ContactsPageStore';
-import GroupsPageStore from './GroupsPageStore';
+import CurrentContactState from './features/CurrentContactState';
+import ContactsPageStore from './features/ContactsPageStore';
+import GroupsPageStore from './features/GroupsPageStore';
 import CredentialsIssuedPageStore from './features/CredentialsIssuedPageStore';
 
 export const createStores = api => {
