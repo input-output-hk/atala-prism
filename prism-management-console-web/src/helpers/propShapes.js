@@ -86,15 +86,15 @@ export const infiniteTableProps = {
 export const credentialTypeDetailsShape = shape({
   id: string,
   icon: string.isRequired,
-  name: string.isRequired,
-  state: number
+  iconFormat: string.isRequired,
+  name: string.isRequired
 });
 
 export const credentialDataShape = shape({
-  contactId: string,
-  contactName: string,
+  id: string,
+  html: string.isRequired,
   credentialTypeDetails: credentialTypeDetailsShape.isRequired,
-  html: string
+  storedAt: shape({ seconds: number, nanos: number })
 });
 
 export const credentialShape = shape({
@@ -108,20 +108,9 @@ export const credentialShape = shape({
 });
 
 export const credentialReceivedShape = shape({
-  batchInclusionProof: string,
-  credentialSubject: shape({
-    html: string.isRequired,
-    credentialTypeName: string.isRequired,
-    credentialTypeIcon: string.isRequired,
-    credentialTypeIconFormat: string,
-    id: string
-  }).isRequired,
-  encodedSignedCredential: string,
-  externalId: string,
-  id: string.isRequired,
-  individualId: string,
-  keyId: string,
-  storedAt: shape({ seconds: number, nanos: number })
+  contactData: contactShape,
+  credentialData: credentialDataShape.isRequired,
+  encodedSignedCredential: string
 });
 
 export const credentialTypeShape = shape({

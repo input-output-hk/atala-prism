@@ -21,17 +21,10 @@ const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }
     setShowDrawer(true);
   };
 
-  const getCredentialTypeAttributes = () =>
-    isCredentialIssued
-      ? getCredentialIssuedTypeAttributes()
-      : getCredentialReceivedTypeAttributes();
-
-  const getCredentialIssuedTypeAttributes = () => ({
+  const getCredentialTypeAttributes = () => ({
     credentialTypeName: credential.credentialData.credentialTypeDetails.name,
     credentialTypeIcon: credential.credentialData.credentialTypeDetails.icon
   });
-
-  const getCredentialReceivedTypeAttributes = () => credential.credentialSubject;
 
   const { credentialTypeName, credentialTypeIcon } = getCredentialTypeAttributes();
 
