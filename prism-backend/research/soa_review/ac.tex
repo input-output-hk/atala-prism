@@ -6,16 +6,16 @@
 Anonymous Credentials (ACs) were first proposed by Chaum \cite{chau85}, and
 further studied, formally treated, and optimized, in a series of papers by
 Camenisch and Lysyanskaya \cite{cl01,cl02,cl04} and, independently, by Brands
-\needcite\footnote{Camenisch and Lysyanskaya line of work is well known for
+\cite{bran00}\footnote{Camenisch and Lysyanskaya line of work is well known for
   IBM's Idemix system, and Brands's work for Microsoft's U-Prove. More detail
   appears in the sequel.}. In an AC system, roughly speaking, users receive
 credentials from an issuing organization, which they can then use to
 authenticate against some verifier. The main property is that this
 authentication process can be done in a privacy-preserving way. This typically
 means that the verifier cannot link different authentication processes by that
-same user. Usually, credentials are composed by multiple attributes, such that
-the verifier only learns the attributes that the user is willing to share (or a
-function of them).
+same user. Also, usually, credentials are composed by multiple attributes, such
+that the verifier only learns the attributes that the user is willing to share
+(or a function of them).
 
 \subsection{Approaches, Models, and Variations}
 \label{ssec:acapproach}
@@ -45,23 +45,25 @@ follows:
 Usually, the commitment to the user's secret key is known as a pseudonym, or
 in short form, \emph{nym}. These nyms have proven to be a useful component to
 ensure security and privacy properties -- and are also leveraged in many group
-signature and DAA works. 
+signature and DAA works. Not all anonymous credentials systems use pseudonyms,
+though.
 
 A large part of the academic works in the AC domain follow this approach, which
 is then extended to support enhanced functionality. For instance, in order to
-support multiple issuers (and, in some sense, multiple attributes)
-\cite{cl01,cl02,cl04} \todo{check if the references are correct} require an
-extra protocol for proving, in zero-knowledge, equality of two committed and signed values.
+let a user with two different credentials prove being the owner of both of
+them, \cite{cl01,cl02,cl04} require an extra protocol for proving, in
+zero-knowledge, equality of two committed and signed values.
 This allows user $A$, with credential $\sigma_A^I$ obtained from issuer $I$ and
 credential $\sigma_A^J$ obtained from issuer $J$, to prove $J$ that she has a
 valid credential from $I$, by issuing a zero-knowledge proof of equality for
-both credentials. Now, if each credential is associated with a different set of
-attributes, this also lets to ``naively'' build multi-attribute AC systems.
+both credentials. Furthermore, if each credential is associated with a different
+(set of) attribute(s), this also leads to ``naive'' constructions of
+multi-attribute AC systems.
 
 For multi-attribute ACs, though, much more efficient variants are possible. To
 begin with, CL signatures allow signing blocks of messages (and commitments),
 which can be seen as attributes signed by the issuer. BBS+ signatures
-\cite{am06,cdl16b}, and PS16 signatures \cite{ps16} also support similar
+\cite{asm06,cdl16b}, and PS16 signatures \cite{ps16} also support similar
 functionality, and have been leveraged to build multi-attribute AC systems
 too (e.g., \cite{cks10} gives a construction with BBS+ credentials, and
 \cite{sms+19,halp20} are based on PS16). These family of signatures on blocks
@@ -84,20 +86,22 @@ have been proposed, leveraging algebraic tricks such as structure-preserving
 signatures on equivalence classes (SPS-EQ), along with vector commitment schemes
 \cite{cdhk15}, or set commitment schemes \cite{fhs19}. The former uses Lagrange
 interpolation to allow revealing only a subset of the committed messages;
-\todo{what was the specific technique of \cite{fhs19}?}. \cite{fhs19}, is more
-efficient, as avoids complex zero-knowledge proofs; however it does not support
-blind issuance of credentials, as opposed to \cite{cdhk15} \todo{confirm this
-  last part, and refine}.
+while \cite{fhs19} employs set commitment schemes, mapping the attributes to
+be committed to roots of a polynomial, so that opening a specific subset of the
+commmitted elements just requires revealing a subset of the roots of the
+polynomial.
 %
 Also improving efficiency, but restricting to the scenario in which the issuer
 is the same entity as the verifier (as in ticketing systems for public transport),
 \cite{cmz14}, replaces signatures with algebraic MACs.
 
-Somewhat similar is the approach to (delegatable) credentials that builds on
-signatures with controlled malleability \cite{bcc+09,cklm14}, where \cite{cklm14}
-is a generalization of \cite{bcc+09}. Roughly, credentials are signatures, built
-from non-interactive zero-knowledge proofs of knowledge, on commitments to the
-user key, that support \emph{controlled malleability}. This malleability means
+Within this line of credentials from randomizable signatures, we can also find
+systems that can achieve high expressiveness, like the (delegatable) credentials
+building on signatures with controlled malleability \cite{bcc+09,cklm14},
+where \cite{cklm14} is a generalization of \cite{bcc+09}. Here, at a high level,
+credentials are signatures, built from non-interactive zero-knowledge proofs of
+knowledge, on commitments to the user key, that support \emph{controlled
+  malleability}. This malleability means
 that both the proof and the statements can be randomized and transformed, but
 only for allowed transformatoins. The specific transformation considered for
 delegation requires that a credential with depth $L$, can only produce a credential
@@ -109,13 +113,13 @@ given in \cite{bcc+09}), it is certainly possible to do so through a proper
 transformation -- although, probably, the result won't be very efficient if
 done naively \todo{specific figures?} The notion of transformations is interesting,
 though, as the authors prove that it is similar (or even more generic) than those
-used to achieve expresiveness in related digital singature schemes (such as
-policy-based signatures \needcite and delegatable functional signatures \needcite).
+used to achieve expressiveness in related digital singature schemes (such as
+policy-based signatures \cite{bf14} and delegatable functional signatures \cite{bms16}).
 Thus, it is reasonable to expect that very expressive AC systems could be built
 with this approach.
 
-All AC systems mentioned up to this point follow, up to small variations, the
-same approach: randomizable signatures on sets of (committed) messages, with
+All AC systems mentioned up to this point follow, up to ``small'' variations,
+the same approach: randomizable signatures on sets of (committed) messages, with
 (somehow) efficient proofs. A completely different approach is described in
 \cite{dmm+18}, based on predicate encryption. In predicate encryption, given
 a master key pair, decryption keys associated with specific predicates can be
@@ -123,7 +127,8 @@ derived. Messages, and attribute sets, are encrypted with the master public key,
 such that the resulting ciphertext can only be decrypted with a decryption key
 associated with a predicate that is satisfied by the attributes in the
 ciphertext. Assume an attribute space that can be represented by binary strings
-$\Sigma$. On one hand, policies defined by verifiers in \cite{dmm+18} are encoded
+in a set $\Sigma$. On one hand, policies defined by verifiers in \cite{dmm+18}
+are encoded
 as binary circuits through strings in $\Sigma$ too\footnote{\todo{This seems
     like an abuse of predicate encryption, as encryption receives a predicate,
     rather than an attribute set.}}, which can thus be associated to
@@ -131,9 +136,12 @@ ciphertexts through the predicate encryption process. On the other hand,
 credentials received by users are decryption keys on a generic policy $f$, with
 a hardcoded set of attributes (the attributes that the user is granted), that
 can evaluate circuits. Then, intuitively, in order for a verifier to check
-whether a user owns a attribute-based credential meeting certain policy $g$, it
-creates a ciphertext with encoding a circuit for $g$. If the user can decrypt
-this ciphertext, the verifier accepts. This only supports public attributes
+whether a user owns an attribute-based credential meeting certain policy $g$, it
+creates a ciphertext, associating as attribute an encoding a circuit for $g$
+(that belongs to $\Sigma$). If the user can decrypt this ciphertext, the
+verifier accepts, as this means that the decryption key in the user's credential
+has a hardcoded set of attributes that makes $g$ evaluate to true. This only
+supports public attributes
 (i.e., known to the issuer), though. A negative part of this approach is that
 credential showings can only be interactive, whereas in the randomizable proofs
 approach, they can be made non-interactive too.
@@ -147,8 +155,8 @@ should be learnt by third parties that the user does not explicitly reveal.
 E.g., for ACs that support multiple attributes and selectively disclosing
 subsets of them, anonymity captures that the information leaked during a showing
 of such credential is limited to the subset of attributes voluntarily revealed
-by the user. Since multi-show credentials are also the most common type,
-anonymity also captures that two different showings must be unlinkable.
+by the user. In multi-show credentials, anonymity also captures that two
+different showings must be unlinkable.
 As mentioned, further variations in the functionality affect anonymity --
 e.g., in systems supporting delegation, the delegation chain may be required
 to be kept private.
@@ -159,56 +167,116 @@ issuer of the system. Again, there are variations to this. For instance, when
 credentials are composed of attributes that can further be selectively
 disclosed. In this case, the adversary should not be able to prove ownership
 of a set of attributes not contained within the set of attributes that have
-been leaked.a showing that include attributes not contained in credentials leaked to the
-adversary.
+been obtained by the adversary or leaked to it.
 
-Special mention is worth to the model variation in \cite{hs20}, which divides
+Special mention is worth to the model variation in \cite{hs21}, which divides
 the user into two entities: core and helper, thus taking anonymous credentials
 closer to DAA. This is reflected into the model by adding a property named
 \emph{dependability}, which requires that no adversary should be capable to
 show an honestly generated credential withouth compromising the core entity.
 
-On the approach to formalize AC security notions, game-based definitions tend
-to be more frequent \needcite, also including definitions in the simulation
-paradigm. The UC framework has also been used \needcite, even in combination
-with game-based definitions \needcite.
+On the approach to formalize AC security notions, game-based definitions tend to
+be more frequent \cite{bcc+09,cks10,cl11,cklm14,cmz14,ckl+15,dmm+18,fhs19,hs21},
+also including definitions in the simulation paradigm. The UC framework
+has also been used \cite{cdhk15}.
 
 \subsubsection{Variations in functionality.}
 %
-Multi-attribute and multi-show credentials, with selective disclosure, are
-the most frequent \needcite.  Blind issuance, i.e., letting users include in
-their credentials attributes that are kept hidden from issuers, is also frequent
-(and certainly useful to, e.g., include secret keys) \needcite. Delegation has
-gained attention in the last decade \needcite, as well as supporting more
-expressive proofs. While the latter is indeed possible in the early works
-(one can use general zero-knowledge proofs on discrete logarithms given a
-CL-, BBS- or PS16- based credential) it is worth noting that the costs are
-probably too high, and it also needs to be considered in the model.
+\paragraph{Attributes, selective disclosure, and expressiveness.} %
+Multi-attribute and multi-show credentials are the most frequent
+\cite{cks10,cl11,cdhk15,ckl+15,fhs19,sms+19,halp20,hs21}, although one-show
+credentials have also been studied \cite{bran00}.
+Similarly, selective disclosure has also been more studied
+\cite{cks10,cl11,cdhk15,sms+19,halp20,hs21}, when compared to 
+more expressive AC systems \cite{bcc+09,cklm14,dmm+18}, while \cite{fhs19}
+supports selective disclosure and restricted policies (specifically,
+conjunctions), for the sake of efficiency. Probably, the higher attention to
+selective disclosure so far is due to the fact that the building blocks enabling
+efficient constructions with high expressiveness (such as SNARKs and functional
+encryption) are recent in the cryptographic literature.
+
+\paragraph{Security and privacy against issuers.} %
+Blind issuance, i.e., letting users include in their credentials attributes that
+are kept hidden from issuers, is also frequent (and certainly useful to, e.g.,
+include secret keys; or support private attributes in general)
+\cite{cklm14,ckl+15}, although it is also frequent to assume (even implicitly)
+that the issuer \emph{needs} to learn the attributes it signs, and thus private
+attributes are not considered, e.g. as in \cite{dmm+18,fhs19,sms+19}.
 %
+Threshold issuance is also interesting for decentralized scenarios, as it
+protects against misbehaving issuers, but it was only considered recently in
+\cite{sms+19} and, consequently, in \cite{halp20} (which actually builds on
+\cite{sms+19}).
+
+\paragraph{Delegation.} %
+Delegation has gained attention in the last decade \cite{bcc+09,cklm14},
+including delegated verification \cite{dmm+18}, as well as supporting more
+expressive proofs \cite{cklm14,dmm+18}. While the latter is indeed possible in
+the early works (one can use general zero-knowledge proofs on discrete
+logarithms given a CL-, BBS- or PS16- based credential) it is worth noting that
+the costs are probably too high. An interesting learning, that can be extracted
+from \cite{cklm14}, is that we can see delegation as a sort of policy that can
+be checked with expressive policies.
+
+\paragraph{Revocation.} %
 Perhaps surprisingly, revocation is not a common functionality, although it is
-certainly considered by several works \needcite.
-%
-Threshold issuance is also interesting for decentralized scenarios, but it
-was only considered in \cite{sms+19} and, consequently, in \cite{halp20}
-(which builds on \cite{sms+19}).
-%
+certainly considered by several works, e.g. \cite{cl01,cks10,ckl+15}, and for
+some it is just sketched \cite{hs21}.
+
+\paragraph{Credential aggregation.} %
 And, finally, an interesting variation that only one work seems to target,
 is that of efficient aggregation of credentials created by different issuers
-\cite{cl11}. As in the topic of expressiveness, this is easily doable with the
-conventional approaches: e.g., if the owner of credential A and credential B
-wants to use both credentials in the same showing, she just has to prove that
-they share the same secret key (although this is only possible in schemes that
-embed a user secret within the credential). Still, even if possible and even
-supported, this process is inefficient. \cite{cl11} leverages aggregatable
+\cite{cl11}. As in the topic of expressiveness, the conventional approach
+can easily be extended to support this: e.g., if the owner of credential A and
+credential B wants to use both credentials in the same showing, she just has to
+prove that they share the same secret key (although this is only possible in
+schemes that embed a user secret within the credential). Still, even if
+possible, this process is inefficient. \cite{cl11} leverages aggregatable
 signatures, which target precisely that setting.
 
 \subsubsection{Efficiency.}
 %
 
-\subsubsection{Main challenges.}
+\subsubsection{Main challenges and interesting lines of work.}
 %
+\note{I find interesting that, given that ACs and group signatures are
+  essentially the same thing, there is no work (or I have not come across it)
+  trying to connect both. Specifically, the following questions:}
 
-\subsection{Related Primitives}
+\begin{itemize}
+\item Anonymity properties in ACs and GSs are roughly similar. However, concerning
+  unforgeability-related properties:
+  \begin{itemize}
+  \item The notion of traceability in GSs seems incompatible in AC systems that
+    do not include a user secret key in the credentials. Even for AC systems that
+    do include it, unforgeability in AC is different than traceability, as there
+    is no guarantee that a credential can be traced to a ``join'' process. Or
+    there is?
+  \item The notion of non-frameability of GSs does not seem to have an equivalent
+    in ACs. I find this kind of surprising from a practical point of view, as an
+    adversary in AC systems can very well aim at impersonating an honest user,
+    which may then carry consequences (e.g., legal actions) for the honest user.
+  \item Maybe I'm wrong in the two previous points, and we can draw a connection
+    between (some basic notion of) unforgeability in ACs, and the usual notions
+    of traceability and non-frameability in GSs. If I recall correctly, the
+    \cite{bmw03} paper merged non-frameability and traceability into
+    unforgeability, and this was later divided again in \cite{bsz05}. Check the
+    reasoning again...
+  \end{itemize}  
+\item I find very surprising that essentially all the body of work in ACs is
+  based on what seems to be the sign-randomize-proof approach of GSs, yet there
+  is nothing (or I have not seen it) similar to the encrypt-then-prove approach.
+  Can we do it? This may be due to the fact that revocation has not been
+  considered as a main requirement in ACs (which, IMHO, is a drawback if we want
+  systems applicable in the real world).
+  \begin{itemize}
+  \item Can we come up with a black-box construction of ACs from GSs, or vice
+    versa? It should not be hard, and this may open a completely new breed of
+    ACs (i.e., those based on the encrypt-then-prove approach).
+  \end{itemize}
+\end{itemize}
+
+\subsection{Related Primitives and Systems}
 \label{ssec:acrelated}
 
 \begin{itemize}
@@ -218,35 +286,11 @@ signatures, which target precisely that setting.
 \subsection{Real World Deployments}
 \label{ssec:acrealworld}
 
-\subsection{TODOs}
-
 \begin{itemize}
-\item \cite{bckl08}.
-\item \cite{sand20}.
-\item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different approach?
+\item Idemix.
+\item Hyperledger Indy.
+\item U-Prove.
 \end{itemize}
-
-[ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
-
-Concepts in ACs: multishow, one-show (Brands et al); interactive vs non-interactive
-showings (differentiation made in \cite[p.6]{fhs19} but, why would one want interactive,
-in the real world?)
-
-Which schemes support comibning credentials from multiple issuers? I think this
-is directly obtained in the schemes following the CL approach; but others?
-
-A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
-of some attributes being included in a credential is that these proofs are costly
-(like, linear in the number of attributes). Yet, they resort to other primitives
-that may also be costly (e.g., predicate encryption \cite{dmm+18}) or somehow move
-the cost to some other place (e.g., \cite{fhs19} uses a vector commitment scheme
-that requires a public key with size that grows with the number of attributes
-that \emph{can} be committed). It would be nice to have a detailed and complete
-(e.g., not skipping the data that makes one scheme look bad, like the size of
-the public keys) comparison. And, ideally, with concrete instantiations (not only
-theoretical analysis)?
-
-\cite{fhs19} has a nice comparison table.
 
 %%% Local Variables:
 %%% mode: latex

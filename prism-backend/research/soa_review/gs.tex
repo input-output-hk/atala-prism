@@ -18,7 +18,7 @@ when to re-identify the creator of a specific signature.
 %
 The initial idea put forward in \cite{ch91} had, as is to be expected, a number
 of limitations. In the following years, the seminal work was extended, both
-formally, functionally and efficiency-wise.
+formally, functionally, and efficiency-wise.
 
 \subsection{Approaches, Models, and Variations}
 \label{ssec:gsapproach}
@@ -34,7 +34,7 @@ associated secret. The difference lies on how this credential is kept hidden
 from the verifier.
 %
 In the sign-encrypt-prove variant, proposed in \cite{bmw03}, signers
-encrypt their credential with a \doubt{IND-CCA2? what type?} scheme and then
+encrypt their credential and then
 create a NIZK \needcite proof of knowledge of such a valid credential
 over their secret (plus the message they want to sign). This typically results
 in schemes with more efficient openings, as the opening authority just has
@@ -64,8 +64,7 @@ identity. These conventional digital identities can be any type of PKI-based
 
 \subsubsection{Main security models.}
 %
-Security for group signatures is given in the form of game-based definitions
-\needcite.
+Security for group signatures is given in the form of game-based definitions.
 The first formal security model appeared in \cite{bmw03}. It captured security
 for groups with a prefixed set of members, added by the group manager upon the
 creation of the group. This static requirement was too restrictive to be
@@ -153,7 +152,7 @@ key leakage) to the future: i.e., if an attacker gains control of a user's
 private key, only signatures produced after the compromise should be considered
 invalid. In schemes that do not ensure forward secrecy, such a compromise also
 renders invalid signatures produced before the compromise. Note that, for
-conventional signatures, only the compromised users is (directly) affected by
+conventional signatures, only the compromised user is (directly) affected by
 such event. However,  in group signatures, all group members are directly
 affected, as the signer's identity is not revealed by the signature. Thus,
 in order to learn whether or not a past signature was issued by a compromised
@@ -161,13 +160,14 @@ user, it is necessary to resort to the opener -- therefore, reidentifying
 \emph{all} users in the system.
 %
 Forward security has been introduced in group signatures in works like
-\cite{song01,ly12} \needcite.
+\cite{song01,ly12}.
 %
 Interestingly (but logically), the approach to incorporate this property
 holds similarities with the functionality to implement fully dynamic group
 signatures: for forward security, users are usually required to apply an
 update procedure to their private keys \cite{ly12}; in fully dynamic group
-signatures, it is the group manager (or the opener) who has to update some
+signatures \todo{fully dynamic gs have not been introduced yet!}, it is the
+group manager (or the opener) who has to update some
 key material \cite{bcc+16}. In both cases, time has to be discretized in epochs,
 and conditions are introduced into the security properties that prevent an
 adversary being able to deanonymize (produce) a valid signature generated
@@ -175,7 +175,7 @@ adversary being able to deanonymize (produce) a valid signature generated
 (either because the user updated it -- in a forward secure scheme -- or the
 group manager revoked it -- in a fully dynamic scheme).
 
-\paragraph{Revocation mechanisms.}
+\paragraph{\todo{Revocation mechanisms}.}
 Verifier Local Revocation \cite{bs04}, accumulators approach.
 
 \paragraph{Opening controls.}
@@ -236,10 +236,9 @@ produced.
 \item Size of (group) keys.
 \item Size of signatures.
 \item Verification time (batching, including revocation checks...)
-\item Accumulators.
 \end{itemize}
 
-\subsubsection{Main challenges.}
+\subsubsection{Main challenges and interesting lines of work.}
 
 Efficiency is possibly good for many real-world cases. Still: utility
 and unavailability of implementations.
@@ -264,12 +263,13 @@ See \cite[Section 1.2.3]{bsi12}: it seems mostly theoretical applications.
 \subsubsection{Theory}
 \label{sssec:gstheoryapp}
 
-GS-MDO imply IBE \cite{ehk+19}.
-GS are implied (shouldn't his by imply?) by trapdoor permutations \cite{bmw03}.
-GS imply one-way functions \cite{romp90}.
-GS imply public key encryption \cite{aw04}.
-Commitments from group signatures (group signatures imply commitments?)
-(ref. 25 in \cite{bfg+11}).
+\begin{itemize}
+\item GS-MDO imply IBE \cite{ehk+19}.
+\item GS are implied by trapdoor permutations \cite{bmw03}.
+\item GS imply one-way functions \cite{romp90}.
+\item GS imply public key encryption \cite{aw04}.
+\item Commitments from GS (ref. 25 in \cite{bfg+11}).
+\end{itemize}
 
 \subsubsection{Real World Deployments}
 \label{sssec:gsrwdeploy}
@@ -284,58 +284,6 @@ a big impact in security/trust model, in the real world it would probably
 be circumventable with audited processes for most use cases. Also, the
 issue with concurrent issuance and the approach we took for implementing
 \cite{gl19} in ICT4Cart, or the limitation to logarithmic numbers of users, etc.
-
-\subsection{TODOs}
-
-\begin{itemize}
-\item Fully anonymous dynamic GS from SPS-EQ \cite{ds16}
-\item Multi-group group signature schemes. Compare with ACs with multiple
-  issuers.
-\end{itemize}
-
-\subsubsection{Further Notes}
-\note{Integrate this section or delete it.}
-
-\todo{CCA2 type of anonymity is defined in \cite{bbs04}. Schemes with CPA type
-  of anonymity are (according to \cite{ehk+19}): \cite{bw06,bw07}.}
-
-\cite{ehk+19} has a nice related work mentioning the assumptions that are
-typically used.
-
-Signature highjacking attacks (referenced in \cite{ehk+19}).
-
-If we want to have traceability, the issuer needs to be honest. See what
-implications this has in practice (e.g., what architectures are compatible
-with this?) This probably makes schemes with separate issuing and opening
-authorities more attractive in practice.
-
-Other minor variants: group blind signatures, democratic group signatures,
-mediated group signatures. All referenced in \cite[Section 1.3.5]{bsi12}.
-
-Backward linkability property of group signatures with Timed Verifier-Local
-Revocation, proposed in \cite{nf05}. Mentioned in \cite[Section 8.1.2]{bsi12}.
-
-Relation of forward security with proactive security \cite{oy91}?
-
-References 1, 24, 32 and, probably, 35 in \cite{bfg+11} seem to be (traceable)
-group signatures that use the nym approach (or similar) for linking. Check.
-
-\paragraph{Academic indicators.}
-IACR, Esorics, CCS, AsiaCCS, SP, EuroSP, Usenix Sec and Privacy, PETs... Not
-sure where to fit this.
-
-Main cryptographic building blocks:
-
-\begin{itemize}
-\item BB signatures \cite{bb04}.
-  \begin{itemize}
-  \item Used in: \cite{ky05}.
-  \item Paillier encryption of discrete-logarithms? Used in \cite{ky05} and,
-    I think, \cite{gl19}.    
-  \end{itemize}
-\item Model for reduction: list of group signature schemes based on RO and
-  non-RO are given in \cite{bcc+16}.
-\end{itemize}
 
 %%% Local Variables:
 %%% mode: latex

@@ -1,0 +1,735 @@
+\section{Log on Review of Anonymous Credentials Systems}
+\label{app:ac}
+
+\subsection{TODOs}
+
+\begin{itemize}
+\item \cite{bckl08}.
+\item \cite{sand20}.
+\item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different
+  approach?
+\end{itemize}
+
+A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
+of some attributes being included in a credential is that these proofs are costly
+(like, linear in the number of attributes). Yet, they resort to other primitives
+that may also be costly (e.g., predicate encryption \cite{dmm+18}) or somehow move
+the cost to some other place (e.g., \cite{fhs19} uses a vector commitment scheme
+that requires a public key with size that grows with the number of attributes
+that \emph{can} be committed). It would be nice to have a detailed and complete
+(e.g., not skipping the data that makes one scheme look bad, like the size of
+the public keys) comparison. And, ideally, with concrete instantiations (not only
+theoretical analysis)?
+
+\subsection{Approaches, Models, and Variations}
+
+\paragraph{Main approaches.} %
+
+\begin{enumerate}
+\item[\cite{cl01}:]
+  \begin{itemize}
+  \item Functionality: FormNym, GrantCred, VerifyCred, VerifyCredOnNym.
+  \item Approach: Users create a pseudonym with each organization. For this,
+    they have to register first with the organization (associating a key to
+    a user name). Whenever the user wants to get a credential from a organization
+    in which he registered, he has to authenticate, and then the organization
+    decides whether or not to grant the credential. Users can show their
+    credentials to organizations in two ways: (1) just proving that they own a
+    credential issued by some organization; or (2), proving that they own a
+    credential issued by some organization \emph{and} this credential is over
+    the same pseudonym that the user holds with the verifying organization.
+    Essentially, pseudonyms are the concatenation of two random numbers (one
+    provided by the user, and the other by the organization). They get
+    associated an authenticating tag, which is a statistically hiding commitment
+    to the user secret (computed using randomness provided by both user and
+    organization). Organizations keep a database of the generated pseudonyms.
+    To get a credential from an organization where the user registered
+    previously, the user proves knowledge of the secret involved in the
+    pseudonym. The organization then creates a ``random signature'' (by using a
+    the inverse of random exponent, with the help of the factorization of an RSA
+    modulus chosen by the organization at setup time) over the pseudonym, and
+    gives that to the user. Users can show the credentials (in any of the
+    previously stated two ways) by creating non-interactive zero-knowledge
+    proofs of knowledge of the appropriate secret. Note that, in case (2),
+    this means that the proof is over two pseudonyms, which must share the
+    same secret.    
+  \end{itemize}
+\item[\cite{cl02}:]
+  \begin{itemize}
+  \item Approach: Te paper aims at improving efficiency of AC systems, as
+    well as still ensuring that the user can retrieve their credentials in
+    a privacy-preserving manner. For this purpose, the core of the paper
+    describes a signature scheme that allows signing blocks of messages,
+    and later prove, in zero-knowledge, knowledge of such a signature. To
+    enable private retrieval of credentials, the authors describe a protocol
+    for their signature scheme, whereby the user specifices a commitment to
+    a message (or a block of messages, although this is not actually
+    formalized), and get a signature of the message in return. While the
+    authors do not strictly define an AC system, the application of their
+    signature system and related protocols to the AC domain seems direct.
+    Indeed, the same functionality as in \cite{cl01} seems straight
+    forward given the cryptosystems in \cite{cl02}.
+  \end{itemize}
+\item[\cite{cl04}:] Follows a similar approach to \cite{cl02}, although
+  changing the security assumptions to be based only on problems related
+  to the discrete logarithm, and on bilinear maps. Basically, defines a
+  signature scheme suitable for signing multiple messages, a protocol to
+  obtain a signature on a committed value, and a protocol to prove knowledge
+  of a signature. Concerning commitments, they rely on Pedersen commitment
+  scheme, for which protocols are known to prove knowledge and equality of
+  committed values. This lets them follow the same approach to \cite{cl02},
+  which is in turn the one in \cite{cl01}.
+\item[\cite{bcc+09}:] This is mostly a theoretical work, which is relevant
+  since it is (one of) the first to propose a delegatable anonymous
+  credentials systems. The building blocks are randomizable proofs of
+  knowledge that randomize both the proof and the statement (which the authors
+  build on top of Groth-Sahai proofs), and message authenticators (a variant
+  of signatures that require a special notion of unforgeability). Each user
+  can create pseudonyms, which are commitments to his secret key, and use
+  these commitments to prove ownership of and delegate credentials. These
+  pseudonyms are essentially as in the CL line of work (user with pseudonym
+  $N^A_U$ w.r.t. organization $A$ and $^B_U$ w.r.t. orgainzation $B$, can
+  prove to $B$ (resp. $A$) that $N^A_U$ and $N^B_U$ are related to the
+  same secret key). Delegations here follow a sequential order: i.e., if
+  a credential has level $L$, then its owner can further delegate this
+  credential, and the result would be a credential with level $L+1$. To
+  delegate, essentially, the delegator (with pseudonym $N_I$) and delegatee
+  (with pseudonym $N_D$) perform an interactive protocol
+  through which the delegatee receives a randomizable NIZKP that lets him
+  prove knowledge of an authenticator over $N_D$, issued by $N_I$. Since
+  both the proof and the statement can be randomized, verifiers do not
+  learn the chain of delegation.  Although this is informally mentioned,
+  ``attributes'' can be added to the delegation process too (besides to the
+  credentials themselves). This is suggested by adding the attributes -- which
+  would be visible to the verifier -- to the application of a hash function
+  used to derive the authenticator). 
+\item[\cite{cks10}:] The system proposed here follows the conventional
+  approach to anonymous credentials based on randomizable signatures (with
+  the possibility to sign committed values) over vectors of messages.
+  It however enables issuers to produce updates on already signed messages.
+  This updates can be leveraged to incorporate revocation. Essentially,
+  time is divided in epochs, and credentials include an attribute which
+  represents the expiration date/epoch of the credential. Users have to
+  prove that their credential is valid for the current epoch. Similarly,
+  to add new attributes, the issuer leverages the internal structure of
+  the signatures over vectors of messages, to basically add new messages
+  (attributes). In both cases, it is responsibility of the user to update
+  her credential given the latest update by the issuer. An example
+  instantiation is given using BBS signatures.
+\item[\cite{cmz14}:] This work differs from the rest in that they use
+  secret key cryptography rather than public key. Namely, they assume a
+  setting in which the issuer will also be the verifier (e.g., a
+  transportation organization that issues tickets for its travelers). In
+  this setting, it is reasonable to assume that both issuer and verifier
+  will have access to the same secret. Therefore, they replace signatures
+  with (algebraic) MACs. They do not create pseudonyms for end users (like
+  \cite{sms+19}). Other than that, the supported functionality is similar
+  to the rest: Setup and KeyGen to initialize the cryptographic parameters,
+  and produce the issuer's keys, respectively; an interactive protocol for
+  end users to blindly receive credentials (MACs) on their attributes; and
+  an interactive protocol for showing and verifying a credential. In case
+  that issuance does not need to be blinded, it becomes a non-interactive
+  protocol (i.e., the issuer just produces the credential and sends it to
+  the user). Otherwise, the user has to encrypt the attributes and prove
+  they are correct. Presentation only requires one message from the user
+  to the verifier.
+\item[\cite{cl11}:] The approach differs from the conventional ones. In this
+  case, the focus is on settings where users may want to combine multiple
+  credentials from different issuers. Thus, interest is on reducing the size
+  of the resulting credentials, and the efficiency of associated processes.
+  The approach is based on aggregate signatures. As usual, each credential
+  may contain several attributes. Each attribute is independently signed
+  by the issuer. Then, users can combine an arbitrary number of signed
+  attributes (by the same or different issuers) into a single aggregate
+  signature. Verification only needs the aggregated signature and the set
+  of public keys of all the involved issuers. To prevent different users
+  from aggregating their credentials, the authors resort to \emph{indexed}
+  aggregate signatures: an index is added to each signature, such that only
+  signatures that have the same index can be aggregated. In their instantiation,
+  the signature is a BGLS signature \cite{bgls03}, and the index is a BB
+  signature \cite{bb04}. The actual instantiation seems impractical (too many
+  linear costs, see the table in the paper).
+\item[\cite{cklm14}:] This work is, in essence, a generalization of \cite{bcc+09}.
+  The main novel building block are controlled-malleability NIZKs. Basically,
+  these are NIZKs that can be re-randomized, but only for a pre-defined set of
+  (NP) transformations. From this cm-NIZKs, malleable signatures are built.
+  From malleable signatures and commitments, delegatable credentials are built
+  as follows. Credentials are basically a tuple $(nym, l, flag)$, where $nym$
+  is a commitment to the user's private key, $l$ is the length of the credential
+  in the delegation chain, and $flag$ is either $cred$ or $proof$. Credentials
+  are accompanied with a malleable signature (which, for level 1 credentials,
+  it is a signature by the issuer). To create ``proofs'' or to delegate, the
+  credential owner has to apply one of the two allowed transformations. For
+  ``proofs'', basically the transformation that has to be applied to the original
+  proof (malleable signature) converts it to a proof showing that the prover
+  knows the secret in the ``source'' pseudonym and ``target'' pseudonym, and
+  both are the same. In the case of delegations, flag is set to ``cred'', and
+  the transformation converts the cm-NIZK proof into one that lets the prover
+  prove knowledge of the secret key in the ``source'' pseudonym, and allows
+  only to produce a new credential with structure $(nym', l+1, cred)$ -- i.e.,
+  from a credential of level $l$, only a credential of level $l+1$ can be
+  derived. On the delegation topic, the type of delegation this work ``supports'',
+  at least by default, is the simple one of hierarchical delegation.
+\item[\cite{cdhk15}:] The approach to build anonymous credentials is roughly
+  the same as in the previous works \cite{cl01,cl02,cl04}, although with
+  relevant differences that make it more efficient. Basically, users create
+  pseudonyms derived from a common secret. Then, any user can request a
+  credential. For this, the user needs to prove knowledge of the pseudonym's
+  secret. In return, the issuer produces an ``unlinkable redactable signature''
+  on a set of attributes, for that pseudonym. A redactable signature is
+  essentially a signature over a set (block) of messages, that enables
+  subsequent verification that a subset of those messages was signed. This
+  is essentially the same as in \cite{cl02,cl04}. However, to achieve
+  unlinkability, \cite{cdhk15} incorporates efficient zero-knowledge proofs
+  to prove correctness of the subset of the messages that a user wants to
+  ``show'' in a credential showing process. This ensures unlinkability (hence,
+  privacy). The internal scheme used for this is a vector commitment scheme
+  that uses Lagrange interpolation to allow checking that a subset of the
+  committed messages are indeed contained within the commitment. Moreover,
+  both the vector commitment scheme, and the vector signing scheme, are
+  structure preserving. This means that, since all the produced messages,
+  commitments, and signatures, are elements of the group (rather than of the
+  field), proving knowledge is much more efficient (e.g., it prevents costly
+  extraction required for security proofs).
+\item[\cite{ckl+15}:] Follows the conventional approach: a secure commitment
+  scheme with proofs of knowledge, and a signature scheme that allows to
+  sign vectors of messages, including commitments. Here, as in the seminal
+  works by Camenisch and Lysyanskaya \cite{cl01,cl02,cl04}, pseudonyms are
+  used as explicit building blocks. \todo{Not sure yet of how they are
+    made explicit in the generic construction. Clarify.}
+  A ``syntactic'' variation: they introduce
+  the concept of tokens both for credential issuance and presentation. To
+  request issuance of a credential, users have to produce an issuance token
+  from the set of attributes they want to reveal to the issuer, and the set
+  of attributes they want to hide (potentially coming from another credential
+  already owned by the user). An equivalent description applies for presentation
+  of a credential to a verifier. In both cases, the issuer/verifier has to
+  check the received token prior to issuing a credential or granting access.
+  They also add revocation functionality. For this, a revocation authority
+  (not necessarily the issuer) keeps a revocation information list, which is
+  basically a list containing no longer valid attributes. In order to prove
+  that their credentials are valid w.r.t. some attribute, users have to generate
+  a (non) revocation token, which proves that the attribute has not been
+  included in the revocation information list.
+\item[\cite{dmm+18}:] Follows a completely different approach to (most) other
+  works. Instead of using randomizable signatures (over committed values) or
+  some equivalent building block, it relies on predicate encryption.
+  Essentially, a user with attributes $A$ is given a decryption key for a
+  predicate $f_A(g)$ which, given a predicate $g$, returns $g(A)$. When
+  a verifier wants to check if a user has a set of attributes that meet
+  certain policy $h$, challenges the user to decrypt a ciphertext over
+  a random message that has been associated to predicate $h$. Then, only
+  if the attribute set $A$ of the user meets policy $h$, the user will be
+  able to decrypt the random message (since $f_A(h) = h(A) = 1$). This
+  protocol is actually augmented with some commitments, to prevent
+  misbehaviour from user and from verifier, but the approach is the same.
+  \doubt{There is something weird here, or that I do not understand --
+    predicate encryption requires a
+    set of attributes for encryption, rather than another predicate. I have
+    reached out to the authors to see if they can help me clarify this.}
+\item[\cite{fhs19}:] Based on Structure Preserving Signatures from equivalence
+  classes (SPS-EQ). The approach resembles that of \cite{ckl+15} in that it
+  uses a structure preserving primitive, and signs (commitments of) sets of
+  messages. However, they aim to avoid (as they claim) costly zero-knowledge
+  proofs. Basically, upon setup, a set commitment scheme is set up. Each user
+  generates a keypair. To obtain a credential on a set of attributes $A$, the
+  user proves knowledge of the user secret key, which is used as randomness
+  for a set commitment over $A$. The issuer (proves knowledge of the secret
+  key and) returns a SPS-EQ signature over $A$. To show the credential, the
+  user randomizes the commitment set and the signature, reveals the required
+  subset $D$ of $A$, and computes a witness that indeed $D \subset A$, as well
+  as a proof knowledge of the randomness used to randomize the credential (to
+  prevent replays). 
+\item[\cite{sms+19}:] The Coconut system follows a similar approach than the previous
+  works with respect to the representation and showing protocol for credentials.
+  Namely, credentials are randomizable signatures issued blindly. In this case,
+  the authors rely on Pointcheval Sanders signatures \cite{ps16} as main
+  building block, to which they incorporate techniques from other schemes to
+  support threshold issuance.
+\item[\cite{halp20}:] Builds on Coconut credentials and a blockchain -- in theory,
+  any blockchain with smart-contract capability, although it seems they are building
+  their own blockchain. This paper is in the frontier of academic and industry
+  work. On the cryptographic side, the credentials they build are essentially an
+  extension of Coconut credentials (although the extension is not described, nor
+  formalized). Users can combine multiple Coconut credentials into one Nym
+  Credential. In order to control Sybil attacks, Nym Credentials are obtained
+  in exchange of Nym Tokens (how users get hold of these, is not described).
+  Service Providers receive Nym Tokens in exchange of offering their services
+  through the network.
+\item[\cite{hs21}:] This work merges AC approaches based on SPS-EQ and aggregate
+  signatures, and also introduces the separation between a trusted but restricted
+  device, and a less trusted but powerful device typical in DAA systems. The
+  former is referred to as \emph{core}, and the latter as \emph{helper}, hence
+  the Core-Helper AC (CHAC) acronym. In addition to the previous basic building
+  blocks, the system uses a Signature with Flexible Public Keys (SFPK) scheme.
+  Roughly, these are signature schemes where the public keys can be randomized,
+  but in a manner that no adversary can decide whether two public keys are
+  related or not (i.e., if one is a randomization of the other). Users identities
+  are SFPK keypairs, where the public part gets signed by the issuer, using an
+  AAEQ scheme (Aggregatable Attribute-based Signature Scheme on Equivalence Classes).
+  Roughly, an AAEQ scheme is a combination of attribute-based signatures on
+  equivalence classes (which the authors combine with Tag-based Signatures on
+  Equivalence Classes), and aggregate signatures. In the proposed AAEQ scheme,
+  a tag is derived from an attribute an a nonce, which is then ``signed'' (note:
+  this tag resembles much the concept of nyms based on scopes). Since signatures
+  (and tags) are group elements sharing the same discrete log (the signer's key),
+  they can be aggregated easily via multiplication. Hence, for each attribute that
+  the issuer wants to grant to the user, it creates an independent signature where
+  the tag depends on the attribute to grant. Then, the user can just aggregate
+  all of them into one credential. In addition to this, the authors split the
+  operations (which are in the bilinear setting), in a way that requires the
+  core to perform only a few operations in $G_1$. The result seems to be quite
+  efficient. However, it only supports selective disclosure (no advanced
+  privacy-preserving policies), and even revocation is not considered from scratch,
+  although the authors sketch an approach to integrate it -- which probably
+  would require a more formal analysis and would incur in (possibly bad?)
+  added costs.
+  \note{The concept of aggregation here is different than the one in \cite{cl11}.
+    In the latter, users can aggregate credentials from different issuers. Here,
+    this is not possible, as aggregation won't work for different signing keys
+    (i.e., issuer keys). Hence, aggregation rather refers to receiving multiple,
+    independently signed, attributes by the same issuer, and then combining them
+    into a single credential by that same issuer.}
+\end{enumerate}
+
+\paragraph{Main security models.}
+
+\begin{enumerate}
+\item[\cite{cl01}:] Security in \cite{cl01} is proven in an ad-hoc way,
+  using the ideal-world/real-world paradigm. The authors describe a
+  simulator for the operations supported by the system (Setup, FormNym,
+  GrantCred, VerifyCred and VerifyCredOnNym), and prove that the output of this
+  simulator is indistinguishable from that of the real protocol, under the
+  strong RSA and Diffie-Hellman assumptions.  
+\item[\cite{cl02}:] No security model is given for the anonymous credential
+  application of the signature scheme (reasonably, as it is not the main focus
+  of the paper). The signature scheme is proven secure (no specific mention
+  to a security model, although I suppose it would be quite straight forward)
+  based on the Strong RSA and Diffie-Hellman assumptions.
+\item[\cite{cl04}:] Same as in \cite{cl02} (no actual security model for the
+  AC system). The custom proofs are based on the DDH and LRSW assumptions.
+\item[\cite{bcc+09}:] The article follows a game-based definition approach,
+  with two security properties (besides correctness): anonymity and
+  unforgeability, which are the usual, but extended to the scenario with
+  delegation. Basically, the anonymity (in the ideal/real world paradigm)
+  property requires that the adversary should not distinguish real credentials
+  from simulated ones. Moreover, the adversary should not learn the delegation
+  chain of an honest credential (even if it was issued by himself). For
+  unforgeability, the requirement is that the adversary should not create
+  a delegation chain that includes a delegation by an honest user, if the
+  user did not actually perform that delegation.
+\item[\cite{cks10}:] Signer privacy and user privacy properties are required
+  for the underlying signature scheme (thus, inherited by the credential system,
+  although I have not found explicit model). Signer privacy captures that the
+  adversary (including corrupt users) doesn't learn any information about the
+  signer from signatures and updates of signatures. User privacy captures that
+  the adversary (including a corrupt issuer) does not learn any information
+  about the blindly signed messages. \doubt{Not sure I get the utility of
+    signer privacy. The original property seems to come from \cite{bckl08}.}
+\item[\cite{cl11}:] The security properties in this work are unforgeability
+  and anonymity, for which the authors give game-based definitions.
+\item[\cite{cklm14}:] Defines security of the DAC scheme using simulation-based
+  notions of anonymity and unforgeability.
+\item[\cite{cmz14}:] The security properties proven in this work are:
+  \begin{itemize}
+  \item \emph{Unforgeability}: The adversary cannot produce a valid proof for a
+    statement, if none of the attribute sets for which it has received a
+    credential meets that statement.
+  \item \emph{Anonymity}: The proofs produced in a presentation do not leak
+    more information than the statement being proved.
+  \item \emph{Blind issuance}: The issuance protocol is a secure two-party
+    protocol for generating credentials on the user's attributes.
+  \item \emph{Key-parameter consistency}: no issuer can use different parameters
+    to produce credentials of different users such that their anonymity can
+    be compromised afterwards. \doubt{This somehow remembers non-frameability in
+      group signatures.}
+  \end{itemize}
+\item[\cite{cdhk15}:] The model (and associated proofs) presented in this paper
+  is very comprehensive, and detailed. Specifically, for the main building block
+  (Unlinkable Redactable Signatures), the authors give both game-based
+  definitions as well as an ideal functionality. This ideal functionality models
+  security in a single-issuer setting. However, as it is done in the UC
+  framework, it can be composed with itself, so that a scenario with multiple
+  issuers, in which users can combine credentials obtained by different users
+  into a single showing process (``presentation'') is directly achievable by
+  composing multiple instances of the ideal functionality (one per ``proof
+  part'').
+\item[\cite{ckl+15}:] The main security and privacy properties required are
+  pseudonym collision-resistance (two different user secret keys cannot produce
+  the same nym for the same scope), unforgeability (the adversary cannot forge
+  issuance tokens or presentation tokens), and privacy (no two presentations by
+  the same user can be linked) or weak privacy (presentations by the same user
+  can be linked, but not traced to an issuance session). Privacy is modelled
+  in the simulation paradigm, the difference in the modelling between privacy
+  and weak privacy being a filter that removes some information \note{(I find
+    this kind of weird; probably I'm wrong. Would be nice to study further)}.
+  The unforgeability and privacy properties are essentially inherited from the
+  main building block, privacy-enhancing attribute-based signatures. Although
+  there, the authors begin by defining a blind issuance experiment (ensuring
+  that the issuer does not learn anything more than what it should during
+  isusance), and then define two variants for user privacy: presentation privacy
+  and untraceability, which basically match the strong and weak notions for
+  PABCs (in untraceability, two presentations by the same user can be linked,
+  but not trace to a specific credential issuance). [Strong] user privacy has
+  to satisfy both blind issuance and presentation privacy; weak user privacy
+  has to satisfy both blind issuance and untraceability. I find this model
+  somehow interesting, as it is one of the few (maybe along with \cite{cmz14})
+  that includes some notion related to tracing back to issuance of credentials,
+  as in group signatures). In both cases (PABC and PABS), [strong] privacy
+  implies weak privacy.
+  Essentially, the security properties required by the PABC scheme, are
+  ensured by the building blocks. Namely: the pseudonym system (requiring
+  key extractability, collision resistance and pseudonym unlinkability); the
+  revocation scheme (requiring soundness and revocation privacy); the
+  PABs (requiring unforgeability, and [weak] privacy); and the commitment
+  scheme (requiring blinding and hiding, and opening extractability).
+\item[\cite{dmm+18}:] The authors give a game-based security model, covering
+  properties of unforgeability, anonymity, and policy-hiding. The latter
+  means that, for delegated verification, the verifier is oblivious to the
+  policy being verified.
+\item[\cite{fhs19}:] Gives a game-based security model, with anonymity and
+  unforgeability being the main security properties (besides correctness).
+  Unforgeability resembles the traceability property of group signatures,
+  which are recognised as an influence in their modelling -- more specifically,
+  \cite{bmw03} (the model -- and the oracles therein -- definitely resembles
+  the BMW model for GSs). The authors claim to be the firsts to give a well defined and
+  formal model for ACs, besides \cite{ckl+15} (which gives game-based properties
+  in the simulation paradigm) and \cite{cdhk15} (which follows the UC framework).
+  However, \cite{fhs19} claims that adopting non-simulation based definitions
+  allows them to reach a more efficient construction. They also support malicious
+  issuer key generation, as issuers have to prove knowledge of their secret keys
+  (which allows extraction in the games).
+  An interesting aspect of their model is that all attributes in their
+  credentials are learned by the issuer -- i.e., there are no blindly signed
+  attributes. This implies that it is not possible to sign secret keys owned
+  by the users (as in the conventional CL credentials). Then, for showing a
+  credential, all the user has to do is reveal the attributes s/he is required
+  to show. This has the disadvantage that, depending on the use case, this may
+  be trivial to attack. For instance, assume a COVID-like pandemic situation,
+  in which citizens have to prove being vaccinated. An AC system for this use
+  could be naively defined as: { Type of vaccine, Date of vaccination }. But
+  this is very susceptible to dictionary attacks, and leaves much to the
+  engineering/implementation level. E.g., if it is easy for an eavesdroper
+  to get hold of a credential (not even the plaintext attributes), s/he can
+  just iterate through the small list of possible values, and then take
+  advantage of the ``stolen'' credential. This is certainly secure under the
+  model defined in \cite{fhs19}, but it is definitely easy for implementations
+  following this model to go wrong...
+  They also model only interactive show processes. Furthermore, to prevent
+  replay attacks, the user has to prove knowledge of some randomness included
+  in the credential. However (\textbf{cross-check this!}), since signatures
+  are randomizable without knowledge of any secret value, any adversary that
+  learns a credential (not necessarily any plaintext attribute associated to
+  it), would be capable of authenticating through a dictionary attack in case
+  of small attribute ranges.
+  Note: this may just be a modelling issue (or not even that, cross-check later
+  in case I misunderstood something). In their construction, they include
+  a secret key of the user in the credentials, of which the user has to prove
+  knowledge during the issue protocol. They do this by ``reusing'' the user
+  secret key as the randomness employed for the set commitment scheme, and
+  requiring the user to prove knowledge of the corresponding public key.
+  However, I am not sure of whether or not this somehow thwarts the previously
+  mentioned ``attack'', which affects the show protocol (\todo{i.e., the user does
+    not need to prove knowledge of the usk during show, no?} \note{Actually, it
+    should not, as it would probably prevent anonymity}) In any case, even if
+  the specific construction and instantiation thwarts this attack, I think their
+  model allows it.
+\item[\cite{sms+19}:] No security model is given nor adopted.
+\item[\cite{halp20}:] No formal definition is given. The following properties
+  are claimed: undetectability (this seems similar to traceability in group sigs),
+  unlinkability, selective attributes disclosure, unforgeability, persistent
+  accounts, sybil resistance, extensibility, availability, decentralization.
+\item[\cite{hs21}:] Security is given through game-based definitions of
+  unforgeability, anonymity, and dependability. The first two are the usual ones,
+  while the latter roughly requires that an adversarial helper cannot produce
+  successful showings without cooperation from the core. It would be interesting
+  to make a detailed comparison with security models of DAA (usually in the UC
+  framework, although some game-based (seemingly flawed) definitions exist).
+  The main argument that the authors give when comparing to DAA, is that the
+  latter does not support attributes, and it is essentially a group signature
+  scheme without revocation and optional linkability (this frontier is also
+  blurry, see \cite{dl21}).
+\end{enumerate}
+
+\paragraph{Variations in functionality.}
+
+\begin{enumerate}
+\item[\cite{cl01}:] Extensions provided to the main functionality are:
+  \begin{itemize}
+  \item PKI-based and all-or-nothing non-transferability: Both options
+    involve sharing a verifiable encryption of the user secrets. In the
+    case of PKI-based non-transferability, the CA receives a verifiable
+    encryption, using as key the user's master secret, of some valuable
+    piece of information belonging to the user (e.g., the user's secret
+    key associated to his public key with that CA). In the all-or-nothing
+    case, the user shares with each organization (with which it has a
+    pseudonym), a verifiable encryption of his pseudonym secret data, encrypted
+    with his master secret. In both cases, if the user shares his master
+    secret with someone else, then he automatically gives access to
+    other relevant pieces of information (as the verifiable encryptions are
+    made public by the corresponding entity).    
+  \item One-show credentials: The validating tags over pseudonyms are extended
+    to include an extra value in their commitment. Then, users have to reveal
+    that value (or, rather, a value deterministically derived from that) in the
+    zero-knowledge proofs they create at show time. Since the value is always
+    the same, verifiers can check whether they have seen it before, or not.
+  \item Revocation: Both local (i.e., within an organization) and global (i.e.,
+    referring to an identity of the user in an external CA) is possible by
+    extending the pseudonyms of the user, and the credential showing protocols,
+    with values that allow subsequent decryption by a trusted party of their
+    pseudonym or external identity, given a transcript of the credential
+    showing.    
+  \item Attributes: The paper also succinctly describes how multiple attributes
+    per credential could be included. This would be done by dividing the inverval
+    within the exponent used to compute the pseudonym in sub-intervals, and then
+    proving that the exponent lies within a sub-interval.
+  \end{itemize}
+\item[\cite{cmz14}:] The paper mentions ``Credential translation'', which
+  basically means being able to prove that two attributes in different
+  credentials are actually the same. This is not formalized or detailed,
+  though.
+\item[\cite{cdhk15}:] The same as in the previous works (\cite{cl01,cl02,cl04}).
+\item[\cite{dmm+18}:] The scheme supports delegated verification. Basically,
+  to implement delegated verification, the delegatee receives an encryption of
+  the policy it has to verify, plus a signature of the encryption. If the
+  signature is valid, it re-randomizes the ciphertext for the policy, and
+  sends it to the user, who follows the same protocol as in the normal case.
+  The paper also mentions how to add more functionality, like delegation of
+  credentials and revocation, but they are not modelled. Also interestingly,
+  they claim somewhat informally (in Section 2.3) that no scheme satisfying
+  anonymity in the presence of an untrustworthy issuer can support delegation
+  of verification with policy hiding.
+\item[\cite{sms+19}:] It is essentially the same as previous works, although it
+  supports threshold issuance. Interestingly, \cite{sms+19} does not make use
+  of pseudonyms. I.e., credentials are just signed (blocks of) attributes. This
+  probably lets them achieve better efficiency. \doubt{This makes the scheme
+    to be practically like a group signature scheme (without revocation...)}
+\item[\cite{hs21}:] The main variation here is the application of the core-helper
+  division (typical of DAA) to the AC domain.
+\end{enumerate}
+
+\paragraph{Efficiency.}
+
+\cite{sms+19} seems to be the most efficient one (note: relies on the
+Fiat-Shamir heuristic). Credentials are only composed by two G1 elements,
+independently on the number of attributes. \todo{Cross-check this after
+  review.}
+
+\cite{cdhk15} and \cite{fhs19} achieve credential showings of size independent
+of the number of attributes.
+
+\paragraph{Main challenges.}
+
+\subsection{Related Primitives}
+
+Most schemes \cite{cl01,cl02,cl04,cdhk15,sms+19} are based on randomizable
+signatures, with the possibility of signing committed values, that also support
+efficient proofs of knowledge.
+
+The most recurrent signature schemes are Camenisch-Lysyanskaya \cite{cl02,cl04},
+BBS/BBS+ \cite{asm06,cdl16b}, and Pointcheval Sanders \cite{ps16}.
+\cite{cdhk15} leverages their own signature scheme, called Unlinkable
+Randomizable Signatures, which lets users obtain a signature on a set of
+(committed) messages and then prove knowledge of (a subset of) these
+messages, introducing rerandomization to prevent linking. \cite{fhs19}
+follows a similar approach, using vector commitments. Both schemes
+\cite{cdhk15,fhs19} seem to be the most efficient AC instantiations to date.
+\cite{cdhk15} follows the UC framework; \cite{fhs19} a game-based definition.
+
+The ``family'' of AC systems known in the industry as BBS+ originates from
+\cite{asm06} (or, probably, from the BBS+ variant in \cite{cdl16b}, which
+introduces several improvements). \cite{asm06} presents a GS-like system that
+lets users obtain a credential from a Group Manager. This credential is a
+BBS+ signature. BBS+ signatures are a digital signature scheme, based on
+\cite{bbs04} and following the modification guidelines put forward in
+\cite{cl04}\footnote{Essentially, the authors of \cite{asm06} acknowledge
+  \cite{cl04} as those who proposed the BBS+ scheme -- but without security
+  proofs, which are provided in (the full version of) \cite{asm06}.}. On top
+of the signature scheme, they add efficient protocols for obtaining a signature
+over a set of committed messages, and proving -- in zero knowledge -- knowledge
+of a signature. Users can then be authorized by Application Providers (APs) to
+access their services: for this, APs maintain a list of the users they have
+granted/revoked access to, using a dynamic accumulator. APs also allow users to
+authenticate anonymously up to $k$ times. In order to access the services of APs,
+users have to derive a value using a VRF, and further prove that the value used
+to seed the VRF is a number within $[1,k]$ -- in addition to, of course, proving
+knowledge of a valid BBS+ signature (their credential). APs keep a record of the
+accesses. Thus, if a user accesses more than $k$ times a given AP, anyone with
+access to the record will be able to learn that a user has accessed more than
+$k$ times, as there will be more than one matching VRF-derived values.
+Furthermore, these two (or more) values let anyone extract a ``pseudonymous''
+identity of the user. The model (only informally presented, formal definitions
+appear in \cite{ts06} and proofs are deferred to a full version) seems to be
+used in $k$-TAA systems ($k$ Times Anonymous Authentication), and defines
+properties for:
+
+\begin{itemize}
+\item D-Detectability: Adversaries authenticating more than $k$ times are
+  detected.  
+\item D-Anonymity: Honest users authenticating less than $k$ times remain
+  anonymous.
+\item D-Exculpability: No honest user can be framed as having authenticated
+  more than $k$ times. The GM cannot be framed as dishonest if that is not
+  the case.
+\end{itemize}
+
+The system in \cite{aks12} also uses BBS+ signatures as a main building block
+to design a system with accountable anonymity, although it is not ``strictly''
+an anonymous credentials system: users receive a credential that lets them
+authenticate anonymously against service providers, but this credential does
+not include attributes, which seems to be the common case in ACs (however,
+with BBS+ it is trivial to add attributes, although this should be modelled).
+The main contribution of \cite{aks12} is the design and incorporation of
+protocols to block misbehaving users depending on their behaviour, without
+relying on trusted third parties. This is based on ``reputation lists'',
+maintained by each service provider. Uses that have previously registered
+with a Group Manager can authenticate against service providers by proving
+knowledge of a valid credential. Depending on how these users behave during
+the session with the service provider, the latter adds the interaction to
+either a \emph{good behaviour} list, or a \emph{misbehaviour list}. For
+subsequent authentications, users prove (in an ``almost unlinkable'' way
+w.r.t. previous authentications) that they have a certain reputation,
+computed as a weighted sum of their presence in the good/bad behaviour
+lists. Moreover, each service provider can maintain multiple thematic lists,
+and then require users to satisfy arbitrary boolean policies based on these
+lists (e.g., reputation $\ge X_1$ on $list_1$ and reputation $\le X_2$ on
+$list_2$ or reputation $= X_3$ on $list_3$) so that only users meeting
+the defined policy can access their system. These proves have though a linear
+dependency on the number of authentications that each user has done in
+the past. To reduce the impact of this, the authors create epochs. When a
+user authenticates successfully against a service provider, at a given epoch
+$i$, the service provider gives the user a token that authenticates the
+reputation that the user had at epoch $i$. Then, when this user tries to
+authenticate again, he only needs to give that token, and prove his reputation
+since epoch $i$ (this is why authentication is ``almost unlinkable'', as
+service providers may learn when the user authenticated for the last time).
+Note that no trusted party is involved in the blacklisting process, as
+correctness of all tokens exchanged between users and service providers to prove
+meeting certain policy, is ensured via the corresponing proof protocols.
+Concerning security, the system is proven secure in the simulation paradigm,
+claiming to meet (informally defined) properties of:
+
+\begin{itemize}
+\item Anonymity: All the SPs can infer from authenticating users is that they
+  meet the predefined policy, and that they authenticated at a certain epoch.
+\item Authenticity: Only users meeting the defined policies can authenticate.
+\item Mis-authentication resistance: Un-registered users cannot authenticate
+  successfully.
+\item Non-frameability: No coalition of users can cause that another user
+  meeting the required policy, cannot authenticate successfully.
+\end{itemize}
+
+Somehow, these properties resemble those in the group signatures model in
+\cite{kty04}. Probably, the addition of non-frameability is a consequence
+of adding a variant of revocation.
+
+\paragraph{Primitives for credentials with generic policies.} \cite{cgm16}
+describes techniques to be able to create efficient proofs that combine both
+algebraic and non-algebraic relations. For instance, proving knowledge of an
+ECDSA or RSA-FDH signature (both of which include computation of a hash
+function); but also being able to prove any arbitrary (non-algebraic) funcion
+$f$. This may be very useful to achieve compatibility with traditional
+credentials/signature schemes, that mostly do not follow the algorithms
+used in anonymous credentials systems. In fact, that is one of the main
+motivations in the paper. The approach in \cite{cgm16} builds on committing
+Oblivious Transfer and Garbled Circuits (not necessarily with privacy).
+A closely related work seems to be \cite{dfkp16},
+which achieves the same goal but using SNARKS, which results in different
+tradeoffs -- hence, it may be interesting, as the SNARK domain has improved
+significantly since 2016. \cite{kkl+16} also allows building anonymous
+credentials for arbitrary policies, but using a different approach too.
+
+\subsubsection{Pseudonym Systems}
+\label{sssec:pseudonyms}
+
+\doubt{Not sure if this fits here.}
+
+\subsection{Applications}
+\label{ssec:acapplication}
+
+\subsubsection{Theory}
+\label{sssec:actheoryapp}
+
+Main approaches to build ACs (from ToPS paper I reviewed):
+
+\begin{itemize}
+\item Re-randomizable signatures on commitments (also as in DAA):
+  \cite{cl02,cl04,lmpy16,ps16}.
+\item Equivalence class signatures: \cite{fhs19,hs14}.
+\item Redactable signatures \cite{cdhk15,sand20} and malleable signatures
+  \cite{ckl14}.
+\item Predicate encryption: \cite{dmm+18}.
+\end{itemize}
+
+Also:
+
+\begin{itemize}
+  \item ACs based on aggregate signatures: \cite{cl11}.
+\end{itemize}
+
+PS: Tokenization.
+
+\subsubsection{Real World Deployments}
+\label{sssec:acrwdeploy}
+
+PS: Tokenization.
+Signal's AC \cite{cpz20}.
+
+\begin{itemize}
+\item U-Prove (see ref. 65 in \cite{hs21}):  This is largely based on Brands
+  thesis. There was a deployment by Microsoft, mostly concurrent to Idemix.
+  They are one-show credentials, but seemingly there is recent real-world
+  deployments based on them (references in p.1 of \cite{hs21}):
+  
+  \begin{itemize}
+  \item Privacy-Pass by Cloudflare.
+  \item Trust Tokens API by Google.
+  \item PrivateStats proposal by Facebook.
+  \end{itemize}
+  
+\item Idemix \cite{ch02}: This is largely based on CL signatures. It has been
+  deployed (or is being deployed) in Hyperledger Fabric, and I think there is
+  some of it in Indy too.
+\end{itemize}
+
+\cite{hs21} contains also many references to ``practical'' applications of
+ACs. However, these are mostly references to papers in cryptographic venues,
+so I suspect that they are more academic than real-world systems.
+
+\subsection{TODO}
+
+\begin{itemize}
+\item \cite{bckl08}.
+\item \cite{sand20}.
+\item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different approach?
+\end{itemize}
+
+[ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
+
+Concepts in ACs: multishow, one-show (Brands et al); interactive vs non-interactive
+showings (differentiation made in \cite[p.6]{fhs19} but, why would one want interactive,
+in the real world?)
+
+Which schemes support comibning credentials from multiple issuers? I think this
+is directly obtained in the schemes following the CL approach; but others?
+
+A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
+of some attributes being included in a credential is that these proofs are costly
+(like, linear in the number of attributes). Yet, they resort to other primitives
+that may also be costly (e.g., predicate encryption \cite{dmm+18}) or somehow move
+the cost to some other place (e.g., \cite{fhs19} uses a vector commitment scheme
+that requires a public key with size that grows with the number of attributes
+that \emph{can} be committed). It would be nice to have a detailed and complete
+(e.g., not skipping the data that makes one scheme look bad, like the size of
+the public keys) comparison. And, ideally, with concrete instantiations (not only
+theoretical analysis)?
+
+\cite{fhs19} has a nice comparison table.
+
+How to compare efficiency of AC systems?
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "sok-privsig"
+%%% End:
