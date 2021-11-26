@@ -39,7 +39,6 @@ export default class CredentialsReceivedStore {
   *fetchCredentials(contactId) {
     this.isFetching = true;
     try {
-      // second param contactsManager is provided to handle fetching the required contact fields.
       const credentialsReceived = yield this.api.credentialsReceivedManager.getReceivedCredentials(
         contactId,
         this.api.contactsManager

@@ -5,6 +5,12 @@ import Logger from '../../helpers/Logger';
 import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
 import { credentialReceivedMapper } from '../helpers/credentialHelpers';
 
+/**
+ *
+ * @param {string} contactId
+ * @param {Object} contactsManager required to handle additional request to fetch contact attributes
+ * @returns {Array} credentials received
+ */
 async function getReceivedCredentials(contactId, contactsManager) {
   const contactMessage = contactId ? ` for contact ${contactId}` : '';
   Logger.info(`Getting received credentials${contactMessage}`);

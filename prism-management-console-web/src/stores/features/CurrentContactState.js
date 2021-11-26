@@ -100,7 +100,6 @@ export default class CurrentContactState {
   *loadCredentialsReceived() {
     this.isLoadingCredentialsReceived = true;
 
-    // second param contactsManager is provided to handle fetching the required contact fields.
     const credentialsList = yield this.api.credentialsReceivedManager.getReceivedCredentials(
       this.contactId,
       this.api.contactsManager
