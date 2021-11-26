@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import {
   DownOutlined,
@@ -11,20 +11,21 @@ import { Button, Dropdown, Menu } from 'antd';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
-import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
-import { checkboxPropShape } from '../../../../helpers/propShapes';
+import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
 
 import './_style.scss';
 
-const TableOptions = ({ bulkActionsProps }) => {
+const TableOptions = observer(() => {
   const { t } = useTranslation();
-  const { selectedCredentials, selectAllProps, refreshCredentials } = bulkActionsProps;
   const {
-    sortingBy,
-    setSortingBy,
-    sortDirection,
-    toggleSortDirection
-  } = useCredentialIssuedUiState();
+    credentials,
+    selectAllCheckboxStateProps,
+    selectedCredentials,
+    isLoadingSelection,
+    refreshCredentials,
+    selectAllCredentials,
+    filterSortingProps: { sortingBy, setSortingBy, sortDirection, toggleSortDirection }
+  } = useCredentialsIssuedPageStore();
 
   const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS);
 
@@ -37,6 +38,12 @@ const TableOptions = ({ bulkActionsProps }) => {
   );
 
   const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
+
+  const checkboxProps = {
+    ...selectAllCheckboxStateProps,
+    disabled: isLoadingSelection || !credentials.length,
+    onChange: selectAllCredentials
+  };
 
   return (
     <div className="TableOptions">
@@ -52,7 +59,11 @@ const TableOptions = ({ bulkActionsProps }) => {
             )
           }
         />
-        <SelectAllButton selectedEntities={selectedCredentials} {...selectAllProps} />
+        <SelectAllButton
+          selectedEntities={selectedCredentials}
+          isLoadingSelection={isLoadingSelection}
+          checkboxProps={checkboxProps}
+        />
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
           <CustomButton
             overrideClassName="theme-link TableOptionButton"
@@ -70,17 +81,6 @@ const TableOptions = ({ bulkActionsProps }) => {
       </Button>
     </div>
   );
-};
-
-TableOptions.propTypes = {
-  bulkActionsProps: PropTypes.shape({
-    selectedCredentials: PropTypes.arrayOf(PropTypes.string).isRequired,
-    refreshCredentials: PropTypes.func.isRequired,
-    selectAllProps: PropTypes.shape({
-      loadingSelection: PropTypes.bool.isRequired,
-      checkboxProps: checkboxPropShape.isRequired
-    })
-  }).isRequired
-};
+});
 
 export default TableOptions;

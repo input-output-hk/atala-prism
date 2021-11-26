@@ -2,14 +2,20 @@ import { CREDENTIAL_STATUSES } from '../../helpers/constants';
 import { contactMapper } from './contactHelpers';
 
 export function credentialMapper(credential) {
+  const credentialObject = credential.toObject();
+  const credentialString = credential.getCredentialData();
+  const credentialData = JSON.parse(credentialString);
+
   return {
-    ...credential,
-    status: getCredentialStatus(credential),
+    ...credentialObject,
+    credentialData,
+    credentialString,
+    status: getCredentialStatus(credentialObject),
     contactData: {
-      ...contactMapper(credential),
-      contactName: credential.credentialData.contactName
+      ...contactMapper(credentialObject),
+      contactName: credentialData.contactName
     },
-    proof: getCredentialProof(credential)
+    proof: getCredentialProof(credentialObject)
   };
 }
 

@@ -20,12 +20,14 @@ import './_style.scss';
 
 const { TabPane } = Tabs;
 
-const CredentialTabs = observer(({ credentialsIssuedProps, verifyCredential }) => {
+const CredentialTabs = observer(({ credentialActionsProps }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState();
   const [showDrawer, setShowDrawer] = useState(false);
 
   const { accountStatus } = useSession();
+
+  const { verifyCredential } = credentialActionsProps;
 
   const showCredentialData = async credential => {
     const verificationResult = await verifyCredential(credential);
@@ -57,7 +59,7 @@ const CredentialTabs = observer(({ credentialsIssuedProps, verifyCredential }) =
         <Tabs defaultActiveKey={CREDENTIALS_ISSUED}>
           <TabPane key={CREDENTIALS_ISSUED} tab={t('credentials.tabs.credentialsIssued')}>
             <CredentialsIssued
-              {...credentialsIssuedProps}
+              credentialActionsProps={credentialActionsProps}
               showCredentialData={showCredentialData}
             />
           </TabPane>
@@ -71,25 +73,18 @@ const CredentialTabs = observer(({ credentialsIssuedProps, verifyCredential }) =
 });
 
 CredentialTabs.propTypes = {
-  credentialsIssuedProps: PropTypes.shape({
+  credentialActionsProps: PropTypes.shape({
+    verifyCredential: PropTypes.func.isRequired,
     revokeSingleCredential: PropTypes.func.isRequired,
     signSingleCredential: PropTypes.func.isRequired,
     sendSingleCredential: PropTypes.func.isRequired,
-    selectionType: PropTypes.shape({
-      selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
-      type: PropTypes.string,
-      onChange: PropTypes.func
-    }),
     bulkActionsProps: {
       refreshCredentials: PropTypes.func.isRequired,
       revokeSelectedCredentials: PropTypes.func.isRequired,
       signSelectedCredentials: PropTypes.func.isRequired,
-      sendSelectedCredentials: PropTypes.func.isRequired,
-      selectedCredentials: PropTypes.arrayOf(PropTypes.string),
-      selectAllProps: PropTypes.func.isRequired
+      sendSelectedCredentials: PropTypes.func.isRequired
     }
-  }).isRequired,
-  verifyCredential: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default CredentialTabs;

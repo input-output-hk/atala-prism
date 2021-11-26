@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
@@ -10,66 +10,60 @@ import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import BulkActionsHeader from '../../Molecules/BulkActionsHeader/BulkActionsHeader';
 import { useSession } from '../../../../hooks/useSession';
 import TableOptions from '../../Molecules/BulkActionsHeader/TableOptions';
-import {
-  useCredentialIssuedStore,
-  useCredentialIssuedUiState
-} from '../../../../hooks/useCredentialIssuedStore';
+import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
 
-const CredentialsIssued = observer(
-  ({
-    selectionType,
-    bulkActionsProps,
-    showCredentialData,
-    searchDueGeneralScroll,
-    ...credentialsIssuedProps
-  }) => {
-    const { t } = useTranslation();
-    const [selectedLength, setSelectedLength] = useState();
+const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData }) => {
+  const { t } = useTranslation();
+  const {
+    filterSortingProps: { hasFiltersApplied },
+    isSearching,
+    credentials,
+    selectedCredentials,
+    handleCherryPickSelection,
+    isFetching,
+    hasMore,
+    fetchMoreData,
+    isLoadingFirstPage
+  } = useCredentialsIssuedPageStore();
 
-    const {
-      credentials,
-      isFetching,
-      hasMore,
-      fetchMoreData,
-      isLoadingFirstPage
-    } = useCredentialIssuedStore();
-    const { hasFiltersApplied, isSearching, isSorting } = useCredentialIssuedUiState();
+  const { accountStatus } = useSession();
 
-    const { accountStatus } = useSession();
+  const { bulkActionsProps } = credentialActionsProps;
 
-    const { selectedRowKeys } = selectionType || {};
+  useEffect(() => {
+    fetchMoreData();
+  }, [fetchMoreData]);
 
-    useEffect(() => {
-      const keys = Object.keys(selectedRowKeys);
-      setSelectedLength(keys.length);
-    }, [selectedRowKeys]);
+  const selectedLength = selectedCredentials.length;
 
-    useEffect(() => {
-      fetchMoreData();
-    }, [fetchMoreData]);
+  const expandedTableProps = {
+    ...credentialActionsProps,
+    selectionType: {
+      selectedRowKeys: selectedCredentials,
+      type: 'checkbox',
+      onChange: handleCherryPickSelection
+    },
+    credentials,
+    tab: CREDENTIALS_ISSUED,
+    onView: showCredentialData,
+    isFetching,
+    hasMore,
+    loading: isSearching
+  };
 
-    const expandedTableProps = {
-      ...credentialsIssuedProps,
-      selectionType,
-      credentials,
-      tab: CREDENTIALS_ISSUED,
-      onView: showCredentialData,
-      searchDueGeneralScroll,
-      isFetching,
-      hasMore,
-      loading: isSearching || isSorting
-    };
+  const emptyProps = {
+    photoSrc: noCredentialsPicture,
+    model: t('credentials.title'),
+    isFilter: hasFiltersApplied,
+    button: accountStatus === CONFIRMED && <CreateCredentialsButton />
+  };
 
-    const emptyProps = {
-      photoSrc: noCredentialsPicture,
-      model: t('credentials.title'),
-      isFilter: hasFiltersApplied,
-      button: accountStatus === CONFIRMED && <CreateCredentialsButton />
-    };
-
-    const renderContent = () => {
-      if (isLoadingFirstPage) return <SimpleLoading size="md" />;
-      return (
+  return (
+    <>
+      <BulkActionsHeader bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
+      {isLoadingFirstPage ? (
+        <SimpleLoading size="md" />
+      ) : (
         <>
           <TableOptions bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
           <CredentialsTable
@@ -78,47 +72,27 @@ const CredentialsIssued = observer(
             {...expandedTableProps}
           />
         </>
-      );
-    };
-
-    return (
-      <>
-        <BulkActionsHeader
-          bulkActionsProps={bulkActionsProps}
-          selectedLength={selectedLength}
-          selectedRowKeys={selectedRowKeys}
-        />
-        {renderContent()}
-      </>
-    );
-  }
-);
+      )}
+    </>
+  );
+});
 
 CredentialsIssued.defaultProps = {
   initialLoading: false
 };
 
 CredentialsIssued.propTypes = {
-  credentials: PropTypes.arrayOf(PropTypes.shape()),
-  selectionType: PropTypes.shape({
-    selectedRowKeys: PropTypes.arrayOf(PropTypes.string)
-  }),
-  hasMore: PropTypes.bool,
-  searching: PropTypes.bool,
-  sortingProps: PropTypes.shape({
-    sortingBy: PropTypes.string,
-    setSortingBy: PropTypes.func,
-    sortDirection: PropTypes.string,
-    setSortDirection: PropTypes.func
-  }).isRequired,
-  bulkActionsProps: PropTypes.shape({
-    signSelectedCredentials: PropTypes.func,
-    sendSelectedCredentials: PropTypes.func,
-    toggleSelectAll: PropTypes.func,
-    selectAll: PropTypes.bool,
-    indeterminateSelectAll: PropTypes.bool
-  }).isRequired,
-  showEmpty: PropTypes.bool
+  credentialActionsProps: {
+    revokeSingleCredential: PropTypes.func,
+    signSingleCredential: PropTypes.func,
+    sendSingleCredential: PropTypes.func,
+    bulkActionsProps: PropTypes.shape({
+      revokeSelectedCredentials: PropTypes.func,
+      signSelectedCredentials: PropTypes.func,
+      sendSelectedCredentials: PropTypes.func
+    }).isRequired
+  },
+  showCredentialData: PropTypes.func.isRequired
 };
 
 export default CredentialsIssued;

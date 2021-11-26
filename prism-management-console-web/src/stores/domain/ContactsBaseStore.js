@@ -6,7 +6,7 @@ import {
   CONTACT_SORTING_KEYS_TRANSLATION,
   SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
-} from '../helpers/constants';
+} from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
 
@@ -45,9 +45,9 @@ export default class ContactsBaseStore {
 
   groupNameFilter = defaultValues.groupNameFilter;
 
-  sortDirection = ascending;
+  sortDirection = defaultValues.sortDirection;
 
-  sortingBy = CONTACT_SORTING_KEYS.name;
+  sortingBy = defaultValues.sortingBy;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -137,12 +137,25 @@ export default class ContactsBaseStore {
   }
 
   get filterSortingProps() {
-    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
+    const {
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      toggleSortDirection,
+      hasFiltersApplied,
+      hasTextFilterApplied,
+      hasDateFilterApplied,
+      hasStatusFilterApplied
+    } = this;
     return {
       sortDirection,
       setSortingBy,
       setFilterValue,
-      toggleSortDirection
+      toggleSortDirection,
+      hasFiltersApplied,
+      hasTextFilterApplied,
+      hasDateFilterApplied,
+      hasStatusFilterApplied
     };
   }
 

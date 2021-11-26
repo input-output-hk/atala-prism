@@ -11,10 +11,10 @@ import {
   SEND_CREDENTIALS,
   SIGN_CREDENTIALS
 } from '../../../../helpers/constants';
+import { credentialTypeShape } from '../../../../helpers/propShapes';
+import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
 
 import './_style.scss';
-import { credentialTypeShape } from '../../../../helpers/propShapes';
-import { useCredentialIssuedUiState } from '../../../../hooks/useCredentialIssuedStore';
 
 const CredentialButtons = observer(
   ({
@@ -26,7 +26,9 @@ const CredentialButtons = observer(
     disableSend
   }) => {
     const { t } = useTranslation();
-    const { hasAditionalFiltersApplied } = useCredentialIssuedUiState();
+    const {
+      filterSortingProps: { hasAdditionalFiltersApplied }
+    } = useCredentialsIssuedPageStore();
 
     const [loadingByKey, setLoadingByKey] = useState(null);
 
@@ -84,7 +86,7 @@ const CredentialButtons = observer(
           buttonText={t('credentials.actions.sendSelectedCredentials')}
         />
 
-        <Badge dot={hasAditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
+        <Badge dot={hasAdditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
           <Dropdown.Button
             overlay={filtersMenu}
             trigger={['click']}

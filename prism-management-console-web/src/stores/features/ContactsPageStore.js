@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import ContactsBaseStore from '../ContactsBaseStore';
+import ContactsBaseStore from '../domain/ContactsBaseStore';
 
 export default class ContactsPageStore {
   constructor(api, sessionState) {
@@ -20,10 +20,6 @@ export default class ContactsPageStore {
 
   get contacts() {
     return this.contactsBaseStore.contacts;
-  }
-
-  get hasFiltersApplied() {
-    return this.contactsBaseStore.hasFiltersApplied;
   }
 
   get hasMore() {
