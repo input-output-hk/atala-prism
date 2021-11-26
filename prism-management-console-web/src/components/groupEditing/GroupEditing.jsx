@@ -16,7 +16,7 @@ import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAl
 import { useSelectAll } from '../../hooks/useSelectAll';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
-import { useCurrentGroupStore } from '../../hooks/useCurrentGroupStore';
+import { useCurrentGroupStore } from '../../hooks/useGroupStore';
 import './_style.scss';
 
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
@@ -25,7 +25,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     hasFiltersApplied,
     isLoadingGroup,
     isLoadingMembers,
-    isFetching,
+    isFetchingMore,
     isSearching,
     isSaving,
     name,
@@ -195,7 +195,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
               contacts={members}
               hasFiltersApplied={hasFiltersApplied}
               isLoading={isSearching}
-              isFetchingMore={isFetching}
+              isFetchingMore={isFetchingMore}
               fetchMoreData={fetchMoreGroupMembers}
               columns={getGroupContactColumns(handleDelete)}
               selectedContacts={selectedGroupContacts}

@@ -1,8 +1,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import { useCurrentGroupStore } from '../../hooks/useGroupStore';
 import GroupEditing from './GroupEditing';
-import { useCurrentGroupStore } from '../../hooks/useCurrentGroupStore';
 
 const GroupEditingContainer = observer(() => {
   const { id } = useParams();

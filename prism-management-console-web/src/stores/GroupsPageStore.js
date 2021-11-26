@@ -64,26 +64,6 @@ export default class GroupsPageStore {
     return this.groupsBaseStore.refreshGroups({ refreshCountDiff });
   }
 
-  *createGroup({ name, members, onSuccess, onError }) {
-    this.isSaving = true;
-
-    try {
-      // TODO: better to do atomically on backend
-      const newGroup = yield this.api.groupsManager.createGroup(name);
-
-      if (members) {
-        yield this.updateGroup(newGroup.id, { contactIdsToAdd: members });
-      }
-
-      onSuccess();
-    } catch (error) {
-      Logger.error('[GroupsPageStore.createGroup] Error: ', error);
-      onError();
-    } finally {
-      this.isSaving = false;
-    }
-  }
-
   *updateGroup(id, change) {
     this.isSaving = true;
 

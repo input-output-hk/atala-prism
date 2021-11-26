@@ -6,7 +6,7 @@ import { Modal, Row, Col } from 'antd';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import { useCurrentGroupStore } from '../../../hooks/useCurrentGroupStore';
+import { useCurrentGroupStore } from '../../../hooks/useGroupStore';
 import SelectAllButton from '../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useSelectAll } from '../../../hooks/useSelectAll';
 import { CONTACT_ID_KEY } from '../../../helpers/constants';

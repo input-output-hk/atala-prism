@@ -75,11 +75,15 @@ export default class ContactsBaseStore {
     return this.isFetching && this.scrollId === undefined;
   }
 
+  get isFetchingMore() {
+    return this.isFetching && this.scrollId && !this.isSearching;
+  }
+
   get hasMore() {
     return this.scrollId;
   }
 
-  initContactStore(groupName) {
+  initContactStore(groupName = defaultValues.groupNameFilter) {
     this.resetContactsAndFilters();
     this.groupNameFilter = groupName;
     return this.fetchMoreData({ startFromTheTop: true });

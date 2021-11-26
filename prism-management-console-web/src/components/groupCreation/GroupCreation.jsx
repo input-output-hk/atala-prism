@@ -9,13 +9,14 @@ import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useSelectAll } from '../../hooks/useSelectAll';
-import { useContactStore } from '../../hooks/useContactStore';
 import { refPropShape } from '../../helpers/propShapes';
+import { useCreateGroupStore } from '../../hooks/useGroupStore';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
 const GroupCreation = observer(
-  ({ createGroup, formRef, updateForm, formValues, updateMembers, isSaving }) => {
+  ({ createGroup, formRef, updateForm, formValues, updateMembers }) => {
     const [selectedContacts, setSelectedContacts] = useState([]);
     const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
 
@@ -27,20 +28,22 @@ const GroupCreation = observer(
     }, [selectedContacts, updateMembers]);
 
     const {
+      init,
       contacts,
-      contactUiState,
-      initContactStore,
+      isLoadingContacts,
       getContactsToSelect,
-      isLoadingFirstPage,
-      fetchMoreData,
-      isFetching,
-      hasMore
-    } = useContactStore();
-    const { hasFiltersApplied, isSearching, isSorting } = contactUiState;
+      isSaving,
+      filterSortingProps,
+      hasFiltersApplied,
+      hasMore,
+      isSearching,
+      isFetchingMore,
+      fetchMoreGroupContacts
+    } = useCreateGroupStore();
 
     useEffect(() => {
-      initContactStore();
-    }, [initContactStore]);
+      init();
+    }, [init]);
 
     const { loadingSelection, checkboxProps } = useSelectAll({
       displayedEntities: contacts,
@@ -48,7 +51,7 @@ const GroupCreation = observer(
       entityKey: CONTACT_ID_KEY,
       selectedEntities: selectedContacts,
       setSelectedEntities: setSelectedContacts,
-      isFetching
+      isFetching: isLoadingContacts
     });
 
     return (
@@ -61,7 +64,7 @@ const GroupCreation = observer(
 
           <div className="flex">
             <div className="SearchBar">
-              <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
+              <ConnectionsFilter filterSortingProps={filterSortingProps} showFullFilter={false} />
             </div>
 
             <div className="groupsButtonContainer">
@@ -96,17 +99,21 @@ const GroupCreation = observer(
               />
             </div>
             <div className="ConnectionsTable InfiniteScrollTableContainer">
-              <ConnectionsTable
-                contacts={contacts}
-                fetchMoreData={fetchMoreData}
-                hasMore={hasMore}
-                hasFiltersApplied={hasFiltersApplied}
-                isLoading={isLoadingFirstPage || isLoadingFirstPage || isSorting}
-                isFetchingMore={isFetching || isSearching}
-                selectedContacts={selectedContacts}
-                setSelectedContacts={setSelectedContacts}
-                size="md"
-              />
+              {isLoadingContacts ? (
+                <SimpleLoading />
+              ) : (
+                <ConnectionsTable
+                  contacts={contacts}
+                  fetchMoreData={fetchMoreGroupContacts}
+                  hasMore={hasMore}
+                  hasFiltersApplied={hasFiltersApplied}
+                  isLoading={isSearching}
+                  isFetchingMore={isFetchingMore}
+                  selectedContacts={selectedContacts}
+                  setSelectedContacts={setSelectedContacts}
+                  size="md"
+                />
+              )}
             </div>
           </div>
         </div>
@@ -115,16 +122,11 @@ const GroupCreation = observer(
   }
 );
 
-GroupCreation.defaultProps = {
-  isSaving: false
-};
-
 GroupCreation.propTypes = {
   createGroup: PropTypes.func.isRequired,
   formRef: refPropShape.isRequired,
   updateForm: PropTypes.func.isRequired,
   formValues: PropTypes.shape().isRequired,
-  isSaving: PropTypes.bool,
   updateMembers: PropTypes.func.isRequired
 };
 

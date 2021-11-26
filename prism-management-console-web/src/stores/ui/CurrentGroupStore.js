@@ -64,6 +64,10 @@ export default class CurrentGroupStore {
     return this.contactsBaseStore.isFetching;
   }
 
+  get isFetchingMore() {
+    return this.contactsBaseStore.isFetchingMore;
+  }
+
   init = async id => {
     this.id = id;
     this.isLoadingMembers = true;
