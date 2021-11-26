@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import {
   DownOutlined,
@@ -12,14 +12,18 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
-import { checkboxPropShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
-const TableOptions = ({ bulkActionsProps }) => {
+const TableOptions = observer(() => {
   const { t } = useTranslation();
-  const { selectedCredentials, selectAllProps, refreshCredentials } = bulkActionsProps;
   const {
+    credentials,
+    selectAllCheckboxStateProps,
+    selectedCredentials,
+    isLoadingSelection,
+    refreshCredentials,
+    selectAllCredentials,
     filterSortingProps: { sortingBy, setSortingBy, sortDirection, toggleSortDirection }
   } = useCredentialsIssuedPageStore();
 
@@ -35,6 +39,12 @@ const TableOptions = ({ bulkActionsProps }) => {
 
   const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
+  const checkboxProps = {
+    ...selectAllCheckboxStateProps,
+    disabled: isLoadingSelection || !credentials.length,
+    onChange: selectAllCredentials
+  };
+
   return (
     <div className="TableOptions">
       <div className="LeftOptions">
@@ -49,7 +59,11 @@ const TableOptions = ({ bulkActionsProps }) => {
             )
           }
         />
-        <SelectAllButton selectedEntities={selectedCredentials} {...selectAllProps} />
+        <SelectAllButton
+          selectedEntities={selectedCredentials}
+          isLoadingSelection={isLoadingSelection}
+          checkboxProps={checkboxProps}
+        />
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
           <CustomButton
             overrideClassName="theme-link TableOptionButton"
@@ -67,17 +81,6 @@ const TableOptions = ({ bulkActionsProps }) => {
       </Button>
     </div>
   );
-};
-
-TableOptions.propTypes = {
-  bulkActionsProps: PropTypes.shape({
-    selectedCredentials: PropTypes.arrayOf(PropTypes.string).isRequired,
-    refreshCredentials: PropTypes.func.isRequired,
-    selectAllProps: PropTypes.shape({
-      loadingSelection: PropTypes.bool.isRequired,
-      checkboxProps: checkboxPropShape.isRequired
-    })
-  }).isRequired
-};
+});
 
 export default TableOptions;
