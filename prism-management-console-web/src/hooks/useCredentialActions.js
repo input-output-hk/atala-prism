@@ -3,6 +3,9 @@ import i18n from 'i18next';
 import { useState } from 'react';
 import {
   CREDENTIAL_STATUSES_TRANSLATOR,
+  DEFAULT_CREDENTIAL_VERIFICATION_RESULT,
+  DRAFT_CREDENTIAL_VERIFICATION_RESULT,
+  PENDING_CREDENTIAL_VERIFICATION_RESULT,
   REVOKE_CREDENTIALS,
   REVOKE_SINGLE_CREDENTIAL,
   SEND_CREDENTIALS,
@@ -14,10 +17,24 @@ import { credentialRequiredStatus, getTargetCredentials } from '../helpers/crede
 import Logger from '../helpers/Logger';
 import { useApi } from './useApi';
 
-export const useCredentialActions = (credentialsIssued, refreshCredentialsIssued) => {
+export const useCredentialActions = (
+  selectedCredentials,
+  credentialsIssued,
+  refreshCredentialsIssued
+) => {
   const { wallet, connector, contactsManager, credentialsManager } = useApi();
-  const [selectedCredentials, setSelectedCredentials] = useState([]);
   const [confirmationModal, setConfirmationModal] = useState(false);
+
+  const verifyCredential = ({ encodedSignedCredential, batchInclusionProof }) =>
+    batchInclusionProof
+      ? wallet.verifyCredential(encodedSignedCredential, batchInclusionProof).catch(error => {
+          Logger.error('There has been an error verifiying the credential', error);
+          const pendingPublication = error.message.includes('Missing publication date');
+          if (pendingPublication) return PENDING_CREDENTIAL_VERIFICATION_RESULT;
+          message.error(i18n.t('credentials.errors.errorVerifying'));
+          return DEFAULT_CREDENTIAL_VERIFICATION_RESULT;
+        })
+      : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
   const revokeCredentials = credentials => wallet.revokeCredentials(credentials);
 
@@ -157,12 +174,12 @@ export const useCredentialActions = (credentialsIssued, refreshCredentialsIssued
 
   return {
     selectedCredentials,
-    setSelectedCredentials,
     confirmationModalProps: {
       type: confirmationModal,
       onOk: handleConfirm,
       onCancel: handleCancel
     },
+    verifyCredential,
     revokeSelectedCredentials,
     revokeSingleCredential,
     signSelectedCredentials,

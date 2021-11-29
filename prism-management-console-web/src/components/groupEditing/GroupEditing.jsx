@@ -22,7 +22,6 @@ import './_style.scss';
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
   const {
     filterSortingProps,
-    hasFiltersApplied,
     isLoadingGroup,
     isLoadingMembers,
     isFetchingMore,
@@ -34,6 +33,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     hasMoreMembers,
     getMembersToSelect
   } = useCurrentGroupStore();
+  const { hasFiltersApplied } = filterSortingProps;
 
   const { t } = useTranslation();
   const formRef = createRef();

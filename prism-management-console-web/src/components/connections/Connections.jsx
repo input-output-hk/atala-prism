@@ -22,13 +22,13 @@ const Connections = observer(
     const {
       contacts,
       filterSortingProps,
-      hasFiltersApplied,
       isSearching,
       isLoadingFirstPage,
       fetchMoreData,
       isFetching,
       hasMore
     } = useContactsPageStore();
+    const { hasFiltersApplied } = filterSortingProps;
 
     const newGroupButton = <AddUsersButton onClick={redirectToImportContacts} />;
 

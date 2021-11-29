@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { isNumber } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import {
   CredentialsServicePromiseClient,
@@ -9,7 +9,8 @@ import {
   REQUEST_AUTH_TIMEOUT_MS,
   CREDENTIAL_PAGE_SIZE,
   CREDENTIAL_SORTING_KEYS,
-  SORTING_DIRECTIONS
+  SORTING_DIRECTIONS,
+  MAX_CREDENTIAL_PAGE_SIZE
 } from '../../helpers/constants';
 import hardcodedCredentialTypes from './mocks/hardcodedCredentialTypes';
 import { getAditionalTimeout } from '../../helpers/genericHelpers';
@@ -22,15 +23,9 @@ import {
 } from '../../protos/console_api_pb';
 import { getProtoDate } from '../../helpers/formatters';
 import { AtalaMessage, PlainTextCredential } from '../../protos/credential_models_pb';
+import { credentialMapper } from '../helpers/credentialHelpers';
 
 const { FilterBy, SortBy } = GetGenericCredentialsRequest;
-
-function mapCredential(cred) {
-  const credential = cred.toObject();
-  const credentialString = cred.getCredentialData();
-  const credentialData = JSON.parse(credentialString);
-  return Object.assign(credential, { credentialData, credentialString });
-}
 
 const fieldKeys = {
   UNKNOWN: 0,
@@ -78,8 +73,41 @@ async function getCredentials({
 
   const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
   const credentialsList = result.getCredentialsList();
-  const mappedCredentialsList = credentialsList.map(mapCredential);
+  const mappedCredentialsList = credentialsList.map(credentialMapper);
+
   return { credentialsList: mappedCredentialsList };
+}
+
+async function fetchMoreCredentialsRecursively({ limit, filter, sort, acc = [], onFinish }) {
+  const pageSize = isNumber(limit)
+    ? Math.min(limit, MAX_CREDENTIAL_PAGE_SIZE)
+    : MAX_CREDENTIAL_PAGE_SIZE;
+  const { credentialsList } = await this.getCredentials({
+    offset: acc.length,
+    pageSize,
+    sort,
+    filter
+  });
+
+  const partialContactsArray = acc.concat(credentialsList);
+  if (credentialsList.length < pageSize) return onFinish(partialContactsArray);
+  return this.fetchMoreContactsRecursively({
+    limit,
+    filter,
+    sort,
+    acc: partialContactsArray,
+    onFinish
+  });
+}
+
+function getAllCredentials({
+  limit,
+  filter = {},
+  sort = { field: CREDENTIAL_SORTING_KEYS.createdOn, direction: SORTING_DIRECTIONS.ascending }
+}) {
+  return new Promise(resolve => {
+    this.fetchMoreCredentialsRecursively({ limit, filter, sort, onFinish: resolve });
+  });
 }
 
 async function createBatchOfCredentials(credentialsData, credentialType, groups) {
@@ -146,7 +174,7 @@ async function getContactCredentials(contactId) {
   if (sessionError) return [];
 
   const res = await this.client.getContactCredentials(req, metadata);
-  const credentialsList = res.getGenericCredentialsList().map(mapCredential);
+  const credentialsList = res.getGenericCredentialsList().map(credentialMapper);
   Logger.info('Got credentials:', credentialsList);
 
   return credentialsList;
@@ -188,6 +216,8 @@ function CredentialsManager(config, auth) {
 }
 
 CredentialsManager.prototype.getCredentials = getCredentials;
+CredentialsManager.prototype.getAllCredentials = getAllCredentials;
+CredentialsManager.prototype.fetchMoreCredentialsRecursively = fetchMoreCredentialsRecursively;
 CredentialsManager.prototype.createBatchOfCredentials = createBatchOfCredentials;
 CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 CredentialsManager.prototype.generateAtalaMessage = generateAtalaMessage;

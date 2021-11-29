@@ -22,10 +22,6 @@ export default class ContactsPageStore {
     return this.contactsBaseStore.contacts;
   }
 
-  get hasFiltersApplied() {
-    return this.contactsBaseStore.hasFiltersApplied;
-  }
-
   get hasMore() {
     return this.contactsBaseStore.hasMore;
   }

@@ -22,7 +22,7 @@ const InfiniteScrollTable = ({
     const tableContent = document.querySelector('.InfiniteScrollTableContainer');
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
-      if (hasMore && !loading && scrollTop >= maxScroll) getMoreData();
+      if (hasMore && !loading && scrollTop === maxScroll) getMoreData();
     };
 
     tableContent.removeEventListener('scroll', scrollListener);

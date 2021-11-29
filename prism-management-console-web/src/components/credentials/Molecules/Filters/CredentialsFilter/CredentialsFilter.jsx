@@ -11,7 +11,7 @@ import {
   CREDENTIAL_STATUSES
 } from '../../../../../helpers/constants';
 import { credentialTypeShape } from '../../../../../helpers/propShapes';
-import { useCredentialIssuedUiState } from '../../../../../hooks/useCredentialIssuedStore';
+import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
 import { useTemplateStore } from '../../../../../hooks/useTemplateStore';
 
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
@@ -20,11 +20,13 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const { t } = useTranslation();
 
   const {
-    credentialTypeFilter,
-    credentialStatusFilter,
-    connectionStatusFilter,
-    setFilterValue
-  } = useCredentialIssuedUiState();
+    filterSortingProps: {
+      credentialTypeFilter,
+      credentialStatusFilter,
+      connectionStatusFilter,
+      setFilterValue
+    }
+  } = useCredentialsIssuedPageStore();
   const { credentialTemplates: credentialTypes } = useTemplateStore();
 
   const setFilterByKey = key => value => setFilterValue(key, value);
