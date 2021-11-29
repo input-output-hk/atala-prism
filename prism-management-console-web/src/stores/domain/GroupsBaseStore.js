@@ -6,7 +6,7 @@ import {
   GROUP_SORTING_KEYS_TRANSLATOR,
   SEARCH_DELAY_MS,
   SORTING_DIRECTIONS
-} from '../helpers/constants';
+} from '../../helpers/constants';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
 

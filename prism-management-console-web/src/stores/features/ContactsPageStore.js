@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import ContactsBaseStore from '../ContactsBaseStore';
+import ContactsBaseStore from '../domain/ContactsBaseStore';
 
 export default class ContactsPageStore {
   constructor(api, sessionState) {

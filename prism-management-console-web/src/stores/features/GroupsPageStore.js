@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import GroupsBaseStore from './GroupsBaseStore';
-import Logger from '../helpers/Logger';
+import GroupsBaseStore from '../domain/GroupsBaseStore';
+import Logger from '../../helpers/Logger';
 
 export default class GroupsPageStore {
   isSaving = false;

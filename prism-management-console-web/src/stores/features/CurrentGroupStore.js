@@ -1,5 +1,5 @@
 import { flow, makeAutoObservable } from 'mobx';
-import ContactsBaseStore from '../ContactsBaseStore';
+import ContactsBaseStore from '../domain/ContactsBaseStore';
 import Logger from '../../helpers/Logger';
 
 const defaultValues = {
