@@ -9,7 +9,7 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \usepackage{hyperref}
 
 
-\title{State of the Art Review on Privacy-Preserving Signatures, Credentials, and Authentication}
+\title{State of the Art Review on Privacy-Preserving Authentication}
 \author{}
 
 % Custom shorthands for this paper
@@ -20,9 +20,27 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 
 
 \begin{abstract}
-	\textbf{DISCLAIMER}: Please, keep in mind that, as of now, this document
-	basically contains a research log in the shape of personal notes. Do not take 
-	anything written here as ground truth.
+  \comment{\textbf{DISCLAIMER}: Please, keep in mind that this is a working
+    draft. Its main use in its current state is to foster debate on the topics
+    it deals with. Do not take anything written here as ground truth.}
+
+  This document explores three closely related cryptographic systems in the area
+  of privacy-enhanced and, more concretely, in the domain of authentication.
+  Namely, we study advances in group signatures (GS), anonymous credentials
+  (AC), and direct anonymous attestation (DAA). All three have somehow similar
+  purpose, have followed similar approaches, and have received much attention in
+  the the academic literature for the last (almost) four decades but, in some
+  sense, independently on one another.
+
+  Our goal is to extract common insight from all of them. Firstly, from a
+  theoretical perspective, with the aim to identify the advantages and
+  disadvantages of existing models and approaches, and develop intuition as to
+  whether we can (or cannot) combine ideas and fill gaps, and what may be the
+  most suitable path to follow for new projects, depending on their needs.
+  Secondly, from a practical perspective, DAA and ACs have already been deployed
+  in the real world, and analysing the difficulties they have come across will
+  certainly be of use.
+  
 \end{abstract}
 
 \iffalse

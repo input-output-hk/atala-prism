@@ -93,7 +93,7 @@ polynomial.
 %
 Also improving efficiency, but restricting to the scenario in which the issuer
 is the same entity as the verifier (as in ticketing systems for public transport),
-\cite{cmz14}, replaces signatures with algebraic MACs.
+\cite{cmz14} replaces signatures with algebraic MACs.
 
 Within this line of credentials from randomizable signatures, we can also find
 systems that can achieve high expressiveness, like the (delegatable) credentials
@@ -236,12 +236,15 @@ signatures, which target precisely that setting.
 
 \subsubsection{Efficiency.}
 %
+\comment{This section is just a placeholder for now...}
 
 \subsubsection{Main challenges and interesting lines of work.}
 %
-\note{I find interesting that, given that ACs and group signatures are
-  essentially the same thing, there is no work (or I have not come across it)
-  trying to connect both. Specifically, the following questions:}
+\comment{This section is just a placeholder for now...}
+
+I find interesting that, given that ACs and group signatures are
+essentially the same thing, there is no work (or I have not come across it)
+trying to connect both. Specifically, the following questions:
 
 \begin{itemize}
 \item Anonymity properties in ACs and GSs are roughly similar. However, concerning
@@ -256,6 +259,11 @@ signatures, which target precisely that setting.
     in ACs. I find this kind of surprising from a practical point of view, as an
     adversary in AC systems can very well aim at impersonating an honest user,
     which may then carry consequences (e.g., legal actions) for the honest user.
+    Probably, this is related to ACs not having opening, although it has been
+    shown in the GS literature that schemes without opening, but with linking
+    can still have a notion of non-frameability \cite{dl21} (and, certainly,
+    blacklisting/revocation allows linking, and this has already been done in
+    the AC domain.)
   \item Maybe I'm wrong in the two previous points, and we can draw a connection
     between (some basic notion of) unforgeability in ACs, and the usual notions
     of traceability and non-frameability in GSs. If I recall correctly, the
@@ -274,10 +282,15 @@ signatures, which target precisely that setting.
     versa? It should not be hard, and this may open a completely new breed of
     ACs (i.e., those based on the encrypt-then-prove approach).
   \end{itemize}
+\item Also, forward security does not seem to have been explored in the AC
+  domain (again, I may just overlooked works on it). But it has been studied in
+  GSs. Can we leverage that?
 \end{itemize}
 
 \subsection{Related Primitives and Systems}
 \label{ssec:acrelated}
+
+\comment{This section is just a placeholder for now...}
 
 \begin{itemize}
 \item Anonymous Authentication systems in the line of Nymble, BLACR, PEREA...
@@ -285,6 +298,8 @@ signatures, which target precisely that setting.
 
 \subsection{Real World Deployments}
 \label{ssec:acrealworld}
+
+\comment{This section is just a placeholder for now...}
 
 \begin{itemize}
 \item Idemix.
