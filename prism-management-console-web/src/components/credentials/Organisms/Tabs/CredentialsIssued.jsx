@@ -31,7 +31,7 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
   const { bulkActionsProps } = credentialActionsProps;
 
   useEffect(() => {
-    fetchMoreData();
+    fetchMoreData({ startFromTheTop: true });
   }, [fetchMoreData]);
 
   const selectedLength = selectedCredentials.length;
