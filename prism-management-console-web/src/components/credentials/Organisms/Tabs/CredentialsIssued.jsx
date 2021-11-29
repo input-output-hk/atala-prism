@@ -23,7 +23,8 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
     isFetching,
     hasMore,
     fetchMoreData,
-    isLoadingFirstPage
+    isLoadingFirstPage,
+    initCredentialsIssuedStore
   } = useCredentialsIssuedPageStore();
 
   const { accountStatus } = useSession();
@@ -31,8 +32,8 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
   const { bulkActionsProps } = credentialActionsProps;
 
   useEffect(() => {
-    fetchMoreData({ startFromTheTop: true });
-  }, [fetchMoreData]);
+    initCredentialsIssuedStore();
+  }, [initCredentialsIssuedStore]);
 
   const selectedLength = selectedCredentials.length;
 
