@@ -49,13 +49,8 @@ export const useGroupsPageStore = () => {
  *
  * @returns {CurrentGroupStore}
  */
-export const useCurrentGroupStore = id => {
+export const useCurrentGroupStore = () => {
   const { currentGroupStore } = useContext(GlobalStateContext);
-  const { init } = currentGroupStore;
-
-  useEffect(() => {
-    if (id) init(id);
-  }, [id, init]);
 
   return currentGroupStore;
 };

@@ -1,7 +1,6 @@
-import { message } from 'antd';
-import i18n from 'i18next';
 import { flow, makeAutoObservable } from 'mobx';
 import ContactsBaseStore from '../ContactsBaseStore';
+import Logger from '../../helpers/Logger';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -103,31 +102,31 @@ export default class CurrentGroupStore {
     return contactsNotInGroup;
   };
 
-  *updateGroupName(newName) {
+  *updateGroupName({ newName, onSuccess, onError }) {
     try {
       this.isSaving = true;
       yield this.api.groupsManager.updateGroup(this.id, { newName });
-      // TODO: this logic belongs to views, here we should just set a flag.
-      //  This way, the store is coupled with antd lib.
-      message.success(i18n.t('groupEditing.success'));
       yield this.loadGroup();
+      onSuccess?.();
       this.isSaving = false;
-    } catch {
-      message.error(i18n.t('groupEditing.errors.grpc'));
+    } catch (error) {
+      Logger.error('[CurrentGroupStore.updateGroupName] Error: ', error);
+      onError?.();
       this.isSaving = false;
     }
   }
 
-  *updateGroupMembers(membersUpdate) {
+  *updateGroupMembers({ membersUpdate, onSuccess, onError }) {
     try {
       this.isSaving = true;
       yield this.api.groupsManager.updateGroup(this.id, membersUpdate);
-      // TODO: same thing as for *updateGroupName
-      message.success(i18n.t('groupEditing.success'));
       yield this.reloadMembers();
+      onSuccess?.();
       this.isSaving = false;
-    } catch {
-      message.error(i18n.t('groupEditing.errors.grpc'));
+    } catch (error) {
+      Logger.error('[CurrentGroupStore.updateGroupMembers] Error: ', error);
+
+      onError?.();
       this.isSaving = false;
     }
   }

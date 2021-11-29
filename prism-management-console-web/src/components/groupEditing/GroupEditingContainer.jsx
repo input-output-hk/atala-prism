@@ -1,19 +1,51 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import { message } from 'antd';
+import i18n from 'i18next';
 import { useCurrentGroupStore } from '../../hooks/useGroupStore';
 import GroupEditing from './GroupEditing';
 
 const GroupEditingContainer = observer(() => {
   const { id } = useParams();
-  const { updateGroupName, updateGroupMembers } = useCurrentGroupStore(id);
+  const { updateGroupName, updateGroupMembers, init } = useCurrentGroupStore();
 
-  const handleRemoveContacts = async contactIdsToRemove =>
-    updateGroupMembers({ contactIdsToRemove });
+  useEffect(() => {
+    if (id) init(id);
+  }, [id, init]);
 
-  const handleAddContacts = async contactIdsToAdd => updateGroupMembers({ contactIdsToAdd });
+  const handleRemoveContacts = contactIdsToRemove =>
+    updateGroupMembers({
+      membersUpdate: { contactIdsToRemove },
+      onSuccess: () => {
+        message.success(i18n.t('groupEditing.success'));
+      },
+      onError: () => {
+        message.error(i18n.t('groupEditing.errors.grpc'));
+      }
+    });
 
-  const handleGroupRename = async newName => updateGroupName(newName);
+  const handleAddContacts = contactIdsToAdd =>
+    updateGroupMembers({
+      membersUpdate: { contactIdsToAdd },
+      onSuccess: () => {
+        message.success(i18n.t('groupEditing.success'));
+      },
+      onError: () => {
+        message.error(i18n.t('groupEditing.errors.grpc'));
+      }
+    });
+
+  const handleGroupRename = newName =>
+    updateGroupName({
+      newName,
+      onSuccess: () => {
+        message.success(i18n.t('groupEditing.success'));
+      },
+      onError: () => {
+        message.error(i18n.t('groupEditing.errors.grpc'));
+      }
+    });
 
   return (
     <GroupEditing

@@ -90,10 +90,10 @@ export default class GroupsPageStore {
     try {
       yield this.api.groupsManager.deleteGroup(groupId);
       yield this.refresh({ refreshCountDiff: -1 });
-      onSuccess();
+      onSuccess?.();
     } catch (error) {
       Logger.error('[GroupsPageStore.deleteGroup] Error: ', error);
-      onError();
+      onError?.();
     } finally {
       this.isSaving = false;
     }
@@ -115,10 +115,10 @@ export default class GroupsPageStore {
       });
 
       yield this.refresh({ refreshCountDiff: 1 });
-      onSuccess();
+      onSuccess?.();
     } catch (error) {
       Logger.error('[GroupsPageStore.copyGroup] Error: ', error);
-      onError();
+      onError?.();
     } finally {
       this.isSaving = false;
     }

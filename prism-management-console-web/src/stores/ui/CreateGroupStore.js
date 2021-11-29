@@ -74,10 +74,10 @@ export default class CreateGroupStore {
         yield this.api.groupsManager.updateGroup(newGroup.id, { contactIdsToAdd: members });
       }
 
-      onSuccess();
+      onSuccess?.();
     } catch (error) {
       Logger.error('[CreateGroupStore.createGroup] Error: ', error);
-      onError();
+      onError?.();
     } finally {
       this.isSaving = false;
     }
