@@ -266,8 +266,6 @@ const ImportDataContainer = ({
         />
         <WizardTitle title={title[useCase]} subtitle={subtitle[useCase]} />
       </div>
-      {/*
-      {renderStep()} */}
       <ImportContactsTabs />
     </div>
   );
