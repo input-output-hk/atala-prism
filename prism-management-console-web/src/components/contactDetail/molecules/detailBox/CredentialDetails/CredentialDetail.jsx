@@ -3,14 +3,13 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 import CredentialSummaryDetail from '../../../../common/Organisms/Detail/CredentialSummaryDetail';
-import { mockHtmlCredential } from '../../../../../helpers/mockData';
 import { backendDateFormat } from '../../../../../helpers/formatters';
-import { credentialShape } from '../../../../../helpers/propShapes';
+import { credentialReceivedShape, credentialShape } from '../../../../../helpers/propShapes';
 
 import './style.scss';
 
 const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }) => {
-  const { credentialType, publicationstoredat } = credential;
+  const { publicationstoredat } = credential;
   const { t } = useTranslation();
 
   const [currentCredential, setCurrentCredential] = useState();
@@ -22,7 +21,12 @@ const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }
     setShowDrawer(true);
   };
 
-  const { name, icon: credentialLogo } = credential.credentialData.credentialTypeDetails;
+  const getCredentialTypeAttributes = () => ({
+    credentialTypeName: credential.credentialData.credentialTypeDetails.name,
+    credentialTypeIcon: credential.credentialData.credentialTypeDetails.icon
+  });
+
+  const { credentialTypeName, credentialTypeIcon } = getCredentialTypeAttributes();
 
   const renderDateSigned = () => (
     <div className="credentialData">
@@ -49,11 +53,11 @@ const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }
       )}
       <div className="credentialDataContainer">
         <div className="img">
-          <img className="icons" src={credentialLogo} alt={credentialType?.name || ''} />
+          <img className="icons" src={credentialTypeIcon} alt={credentialTypeName || ''} />
         </div>
         <div className="credentialData">
           <p>{t('credentials.table.columns.credentialType')}</p>
-          <span>{t(name)}</span>
+          <span>{credentialTypeName}</span>
         </div>
       </div>
       <div className="credentialDataContainer">
@@ -72,19 +76,12 @@ const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }
   );
 };
 
-const mockCredential = {
-  credentialType: 'governmentId',
-  publicationstoredat: 0,
-  html: mockHtmlCredential
-};
-
 CredentialDetail.defaultProps = {
-  credential: mockCredential,
   isCredentialIssued: false
 };
 
 CredentialDetail.propTypes = {
-  credential: credentialShape,
+  credential: PropTypes.oneOfType([credentialShape, credentialReceivedShape]).isRequired,
   isCredentialIssued: PropTypes.bool,
   onVerifyCredential: PropTypes.func.isRequired
 };
