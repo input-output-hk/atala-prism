@@ -5,10 +5,6 @@ import { Tooltip, Checkbox } from 'antd';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import './_style.scss';
 
-function onChange(e) {
-  console.log(`checked = ${e.target.checked}`);
-}
-
 const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disabledHelp }) => {
   const { t } = useTranslation();
 
@@ -45,7 +41,7 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disa
         tabIndex={disabled ? null : index[option]}
       >
         <div className="CheckBox">
-          <Checkbox onChange={onChange} />
+          <Checkbox checked={isSelected} />
         </div>
         <div className="img-container">
           <img src={img} alt="" />
