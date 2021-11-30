@@ -1,19 +1,23 @@
 package io.iohk.atala.prism.node.metrics
 
+import io.iohk.atala.prism.node.NodeApp
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.operations.StateError
 import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation, UpdateDIDAction}
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
+import tofu.logging.Logging
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import kamon.Kamon
 import kamon.metric.Metric
 import kamon.tag.TagSet
-import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
 object OperationsCounters {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  private val logger = Logging.Make.plain[IO].forService[NodeApp]
+
   private val RECEIVED_OPERATION_METRIC_NAME = "received-atala-operations"
   private val FAILED_TO_STORE_OPERATION_METRIC_NAME =
     "failed-to-store-atala-objects"
@@ -91,7 +95,7 @@ object OperationsCounters {
       counter
         .withTags(tagSetBuilder.add(OPERATION_TAG, operationName).build())
         .increment()
-    }.toEither.left.foreach(error => logger.error(s"${counter.name} just blew up", error))
+    }.toEither.left.foreach(error => logger.error(s"${counter.name} just blew up", error).unsafeRunAndForget())
 
   private def increaseOperationsOccurrencesCounter(
       in: List[SignedAtalaOperation],
@@ -104,7 +108,7 @@ object OperationsCounters {
       operationAndOccurrences.foreach { case (operation, occurrences) =>
         countAtalaDidOperations(operation, occurrences, counter, tagSetBuilder)
       }
-    }.toEither.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error))
+    }.toEither.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error).unsafeRunAndForget())
 
   private def countAtalaDidOperations(
       in: AtalaOperation.Operation,
