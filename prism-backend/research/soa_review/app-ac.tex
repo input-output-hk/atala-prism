@@ -1,27 +1,9 @@
 \section{Log on Review of Anonymous Credentials Systems}
 \label{app:ac}
 
-\subsection{TODOs}
+\subsection{Academic Literature Review}
 
-\begin{itemize}
-\item \cite{bckl08}.
-\item \cite{sand20}.
-\item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different
-  approach?
-\end{itemize}
-
-A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
-of some attributes being included in a credential is that these proofs are costly
-(like, linear in the number of attributes). Yet, they resort to other primitives
-that may also be costly (e.g., predicate encryption \cite{dmm+18}) or somehow move
-the cost to some other place (e.g., \cite{fhs19} uses a vector commitment scheme
-that requires a public key with size that grows with the number of attributes
-that \emph{can} be committed). It would be nice to have a detailed and complete
-(e.g., not skipping the data that makes one scheme look bad, like the size of
-the public keys) comparison. And, ideally, with concrete instantiations (not only
-theoretical analysis)?
-
-\subsection{Approaches, Models, and Variations}
+\subsubsection{Approaches, Models, and Variations}
 
 \paragraph{Main approaches.} %
 
@@ -508,7 +490,7 @@ theoretical analysis)?
   division (typical of DAA) to the AC domain.
 \end{enumerate}
 
-\paragraph{Efficiency.}
+\subsubsection{Efficiency.}
 
 \cite{sms+19} seems to be the most efficient one (note: relies on the
 Fiat-Shamir heuristic). Credentials are only composed by two G1 elements,
@@ -518,9 +500,9 @@ independently on the number of attributes. \todo{Cross-check this after
 \cite{cdhk15} and \cite{fhs19} achieve credential showings of size independent
 of the number of attributes.
 
-\paragraph{Main challenges.}
+\subsubsection{Main challenges.}
 
-\subsection{Related Primitives}
+\subsubsection{Related Primitives}
 
 Most schemes \cite{cl01,cl02,cl04,cdhk15,sms+19} are based on randomizable
 signatures, with the possibility of signing committed values, that also support
@@ -644,7 +626,7 @@ credentials for arbitrary policies, but using a different approach too.
 
 \doubt{Not sure if this fits here.}
 
-\subsection{Applications}
+\subsubsection{Applications}
 \label{ssec:acapplication}
 
 \subsubsection{Theory}
@@ -696,13 +678,24 @@ Signal's AC \cite{cpz20}.
 ACs. However, these are mostly references to papers in cryptographic venues,
 so I suspect that they are more academic than real-world systems.
 
-\subsection{TODO}
+\subsubsection{TODO}
 
 \begin{itemize}
 \item \cite{bckl08}.
 \item \cite{sand20}.
 \item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different approach?
 \end{itemize}
+
+A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
+of some attributes being included in a credential is that these proofs are costly
+(like, linear in the number of attributes). Yet, they resort to other primitives
+that may also be costly (e.g., predicate encryption \cite{dmm+18}) or somehow move
+the cost to some other place (e.g., \cite{fhs19} uses a vector commitment scheme
+that requires a public key with size that grows with the number of attributes
+that \emph{can} be committed). It would be nice to have a detailed and complete
+(e.g., not skipping the data that makes one scheme look bad, like the size of
+the public keys) comparison. And, ideally, with concrete instantiations (not only
+theoretical analysis)?
 
 [ToPS paper I reviewed] refers to a strategy to do threshold issuing in \cite{bbh06}.
 
@@ -727,6 +720,82 @@ theoretical analysis)?
 \cite{fhs19} has a nice comparison table.
 
 How to compare efficiency of AC systems?
+
+\subsection{Industry Systems Review}
+
+\begin{itemize}
+\item Evernym. \url{https://www.evernym.com/}
+  \begin{itemize}
+  \item {\bf Introduction}. Evernym is a software company that is some kind of
+    relative of Sovrin. Their solution builds completely on the Sovrin system.
+  \item \emph{``How Sovrin Works''}%
+    \footnote{\url{https://www.evernym.com/wp-content/uploads/2017/07/How-Sovrin-Works.pdf}}.
+    Describes from a high-level perspective what information the Sovrin system
+    manages, how it does it, and the main actors. Basically, it is a public and
+    permissioned blockchain, that stores DIDs and VC schemas.
+    %
+    Some interesting properties (\textbf{Note: the following is based on
+      whitepapers from 2016!}):
+    \begin{itemize}
+    \item Credentials/claims are multi-show.
+    \item The keys used by issuers to produce claims can be rotated. To ensure
+      that verifiers will be able to check credentials that have been issued
+      with a rotated key, old keys are saved. This ``backward compatibility''
+      is an interesting feature for real-world systems to consider.      
+    \item Relationships between users and verifiers are not private:
+      \emph{``Jane has a relationship with a retailer (we can tell since they
+        have her verification key)''}
+    \item Consent receipts: A kind of ``policy'' that is stored in the ledger,
+      which contains the agreements reached between users and service providers
+      (e.g., SP can use Alice's data to do X or Y, only during 30 days). The
+      user can resort to the ledger to track past agreements.      
+    \item Support for public and private attributes. Public attributes are/can
+      be stored in the Sovrin ledger. Private attributes are stored in each
+      user's private ledger: \emph{``One important purpose of the private ledger
+        is to track the time and order that things are written. Hashes of the
+        private ledger can be written to Sovrin's public ledger periodically to
+        provide evidence of Jane's holdings. These are called anchors. Jane can
+        thus generate audit proofs that any particular interaction happened at a
+        particular time without disclosing the details of the interaction.''}
+      Private ledgers can be managed by agencies, but they should be easily
+      exportable to avoid lock-in.
+    \end{itemize}
+  \item \emph{``The Technical Foundations of Sovrin.''}%
+    \footnote{\url{https://www.evernym.com/wp-content/uploads/2017/07/The-Technical-Foundations-of-Sovrin.pdf}}.
+    Describes from a high-level perspective the architecture of the system,
+    mostly focusing on the blockchain network, and related components (like
+    agents and clients). Some identity-related stuff:
+    \begin{itemize}
+    \item To create a new identity from scratch, users have to rely on ``trust
+      anchors'' (i.e., participants of the network that have somehow acquired
+      trust). The new user perform a kind of issuance protocol with this trust
+      anchor, who endorses the new user by registering some information in the
+      ledger. The user can check the trustworthiness of the anchor, and result
+      of the registration, via the ledger. The described process (page 14)
+      resembles the join-issue protocols in GSs and ACs.      
+    \item Brief mention is made to public and private attributes (in page 20),
+      which again are differentiated depending on whether they are: stored in
+      the ledger (public), no matter if they are encrypted/obfuscated or not;
+      or in a private ledger (private). %
+      The document also mentions five types of claims: cleartext claims,
+      encrypted claims, hash signature claims, proof of existence claims, and
+      anonymous credentials. See page 21, although it barely gives an
+      intuition.      
+    \end{itemize}
+  \item \emph{``Why the Verifiable Credentials Community Should Converge on BBS+''}%
+    \footnote{\url{https://www.evernym.com/blog/bbs-verifiable-credentials/}}.
+    This is a blog post by a cryptographer in Evernym, that describes the
+    evolution of Evernym's approach. They initially targetted CL credentials,
+    which they implemented for Sovrin/Indy. Then, they decided to migrate to
+    BBS+, supporting predicates for proofs, and revocation. They seemed to fail.
+    Later, MATTR restricted the approach to selective disclosure (not sure if
+    revocation is included). This is useful to understand the confusion between
+    the terms ZKP-CL vs JSON-LD BBS+. They are just historical: the former is the
+    approach Indy adopted, and they have their own user base and formats;
+    JSON-LD BBS+ is the approach of MATTR, which Evernym (the descendant of
+    Sovrin/Indy) seems to be adopting too.
+  \end{itemize}
+\end{itemize}
 
 
 %%% Local Variables:
