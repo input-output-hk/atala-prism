@@ -2,6 +2,14 @@
 
 .ImportStepPageContainer {
     padding: 1em 2em;
+    .TitleContainer {
+        .WizardTitle {
+            .TypeSelectionContainer {
+                padding: 1em 0;
+                border-bottom: 1px solid $light-grey;
+            }
+        }
+    }
     .errorLogSection {
         max-height: 65vh;
         overflow-y: auto;
