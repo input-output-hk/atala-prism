@@ -45,7 +45,7 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disa
         tabIndex={disabled ? null : index[option]}
       >
         <div className="CheckBox">
-          <Checkbox onChange={onChange}></Checkbox>
+          <Checkbox onChange={onChange} />
         </div>
         <div className="img-container">
           <img src={img} alt="" />
