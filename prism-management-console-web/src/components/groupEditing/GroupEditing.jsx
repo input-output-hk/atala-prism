@@ -8,12 +8,11 @@ import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
-import { CONTACT_ID_KEY, GROUP_NAME_STATES } from '../../helpers/constants';
+import { GROUP_NAME_STATES } from '../../helpers/constants';
 import AddContactsModal from './AddContactsModal/AddContactsModal';
 import ConfirmDeletionModal from './ConfirmDeletionModal/ConfirmDeletionModal';
 import { contactShape, groupShape } from '../../helpers/propShapes';
 import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
-import { useSelectAll } from '../../hooks/useSelectAll';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
 import { useCurrentGroupStore } from '../../hooks/useGroupStore';
@@ -22,6 +21,7 @@ import './_style.scss';
 const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts }) => {
   const {
     filterSortingProps,
+    filterValues,
     isLoadingGroup,
     isLoadingMembers,
     isFetchingMore,
@@ -31,7 +31,13 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     members,
     fetchMoreGroupMembers,
     hasMoreMembers,
-    getMembersToSelect
+    //
+    selectedContacts,
+    isLoadingSelection,
+    selectAllCheckboxStateProps,
+    handleCherryPickSelection,
+    selectAllContacts,
+    resetSelection: resetContactsSelection
   } = useCurrentGroupStore();
   const { hasFiltersApplied } = filterSortingProps;
 
@@ -41,23 +47,24 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   const [contactsToRemove, setContactsToRemove] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalDeletionVisible, setModalDeletionVisible] = useState(false);
-  const [selectedGroupContacts, setSelectedGroupContacts] = useState([]);
   const [editing, setEditing] = useState(false);
   const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
   const formValues = { groupName };
 
-  const { loadingSelection, checkboxProps } = useSelectAll({
-    displayedEntities: members,
-    entitiesFetcher: getMembersToSelect,
-    entityKey: CONTACT_ID_KEY,
-    selectedEntities: selectedGroupContacts,
-    setSelectedEntities: setSelectedGroupContacts,
-    isFetching: isLoadingMembers
-  });
+  const selectAllCheckboxProps = {
+    checked: selectAllCheckboxStateProps.checked,
+    indeterminate: selectAllCheckboxStateProps.indeterminate,
+    disabled: isLoadingMembers || !members.length,
+    onChange: ev => selectAllContacts(ev, filterValues.textFilter)
+  };
 
   useEffect(() => {
     setGroupName(name);
   }, [name]);
+
+  useEffect(() => {
+    resetContactsSelection();
+  }, [filterValues.textFilter]);
 
   const handleCancelClick = () => {
     setGroupName(name);
@@ -67,10 +74,14 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   const handleRemoveClick = () =>
     onRemoveContacts(contactsToRemove).finally(() => {
       setModalDeletionVisible(false);
-      setSelectedGroupContacts([]);
+      resetContactsSelection();
     });
+
   const handleAddContactConfirm = aContactsList =>
-    onAddContacts(aContactsList).then(() => setModalVisible(false));
+    onAddContacts(aContactsList).then(() => {
+      setModalVisible(false);
+      resetContactsSelection();
+    });
 
   const handleRemoveContactRequest = aContactsList => {
     setContactsToRemove(aContactsList);
@@ -168,8 +179,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
             <CustomButton
               overrideClassName="theme-outline custom"
               buttonProps={{
-                disabled: !selectedGroupContacts.length,
-                onClick: () => handleRemoveContactRequest(selectedGroupContacts)
+                disabled: !selectedContacts.length,
+                onClick: () => handleRemoveContactRequest(selectedContacts)
               }}
               buttonText={t('groupEditing.buttons.remove')}
               loading={isSaving}
@@ -182,9 +193,9 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
             <ConnectionsFilter filterSortingProps={filterSortingProps} showFullFilter={false} />
           </div>
           <SelectAllButton
-            loadingSelection={loadingSelection}
-            selectedEntities={selectedGroupContacts}
-            checkboxProps={checkboxProps}
+            isLoadingSelection={isLoadingSelection}
+            selectedEntities={selectedContacts}
+            checkboxProps={selectAllCheckboxProps}
           />
         </div>
         <div className="ConnectionsTable">
@@ -198,8 +209,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
               isFetchingMore={isFetchingMore}
               fetchMoreData={fetchMoreGroupMembers}
               columns={getGroupContactColumns(handleDelete)}
-              selectedContacts={selectedGroupContacts}
-              setSelectedContacts={setSelectedGroupContacts}
+              selectedContacts={[...selectedContacts]} // selectedContacts is observable proxy!
+              onSelect={handleCherryPickSelection}
               hasMore={hasMoreMembers}
               size="md"
               searchDueGeneralScroll

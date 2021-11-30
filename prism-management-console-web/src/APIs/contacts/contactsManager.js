@@ -162,21 +162,32 @@ async function getContact(contactId) {
   return mappedContact;
 }
 
-async function fetchMoreContactsRecursively(scrollId, groupName, acc, onFinish) {
+async function fetchMoreContactsRecursively({ scrollId, filter, acc, onFinish }) {
   const { contactsList, newScrollId } = await this.getContacts({
-    filter: { groupName },
+    filter, // { searchText, connectionStatus, createdAt, groupName }
+
     scrollId,
     pageSize: MAX_CONTACT_PAGE_SIZE
   });
   const mappedContacts = contactsList.map(contactMapper);
   const partialContactsArray = acc.concat(mappedContacts);
   if (contactsList.length < MAX_CONTACT_PAGE_SIZE) return onFinish(partialContactsArray);
-  return this.fetchMoreContactsRecursively(newScrollId, groupName, partialContactsArray, onFinish);
+  return this.fetchMoreContactsRecursively({
+    scrollId: newScrollId,
+    filter,
+    acc: partialContactsArray,
+    onFinish
+  });
 }
 
-function getAllContacts(groupName) {
+function getAllContacts({ groupName, searchText, connectionStatus, createdAt } = {}) {
   return new Promise(resolve => {
-    this.fetchMoreContactsRecursively(null, groupName, [], resolve);
+    this.fetchMoreContactsRecursively({
+      scrollId: null,
+      filter: { groupName, searchText, connectionStatus, createdAt },
+      acc: [],
+      onFinish: resolve
+    });
   });
 }
 
