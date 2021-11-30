@@ -19,11 +19,11 @@ import { contactMapper } from '../../APIs/helpers/contactHelpers';
 import ImportCredentialsData from '../importCredentialsData/ImportCredentialsData';
 import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
-import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useApi } from '../../hooks/useApi';
 import { useRedirector } from '../../hooks/useRedirector';
 import { useCreateCredentialPageStore } from '../../hooks/useCreateCredentialPageStore';
 import SuccessBanner from '../common/Molecules/SuccessPage/SuccessBanner';
+import { useTemplatePageStore } from '../../hooks/useTemplatesPageStore';
 
 const NewCredentialContainer = observer(() => {
   const { t } = useTranslation();
@@ -40,8 +40,13 @@ const NewCredentialContainer = observer(() => {
 
   const {
     getCredentialTemplateDetails: getCredentialTypeDetails,
-    templateCategories
-  } = useTemplateStore({ fetch: true });
+    templateCategories,
+    initTemplateStore
+  } = useTemplatePageStore();
+
+  useEffect(() => {
+    initTemplateStore();
+  }, [initTemplateStore]);
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Form, Input } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { exactValueExists } from '../../../../helpers/filterHelpers';
-import { useTemplateStore } from '../../../../hooks/useTemplateStore';
+import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
 
 import './_style.scss';
 
@@ -13,7 +13,7 @@ const i18nPrefix = 'credentialTemplateCreation';
 
 const TemplateNameSection = observer(() => {
   const { t } = useTranslation();
-  const { credentialTemplates } = useTemplateStore();
+  const { credentialTemplates } = useTemplatePageStore();
 
   const templateExists = async (_rule, value) => {
     const normalizedValue = normalize(value);

@@ -6,12 +6,13 @@ import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import TemplateFilters from './TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
-import { useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
 
 const TemplateFiltersContainer = observer(({ showDateFilters }) => {
   const { t } = useTranslation();
-
-  const { nameFilter, hasAditionalFiltersApplied, setFilterValue } = useTemplateUiState();
+  
+  const { filterSortingProps } = useTemplatePageStore();
+  const { nameFilter, hasAditionalFiltersApplied, setFilterValue } = filterSortingProps;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">

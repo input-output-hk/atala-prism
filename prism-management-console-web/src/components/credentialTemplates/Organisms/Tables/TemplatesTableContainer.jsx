@@ -10,13 +10,18 @@ import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent'
 import TemplatesTable from './TemplatesTable';
 import noTemplatesPicture from '../../../../images/noTemplates.svg';
 import SortControls from '../../Molecules/Headers/SortControls';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
 
 const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { templateCategories, isLoading, fetchTemplates } = useTemplateStore();
-  const { hasFiltersApplied, filteredTemplates } = useTemplateUiState();
+  const {
+    filteredTemplates,
+    templateCategories,
+    isLoading,
+    filterSortingProps
+  } = useTemplatePageStore();
+  const { hasFiltersApplied } = filterSortingProps;
 
   const noTemplates = !filteredTemplates?.length;
 
@@ -32,11 +37,10 @@ const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
     if (noTemplates) return <EmptyComponent {...emptyProps} />;
     return (
       <>
-        <SortControls />
+        <SortControls {...filterSortingProps} />
         <TemplatesTable
           credentialTemplates={filteredTemplates}
           templateCategories={templateCategories}
-          getMoreTemplates={fetchTemplates}
           isLoading={isLoading}
           showTemplatePreview={showTemplatePreview}
         />

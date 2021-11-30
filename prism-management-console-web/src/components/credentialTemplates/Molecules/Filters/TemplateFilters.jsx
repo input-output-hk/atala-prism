@@ -6,7 +6,7 @@ import { DownOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
 
 const ENABLED_STATE = 1;
 
@@ -14,8 +14,8 @@ const TemplateFilters = observer(({ showDateFilter }) => {
   const { t } = useTranslation();
   const { Option } = Select;
 
-  const { templateCategories } = useTemplateStore();
-  const { categoryFilter, lastEditedFilter, setFilterValue } = useTemplateUiState();
+  const { templateCategories, filterSortingProps } = useTemplatePageStore();
+  const { categoryFilter, lastEditedFilter, setFilterValue } = filterSortingProps;
 
   const allowedTemplateCategories = templateCategories.filter(
     ({ state }) => state === ENABLED_STATE

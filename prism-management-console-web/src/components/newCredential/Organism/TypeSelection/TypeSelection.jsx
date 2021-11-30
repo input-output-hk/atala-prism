@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import { CONFIRMED } from '../../../../helpers/constants';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
 import TemplatesList from './TemplatesList';
 import CreateTemplateButton from '../../../credentialTemplates/Atoms/Buttons/CreateTemplateButton';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
@@ -16,8 +16,8 @@ import './_style.scss';
 const TypeSelection = observer(({ selectedType, onTypeSelection }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { isLoading } = useTemplateStore();
-  const { filteredTemplates, hasFiltersApplied } = useTemplateUiState();
+  const { filteredTemplates, isLoading } = useTemplatePageStore();
+  const { hasFiltersApplied } = filterSortingProps
 
   const noTemplates = !filteredTemplates?.length;
 
