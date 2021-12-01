@@ -14,6 +14,7 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
   const { back, next } = steps[currentStep];
 
   const nextButton = (
+    // @dbrosio on the las step should say "Continue" instead of "Next"
     <>
       {t('actions.next')}
       <RightOutlined />
