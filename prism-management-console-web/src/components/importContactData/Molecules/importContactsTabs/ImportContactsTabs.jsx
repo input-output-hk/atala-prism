@@ -1,6 +1,5 @@
 import React from 'react';
 import { Tabs } from 'antd';
-import { useTranslation } from 'react-i18next';
 import BulkImportTab from '../bulkImportTab/BulkImportTab';
 import ManualImportTab from '../manualImportTab/ManualImportTab';
 import { IMPORT_CONTACTS } from '../../../../helpers/constants';
@@ -9,7 +8,6 @@ import './_style.scss';
 const { TabPane } = Tabs;
 
 const ImportContactsTabs = () => {
-  const { t } = useTranslation();
 
   return (
     <div className="ImportContactsTabs">
