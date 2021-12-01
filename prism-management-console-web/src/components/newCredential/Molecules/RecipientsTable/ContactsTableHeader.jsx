@@ -36,7 +36,7 @@ const ContactsTableHeader = observer(
       <div className="RecipientsSelectionTableHeader">
         <ConnectionsFilter filterSortingProps={contactUiState} showFullFilter={false} />
         <SelectAllButton
-          loadingSelection={loadingSelection}
+          isLoadingSelection={loadingSelection}
           selectedEntities={selectedContacts}
           checkboxProps={checkboxProps}
         />

@@ -143,6 +143,7 @@ export const CONTACT_NAME_KEY = 'contactName';
 export const EXTERNAL_ID_KEY = 'externalId';
 export const GROUP_NAME_KEY = 'name';
 export const CONTACT_ID_KEY = 'contactId';
+export const GROUP_ID_KEY = 'id';
 export const CREDENTIAL_ID_KEY = 'credentialId';
 
 // Bulk import data

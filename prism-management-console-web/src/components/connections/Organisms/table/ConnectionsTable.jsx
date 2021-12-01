@@ -20,6 +20,7 @@ const ConnectionsTable = ({
   isFetchingMore,
   columns,
   setSelectedContacts,
+  onSelect,
   selectedContacts,
   inviteContact,
   viewContactDetail,
@@ -43,14 +44,18 @@ const ConnectionsTable = ({
   const tableProps = {
     columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
     data: contacts,
-    selectionType: setSelectedContacts && {
-      selectedRowKeys: selectedContacts,
-      type: 'checkbox',
-      onChange: setSelectedContacts,
-      getCheckboxProps: () => ({
-        disabled: !shouldSelectRecipients
-      })
-    },
+    selectionType:
+      setSelectedContacts || onSelect
+        ? {
+            selectedRowKeys: selectedContacts,
+            type: 'checkbox',
+            onChange: setSelectedContacts,
+            onSelect,
+            getCheckboxProps: () => ({
+              disabled: !shouldSelectRecipients
+            })
+          }
+        : undefined,
     rowKey: 'contactId',
     getMoreData: fetchMoreData,
     loading: isLoading,
@@ -61,10 +66,12 @@ const ConnectionsTable = ({
 
   return <InfiniteScrollTable {...tableProps} />;
 };
+
 ConnectionsTable.defaultProps = {
   contacts: [],
   columns: null,
   setSelectedContacts: null,
+  onSelect: null,
   selectedContacts: [],
   inviteContact: null,
   viewContactDetail: null,
@@ -81,6 +88,7 @@ ConnectionsTable.propTypes = {
   isFetchingMore: PropTypes.bool.isRequired,
   columns: PropTypes.arrayOf(PropTypes.any),
   setSelectedContacts: PropTypes.func,
+  onSelect: PropTypes.func,
   selectedContacts: PropTypes.arrayOf(PropTypes.string),
   inviteContact: PropTypes.func,
   viewContactDetail: PropTypes.func,

@@ -88,7 +88,7 @@ const NewCredentialContainer = observer(() => {
 
   const getRecipients = async () => {
     const groupContactsPromises = selectedGroups.map(group =>
-      contactsManager.getAllContacts(group)
+      contactsManager.getAllContacts({ groupName: group })
     );
 
     const allContacts = await contactsManager.getAllContacts();
@@ -146,7 +146,7 @@ const NewCredentialContainer = observer(() => {
 
   const getContactsFromGroups = () => {
     const groupContactsPromises = selectedGroups.map(group =>
-      contactsManager.getAllContacts(group)
+      contactsManager.getAllContacts({ groupName: group })
     );
 
     return Promise.all(groupContactsPromises);

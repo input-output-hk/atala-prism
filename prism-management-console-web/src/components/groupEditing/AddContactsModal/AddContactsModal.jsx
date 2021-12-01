@@ -78,7 +78,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       <Row type="flex" align="middle" className="mb-3">
         <Col span={5}>
           <SelectAllButton
-            loadingSelection={loadingSelection}
+            isLoadingSelection={loadingSelection}
             selectedEntities={selectedContacts}
             checkboxProps={checkboxProps}
           />

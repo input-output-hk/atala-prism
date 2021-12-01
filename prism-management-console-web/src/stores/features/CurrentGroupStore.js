@@ -1,6 +1,7 @@
-import { flow, makeAutoObservable } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import ContactsBaseStore from '../domain/ContactsBaseStore';
 import Logger from '../../helpers/Logger';
+import ContactsSelectStore from '../domain/ContactsSelectStore';
 
 const defaultValues = {
   isLoadingGroup: false,
@@ -31,12 +32,20 @@ export default class CurrentGroupStore {
     this.api = api;
     this.sessionState = sessionState;
     this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
+    this.contactsSelectStore = new ContactsSelectStore(api);
 
-    makeAutoObservable(this, {
-      loadGroup: flow.bound,
-      updateGroupName: flow.bound,
-      updateGroupMembers: flow.bound
-    });
+    makeAutoObservable(
+      this,
+      {
+        api: false,
+        sessionState: false,
+        contactsBaseStore: false,
+        contactsSelectStore: false
+      },
+      {
+        autoBind: true
+      }
+    );
   }
 
   get members() {
@@ -49,6 +58,10 @@ export default class CurrentGroupStore {
 
   get filterSortingProps() {
     return this.contactsBaseStore.filterSortingProps;
+  }
+
+  get filterValues() {
+    return { textFilter: this.contactsBaseStore.textFilter };
   }
 
   get isSearching() {
@@ -68,6 +81,7 @@ export default class CurrentGroupStore {
     this.isLoadingMembers = true;
     await this.loadGroup();
     await this.contactsBaseStore.initContactStore(this.name);
+    this.contactsSelectStore.resetSelection();
     this.isLoadingMembers = false;
   };
 
@@ -85,13 +99,11 @@ export default class CurrentGroupStore {
 
   reloadMembers = () => this.contactsBaseStore.fetchMoreData({ startFromTheTop: true });
 
-  // FIXME: select only filtered members
-  getMembersToSelect = () => this.api.contactsManager.getAllContacts(this.name);
-
   getContactsNotInGroup = async () => {
+    // TODO: we need new API for this
     this.isLoadingContactsNotInGroup = true;
     const allContacts = await this.api.contactsManager.getAllContacts();
-    const allMembers = await this.api.contactsManager.getAllContacts(this.name);
+    const allMembers = await this.api.contactsManager.getAllContacts({ groupName: this.name });
     const contactIdsInGroup = new Set(allMembers.map(item => item.contactId));
     const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
     this.isLoadingContactsNotInGroup = false;
@@ -125,5 +137,31 @@ export default class CurrentGroupStore {
       onError?.();
       this.isSaving = false;
     }
+  }
+
+  // SELECT ALL
+
+  get selectedContacts() {
+    return this.contactsSelectStore.selectedContacts;
+  }
+
+  get isLoadingSelection() {
+    return this.contactsSelectStore.isLoadingSelection;
+  }
+
+  get selectAllCheckboxStateProps() {
+    return this.contactsSelectStore.selectAllCheckboxStateProps;
+  }
+
+  selectAllContacts(ev, searchText) {
+    return this.contactsSelectStore.selectAllContacts(ev, { groupName: this.name, searchText });
+  }
+
+  resetSelection() {
+    return this.contactsSelectStore.resetSelection();
+  }
+
+  handleCherryPickSelection(record, selected) {
+    return this.contactsSelectStore.handleCherryPickSelection(record, selected);
   }
 }
