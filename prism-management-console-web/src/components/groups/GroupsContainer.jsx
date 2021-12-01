@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
+import { useGroupsPageStore } from '../../hooks/useGroupStore';
 import Groups from './Groups';
-import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
 
 const GroupsContainer = observer(() => {
   const groupsPageStore = useGroupsPageStore();

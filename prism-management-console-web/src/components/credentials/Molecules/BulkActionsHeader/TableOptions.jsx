@@ -60,8 +60,8 @@ const TableOptions = observer(() => {
           }
         />
         <SelectAllButton
-          selectedEntities={selectedCredentials}
           isLoadingSelection={isLoadingSelection}
+          selectedEntities={selectedCredentials}
           checkboxProps={checkboxProps}
         />
         <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>

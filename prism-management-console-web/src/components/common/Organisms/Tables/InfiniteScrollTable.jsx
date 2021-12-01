@@ -22,7 +22,11 @@ const InfiniteScrollTable = ({
     const tableContent = document.querySelector('.InfiniteScrollTableContainer');
     const scrollListener = ({ target: { scrollHeight, clientHeight, scrollTop } }) => {
       const maxScroll = scrollHeight - clientHeight;
-      if (hasMore && !loading && scrollTop === maxScroll) getMoreData();
+      // TODO: there must be a better way to do this. Also, check if Antd has some virtualized table
+      //  or list component, standard table wont work in this setup as infinite list when there is a
+      //  lot of rows
+      // scrollTop was half pixel more than maxScroll?
+      if (hasMore && !loading && scrollTop >= maxScroll) getMoreData();
     };
 
     tableContent.removeEventListener('scroll', scrollListener);
