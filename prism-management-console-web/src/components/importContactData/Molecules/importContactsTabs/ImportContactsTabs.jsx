@@ -8,7 +8,6 @@ import './_style.scss';
 const { TabPane } = Tabs;
 
 const ImportContactsTabs = () => {
-
   return (
     <div className="ImportContactsTabs">
       <Tabs defaultActiveKey="1">
