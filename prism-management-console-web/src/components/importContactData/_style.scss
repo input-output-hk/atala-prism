@@ -1,11 +1,16 @@
 @import '../../css/general_styling';
 
 .ImportStepPageContainer {
+    padding: 1em 2em;
     .TitleContainer {
         .WizardTitle {
-                padding: 1em 2em;
+          padding: 1em 2em;
+            .TypeSelectionContainer {
+                padding: 1em 0;
+                border-bottom: 1px solid $light-grey;
             }
         }
+    }
     .errorLogSection {
         max-height: 65vh;
         overflow-y: auto;

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Tooltip } from 'antd';
+import { Tooltip, Checkbox } from 'antd';
 import { IMPORT_CONTACTS, IMPORT_CREDENTIALS_DATA } from '../../../../helpers/constants';
 import './_style.scss';
 
@@ -40,6 +40,9 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disa
         role="button"
         tabIndex={disabled ? null : index[option]}
       >
+        <div className="CheckBox">
+          <Checkbox checked={isSelected} />
+        </div>
         <div className="img-container">
           <img src={img} alt="" />
         </div>
