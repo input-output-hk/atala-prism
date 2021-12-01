@@ -85,16 +85,16 @@ export const infiniteTableProps = {
 
 export const credentialTypeDetailsShape = shape({
   id: string,
-  logo: string.isRequired,
-  name: string.isRequired,
-  state: number
+  icon: string.isRequired,
+  iconFormat: string.isRequired,
+  name: string.isRequired
 });
 
 export const credentialDataShape = shape({
-  contactId: string,
-  contactName: string,
+  id: string,
+  html: string.isRequired,
   credentialTypeDetails: credentialTypeDetailsShape.isRequired,
-  html: string
+  storedAt: shape({ seconds: number, nanos: number })
 });
 
 export const credentialShape = shape({
@@ -105,6 +105,12 @@ export const credentialShape = shape({
   encodedSignedCredential: string,
   externalId: string.isRequired,
   connectionStatus: oneOf(Object.values(CONNECTION_STATUSES))
+});
+
+export const credentialReceivedShape = shape({
+  contactData: contactShape,
+  credentialData: credentialDataShape.isRequired,
+  encodedSignedCredential: string
 });
 
 export const credentialTypeShape = shape({

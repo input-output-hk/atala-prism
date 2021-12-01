@@ -2,14 +2,12 @@ import React, { useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
+import { noop } from 'lodash';
 import CredentialsTable from '../Tables/CredentialsTable/CredentialsTable';
 import noCredentialsPicture from '../../../../images/noCredentials.svg';
 import { CREDENTIALS_RECEIVED } from '../../../../helpers/constants';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
-import {
-  useCredentialReceivedStore,
-  useCredentialReceivedUiState
-} from '../../../../hooks/useCredentialReceivedStore';
+import { useCredentialsReceivedStore } from '../../../../hooks/useCredentialsReceivedStore';
 
 const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
   const { t } = useTranslation();
@@ -17,20 +15,17 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
     credentials,
     isFetching,
     hasMore,
-    fetchMoreData,
+    fetchCredentials,
     isLoadingFirstPage
-  } = useCredentialReceivedStore();
-  const { hasFiltersApplied } = useCredentialReceivedUiState({
-    reset: true
-  });
+  } = useCredentialsReceivedStore();
 
   useEffect(() => {
-    fetchMoreData();
-  }, [fetchMoreData]);
+    fetchCredentials();
+  }, [fetchCredentials]);
 
   const expandedTableProps = {
     credentials,
-    getMoreData: fetchMoreData,
+    getMoreData: noop(),
     tab: CREDENTIALS_RECEIVED,
     onView: showCredentialData,
     searchDueGeneralScroll: true,
@@ -41,8 +36,7 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
   const emptyProps = {
     isEmpty: !credentials.length || showEmpty,
     photoSrc: noCredentialsPicture,
-    model: t('credentials.title'),
-    isFilter: hasFiltersApplied
+    model: t('credentials.title')
   };
 
   if (isLoadingFirstPage) return <SimpleLoading size="md" />;

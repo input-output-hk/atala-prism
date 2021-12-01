@@ -12,9 +12,9 @@ object versions {
   val doobie = "1.0.0-RC1"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
-  val flyway = "8.0.5"
+  val flyway = "8.1.0"
   val grpc = "1.42.1"
-  val kamon = "2.3.1"
+  val kamon = "2.4.1"
   val logback = "1.2.7"
   val logbackLogstash = "7.0.1"
   val jaxb = "2.3.1"
@@ -31,7 +31,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "1.3.0-build-26-52d80580"
+  val prismSdk = "1.3.0-build-27-b6d99b5f"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 

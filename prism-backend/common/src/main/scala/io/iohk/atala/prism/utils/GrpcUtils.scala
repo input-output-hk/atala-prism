@@ -17,7 +17,7 @@ object GrpcUtils {
 
   def extractSingleOperationOutput(scheduleOperationsResponse: ScheduleOperationsResponse): OperationOutput =
     scheduleOperationsResponse.outputs match {
-      case head :: Nil => head
+      case Seq(head) => head
       case outputs =>
         throw new RuntimeException(s"1 operation output expected but got ${outputs.size}")
     }

@@ -8,6 +8,7 @@ import CurrentContactState from './features/CurrentContactState';
 import ContactsPageStore from './features/ContactsPageStore';
 import GroupsPageStore from './features/GroupsPageStore';
 import CredentialsIssuedPageStore from './features/CredentialsIssuedPageStore';
+import CredentialsReceivedStore from './domain/CredentialsReceivedStore';
 
 export const createStores = api => {
   const sessionState = new SessionState(api);
@@ -20,6 +21,7 @@ export const createStores = api => {
   const contactsPageStore = new ContactsPageStore(api, sessionState);
   const currentContactState = new CurrentContactState(api, sessionState);
   const credentialsIssuedPageStore = new CredentialsIssuedPageStore(api, sessionState);
+  const credentialsReceivedStore = new CredentialsReceivedStore(api, sessionState);
 
   return {
     ...rootStore.uiState,
@@ -31,7 +33,8 @@ export const createStores = api => {
     contactStore,
     contactsPageStore,
     currentContactState,
-    credentialsIssuedPageStore
+    credentialsIssuedPageStore,
+    credentialsReceivedStore
   };
 };
 

@@ -14,7 +14,7 @@ import DataDetail from './DataDetail';
 import { sanitizeView } from '../../../../helpers/credentialView';
 import CredentialRawDetail from './CredentialRawDetail/CredentialRawDetail';
 import revokedIconSrc from '../../../../images/revokeIcon.svg';
-import { credentialShape } from '../../../../helpers/propShapes';
+import { credentialReceivedShape, credentialShape } from '../../../../helpers/propShapes';
 import DownloadRawButton from '../../Atoms/DownloadRawButton/DownloadRawButton';
 
 const { TabPane } = Tabs;
@@ -39,7 +39,8 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const {
     encodedSignedCredential,
     proof,
-    credentialData: { contactName, credentialTypeDetails },
+    contactData: { contactName },
+    credentialData: { credentialTypeDetails },
     verificationResult: {
       credentialSigned,
       credentialPublished,
@@ -208,7 +209,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
 
 CredentialSummaryDetail.propTypes = {
   drawerInfo: PropTypes.shape().isRequired,
-  credential: credentialShape.isRequired
+  credential: PropTypes.oneOfType([credentialShape, credentialReceivedShape]).isRequired
 };
 
 export default CredentialSummaryDetail;

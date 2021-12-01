@@ -75,6 +75,8 @@ async function getCredentials({
   const credentialsList = result.getCredentialsList();
   const mappedCredentialsList = credentialsList.map(credentialMapper);
 
+  Logger.info('Got issued credentials:', mappedCredentialsList);
+
   return { credentialsList: mappedCredentialsList };
 }
 

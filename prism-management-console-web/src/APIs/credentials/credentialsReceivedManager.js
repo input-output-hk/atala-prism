@@ -3,8 +3,15 @@ import { CredentialsStoreServicePromiseClient } from '../../protos/console_api_g
 import { GetStoredCredentialsForRequest } from '../../protos/console_api_pb';
 import Logger from '../../helpers/Logger';
 import { BROWSER_WALLET_INIT_DEFAULT_TIMEOUT_MS } from '../../helpers/constants';
+import { credentialReceivedMapper } from '../helpers/credentialHelpers';
 
-async function getReceivedCredentials(contactId) {
+/**
+ *
+ * @param {string} contactId
+ * @param {Object} contactsManager required to handle additional request to fetch contact attributes
+ * @returns {Array} credentials received
+ */
+async function getReceivedCredentials(contactId, contactsManager) {
   const contactMessage = contactId ? ` for contact ${contactId}` : '';
   Logger.info(`Getting received credentials${contactMessage}`);
   const req = new GetStoredCredentialsForRequest();
@@ -24,8 +31,23 @@ async function getReceivedCredentials(contactId) {
     const credential = Object.assign(parsedCredentialData, rest);
     return Object.assign(credential, { encodedSignedCredential });
   });
-  Logger.info('Got received credentials:', credentials);
-  return { credentialsList: credentials };
+  /**
+   * Additional request to fetch contact's data.
+   * TODO: update backend so it provides all the required fields
+   */
+  const credentialsWithContactsData = credentials.map(credential =>
+    contactsManager
+      .getContact(credential.individualId)
+      .then(contactData => ({ contactData, ...credential }))
+  );
+  const credentialsWithIssuanceProof = await Promise.all(credentialsWithContactsData);
+
+  const mappedCredentials = credentialsWithIssuanceProof.map(cred =>
+    credentialReceivedMapper(cred)
+  );
+
+  Logger.info('Got received credentials:', mappedCredentials);
+  return mappedCredentials;
 }
 
 function CredentialsReceivedManager(config, auth) {

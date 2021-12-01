@@ -100,8 +100,9 @@ export default class CurrentContactState {
   *loadCredentialsReceived() {
     this.isLoadingCredentialsReceived = true;
 
-    const { credentialsList } = yield this.api.credentialsReceivedManager.getReceivedCredentials(
-      this.contactId
+    const credentialsList = yield this.api.credentialsReceivedManager.getReceivedCredentials(
+      this.contactId,
+      this.api.contactsManager
     );
 
     this.credentialsReceived = credentialsList;
