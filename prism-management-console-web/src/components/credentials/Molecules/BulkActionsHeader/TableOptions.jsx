@@ -60,7 +60,7 @@ const TableOptions = observer(() => {
           }
         />
         <SelectAllButton
-          selectedEntities={selectedCredentials}
+          isLoadingSelection={selectedCredentials}
           isLoadingSelection={isLoadingSelection}
           checkboxProps={checkboxProps}
         />
