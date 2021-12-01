@@ -6,6 +6,7 @@
     "view": "View",
     "back": "Back",
     "next": "Next",
+    "continue": "Continue",
     "done": "Done",
     "save": "Save",
     "saveForLater": "Save & Continue later",
@@ -1006,9 +1007,9 @@
       "buttonText": "Save",
       "groupName": "Type Group Name"
     },
-    "success": "Successfully created",
+    "success": "Successfully created {{groupName}}",
     "errors": {
-      "grpc": "Error creating group",
+      "grpc": "Error creating group {{groupName}}",
       "gettingGroups": "Error getting groups"
     },
     "selectAll": "Select All",
