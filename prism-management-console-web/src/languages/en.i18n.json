@@ -446,7 +446,8 @@
         "success": "",
         "errorLog": "Create Credentials | Error Log"
       },
-      "step4": "Credential Detail"
+      "step4": "Credential Detail",
+      "step5": ""
     },
     "subtitle": {
       "step1": "Select Credential Template",
@@ -460,13 +461,18 @@
         "success": "",
         "errorLog": "Your file has some errors, please correct them and upload your file again."
       },
-      "step4": ""
+      "step4": "",
+      "step5": ""
     },
     "steps": {
       "step1": "Select Credential Template",
       "step2": "Assign Recipients",
       "step3": "Upload Credential Information",
       "step4": "Check and Create Credential"
+    },
+    "success": {
+      "title": "Credentials successfully created",
+      "info": "{{amount}} Credential(s) created"
     },
     "typeSelection": "Select a type of credential",
     "targetsSelection": {

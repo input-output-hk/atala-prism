@@ -176,7 +176,8 @@ export const SELECT_CREDENTIAL_TYPE_STEP = 0;
 export const SELECT_RECIPIENTS_STEP = 1;
 export const IMPORT_CREDENTIAL_DATA_STEP = 2;
 export const PREVIEW_AND_SIGN_CREDENTIAL_STEP = 3;
-export const NEW_CREDENTIAL_STEP_COUNT = 4;
+export const CREATE_CREDENTIALS_RESULT = 4;
+export const NEW_CREDENTIAL_STEP_COUNT = 5;
 
 // status flags
 export const FAILED = 'failed';

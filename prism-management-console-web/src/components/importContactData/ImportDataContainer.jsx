@@ -230,7 +230,7 @@ const ImportDataContainer = ({
       hasErrors ? { back } : { next: continueCallback || results?.continueCallback }
     ];
     if (!isEmbedded[useCase]) return baseSteps;
-    return [{}, {}, baseSteps[currentStep], {}];
+    return [{}, {}, baseSteps[currentStep], {}, {}];
   };
 
   const getTranslationSuffix = () => {
