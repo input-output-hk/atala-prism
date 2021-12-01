@@ -235,12 +235,14 @@ export default class ContactsBaseStore {
 
   // Controls contacts fetching
   *fetchMoreData({ startFromTheTop, pageSize } = {}) {
+    if (this.isFetching) return;
     if (!startFromTheTop && !this.hasMore) return;
 
     const response = yield this.fetchContacts({
       scrollId: !startFromTheTop && this.scrollId,
       pageSize
     });
+
     this.contacts = startFromTheTop
       ? response.contactsList
       : this.contacts.concat(response.contactsList);

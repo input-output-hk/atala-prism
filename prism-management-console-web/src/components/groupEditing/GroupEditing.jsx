@@ -31,7 +31,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     members,
     fetchMoreGroupMembers,
     hasMoreMembers,
-    //
+    // select all
     selectedContacts,
     isLoadingSelection,
     selectAllCheckboxStateProps,
@@ -64,7 +64,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
 
   useEffect(() => {
     resetContactsSelection();
-  }, [filterValues.textFilter]);
+  }, [filterValues.textFilter, resetContactsSelection]);
 
   const handleCancelClick = () => {
     setGroupName(name);
@@ -204,16 +204,15 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
           ) : (
             <ConnectionsTable
               contacts={members}
-              hasFiltersApplied={hasFiltersApplied}
               isLoading={isSearching}
               isFetchingMore={isFetchingMore}
+              hasFiltersApplied={hasFiltersApplied}
+              hasMore={hasMoreMembers}
               fetchMoreData={fetchMoreGroupMembers}
-              columns={getGroupContactColumns(handleDelete)}
               selectedContacts={[...selectedContacts]} // selectedContacts is observable proxy!
               onSelect={handleCherryPickSelection}
-              hasMore={hasMoreMembers}
+              columns={getGroupContactColumns(handleDelete)}
               size="md"
-              searchDueGeneralScroll
             />
           )}
         </div>

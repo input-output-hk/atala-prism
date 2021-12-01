@@ -17,42 +17,50 @@ import './_style.scss';
 
 const GroupCreation = observer(
   ({ createGroup, formRef, updateForm, formValues, updateMembers }) => {
-    const [selectedContacts, setSelectedContacts] = useState([]);
-    const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
-
     const { groupName } = formValues;
     const { t } = useTranslation();
-
-    useEffect(() => {
-      updateMembers(selectedContacts);
-    }, [selectedContacts, updateMembers]);
 
     const {
       init,
       contacts,
       isLoadingContacts,
-      getContactsToSelect,
       isSaving,
       filterSortingProps,
+      filterValues,
       hasFiltersApplied,
-      hasMore,
+      hasMoreContacts,
       isSearching,
       isFetchingMore,
-      fetchMoreGroupContacts
+      fetchMoreGroupContacts,
+      // select all
+      selectedContacts,
+      isLoadingSelection,
+      selectAllCheckboxStateProps,
+      handleCherryPickSelection,
+      selectAllContacts,
+      resetSelection: resetContactsSelection
     } = useCreateGroupStore();
 
     useEffect(() => {
       init();
     }, [init]);
 
-    const { loadingSelection, checkboxProps } = useSelectAll({
-      displayedEntities: contacts,
-      entitiesFetcher: getContactsToSelect,
-      entityKey: CONTACT_ID_KEY,
-      selectedEntities: selectedContacts,
-      setSelectedEntities: setSelectedContacts,
-      isFetching: isLoadingContacts
-    });
+    const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
+
+    useEffect(() => {
+      updateMembers(selectedContacts);
+    }, [selectedContacts, updateMembers]);
+
+    useEffect(() => {
+      resetContactsSelection();
+    }, [filterValues.textFilter, resetContactsSelection]);
+
+    const selectAllCheckboxProps = {
+      checked: selectAllCheckboxStateProps.checked,
+      indeterminate: selectAllCheckboxStateProps.indeterminate,
+      disabled: isLoadingContacts || !contacts.length,
+      onChange: ev => selectAllContacts(ev, filterValues.textFilter)
+    };
 
     return (
       <div className="WrapperGroupCreation">
@@ -93,9 +101,9 @@ const GroupCreation = observer(
             <h3>{t('groupCreation.addContacts')}</h3>
             <div className="UtilsContainer">
               <SelectAllButton
-                loadingSelection={loadingSelection}
+                isLoadingSelection={isLoadingSelection}
                 selectedEntities={selectedContacts}
-                checkboxProps={checkboxProps}
+                checkboxProps={selectAllCheckboxProps}
               />
             </div>
             <div className="ConnectionsTable InfiniteScrollTableContainer">
@@ -104,13 +112,13 @@ const GroupCreation = observer(
               ) : (
                 <ConnectionsTable
                   contacts={contacts}
-                  fetchMoreData={fetchMoreGroupContacts}
-                  hasMore={hasMore}
-                  hasFiltersApplied={hasFiltersApplied}
                   isLoading={isSearching}
                   isFetchingMore={isFetchingMore}
-                  selectedContacts={selectedContacts}
-                  setSelectedContacts={setSelectedContacts}
+                  hasFiltersApplied={hasFiltersApplied}
+                  hasMore={hasMoreContacts}
+                  fetchMoreData={fetchMoreGroupContacts}
+                  selectedContacts={[...selectedContacts]} // selectedContacts is observable proxy!
+                  onSelect={handleCherryPickSelection}
                   size="md"
                 />
               )}

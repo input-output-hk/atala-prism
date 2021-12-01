@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import ContactsBaseStore from '../domain/ContactsBaseStore';
 import Logger from '../../helpers/Logger';
+import ContactsSelectStore from '../domain/ContactsSelectStore';
 
 const defaultValues = {
   isLoadingContacts: false,
@@ -15,12 +16,14 @@ export default class CreateGroupStore {
   constructor(api, sessionState) {
     this.api = api;
     this.contactsBaseStore = new ContactsBaseStore(api, sessionState);
+    this.contactsSelectStore = new ContactsSelectStore(api);
 
     makeAutoObservable(
       this,
       {
         api: false,
-        contactsBaseStore: false
+        contactsBaseStore: false,
+        contactsSelectStore: false
       },
       { autoBind: true }
     );
@@ -30,12 +33,20 @@ export default class CreateGroupStore {
     return this.contactsBaseStore.contacts;
   }
 
+  get hasMoreContacts() {
+    return this.contactsBaseStore.hasMore;
+  }
+
   get hasFiltersApplied() {
     return this.contactsBaseStore.hasFiltersApplied;
   }
 
   get filterSortingProps() {
     return this.contactsBaseStore.filterSortingProps;
+  }
+
+  get filterValues() {
+    return { textFilter: this.contactsBaseStore.textFilter };
   }
 
   get isSearching() {
@@ -53,15 +64,13 @@ export default class CreateGroupStore {
   async init() {
     this.isLoadingContacts = true;
     await this.contactsBaseStore.initContactStore();
+    this.contactsSelectStore.resetSelection();
     this.isLoadingContacts = false;
   }
 
   fetchMoreGroupContacts = () => {
     this.contactsBaseStore.fetchMoreData();
   };
-
-  // FIXME: select only filtered members
-  getContactsToSelect = () => this.api.contactsManager.getAllContacts();
 
   *createGroup({ name, members, onSuccess, onError }) {
     this.isSaving = true;
@@ -81,5 +90,31 @@ export default class CreateGroupStore {
     } finally {
       this.isSaving = false;
     }
+  }
+
+  // SELECT ALL
+
+  get selectedContacts() {
+    return this.contactsSelectStore.selectedContacts;
+  }
+
+  get isLoadingSelection() {
+    return this.contactsSelectStore.isLoadingSelection;
+  }
+
+  get selectAllCheckboxStateProps() {
+    return this.contactsSelectStore.selectAllCheckboxStateProps;
+  }
+
+  selectAllContacts(ev, searchText) {
+    return this.contactsSelectStore.selectAllContacts(ev, { searchText });
+  }
+
+  resetSelection() {
+    return this.contactsSelectStore.resetSelection();
+  }
+
+  handleCherryPickSelection(record, selected) {
+    return this.contactsSelectStore.handleCherryPickSelection(record, selected);
   }
 }

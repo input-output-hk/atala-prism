@@ -1,4 +1,4 @@
-import { flow, makeAutoObservable } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import ContactsBaseStore from '../domain/ContactsBaseStore';
 import Logger from '../../helpers/Logger';
 import ContactsSelectStore from '../domain/ContactsSelectStore';
@@ -81,6 +81,7 @@ export default class CurrentGroupStore {
     this.isLoadingMembers = true;
     await this.loadGroup();
     await this.contactsBaseStore.initContactStore(this.name);
+    this.contactsSelectStore.resetSelection();
     this.isLoadingMembers = false;
   };
 
