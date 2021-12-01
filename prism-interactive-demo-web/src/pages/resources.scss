@@ -185,6 +185,9 @@
 
         .thumbnail {
           width: 45%;
+          img {
+            width: 100%;
+          }
         }
 
         .brochure-info-container {
@@ -334,7 +337,30 @@
   }
 }
 
+@media only screen and (max-width: 1032px) {
+  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info {
+    flex-direction: column;
+  }
+  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now img, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-time img {
+    margin-right: 0.5em;
+    margin-left: 0!important;
+  }
+
+  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now img, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-time {
+    align-items: center;
+    margin:0.5em 0;
+  }
+
+  .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now img, .ResourcesContainer .container-middle-section .videos-section .videos-container .video-container .video-info-container .video-info .watch-now p {
+    margin-left: 0.5em;
+  }
+  
+}
+
 @media only screen and (max-width: 768px) {
+  .ResourcesContainer .container-middle-section .brochures-section .featured-brochure-container .thumbnail {
+    width: 100%;
+  }
   .container-middle-section {
     padding: 8em 2em !important;
     .videos-section {
@@ -414,6 +440,9 @@
 }
 
 @media only screen and (max-width: 660px) {
+  .ResourcesContainer .container-middle-section .brochures-section .featured-brochure-container .thumbnail {
+    width: 100%;
+  }
   .ResourcesContainer {
     .container-middle-section {
       .videos-section .videos-container {

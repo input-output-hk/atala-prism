@@ -104,13 +104,13 @@ const Resources = ({ data }) => {
                 </a>
               </div>
             </div>
-            <img className="thumbnail" src={featuredBrochure.thumbnail} alt="Thumbnail" />
+            <a rel="noopener noreferrer" className="thumbnail" href={featuredBrochure.url} target="_blank"><img src={featuredBrochure.thumbnail} alt="Thumbnail" /></a>
           </div>
           <div className="brochures-container">
             {otherBrochures.map(({ title, description, url, thumbnail }) => (
               <div className="brochure-container">
                 <div className="brochure-info-container">
-                  <img className="thumbnail" src={thumbnail} alt="Thumbnail" />
+                  <a rel="noopener noreferrer" href={url} target="_blank"><img className="thumbnail" src={thumbnail} alt="Thumbnail" /></a>
                   <h2>{title}</h2>
                   <p>{description}</p>
                 </div>
