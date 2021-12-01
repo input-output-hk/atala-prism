@@ -83,7 +83,7 @@ export default class CredentialsIssuedBaseStore {
     this.credentials = [];
   }
 
-  resetContactsAndFilters() {
+  resetCredentialsAndFilters() {
     this.resetCredentials();
     this.isFetching = false;
     this.isSearching = false;

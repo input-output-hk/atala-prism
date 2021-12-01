@@ -75,8 +75,8 @@ export default class CredentialsIssuedPageStore {
     return this.selectedCredentials.filter(sc => !credentialIds.includes(sc));
   }
 
-  fetchMoreData() {
-    return this.credentialsIssuedBaseStore.fetchMoreData();
+  fetchMoreData(args) {
+    return this.credentialsIssuedBaseStore.fetchMoreData(args);
   }
 
   refreshCredentials() {
