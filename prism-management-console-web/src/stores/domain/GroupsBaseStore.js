@@ -191,6 +191,7 @@ export default class GroupsBaseStore {
   }
 
   *fetchMoreData({ startFromTheTop, pageSize } = {}) {
+    if (this.isFetching) return;
     if (!startFromTheTop && !this.hasMore) return;
 
     const response = yield this.fetchGroups({

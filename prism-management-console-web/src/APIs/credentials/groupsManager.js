@@ -3,7 +3,8 @@ import {
   GROUP_PAGE_SIZE,
   SORTING_DIRECTIONS,
   GROUP_SORTING_KEYS,
-  REQUEST_AUTH_TIMEOUT_MS
+  REQUEST_AUTH_TIMEOUT_MS,
+  MAX_GROUP_PAGE_SIZE
 } from '../../helpers/constants';
 import { getProtoDate } from '../../helpers/formatters';
 import { GroupsServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
@@ -78,17 +79,37 @@ async function getGroups({
   return { groupsList, totalNumberOfGroups };
 }
 
-/* TODO: refactor getAllGroups
- * The responded totalNumberOfGroups might be bigger than maximum page size.
- */
-async function getAllGroups() {
-  const { totalNumberOfGroups } = await this.getGroups({});
-  const { groupsList } = await this.getGroups({ limit: totalNumberOfGroups });
+// TODO: just a copy from GroupStore. We should either implement APIs for fetching all groups,
+//  contacts, etc., or we should give up of feature requirements for which fetching all entities is
+//  needed
+async function fetchGroupsRecursively({ contactId, filter, acc = [] }) {
+  const response = await this.getGroups({
+    contactId,
+    filter, // { name, createdBefore, createdAfter }
+    pageSize: MAX_GROUP_PAGE_SIZE,
+    offset: acc.length
+    // no sorting is implemented!
+  });
 
-  return groupsList;
+  const updatedAcc = acc.concat(response.groupsList);
+
+  if (updatedAcc.length >= response.totalNumberOfGroups) {
+    return updatedAcc;
+  }
+
+  return this.fetchGroupsRecursively({ contactId, filter, acc: updatedAcc });
+}
+
+async function getAllGroups({ contactId, name, createdBefore, createdAfter } = {}) {
+  return this.fetchGroupsRecursively({
+    contactId,
+    filter: { name, createdBefore, createdAfter },
+    acc: []
+  });
 }
 
 async function getGroupById(groupId) {
+  // TODO: create API for fetching a group
   const allGroups = await this.getAllGroups();
   return allGroups.find(g => g.id === groupId);
 }
@@ -141,6 +162,7 @@ function GroupsManager(config, auth) {
 }
 
 GroupsManager.prototype.getGroups = getGroups;
+GroupsManager.prototype.fetchGroupsRecursively = fetchGroupsRecursively;
 GroupsManager.prototype.getAllGroups = getAllGroups;
 GroupsManager.prototype.getGroupById = getGroupById;
 GroupsManager.prototype.createGroup = createGroup;
