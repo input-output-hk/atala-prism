@@ -1,4 +1,4 @@
-@import "../../css/general_styling";
+@import '../../css/general_styling';
 
 .ContactsImportWrapper {
   max-height: calc(100vh - 20em);
@@ -32,6 +32,26 @@
       align-items: center;
       .MultiSelectContainer {
         width: 22em;
+        .ant-select-selector {
+          border: 1px solid $primary-color !important;
+          box-shadow: none !important;
+        }
+        .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+          border: 1px solid $primary-color !important;
+          box-shadow: none !important;
+        }
+        .ant-select-multiple .ant-select-selection-item {
+          background-color: rgb(255, 215, 215);
+          border:none;
+          border-radius: 4px;
+          color: $primary-color;
+        }
+        .anticon svg {
+          color: $primary-color;
+        }
+        .ant-select-selection-item-content {
+          padding:0 0.2em;
+        }
       }
     }
     h3 {
@@ -49,7 +69,13 @@
     .ant-table-container {
       width: 100%;
     }
-    .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table > tbody > tr > td:last-child {
+    .ant-table.ant-table-bordered
+      > .ant-table-container
+      > .ant-table-content
+      > table
+      > tbody
+      > tr
+      > td:last-child {
       width: 200px !important;
     }
     .ant-table-wrapper {
