@@ -43,6 +43,7 @@
   }
   .ant-btn[disabled], .ant-btn[disabled]:hover, .ant-btn[disabled]:focus, .ant-btn[disabled]:active {
     background-color: transparent!important;
+    opacity: 0.5;
   }
   .ControlButtons {
     .ant-btn {

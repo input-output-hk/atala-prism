@@ -8,7 +8,7 @@ import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInput
 import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/CustomDateRangePicker';
 import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import './_style.scss';
-import { useGroupsPageStore } from '../../../../hooks/useGroupsPageStore';
+import { useGroupsPageStore } from '../../../../hooks/useGroupStore';
 
 const GroupFilters = observer(({ showFullFilter }) => {
   const { t } = useTranslation();
@@ -25,41 +25,43 @@ const GroupFilters = observer(({ showFullFilter }) => {
   const isAscending = sortDirection === SORTING_DIRECTIONS.ascending;
 
   return (
-    <div className="w-100">
-      <div>
-        <Input
-          placeholder={t('groups.filters.search')}
-          prefix={<SearchOutlined />}
-          onChange={({ target: { value } }) => setFilterValue('nameFilter', value)}
-        />
+    <div className="FilterControls">
+      <div className="w-100">
+        <div>
+          <Input
+            placeholder={t('groups.filters.search')}
+            prefix={<SearchOutlined />}
+            onChange={({ target: { value } }) => setFilterValue('nameFilter', value)}
+          />
+        </div>
+        {showFullFilter && (
+          <>
+            <div>
+              <CustomInputGroup prefixIcon="calendar">
+                <CustomDateRangePicker {...datePickerProps} />
+              </CustomInputGroup>
+            </div>
+            <div>
+              <CustomInputGroup
+                onClick={toggleSortDirection}
+                prefixIcon={isAscending ? 'sort-ascending' : 'sort-descending'}
+              >
+                <Select defaultValue={GROUP_SORTING_KEYS.name} onChange={setSortingBy}>
+                  <Select.Option value={GROUP_SORTING_KEYS.name}>
+                    {t('groups.filters.name')}
+                  </Select.Option>
+                  <Select.Option value={GROUP_SORTING_KEYS.createdAt}>
+                    {t('groups.filters.createdAt')}
+                  </Select.Option>
+                  <Select.Option value={GROUP_SORTING_KEYS.numberOfContacts}>
+                    {t('groups.filters.numberOfContacts')}
+                  </Select.Option>
+                </Select>
+              </CustomInputGroup>
+            </div>
+          </>
+        )}
       </div>
-      {showFullFilter && (
-        <>
-          <div>
-            <CustomInputGroup prefixIcon="calendar">
-              <CustomDateRangePicker {...datePickerProps} />
-            </CustomInputGroup>
-          </div>
-          <div>
-            <CustomInputGroup
-              onClick={toggleSortDirection}
-              prefixIcon={isAscending ? 'sort-ascending' : 'sort-descending'}
-            >
-              <Select defaultValue={GROUP_SORTING_KEYS.name} onChange={setSortingBy}>
-                <Select.Option value={GROUP_SORTING_KEYS.name}>
-                  {t('groups.filters.name')}
-                </Select.Option>
-                <Select.Option value={GROUP_SORTING_KEYS.createdAt}>
-                  {t('groups.filters.createdAt')}
-                </Select.Option>
-                <Select.Option value={GROUP_SORTING_KEYS.numberOfContacts}>
-                  {t('groups.filters.numberOfContacts')}
-                </Select.Option>
-              </Select>
-            </CustomInputGroup>
-          </div>
-        </>
-      )}
     </div>
   );
 });

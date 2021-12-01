@@ -2,14 +2,14 @@ import React, { createRef, useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRedirector } from '../../hooks/useRedirector';
-import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
+import { useCreateGroupStore } from '../../hooks/useGroupStore';
 import GroupCreation from './GroupCreation';
 
 const GroupCreationContainer = () => {
   const { redirectToGroups } = useRedirector();
   const { t } = useTranslation();
 
-  const { createGroup, isSaving } = useGroupsPageStore();
+  const { createGroup } = useCreateGroupStore();
 
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState([]);
@@ -37,7 +37,6 @@ const GroupCreationContainer = () => {
       updateForm={setGroupName}
       updateMembers={setMembers}
       formValues={formValues}
-      isSaving={isSaving}
     />
   );
 };

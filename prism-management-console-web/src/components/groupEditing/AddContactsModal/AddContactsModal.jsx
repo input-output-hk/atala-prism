@@ -6,7 +6,7 @@ import { Modal, Row, Col } from 'antd';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
-import { useCurrentGroupStore } from '../../../hooks/useCurrentGroupStore';
+import { useCurrentGroupStore } from '../../../hooks/useGroupStore';
 import SelectAllButton from '../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useSelectAll } from '../../../hooks/useSelectAll';
 import { CONTACT_ID_KEY } from '../../../helpers/constants';
@@ -78,7 +78,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       <Row type="flex" align="middle" className="mb-3">
         <Col span={5}>
           <SelectAllButton
-            loadingSelection={loadingSelection}
+            isLoadingSelection={loadingSelection}
             selectedEntities={selectedContacts}
             checkboxProps={checkboxProps}
           />

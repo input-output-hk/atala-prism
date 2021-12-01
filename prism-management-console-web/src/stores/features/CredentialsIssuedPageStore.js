@@ -75,8 +75,8 @@ export default class CredentialsIssuedPageStore {
     return this.selectedCredentials.filter(sc => !credentialIds.includes(sc));
   }
 
-  fetchMoreData() {
-    return this.credentialsIssuedBaseStore.fetchMoreData();
+  fetchMoreData(args) {
+    return this.credentialsIssuedBaseStore.fetchMoreData(args);
   }
 
   refreshCredentials() {
@@ -91,6 +91,7 @@ export default class CredentialsIssuedPageStore {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
     this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
+    // TODO: is there a reason to fetch all credentials even when checked=false?
     const entitiesToSelect = yield this.credentialsIssuedBaseStore.fetchAllCredentials();
     this.setSelection(checked, entitiesToSelect);
     this.isLoadingSelection = false;

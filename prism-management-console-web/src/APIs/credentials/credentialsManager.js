@@ -93,7 +93,7 @@ async function fetchMoreCredentialsRecursively({ limit, filter, sort, acc = [], 
 
   const partialContactsArray = acc.concat(credentialsList);
   if (credentialsList.length < pageSize) return onFinish(partialContactsArray);
-  return this.fetchMoreContactsRecursively({
+  return this.fetchMoreCredentialsRecursively({
     limit,
     filter,
     sort,

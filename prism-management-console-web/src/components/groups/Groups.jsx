@@ -14,7 +14,7 @@ import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import { useRedirector } from '../../hooks/useRedirector';
 
 import './_style.scss';
-import { useGroupsPageStore } from '../../hooks/useGroupsPageStore';
+import { useGroupsPageStore } from '../../hooks/useGroupStore';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();

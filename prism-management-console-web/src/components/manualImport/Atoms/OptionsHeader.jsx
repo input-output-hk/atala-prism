@@ -29,7 +29,7 @@ const OptionsHeader = ({ groupsProps, addEntity }) => {
         </Select>
       </div>
       <CustomButton
-        buttonProps={{ onClick: addEntity, className: 'theme-secondary', icon: <PlusOutlined /> }}
+        buttonProps={{ onClick: addEntity, className: 'theme-link', icon: <PlusOutlined /> }}
         buttonText={t(`${useCase}.manualImport.newContact`)}
       />
     </div>

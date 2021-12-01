@@ -10,7 +10,7 @@ import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED } from '../../../../helpers/constants';
 
 import './_style.scss';
-import { useGroupsPageStore } from '../../../../hooks/useGroupsPageStore';
+import { useGroupsPageStore } from '../../../../hooks/useGroupStore';
 
 const GroupsTable = observer(
   ({
