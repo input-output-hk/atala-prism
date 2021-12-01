@@ -100,6 +100,7 @@ export default class CurrentGroupStore {
   reloadMembers = () => this.contactsBaseStore.fetchMoreData({ startFromTheTop: true });
 
   getContactsNotInGroup = async () => {
+    // TODO: we need new API for this
     this.isLoadingContactsNotInGroup = true;
     const allContacts = await this.api.contactsManager.getAllContacts();
     const allMembers = await this.api.contactsManager.getAllContacts({ groupName: this.name });
