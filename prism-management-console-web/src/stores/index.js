@@ -9,6 +9,7 @@ import CredentialsIssuedPageStore from './features/CredentialsIssuedPageStore';
 import CredentialsReceivedStore from './domain/CredentialsReceivedStore';
 import CreateCredentialPageStore from './features/CeateCredentialPageStore';
 import TemplatesPageStore from './features/TemplatesPageStore';
+import TemplatesByCategoryStore from './features/TemplatesByCategoryStore';
 
 export const createStores = api => {
   const sessionState = new SessionState(api);
@@ -21,6 +22,7 @@ export const createStores = api => {
   const credentialsReceivedStore = new CredentialsReceivedStore(api, sessionState);
   const createCredentialPageStore = new CreateCredentialPageStore(api, sessionState);
   const templatesPageStore = new TemplatesPageStore(api, sessionState);
+  const templatesByCategoryStore = new TemplatesByCategoryStore(api, sessionState);
 
   return {
     sessionState,
@@ -32,7 +34,8 @@ export const createStores = api => {
     credentialsIssuedPageStore,
     credentialsReceivedStore,
     createCredentialPageStore,
-    templatesPageStore
+    templatesPageStore,
+    templatesByCategoryStore
   };
 };
 

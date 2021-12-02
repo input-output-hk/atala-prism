@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { computed, makeAutoObservable } from 'mobx';
-import { computedFn } from 'mobx-utils';
 import { v4 as uuidv4 } from 'uuid';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../helpers/constants';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
@@ -116,10 +115,6 @@ export default class TemplateBaseStore {
       toggleSortDirection
     };
   }
-
-  filteredTemplatesByCategory = computedFn(category =>
-    this.filteredTemplates.filter(ct => category.id === ct.category)
-  );
 
   applyFilters(templates) {
     return templates.filter(item => {

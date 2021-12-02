@@ -8,13 +8,13 @@ import {
   CREDENTIAL_TYPE_STATUSES,
   VALID_CREDENTIAL_TYPE_STATUSES
 } from '../../../../helpers/constants';
-import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
+import { useTemplatesByCategoryStore } from '../../../../hooks/useTemplatesPageStore';
 
 import './_style.scss';
 
 const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
   const { t } = useTranslation();
-  const { templateCategories, filteredTemplatesByCategory } = useTemplatePageStore();
+  const { templateCategories, filteredTemplatesByCategory } = useTemplatesByCategoryStore();
 
   const isValidState = state => VALID_CREDENTIAL_TYPE_STATUSES.includes(state);
   const isMockedState = state => state === CREDENTIAL_TYPE_STATUSES.MOCKED;

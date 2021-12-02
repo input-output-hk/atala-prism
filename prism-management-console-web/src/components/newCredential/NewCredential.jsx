@@ -13,6 +13,7 @@ import {
 } from '../../helpers/constants';
 import TemplateFiltersContainer from '../credentialTemplates/Molecules/Filters/TemplateFiltersContainer';
 import { useRedirector } from '../../hooks/useRedirector';
+import { useTemplatesByCategoryStore } from '../../hooks/useTemplatesPageStore';
 
 import './_style.scss';
 
@@ -28,6 +29,8 @@ const NewCredential = ({
 }) => {
   const { t } = useTranslation();
   const { redirectToCredentials } = useRedirector();
+
+  const { filterSortingProps, templateCategories } = useTemplatesByCategoryStore();
 
   const goToSelectTargets = () => {
     if (selectedCredentialTypeId) changeStep(SELECT_RECIPIENTS_STEP);
@@ -68,7 +71,10 @@ const NewCredential = ({
       />
       {currentStep === SELECT_CREDENTIAL_TYPE_STEP && (
         <div className="ActionsHeader EmbeddedTempalteFilters flex">
-          <TemplateFiltersContainer />
+          <TemplateFiltersContainer
+            templateCategories={templateCategories}
+            {...filterSortingProps}
+          />{' '}
         </div>
       )}
     </div>

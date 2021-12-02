@@ -10,7 +10,7 @@ import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent'
 import TemplatesTable from './TemplatesTable';
 import noTemplatesPicture from '../../../../images/noTemplates.svg';
 import SortControls from '../../Molecules/Headers/SortControls';
-import { useTemplatePageStore } from '../../../../hooks/useTemplatesPageStore';
+import { useTemplatesPageStore } from '../../../../hooks/useTemplatesPageStore';
 
 const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
     templateCategories,
     isLoading,
     filterSortingProps
-  } = useTemplatePageStore();
+  } = useTemplatesPageStore();
   const { hasFiltersApplied } = filterSortingProps;
 
   const noTemplates = !filteredTemplates?.length;

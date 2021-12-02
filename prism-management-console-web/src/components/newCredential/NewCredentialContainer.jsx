@@ -23,7 +23,7 @@ import { useApi } from '../../hooks/useApi';
 import { useRedirector } from '../../hooks/useRedirector';
 import { useCreateCredentialPageStore } from '../../hooks/useCreateCredentialPageStore';
 import SuccessBanner from '../common/Molecules/SuccessPage/SuccessBanner';
-import { useTemplatePageStore } from '../../hooks/useTemplatesPageStore';
+import { useTemplatesByCategoryStore } from '../../hooks/useTemplatesPageStore';
 
 const NewCredentialContainer = observer(() => {
   const { t } = useTranslation();
@@ -41,12 +41,12 @@ const NewCredentialContainer = observer(() => {
   const {
     getCredentialTemplateDetails: getCredentialTypeDetails,
     templateCategories,
-    initTemplateStore
-  } = useTemplatePageStore();
+    init
+  } = useTemplatesByCategoryStore();
 
   useEffect(() => {
-    initTemplateStore();
-  }, [initTemplateStore]);
+    init();
+  }, [init]);
 
   const [shouldSelectRecipients, setShouldSelectRecipients] = useState(true);
   const [recipients, setRecipients] = useState([]);

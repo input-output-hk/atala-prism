@@ -12,7 +12,7 @@ import {
 } from '../../../../../helpers/constants';
 import { credentialTypeShape } from '../../../../../helpers/propShapes';
 import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
-import { useTemplatePageStore } from '../../../../../hooks/useTemplatesPageStore';
+import { useTemplatesPageStore } from '../../../../../hooks/useTemplatesPageStore';
 
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
@@ -27,7 +27,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
       setFilterValue
     }
   } = useCredentialsIssuedPageStore();
-  const { credentialTemplates: credentialTypes } = useTemplatePageStore();
+  const { credentialTemplates: credentialTypes } = useTemplatesPageStore();
 
   const setFilterByKey = key => value => setFilterValue(key, value);
 

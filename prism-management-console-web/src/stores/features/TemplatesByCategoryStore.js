@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
+import { computedFn } from 'mobx-utils';
 import TemplateBaseStore from '../domain/TemplateBaseStore';
 
-export default class TemplatesPageStore {
+export default class TemplatesByCategoryStore {
   constructor(api, sessionState) {
     this.api = api;
     this.sessionState = sessionState;
@@ -36,6 +37,14 @@ export default class TemplatesPageStore {
 
   get isLoading() {
     return this.templatesBaseStore.isLoading;
+  }
+
+  filteredTemplatesByCategory = computedFn(category =>
+    this.filteredTemplates.filter(ct => category.id === ct.category)
+  );
+
+  getCredentialTemplateDetails(id) {
+    return this.templatesBaseStore.getCredentialTemplateDetails(id);
   }
 
   init() {
