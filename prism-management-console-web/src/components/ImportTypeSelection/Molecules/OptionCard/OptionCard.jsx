@@ -43,12 +43,14 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disa
         <div className="CheckBox">
           <Checkbox checked={isSelected} />
         </div>
-        <div className="img-container">
-          <img src={img} alt="" />
-        </div>
-        <div className="CardText">
-          <h1>{t(`${useCase}.${option}Card.title`)}</h1>
-          <p>{t(`${useCase}.${option}Card.info`)}</p>
+        <div className="ContaierImageText">
+          <div className="img-container">
+            <img src={img} alt="" />
+          </div>
+          <div className="CardText">
+            <h1>{t(`${useCase}.${option}Card.title`)}</h1>
+            <p>{t(`${useCase}.${option}Card.info`)}</p>
+          </div>
         </div>
       </div>
     </Tooltip>

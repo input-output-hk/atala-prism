@@ -1,11 +1,8 @@
 @import '../../../../css/general_styling';
 
-.ImportCredentialsOptionCard {
-  width: 300px;
-  height: 250px;
-}
-
 .OptionCard {
+  width: 300px;
+  height: 200px;
   cursor: pointer;
   text-align: center;
   margin: 0 1em;
@@ -15,87 +12,31 @@
   padding: 2em 2em 4em 2em;
   border-radius: 10px;
   box-shadow: $shadow;
-
+  border: 2px solid transparent;
   &:focus {
     outline: none;
     border: 2px solid $primary-color;
   }
-
-  .active {
-    border-radius: 50px;
+  .CheckBox {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
   }
-  .CardText {
-    h1 {
-      @include primary-text($h2, $black);
-      font-weight: bold;
+  .ContaierImageText {
+    .img-container img {
+      height: 45px;
     }
-    p {
-      @include primary-text($body, $dark-grey);
-    }
-  }
-  .ImportContactOptionCard {
-    width: 300px;
-    height: 250px;
-    box-sizing: border-box;
-    .Selected {
-      border: 2px solid $primary-color;
-      border-radius: 10px;
-      box-shadow: $red-shadow;
-      display: flex;
-      justify-content: center !important;
-      flex-wrap: wrap;
-
+    .CardText {
       h1 {
         @include secondary-text($h2, $secondary-color);
         @include letter-spacing();
       }
-
       p {
-        @include primary-text($body, $secondary-color);
+        @include primary-text($body, $dark-grey);
         @include letter-spacing();
       }
     }
-    .img-container {
-      display: flex;
-      align-items: center;
-      img {
-        height: 45px;
-      }
-    }
   }
-}
-.content-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.icon-container {
-  width: 100%;
-  text-align: end;
-  .icon {
-    color: $primary-color;
-    font-size: 25px;
-    margin-bottom: 0.4em;
-  }
-  .icon-disabled {
-    color: white;
-    font-size: 25px;
-  }
-}
-.img-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  img {
-    height: 45px;
-  }
-}
-
-.CheckBox:hover {
-  border: none;
 }
 
 .CheckBox {
@@ -112,11 +53,31 @@
   }
 }
 
+.CheckBox:hover {
+  border: none;
+}
+
 .ant-checkbox-checked::after {
   border: none!important;
 }
 .ant-checkbox-checked:hover {
   border: none!important;
+}
+
+.NotSelected {
+  opacity: 0.5;
+  transition: 0.5s;
+}
+
+.Selected {
+  opacity: 1;
+  transition: 0.5s;
+  border: 2px solid $primary-color;
+  border-radius: 10px;
+  box-shadow: $red-shadow;
+  display: flex;
+  justify-content: center !important;
+  flex-wrap: wrap;
 }
 
 .NotSelected:hover {
@@ -125,27 +86,4 @@
   border-radius: 10px;
   box-shadow: $red-shadow;
   transition: 0.5s;
-}
-
-.NotSelected {
-  border: 2px solid transparent;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  opacity: 0.7;
-
-  .CardText {
-    h1 {
-      @include primary-text($h2, $black);
-      font-weight: bold;
-    }
-    p {
-      @include primary-text($body, $dark-grey);
-    }
-  }
-}
-
-.Disabled {
-  cursor: not-allowed !important;
-  box-shadow: none;
 }
