@@ -39,24 +39,21 @@ trait SubmissionService[F[_]] {
     */
   def submitReceivedObjects(): F[Either[NodeError, Int]]
 
-  def updateTransactionStatuses(
-      ledgerPendingTransactionTimeout: Duration
-  ): F[UpdateTransactionStatusesResult]
+  def updateTransactionStatuses(): F[UpdateTransactionStatusesResult]
 
 }
 
 object SubmissionService {
 
   case class Config(
-      maxNumberTransactionsToSubmit: Int,
-      maxNumberTransactionsToRetry: Int
+      maxNumberTransactionsToSubmit: Int
   )
 
   def apply[F[_]: MonadThrow, R[_]: Functor](
       atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      config: Config = Config(Int.MaxValue),
       logs: Logs[R, F]
   ): R[SubmissionService[F]] =
     for {
@@ -78,7 +75,7 @@ object SubmissionService {
       atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      config: Config = Config(Int.MaxValue),
       logs: Logs[R, F]
   ): Resource[R, SubmissionService[F]] = Resource.eval(
     SubmissionService(
@@ -94,7 +91,7 @@ object SubmissionService {
       atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      config: Config = Config(Int.MaxValue),
       logs: Logs[R, F]
   ): SubmissionService[F] =
     SubmissionService(
@@ -138,13 +135,11 @@ private class SubmissionServiceImpl[F[_]: Monad](
     submissionET.value
   }
 
-  def updateTransactionStatuses(
-      ledgerPendingTransactionTimeout: Duration
-  ): F[UpdateTransactionStatusesResult] = {
+  def updateTransactionStatuses(): F[UpdateTransactionStatusesResult] = {
     val getOldPendingTransactions =
       atalaObjectsTransactionsRepository
         .getOldPendingTransactions(
-          ledgerPendingTransactionTimeout,
+          Duration.ZERO,
           atalaReferenceLedger.getType
         )
         .map(_.toList.flatten)

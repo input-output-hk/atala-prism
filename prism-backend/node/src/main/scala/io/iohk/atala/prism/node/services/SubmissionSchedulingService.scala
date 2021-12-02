@@ -8,7 +8,6 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
 import io.iohk.atala.prism.tracing.Tracing._
 
-import java.time.Duration
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,23 +26,23 @@ class SubmissionSchedulingService private (
 
   // Schedule first run
   // NOTE: retryOldPendingTransactions is not thread-safe, so race-conditions may occur in a concurrent mode.
-  scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
+  scheduleUpdateTransactionStatuses(config.transactionUpdateStatusesPeriod)
 
   // NOTE: submitReceivedObjects is not thread-safe, so race-conditions may occur in a concurrent mode.
   scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
 
   // Every `delay` units of time, calls submissionService.retryOldPendingTransactions
-  private def scheduleRetryOldPendingTransactions(
+  private def scheduleUpdateTransactionStatuses(
       delay: FiniteDuration
   ): Unit = trace[Id, Unit] { traceId =>
     (IO.sleep(delay) *> IO(
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(traceId)
         .unsafeToFuture()
         .onComplete { _ =>
-          scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
+          scheduleUpdateTransactionStatuses(config.transactionUpdateStatusesPeriod)
         }
     )).unsafeRunAndForget()
   }
@@ -68,8 +67,7 @@ class SubmissionSchedulingService private (
 
 object SubmissionSchedulingService {
   case class Config(
-      ledgerPendingTransactionTimeout: Duration,
-      transactionRetryPeriod: FiniteDuration = 20.seconds,
+      transactionUpdateStatusesPeriod: FiniteDuration = 20.seconds,
       operationSubmissionPeriod: FiniteDuration = 20.seconds
   )
 

@@ -33,9 +33,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
-import scala.concurrent.duration._
-import java.time.Duration
-
 object SubmissionServiceSpec {}
 
 class SubmissionServiceSpec
@@ -67,13 +64,6 @@ class SubmissionServiceSpec
       atalaOperationsRepository,
       atalaObjectsTransactionsRepository,
       logs = logs
-    )
-
-  private val config: SubmissionSchedulingService.Config =
-    SubmissionSchedulingService.Config(
-      ledgerPendingTransactionTimeout = Duration.ZERO,
-      transactionRetryPeriod = 1.hour,
-      operationSubmissionPeriod = 1.hour
     )
 
   private implicit lazy val objectManagementService: ObjectManagementService[IOWithTraceIdContext] =
@@ -229,7 +219,7 @@ class SubmissionServiceSpec
       // updates statuses for inLedger submissions
       // note that we're not resubmitting the first object here since it wasn't published at all
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
       DataPreparation
@@ -315,7 +305,7 @@ class SubmissionServiceSpec
         .getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger)
         .size must be(0)
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync() mustBe UpdateTransactionStatusesResult(4, 0, 3)
 
@@ -342,7 +332,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -365,7 +355,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -386,7 +376,7 @@ class SubmissionServiceSpec
       doReturn(Ledger.CardanoTestnet).when(ledger).getType
 
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -423,7 +413,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -470,7 +460,7 @@ class SubmissionServiceSpec
 
       // deletes all expired transactions, so that the corresponding objects become in status pending again
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -529,7 +519,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .updateTransactionStatuses(Duration.ofMinutes(10))
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -555,7 +545,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 

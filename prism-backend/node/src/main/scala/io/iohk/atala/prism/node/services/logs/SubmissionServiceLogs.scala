@@ -10,7 +10,6 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 
-import java.time.Duration
 import cats.MonadThrow
 
 private[services] final class SubmissionServiceLogs[
@@ -30,14 +29,12 @@ private[services] final class SubmissionServiceLogs[
           errorCause"Encountered an error while submitting received objects" (_)
         )
 
-  override def updateTransactionStatuses(
-      ledgerPendingTransactionTimeout: Duration
-  ): Mid[F, UpdateTransactionStatusesResult] =
+  override def updateTransactionStatuses(): Mid[F, UpdateTransactionStatusesResult] =
     in =>
-      info"retrying old pending transactions, duration $ledgerPendingTransactionTimeout" *> in
-        .flatTap(result => info"retrying old pending transactions - successfully done $result")
+      info"updating transaction statuses" *> in
+        .flatTap(result => info"updating transaction statuses - successfully done $result")
         .onError(
-          errorCause"Encountered an error while retrying old pending transactions" (
+          errorCause"Encountered an error while updating transaction statuses" (
             _
           )
         )

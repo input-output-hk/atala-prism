@@ -91,7 +91,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       ledgerPendingTransactionTimeout = globalConfig.getDuration(
         "ledgerPendingTransactionTimeout"
       )
-      transactionRetryPeriod = FiniteDuration(
+      transactionUpdateStatusPeriod = FiniteDuration(
         globalConfig.getDuration("transactionRetryPeriod").toNanos,
         TimeUnit.NANOSECONDS
       )
@@ -105,15 +105,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         atalaOperationsRepository,
         atalaObjectsTransactionsRepository,
         SubmissionService.Config(
-          maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
-          maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
+          maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond
         ),
         logs
       )
       submissionSchedulingService = SubmissionSchedulingService(
         SubmissionSchedulingService.Config(
-          ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout,
-          transactionRetryPeriod = transactionRetryPeriod,
+          transactionUpdateStatusesPeriod = transactionUpdateStatusPeriod,
           operationSubmissionPeriod = operationSubmissionPeriod
         ),
         submissionService
