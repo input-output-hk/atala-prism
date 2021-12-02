@@ -12,7 +12,7 @@ import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 const CredentialTemplateCreationContainer = observer(() => {
   const { t } = useTranslation();
 
-  // TODO: replace with own feature store for tempalte creation
+  // TODO: replace with own feature store for creating template
   const { initTemplateStore } = useTemplatesPageStore();
 
   useEffect(() => {

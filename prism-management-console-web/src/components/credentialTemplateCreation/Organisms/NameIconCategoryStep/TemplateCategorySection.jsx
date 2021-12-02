@@ -21,7 +21,11 @@ const i18nPrefix = 'credentialTemplateCreation.templateCategory';
 const TemplateCategorySection = observer(() => {
   const { t } = useTranslation();
   // TODO: replace with own feature store for creating template
-  const { templateCategories, isLoadingCategories, createTemplateCategory } = useTemplatesPageStore();
+  const {
+    templateCategories,
+    isLoadingCategories,
+    createTemplateCategory
+  } = useTemplatesPageStore();
   const { templateSketch } = useTemplateSketch();
   const [open, setOpen] = useState(false);
 

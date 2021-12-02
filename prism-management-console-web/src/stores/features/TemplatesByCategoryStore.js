@@ -1,12 +1,12 @@
 import { makeAutoObservable } from 'mobx';
 import { computedFn } from 'mobx-utils';
-import TemplateBaseStore from '../domain/TemplateBaseStore';
+import TemplatesBaseStore from '../domain/TemplatesBaseStore';
 
 export default class TemplatesByCategoryStore {
   constructor(api, sessionState) {
     this.api = api;
     this.sessionState = sessionState;
-    this.templatesBaseStore = new TemplateBaseStore(api, sessionState);
+    this.templatesBaseStore = new TemplatesBaseStore(api, sessionState);
 
     makeAutoObservable(
       this,

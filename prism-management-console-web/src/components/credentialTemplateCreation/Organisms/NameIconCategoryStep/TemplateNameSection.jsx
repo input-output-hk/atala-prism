@@ -13,6 +13,7 @@ const i18nPrefix = 'credentialTemplateCreation';
 
 const TemplateNameSection = observer(() => {
   const { t } = useTranslation();
+  // TODO: replace with own feature store for creating template
   const { credentialTemplates } = useTemplatesPageStore();
 
   const templateExists = async (_rule, value) => {

@@ -1,11 +1,11 @@
 import { makeAutoObservable } from 'mobx';
-import TemplateBaseStore from '../domain/TemplateBaseStore';
+import TemplatesBaseStore from '../domain/TemplatesBaseStore';
 
 export default class TemplatesPageStore {
   constructor(api, sessionState) {
     this.api = api;
     this.sessionState = sessionState;
-    this.templatesBaseStore = new TemplateBaseStore(api, sessionState);
+    this.templatesBaseStore = new TemplatesBaseStore(api, sessionState);
 
     makeAutoObservable(
       this,

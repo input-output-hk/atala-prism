@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import CredentialTabs from './CredentialTabs';
 import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
-import { useTemplatesPageStore } from '../../hooks/useTemplatesPageStore';
 import { useCredentialsIssuedPageStore } from '../../hooks/useCredentialsIssuedPageStore';
 
 const CredentialContainer = observer(() => {
@@ -13,11 +12,6 @@ const CredentialContainer = observer(() => {
     refreshCredentials: refreshCredentialsIssued,
     selectedCredentials
   } = useCredentialsIssuedPageStore();
-  const { init } = useTemplatesPageStore();
-
-  useEffect(() => {
-    init();
-  }, [init]);
 
   const {
     verifyCredential,

@@ -6,7 +6,7 @@ import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpe
 
 const { ascending, descending } = SORTING_DIRECTIONS;
 
-export default class TemplateBaseStore {
+export default class TemplatesBaseStore {
   isFetchingTemplates = false;
 
   isFetchingCategories = false;
