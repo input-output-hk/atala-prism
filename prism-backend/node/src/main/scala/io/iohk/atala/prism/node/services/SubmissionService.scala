@@ -24,7 +24,7 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
 import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
-import io.iohk.atala.prism.node.services.models.RetryOldPendingTransactionsResult
+import io.iohk.atala.prism.node.services.models.UpdateTransactionStatusesResult
 import io.iohk.atala.prism.protos.node_internal
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -39,9 +39,9 @@ trait SubmissionService[F[_]] {
     */
   def submitReceivedObjects(): F[Either[NodeError, Int]]
 
-  def retryOldPendingTransactions(
+  def updateTransactionStatuses(
       ledgerPendingTransactionTimeout: Duration
-  ): F[RetryOldPendingTransactionsResult]
+  ): F[UpdateTransactionStatusesResult]
 
 }
 
@@ -138,9 +138,9 @@ private class SubmissionServiceImpl[F[_]: Monad](
     submissionET.value
   }
 
-  def retryOldPendingTransactions(
+  def updateTransactionStatuses(
       ledgerPendingTransactionTimeout: Duration
-  ): F[RetryOldPendingTransactionsResult] = {
+  ): F[UpdateTransactionStatusesResult] = {
     val getOldPendingTransactions =
       atalaObjectsTransactionsRepository
         .getOldPendingTransactions(
@@ -167,32 +167,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
         }
       numInLedgerSynced <- syncInLedgerTransactions(inLedgerTransactions)
 
-      transactionsToRetry = notInLedgerTransactions.collect {
-        case (transaction, status) if status != TransactionStatus.Submitted =>
+      expiredTransactions = notInLedgerTransactions.collect {
+        case (transaction, status) if status == TransactionStatus.Expired =>
           transaction
       }
 
-      numPublished <- mergeAndRetryPendingTransactions(transactionsToRetry)
-    } yield RetryOldPendingTransactionsResult(pendingTransactions.size, numInLedgerSynced, numPublished)
-  }
-
-  private def mergeAndRetryPendingTransactions(
-      transactions: List[AtalaObjectTransactionSubmission]
-  ): F[Int] = {
-    for {
-      deletedTransactions <- deleteTransactions(transactions)
-      atalaObjects <-
-        atalaObjectsTransactionsRepository
-          .retrieveObjects(deletedTransactions)
-          .map(_.flatMap(_.toOption.flatten))
-      atalaObjectsMerged <- mergeAtalaObjects(atalaObjects)
-      atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
-        (obj, parseObjectContent(obj))
-      }
-      publishedTransactions <- publishObjectsAndRecordTransaction(
-        atalaObjectsWithParsedContent
-      )
-    } yield publishedTransactions.size
+      deletedTransactions <- deleteTransactions(expiredTransactions)
+    } yield UpdateTransactionStatusesResult(pendingTransactions.size, numInLedgerSynced, deletedTransactions.size)
   }
 
   private def publishObjectsAndRecordTransaction(

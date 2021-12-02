@@ -24,7 +24,7 @@ import io.iohk.atala.prism.node.repositories.{
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.atala.prism.node.services.models.RetryOldPendingTransactionsResult
+import io.iohk.atala.prism.node.services.models.UpdateTransactionStatusesResult
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.utils.IOUtils._
@@ -90,6 +90,7 @@ class SubmissionServiceSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
+    resetAll()
     doReturn(Ledger.InMemory).when(ledger).getType
     ()
   }
@@ -228,7 +229,7 @@ class SubmissionServiceSpec
       // updates statuses for inLedger submissions
       // note that we're not resubmitting the first object here since it wasn't published at all
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
       DataPreparation
@@ -280,9 +281,10 @@ class SubmissionServiceSpec
             .publish(atalaObject)
           mockTransactionStatus(
             publicationInfo.transaction.transactionId,
-            TransactionStatus.Pending
+            TransactionStatus.Expired
           )
         }
+
       publications.take(atalaObjects.size).foreach { publicationInfo =>
         doReturn(
           ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](Right(()))
@@ -313,9 +315,9 @@ class SubmissionServiceSpec
         .getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger)
         .size must be(0)
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
-        .unsafeRunSync() mustBe RetryOldPendingTransactionsResult(4, 0, 1)
+        .unsafeRunSync() mustBe UpdateTransactionStatusesResult(4, 0, 3)
 
       val inLedgerTxs = DataPreparation.getSubmissionsByStatus(
         AtalaObjectTransactionSubmissionStatus.InLedger
@@ -340,7 +342,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -363,7 +365,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -384,7 +386,7 @@ class SubmissionServiceSpec
       doReturn(Ledger.CardanoTestnet).when(ledger).getType
 
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -417,11 +419,16 @@ class SubmissionServiceSpec
       publishSingleOperationAndFlush(atalaOperation).futureValue
       mockTransactionStatus(
         dummyTransactionInfo.transactionId,
-        TransactionStatus.Pending
+        TransactionStatus.Expired
       )
 
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+
+      submissionService
+        .submitReceivedObjects()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -445,7 +452,7 @@ class SubmissionServiceSpec
           .publish(atalaObject)
         mockTransactionStatus(
           publicationInfo.transaction.transactionId,
-          TransactionStatus.Pending
+          TransactionStatus.Expired
         )
       }
       publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
@@ -461,8 +468,15 @@ class SubmissionServiceSpec
       // publish operations sequentially because we want to preserve the order by timestamps
       publishOpsSequentially(ops)
 
+      // deletes all expired transactions, so that the corresponding objects become in status pending again
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
+        .run(TraceId.generateYOLO)
+        .unsafeRunSync()
+
+      // submits two objects containing 40 pending operations
+      submissionService
+        .submitReceivedObjects()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -515,7 +529,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .retryOldPendingTransactions(Duration.ofMinutes(10))
+        .updateTransactionStatuses(Duration.ofMinutes(10))
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
@@ -541,7 +555,7 @@ class SubmissionServiceSpec
       )
 
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 

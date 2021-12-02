@@ -74,7 +74,7 @@ object AtalaObjectsDAO {
          |  (
          |    SELECT 1
          |      FROM atala_object_tx_submissions
-         |      WHERE atala_object_id = obj.atala_object_id
+         |      WHERE atala_object_id = obj.atala_object_id AND status != 'DELETED'
          |  )
          |) as obj
          |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id

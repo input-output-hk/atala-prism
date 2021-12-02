@@ -12,7 +12,7 @@ package object models {
   )
 
   @derive(loggable)
-  case class RetryOldPendingTransactionsResult(pendingTransactions: Int, numInLedgerSynced: Int, numPublished: Int)
+  case class UpdateTransactionStatusesResult(pendingTransactions: Int, numInLedgerSynced: Int, numDeleted: Int)
 
   type AtalaObjectNotificationHandler[F[_]] = AtalaObjectNotification => F[Unit]
 }

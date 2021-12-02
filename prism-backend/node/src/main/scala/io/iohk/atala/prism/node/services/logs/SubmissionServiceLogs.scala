@@ -5,7 +5,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.services.SubmissionService
-import io.iohk.atala.prism.node.services.models.RetryOldPendingTransactionsResult
+import io.iohk.atala.prism.node.services.models.UpdateTransactionStatusesResult
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
@@ -30,9 +30,9 @@ private[services] final class SubmissionServiceLogs[
           errorCause"Encountered an error while submitting received objects" (_)
         )
 
-  override def retryOldPendingTransactions(
+  override def updateTransactionStatuses(
       ledgerPendingTransactionTimeout: Duration
-  ): Mid[F, RetryOldPendingTransactionsResult] =
+  ): Mid[F, UpdateTransactionStatusesResult] =
     in =>
       info"retrying old pending transactions, duration $ledgerPendingTransactionTimeout" *> in
         .flatTap(result => info"retrying old pending transactions - successfully done $result")

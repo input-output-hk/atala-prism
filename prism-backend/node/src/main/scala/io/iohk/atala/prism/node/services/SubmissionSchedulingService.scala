@@ -39,7 +39,7 @@ class SubmissionSchedulingService private (
     (IO.sleep(delay) *> IO(
       // Ensure run is scheduled after completion, even if current run fails
       submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+        .updateTransactionStatuses(config.ledgerPendingTransactionTimeout)
         .run(traceId)
         .unsafeToFuture()
         .onComplete { _ =>
