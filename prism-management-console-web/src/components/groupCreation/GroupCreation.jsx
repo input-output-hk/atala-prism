@@ -116,7 +116,7 @@ const GroupCreation = observer(
                   hasFiltersApplied={hasFiltersApplied}
                   hasMore={hasMoreContacts}
                   fetchMoreData={fetchMoreGroupContacts}
-                  selectedContacts={[...selectedContacts]} // selectedContacts is observable proxy!
+                  selectedContacts={selectedContacts}
                   onSelect={handleCherryPickSelection}
                   size="md"
                 />

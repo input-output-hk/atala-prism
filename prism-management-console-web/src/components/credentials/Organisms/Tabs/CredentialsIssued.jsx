@@ -42,7 +42,7 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
     selectionType: {
       selectedRowKeys: selectedCredentials,
       type: 'checkbox',
-      onChange: handleCherryPickSelection
+      onSelect: handleCherryPickSelection
     },
     credentials,
     tab: CREDENTIALS_ISSUED,

@@ -58,9 +58,11 @@ export default class GroupsSelectStore {
     this.selectAllCheckboxState = checkboxStates.INDETERMINATE;
 
     if (selected) {
-      this.selectedGroups.push(groupId);
+      // it's important to create new array because Antd has some PureComponent/memo optimizations,
+      // so change is not detected
+      this.selectedGroups = [...this.selectedGroups, groupId];
     } else {
-      this.selectedGroups = this.selectedGroups.filter(scId => scId !== groupId);
+      this.selectedGroups = this.selectedGroups.filter(sgId => sgId !== groupId);
     }
   }
 }

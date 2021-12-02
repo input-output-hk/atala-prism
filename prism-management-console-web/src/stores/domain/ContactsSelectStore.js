@@ -58,7 +58,9 @@ export default class ContactsSelectStore {
     this.selectAllCheckboxState = checkboxStates.INDETERMINATE;
 
     if (selected) {
-      this.selectedContacts.push(contactId);
+      // it's important to create new array because Antd has some PureComponent/memo optimizations,
+      // so change is not detected
+      this.selectedContacts = [...this.selectedContacts, contactId];
     } else {
       this.selectedContacts = this.selectedContacts.filter(scId => scId !== contactId);
     }
