@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { computed, makeAutoObservable } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../helpers/constants';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
 
@@ -186,22 +185,6 @@ export default class TemplatesBaseStore {
     }
   }
 
-  *createCredentialTemplate(newTemplate) {
-    try {
-      this.mockedCredentialTemplates.push(newTemplate);
-      yield this.api.credentialTypesManager.createTemplate(newTemplate);
-      this.transportLayerErrorHandler.handleTransportLayerSuccess();
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'createCredentialTemplate',
-        verb: 'saving',
-        model: 'Template'
-      };
-      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
-    }
-  }
-
   *fetchCategories() {
     this.isFetchingCategories = true;
     try {
@@ -214,28 +197,6 @@ export default class TemplatesBaseStore {
         method: 'fetchCategories',
         verb: 'getting',
         model: 'Template Categories'
-      };
-      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
-    }
-    this.isFetchingCategories = false;
-  }
-
-  *createTemplateCategory(newCategoryData) {
-    this.isFetchingCategories = true;
-    try {
-      const { categoryName } = newCategoryData;
-      const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
-      const response = yield this.api.credentialTypesManager.createCategory(newCategory);
-      this.transportLayerErrorHandler.handleTransportLayerSuccess();
-      this.mockedTemplateCategories.push(newCategory);
-      this.fetchCategories();
-      return response;
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'createTemplateCategory',
-        verb: 'saving',
-        model: 'Template Category'
       };
       this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
     }

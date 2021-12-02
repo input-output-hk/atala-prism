@@ -6,9 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import './_style.scss';
-import { useTemplatesPageStore } from '../../../../hooks/useTemplatesPageStore';
 
 const ENABLED_STATE = 1;
 
@@ -20,13 +19,13 @@ const i18nPrefix = 'credentialTemplateCreation.templateCategory';
 
 const TemplateCategorySection = observer(() => {
   const { t } = useTranslation();
-  // TODO: replace with own feature store for creating template
+
   const {
     templateCategories,
     isLoadingCategories,
-    createTemplateCategory
-  } = useTemplatesPageStore();
-  const { templateSketch } = useTemplateSketch();
+    createTemplateCategory,
+    templateSketch
+  } = useTemplateCreationStore();
   const [open, setOpen] = useState(false);
 
   const handleCreateCategory = newCategoryName => {

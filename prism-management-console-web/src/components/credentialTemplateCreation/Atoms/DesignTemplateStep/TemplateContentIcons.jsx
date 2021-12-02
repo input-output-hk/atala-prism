@@ -3,14 +3,14 @@ import { observer } from 'mobx-react-lite';
 import { Button, Upload } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import { blobToBase64 } from '../../../../helpers/genericHelpers';
 import './_style.scss';
 
 const TemplateContentIcons = observer(() => {
   const { t } = useTranslation();
-  const { templateSketch, setSketchState } = useTemplateSketch();
+  const { templateSketch, setSketchState } = useTemplateCreationStore();
 
   const { images } = templateLayouts[templateSketch.layout];
 

@@ -11,9 +11,9 @@ import {
   TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
-import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 import { useRedirector } from '../../hooks/useRedirector';
 import './_style.scss';
+import { useTemplateCreationStore } from '../../hooks/useTemplatesPageStore';
 
 const fieldsByStep = {
   [TEMPLATE_NAME_ICON_CATEGORY]: ['name', 'category'],
@@ -31,7 +31,7 @@ const CredentialTemplateCreation = observer(({ currentStep, changeStep }) => {
   const { t } = useTranslation();
   const { redirectToCredentialTemplates } = useRedirector();
 
-  const { form, createTemplateFromSketch } = useTemplateSketch();
+  const { form, createCredentialTemplate } = useTemplateCreationStore();
   const [loadingNext, setLoadingNext] = useState(false);
 
   const validateByStep = () =>
@@ -62,7 +62,7 @@ const CredentialTemplateCreation = observer(({ currentStep, changeStep }) => {
     setLoadingNext(true);
     const isPartiallyValid = await validate();
     if (isPartiallyValid) {
-      await createTemplateFromSketch();
+      await createCredentialTemplate();
       advanceStep();
     }
     setLoadingNext(false);

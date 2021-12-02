@@ -3,12 +3,12 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Form, Radio } from 'antd';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import './_style.scss';
 
 const LayoutSelector = observer(() => {
   const { t } = useTranslation();
-  const { templateSketch } = useTemplateSketch();
+  const { templateSketch } = useTemplateCreationStore();
 
   return (
     <Form.Item
