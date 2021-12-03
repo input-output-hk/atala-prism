@@ -40,10 +40,14 @@ const placeholdersReplacements = {
   }
 };
 
-export const adaptCredentialType = ({ id, name, ...rest } = {}) => ({
+const b64ImagePrefix = 'data:image/svg+xml;base64';
+
+export const adaptCredentialType = ({ id, name, icon, ...rest } = {}) => ({
   ...rest,
-  ...credentialTypeEquivalents[name],
   id,
+  name,
+  icon: icon && `${b64ImagePrefix},${icon}`,
+  ...credentialTypeEquivalents[name],
   placeholders: placeholdersReplacements[name]
 });
 
@@ -56,5 +60,13 @@ export const getCredentialTypeAttributes = async credentialList => {
     credentialTypeName: name,
     credentialTypeIcon: encodedIcon,
     credentialTypeIconFormat: 'svg'
+  };
+};
+
+export const splitBase64String = b64String => {
+  const [prefix, data] = b64String.split(',');
+  return {
+    prefix,
+    data
   };
 };

@@ -10,7 +10,7 @@ export default class TemplateCreationStore {
     this.storeName = this.constructor.name;
     this.transportLayerErrorHandler = sessionState.transportLayerErrorHandler;
     this.templatesBaseStore = new TemplatesBaseStore(api, sessionState);
-    this.templateSketchStore = new TemplateSketchStore(api, sessionState);
+    this.templateSketchStore = new TemplateSketchStore();
 
     makeAutoObservable(
       this,
@@ -48,7 +48,7 @@ export default class TemplateCreationStore {
   }
 
   *init() {
-    yield this.templateSketchStore.resetSketch();
+    yield this.templateSketchStore.initSketch();
     yield this.templatesBaseStore.initTemplateStore();
   }
 
@@ -68,7 +68,6 @@ export default class TemplateCreationStore {
         state: CREDENTIAL_TYPE_STATUSES.MOCKED,
         id: uuidv4()
       };
-      this.templatesBaseStore.mockedCredentialTemplates.push(newTemplate);
       yield this.api.credentialTypesManager.createTemplate(newTemplate);
       this.transportLayerErrorHandler.handleTransportLayerSuccess();
     } catch (error) {
@@ -89,7 +88,6 @@ export default class TemplateCreationStore {
       const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
       const response = yield this.api.credentialTypesManager.createCategory(newCategory);
       this.transportLayerErrorHandler.handleTransportLayerSuccess();
-      this.templatesBaseStore.mockedTemplateCategories.push(newCategory);
       this.templatesBaseStore.fetchCategories();
       return response;
     } catch (error) {

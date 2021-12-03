@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { svgPathToEncodedBase64 } from '../../helpers/genericHelpers';
 import { defaultTemplateSketch, insertFormChangeIntoArray } from '../../helpers/templateHelpers';
 import {
   configureHtmlTemplate,
@@ -10,12 +11,16 @@ export default class TemplateSketchStore {
 
   form;
 
-  constructor(rootStore) {
-    this.rootStore = rootStore;
-    makeAutoObservable(this, {
-      updateCredentialBody: false,
-      rootStore: false
-    });
+  constructor() {
+    makeAutoObservable(
+      this,
+      {
+        api: false,
+        updateCredentialBody: false,
+        credentialsIssuedBaseStore: false
+      },
+      { autoBind: true }
+    );
   }
 
   get preview() {
@@ -29,8 +34,9 @@ export default class TemplateSketchStore {
     return configureHtmlTemplate(currentConfig.layout, currentConfig);
   }
 
-  resetSketch() {
+  *initSketch() {
     this.templateSketch = defaultTemplateSketch;
+    this.templateSketch.icon = yield svgPathToEncodedBase64(this.templateSketch.icon);
   }
 
   setSketchState(stateChange) {

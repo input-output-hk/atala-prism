@@ -14,8 +14,6 @@ export default class TemplatesBaseStore {
 
   templateCategories = [];
 
-  mockedCredentialTemplates = [];
-
   mockedTemplateCategories = [];
 
   nameFilter = '';
@@ -155,7 +153,7 @@ export default class TemplatesBaseStore {
     this.isFetchingTemplates = true;
     try {
       const response = yield this.api.credentialTypesManager.getCredentialTypes();
-      this.credentialTemplates = response.concat(this.mockedCredentialTemplates);
+      this.credentialTemplates = response;
       this.transportLayerErrorHandler.handleTransportLayerSuccess();
     } catch (error) {
       const metadata = {
@@ -190,7 +188,7 @@ export default class TemplatesBaseStore {
     try {
       const response = yield this.api.credentialTypesManager.getTemplateCategories();
       this.transportLayerErrorHandler.handleTransportLayerSuccess();
-      this.templateCategories = response.concat(this.mockedTemplateCategories);
+      this.templateCategories = response;
     } catch (error) {
       const metadata = {
         store: this.storeName,
