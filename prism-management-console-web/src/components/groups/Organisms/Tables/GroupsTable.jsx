@@ -7,31 +7,28 @@ import { getGroupColumns } from '../../../../helpers/tableDefinitions/groups';
 import noGroups from '../../../../images/noGroups.svg';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import { useSession } from '../../../../hooks/useSession';
-import { CONFIRMED } from '../../../../helpers/constants';
+import { CONFIRMED, GROUP_ID_KEY } from '../../../../helpers/constants';
+import { groupShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
-import { useGroupsPageStore } from '../../../../hooks/useGroupStore';
 
 const GroupsTable = observer(
   ({
+    groups,
+    fetchMoreData,
+    isFetchingMore,
+    hasMore,
+    hasFiltersApplied,
+    isLoading,
     onCopy,
     setGroupToDelete,
     newGroupButton,
     selectedGroups,
-    setSelectedGroups,
+    onSelect,
     shouldSelectRecipients
   }) => {
     const { t } = useTranslation();
     const { accountStatus } = useSession();
-    const {
-      groups,
-      fetchMoreData,
-      isFetching,
-      hasMore,
-      hasFiltersApplied,
-      isSearching,
-      isSaving
-    } = useGroupsPageStore();
 
     const emptyProps = {
       photoSrc: noGroups,
@@ -45,22 +42,22 @@ const GroupsTable = observer(
     );
 
     const tableProps = {
-      columns: getGroupColumns({ onCopy, setGroupToDelete, setSelectedGroups }),
+      columns: getGroupColumns({ onCopy, setGroupToDelete, setGroup: !!onSelect }),
       data: groups,
-      selectionType: !setSelectedGroups
-        ? null
-        : {
+      selectionType: onSelect
+        ? {
             selectedRowKeys: selectedGroups,
             type: 'checkbox',
-            onChange: setSelectedGroups,
+            onSelect,
             getCheckboxProps: () => ({
               disabled: !shouldSelectRecipients
             })
-          },
-      rowKey: 'name',
+          }
+        : undefined,
+      rowKey: GROUP_ID_KEY,
       getMoreData: fetchMoreData,
-      loading: isSearching || isSaving,
-      fetchingMore: isFetching,
+      loading: isLoading,
+      fetchingMore: isFetchingMore,
       hasMore,
       renderEmpty
     };
@@ -70,19 +67,26 @@ const GroupsTable = observer(
 );
 
 GroupsTable.defaultProps = {
+  groups: [],
   selectedGroups: [],
-  setSelectedGroups: null,
+  onSelect: null,
   setGroupToDelete: null,
   shouldSelectRecipients: false
 };
 
 GroupsTable.propTypes = {
-  onCopy: PropTypes.func.isRequired,
+  onCopy: PropTypes.func,
   setGroupToDelete: PropTypes.func,
   newGroupButton: PropTypes.node,
   selectedGroups: PropTypes.arrayOf(PropTypes.string),
-  setSelectedGroups: PropTypes.func,
-  shouldSelectRecipients: PropTypes.bool
+  onSelect: PropTypes.func,
+  shouldSelectRecipients: PropTypes.bool,
+  groups: PropTypes.arrayOf(groupShape),
+  fetchMoreData: PropTypes.func.isRequired,
+  isFetchingMore: PropTypes.bool.isRequired,
+  hasMore: PropTypes.bool.isRequired,
+  hasFiltersApplied: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired
 };
 
 export default GroupsTable;

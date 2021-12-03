@@ -272,6 +272,7 @@ export default class CredentialsIssuedBaseStore {
 
   // Controls credentials fetching
   *fetchMoreData({ startFromTheTop, pageSize } = {}) {
+    if (this.isFetching) return; // prevents fetching same data multiple times
     if (!startFromTheTop && !this.hasMore) return;
 
     const response = yield this.fetchCredentials({

@@ -8,7 +8,7 @@ const checkboxStates = {
 };
 
 export default class ContactsSelectStore {
-  selectedContacts = [];
+  selectedContactsObjects = [];
 
   isLoadingSelection = false;
 
@@ -26,6 +26,10 @@ export default class ContactsSelectStore {
     );
   }
 
+  get selectedContacts() {
+    return this.selectedContactsObjects.map(c => c[CONTACT_ID_KEY]);
+  }
+
   get selectAllCheckboxStateProps() {
     return {
       checked: this.selectAllCheckboxState === checkboxStates.CHECKED,
@@ -37,13 +41,14 @@ export default class ContactsSelectStore {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
     this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
-    const entitiesToSelect = checked ? yield this.api.contactsManager.getAllContacts(filters) : [];
-    this.selectedContacts = entitiesToSelect.map(e => e[CONTACT_ID_KEY]);
+    this.selectedContactsObjects = checked
+      ? yield this.api.contactsManager.getAllContacts(filters)
+      : [];
     this.isLoadingSelection = false;
   }
 
   resetSelection() {
-    this.selectedContacts = [];
+    this.selectedContactsObjects = [];
     this.selectAllCheckboxState = checkboxStates.UNCHECKED;
     this.isLoadingSelection = false;
   }
@@ -54,13 +59,17 @@ export default class ContactsSelectStore {
    * @param {boolean} selected
    */
   handleCherryPickSelection(record, selected) {
-    const contactId = record[CONTACT_ID_KEY];
+    const newContactId = record[CONTACT_ID_KEY];
     this.selectAllCheckboxState = checkboxStates.INDETERMINATE;
 
     if (selected) {
-      this.selectedContacts.push(contactId);
+      // it's important to create new array because Antd has some PureComponent/memo optimizations,
+      // so change is not detected
+      this.selectedContactsObjects = [...this.selectedContactsObjects, record];
     } else {
-      this.selectedContacts = this.selectedContacts.filter(scId => scId !== contactId);
+      this.selectedContactsObjects = this.selectedContactsObjects.filter(
+        contactRow => contactRow[CONTACT_ID_KEY] !== newContactId
+      );
     }
   }
 }

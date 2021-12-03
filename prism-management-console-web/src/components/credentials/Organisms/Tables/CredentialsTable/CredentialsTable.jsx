@@ -122,7 +122,7 @@ CredentialsTable.propTypes = {
   sendSingleCredential: PropTypes.func,
   selectionType: PropTypes.shape({
     selectedRowKeys: PropTypes.arrayOf(PropTypes.string),
-    onChange: PropTypes.func
+    onSelect: PropTypes.func
   }),
   tab: PropTypes.oneOf([CREDENTIALS_ISSUED, CREDENTIALS_RECEIVED]).isRequired,
   searchDueGeneralScroll: PropTypes.bool,

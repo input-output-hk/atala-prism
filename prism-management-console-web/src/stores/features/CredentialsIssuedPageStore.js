@@ -70,11 +70,6 @@ export default class CredentialsIssuedPageStore {
     return this.credentialsIssuedBaseStore.isLoadingFirstPage;
   }
 
-  get invisibleSelectedCredentials() {
-    const credentialIds = this.credentials.map(c => c.credentialId);
-    return this.selectedCredentials.filter(sc => !credentialIds.includes(sc));
-  }
-
   fetchMoreData(args) {
     return this.credentialsIssuedBaseStore.fetchMoreData(args);
   }
@@ -91,14 +86,11 @@ export default class CredentialsIssuedPageStore {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
     this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
-    // TODO: is there a reason to fetch all credentials even when checked=false?
-    const entitiesToSelect = yield this.credentialsIssuedBaseStore.fetchAllCredentials();
-    this.setSelection(checked, entitiesToSelect);
+    const entitiesToSelect = checked
+      ? yield this.credentialsIssuedBaseStore.fetchAllCredentials()
+      : [];
+    this.selectedCredentials = entitiesToSelect.map(e => e[CREDENTIAL_ID_KEY]);
     this.isLoadingSelection = false;
-  }
-
-  setSelection(checked, entitiesList) {
-    this.selectedCredentials = checked ? entitiesList.map(e => e[CREDENTIAL_ID_KEY]) : [];
   }
 
   resetSelection() {
@@ -107,8 +99,21 @@ export default class CredentialsIssuedPageStore {
     this.isLoadingSelection = false;
   }
 
-  handleCherryPickSelection(updatedPartialSelection) {
+  /**
+   *  Use this as a onSelect handler in Antd Table
+   * @param {Object} record - selected row's data
+   * @param {boolean} selected
+   */
+  handleCherryPickSelection(record, selected) {
+    const credentialId = record[[CREDENTIAL_ID_KEY]];
     this.selectAllCheckboxState = checkboxStates.INDETERMINATE;
-    this.selectedCredentials = this.invisibleSelectedCredentials.concat(updatedPartialSelection);
+
+    if (selected) {
+      // it's important to create new array because Antd has some PureComponent/memo optimizations,
+      // so change is not detected
+      this.selectedCredentials = [...this.selectedCredentials, credentialId];
+    } else {
+      this.selectedCredentials = this.selectedCredentials.filter(scId => scId !== credentialId);
+    }
   }
 }
