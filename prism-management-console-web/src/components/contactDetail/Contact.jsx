@@ -87,7 +87,7 @@ const Contact = observer(
           onClose={handleCancel}
           onFinish={handleUpdateContact}
         />
-        <div className="ContentHeader headerSection">
+        <div className="ContentHeader">
           <div className="buttonSection">
             <CustomButton
               buttonText={t('actions.back')}
@@ -98,12 +98,12 @@ const Contact = observer(
               }}
             />
           </div>
-          <h1>{tp('detailSection.title')}</h1>
         </div>
+        <h1>{tp('detailSection.title')}</h1>
         <div className="detailSection">
           <div className="ContactInfo">
             <h3>{tp('detailSection.subtitle')}</h3>
-            <div className="header">
+            <div className="table-general-info">
               <div className="img">
                 <img className="ContactIcon" src={contactIcon} alt="ContactIcon" />
               </div>

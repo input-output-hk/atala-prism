@@ -8,20 +8,18 @@
   .ContentHeader {
     flex-direction: column;
     border-bottom: 1px solid $light-grey;
-    height: 13vh;
-    h1 {
-      margin-bottom: 0.5em !important;
-    }
   }
-  .headerSection {
-    display: flex;
-    align-items: flex-start;
+  h1 {
+    @include primary-text($h2, $secondary-color);
+    font-weight: bold;
+    margin: 0 0 1em 0;
   }
-  .header {
+  .table-general-info {
     display: flex;
     background-color: #f8f9f9;
     border-radius: 6px;
     padding: 1em;
+    margin-bottom: 2em;
     .img {
       margin-right: 1em;
     }
@@ -42,8 +40,9 @@
     margin: 20px 0 10px 0;
   }
   .subtitleCredentials {
-    margin: 20px 0 0 0 !important;
-    @include primary-text($h3, $secondary-color);
+    margin: 0.5em 0 0 0 !important;
+    @include primary-text(14px, $secondary-color);
+    font-weight: bold;
   }
   .buttonEdit {
     margin-left: auto;
@@ -52,19 +51,24 @@
     display: flex;
     max-height: 85vh;
     overflow-y: auto;
+    margin-top: 1em;
     h3 {
-      @include primary-text($h3, #303034);
+      @include primary-text(14px, $secondary-color);
+      font-weight: bold;
       margin-bottom: 20px;
     }
     .ContactInfo {
-      width: 45%;
-      padding-top: 14px;
+      width: 50%;
+      padding:0 1em 0 0;
     }
     .CredentialInfo {
+      padding: 0 0 0 1em;
+      width: 50%;
       .ant-tabs-nav .ant-tabs-tab {
         @include primary-text($body, #a0aabb);
         font-weight: 800;
         margin: 0 1em 0 0;
+        font-variant: normal;
       }
       .ant-tabs-tab-active {
         .ant-tabs-tab-btn {
@@ -90,33 +94,13 @@
       .ant-tabs-tab:hover {
         color: $primary-color;
       }
-      padding: 0 3em 2em 3em;
-      width: 55%;
       h3 {
         @include primary-text($h3, $black);
       }
       p {
         @include primary-text($body, $dark-grey);
         margin: 0 0 20px 0;
-      }
-      .credentialInfoContainer {
-        display: flex;
-        align-items: center;
-        margin: 2em 0;
-        .img {
-          margin-right: 1em;
-        }
-        .title {
-          margin-right: 50px;
-          p {
-            margin: 0;
-            @include primary-text($label, $dark-grey);
-          }
-          span {
-            margin: 0;
-            @include secondary-text($label, #303034);
-          }
-        }
+        font-variant: normal;
       }
     }
   }
