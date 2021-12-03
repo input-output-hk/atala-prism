@@ -40,6 +40,8 @@ export default class CreateCredentialPageStore {
     this.isInitRecipientsInProgress = false;
   };
 
+  // contacts
+
   get contacts() {
     return this.contactsBaseStore.contacts;
   }
