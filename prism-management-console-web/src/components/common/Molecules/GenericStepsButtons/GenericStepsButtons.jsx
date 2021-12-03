@@ -13,9 +13,11 @@ const GenericStepsButtons = ({ steps, currentStep, disableBack, disableNext, loa
   const { t } = useTranslation();
   const { back, next } = steps[currentStep];
 
+  const isLastStep = currentStep === steps.length - 1;
+
   const nextButton = (
     <>
-      {t('actions.next')}
+      {isLastStep ? t('actions.continue') : t('actions.next')}
       <RightOutlined />
     </>
   );

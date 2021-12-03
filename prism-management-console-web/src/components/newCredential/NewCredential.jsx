@@ -8,7 +8,8 @@ import {
   NEW_CREDENTIALS_STEP_UNIT,
   SELECT_RECIPIENTS_STEP,
   IMPORT_CREDENTIAL_DATA_STEP,
-  SELECT_CREDENTIAL_TYPE_STEP
+  SELECT_CREDENTIAL_TYPE_STEP,
+  CREATE_CREDENTIALS_RESULT
 } from '../../helpers/constants';
 import TemplateFiltersContainer from '../credentialTemplates/Molecules/Filters/TemplateFiltersContainer';
 import { useRedirector } from '../../hooks/useRedirector';
@@ -23,7 +24,7 @@ const NewCredential = ({
   selectedCredentialTypeId,
   hasSelectedRecipients,
   goToCredentialsPreview,
-  onSuccess
+  onCredentialCreation
 }) => {
   const { t } = useTranslation();
   const { redirectToCredentials } = useRedirector();
@@ -38,13 +39,23 @@ const NewCredential = ({
     else message.error(t('newCredential.messages.selectRecipientError'));
   };
 
+  const goToResults = async () => {
+    try {
+      await onCredentialCreation();
+      changeStep(CREATE_CREDENTIALS_RESULT);
+    } catch (error) {
+      message.error(t('newCredential.messages.selectRecipientError'));
+    }
+  };
+
   const goBack = () => changeStep(currentStep - NEW_CREDENTIALS_STEP_UNIT);
 
   const steps = [
     { key: '0', back: redirectToCredentials, next: goToSelectTargets },
     { key: '1', back: goBack, next: goToDataInput },
     { key: '2', back: goBack, next: goToCredentialsPreview },
-    { key: '3', back: goBack, next: onSuccess }
+    { key: '3', back: goBack, next: goToResults },
+    { key: '4', back: goBack, next: redirectToCredentials }
   ];
 
   const isLastStep = currentStep + 1 === steps.length;
@@ -105,7 +116,7 @@ NewCredential.propTypes = {
   selectedCredentialTypeId: PropTypes.string,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   goToCredentialsPreview: PropTypes.func.isRequired,
-  onSuccess: PropTypes.func.isRequired
+  onCredentialCreation: PropTypes.func.isRequired
 };
 
 export default NewCredential;

@@ -11,7 +11,8 @@ import {
   SELECT_CREDENTIAL_TYPE_STEP,
   SELECT_RECIPIENTS_STEP,
   IMPORT_CREDENTIAL_DATA_STEP,
-  PREVIEW_AND_SIGN_CREDENTIAL_STEP
+  PREVIEW_AND_SIGN_CREDENTIAL_STEP,
+  CREATE_CREDENTIALS_RESULT
 } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 import { contactMapper } from '../../APIs/helpers/contactHelpers';
@@ -22,6 +23,7 @@ import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useApi } from '../../hooks/useApi';
 import { useRedirector } from '../../hooks/useRedirector';
 import { useCreateCredentialPageStore } from '../../hooks/useCreateCredentialPageStore';
+import SuccessBanner from '../common/Molecules/SuccessPage/SuccessBanner';
 
 const NewCredentialContainer = observer(() => {
   const { t } = useTranslation();
@@ -154,7 +156,7 @@ const NewCredentialContainer = observer(() => {
     return Promise.all(groupContactsPromises);
   };
 
-  const signCredentials = async () => {
+  const handleCredentialCreation = async () => {
     setIsLoading(true);
 
     const onFinish = async allContacts => {
@@ -181,8 +183,6 @@ const NewCredentialContainer = observer(() => {
         message.success(
           t('newCredential.messages.creationSuccess', { amount: credentialsData.length })
         );
-
-        redirectToCredentials();
       } catch (error) {
         Logger.error(error);
         message.error(t('errors.errorSaving', { model: t('credentials.title') }));
@@ -244,7 +244,6 @@ const NewCredentialContainer = observer(() => {
         );
       }
       case PREVIEW_AND_SIGN_CREDENTIAL_STEP:
-      default:
         return (
           <CredentialsPreview
             groups={selectedGroupsObjects}
@@ -252,6 +251,18 @@ const NewCredentialContainer = observer(() => {
             credentialViews={credentialViews}
           />
         );
+      case CREATE_CREDENTIALS_RESULT: {
+        return (
+          <SuccessBanner
+            title={t('newCredential.success.title')}
+            message={t('newCredential.success.info', { amount: importedData.length })}
+            buttonText={t('actions.continue')}
+            onContinue={redirectToCredentials}
+          />
+        );
+      }
+      default:
+        null;
     }
   };
 
@@ -265,7 +276,7 @@ const NewCredentialContainer = observer(() => {
       renderStep={renderStep}
       selectedCredentialTypeId={selectedCredentialTypeId}
       hasSelectedRecipients={hasSelectedRecipients}
-      onSuccess={signCredentials}
+      onCredentialCreation={handleCredentialCreation}
       isLoading={isLoading}
       goToCredentialsPreview={goToCredentialsPreview}
     />
