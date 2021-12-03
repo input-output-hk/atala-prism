@@ -11,7 +11,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceIdIO, withLogIO, IOWithTraceIdAndMethodNameContext}
+import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog, IOWithTraceIdAndMethodNameContext}
 import io.iohk.atala.prism.node.logging.NodeLogging
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
@@ -53,7 +53,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
 
   import NodeGrpcServiceImpl._
 
-  implicit val loggerIO = NodeLogging.logs.forService[NodeGrpcServiceImpl].unsafeRunSync()
+  private implicit val loggerIO = NodeLogging.logs.forService[NodeGrpcServiceImpl].unsafeRunSync()
 
   override def healthCheck(
       request: HealthCheckRequest
@@ -66,7 +66,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getDidDocument"
 
     measureRequestFuture(serviceName, methodName) {
-      withLogIO(methodName, request) { traceId =>
+      withLog(methodName, request) { traceId =>
         getDidDocument(request.did, methodName, traceId)
       }
     }
@@ -79,7 +79,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getBatchState"
 
     measureRequestFuture(serviceName, methodName) {
-      withLogIO(methodName, request) { traceId =>
+      withLog(methodName, request) { traceId =>
         val ctx = TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName)
         val batchIdF = getFromOptionOrFailF(
           Option(CredentialBatchId.fromString(request.batchId)),
@@ -88,7 +88,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
         )
         for {
           batchId <- batchIdF
-          _ <- logWithTraceIdIO(
+          _ <- logWithTraceId(
             methodName,
             traceId,
             "batchId" -> s"${batchId.getId}"
@@ -119,7 +119,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
         Status.INTERNAL.getCode.value()
       )
     measureRequestFuture(serviceName, methodName) {
-      withLogIO(methodName, request) { traceId =>
+      withLog(methodName, request) { traceId =>
         val ctx = TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName)
         val batchIdF = getFromOptionOrFailF(
           Option(CredentialBatchId.fromString(request.batchId)),
@@ -128,9 +128,9 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
         )
         for {
           batchId <- batchIdF
-          _ <- logWithTraceIdIO(methodName, traceId, "batchId" -> s"${batchId.getId}").unsafeToFuture()
+          _ <- logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}").unsafeToFuture()
           credentialHash <- credentialHashF
-          _ <- logWithTraceIdIO(
+          _ <- logWithTraceId(
             methodName,
             traceId,
             "credentialHash" -> s"${credentialHash.getHexValue}"
@@ -186,11 +186,11 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       )
 
     measureRequestFuture(serviceName, methodName) {
-      withLogIO(methodName, request) { traceId =>
+      withLog(methodName, request) { traceId =>
         for {
           operations <- operationsF
           operationIds = operations.map(AtalaOperationId.of)
-          _ <- logWithTraceIdIO(
+          _ <- logWithTraceId(
             methodName,
             traceId,
             "operations" -> operationIds.map(_.toString).mkString(",")
@@ -226,12 +226,12 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
 
     val methodName = "getOperationInfo"
 
-    withLogIO(methodName, request) { traceId =>
+    withLog(methodName, request) { traceId =>
       val atalaOperationId = AtalaOperationId.fromVectorUnsafe(
         request.operationId.toByteArray.toVector
       )
       for {
-        _ <- logWithTraceIdIO(
+        _ <- logWithTraceId(
           methodName,
           traceId,
           "atalaOperationId" -> s"${atalaOperationId.toString}"
@@ -308,7 +308,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[node_api.GetLastSyncedBlockTimestampResponse] = {
     val methodName = "lastSyncedTimestamp"
     measureRequestFuture(serviceName, methodName)(
-      withLogIO(methodName, request) { traceId =>
+      withLog(methodName, request) { traceId =>
         nodeService.getLastSyncedTimestamp
           .map { lastSyncedBlockTimestamp =>
             node_api
@@ -329,7 +329,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getNodeBuildInfo"
 
     measureRequestFuture(serviceName, methodName)(
-      withLogIO(methodName, request) { _ =>
+      withLog(methodName, request) { _ =>
         Future
           .successful(
             node_api

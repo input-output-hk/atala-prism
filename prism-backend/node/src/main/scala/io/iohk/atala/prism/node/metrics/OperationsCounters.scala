@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.metrics
 
-import io.iohk.atala.prism.node.NodeApp
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.operations.StateError
 import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation, UpdateDIDAction}
@@ -16,7 +15,7 @@ import scala.util.Try
 
 object OperationsCounters {
 
-  private val logger = Logging.Make.plain[IO].forService[NodeApp]
+  private val logger = Logging.Make.plain[IO].forService[OperationsCounters.type]
 
   private val RECEIVED_OPERATION_METRIC_NAME = "received-atala-operations"
   private val FAILED_TO_STORE_OPERATION_METRIC_NAME =

@@ -28,7 +28,7 @@ object NodeLogging {
     Logs.withContext[IO, IOWithTraceIdAndMethodNameContext]
   }
 
-  def withLogIO[Response <: GeneratedMessage, Req <: GeneratedMessage](
+  def withLog[Response <: GeneratedMessage, Req <: GeneratedMessage](
       methodName: String,
       request: Req
   )(code: TraceId => Future[Response])(implicit
@@ -59,7 +59,7 @@ object NodeLogging {
     }
   }
 
-  def logWithTraceIdIO(
+  def logWithTraceId(
       methodName: String,
       traceId: TraceId,
       argsToLog: (String, String)*
