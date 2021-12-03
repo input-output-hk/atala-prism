@@ -12,9 +12,10 @@ import { useSession } from '../../hooks/useSession';
 import CopyGroupModal from './Organisms/Modals/CopyGroupModal/CopyGroupModal';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import { useRedirector } from '../../hooks/useRedirector';
+import { useGroupsPageStore } from '../../hooks/useGroupStore';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
-import { useGroupsPageStore } from '../../hooks/useGroupStore';
 
 const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
@@ -33,7 +34,17 @@ const NewGroupButton = ({ onClick }) => {
 const Groups = observer(({ handleGroupDeletion, copyGroup }) => {
   const { t } = useTranslation();
   const { redirectToGroupCreation } = useRedirector();
-  const { isSaving } = useGroupsPageStore();
+  const {
+    filterSortingProps,
+    groups,
+    fetchMoreData,
+    isFetchingMore,
+    hasMore,
+    hasFiltersApplied,
+    isSearching,
+    isLoadingFirstPage,
+    isSaving
+  } = useGroupsPageStore();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
@@ -93,17 +104,27 @@ const Groups = observer(({ handleGroupDeletion, copyGroup }) => {
         </div>
         <div className="filterSection">
           <div className="filterContainer">
-            <GroupFilters showFullFilter />
+            <GroupFilters filterSortingProps={filterSortingProps} showFullFilter={true} />
           </div>
           {accountStatus === CONFIRMED && newGroupButton}
         </div>
       </div>
       <div className="GroupContentContainer InfiniteScrollTableContainer">
-        <GroupsTable
-          onCopy={handleCopy}
-          setGroupToDelete={setGroupToDelete}
-          newGroupButton={newGroupButton}
-        />
+        {isLoadingFirstPage ? (
+          <SimpleLoading size="md" />
+        ) : (
+          <GroupsTable
+            groups={groups}
+            fetchMoreData={fetchMoreData}
+            isFetchingMore={isFetchingMore}
+            hasMore={hasMore}
+            hasFiltersApplied={hasFiltersApplied}
+            isLoading={isSearching || isSaving}
+            onCopy={handleCopy}
+            setGroupToDelete={setGroupToDelete}
+            newGroupButton={newGroupButton}
+          />
+        )}
       </div>
     </div>
   );

@@ -66,7 +66,7 @@ export default class GroupsBaseStore {
 
   init() {
     this.resetGroupsAndFilters();
-    this.fetchMoreData({ startFromTheTop: true });
+    return this.fetchMoreData({ startFromTheTop: true });
   }
 
   get isLoadingFirstPage() {
@@ -75,6 +75,10 @@ export default class GroupsBaseStore {
 
   get hasMore() {
     return this.totalNumberOfGroups > this.groups.length;
+  }
+
+  get isFetchingMore() {
+    return this.isFetching && this.totalNumberOfGroups && !this.isSearching;
   }
 
   resetGroups() {

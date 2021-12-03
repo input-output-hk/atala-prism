@@ -224,10 +224,6 @@ const NewCredentialContainer = observer(() => {
       case SELECT_RECIPIENTS_STEP:
         return (
           <RecipientsSelection
-            selectedGroups={selectedGroups}
-            setSelectedGroups={setSelectedGroups}
-            selectedContacts={selectedContacts}
-            setSelectedContacts={setSelectedContacts}
             toggleShouldSelectRecipients={handleToggleShouldSelectRecipients}
             shouldSelectRecipients={shouldSelectRecipients}
           />

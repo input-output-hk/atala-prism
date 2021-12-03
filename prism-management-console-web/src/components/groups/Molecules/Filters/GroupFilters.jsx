@@ -8,12 +8,10 @@ import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInput
 import CustomDateRangePicker from '../../../common/Atoms/CustomDatePicker/CustomDateRangePicker';
 import { GROUP_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
 import './_style.scss';
-import { useGroupsPageStore } from '../../../../hooks/useGroupStore';
 
-const GroupFilters = observer(({ showFullFilter }) => {
+const GroupFilters = observer(({ filterSortingProps, showFullFilter }) => {
   const { t } = useTranslation();
 
-  const { filterSortingProps } = useGroupsPageStore();
   const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = filterSortingProps;
 
   const datePickerProps = {
@@ -67,11 +65,18 @@ const GroupFilters = observer(({ showFullFilter }) => {
 });
 
 GroupFilters.defaultProps = {
-  showFullFilter: false
+  showFullFilter: false,
+  filterSortingProps: {}
 };
 
 GroupFilters.propTypes = {
-  showFullFilter: PropTypes.bool
+  showFullFilter: PropTypes.bool,
+  filterSortingProps: PropTypes.shape({
+    sortDirection: PropTypes.string,
+    setSortingBy: PropTypes.func,
+    setFilterValue: PropTypes.func,
+    toggleSortDirection: PropTypes.func
+  })
 };
 
 export default GroupFilters;

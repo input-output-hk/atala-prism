@@ -6,52 +6,50 @@ import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import GroupFilters from '../../../groups/Molecules/Filters/GroupFilters';
 import SelectAllButton from './SelectAllButton';
-import { useGroupStore } from '../../../../hooks/useGroupStore';
-import { GROUP_NAME_KEY } from '../../../../helpers/constants';
+import { useCreateCredentialPageStore } from '../../../../hooks/useCreateCredentialPageStore';
 import './_style.scss';
-import { useSelectAll } from '../../../../hooks/useSelectAll';
 
-const GroupsTableHeader = observer(
-  ({ selectedGroups, setSelectedGroups, shouldSelectRecipients, toggleShouldSelectRecipients }) => {
-    const { t } = useTranslation();
+const GroupsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSelectRecipients }) => {
+  const { t } = useTranslation();
 
-    const { groups, getGroupsToSelect, isFetching } = useGroupStore();
+  const {
+    selectedGroups,
+    groupsSelectAllCheckboxStateProps,
+    isLoadingGroupsSelection,
+    selectAllGroups,
+    groups,
+    groupsFilterSortingProps
+  } = useCreateCredentialPageStore();
 
-    const { loadingSelection, checkboxProps } = useSelectAll({
-      displayedEntities: groups,
-      entitiesFetcher: getGroupsToSelect,
-      entityKey: GROUP_NAME_KEY,
-      selectedEntities: selectedGroups,
-      setSelectedEntities: setSelectedGroups,
-      shouldSelectRecipients,
-      isFetching
-    });
+  const selectAllCheckboxProps = {
+    checked: groupsSelectAllCheckboxStateProps.checked,
+    indeterminate: groupsSelectAllCheckboxStateProps.indeterminate,
+    disabled: !shouldSelectRecipients || !groups.length,
+    onChange: selectAllGroups
+  };
 
-    return (
-      <div className="RecipientsSelectionTableHeader">
-        <GroupFilters showFullFilter={false} />
-        <SelectAllButton
-          isLoadingSelection={loadingSelection}
-          selectedEntities={selectedGroups}
-          checkboxProps={checkboxProps}
-        />
-        <div className="RecipientSelectionCheckbox NoRecipientsCheckbox">
-          <Checkbox
-            className="CheckboxReverse"
-            onChange={toggleShouldSelectRecipients}
-            checked={!shouldSelectRecipients}
-          >
-            <WarningOutlined className="icon" /> {t('newCredential.targetsSelection.checkbox')}
-          </Checkbox>
-        </div>
+  return (
+    <div className="RecipientsSelectionTableHeader">
+      <GroupFilters filterSortingProps={groupsFilterSortingProps} showFullFilter={false} />
+      <SelectAllButton
+        isLoadingSelection={isLoadingGroupsSelection}
+        selectedEntities={selectedGroups}
+        checkboxProps={selectAllCheckboxProps}
+      />
+      <div className="RecipientSelectionCheckbox NoRecipientsCheckbox">
+        <Checkbox
+          className="CheckboxReverse"
+          onChange={toggleShouldSelectRecipients}
+          checked={!shouldSelectRecipients}
+        >
+          <WarningOutlined className="icon" /> {t('newCredential.targetsSelection.checkbox')}
+        </Checkbox>
       </div>
-    );
-  }
-);
+    </div>
+  );
+});
 
 GroupsTableHeader.propTypes = {
-  selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedGroups: PropTypes.func.isRequired,
   shouldSelectRecipients: PropTypes.bool.isRequired,
   toggleShouldSelectRecipients: PropTypes.func.isRequired
 };

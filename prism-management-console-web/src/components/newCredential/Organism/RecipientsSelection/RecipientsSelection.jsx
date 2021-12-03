@@ -7,7 +7,8 @@ import GroupsTable from '../../../groups/Organisms/Tables/GroupsTable';
 import ConnectionsTable from '../../../connections/Organisms/table/ConnectionsTable';
 import GroupsTableHeader from '../../Molecules/RecipientsTable/GroupsTableHeader';
 import ContactsTableHeader from '../../Molecules/RecipientsTable/ContactsTableHeader';
-import { useContactStore } from '../../../../hooks/useContactStore';
+import { useCreateCredentialPageStore } from '../../../../hooks/useCreateCredentialPageStore';
+import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
@@ -16,93 +17,95 @@ const { TabPane } = Tabs;
 const GROUPS_KEY = 'groups';
 const SUBJECTS_KEY = 'subjects';
 
-const RecipientsSelection = observer(
-  ({
-    selectedGroups,
-    setSelectedGroups,
+const RecipientsSelection = observer(({ toggleShouldSelectRecipients, shouldSelectRecipients }) => {
+  const { t } = useTranslation();
+
+  const {
+    initRecipients,
+    isInitRecipientsInProgress,
+    contacts,
+    hasMoreContacts,
+    hasContactsFiltersApplied,
+    isSearchingContacts,
+    isFetchingMoreContacts,
+    fetchMoreContacts,
+    // contacts select all
     selectedContacts,
-    setSelectedContacts,
-    toggleShouldSelectRecipients,
-    shouldSelectRecipients
-  }) => {
-    const { t } = useTranslation();
+    handleContactsCherryPickSelection,
+    // groups
+    groups,
+    hasMoreGroups,
+    hasGroupsFiltersApplied,
+    isSearchingGroups,
+    isFetchingMoreGroups,
+    fetchMoreGroups,
+    // groups select all
+    selectedGroups,
+    handleGroupsCherryPickSelection
+  } = useCreateCredentialPageStore();
 
-    const {
-      contacts,
-      contactUiState: { hasFiltersApplied, isSearching, isSorting },
-      initContactStore,
-      isLoadingFirstPage,
-      fetchMoreData,
-      isFetching,
-      hasMore
-    } = useContactStore();
+  useEffect(() => {
+    initRecipients();
+  }, [initRecipients]);
 
-    useEffect(() => {
-      initContactStore();
-    }, [initContactStore]);
+  const renderHelpText = () => (
+    <div className="helperTextContainer">
+      <span>{t('newCredential.targetsSelection.helpText')}</span>
+    </div>
+  );
 
-    const renderHelpText = () => (
-      <div className="helperTextContainer">
-        <span>{t('newCredential.targetsSelection.helpText')}</span>
-      </div>
-    );
-
-    return (
-      <div className="RecipientsSelection">
-        <Tabs defaultActiveKey="groups">
-          <TabPane key={GROUPS_KEY} tab={t('newCredential.targetsSelection.groups')}>
-            {renderHelpText()}
-            <GroupsTableHeader
-              selectedGroups={selectedGroups}
-              setSelectedGroups={setSelectedGroups}
-              shouldSelectRecipients={shouldSelectRecipients}
-              toggleShouldSelectRecipients={toggleShouldSelectRecipients}
-            />
-            <div className="groupsTableContainer">
-              <GroupsTable
-                selectedGroups={selectedGroups}
-                setSelectedGroups={setSelectedGroups}
-                shouldSelectRecipients={shouldSelectRecipients}
-              />
-            </div>
-          </TabPane>
-          <TabPane key={SUBJECTS_KEY} tab={t('newCredential.targetsSelection.subjects')}>
-            {renderHelpText()}
-            <ContactsTableHeader
-              setSelectedContacts={setSelectedContacts}
-              selectedContacts={selectedContacts}
-              shouldSelectRecipients={shouldSelectRecipients}
-              toggleShouldSelectRecipients={toggleShouldSelectRecipients}
-            />
-            <ConnectionsTable
-              contacts={contacts}
-              fetchMoreData={fetchMoreData}
-              hasMore={hasMore}
-              hasFiltersApplied={hasFiltersApplied}
-              isLoading={isLoadingFirstPage || isLoadingFirstPage || isSorting}
-              isFetchingMore={isFetching || isSearching}
-              setSelectedContacts={setSelectedContacts}
-              selectedContacts={selectedContacts}
-              shouldSelectRecipients={shouldSelectRecipients}
-              size="xs"
-              searchDueGeneralScroll
-            />
-          </TabPane>
-        </Tabs>
-      </div>
-    );
+  if (isInitRecipientsInProgress) {
+    return <SimpleLoading size="md" />;
   }
-);
+
+  return (
+    <div className="RecipientsSelection">
+      <Tabs defaultActiveKey="groups">
+        <TabPane key={GROUPS_KEY} tab={t('newCredential.targetsSelection.groups')}>
+          {renderHelpText()}
+          <GroupsTableHeader
+            shouldSelectRecipients={shouldSelectRecipients}
+            toggleShouldSelectRecipients={toggleShouldSelectRecipients}
+          />
+          <div className="groupsTableContainer">
+            <GroupsTable
+              groups={groups}
+              fetchMoreData={fetchMoreGroups}
+              isFetchingMore={isFetchingMoreGroups}
+              hasMore={hasMoreGroups}
+              hasFiltersApplied={hasGroupsFiltersApplied}
+              isLoading={isSearchingGroups}
+              selectedGroups={selectedGroups}
+              onSelect={handleGroupsCherryPickSelection}
+              shouldSelectRecipients={shouldSelectRecipients}
+            />
+          </div>
+        </TabPane>
+        <TabPane key={SUBJECTS_KEY} tab={t('newCredential.targetsSelection.subjects')}>
+          {renderHelpText()}
+          <ContactsTableHeader
+            shouldSelectRecipients={shouldSelectRecipients}
+            toggleShouldSelectRecipients={toggleShouldSelectRecipients}
+          />
+          <ConnectionsTable
+            contacts={contacts}
+            fetchMoreData={fetchMoreContacts}
+            hasMore={hasMoreContacts}
+            hasFiltersApplied={hasContactsFiltersApplied}
+            isLoading={isSearchingContacts}
+            isFetchingMore={isFetchingMoreContacts}
+            onSelect={handleContactsCherryPickSelection}
+            selectedContacts={selectedContacts}
+            shouldSelectRecipients={shouldSelectRecipients}
+            size="xs"
+          />
+        </TabPane>
+      </Tabs>
+    </div>
+  );
+});
 
 RecipientsSelection.propTypes = {
-  groupsProps: PropTypes.shape({
-    selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setSelectedGroups: PropTypes.func.isRequired
-  }).isRequired,
-  contactsProps: PropTypes.shape({
-    selectedContacts: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setSelectedContacts: PropTypes.func.isRequired
-  }).isRequired,
   toggleShouldSelectRecipients: PropTypes.func.isRequired,
   shouldSelectRecipients: PropTypes.bool.isRequired
 };

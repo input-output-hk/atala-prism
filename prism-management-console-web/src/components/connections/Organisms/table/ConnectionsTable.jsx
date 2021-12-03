@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { contactShape } from '../../../../helpers/propShapes';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
@@ -7,65 +8,67 @@ import { getContactColumns } from '../../../../helpers/tableDefinitions/contacts
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import noContacts from '../../../../images/noConnections.svg';
 import { useSession } from '../../../../hooks/useSession';
-import { CONFIRMED } from '../../../../helpers/constants';
+import { CONFIRMED, CONTACT_ID_KEY } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const ConnectionsTable = ({
-  contacts,
-  fetchMoreData,
-  hasMore,
-  hasFiltersApplied,
-  isLoading,
-  isFetchingMore,
-  columns,
-  setSelectedContacts,
-  onSelect,
-  selectedContacts,
-  inviteContact,
-  viewContactDetail,
-  shouldSelectRecipients,
-  newContactButton
-}) => {
-  const { t } = useTranslation();
-  const { accountStatus } = useSession();
-
-  const emptyProps = {
-    photoSrc: noContacts,
-    model: t('contacts.title'),
-    isFilter: hasFiltersApplied,
-    button: newContactButton
-  };
-
-  const renderEmpty = () => (
-    <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newContactButton} />
-  );
-
-  const tableProps = {
-    columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
-    data: contacts,
-    selectionType:
-      setSelectedContacts || onSelect
-        ? {
-            selectedRowKeys: selectedContacts,
-            type: 'checkbox',
-            onChange: setSelectedContacts,
-            onSelect,
-            getCheckboxProps: () => ({
-              disabled: !shouldSelectRecipients
-            })
-          }
-        : undefined,
-    rowKey: 'contactId',
-    getMoreData: fetchMoreData,
-    loading: isLoading,
-    fetchingMore: isFetchingMore,
+const ConnectionsTable = observer(
+  ({
+    contacts,
+    fetchMoreData,
     hasMore,
-    renderEmpty
-  };
+    hasFiltersApplied,
+    isLoading,
+    isFetchingMore,
+    columns,
+    setSelectedContacts,
+    onSelect,
+    selectedContacts,
+    inviteContact,
+    viewContactDetail,
+    shouldSelectRecipients,
+    newContactButton
+  }) => {
+    const { t } = useTranslation();
+    const { accountStatus } = useSession();
 
-  return <InfiniteScrollTable {...tableProps} />;
-};
+    const emptyProps = {
+      photoSrc: noContacts,
+      model: t('contacts.title'),
+      isFilter: hasFiltersApplied,
+      button: newContactButton
+    };
+
+    const renderEmpty = () => (
+      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newContactButton} />
+    );
+
+    const tableProps = {
+      columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
+      data: contacts,
+      selectionType:
+        setSelectedContacts || onSelect
+          ? {
+              selectedRowKeys: selectedContacts,
+              type: 'checkbox',
+              onChange: setSelectedContacts,
+              onSelect,
+              getCheckboxProps: () => ({
+                disabled: !shouldSelectRecipients
+              })
+            }
+          : undefined,
+      rowKey: CONTACT_ID_KEY,
+      getMoreData: fetchMoreData,
+      loading: isLoading,
+      fetchingMore: isFetchingMore,
+      hasMore,
+      renderEmpty
+    };
+
+    return <InfiniteScrollTable {...tableProps} />;
+  }
+);
 
 ConnectionsTable.defaultProps = {
   contacts: [],

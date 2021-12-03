@@ -56,6 +56,10 @@ export default class GroupsPageStore {
     return this.groupsBaseStore.isFetching;
   }
 
+  get isFetchingMore() {
+    return this.groupsBaseStore.isFetchingMore;
+  }
+
   fetchMoreData() {
     return this.groupsBaseStore.fetchMoreData();
   }
