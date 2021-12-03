@@ -74,6 +74,10 @@ export default class CreateCredentialPageStore {
     return this.contactsSelectStore.selectedContacts;
   }
 
+  get selectedContactsObjects() {
+    return this.contactsSelectStore.selectedContactsObjects;
+  }
+
   get isLoadingContactsSelection() {
     return this.contactsSelectStore.isLoadingSelection;
   }
@@ -128,8 +132,16 @@ export default class CreateCredentialPageStore {
 
   // groups select all
 
+  get selectedGroupsObjects() {
+    return this.groupsSelectStore.selectedGroupsObjects;
+  }
+
   get selectedGroups() {
     return this.groupsSelectStore.selectedGroups;
+  }
+
+  get selectedGroupsNames() {
+    return this.groupsSelectStore.selectedGroupsNames;
   }
 
   get isLoadingGroupsSelection() {

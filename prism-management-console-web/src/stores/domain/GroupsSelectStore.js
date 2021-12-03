@@ -8,7 +8,7 @@ const checkboxStates = {
 };
 
 export default class GroupsSelectStore {
-  selectedGroups = [];
+  selectedGroupsObjects = [];
 
   isLoadingSelection = false;
 
@@ -26,6 +26,14 @@ export default class GroupsSelectStore {
     );
   }
 
+  get selectedGroups() {
+    return this.selectedGroupsObjects.map(groupRow => groupRow[GROUP_ID_KEY]);
+  }
+
+  get selectedGroupsNames() {
+    return this.selectedGroupsObjects.map(groupRow => groupRow.name);
+  }
+
   get selectAllCheckboxStateProps() {
     return {
       checked: this.selectAllCheckboxState === checkboxStates.CHECKED,
@@ -37,13 +45,12 @@ export default class GroupsSelectStore {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
     this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
-    const entitiesToSelect = checked ? yield this.api.groupsManager.getAllGroups(filters) : [];
-    this.selectedGroups = entitiesToSelect.map(e => e[GROUP_ID_KEY]);
+    this.selectedGroupsObjects = checked ? yield this.api.groupsManager.getAllGroups(filters) : [];
     this.isLoadingSelection = false;
   }
 
   resetSelection() {
-    this.selectedGroups = [];
+    this.selectedGroupsObjects = [];
     this.selectAllCheckboxState = checkboxStates.UNCHECKED;
     this.isLoadingSelection = false;
   }
@@ -54,15 +61,17 @@ export default class GroupsSelectStore {
    * @param {boolean} selected
    */
   handleCherryPickSelection(record, selected) {
-    const groupId = record[GROUP_ID_KEY];
+    const newGroupId = record[GROUP_ID_KEY];
     this.selectAllCheckboxState = checkboxStates.INDETERMINATE;
 
     if (selected) {
       // it's important to create new array because Antd has some PureComponent/memo optimizations,
       // so change is not detected
-      this.selectedGroups = [...this.selectedGroups, groupId];
+      this.selectedGroupsObjects = [...this.selectedGroupsObjects, record];
     } else {
-      this.selectedGroups = this.selectedGroups.filter(sgId => sgId !== groupId);
+      this.selectedGroupsObjects = this.selectedGroupsObjects.filter(
+        groupRow => groupRow[GROUP_ID_KEY] !== newGroupId
+      );
     }
   }
 }

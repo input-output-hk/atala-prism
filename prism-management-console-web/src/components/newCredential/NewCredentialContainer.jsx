@@ -19,10 +19,9 @@ import ImportCredentialsData from '../importCredentialsData/ImportCredentialsDat
 import { useSession } from '../../hooks/useSession';
 import { fillHTMLCredential } from '../../helpers/credentialView';
 import { useTemplateStore } from '../../hooks/useTemplateStore';
-import { useGroupStore, useGroupUiState } from '../../hooks/useGroupStore';
-import { useContactStore } from '../../hooks/useContactStore';
 import { useApi } from '../../hooks/useApi';
 import { useRedirector } from '../../hooks/useRedirector';
+import { useCreateCredentialPageStore } from '../../hooks/useCreateCredentialPageStore';
 
 const NewCredentialContainer = observer(() => {
   const { t } = useTranslation();
@@ -37,15 +36,6 @@ const NewCredentialContainer = observer(() => {
   const [credentialTypeDetails, setCredentialTypeDetails] = useState();
   const resetCredentialTypeDetails = useCallback(() => setCredentialTypeDetails(), []);
 
-  const [selectedGroups, setSelectedGroups] = useState([]);
-
-  const { groups } = useGroupStore({ reset: true });
-  useGroupUiState({ reset: true });
-
-  const { contacts } = useContactStore();
-
-  const [selectedContacts, setSelectedContacts] = useState([]);
-
   const {
     getCredentialTemplateDetails: getCredentialTypeDetails,
     templateCategories
@@ -56,6 +46,18 @@ const NewCredentialContainer = observer(() => {
   const [importedData, setImportedData] = useState([]);
   const [credentialViewTemplates, setCredentialViewTemplates] = useState([]);
   const [credentialViews, setCredentialViews] = useState([]);
+
+  const {
+    contacts,
+    groups,
+    selectedContacts,
+    selectedContactsObjects,
+    selectedGroups,
+    selectedGroupsNames,
+    selectedGroupsObjects,
+    resetContactsSelection,
+    resetGroupsSelection
+  } = useCreateCredentialPageStore();
 
   useEffect(() => {
     if (!credentialViewTemplates.length)
@@ -81,14 +83,14 @@ const NewCredentialContainer = observer(() => {
 
   useEffect(() => {
     if (!shouldSelectRecipients) {
-      setSelectedGroups([]);
-      setSelectedContacts([]);
+      resetContactsSelection();
+      resetGroupsSelection();
     }
-  }, [shouldSelectRecipients]);
+  }, [shouldSelectRecipients, resetContactsSelection, resetGroupsSelection]);
 
   const getRecipients = async () => {
-    const groupContactsPromises = selectedGroups.map(group =>
-      contactsManager.getAllContacts({ groupName: group })
+    const groupContactsPromises = selectedGroupsNames.map(groupName =>
+      contactsManager.getAllContacts({ groupName })
     );
 
     const allContacts = await contactsManager.getAllContacts();
@@ -145,8 +147,8 @@ const NewCredentialContainer = observer(() => {
   };
 
   const getContactsFromGroups = () => {
-    const groupContactsPromises = selectedGroups.map(group =>
-      contactsManager.getAllContacts({ groupName: group })
+    const groupContactsPromises = selectedGroupsNames.map(groupName =>
+      contactsManager.getAllContacts({ groupName })
     );
 
     return Promise.all(groupContactsPromises);
@@ -172,7 +174,7 @@ const NewCredentialContainer = observer(() => {
         const createCredentialsResponse = await credentialsManager.createBatchOfCredentials(
           credentialsData,
           credentialTypeDetails,
-          selectedGroups.map(sg => groups.find(g => g.name === sg))
+          selectedGroups
         );
         Logger.debug('Created credentials:', createCredentialsResponse);
         Logger.info('Successfully created the credential(s)');
@@ -245,8 +247,8 @@ const NewCredentialContainer = observer(() => {
       default:
         return (
           <CredentialsPreview
-            groups={groups.filter(({ name: groupName }) => selectedGroups.includes(groupName))}
-            subjects={contacts.filter(({ contactId }) => selectedContacts.includes(contactId))}
+            groups={selectedGroupsObjects}
+            subjects={selectedContactsObjects}
             credentialViews={credentialViews}
           />
         );
@@ -265,6 +267,7 @@ const NewCredentialContainer = observer(() => {
       hasSelectedRecipients={hasSelectedRecipients}
       onSuccess={signCredentials}
       isLoading={isLoading}
+      goToCredentialsPreview={goToCredentialsPreview}
     />
   );
 });

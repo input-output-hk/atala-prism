@@ -112,12 +112,12 @@ function getAllCredentials({
   });
 }
 
-async function createBatchOfCredentials(credentialsData, credentialType, groups) {
+async function createBatchOfCredentials(credentialsData, credentialType, groupsIds) {
   Logger.info(`Creating ${credentialsData.length} credential(s):`);
   const draftsToSend = credentialsData.map(c => ({
     external_id: c.externalId,
     credential_data: _.omit(c, ['externalId', 'issuer', 'credentialType']),
-    group_ids: groups.map(g => g.id)
+    group_ids: groupsIds
   }));
   const jsonToSend = {
     // FIXME: issuance_name is required to be unique by the backend.
