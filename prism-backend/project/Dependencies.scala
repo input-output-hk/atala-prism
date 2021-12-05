@@ -1,7 +1,7 @@
 import sbt._
 
 object versions {
-  val bouncycastle = "1.69"
+  val bouncycastle = "1.70"
   val catsScalatest = "3.1.1"
   val chimney = "0.6.1"
   val circe = "0.14.1"
