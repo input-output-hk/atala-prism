@@ -61,44 +61,22 @@ export default class TemplateCreationStore {
   }
 
   *createCredentialTemplate() {
-    try {
-      const newTemplate = {
-        ...this.templateSketchStore.templateSketch,
-        template: this.preview,
-        state: CREDENTIAL_TYPE_STATUSES.MOCKED,
-        id: uuidv4()
-      };
-      yield this.api.credentialTypesManager.createTemplate(newTemplate);
-      this.transportLayerErrorHandler.handleTransportLayerSuccess();
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'createCredentialTemplate',
-        verb: 'saving',
-        model: 'Template'
-      };
-      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
-    }
+    const newTemplate = {
+      ...this.templateSketchStore.templateSketch,
+      template: this.preview,
+      state: CREDENTIAL_TYPE_STATUSES.MOCKED,
+      id: uuidv4()
+    };
+    yield this.api.credentialTypesManager.createTemplate(newTemplate);
   }
 
   *createTemplateCategory(newCategoryData) {
     this.isFetchingCategories = true;
-    try {
-      const { categoryName } = newCategoryData;
-      const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
-      const response = yield this.api.credentialTypesManager.createCategory(newCategory);
-      this.transportLayerErrorHandler.handleTransportLayerSuccess();
-      this.templatesBaseStore.fetchCategories();
-      return response;
-    } catch (error) {
-      const metadata = {
-        store: this.storeName,
-        method: 'createTemplateCategory',
-        verb: 'saving',
-        model: 'Template Category'
-      };
-      this.transportLayerErrorHandler.handleTransportLayerError(error, metadata);
-    }
+    const { categoryName } = newCategoryData;
+    const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
+    const response = yield this.api.credentialTypesManager.createCategory(newCategory);
+    this.templatesBaseStore.fetchCategories();
     this.isFetchingCategories = false;
+    return response;
   }
 }

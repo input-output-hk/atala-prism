@@ -14,6 +14,7 @@ import {
 import { useRedirector } from '../../hooks/useRedirector';
 import './_style.scss';
 import { useTemplateCreationStore } from '../../hooks/useTemplatesPageStore';
+import Logger from '../../helpers/Logger';
 
 const fieldsByStep = {
   [TEMPLATE_NAME_ICON_CATEGORY]: ['name', 'category'],
@@ -62,8 +63,13 @@ const CredentialTemplateCreation = observer(({ currentStep, changeStep }) => {
     setLoadingNext(true);
     const isPartiallyValid = await validate();
     if (isPartiallyValid) {
-      await createCredentialTemplate();
-      advanceStep();
+      try {
+        await createCredentialTemplate();
+        advanceStep();
+      } catch (error) {
+        Logger.error('[templateStore.createCredentialTemplate] Error while saving Template', error);
+        message.error(t('errors.saving', { model: t('templates.model') }));
+      }
     }
     setLoadingNext(false);
   };

@@ -547,7 +547,7 @@
     "checkInfo": "Check the data below"
   },
   "templates": {
-    "model": "Templates",
+    "model": "Template",
     "title": "Credential Templates",
     "table": {
       "unknownValue": "Unknown",
