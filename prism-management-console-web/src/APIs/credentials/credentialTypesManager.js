@@ -7,7 +7,7 @@ import {
   CreateCredentialTypeRequest
 } from '../../protos/console_api_pb';
 import { CreateCredentialType, CreateCredentialTypeField } from '../../protos/console_models_pb';
-import { adaptCredentialType, splitBase64String } from '../helpers/credentialTypeHelpers';
+import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import { VALIDATION_KEYS } from '../../helpers/constants';
 
 async function getCredentialTypes() {
@@ -48,7 +48,7 @@ async function createTemplate(values) {
   const createCredentialTypeRequest = new CreateCredentialTypeRequest();
   const credentialType = new CreateCredentialType();
 
-  const { data: iconData } = splitBase64String(values.icon);
+  const [_prefix, iconData] = values.icon.split(',');
 
   credentialType.setName(values.name);
   credentialType.setTemplate(values.template);

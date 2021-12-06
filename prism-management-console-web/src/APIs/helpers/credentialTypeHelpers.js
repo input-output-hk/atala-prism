@@ -62,11 +62,3 @@ export const getCredentialTypeAttributes = async credentialList => {
     credentialTypeIconFormat: 'svg'
   };
 };
-
-export const splitBase64String = b64String => {
-  const [prefix, data] = b64String.split(',');
-  return {
-    prefix,
-    data
-  };
-};
