@@ -29,10 +29,10 @@ const TemplateCategorySection = observer(() => {
   } = useTemplateCreationStore();
   const [open, setOpen] = useState(false);
 
-  const handleCreateCategory = newCategoryName => {
+  const handleCreateCategory = async newCategoryName => {
     const categoryName = normalize(newCategoryName);
     try {
-      createTemplateCategory({ categoryName });
+      await createTemplateCategory({ categoryName });
     } catch (error) {
       Logger.error(
         '[templateStore.createTemplateCategory] Error while saving Template Category',
