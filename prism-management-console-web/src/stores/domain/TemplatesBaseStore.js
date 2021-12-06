@@ -129,7 +129,7 @@ export default class TemplatesBaseStore {
   applySorting = templates =>
     _.orderBy(
       templates,
-      [o => (this.sortingIsCaseSensitive() ? o[this.sortingBy].toLowerCase() : o[this.sortingBy])],
+      [t => (this.sortingIsCaseSensitive() ? t[this.sortingBy]?.toLowerCase() : t[this.sortingBy])],
       this.sortDirection === ascending ? 'asc' : 'desc'
     );
 
