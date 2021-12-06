@@ -64,7 +64,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
 
         val storedPayloads =
           payloadsRepository
-            .getByPaginated(did, None, 10)
+            .getRecordsPaginated(did, None, 10)
             .run(TraceId.generateYOLO)
             .unsafeRunSync()
 
@@ -100,7 +100,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
 
       val storedPayloads =
         payloadsRepository
-          .getByPaginated(did, None, 10)
+          .getRecordsPaginated(did, None, 10)
           .run(TraceId.generateYOLO)
           .unsafeRunSync()
 

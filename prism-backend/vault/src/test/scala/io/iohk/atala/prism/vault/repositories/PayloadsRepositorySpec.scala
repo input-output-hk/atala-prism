@@ -5,7 +5,7 @@ import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.{EC, Sha256}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
+import io.iohk.atala.prism.vault.model.{CreateRecord, Record}
 import io.iohk.atala.prism.utils.IOUtils._
 import org.scalatest.OptionValues
 import tofu.logging.Logs
@@ -17,12 +17,12 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
 
   private lazy val vaultTestLogs: Logs[IO, IO] = Logs.sync[IO, IO]
 
-  lazy val repo: PayloadsRepository[IO] = PayloadsRepository.unsafe(database, vaultTestLogs)
+  lazy val repo: RecordsRepository[IO] = RecordsRepository.unsafe(database, vaultTestLogs)
 
-  def createPayload(did: DID, content: Vector[Byte]): IO[Payload] = {
-    val externalId = Payload.ExternalId.random()
+  def createPayload(did: DID, content: Vector[Byte]): IO[Record] = {
+    val externalId = Record.ExternalId.random()
     val hash = Sha256.compute(content.toArray)
-    val createPayload1 = CreatePayload(externalId, hash, did, content)
+    val createPayload1 = CreateRecord(externalId, hash, did, content)
     repo.create(createPayload1)
   }
 
@@ -66,10 +66,10 @@ class PayloadsRepositorySpec extends AtalaWithPostgresSpec with OptionValues {
         payload1 <- createPayload(did1, content1)
         payload2 <- createPayload(did2, content2)
         payload3 <- createPayload(did2, content3)
-        mustBe1Payload <- repo.getByPaginated(did1, None, 10)
-        mustBe2And3Payload <- repo.getByPaginated(did2, None, 10)
-        mustBe2Payload <- repo.getByPaginated(did2, None, 1)
-        mustBe3Payload <- repo.getByPaginated(did2, Some(payload2.id), 1)
+        mustBe1Payload <- repo.getRecordsPaginated(did1, None, 10)
+        mustBe2And3Payload <- repo.getRecordsPaginated(did2, None, 10)
+        mustBe2Payload <- repo.getRecordsPaginated(did2, None, 1)
+        mustBe3Payload <- repo.getRecordsPaginated(did2, Some(payload2.id), 1)
       } yield {
         mustBe1Payload mustBe List(payload1)
         mustBe2And3Payload mustBe List(payload2, payload3)

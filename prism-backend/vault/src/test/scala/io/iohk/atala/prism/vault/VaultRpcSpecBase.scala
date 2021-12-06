@@ -8,7 +8,7 @@ import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
-import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.vault.repositories.RecordsRepository
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito.MockitoSugar._
@@ -31,7 +31,7 @@ class VaultRpcSpecBase extends RpcSpecBase {
 
   lazy val (payloadsRepository, vaultGrpcService) = (for {
     requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO, vaultTestLogs)
-    payloadsRepository <- PayloadsRepository.create(dbLiftedToTraceIdIO, vaultTestLogs)
+    payloadsRepository <- RecordsRepository.create(dbLiftedToTraceIdIO, vaultTestLogs)
     nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
     authenticator = AuthenticatorF.unsafe(
       nodeMock,

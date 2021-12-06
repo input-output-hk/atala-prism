@@ -1,41 +1,44 @@
 package io.iohk.atala.prism.vault.services
 
 import cats.effect.Resource
+import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.syntax.applicativeError._
+import cats.{Applicative, Comonad, Functor, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.vault.model.{CreatePayload, Payload}
-import io.iohk.atala.prism.vault.repositories.PayloadsRepository
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import io.iohk.atala.prism.vault.model.{CreateRecord, Record}
+import io.iohk.atala.prism.vault.repositories.RecordsRepository
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
-import cats.{Applicative, Comonad, Functor, MonadThrow}
 
 @derive(applyK)
 trait EncryptedDataVaultService[F[_]] {
-  def storeData(
-      externalId: Payload.ExternalId,
-      hash: Sha256Digest,
-      did: DID,
-      content: Vector[Byte]
-  ): F[Payload]
-  def getByPaginated(
-      did: DID,
-      lastSeenId: Option[Payload.Id],
+  def storeRecord(
+      type_ : Record.Type,
+      id: Record.Id,
+      payload: Record.Payload
+  ): F[Record]
+
+  def getRecord(
+      type_ : Record.Type,
+      id: Record.Id
+  ): F[Option[Record]]
+
+  def getRecordsPaginated(
+      type_ : Record.Type,
+      lastSeenId: Option[Record.Id],
       limit: Int
-  ): F[List[Payload]]
+  ): F[List[Record]]
+
 }
 
 object EncryptedDataVaultService {
   def create[F[_]: MonadThrow, R[_]: Functor](
-      payloadsRepository: PayloadsRepository[F],
+      recordsRepository: RecordsRepository[F],
       logs: Logs[R, F]
   ): R[EncryptedDataVaultService[F]] = {
     for {
@@ -43,81 +46,78 @@ object EncryptedDataVaultService {
     } yield {
       implicit val implicitLogs: ServiceLogging[F, EncryptedDataVaultService[F]] = serviceLogs
       val logging: EncryptedDataVaultService[Mid[F, *]] = new EncyptedDataVaultServiceLogging
-      logging attach new EncyptedDataVaultServiceImpl(payloadsRepository)
+      logging attach new EncyptedDataVaultServiceImpl(recordsRepository)
     }
   }
   def resource[F[_]: MonadThrow, R[_]: Applicative: Functor](
-      payloadsRepository: PayloadsRepository[F],
+      recordsRepository: RecordsRepository[F],
       logs: Logs[R, F]
   ): Resource[R, EncryptedDataVaultService[F]] =
-    Resource.eval(EncryptedDataVaultService.create(payloadsRepository, logs))
+    Resource.eval(EncryptedDataVaultService.create(recordsRepository, logs))
 
   def unsafe[F[_]: MonadThrow, R[_]: Comonad](
-      payloadsRepository: PayloadsRepository[F],
+      recordsRepository: RecordsRepository[F],
       logs: Logs[R, F]
-  ): EncryptedDataVaultService[F] = EncryptedDataVaultService.create(payloadsRepository, logs).extract
+  ): EncryptedDataVaultService[F] = EncryptedDataVaultService.create(recordsRepository, logs).extract
 }
 
 private final class EncyptedDataVaultServiceImpl[F[_]](
-    payloadsRepository: PayloadsRepository[F]
+    recordsRepository: RecordsRepository[F]
 ) extends EncryptedDataVaultService[F] {
 
-  override def storeData(
-      externalId: Payload.ExternalId,
-      hash: Sha256Digest,
-      did: DID,
-      content: Vector[Byte]
-  ): F[Payload] =
-    payloadsRepository
+  override def storeRecord(
+      type_ : Record.Type,
+      id: Record.Id,
+      payload: Record.Payload
+  ): F[Record] =
+    recordsRepository
       .create(
-        CreatePayload(
-          externalId,
-          hash,
-          did,
-          content
+        CreateRecord(
+          type_,
+          id,
+          payload
         )
       )
 
-  override def getByPaginated(
-      did: DID,
-      lastSeenId: Option[Payload.Id],
-      limit: Int
-  ): F[List[Payload]] = {
-    payloadsRepository
-      .getByPaginated(
-        did,
-        lastSeenId,
-        limit
-      )
-  }
+  override def getRecord(type_ : Record.Type, id: Record.Id): F[Option[Record]] = recordsRepository.getRecord(type_, id)
+
+  override def getRecordsPaginated(type_ : Record.Type, lastSeenId: Option[Record.Id], limit: Int): F[List[Record]] =
+    recordsRepository.getRecordsPaginated(type_, lastSeenId, limit)
 }
 
 private class EncyptedDataVaultServiceLogging[
     F[_]: MonadThrow: ServiceLogging[*[_], EncryptedDataVaultService[F]]
 ] extends EncryptedDataVaultService[Mid[F, *]] {
 
-  override def storeData(
-      externalId: Payload.ExternalId,
-      hash: Sha256Digest,
-      did: DID,
-      content: Vector[Byte]
-  ): Mid[F, Payload] =
+  override def storeRecord(
+      type_ : Record.Type,
+      id: Record.Id,
+      payload: Record.Payload
+  ): Mid[F, Record] =
     in =>
-      info"storing data $externalId $did" *> in
-        .flatTap(p => info"storing data - successfully done ${p.id}")
+      info"storing encrypted record $type_ $id" *> in
+        .flatTap(p => info"storing record ${p.id} - successfully done ")
         .onError { e =>
-          errorCause"encountered an error while storing data!" (e)
+          errorCause"encountered an error while storing record!" (e)
         }
 
-  override def getByPaginated(
-      did: DID,
-      lastSeenId: Option[Payload.Id],
-      limit: Int
-  ): Mid[F, List[Payload]] =
+  override def getRecord(type_ : Record.Type, id: Record.Id): Mid[F, Option[Record]] =
     in =>
-      info"getting paginated data $did $lastSeenId" *> in
-        .flatTap(p => info"getting paginated data - successfully done found ${p.size} entities")
+      info"getting a record with type = $type_, id = $id " *> in
+        .flatTap(_ => info"getting a record - successfully done")
         .onError { e =>
-          errorCause"encountered an error while getting data by paginated!" (e)
+          errorCause"encountered an error while getting a record" (e)
+        }
+
+  override def getRecordsPaginated(
+      type_ : Record.Type,
+      lastSeenIdOpt: Option[Record.Id],
+      limit: Int
+  ): Mid[F, List[Record]] =
+    in =>
+      info"getting paginated records type = $type_, lastId = $lastSeenIdOpt, limit = $limit " *> in
+        .flatTap(p => info"getting paginated records - successfully done found ${p.size} records")
+        .onError { e =>
+          errorCause"encountered an error while getting records by paginated!" (e)
         }
 }

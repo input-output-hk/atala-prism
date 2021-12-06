@@ -6,7 +6,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.AuthenticatorF
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
@@ -14,7 +13,7 @@ import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.grpc.EncryptedDataVaultGrpcService
-import io.iohk.atala.prism.vault.repositories.{PayloadsRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.vault.repositories.RecordsRepository
 import io.iohk.atala.prism.vault.services.EncryptedDataVaultService
 import kamon.Kamon
 import kamon.module.Module
@@ -52,16 +51,14 @@ class VaultApp() {
       transactor <- connectToDB(databaseConfig)
       transactorWithIOContext = transactor.mapK(TraceId.liftToIOWithTraceId)
       node = createNodeClient(config)
-      payloadsRepository <- PayloadsRepository.resource(transactorWithIOContext, vaultLogs)
-      requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.resource(transactorWithIOContext, vaultLogs)
+      recordsRepository <- RecordsRepository.resource(transactorWithIOContext, vaultLogs)
       authenticator <- AuthenticatorF.resource(
         node,
-        new VaultAuthenticator(
-          requestNoncesRepository
-        ),
+        new VaultAuthenticator,
         vaultLogs
       )
-      encryptedDataVaultService <- EncryptedDataVaultService.resource(payloadsRepository, vaultLogs)
+
+      encryptedDataVaultService <- EncryptedDataVaultService.resource(recordsRepository, vaultLogs)
       encryptedDataVaultGrpcService = new EncryptedDataVaultGrpcService(encryptedDataVaultService, authenticator)(
         ec,
         runtime

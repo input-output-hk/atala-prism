@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.vault
 
+import cats.Monad
 import cats.data.ReaderT
 import io.iohk.atala.prism.auth.AuthHelper
 import io.iohk.atala.prism.auth.errors.{AuthError, UnsupportedAuthMethod}
@@ -7,22 +8,24 @@ import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.vault.repositories.RequestNoncesRepository
 
-class VaultAuthenticator(
-    requestNoncesRepository: RequestNoncesRepository[IOWithTraceIdContext]
-) extends AuthHelper[DID, IOWithTraceIdContext] {
+class VaultAuthenticator extends AuthHelper[Unit, IOWithTraceIdContext] {
 
   override def burnNonce(
-      did: DID,
+      unit: Unit,
       requestNonce: RequestNonce
   ): IOWithTraceIdContext[Unit] =
-    requestNoncesRepository
-      .burn(did, requestNonce)
+    Monad[IOWithTraceIdContext].unit
 
-  override def findByPublicKey(publicKey: ECPublicKey): IOWithTraceIdContext[Either[AuthError, DID]] =
+  override def burnNonce(
+      unit: DID,
+      requestNonce: RequestNonce
+  ): IOWithTraceIdContext[Unit] =
+    Monad[IOWithTraceIdContext].unit
+
+  override def findByPublicKey(publicKey: ECPublicKey): IOWithTraceIdContext[Either[AuthError, Unit]] =
     ReaderT.pure(Left(UnsupportedAuthMethod()))
 
-  override def findByDid(did: DID): IOWithTraceIdContext[Either[AuthError, DID]] =
-    ReaderT.pure(Right(did))
+  override def findByDid(did: DID): IOWithTraceIdContext[Either[AuthError, Unit]] =
+    ReaderT.pure(Left(UnsupportedAuthMethod()))
 }

@@ -1,36 +1,56 @@
 package io.iohk.atala.prism.vault
 
-import java.time.Instant
-import java.util.UUID
-import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.UUIDValue
 import tofu.logging.derivation.loggable
 import derevo.derive
+import io.iohk.atala.prism.protos.vault_models
+import com.google.protobuf.ByteString
 
 package object model {
-  final case class CreatePayload(
-      externalId: Payload.ExternalId,
-      hash: Sha256Digest,
-      did: DID,
-      content: Vector[Byte]
+  final case class CreateRecord(
+      type_ : Record.Type,
+      id: Record.Id,
+      payload: Record.Payload
   )
 
-  final case class Payload(
-      id: Payload.Id,
-      externalId: Payload.ExternalId,
-      hash: Sha256Digest,
-      did: DID,
-      content: Vector[Byte],
-      createdAt: Instant
-  )
+  final case class Record(
+      type_ : Record.Type,
+      id: Record.Id,
+      payload: Record.Payload
+  ) {
+    def toProto: vault_models.EncryptedRecord =
+      vault_models.EncryptedRecord(
+        ByteString.copyFrom(type_.encrypted.toArray),
+        ByteString.copyFrom(id.encrypted.toArray),
+        ByteString.copyFrom(payload.encrypted.toArray)
+      )
+  }
 
-  object Payload {
+  object Record {
     @derive(loggable)
-    final case class Id(uuid: UUID) extends AnyVal with UUIDValue
-    object Id extends UUIDValue.Builder[Id]
+    case class Type private (encrypted: Vector[Byte])
+
+    object Type {
+      def unsafeFrom(bytes: Array[Byte]): Type =
+        if (bytes.nonEmpty) new Type(bytes.toVector) {}
+        else throw new IllegalArgumentException("Empty record type")
+    }
+
     @derive(loggable)
-    final case class ExternalId(uuid: UUID) extends AnyVal with UUIDValue
-    object ExternalId extends UUIDValue.Builder[ExternalId]
+    case class Id private (encrypted: Vector[Byte])
+
+    object Id {
+      def unsafeFrom(bytes: Array[Byte]): Id =
+        if (bytes.nonEmpty) new Id(bytes.toVector) {}
+        else throw new IllegalArgumentException("Empty record id")
+    }
+
+    @derive(loggable)
+    case class Payload private (encrypted: Vector[Byte])
+
+    object Payload {
+      def unsafeFrom(bytes: Array[Byte]): Payload =
+        if (bytes.nonEmpty) new Payload(bytes.toVector) {}
+        else throw new IllegalArgumentException("Empty record payload")
+    }
   }
 }
