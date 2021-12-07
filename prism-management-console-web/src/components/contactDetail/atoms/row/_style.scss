@@ -6,7 +6,6 @@
   background-color: #f8f9f9;
   border-radius: 6px;
   justify-content: space-between;
-  margin-right: 15px;
   p {
     @include primary-text($label, $dark-grey);
     margin: 0;
@@ -18,16 +17,19 @@
 
   display: flex;
   .img {
-    margin-right: 1em;
+    display: none;
   }
   .contactsContainer {
-    line-height: 14px;
+    line-height: normal;
     p {
-      @include primary-text($body, #b3c0d9);
+      @include primary-text($label, #011727);
       font-weight: bold;
+      margin-top: 5px;
     }
     span {
-      @include primary-text($explain, #b3c0d9);
+      @include primary-text($label, #99a2a9);
+      text-transform: none!important;
+      line-height: normal;
     }
   }
 }

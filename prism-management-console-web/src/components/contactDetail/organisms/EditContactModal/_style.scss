@@ -55,11 +55,33 @@
     justify-content: center;
     align-items: center;
   .detailBox {
+    width: 100%;
       height: auto;
       max-height: 300px;
       overflow-y: auto;
+      .infoRow {
+        .RowInfo {
+          .contactsTitle {
+            .contactsContainer {
+              display: flex;
+              flex-direction: column-reverse;
+              line-height: normal;
+              p {
+                color: $secondary-color!important;
+              }
+              span {
+                line-height: auto;
+                text-transform: none;
+              }
+            }
+            img {
+              display: none;
+            }
+          }
+        }
+      }
   }
   button  {
-      width: 200px;
+      width: 100px;
   }
 }
