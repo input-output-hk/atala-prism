@@ -14,8 +14,10 @@ const TemplateContentIcons = observer(() => {
 
   const { images } = templateLayouts[templateSketch.layout];
 
+  const allowedFormats = '.jpg, .jpeg, .png, .svg';
+
   const uploaderProps = {
-    accept: '.svg',
+    accept: allowedFormats,
     listType: 'picture',
     fileList: []
   };
