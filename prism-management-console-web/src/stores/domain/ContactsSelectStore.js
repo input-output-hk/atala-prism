@@ -8,7 +8,7 @@ const checkboxStates = {
 };
 
 export default class ContactsSelectStore {
-  selectedContactsObjects = [];
+  selectedContacts = [];
 
   isLoadingSelection = false;
 
@@ -27,7 +27,7 @@ export default class ContactsSelectStore {
   }
 
   get selectedContactIds() {
-    return this.selectedContactsObjects.map(c => c[CONTACT_ID_KEY]);
+    return this.selectedContacts.map(c => c[CONTACT_ID_KEY]);
   }
 
   get selectAllCheckboxStateProps() {
@@ -41,14 +41,12 @@ export default class ContactsSelectStore {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
     this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
-    this.selectedContactsObjects = checked
-      ? yield this.api.contactsManager.getAllContacts(filters)
-      : [];
+    this.selectedContacts = checked ? yield this.api.contactsManager.getAllContacts(filters) : [];
     this.isLoadingSelection = false;
   }
 
   resetSelection() {
-    this.selectedContactsObjects = [];
+    this.selectedContacts = [];
     this.selectAllCheckboxState = checkboxStates.UNCHECKED;
     this.isLoadingSelection = false;
   }
@@ -65,9 +63,9 @@ export default class ContactsSelectStore {
     if (selected) {
       // it's important to create new array because Antd has some PureComponent/memo optimizations,
       // so change is not detected
-      this.selectedContactsObjects = [...this.selectedContactsObjects, record];
+      this.selectedContacts = [...this.selectedContacts, record];
     } else {
-      this.selectedContactsObjects = this.selectedContactsObjects.filter(
+      this.selectedContacts = this.selectedContacts.filter(
         contactRow => contactRow[CONTACT_ID_KEY] !== newContactId
       );
     }

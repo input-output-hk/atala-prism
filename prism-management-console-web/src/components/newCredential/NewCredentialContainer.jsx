@@ -53,7 +53,7 @@ const NewCredentialContainer = observer(() => {
     contacts,
     groups,
     selectedContactIds,
-    selectedContactsObjects,
+    selectedContacts,
     selectedGroups,
     selectedGroupsNames,
     selectedGroupsObjects,
@@ -247,7 +247,7 @@ const NewCredentialContainer = observer(() => {
         return (
           <CredentialsPreview
             groups={selectedGroupsObjects}
-            subjects={selectedContactsObjects}
+            subjects={selectedContacts}
             credentialViews={credentialViews}
           />
         );

@@ -76,8 +76,8 @@ export default class CreateCredentialPageStore {
     return this.contactsSelectStore.selectedContactIds;
   }
 
-  get selectedContactsObjects() {
-    return this.contactsSelectStore.selectedContactsObjects;
+  get selectedContacts() {
+    return this.contactsSelectStore.selectedContacts;
   }
 
   get isLoadingContactsSelection() {
