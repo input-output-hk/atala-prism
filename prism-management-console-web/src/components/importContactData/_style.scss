@@ -1,25 +1,50 @@
 @import '../../css/general_styling';
 
 .ImportStepPageContainer {
-    padding: 1em 2em;
-    .TitleContainer {
-        .WizardTitle {
-          padding: 1em 2em;
-            .TypeSelectionContainer {
-                padding: 1em 0;
-                border-bottom: 1px solid $light-grey;
-            }
-        }
+  padding: 1em 2em;
+  .TitleContainer {
+    .WizardTitle {
+      padding: 1em 2em;
+      .TypeSelectionContainer {
+        padding: 1em 0;
+        border-bottom: 1px solid $light-grey;
+      }
     }
-    .errorLogSection {
-        max-height: 65vh;
-        overflow-y: auto;
-        .table {
-            margin-top: 0;
-            .ant-table-body {
-                overflow-y: auto!important;
-                max-height: 100vh!important;
-            }
-        }
+  }
+  .BulkImportStepsWrapper {
+      display: flex;
+      justify-content: center;
+    .BulkImportContent {
+      display: flex;
+      margin:1em 0;
+      .StepCard {
+        display: flex;
+        flex-direction: column;
+        width: 360px;
+        height: 260px;
+        margin: 0 1em;
+        cursor: pointer;
+      }
+      .Selected {
+          opacity: 1;
+          transition: 0.5s;
+      }
+      .NotSelected:hover {
+        opacity: 1;
+        transition: 0.5s;
+        border: 2px solid $primary-color;
+      }
     }
+  }
+  .errorLogSection {
+    max-height: 65vh;
+    overflow-y: auto;
+    .table {
+      margin-top: 0;
+      .ant-table-body {
+        overflow-y: auto !important;
+        max-height: 100vh !important;
+      }
+    }
+  }
 }

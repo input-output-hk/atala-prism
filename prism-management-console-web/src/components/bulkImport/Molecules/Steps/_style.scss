@@ -58,7 +58,7 @@
       font-size: $label;
     }
     .ant-select-show-search.ant-select:not(.ant-select-customize-input) .ant-select-selector {
-      border: 1px solid lightgray;
+      border: 1px solid $primary-color;
     }
     .ant-select:not(.ant-select-customize-input) .ant-select-selector {
       border: 1px solid $primary-color;
@@ -79,44 +79,41 @@
   }
 }
 
-.Selected {
-  opacity: 1;
-  border: 2px solid $primary-color;
-  border-radius: 10px;
-  box-shadow: $red-shadow;
-
-  h1 {
-    @include secondary-text($h2, $secondary-color);
-    @include letter-spacing();
-  }
-
-  p {
-    @include primary-text($body, $dark-grey);
-    @include letter-spacing();
-  }
+.PaginatedTable table .ant-table-tbody > tr > td, .PaginatedTableHeader table .ant-table-tbody > tr > td {
+  background: transparent;
 }
 
-.NotSelected {
-  transition: 0.5s;
-  h1 {
-    @include secondary-text($h1, $secondary-color-disabled);
-    @include letter-spacing();
+.BulkImportStepsWrapper {
+  .Selected {
+    opacity: 1;
+    border: 2px solid $primary-color;
+    border-radius: 10px;
+    box-shadow: $red-shadow;
+    transition: 0.5s;
+    h1 {
+      @include secondary-text($h2, $secondary-color);
+      @include letter-spacing();
+    }
+  
+    p {
+      @include primary-text($body, $dark-grey);
+      @include letter-spacing();
+    }
   }
-
-  p {
-    @include primary-text($body, $secondary-color-disabled);
-    @include letter-spacing();
-  }
-
-  .ant-select-selection,
-  .ant-select-selection:active,
-  .ant-select-selection:focus,
-  .ant-select-selection:hover {
-    opacity: 0.7;
-  }
-
-  .fileActionButton {
-    opacity: 0.7 !important;
+  
+  .NotSelected {
+    border: 2px solid transparent;
+    transition: 0.5s;
+    opacity: 0.5;
+    h1 {
+      @include secondary-text($h2, $secondary-color);
+      @include letter-spacing();
+    }
+  
+    p {
+      @include primary-text($body, $dark-grey);
+      @include letter-spacing();
+    }
   }
 }
 
