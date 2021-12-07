@@ -21,9 +21,9 @@ const ConnectionsTable = observer(
     isLoading,
     isFetchingMore,
     columns,
-    setSelectedContacts,
+    setSelectedContactIds,
     onSelect,
-    selectedContacts,
+    selectedContactIds,
     inviteContact,
     viewContactDetail,
     shouldSelectRecipients,
@@ -47,11 +47,11 @@ const ConnectionsTable = observer(
       columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
       data: contacts,
       selectionType:
-        setSelectedContacts || onSelect
+        setSelectedContactIds || onSelect
           ? {
-              selectedRowKeys: selectedContacts,
+              selectedRowKeys: selectedContactIds,
               type: 'checkbox',
-              onChange: setSelectedContacts,
+              onChange: setSelectedContactIds,
               onSelect,
               getCheckboxProps: () => ({
                 disabled: !shouldSelectRecipients
@@ -73,9 +73,9 @@ const ConnectionsTable = observer(
 ConnectionsTable.defaultProps = {
   contacts: [],
   columns: null,
-  setSelectedContacts: null,
+  setSelectedContactIds: null,
   onSelect: null,
-  selectedContacts: [],
+  selectedContactIds: [],
   inviteContact: null,
   viewContactDetail: null,
   shouldSelectRecipients: true,
@@ -90,9 +90,9 @@ ConnectionsTable.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   isFetchingMore: PropTypes.bool.isRequired,
   columns: PropTypes.arrayOf(PropTypes.any),
-  setSelectedContacts: PropTypes.func,
+  setSelectedContactIds: PropTypes.func,
   onSelect: PropTypes.func,
-  selectedContacts: PropTypes.arrayOf(PropTypes.string),
+  selectedContactIds: PropTypes.arrayOf(PropTypes.string),
   inviteContact: PropTypes.func,
   viewContactDetail: PropTypes.func,
   shouldSelectRecipients: PropTypes.bool,

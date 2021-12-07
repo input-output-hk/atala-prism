@@ -52,7 +52,7 @@ const NewCredentialContainer = observer(() => {
   const {
     contacts,
     groups,
-    selectedContacts,
+    selectedContactIds,
     selectedContactsObjects,
     selectedGroups,
     selectedGroupsNames,
@@ -101,7 +101,7 @@ const NewCredentialContainer = observer(() => {
     const targetsFromGroups = promisesList.flat();
     const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
     const cherryPickedSubjects = allContacts
-      .filter(({ contactId }) => selectedContacts.includes(contactId))
+      .filter(({ contactId }) => selectedContactIds.includes(contactId))
       .map(contactMapper);
 
     const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
@@ -267,7 +267,7 @@ const NewCredentialContainer = observer(() => {
   };
 
   const hasSelectedRecipients =
-    !shouldSelectRecipients || selectedGroups.length || selectedContacts.length;
+    !shouldSelectRecipients || selectedGroups.length || selectedContactIds.length;
 
   return (
     <NewCredential

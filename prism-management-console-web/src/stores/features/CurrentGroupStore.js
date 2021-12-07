@@ -141,8 +141,8 @@ export default class CurrentGroupStore {
 
   // SELECT ALL
 
-  get selectedContacts() {
-    return this.contactsSelectStore.selectedContacts;
+  get selectedContactIds() {
+    return this.contactsSelectStore.selectedContactIds;
   }
 
   get isLoadingSelection() {

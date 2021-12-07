@@ -32,7 +32,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     fetchMoreGroupMembers,
     hasMoreMembers,
     // select all
-    selectedContacts,
+    selectedContactIds,
     isLoadingSelection,
     selectAllCheckboxStateProps,
     handleCherryPickSelection,
@@ -179,8 +179,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
             <CustomButton
               overrideClassName="theme-outline custom"
               buttonProps={{
-                disabled: !selectedContacts.length,
-                onClick: () => handleRemoveContactRequest(selectedContacts)
+                disabled: !selectedContactIds.length,
+                onClick: () => handleRemoveContactRequest(selectedContactIds)
               }}
               buttonText={t('groupEditing.buttons.remove')}
               loading={isSaving}
@@ -194,7 +194,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
           </div>
           <SelectAllButton
             isLoadingSelection={isLoadingSelection}
-            selectedEntities={selectedContacts}
+            selectedEntities={selectedContactIds}
             checkboxProps={selectAllCheckboxProps}
           />
         </div>
@@ -209,7 +209,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
               hasFiltersApplied={hasFiltersApplied}
               hasMore={hasMoreMembers}
               fetchMoreData={fetchMoreGroupMembers}
-              selectedContacts={selectedContacts}
+              selectedContactIds={selectedContactIds}
               onSelect={handleCherryPickSelection}
               columns={getGroupContactColumns(handleDelete)}
               size="md"

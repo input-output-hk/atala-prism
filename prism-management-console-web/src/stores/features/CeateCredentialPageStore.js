@@ -72,8 +72,8 @@ export default class CreateCredentialPageStore {
 
   // contacts select all
 
-  get selectedContacts() {
-    return this.contactsSelectStore.selectedContacts;
+  get selectedContactIds() {
+    return this.contactsSelectStore.selectedContactIds;
   }
 
   get selectedContactsObjects() {

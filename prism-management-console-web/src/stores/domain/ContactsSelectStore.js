@@ -26,7 +26,7 @@ export default class ContactsSelectStore {
     );
   }
 
-  get selectedContacts() {
+  get selectedContactIds() {
     return this.selectedContactsObjects.map(c => c[CONTACT_ID_KEY]);
   }
 

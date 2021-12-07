@@ -13,7 +13,7 @@ const ContactsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSele
   const { t } = useTranslation();
 
   const {
-    selectedContacts,
+    selectedContactIds,
     contactsSelectAllCheckboxStateProps,
     isLoadingContactsSelection,
     selectAllContacts,
@@ -33,7 +33,7 @@ const ContactsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSele
       <ConnectionsFilter filterSortingProps={contactsFilterSortingProps} showFullFilter={false} />
       <SelectAllButton
         isLoadingSelection={isLoadingContactsSelection}
-        selectedEntities={selectedContacts}
+        selectedEntities={selectedContactIds}
         checkboxProps={selectAllCheckboxProps}
       />
       <div className="RecipientSelectionCheckbox NoRecipientsCheckbox">

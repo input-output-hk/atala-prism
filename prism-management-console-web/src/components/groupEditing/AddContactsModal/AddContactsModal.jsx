@@ -18,7 +18,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
   const [contactsNotInGroup, setContactsNotInGroup] = useState([]);
   const [textFilter, setTextFilter] = useState('');
   const [filteredContacts, setFilteredContacts] = useState([]);
-  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [selectedContactIds, setSelectedContactIds] = useState([]);
   const { isLoadingContactsNotInGroup, getContactsNotInGroup } = useCurrentGroupStore();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
 
     if (visible) {
       handleGetContacts();
-      setSelectedContacts([]);
+      setSelectedContactIds([]);
     }
   }, [visible, getContactsNotInGroup]);
 
@@ -44,12 +44,12 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     displayedEntities: filteredContacts,
     entitiesFetcher: () => filteredContacts,
     entityKey: CONTACT_ID_KEY,
-    selectedEntities: selectedContacts,
-    setSelectedEntities: setSelectedContacts,
+    selectedEntities: selectedContactIds,
+    setSelectedEntities: setSelectedContactIds,
     isFetching: isLoadingContactsNotInGroup
   });
 
-  const handleConfirm = () => onConfirm(selectedContacts);
+  const handleConfirm = () => onConfirm(selectedContactIds);
 
   const confirmButton = (
     <Row>
@@ -58,7 +58,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
           buttonProps={{
             className: 'theme-secondary',
             onClick: handleConfirm,
-            disabled: selectedContacts.length === 0
+            disabled: selectedContactIds.length === 0
           }}
           buttonText={t('groupEditing.buttons.addContacts')}
         />
@@ -79,7 +79,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
         <Col span={5}>
           <SelectAllButton
             isLoadingSelection={loadingSelection}
-            selectedEntities={selectedContacts}
+            selectedEntities={selectedContactIds}
             checkboxProps={checkboxProps}
           />
         </Col>
@@ -100,8 +100,8 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
             contacts={filteredContacts}
             hasFiltersApplied
             isLoading={isLoadingContactsNotInGroup}
-            selectedContacts={selectedContacts}
-            setSelectedContacts={setSelectedContacts}
+            selectedContactIds={selectedContactIds}
+            setSelectedContactIds={setSelectedContactIds}
             size="md"
           />
         </Col>
