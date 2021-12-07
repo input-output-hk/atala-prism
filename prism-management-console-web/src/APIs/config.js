@@ -17,7 +17,9 @@ export const config = {
   tutorialProgress: getTutorialProgress(),
   saveTutorialProgress,
   getMockedTemplateCategories,
-  saveMockedTemplateCategories
+  saveMockedTemplateCategories,
+  getCredentialTypesWithCategories,
+  saveCredentialTypeWithCategory
 };
 
 function getFromLocalStorage(key) {
@@ -42,4 +44,22 @@ function getMockedTemplateCategories() {
 
 function saveMockedTemplateCategories(templateCategories) {
   window.localStorage.setItem('templateCategories', JSON.stringify(templateCategories));
+}
+
+function getCredentialTypesWithCategories() {
+  const templateCategories = getFromLocalStorage('credentialTypeWithCategories');
+  if (templateCategories) return JSON.parse(templateCategories);
+  return {};
+}
+
+function saveCredentialTypeWithCategory({ credentialTypeId, category }) {
+  const currentCredentialTypesWithCategories = this.getCredentialTypesWithCategories();
+  const updatedCredentialTypesWithCategories = {
+    ...currentCredentialTypesWithCategories,
+    [credentialTypeId]: category
+  };
+  window.localStorage.setItem(
+    'credentialTypeWithCategories',
+    JSON.stringify(updatedCredentialTypesWithCategories)
+  );
 }

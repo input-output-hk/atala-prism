@@ -21,9 +21,20 @@ async function getCredentialTypes() {
 
   const { credentialTypesList } = response.toObject();
   const adaptedCredentialTypesList = credentialTypesList.map(adaptCredentialType);
-  Logger.info('got credential types: ', adaptedCredentialTypesList);
 
-  return adaptedCredentialTypesList;
+  /**
+   * This additional mapping injects the credential types with the corresponding category,
+   * stored in the local storage (for now)
+   * TODO: remove when backend supports categories
+   */
+  const customCredentialTypesCategories = this.config.getCredentialTypesWithCategories();
+  const adaptedCredentialTypesListWithMockedCategories = adaptedCredentialTypesList.map(c => ({
+    ...c,
+    category: customCredentialTypesCategories[c.id] || c.category
+  }));
+  Logger.info('got credential types: ', adaptedCredentialTypesListWithMockedCategories);
+
+  return adaptedCredentialTypesListWithMockedCategories;
 }
 
 async function getCredentialTypeDetails(id) {
@@ -44,15 +55,15 @@ async function getCredentialTypeDetails(id) {
   return mappedCredentialType;
 }
 
-async function createTemplate(values) {
+async function createCredentialType(values) {
   const createCredentialTypeRequest = new CreateCredentialTypeRequest();
-  const credentialType = new CreateCredentialType();
+  const credentialTypeModel = new CreateCredentialType();
 
   const [_prefix, iconData] = values.icon.split(',');
 
-  credentialType.setName(values.name);
-  credentialType.setTemplate(values.template);
-  credentialType.setIcon(iconData);
+  credentialTypeModel.setName(values.name);
+  credentialTypeModel.setTemplate(values.template);
+  credentialTypeModel.setIcon(iconData);
 
   const fields = values.credentialBody.map(fieldData => {
     const fieldObj = new CreateCredentialTypeField();
@@ -62,14 +73,28 @@ async function createTemplate(values) {
     return fieldObj;
   });
 
-  credentialType.setFieldsList(fields); // `setFields` is undefined
-  createCredentialTypeRequest.setCredentialType(credentialType);
+  credentialTypeModel.setFieldsList(fields);
+  createCredentialTypeRequest.setCredentialType(credentialTypeModel);
 
   const { metadata, sessionError } = await this.auth.getMetadata(createCredentialTypeRequest);
   if (sessionError) return [];
 
   const response = await this.client.createCredentialType(createCredentialTypeRequest, metadata);
-  return response;
+
+  const responseObject = response.toObject();
+  const {
+    credentialType: { credentialType }
+  } = responseObject;
+  /**
+   * Here we persist the credential type -- category relationship in the local storage
+   * TODO: remove when backend supports categories
+   */
+  this.config.saveCredentialTypeWithCategory({
+    credentialTypeId: credentialType.id,
+    category: values.category
+  });
+
+  return credentialType;
 }
 
 function getTemplateCategories() {
@@ -97,7 +122,7 @@ function CredentialTypesManager(config, auth) {
 
 CredentialTypesManager.prototype.getCredentialTypes = getCredentialTypes;
 CredentialTypesManager.prototype.getCredentialTypeDetails = getCredentialTypeDetails;
-CredentialTypesManager.prototype.createTemplate = createTemplate;
+CredentialTypesManager.prototype.createCredentialType = createCredentialType;
 CredentialTypesManager.prototype.getTemplateCategories = getTemplateCategories;
 CredentialTypesManager.prototype.createCategory = createCategory;
 
