@@ -3,7 +3,6 @@ package io.iohk.atala.prism.vault
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.auth.AuthenticatorF
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
 import io.iohk.atala.prism.{ApiTestHelper, RpcSpecBase}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.protos.vault_api
@@ -27,20 +26,15 @@ class VaultRpcSpecBase extends RpcSpecBase {
   private val vaultTestLogs: Logs[IO, IOWithTraceIdContext] =
     Logs.withContext[IO, IOWithTraceIdContext]
 
-  RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO, vaultTestLogs)
-
-  lazy val (payloadsRepository, vaultGrpcService) = (for {
-    requestNoncesRepository <- RequestNoncesRepository.PostgresImpl.create(dbLiftedToTraceIdIO, vaultTestLogs)
-    payloadsRepository <- RecordsRepository.create(dbLiftedToTraceIdIO, vaultTestLogs)
+  lazy val (recordsRepository, vaultGrpcService) = (for {
+    recordsRepository <- RecordsRepository.create(dbLiftedToTraceIdIO, vaultTestLogs)
     nodeMock = mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
     authenticator = AuthenticatorF.unsafe(
       nodeMock,
-      new VaultAuthenticator(
-        requestNoncesRepository
-      ),
+      new VaultAuthenticator,
       vaultTestLogs
     )
-    encryptedDataVaultService <- EncryptedDataVaultService.create(payloadsRepository, vaultTestLogs)
+    encryptedDataVaultService <- EncryptedDataVaultService.create(recordsRepository, vaultTestLogs)
     vaultGrpcService = new EncryptedDataVaultGrpcService(
       encryptedDataVaultService,
       authenticator
@@ -48,7 +42,7 @@ class VaultRpcSpecBase extends RpcSpecBase {
       executionContext,
       global
     )
-  } yield (payloadsRepository, vaultGrpcService)).unsafeRunSync()
+  } yield (recordsRepository, vaultGrpcService)).unsafeRunSync()
 
   val usingApiAs: ApiTestHelper[
     vault_api.EncryptedDataVaultServiceGrpc.EncryptedDataVaultServiceBlockingStub
