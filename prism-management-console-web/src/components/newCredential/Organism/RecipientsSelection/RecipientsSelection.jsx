@@ -40,7 +40,7 @@ const RecipientsSelection = observer(({ toggleShouldSelectRecipients, shouldSele
     isFetchingMoreGroups,
     fetchMoreGroups,
     // groups select all
-    selectedGroups,
+    selectedGroupIds,
     handleGroupsCherryPickSelection
   } = useCreateCredentialPageStore();
 
@@ -75,7 +75,7 @@ const RecipientsSelection = observer(({ toggleShouldSelectRecipients, shouldSele
               hasMore={hasMoreGroups}
               hasFiltersApplied={hasGroupsFiltersApplied}
               isLoading={isSearchingGroups}
-              selectedGroups={selectedGroups}
+              selectedGroupIds={selectedGroupIds}
               onSelect={handleGroupsCherryPickSelection}
               shouldSelectRecipients={shouldSelectRecipients}
             />

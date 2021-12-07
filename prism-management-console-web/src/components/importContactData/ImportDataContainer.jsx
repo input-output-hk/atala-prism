@@ -59,7 +59,7 @@ const ImportDataContainer = ({
   const [contacts, setContacts] = useState([createBlankContact(0)]);
   const [fileData, setFileData] = useState();
   const [skipGroupsAssignment, setSkipGroupsAssignment] = useState(false);
-  const [selectedGroups, setSelectedGroups] = useState([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
 
   const { saveFormProviderAvailable, addEntity, form } = useContext(DynamicFormContext);
 
@@ -86,7 +86,7 @@ const ImportDataContainer = ({
       const payload = {
         [IMPORT_CONTACTS]: {
           contacts: translatedContacts,
-          groups: skipGroupsAssignment ? [] : selectedGroups
+          groups: skipGroupsAssignment ? [] : selectedGroupIds
         },
         [IMPORT_CREDENTIALS_DATA]: {
           credentials: translatedContacts
@@ -124,7 +124,7 @@ const ImportDataContainer = ({
       const data = form.getFieldValue(IMPORT_CONTACTS);
       const parsedData = data.map((item, key) => ({ ...item, key }));
       await form.validateFields();
-      handleManualImport({ contacts: parsedData, groups: selectedGroups });
+      handleManualImport({ contacts: parsedData, groups: selectedGroupIds });
     } catch (error) {
       Logger.error('An error occurred while saving contacts', error);
       message.error(getFirstError(error));
@@ -179,8 +179,8 @@ const ImportDataContainer = ({
           loading={loading}
           fileData={fileData}
           setFileData={setFileData}
-          selectedGroups={selectedGroups}
-          setSelectedGroups={setSelectedGroups}
+          selectedGroupIds={selectedGroupIds}
+          setSelectedGroupIds={setSelectedGroupIds}
           skipGroupsAssignment={skipGroupsAssignment}
           setSkipGroupsAssignment={setSkipGroupsAssignment}
           {...useCaseProps}
@@ -194,8 +194,8 @@ const ImportDataContainer = ({
           contacts={contacts}
           setContacts={setContacts}
           recipients={recipients}
-          selectedGroups={selectedGroups}
-          setSelectedGroups={setSelectedGroups}
+          selectedGroupIds={selectedGroupIds}
+          setSelectedGroupIds={setSelectedGroupIds}
         />
       );
 
@@ -216,7 +216,7 @@ const ImportDataContainer = ({
     ? !saveFormProviderAvailable
     : !fileData ||
       fileData.errors.length ||
-      (useCase === IMPORT_CONTACTS && !skipGroupsAssignment && !selectedGroups.length);
+      (useCase === IMPORT_CONTACTS && !skipGroupsAssignment && !selectedGroupIds.length);
 
   const disableNext = loading || !selectedMethod || (isImportStep && shouldDisableImport);
 

@@ -23,7 +23,7 @@ const GroupsTable = observer(
     onCopy,
     setGroupToDelete,
     newGroupButton,
-    selectedGroups,
+    selectedGroupIds,
     onSelect,
     shouldSelectRecipients
   }) => {
@@ -46,7 +46,7 @@ const GroupsTable = observer(
       data: groups,
       selectionType: onSelect
         ? {
-            selectedRowKeys: selectedGroups,
+            selectedRowKeys: selectedGroupIds,
             type: 'checkbox',
             onSelect,
             getCheckboxProps: () => ({
@@ -68,7 +68,7 @@ const GroupsTable = observer(
 
 GroupsTable.defaultProps = {
   groups: [],
-  selectedGroups: [],
+  selectedGroupIds: [],
   onSelect: null,
   setGroupToDelete: null,
   shouldSelectRecipients: false
@@ -78,7 +78,7 @@ GroupsTable.propTypes = {
   onCopy: PropTypes.func,
   setGroupToDelete: PropTypes.func,
   newGroupButton: PropTypes.node,
-  selectedGroups: PropTypes.arrayOf(PropTypes.string),
+  selectedGroupIds: PropTypes.arrayOf(PropTypes.string),
   onSelect: PropTypes.func,
   shouldSelectRecipients: PropTypes.bool,
   groups: PropTypes.arrayOf(groupShape),

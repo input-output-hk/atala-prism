@@ -23,8 +23,8 @@ ManualContactCreation.defaultProps = {
 ManualContactCreation.propTypes = {
   groupsProps: PropTypes.shape({
     groups: PropTypes.arrayOf(groupShape).isRequired,
-    selectedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setSelectedGroups: PropTypes.func.isRequired
+    selectedGroupIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setSelectedGroupIds: PropTypes.func.isRequired
   }).isRequired,
   addEntity: PropTypes.func
 };

@@ -26,7 +26,7 @@ export default class GroupsSelectStore {
     );
   }
 
-  get selectedGroups() {
+  get selectedGroupIds() {
     return this.selectedGroupsObjects.map(groupRow => groupRow[GROUP_ID_KEY]);
   }
 

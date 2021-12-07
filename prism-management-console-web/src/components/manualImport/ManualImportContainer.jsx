@@ -11,8 +11,8 @@ const ManualImportContainer = ({
   useCaseProps,
   credentialType,
   recipients,
-  selectedGroups,
-  setSelectedGroups,
+  selectedGroupIds,
+  setSelectedGroupIds,
   addEntity
 }) => {
   const { t } = useTranslation();
@@ -32,7 +32,7 @@ const ManualImportContainer = ({
     }
   }, [groupsManager, showGroupSelection, t]);
 
-  const groupsProps = { groups, selectedGroups, setSelectedGroups };
+  const groupsProps = { groups, selectedGroupIds, setSelectedGroupIds };
 
   return (
     <ManualImport
@@ -58,8 +58,8 @@ ManualImportContainer.propTypes = {
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
   recipients: PropTypes.arrayOf(credentialShape),
-  selectedGroups: PropTypes.arrayOf(PropTypes.shape(groupShape)).isRequired,
-  setSelectedGroups: PropTypes.func.isRequired,
+  selectedGroupIds: PropTypes.arrayOf(PropTypes.shape(groupShape)).isRequired,
+  setSelectedGroupIds: PropTypes.func.isRequired,
   addEntity: PropTypes.func.isRequired
 };
 

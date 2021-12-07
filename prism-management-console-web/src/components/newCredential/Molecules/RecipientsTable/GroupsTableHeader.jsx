@@ -13,7 +13,7 @@ const GroupsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSelect
   const { t } = useTranslation();
 
   const {
-    selectedGroups,
+    selectedGroupIds,
     groupsSelectAllCheckboxStateProps,
     isLoadingGroupsSelection,
     selectAllGroups,
@@ -33,7 +33,7 @@ const GroupsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSelect
       <GroupFilters filterSortingProps={groupsFilterSortingProps} showFullFilter={false} />
       <SelectAllButton
         isLoadingSelection={isLoadingGroupsSelection}
-        selectedEntities={selectedGroups}
+        selectedEntities={selectedGroupIds}
         checkboxProps={selectAllCheckboxProps}
       />
       <div className="RecipientSelectionCheckbox NoRecipientsCheckbox">

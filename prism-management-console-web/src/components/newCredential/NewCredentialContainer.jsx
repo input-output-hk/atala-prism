@@ -54,7 +54,7 @@ const NewCredentialContainer = observer(() => {
     groups,
     selectedContactIds,
     selectedContacts,
-    selectedGroups,
+    selectedGroupIds,
     selectedGroupsNames,
     selectedGroupsObjects,
     resetContactsSelection,
@@ -176,7 +176,7 @@ const NewCredentialContainer = observer(() => {
         const createCredentialsResponse = await credentialsManager.createBatchOfCredentials(
           credentialsData,
           credentialTypeDetails,
-          selectedGroups
+          selectedGroupIds
         );
         Logger.debug('Created credentials:', createCredentialsResponse);
         Logger.info('Successfully created the credential(s)');
@@ -267,7 +267,7 @@ const NewCredentialContainer = observer(() => {
   };
 
   const hasSelectedRecipients =
-    !shouldSelectRecipients || selectedGroups.length || selectedContactIds.length;
+    !shouldSelectRecipients || selectedGroupIds.length || selectedContactIds.length;
 
   return (
     <NewCredential
