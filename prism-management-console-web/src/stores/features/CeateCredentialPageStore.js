@@ -134,16 +134,16 @@ export default class CreateCredentialPageStore {
 
   // groups select all
 
-  get selectedGroupsObjects() {
-    return this.groupsSelectStore.selectedGroupsObjects;
+  get selectedGroups() {
+    return this.groupsSelectStore.selectedGroups;
   }
 
   get selectedGroupIds() {
     return this.groupsSelectStore.selectedGroupIds;
   }
 
-  get selectedGroupsNames() {
-    return this.groupsSelectStore.selectedGroupsNames;
+  get selectedGroupNames() {
+    return this.groupsSelectStore.selectedGroupNames;
   }
 
   get isLoadingGroupsSelection() {

@@ -55,8 +55,8 @@ const NewCredentialContainer = observer(() => {
     selectedContactIds,
     selectedContacts,
     selectedGroupIds,
-    selectedGroupsNames,
-    selectedGroupsObjects,
+    selectedGroupNames,
+    selectedGroups,
     resetContactsSelection,
     resetGroupsSelection
   } = useCreateCredentialPageStore();
@@ -91,7 +91,7 @@ const NewCredentialContainer = observer(() => {
   }, [shouldSelectRecipients, resetContactsSelection, resetGroupsSelection]);
 
   const getRecipients = async () => {
-    const groupContactsPromises = selectedGroupsNames.map(groupName =>
+    const groupContactsPromises = selectedGroupNames.map(groupName =>
       contactsManager.getAllContacts({ groupName })
     );
 
@@ -149,7 +149,7 @@ const NewCredentialContainer = observer(() => {
   };
 
   const getContactsFromGroups = () => {
-    const groupContactsPromises = selectedGroupsNames.map(groupName =>
+    const groupContactsPromises = selectedGroupNames.map(groupName =>
       contactsManager.getAllContacts({ groupName })
     );
 
@@ -246,7 +246,7 @@ const NewCredentialContainer = observer(() => {
       case PREVIEW_AND_SIGN_CREDENTIAL_STEP:
         return (
           <CredentialsPreview
-            groups={selectedGroupsObjects}
+            groups={selectedGroups}
             subjects={selectedContacts}
             credentialViews={credentialViews}
           />
