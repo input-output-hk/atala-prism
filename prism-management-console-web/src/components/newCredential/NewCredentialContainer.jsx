@@ -52,11 +52,11 @@ const NewCredentialContainer = observer(() => {
   const {
     contacts,
     groups,
+    selectedContactIds,
     selectedContacts,
-    selectedContactsObjects,
+    selectedGroupIds,
+    selectedGroupNames,
     selectedGroups,
-    selectedGroupsNames,
-    selectedGroupsObjects,
     resetContactsSelection,
     resetGroupsSelection
   } = useCreateCredentialPageStore();
@@ -91,7 +91,7 @@ const NewCredentialContainer = observer(() => {
   }, [shouldSelectRecipients, resetContactsSelection, resetGroupsSelection]);
 
   const getRecipients = async () => {
-    const groupContactsPromises = selectedGroupsNames.map(groupName =>
+    const groupContactsPromises = selectedGroupNames.map(groupName =>
       contactsManager.getAllContacts({ groupName })
     );
 
@@ -101,7 +101,7 @@ const NewCredentialContainer = observer(() => {
     const targetsFromGroups = promisesList.flat();
     const targetsFromGroupsWithKeys = targetsFromGroups.map(contactMapper);
     const cherryPickedSubjects = allContacts
-      .filter(({ contactId }) => selectedContacts.includes(contactId))
+      .filter(({ contactId }) => selectedContactIds.includes(contactId))
       .map(contactMapper);
 
     const targetSubjects = [...targetsFromGroupsWithKeys, ...cherryPickedSubjects];
@@ -149,7 +149,7 @@ const NewCredentialContainer = observer(() => {
   };
 
   const getContactsFromGroups = () => {
-    const groupContactsPromises = selectedGroupsNames.map(groupName =>
+    const groupContactsPromises = selectedGroupNames.map(groupName =>
       contactsManager.getAllContacts({ groupName })
     );
 
@@ -176,7 +176,7 @@ const NewCredentialContainer = observer(() => {
         const createCredentialsResponse = await credentialsManager.createBatchOfCredentials(
           credentialsData,
           credentialTypeDetails,
-          selectedGroups
+          selectedGroupIds
         );
         Logger.debug('Created credentials:', createCredentialsResponse);
         Logger.info('Successfully created the credential(s)');
@@ -246,8 +246,8 @@ const NewCredentialContainer = observer(() => {
       case PREVIEW_AND_SIGN_CREDENTIAL_STEP:
         return (
           <CredentialsPreview
-            groups={selectedGroupsObjects}
-            subjects={selectedContactsObjects}
+            groups={selectedGroups}
+            subjects={selectedContacts}
             credentialViews={credentialViews}
           />
         );
@@ -267,7 +267,7 @@ const NewCredentialContainer = observer(() => {
   };
 
   const hasSelectedRecipients =
-    !shouldSelectRecipients || selectedGroups.length || selectedContacts.length;
+    !shouldSelectRecipients || selectedGroupIds.length || selectedContactIds.length;
 
   return (
     <NewCredential

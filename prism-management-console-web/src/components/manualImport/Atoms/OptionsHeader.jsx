@@ -9,7 +9,7 @@ import { groupShape } from '../../../helpers/propShapes';
 
 const OptionsHeader = ({ groupsProps, addEntity }) => {
   const { t } = useTranslation();
-  const { groups, selectedGroups, setSelectedGroups } = groupsProps;
+  const { groups, selectedGroupIds, setSelectedGroupIds } = groupsProps;
   const { Option } = Select;
   const useCase = IMPORT_CONTACTS;
 
@@ -19,9 +19,9 @@ const OptionsHeader = ({ groupsProps, addEntity }) => {
         <Select
           mode="tags"
           style={{ width: '100%' }}
-          value={selectedGroups}
+          value={selectedGroupIds}
           placeholder={t('manualImport.assignToGroups.placeholder')}
-          onChange={setSelectedGroups}
+          onChange={setSelectedGroupIds}
         >
           {groups.map(({ name }) => (
             <Option key={name}>{name}</Option>
@@ -43,8 +43,8 @@ OptionsHeader.defaultProps = {
 OptionsHeader.propTypes = {
   groupsProps: PropTypes.shape({
     groups: PropTypes.arrayOf(groupShape).isRequired,
-    selectedGroups: PropTypes.arrayOf(PropTypes.string),
-    setSelectedGroups: PropTypes.func.isRequired
+    selectedGroupIds: PropTypes.arrayOf(PropTypes.string),
+    setSelectedGroupIds: PropTypes.func.isRequired
   }).isRequired,
   addEntity: PropTypes.func
 };

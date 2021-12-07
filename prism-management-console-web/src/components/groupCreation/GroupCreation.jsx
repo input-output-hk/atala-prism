@@ -32,7 +32,7 @@ const GroupCreation = observer(
       isFetchingMore,
       fetchMoreGroupContacts,
       // select all
-      selectedContacts,
+      selectedContactIds,
       isLoadingSelection,
       selectAllCheckboxStateProps,
       handleCherryPickSelection,
@@ -47,8 +47,8 @@ const GroupCreation = observer(
     const [nameState, setNameState] = useState(GROUP_NAME_STATES.initial);
 
     useEffect(() => {
-      updateMembers(selectedContacts);
-    }, [selectedContacts, updateMembers]);
+      updateMembers(selectedContactIds);
+    }, [selectedContactIds, updateMembers]);
 
     useEffect(() => {
       resetContactsSelection();
@@ -101,7 +101,7 @@ const GroupCreation = observer(
             <div className="UtilsContainer">
               <SelectAllButton
                 isLoadingSelection={isLoadingSelection}
-                selectedEntities={selectedContacts}
+                selectedEntities={selectedContactIds}
                 checkboxProps={selectAllCheckboxProps}
               />
             </div>
@@ -116,7 +116,7 @@ const GroupCreation = observer(
                   hasFiltersApplied={hasFiltersApplied}
                   hasMore={hasMoreContacts}
                   fetchMoreData={fetchMoreGroupContacts}
-                  selectedContacts={selectedContacts}
+                  selectedContactIds={selectedContactIds}
                   onSelect={handleCherryPickSelection}
                   size="md"
                 />

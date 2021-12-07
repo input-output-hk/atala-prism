@@ -14,8 +14,8 @@ import './_style.scss';
 const BulkImportSteps = ({
   fileData,
   setFileData,
-  selectedGroups,
-  setSelectedGroups,
+  selectedGroupIds,
+  setSelectedGroupIds,
   skipGroupsAssignment,
   setSkipGroupsAssignment,
   showGroupSelection,
@@ -28,7 +28,7 @@ const BulkImportSteps = ({
 
   const shouldDisableNext = {
     [COMPLETE_SPREADSHEET_STEP]: !fileData || fileData?.errors.length,
-    [ASSIGN_TO_GROUPS]: !skipGroupsAssignment && !selectedGroups.length
+    [ASSIGN_TO_GROUPS]: !skipGroupsAssignment && !selectedGroupIds.length
   };
 
   const showStepNumber = {
@@ -59,8 +59,8 @@ const BulkImportSteps = ({
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
             showGroupSelection={showGroupSelection}
-            selectedGroups={selectedGroups}
-            setSelectedGroups={setSelectedGroups}
+            selectedGroupIds={selectedGroupIds}
+            setSelectedGroupIds={setSelectedGroupIds}
             setSkipGroupsAssignment={setSkipGroupsAssignment}
             disabled={shouldDisableNext[COMPLETE_SPREADSHEET_STEP]}
           />
@@ -73,7 +73,7 @@ const BulkImportSteps = ({
 BulkImportSteps.defaultProps = {
   fileData: null,
   showGroupSelection: false,
-  selectedGroups: [],
+  selectedGroupIds: [],
   recipients: null,
   credentialType: null
 };
@@ -86,8 +86,8 @@ BulkImportSteps.propTypes = {
     errors: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({ type: PropTypes.string })))
   }),
   setFileData: PropTypes.func.isRequired,
-  selectedGroups: PropTypes.arrayOf(PropTypes.string),
-  setSelectedGroups: PropTypes.func.isRequired,
+  selectedGroupIds: PropTypes.arrayOf(PropTypes.string),
+  setSelectedGroupIds: PropTypes.func.isRequired,
   showGroupSelection: PropTypes.bool,
   skipGroupsAssignment: PropTypes.bool.isRequired,
   setSkipGroupsAssignment: PropTypes.func.isRequired,

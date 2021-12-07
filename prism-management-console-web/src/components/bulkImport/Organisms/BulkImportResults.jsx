@@ -34,7 +34,6 @@ const BulkImportResults = ({
 };
 
 BulkImportResults.defaultProps = {
-  selectedGroups: [],
   validationErrors: null,
   contactCreations: 0,
   credentialDataImported: 0,
@@ -43,7 +42,6 @@ BulkImportResults.defaultProps = {
 
 BulkImportResults.propTypes = {
   fileData: PropTypes.shape({ data: PropTypes.string }).isRequired,
-  selectedGroups: PropTypes.arrayOf(PropTypes.string),
   validationErrors: PropTypes.arrayOf(
     PropTypes.arrayOf(PropTypes.shape({ error: PropTypes.string }))
   ),

@@ -1,23 +1,25 @@
-import { useContext, useEffect, useState } from 'react';
-import { GlobalStateContext } from '../stores/index';
-
-export const useContactStore = () => {
-  const { contactStore } = useContext(GlobalStateContext);
-
-  return contactStore;
-};
+import { useEffect, useState } from 'react';
+import { useApi } from './useApi';
 
 export const useAllContacts = () => {
   const [allContacts, setAllContacts] = useState([]);
-  const { fetchAllContacts, isFetching } = useContactStore();
+  const [isFetching, setIsFetching] = useState(false);
+  const { contactsManager } = useApi();
 
   useEffect(() => {
     const triggerFetch = async () => {
-      const fetchedContacts = await fetchAllContacts();
-      setAllContacts(fetchedContacts);
+      setIsFetching(true);
+
+      try {
+        const response = await contactsManager.getAllContacts();
+        setAllContacts(response);
+      } finally {
+        setIsFetching(false);
+      }
     };
+
     triggerFetch();
-  }, [fetchAllContacts]);
+  }, [contactsManager]);
 
   return {
     isLoading: isFetching,

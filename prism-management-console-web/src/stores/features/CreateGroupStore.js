@@ -94,8 +94,8 @@ export default class CreateGroupStore {
 
   // SELECT ALL
 
-  get selectedContacts() {
-    return this.contactsSelectStore.selectedContacts;
+  get selectedContactIds() {
+    return this.contactsSelectStore.selectedContactIds;
   }
 
   get isLoadingSelection() {

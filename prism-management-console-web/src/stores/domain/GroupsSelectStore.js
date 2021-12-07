@@ -8,7 +8,7 @@ const checkboxStates = {
 };
 
 export default class GroupsSelectStore {
-  selectedGroupsObjects = [];
+  selectedGroups = [];
 
   isLoadingSelection = false;
 
@@ -26,12 +26,12 @@ export default class GroupsSelectStore {
     );
   }
 
-  get selectedGroups() {
-    return this.selectedGroupsObjects.map(groupRow => groupRow[GROUP_ID_KEY]);
+  get selectedGroupIds() {
+    return this.selectedGroups.map(groupRow => groupRow[GROUP_ID_KEY]);
   }
 
-  get selectedGroupsNames() {
-    return this.selectedGroupsObjects.map(groupRow => groupRow.name);
+  get selectedGroupNames() {
+    return this.selectedGroups.map(groupRow => groupRow.name);
   }
 
   get selectAllCheckboxStateProps() {
@@ -45,12 +45,12 @@ export default class GroupsSelectStore {
     this.isLoadingSelection = true;
     const { checked } = ev.target;
     this.selectAllCheckboxState = checked ? checkboxStates.CHECKED : checkboxStates.UNCHECKED;
-    this.selectedGroupsObjects = checked ? yield this.api.groupsManager.getAllGroups(filters) : [];
+    this.selectedGroups = checked ? yield this.api.groupsManager.getAllGroups(filters) : [];
     this.isLoadingSelection = false;
   }
 
   resetSelection() {
-    this.selectedGroupsObjects = [];
+    this.selectedGroups = [];
     this.selectAllCheckboxState = checkboxStates.UNCHECKED;
     this.isLoadingSelection = false;
   }
@@ -67,9 +67,9 @@ export default class GroupsSelectStore {
     if (selected) {
       // it's important to create new array because Antd has some PureComponent/memo optimizations,
       // so change is not detected
-      this.selectedGroupsObjects = [...this.selectedGroupsObjects, record];
+      this.selectedGroups = [...this.selectedGroups, record];
     } else {
-      this.selectedGroupsObjects = this.selectedGroupsObjects.filter(
+      this.selectedGroups = this.selectedGroups.filter(
         groupRow => groupRow[GROUP_ID_KEY] !== newGroupId
       );
     }

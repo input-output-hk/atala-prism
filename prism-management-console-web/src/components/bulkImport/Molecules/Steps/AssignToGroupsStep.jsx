@@ -11,8 +11,8 @@ const AssignToGroupsStep = ({
   currentStep,
   setCurrentStep,
   showGroupSelection,
-  selectedGroups,
-  setSelectedGroups,
+  selectedGroupIds,
+  setSelectedGroupIds,
   setSkipGroupsAssignment,
   disabled
 }) => {
@@ -47,9 +47,9 @@ const AssignToGroupsStep = ({
         <Select
           mode="tags"
           style={{ width: '100%' }}
-          value={selectedGroups}
+          value={selectedGroupIds}
           placeholder={t('bulkImport.assignToGroups.placeholder')}
-          onChange={setSelectedGroups}
+          onChange={setSelectedGroupIds}
           disabled={currentStep !== ASSIGN_TO_GROUPS}
         >
           {groups.map(({ name }) => (
@@ -72,21 +72,16 @@ const AssignToGroupsStep = ({
 
 AssignToGroupsStep.defaultProps = {
   showGroupSelection: false,
-  selectedGroups: [],
+  selectedGroupIds: [],
   disabled: false
 };
 
 AssignToGroupsStep.propTypes = {
-  api: PropTypes.shape({
-    groupsManager: PropTypes.shape({
-      getGroups: PropTypes.func.isRequired
-    }).isRequired
-  }).isRequired,
   currentStep: PropTypes.number.isRequired,
   setCurrentStep: PropTypes.func.isRequired,
   showGroupSelection: PropTypes.bool,
-  selectedGroups: PropTypes.arrayOf(PropTypes.string),
-  setSelectedGroups: PropTypes.func.isRequired,
+  selectedGroupIds: PropTypes.arrayOf(PropTypes.string),
+  setSelectedGroupIds: PropTypes.func.isRequired,
   setSkipGroupsAssignment: PropTypes.func.isRequired,
   disabled: PropTypes.bool
 };

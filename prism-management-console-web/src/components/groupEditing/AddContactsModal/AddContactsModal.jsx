@@ -8,17 +8,21 @@ import ConnectionsFilter from '../../connections/Molecules/filter/ConnectionsFil
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
 import { useCurrentGroupStore } from '../../../hooks/useGroupStore';
 import SelectAllButton from '../../newCredential/Molecules/RecipientsTable/SelectAllButton';
-import { useSelectAll } from '../../../hooks/useSelectAll';
 import { CONTACT_ID_KEY } from '../../../helpers/constants';
 import { filterByMultipleKeys } from '../../../helpers/filterHelpers';
 import './_style.scss';
+
+const getCheckedAndIndeterminateProps = (rows, selectedRows) => ({
+  checked: rows.length && selectedRows.length === rows.length,
+  indeterminate: Boolean(selectedRows.length && selectedRows.length !== rows.length)
+});
 
 const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
   const { t } = useTranslation();
   const [contactsNotInGroup, setContactsNotInGroup] = useState([]);
   const [textFilter, setTextFilter] = useState('');
   const [filteredContacts, setFilteredContacts] = useState([]);
-  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [selectedContactIds, setSelectedContactIds] = useState([]);
   const { isLoadingContactsNotInGroup, getContactsNotInGroup } = useCurrentGroupStore();
 
   useEffect(() => {
@@ -29,7 +33,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
 
     if (visible) {
       handleGetContacts();
-      setSelectedContacts([]);
+      setSelectedContactIds([]);
     }
   }, [visible, getContactsNotInGroup]);
 
@@ -40,16 +44,26 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     setFilteredContacts(textFilter ? applyFilters(contactsNotInGroup) : contactsNotInGroup);
   }, [contactsNotInGroup, textFilter]);
 
-  const { loadingSelection, checkboxProps } = useSelectAll({
-    displayedEntities: filteredContacts,
-    entitiesFetcher: () => filteredContacts,
-    entityKey: CONTACT_ID_KEY,
-    selectedEntities: selectedContacts,
-    setSelectedEntities: setSelectedContacts,
-    isFetching: isLoadingContactsNotInGroup
-  });
+  const handleSelectAll = ev => {
+    const { checked } = ev.target;
+    setSelectedContactIds(checked ? filteredContacts.map(c => c[CONTACT_ID_KEY]) : []);
+  };
 
-  const handleConfirm = () => onConfirm(selectedContacts);
+  const handleContactSelect = (contactRecord, selected) => {
+    setSelectedContactIds(prevSelectedContactIds =>
+      selected
+        ? [...prevSelectedContactIds, contactRecord[CONTACT_ID_KEY]]
+        : prevSelectedContactIds.filter(cId => cId !== contactRecord[CONTACT_ID_KEY])
+    );
+  };
+
+  const handleConfirm = () => onConfirm(selectedContactIds);
+
+  const checkboxProps = {
+    ...getCheckedAndIndeterminateProps(filteredContacts, selectedContactIds),
+    disabled: isLoadingContactsNotInGroup || !filteredContacts.length,
+    onChange: handleSelectAll
+  };
 
   const confirmButton = (
     <Row>
@@ -58,7 +72,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
           buttonProps={{
             className: 'theme-secondary',
             onClick: handleConfirm,
-            disabled: selectedContacts.length === 0
+            disabled: selectedContactIds.length === 0
           }}
           buttonText={t('groupEditing.buttons.addContacts')}
         />
@@ -78,8 +92,8 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       <Row type="flex" align="middle" className="mb-3">
         <Col span={5}>
           <SelectAllButton
-            isLoadingSelection={loadingSelection}
-            selectedEntities={selectedContacts}
+            isLoadingSelection={false}
+            selectedEntities={selectedContactIds}
             checkboxProps={checkboxProps}
           />
         </Col>
@@ -100,8 +114,8 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
             contacts={filteredContacts}
             hasFiltersApplied
             isLoading={isLoadingContactsNotInGroup}
-            selectedContacts={selectedContacts}
-            setSelectedContacts={setSelectedContacts}
+            selectedContactIds={selectedContactIds}
+            onSelect={handleContactSelect}
             size="md"
           />
         </Col>
