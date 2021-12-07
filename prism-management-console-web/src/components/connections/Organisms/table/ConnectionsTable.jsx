@@ -21,7 +21,6 @@ const ConnectionsTable = observer(
     isLoading,
     isFetchingMore,
     columns,
-    setSelectedContactIds,
     onSelect,
     selectedContactIds,
     inviteContact,
@@ -46,18 +45,16 @@ const ConnectionsTable = observer(
     const tableProps = {
       columns: columns || getContactColumns({ inviteContact, viewContactDetail }),
       data: contacts,
-      selectionType:
-        setSelectedContactIds || onSelect
-          ? {
-              selectedRowKeys: selectedContactIds,
-              type: 'checkbox',
-              onChange: setSelectedContactIds,
-              onSelect,
-              getCheckboxProps: () => ({
-                disabled: !shouldSelectRecipients
-              })
-            }
-          : undefined,
+      selectionType: onSelect
+        ? {
+            selectedRowKeys: selectedContactIds,
+            type: 'checkbox',
+            onSelect,
+            getCheckboxProps: () => ({
+              disabled: !shouldSelectRecipients
+            })
+          }
+        : undefined,
       rowKey: CONTACT_ID_KEY,
       getMoreData: fetchMoreData,
       loading: isLoading,
@@ -73,7 +70,6 @@ const ConnectionsTable = observer(
 ConnectionsTable.defaultProps = {
   contacts: [],
   columns: null,
-  setSelectedContactIds: null,
   onSelect: null,
   selectedContactIds: [],
   inviteContact: null,
@@ -90,7 +86,6 @@ ConnectionsTable.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   isFetchingMore: PropTypes.bool.isRequired,
   columns: PropTypes.arrayOf(PropTypes.any),
-  setSelectedContactIds: PropTypes.func,
   onSelect: PropTypes.func,
   selectedContactIds: PropTypes.arrayOf(PropTypes.string),
   inviteContact: PropTypes.func,
