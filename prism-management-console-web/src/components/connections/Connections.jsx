@@ -39,7 +39,7 @@ const Connections = observer(
           <div className="title">
             <h1>{t('contacts.title')}</h1>
           </div>
-          <div className="flex spaceBetween fullWidth">
+          <div className="ConnectionFilterWrapper">
             <ConnectionsFilter filterSortingProps={filterSortingProps} />
             {accountStatus === CONFIRMED && newGroupButton}
           </div>

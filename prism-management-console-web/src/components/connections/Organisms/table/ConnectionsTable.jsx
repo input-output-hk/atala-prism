@@ -39,7 +39,10 @@ const ConnectionsTable = observer(
     };
 
     const renderEmpty = () => (
-      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newContactButton} />
+      <EmptyComponent
+        {...emptyProps}
+        button={accountStatus === CONFIRMED ? newContactButton : undefined}
+      />
     );
 
     const tableProps = {
@@ -79,7 +82,7 @@ ConnectionsTable.defaultProps = {
 };
 
 ConnectionsTable.propTypes = {
-  contacts: PropTypes.arrayOf(contactShape),
+  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
   fetchMoreData: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   hasFiltersApplied: PropTypes.bool.isRequired,

@@ -74,7 +74,7 @@ InfiniteScrollTable.propTypes = {
   getMoreData: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   rowKey: PropTypes.string.isRequired,
-  renderEmpty: PropTypes.node.isRequired
+  renderEmpty: PropTypes.oneOfType([PropTypes.func, PropTypes.node]).isRequired
 };
 
 export default InfiniteScrollTable;

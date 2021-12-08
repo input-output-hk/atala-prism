@@ -35,7 +35,7 @@ export const contactShape = {
   contactName: string,
   externalId: string,
   contactId: string,
-  status: oneOf(connectionStatusesShape)
+  connectionStatus: oneOf(connectionStatusesShape)
 };
 
 export const groupShape = {
@@ -67,7 +67,7 @@ export const dateObjectShape = {
 };
 
 export const studentShape = {
-  admissiondate: dateObjectShape,
+  admissiondate: shape(dateObjectShape),
   connectionid: string,
   connectionstatus: oneOf(connectionStatusesShape),
   connectiontoken: string,

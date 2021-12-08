@@ -30,15 +30,6 @@
           @include secondary-text($body, $dark-grey);
         }
       }
-
-      .FilterControls {
-        display: flex;
-        margin: 0.5em 0 1em;
-
-        .ant-select {
-          width: 100%;
-        }
-      }
     }
   }
 }
