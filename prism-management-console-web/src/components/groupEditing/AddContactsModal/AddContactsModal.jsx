@@ -13,7 +13,7 @@ import { filterByMultipleKeys } from '../../../helpers/filterHelpers';
 import './_style.scss';
 
 const getCheckedAndIndeterminateProps = (rows, selectedRows) => ({
-  checked: rows.length && selectedRows.length === rows.length,
+  checked: Boolean(rows.length && selectedRows.length === rows.length),
   indeterminate: Boolean(selectedRows.length && selectedRows.length !== rows.length)
 });
 
@@ -112,11 +112,14 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
           <ConnectionsTable
             // TODO: add pagination for getting group members
             contacts={filteredContacts}
-            hasFiltersApplied
             isLoading={isLoadingContactsNotInGroup}
             selectedContactIds={selectedContactIds}
             onSelect={handleContactSelect}
             size="md"
+            hasFiltersApplied={true}
+            fetchMoreData={() => {}}
+            isFetchingMore={false}
+            hasMore={false}
           />
         </Col>
       </Row>

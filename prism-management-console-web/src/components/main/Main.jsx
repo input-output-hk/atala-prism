@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
 import 'antd/dist/antd.css';
@@ -20,10 +20,27 @@ message.config({
 });
 
 const Main = () => {
-  i18nInitialise().catch(error => {
-    Logger.error('[index.i18nInitialise] Error while initialising i18n', error);
+  const [hasInitCompleted, setHasInitCompleted] = useState(false);
+  const [hasInitFailed, setHasInitFailed] = useState(false);
+
+  useEffect(() => {
+    i18nInitialise()
+      .then(() => {
+        setHasInitCompleted(true);
+      })
+      .catch(error => {
+        Logger.error('[index.i18nInitialise] Error while initialising i18n', error);
+        setHasInitFailed(true);
+      });
+  }, []);
+
+  if (hasInitFailed) {
     return <I18nError />;
-  });
+  }
+
+  if (!hasInitCompleted) {
+    return null;
+  }
 
   return (
     <main>

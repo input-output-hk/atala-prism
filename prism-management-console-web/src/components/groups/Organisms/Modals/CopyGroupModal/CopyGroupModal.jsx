@@ -63,7 +63,7 @@ CopyGroupModal.defaultProps = {
 };
 
 CopyGroupModal.propTypes = {
-  group: PropTypes.shape(groupShape),
+  group: groupShape,
   closeModal: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
   onSave: PropTypes.func.isRequired,

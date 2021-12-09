@@ -68,7 +68,7 @@ const GroupName = ({ updateForm, formValues, formRef, nameState, setNameState, c
   return (
     <div className={`GroupNameWrapper ai-center mb-3 ${className}`}>
       <div className="FormContainer">
-        <GroupForm ref={formRef} updateForm={handleUpdateForm} formValues={formValues} />
+        <GroupForm formRef={formRef} updateForm={handleUpdateForm} formValues={formValues} />
       </div>
       <div>{renderNameState()}</div>
     </div>
@@ -86,7 +86,7 @@ GroupName.propTypes = {
   updateForm: PropTypes.func.isRequired,
   nameState: PropTypes.oneOf(Object.values(GROUP_NAME_STATES)),
   setNameState: PropTypes.func.isRequired,
-  formValues: PropTypes.shape().isRequired
+  formValues: PropTypes.object.isRequired
 };
 
 export default GroupName;

@@ -76,11 +76,11 @@ export default class ContactsBaseStore {
   }
 
   get isFetchingMore() {
-    return this.isFetching && this.scrollId && !this.isSearching;
+    return !!(this.isFetching && this.scrollId && !this.isSearching);
   }
 
   get hasMore() {
-    return this.scrollId;
+    return !!this.scrollId;
   }
 
   initContactStore(groupName = defaultValues.groupNameFilter) {
@@ -171,9 +171,9 @@ export default class ContactsBaseStore {
     this.sortingBy = value;
   }
 
-  async triggerSearch() {
+  *triggerSearch() {
     this.isSearching = true;
-    await this.fetchMoreData({ startFromTheTop: true });
+    yield this.fetchMoreData({ startFromTheTop: true });
     this.isSearching = false;
   }
 

@@ -11,7 +11,6 @@ import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import { GROUP_NAME_STATES } from '../../helpers/constants';
 import AddContactsModal from './AddContactsModal/AddContactsModal';
 import ConfirmDeletionModal from './ConfirmDeletionModal/ConfirmDeletionModal';
-import { contactShape, groupShape } from '../../helpers/propShapes';
 import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
 import { getGroupContactColumns } from '../../helpers/tableDefinitions/contacts';
@@ -116,7 +115,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     if (editing)
       return (
         <GroupName
-          ref={formRef}
+          formRef={formRef}
           updateForm={setGroupName}
           groupName={groupName}
           formValues={formValues}
@@ -221,16 +220,9 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
   );
 });
 
-GroupEditing.defaultProps = {
-  group: {
-    name: ''
-  },
-  members: []
-};
+GroupEditing.defaultProps = {};
 
 GroupEditing.propTypes = {
-  group: PropTypes.arrayOf(groupShape),
-  members: PropTypes.arrayOf(contactShape),
   onGroupRename: PropTypes.func.isRequired,
   onRemoveContacts: PropTypes.func.isRequired,
   onAddContacts: PropTypes.func.isRequired

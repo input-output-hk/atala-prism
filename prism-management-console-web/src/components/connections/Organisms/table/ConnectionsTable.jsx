@@ -39,7 +39,10 @@ const ConnectionsTable = observer(
     };
 
     const renderEmpty = () => (
-      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newContactButton} />
+      <EmptyComponent
+        {...emptyProps}
+        button={accountStatus === CONFIRMED ? newContactButton : undefined}
+      />
     );
 
     const tableProps = {

@@ -42,38 +42,42 @@ const ConnectionsFilter = observer(({ filterSortingProps, showFullFilter, localS
           prefix={<SearchOutlined />}
           onChange={({ target: { value } }) => setFilterValue('textFilter', value)}
         />
-        {showFullFilter && [
-          <Select
-            allowClear
-            onChange={value => setFilterValue('statusFilter', value)}
-            placeholder={t('contacts.filters.status')}
-          >
-            {statuses.map(statusType => (
-              <Select.Option key={statusType} value={statusType}>
-                {t(`holders.status.${statusType}`)}
-              </Select.Option>
-            ))}
-          </Select>,
-          <CustomInputGroup prefixIcon="calendar">
-            <CustomDatePicker {...datePickerProps} />
-          </CustomInputGroup>,
-          <CustomInputGroup
-            onClick={toggleSortDirection}
-            prefixIcon={isAscending ? 'sort-ascending' : 'sort-descending'}
-          >
-            <Select defaultValue={CONTACT_SORTING_KEYS.name} onChange={setSortingBy}>
-              <Select.Option value={CONTACT_SORTING_KEYS.name}>
-                {t('contacts.filters.name')}
-              </Select.Option>
-              <Select.Option value={CONTACT_SORTING_KEYS.createdAt}>
-                {t('contacts.filters.createdAt')}
-              </Select.Option>
-              <Select.Option value={CONTACT_SORTING_KEYS.externalId}>
-                {t('contacts.filters.externalId')}
-              </Select.Option>
+        {showFullFilter && (
+          <>
+            <Select
+              allowClear
+              onChange={value => setFilterValue('statusFilter', value)}
+              placeholder={t('contacts.filters.status')}
+            >
+              {statuses.map(statusType => (
+                <Select.Option key={statusType} value={statusType}>
+                  {t(`holders.status.${statusType}`)}
+                </Select.Option>
+              ))}
             </Select>
-          </CustomInputGroup>
-        ]}
+
+            <CustomInputGroup prefixIcon="calendar">
+              <CustomDatePicker {...datePickerProps} />
+            </CustomInputGroup>
+
+            <CustomInputGroup
+              onClick={toggleSortDirection}
+              prefixIcon={isAscending ? 'sort-ascending' : 'sort-descending'}
+            >
+              <Select defaultValue={CONTACT_SORTING_KEYS.name} onChange={setSortingBy}>
+                <Select.Option value={CONTACT_SORTING_KEYS.name}>
+                  {t('contacts.filters.name')}
+                </Select.Option>
+                <Select.Option value={CONTACT_SORTING_KEYS.createdAt}>
+                  {t('contacts.filters.createdAt')}
+                </Select.Option>
+                <Select.Option value={CONTACT_SORTING_KEYS.externalId}>
+                  {t('contacts.filters.externalId')}
+                </Select.Option>
+              </Select>
+            </CustomInputGroup>
+          </>
+        )}
       </div>
     </div>
   );

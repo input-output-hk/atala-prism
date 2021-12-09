@@ -64,8 +64,8 @@ ImportCredentialsData.defaultProps = {
 };
 
 ImportCredentialsData.propTypes = {
-  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
-  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)).isRequired,
+  recipients: PropTypes.arrayOf(contactShape).isRequired,
+  contacts: PropTypes.arrayOf(contactShape).isRequired,
   credentialType: credentialTypeShape.isRequired,
   onCancel: PropTypes.func.isRequired,
   onFinish: PropTypes.func.isRequired,

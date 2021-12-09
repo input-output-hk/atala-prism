@@ -39,7 +39,7 @@ const ContactContainer = observer(() => {
         })
       : DRAFT_CREDENTIAL_VERIFICATION_RESULT;
 
-  const isEditing = contactIsLoaded && editing;
+  const isEditing = !!(contactIsLoaded && editing);
 
   return (
     <Contact

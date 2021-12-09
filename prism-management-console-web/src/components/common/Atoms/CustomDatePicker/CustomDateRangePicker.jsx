@@ -29,7 +29,7 @@ CustomDateRangePicker.defaultProps = {
 };
 
 CustomDateRangePicker.propTypes = {
-  placeholder: PropTypes.string.isRequired,
+  placeholder: PropTypes.arrayOf(PropTypes.string).isRequired,
   suffixIcon: PropTypes.element,
   onChange: PropTypes.func.isRequired
 };

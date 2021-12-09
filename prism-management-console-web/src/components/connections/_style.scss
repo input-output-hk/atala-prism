@@ -20,7 +20,17 @@
     .title {
       width: 100%;
     }
+
+    .ConnectionFilterWrapper {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1.5em 0 1em 0;
+    }
   }
+
+
   .ConnectionsTable {
     margin-top: 1em;
     height: 100vh;

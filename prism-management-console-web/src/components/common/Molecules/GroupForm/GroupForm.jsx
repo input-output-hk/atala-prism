@@ -4,10 +4,11 @@ import { Input } from 'antd';
 import PropTypes from 'prop-types';
 import { noEmptyInput } from '../../../../helpers/formRules';
 import CustomForm from '../../Organisms/Forms/CustomForm';
+import { refPropShape } from '../../../../helpers/propShapes';
 
 const i18nPrefix = 'groupCreation.form';
 
-const GroupForm = ({ updateForm, formValues, ref }) => {
+const GroupForm = ({ updateForm, formValues, formRef }) => {
   const { t } = useTranslation();
 
   const { groupName } = formValues;
@@ -24,7 +25,7 @@ const GroupForm = ({ updateForm, formValues, ref }) => {
 
   const items = [getInput('groupName', groupName, ({ target }) => updateForm(target.value))];
 
-  return <CustomForm items={items} ref={ref} />;
+  return <CustomForm items={items} ref={formRef} />;
 };
 
 GroupForm.defaultProps = {
@@ -38,7 +39,7 @@ GroupForm.propTypes = {
   formValues: PropTypes.shape({
     groupName: PropTypes.string
   }),
-  ref: PropTypes.shape().isRequired
+  formRef: refPropShape.isRequired
 };
 
 export default GroupForm;
