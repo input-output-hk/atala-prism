@@ -12,11 +12,11 @@ const Row = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
   return (
     <div className={classname}>
       <div className="contactsTitle">
-      <div className="groupNameContainer">
-        <div className="img">
-          <img className="IconUniversity" src={IdIcon} alt="Icon University" />
+        <div className="groupNameContainer">
+          <div className="img">
+            <img className="IconUniversity" src={IdIcon} alt="Icon University" />
+          </div>
         </div>
-      </div>
         <div className="groupTitle">
           <p>{t('contacts.detail.dataTitle')}</p>
           <span>{groupName}</span>
