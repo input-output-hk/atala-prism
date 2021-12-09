@@ -75,6 +75,10 @@ const Contact = observer(
       setGroupsToRemove([]);
     };
 
+    if (isLoadingContact || isLoadingGroups || !contactName) {
+      return <SimpleLoading size="md" />;
+    }
+
     return (
       <div className="contactDetail">
         <EditContactModal
@@ -109,11 +113,11 @@ const Contact = observer(
               </div>
               <div className="title">
                 <p>{t('contacts.table.columns.contactName')}</p>
-                <span>{isLoadingContact ? <SimpleLoading size="xs" /> : contactName}</span>
+                <span>{contactName}</span>
               </div>
               <div className="title">
                 <p>{t('contacts.table.columns.externalId')}</p>
-                <span>{isLoadingContact ? <SimpleLoading size="xs" /> : externalId}</span>
+                <span>{externalId}</span>
               </div>
               <CustomButton
                 buttonText={t('groups.table.buttons.edit')}
@@ -135,6 +139,7 @@ const Contact = observer(
                 ) : (
                   credentialsIssued.map(credential => (
                     <CredentialDetail
+                      key={credential.credentialId}
                       credential={credential}
                       isCredentialIssued
                       onVerifyCredential={onVerifyCredential}
@@ -171,9 +176,9 @@ Contact.defaultProps = {
 
 Contact.propTypes = {
   isEditing: PropTypes.bool,
-  verifyCredential: PropTypes.func.isRequired,
-  removeFromGroup: PropTypes.func.isRequired,
-  updateContact: PropTypes.func.isRequired
+  onVerifyCredential: PropTypes.func.isRequired,
+  onRemoveFromGroup: PropTypes.func.isRequired,
+  onUpdateContact: PropTypes.func.isRequired
 };
 
 export default Contact;

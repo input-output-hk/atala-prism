@@ -86,7 +86,7 @@ export const infiniteTableProps = {
 export const credentialTypeDetailsShape = shape({
   id: string,
   icon: string.isRequired,
-  iconFormat: string.isRequired,
+  iconFormat: string,
   name: string.isRequired
 });
 
@@ -108,7 +108,7 @@ export const credentialShape = shape({
 });
 
 export const credentialReceivedShape = shape({
-  contactData: contactShape,
+  contactData: shape(contactShape),
   credentialData: credentialDataShape.isRequired,
   encodedSignedCredential: string
 });

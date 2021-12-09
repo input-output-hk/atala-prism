@@ -47,7 +47,9 @@ const EditContactModal = ({
         <div className="modalContainer">
           <div className="titleContainer">
             {items.map(col => (
-              <div className="col">{col.label}</div>
+              <div key={col.fieldKey} className="col">
+                {col.label}
+              </div>
             ))}
           </div>
           <div className="input">

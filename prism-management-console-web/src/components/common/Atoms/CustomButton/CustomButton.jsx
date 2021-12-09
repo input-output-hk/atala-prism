@@ -40,15 +40,7 @@ CustomButton.defaultProps = {
 
 CustomButton.propTypes = {
   buttonProps: PropTypes.shape({
-    className: PropTypes.oneOf([
-      'theme-primary',
-      'theme-secondary',
-      'theme-outline',
-      'theme-grey',
-      'theme-link',
-      'theme-filter',
-      'theme-text'
-    ]),
+    className: PropTypes.string,
     onClick: PropTypes.func,
     disabled: PropTypes.bool
   }),

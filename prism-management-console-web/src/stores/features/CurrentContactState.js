@@ -19,8 +19,6 @@ const defaultValues = {
 export default class CurrentContactState {
   isLoadingContact = defaultValues.isLoadingContact;
 
-  isLoadingContact = defaultValues.isLoadingContact;
-
   isLoadingGroups = defaultValues.isLoadingGroups;
 
   isLoadingCredentialsIssued = defaultValues.isLoadingCredentialsIssued;

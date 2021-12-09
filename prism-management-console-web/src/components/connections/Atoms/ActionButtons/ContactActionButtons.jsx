@@ -33,6 +33,7 @@ const ContactActionButtons = ({ inviteContact, viewContactDetail, contact }) => 
         a =>
           !a.hideCondition && (
             <CustomButton
+              key={a.name}
               buttonProps={{
                 className: 'theme-link',
                 onClick: a.call || defaultAction
