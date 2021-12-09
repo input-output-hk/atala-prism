@@ -76,14 +76,14 @@ export default class CurrentGroupStore {
     return this.contactsBaseStore.isFetchingMore;
   }
 
-  init = async id => {
+  *init(id) {
     this.id = id;
     this.isLoadingMembers = true;
-    await this.loadGroup();
-    await this.contactsBaseStore.initContactStore(this.name);
+    yield this.loadGroup();
+    yield this.contactsBaseStore.initContactStore(this.name);
     this.contactsSelectStore.resetSelection();
     this.isLoadingMembers = false;
-  };
+  }
 
   *loadGroup() {
     this.isLoadingGroup = true;
@@ -99,16 +99,16 @@ export default class CurrentGroupStore {
 
   reloadMembers = () => this.contactsBaseStore.fetchMoreData({ startFromTheTop: true });
 
-  getContactsNotInGroup = async () => {
+  *getContactsNotInGroup() {
     // TODO: we need new API for this
     this.isLoadingContactsNotInGroup = true;
-    const allContacts = await this.api.contactsManager.getAllContacts();
-    const allMembers = await this.api.contactsManager.getAllContacts({ groupName: this.name });
+    const allContacts = yield this.api.contactsManager.getAllContacts();
+    const allMembers = yield this.api.contactsManager.getAllContacts({ groupName: this.name });
     const contactIdsInGroup = new Set(allMembers.map(item => item.contactId));
     const contactsNotInGroup = allContacts.filter(item => !contactIdsInGroup.has(item.contactId));
     this.isLoadingContactsNotInGroup = false;
     return contactsNotInGroup;
-  };
+  }
 
   *updateGroupName({ newName, onSuccess, onError }) {
     try {

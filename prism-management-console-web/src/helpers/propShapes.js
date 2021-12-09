@@ -10,7 +10,8 @@ import {
   element,
   objectOf,
   instanceOf,
-  node
+  node,
+  any
 } from 'prop-types';
 import __ from 'lodash';
 import {
@@ -31,17 +32,17 @@ export const contactCreationShape = {
   key: number.isRequired
 };
 
-export const contactShape = {
+export const contactShape = shape({
   contactName: string,
   externalId: string,
   contactId: string,
   connectionStatus: oneOf(connectionStatusesShape)
-};
+});
 
-export const groupShape = {
+export const groupShape = shape({
   groupid: string,
   name: string
-};
+});
 
 export const credentialSummaryShape = {
   id: string,
@@ -108,7 +109,7 @@ export const credentialShape = shape({
 });
 
 export const credentialReceivedShape = shape({
-  contactData: shape(contactShape),
+  contactData: contactShape,
   credentialData: credentialDataShape.isRequired,
   encodedSignedCredential: string
 });
@@ -162,7 +163,7 @@ export const credentialTypesManagerShape = shape({
   createCategory: func
 });
 
-export const refPropShape = oneOfType([func, shape({ current: instanceOf(Element) })]);
+export const refPropShape = oneOfType([func, shape({ current: any })]);
 
 export const antdV4FormShape = shape({ validateFields: func, resetFields: func });
 

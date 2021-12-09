@@ -32,6 +32,7 @@
 .ContentHeader {
   display: flex;
   flex-wrap: wrap;
+  border-bottom: 1px solid $light-grey;
   .title {
     width: 100%;
     h1 {
@@ -48,7 +49,7 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-top: 1em;
+    margin: 1.5em 0 1em 0;
     .InputContainer {
       margin-left: 1em;
       .ChildrenContainer {
