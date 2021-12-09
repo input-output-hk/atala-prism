@@ -38,7 +38,10 @@ const GroupsTable = observer(
     };
 
     const renderEmpty = () => (
-      <EmptyComponent {...emptyProps} button={accountStatus === CONFIRMED && newGroupButton} />
+      <EmptyComponent
+        {...emptyProps}
+        button={accountStatus === CONFIRMED ? newGroupButton : undefined}
+      />
     );
 
     const tableProps = {

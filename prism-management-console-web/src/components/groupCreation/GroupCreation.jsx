@@ -93,7 +93,7 @@ const GroupCreation = observer(
             <GroupName
               updateForm={updateForm}
               formValues={formValues}
-              ref={formRef}
+              formRef={formRef}
               setNameState={setNameState}
               nameState={nameState}
             />

@@ -58,7 +58,7 @@ ManualImportContainer.propTypes = {
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
   recipients: PropTypes.arrayOf(credentialShape),
-  selectedGroupIds: PropTypes.arrayOf(PropTypes.shape(groupShape)).isRequired,
+  selectedGroupIds: PropTypes.arrayOf(groupShape).isRequired,
   setSelectedGroupIds: PropTypes.func.isRequired,
   addEntity: PropTypes.func.isRequired
 };

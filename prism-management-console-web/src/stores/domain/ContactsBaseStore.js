@@ -76,7 +76,7 @@ export default class ContactsBaseStore {
   }
 
   get isFetchingMore() {
-    return this.isFetching && this.scrollId && !this.isSearching;
+    return !!(this.isFetching && this.scrollId && !this.isSearching);
   }
 
   get hasMore() {

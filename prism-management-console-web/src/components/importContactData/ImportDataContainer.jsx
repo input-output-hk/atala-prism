@@ -280,8 +280,8 @@ ImportDataContainer.defaultProps = {
 };
 
 ImportDataContainer.propTypes = {
-  recipients: PropTypes.arrayOf(PropTypes.shape(contactShape)),
-  credentialType: PropTypes.shape(credentialTypeShape),
+  recipients: PropTypes.arrayOf(contactShape),
+  credentialType: credentialTypeShape,
   bulkValidator: PropTypes.func,
   onFinish: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,

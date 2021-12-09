@@ -18,7 +18,9 @@ const GenericForm = ({ items, form: { getFieldDecorator } }) => (
 
 GenericForm.propTypes = {
   items: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  form: PropTypes.shape().isRequired
+  form: PropTypes.shape({
+    getFieldDecorator: PropTypes.func.isRequired
+  }).isRequired
 };
 
 const CustomForm = Form.create({ name: 'custom_form' })(GenericForm);

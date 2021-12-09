@@ -82,7 +82,7 @@ ConnectionsTable.defaultProps = {
 };
 
 ConnectionsTable.propTypes = {
-  contacts: PropTypes.arrayOf(PropTypes.shape(contactShape)),
+  contacts: PropTypes.arrayOf(contactShape),
   fetchMoreData: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   hasFiltersApplied: PropTypes.bool.isRequired,
