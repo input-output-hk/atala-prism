@@ -45,8 +45,7 @@
     flex-direction: row;
     width: 100%;
     .input {
-      width: 46% !important;
-      margin: 0 1em 0 0;
+      width: 45% !important;
       label {
         @include primary-text($label, $grey);
       }
@@ -56,6 +55,9 @@
       .ant-input:focus {
         border: 1px solid $primary-color;
       }
+    }
+    .input:nth-child(2) {
+      margin-left: 2%;
     }
   }
 }
@@ -76,7 +78,7 @@
   }
   .firstGroupInputContainer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-end;
     .ant-btn-icon-only {
       display: flex;
@@ -100,7 +102,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 1.25em 1em;
+    padding: 1.25em .5em;
     color: #99a2a9;
   }
 
@@ -139,7 +141,7 @@
 
   .firstGroupInputContainer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-end;
     width: 100%;
   }
