@@ -25,7 +25,7 @@ const replacePlaceholdersFromObject = (html, placeholders, data) =>
     html
   );
 
-const autoReplacePlaceholders = (htmlTemplate, credentialData) =>
+export const autoReplacePlaceholders = (htmlTemplate, credentialData) =>
   htmlTemplate.replace(/{{(\w+)}}/g, (mustache, key) => credentialData[key] || mustache);
 
 export const fillHTMLCredential = (
