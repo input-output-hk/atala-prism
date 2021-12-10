@@ -3,7 +3,7 @@
 .CredentialMainContent {
   display: flex;
   width: 100%;
-  padding: 0 1em;
+  padding: 1em 2em;
   flex-direction: column;
   .StepHeader {
     width: 100%;
@@ -43,4 +43,8 @@
       margin: 2em 0;
     }
   }
+}
+
+.EmbeddedImportStep {
+  padding: 0;
 }
