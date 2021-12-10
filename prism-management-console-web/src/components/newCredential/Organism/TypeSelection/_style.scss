@@ -2,8 +2,19 @@
 
 .TypeSelectionWrapper {
   width: 100%;
+  .HeaderTextContainer {
+    display: flex;
+    flex-direction: column;
+    padding: 1em 0;
+    .StepTitle {
+      @include secondary-text($h3, $black);
+    }
+    .StepInfo {
+      @include secondary-text($h3, $dark-grey);
+      font-weight: 450;
+    }
+  }
   .TypeSelectionContainer {
-    margin: 1em 0;
     .titleContainer {
       h1 {
         font-variant: normal;
@@ -13,8 +24,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-around;
-      p {
-        font-weight: 600;
+      .CategoryTitle {
+        @include secondary-text($body, $black);
       }
       .CredentialTemplatesContainer {
         padding: 1em 0;

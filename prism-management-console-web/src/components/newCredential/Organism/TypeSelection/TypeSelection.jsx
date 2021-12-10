@@ -35,6 +35,10 @@ const TypeSelection = observer(({ selectedType, onTypeSelection }) => {
     <div className="TypeSelectionWrapper">
       <div className="TypeSelectionContainer">
         <div className="TypeSelection">
+          <div className="HeaderTextContainer">
+            <h3 className="StepTitle">{t('newCredential.step1.headerText.title')}</h3>
+            <p className="StepInfo">{t('newCredential.step1.headerText.info')}</p>
+          </div>
           <TemplatesList selectedType={selectedType} onTypeSelection={onTypeSelection} />
         </div>
       </div>
