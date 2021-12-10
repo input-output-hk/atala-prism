@@ -44,10 +44,10 @@ const b64ImagePrefix = 'data:image/svg+xml;base64';
 
 export const adaptCredentialType = ({ id, name, icon, ...rest } = {}) => ({
   ...rest,
-  id,
   name,
   icon: icon && `${b64ImagePrefix},${icon}`,
   ...credentialTypeEquivalents[name],
+  id,
   placeholders: placeholdersReplacements[name]
 });
 

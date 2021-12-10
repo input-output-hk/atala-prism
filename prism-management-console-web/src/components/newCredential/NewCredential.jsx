@@ -61,8 +61,6 @@ const NewCredential = ({
     { key: '4', back: goBack, next: redirectToCredentials }
   ];
 
-  const isLastStep = currentStep + 1 === steps.length;
-
   const renderStepHeader = () => (
     <div className="StepHeader">
       <WizardTitle
@@ -74,7 +72,7 @@ const NewCredential = ({
           <TemplateFiltersContainer
             templateCategories={templateCategories}
             {...filterSortingProps}
-          />{' '}
+          />
         </div>
       )}
     </div>
@@ -90,7 +88,7 @@ const NewCredential = ({
               currentStep={currentStep}
               disableBack={isLoading}
               disableNext={isLoading}
-              loading={isLoading && isLastStep}
+              loading={isLoading}
             />,
             renderStepHeader()
           ]}

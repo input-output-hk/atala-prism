@@ -67,7 +67,7 @@ export default class TemplateCreationStore {
       state: CREDENTIAL_TYPE_STATUSES.MOCKED,
       id: uuidv4()
     };
-    yield this.api.credentialTypesManager.createTemplate(newTemplate);
+    yield this.api.credentialTypesManager.createCredentialType(newTemplate);
   }
 
   *createTemplateCategory(newCategoryData) {

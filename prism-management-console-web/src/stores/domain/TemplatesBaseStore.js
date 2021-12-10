@@ -115,7 +115,7 @@ export default class TemplatesBaseStore {
 
   applyFilters(templates) {
     return templates.filter(item => {
-      const matchName = filterByInclusion(this.nameFilter, item.name);
+      const matchName = filterByInclusion(this.nameFilter, item?.name);
       const matchCategory = filterByExactMatch(this.categoryFilter, item.category);
       const matchDate = filterByExactMatch(this.lastEditedFilter, item.lastEdited);
 
