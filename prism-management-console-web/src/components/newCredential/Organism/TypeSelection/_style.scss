@@ -26,6 +26,7 @@
       justify-content: space-around;
       .CategoryTitle {
         @include secondary-text($body, $black);
+        margin-bottom: 1em ;
       }
       .CredentialTemplatesContainer {
         padding: 1em 0;
