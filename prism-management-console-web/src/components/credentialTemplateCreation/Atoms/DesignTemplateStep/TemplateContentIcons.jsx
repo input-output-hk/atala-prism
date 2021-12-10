@@ -10,15 +10,15 @@ import { blobToBase64 } from '../../../../helpers/genericHelpers';
 import { MAX_ICON_FILE_SIZE } from '../../../../helpers/constants';
 import './_style.scss';
 
+const isValidSize = file => file.size < MAX_ICON_FILE_SIZE;
+
+const allowedFormats = '.jpg, .jpeg, .png, .svg';
+
 const TemplateContentIcons = observer(() => {
   const { t } = useTranslation();
   const { templateSketch, setSketchState } = useTemplateCreationStore();
 
   const { images } = templateLayouts[templateSketch.layout];
-
-  const isValidSize = file => file.size < MAX_ICON_FILE_SIZE;
-
-  const allowedFormats = '.jpg, .jpeg, .png, .svg';
 
   const uploaderProps = {
     accept: allowedFormats,

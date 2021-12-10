@@ -13,6 +13,10 @@ import './_style.scss';
 
 const i18nPrefix = 'credentialTemplateCreation.iconPicker';
 
+const isValidSize = file => file.size < MAX_ICON_FILE_SIZE;
+
+const allowedFormats = '.svg';
+
 const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
   const { t } = useTranslation();
 
@@ -32,10 +36,6 @@ const IconSelector = ({ selectedIcon, setSelectedIcon }) => {
     }
     return thumbUrl;
   };
-
-  const isValidSize = file => file.size < MAX_ICON_FILE_SIZE;
-
-  const allowedFormats = '.svg';
 
   const uploaderProps = {
     accept: allowedFormats,
