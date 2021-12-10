@@ -72,6 +72,10 @@ export default class CredentialsIssuedPageStore {
     return this.credentialsIssuedBaseStore.isLoadingFirstPage;
   }
 
+  get credentialTypes() {
+    return this.templatesBaseStore.credentialTemplates;
+  }
+
   fetchMoreData(args) {
     return this.credentialsIssuedBaseStore.fetchMoreData(args);
   }
