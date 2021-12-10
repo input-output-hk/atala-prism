@@ -25,14 +25,21 @@ const replacePlaceholdersFromObject = (html, placeholders, data) =>
     html
   );
 
+export const autoReplacePlaceholders = (htmlTemplate, credentialData) =>
+  htmlTemplate.replace(/{{(\w+)}}/g, (mustache, key) => credentialData[key] || mustache);
+
 export const fillHTMLCredential = (
   htmlTemplate,
   credentialType,
   credentialData,
   organisationName
 ) => {
-  const { placeholders, isMultiRow, multiRowKey, multiRowView } = credentialType;
+  const { isMultiRow, multiRowKey, multiRowView } = credentialType;
 
+  /**
+   * multi-row credentials are not supported by the backend
+   * TODO: add support once the backend is ready. otherwise remove legacy code.
+   */
   const multiRowHTML = isMultiRow
     ? credentialData[multiRowKey]
         .map(data =>
@@ -41,11 +48,9 @@ export const fillHTMLCredential = (
         .join('')
     : '';
 
-  const credentialTemplate = replacePlaceholdersFromObject(
-    htmlTemplate,
-    placeholders,
-    credentialData
-  )
+  const credentialTemplateWithValues = autoReplacePlaceholders(htmlTemplate, credentialData);
+
+  const processedCredentialTemplateWithValues = credentialTemplateWithValues
     .replace(ISSUER_NAME_PLACEHOLDER, organisationName)
     .replace(ISSUANCE_DATE_PLACEHOLDER, dateFormat(new Date()))
     .replace(`{{${multiRowKey}Html}}`, multiRowHTML)
@@ -53,7 +58,7 @@ export const fillHTMLCredential = (
     // that breaks the styling during sanitization so here we remove it
     .replace('boxShadow;', '');
 
-  return sanitizeView(credentialTemplate);
+  return sanitizeView(processedCredentialTemplateWithValues);
 };
 
 export const sanitizeView = html => sanitizeHtml(html, HTML_SANITIZER_OPTIONS);

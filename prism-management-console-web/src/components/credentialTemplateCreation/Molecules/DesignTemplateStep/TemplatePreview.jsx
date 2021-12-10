@@ -1,10 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import CredentialsViewer from '../../../newCredential/Molecules/CredentialsViewer/CredentialsViewer';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 
 const TemplatePreview = observer(() => {
-  const { preview } = useTemplateSketch();
+  const { preview } = useTemplateCreationStore();
 
   return <CredentialsViewer credentialViews={[preview]} showBrowseControls={false} />;
 });

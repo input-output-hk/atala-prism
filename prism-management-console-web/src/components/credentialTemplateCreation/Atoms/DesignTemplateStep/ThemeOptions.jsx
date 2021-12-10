@@ -2,13 +2,13 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { backgroundColors, themeColors } from '../../../../helpers/colors';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import ColorPicker from './ColorPicker';
 import './_style.scss';
 
 const ThemeOptions = observer(() => {
   const { t } = useTranslation();
-  const { templateSketch } = useTemplateSketch();
+  const { templateSketch } = useTemplateCreationStore();
 
   return (
     <>

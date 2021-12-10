@@ -20,3 +20,13 @@ export const useTemplatesByCategoryStore = () => {
 
   return templatesByCategoryStore;
 };
+
+/**
+ *
+ * @returns {TemplateCreationStore}
+ */
+export const useTemplateCreationStore = () => {
+  const { templateCreationStore } = useContext(GlobalStateContext);
+
+  return templateCreationStore;
+};

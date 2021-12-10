@@ -5,21 +5,17 @@ import { Form } from 'antd';
 import { TEMPLATE_NAME_ICON_CATEGORY } from '../../helpers/constants';
 import CredentialTemplateCreation from './CredentialTemplateCreation';
 import TemplateCreationStep from './Organisms/TemplateCreationStep';
-import { useTemplatesPageStore } from '../../hooks/useTemplatesPageStore';
+import { useTemplateCreationStore } from '../../hooks/useTemplatesPageStore';
 import { defaultTemplateSketch } from '../../helpers/templateHelpers';
-import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 
 const CredentialTemplateCreationContainer = observer(() => {
   const { t } = useTranslation();
 
-  // TODO: replace with own feature store for creating template
-  const { initTemplateStore } = useTemplatesPageStore();
+  const { init, setForm, setSketchState: handleValuesUpdate } = useTemplateCreationStore();
 
   useEffect(() => {
-    initTemplateStore();
-  }, [initTemplateStore]);
-
-  const { setForm, setSketchState: handleValuesUpdate } = useTemplateSketch({ reset: true });
+    init();
+  }, [init]);
 
   const [currentStep, setCurrentStep] = useState(TEMPLATE_NAME_ICON_CATEGORY);
   const [form] = Form.useForm();

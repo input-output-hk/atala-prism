@@ -39,7 +39,7 @@
     "no-console": "warn",
     "no-mixed-operators": "off",
     "prefer-template": "off",
-    "no-unused-vars": "warn",
+    "no-unused-vars": ["warn", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
     "no-trailing-spaces": "warn",
     "padded-blocks": "warn",
     "no-undef": "warn",
