@@ -26,7 +26,7 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
   return validCategories.map(category => {
     const templatesForThisCategory = filteredTemplatesByCategory(category);
     return templatesForThisCategory.length ? (
-      <>
+      <div class="CredentialTemplatesContainer">
         <p>{category.name}</p>
         <Row>
           {templatesForThisCategory.map(ct => (
@@ -41,7 +41,7 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
             />
           ))}
         </Row>
-      </>
+      </div>
     ) : null;
   });
 });
