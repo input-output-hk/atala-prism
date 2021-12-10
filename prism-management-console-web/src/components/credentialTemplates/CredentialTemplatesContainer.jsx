@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import CredentialTemplates from './CredentialTemplates';
-import { useTemplateStore, useTemplateUiState } from '../../hooks/useTemplateStore';
+import { useTemplatesPageStore } from '../../hooks/useTemplatesPageStore';
 
 const CredentialTemplatesContainer = observer(() => {
-  useTemplateStore({ fetch: true });
-  useTemplateUiState({ reset: true });
+  const { init } = useTemplatesPageStore();
+
+  useEffect(() => {
+    init();
+  }, [init]);
 
   return <CredentialTemplates />;
 });

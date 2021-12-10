@@ -547,7 +547,7 @@
     "checkInfo": "Check the data below"
   },
   "templates": {
-    "model": "Templates",
+    "model": "Template",
     "title": "Credential Templates",
     "table": {
       "unknownValue": "Unknown",
@@ -627,7 +627,7 @@
       "uploadButton": "Upload",
       "gallery": "Gallery",
       "save": "Save",
-      "allowedFormats": "Allowed formats are {{allowedFormats}}"
+      "allowedFormats": "Allowed format is {{allowedFormats}}, and the max file size is {{maxSize}}"
     },
     "templateCategory": {
       "title": "Select a Category",

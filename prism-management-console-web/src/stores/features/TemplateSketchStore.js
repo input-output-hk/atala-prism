@@ -1,23 +1,26 @@
 import { makeAutoObservable } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
-import { CREDENTIAL_TYPE_STATUSES } from '../../helpers/constants';
+import { svgPathToEncodedBase64 } from '../../helpers/genericHelpers';
 import { defaultTemplateSketch, insertFormChangeIntoArray } from '../../helpers/templateHelpers';
 import {
   configureHtmlTemplate,
   getContrastColorSettings
 } from '../../helpers/templateLayouts/templates';
 
-export default class TemplateSketchState {
+export default class TemplateSketchStore {
   templateSketch = defaultTemplateSketch;
 
   form;
 
-  constructor(rootStore) {
-    this.rootStore = rootStore;
-    makeAutoObservable(this, {
-      updateCredentialBody: false,
-      rootStore: false
-    });
+  constructor() {
+    makeAutoObservable(
+      this,
+      {
+        api: false,
+        updateCredentialBody: false,
+        credentialsIssuedBaseStore: false
+      },
+      { autoBind: true }
+    );
   }
 
   get preview() {
@@ -31,7 +34,12 @@ export default class TemplateSketchState {
     return configureHtmlTemplate(currentConfig.layout, currentConfig);
   }
 
-  setSketchState = async stateChange => {
+  *initSketch() {
+    this.templateSketch = defaultTemplateSketch;
+    this.templateSketch.icon = yield svgPathToEncodedBase64(this.templateSketch.icon);
+  }
+
+  setSketchState(stateChange) {
     if (stateChange.credentialBody) {
       this.updateCredentialBody(stateChange);
     } else {
@@ -40,9 +48,9 @@ export default class TemplateSketchState {
         ...stateChange
       };
     }
-  };
+  }
 
-  updateCredentialBody = stateChange => {
+  updateCredentialBody(stateChange) {
     this.templateSketch = {
       ...this.templateSketch,
       credentialBody: insertFormChangeIntoArray(
@@ -50,24 +58,9 @@ export default class TemplateSketchState {
         this.templateSketch.credentialBody
       )
     };
-  };
+  }
 
-  resetSketch = () => {
-    this.templateSketch = defaultTemplateSketch;
-  };
-
-  setForm = ref => {
+  setForm(ref) {
     this.form = ref;
-  };
-
-  createTemplateFromSketch = () => {
-    const { createCredentialTemplate } = this.rootStore.prismStore.templateStore;
-    const newTemplate = {
-      ...this.templateSketch,
-      template: this.preview,
-      state: CREDENTIAL_TYPE_STATUSES.MOCKED,
-      id: uuidv4()
-    };
-    return createCredentialTemplate(newTemplate);
-  };
+  }
 }

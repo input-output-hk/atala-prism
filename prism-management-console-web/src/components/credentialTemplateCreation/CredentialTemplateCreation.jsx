@@ -11,9 +11,10 @@ import {
   TEMPLATE_NAME_ICON_CATEGORY,
   TEMPLATE_CREATION_RESULT
 } from '../../helpers/constants';
-import { useTemplateSketch } from '../../hooks/useTemplateSketch';
 import { useRedirector } from '../../hooks/useRedirector';
 import './_style.scss';
+import { useTemplateCreationStore } from '../../hooks/useTemplatesPageStore';
+import Logger from '../../helpers/Logger';
 
 const fieldsByStep = {
   [TEMPLATE_NAME_ICON_CATEGORY]: ['name', 'category'],
@@ -31,7 +32,7 @@ const CredentialTemplateCreation = observer(({ currentStep, changeStep }) => {
   const { t } = useTranslation();
   const { redirectToCredentialTemplates } = useRedirector();
 
-  const { form, createTemplateFromSketch } = useTemplateSketch();
+  const { form, createCredentialTemplate } = useTemplateCreationStore();
   const [loadingNext, setLoadingNext] = useState(false);
 
   const validateByStep = () =>
@@ -62,8 +63,13 @@ const CredentialTemplateCreation = observer(({ currentStep, changeStep }) => {
     setLoadingNext(true);
     const isPartiallyValid = await validate();
     if (isPartiallyValid) {
-      await createTemplateFromSketch();
-      advanceStep();
+      try {
+        await createCredentialTemplate();
+        advanceStep();
+      } catch (error) {
+        Logger.error('[templateStore.createCredentialTemplate] Error while saving Template', error);
+        message.error(t('errors.saving', { model: t('templates.model') }));
+      }
     }
     setLoadingNext(false);
   };

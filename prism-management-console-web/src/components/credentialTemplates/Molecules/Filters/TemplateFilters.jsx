@@ -3,19 +3,21 @@ import { PropTypes } from 'prop-types';
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
-import { observer } from 'mobx-react-lite';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
 
 const ENABLED_STATE = 1;
 
-const TemplateFilters = observer(({ showDateFilter }) => {
+const TemplateFilters = ({
+  templateCategories,
+  categoryFilter,
+  lastEditedFilter,
+  setFilterValue,
+  showDateFilter
+}) => {
   const { t } = useTranslation();
   const { Option } = Select;
-
-  const { templateCategories } = useTemplateStore();
-  const { categoryFilter, lastEditedFilter, setFilterValue } = useTemplateUiState();
 
   const allowedTemplateCategories = templateCategories.filter(
     ({ state }) => state === ENABLED_STATE
@@ -48,13 +50,17 @@ const TemplateFilters = observer(({ showDateFilter }) => {
       )}
     </div>
   );
-});
+};
 
 TemplateFilters.defaultProps = {
   showDateFilter: true
 };
 
 TemplateFilters.propTypes = {
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
+  categoryFilter: PropTypes.string.isRequired,
+  lastEditedFilter: PropTypes.string.isRequired,
+  setFilterValue: PropTypes.func.isRequired,
   showDateFilter: PropTypes.bool
 };
 

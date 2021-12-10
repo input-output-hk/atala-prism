@@ -1,6 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import { CREDENTIAL_ID_KEY } from '../../helpers/constants';
 import CredentialsIssuedBaseStore from '../domain/CredentialsIssuedBaseStore';
+import TemplatesBaseStore from '../domain/TemplatesBaseStore';
 
 const checkboxStates = {
   UNCHECKED: 'UNCHECKED',
@@ -19,6 +20,7 @@ export default class CredentialsIssuedPageStore {
     this.api = api;
     this.sessionState = sessionState;
     this.credentialsIssuedBaseStore = new CredentialsIssuedBaseStore(api, sessionState);
+    this.templatesBaseStore = new TemplatesBaseStore(api, sessionState);
 
     makeAutoObservable(
       this,
@@ -78,8 +80,9 @@ export default class CredentialsIssuedPageStore {
     return this.credentialsIssuedBaseStore.refreshCredentials();
   }
 
-  initCredentialsIssuedStore() {
-    return this.credentialsIssuedBaseStore.initCredentialStore();
+  *initCredentialsIssuedStore() {
+    yield this.credentialsIssuedBaseStore.initCredentialStore();
+    yield this.templatesBaseStore.initTemplateStore();
   }
 
   *selectAllCredentials(ev) {

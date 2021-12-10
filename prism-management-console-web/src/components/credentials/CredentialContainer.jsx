@@ -4,7 +4,6 @@ import CredentialTabs from './CredentialTabs';
 import CredentialActionConfirmationModal from './Molecules/Modals/CredentialActionConfirmationModal';
 import { getTargetCredentials } from '../../helpers/credentialActions';
 import { useCredentialActions } from '../../hooks/useCredentialActions';
-import { useTemplateStore } from '../../hooks/useTemplateStore';
 import { useCredentialsIssuedPageStore } from '../../hooks/useCredentialsIssuedPageStore';
 
 const CredentialContainer = observer(() => {
@@ -13,7 +12,6 @@ const CredentialContainer = observer(() => {
     refreshCredentials: refreshCredentialsIssued,
     selectedCredentials
   } = useCredentialsIssuedPageStore();
-  useTemplateStore({ fetch: true });
 
   const {
     verifyCredential,
