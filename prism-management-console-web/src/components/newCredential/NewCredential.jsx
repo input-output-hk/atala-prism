@@ -78,26 +78,28 @@ const NewCredential = ({
     </div>
   );
 
+  const isEmbeddedImportStep = currentStep === IMPORT_CREDENTIAL_DATA_STEP;
+
   return (
     <React.Fragment>
-      <div className="CredentialMainContent">
+      <div className={`CredentialMainContent ${isEmbeddedImportStep ? 'EmbeddedImportStep' : ''}`}>
         <div className="TitleContainer">
-          {currentStep !== IMPORT_CREDENTIAL_DATA_STEP && [
-            <GenericStepsButtons
-              steps={steps}
-              currentStep={currentStep}
-              disableBack={isLoading}
-              disableNext={isLoading}
-              loading={isLoading}
-            />,
-            renderStepHeader()
-          ]}
+          {!isEmbeddedImportStep && (
+            <>
+              <GenericStepsButtons
+                steps={steps}
+                currentStep={currentStep}
+                disableBack={isLoading}
+                disableNext={isLoading}
+                loading={isLoading}
+              />
+              {renderStepHeader()}
+            </>
+          )}
         </div>
         <div
           className={
-            currentStep !== IMPORT_CREDENTIAL_DATA_STEP
-              ? 'WizardContentContainer InfiniteScrollTableContainer'
-              : ''
+            !isEmbeddedImportStep ? 'WizardContentContainer InfiniteScrollTableContainer' : ''
           }
         >
           {renderStep()}
