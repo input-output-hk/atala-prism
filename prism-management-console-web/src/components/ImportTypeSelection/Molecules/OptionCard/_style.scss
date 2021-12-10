@@ -7,8 +7,6 @@
   text-align: center;
   margin: 0 1em;
   background-color: white;
-  position: relative;
-  justify-content: center;
   padding: 2em 2em 4em 2em;
   border-radius: 10px;
   box-shadow: $shadow;
@@ -16,11 +14,6 @@
   &:focus {
     outline: none;
     border: 2px solid $primary-color;
-  }
-  .CheckBox {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
   }
   .ContaierImageText {
     .img-container img {
@@ -39,21 +32,18 @@
   }
 }
 
-.CheckBox {
+.OptionCardCheckBoxContainer {
   display: flex;
   width: 100%;
   justify-content: flex-end;
-  .ant-checkbox {
-    border-radius: 50em;
-  }
-  .ant-checkbox .ant-checkbox-inner {
-    border-radius: 50em!important;
+  .ant-checkbox-inner {
+    border-radius: 50%;
     height: 20px;
     width: 20px;
   }
 }
 
-.CheckBox:hover {
+.OptionCardCheckBoxContainer:hover {
   border: none;
 }
 
@@ -73,17 +63,12 @@
   opacity: 1;
   transition: 0.5s;
   border: 2px solid $primary-color;
-  border-radius: 10px;
   box-shadow: $red-shadow;
-  display: flex;
-  justify-content: center !important;
-  flex-wrap: wrap;
 }
 
 .NotSelected:hover {
   opacity: 1;
   border: 2px solid $primary-color;
-  border-radius: 10px;
   box-shadow: $red-shadow;
   transition: 0.5s;
 }
