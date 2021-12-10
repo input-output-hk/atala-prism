@@ -266,8 +266,9 @@ const NewCredentialContainer = observer(() => {
     }
   };
 
-  const hasSelectedRecipients =
-    !shouldSelectRecipients || selectedGroupIds.length || selectedContactIds.length;
+  const hasSelectedRecipients = Boolean(
+    !shouldSelectRecipients || selectedGroupIds.length || selectedContactIds.length
+  );
 
   return (
     <NewCredential

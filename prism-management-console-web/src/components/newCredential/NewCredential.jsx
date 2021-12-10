@@ -61,7 +61,7 @@ const NewCredential = ({
   const isLastStep = currentStep + 1 === steps.length;
 
   const renderStepHeader = () => (
-    <div className="StepHeader">
+    <div key="step-header" className="StepHeader">
       <WizardTitle
         title={t(`newCredential.title.step${currentStep + 1}`)}
         subtitle={t(`newCredential.subtitle.step${currentStep + 1}`)}
@@ -80,6 +80,7 @@ const NewCredential = ({
         <div className="TitleContainer">
           {currentStep !== IMPORT_CREDENTIAL_DATA_STEP && [
             <GenericStepsButtons
+              key="steps"
               steps={steps}
               currentStep={currentStep}
               disableBack={isLoading}

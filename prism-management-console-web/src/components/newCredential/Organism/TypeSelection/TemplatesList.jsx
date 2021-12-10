@@ -27,7 +27,7 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
   return validCategories.map(category => {
     const templatesForThisCategory = filteredTemplatesByCategory(category);
     return templatesForThisCategory.length ? (
-      <>
+      <React.Fragment key={category.id}>
         <p>{category.name}</p>
         <Row>
           {templatesForThisCategory.map(ct => (
@@ -42,7 +42,7 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
             />
           ))}
         </Row>
-      </>
+      </React.Fragment>
     ) : null;
   });
 });

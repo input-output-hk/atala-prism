@@ -78,12 +78,12 @@ CredentialTabs.propTypes = {
     revokeSingleCredential: PropTypes.func.isRequired,
     signSingleCredential: PropTypes.func.isRequired,
     sendSingleCredential: PropTypes.func.isRequired,
-    bulkActionsProps: {
+    bulkActionsProps: PropTypes.shape({
       refreshCredentials: PropTypes.func.isRequired,
       revokeSelectedCredentials: PropTypes.func.isRequired,
       signSelectedCredentials: PropTypes.func.isRequired,
       sendSelectedCredentials: PropTypes.func.isRequired
-    }
+    })
   }).isRequired
 };
 
