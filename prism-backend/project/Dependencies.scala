@@ -8,7 +8,7 @@ object versions {
   val circeOptics = "0.14.1"
   val diffx = "0.7.0"
   val dockerClient = "8.16.0"
-  val dockerTestkit = "0.9.9"
+  val dockerTestkit = "0.11.0"
   val doobie = "1.0.0-RC1"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
