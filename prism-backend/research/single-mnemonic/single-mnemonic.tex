@@ -1,0 +1,41 @@
+\documentclass{llncs}
+\pagestyle{plain}
+
+\usepackage[n,advantage,operators,sets,adversary,landau,probability,notions,
+logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
+%\usepackage{amssymb}
+\usepackage{xspace}
+%\usepackage[normalem]{ulem}
+\usepackage{hyperref}
+
+\title{Research Spike: Evaluation of Using a Single Mnemonic both
+  for Cryptocurrency and Identity Wallets}
+\author{}
+
+% Custom shorthands for this paper
+\input{symbols.tex}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  \comment{\textbf{DISCLAIMER}: Please, keep in mind that this is a working
+    draft. Its main use in its current state is to foster debate on the topics
+    it deals with. Do not take anything written here as ground truth.}  
+\end{abstract}
+
+\input{introduction.tex}
+\input{bip32-etal.tex}
+\input{idwal.tex}
+\input{discussion.tex}
+\input{conclusion.tex}
+
+\bibliographystyle{splncs04}
+\bibliography{single-mnemonic}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: ucl.tex
+%%% End:
