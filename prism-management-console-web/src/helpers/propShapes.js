@@ -124,7 +124,7 @@ export const credentialTypeShape = shape({
   fields: arrayOf(
     shape({
       key: string,
-      type: string,
+      type: oneOfType([string, number]),
       validations: arrayOf(string),
       isRowField: bool
     })
@@ -135,18 +135,22 @@ export const credentialTypeShape = shape({
 
 export const credentialTypesShape = arrayOf(credentialTypeShape);
 
-export const columnShape = arrayOf({
-  label: string,
-  fieldKey: string,
-  width: oneOf([number, string])
-});
+export const columnShape = arrayOf(
+  shape({
+    label: string,
+    fieldKey: string,
+    width: oneOfType([number, string])
+  })
+);
 
-export const skeletonShape = arrayOf({
-  name: string,
-  placeholder: string,
-  fieldKey: string,
-  rules: arrayOf(shape({ message: string }))
-});
+export const skeletonShape = arrayOf(
+  shape({
+    name: string,
+    placeholder: string,
+    fieldKey: string,
+    rules: arrayOf(shape({ message: string }))
+  })
+);
 
 export const templateCategoryShape = shape({
   id: string.isRequired,

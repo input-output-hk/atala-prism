@@ -14,7 +14,6 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
   const {
     credentials,
     isFetching,
-    hasMore,
     fetchCredentials,
     isLoadingFirstPage
   } = useCredentialsReceivedStore();
@@ -25,11 +24,11 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
 
   const expandedTableProps = {
     credentials,
-    getMoreData: noop(),
+    getMoreData: noop,
     tab: CREDENTIALS_RECEIVED,
     onView: showCredentialData,
     searchDueGeneralScroll: true,
-    hasMore,
+    hasMore: false,
     loading: isFetching
   };
 
@@ -40,6 +39,7 @@ const CredentialsReceived = observer(({ showEmpty, showCredentialData }) => {
   };
 
   if (isLoadingFirstPage) return <SimpleLoading size="md" />;
+
   return <CredentialsTable {...expandedTableProps} emptyProps={emptyProps} />;
 });
 

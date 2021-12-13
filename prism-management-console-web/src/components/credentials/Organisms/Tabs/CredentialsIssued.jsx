@@ -56,7 +56,7 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
     isFilter: hasFiltersApplied,
-    button: accountStatus === CONFIRMED && <CreateCredentialsButton />
+    button: accountStatus === CONFIRMED ? <CreateCredentialsButton /> : null
   };
 
   return (
@@ -83,7 +83,7 @@ CredentialsIssued.defaultProps = {
 };
 
 CredentialsIssued.propTypes = {
-  credentialActionsProps: {
+  credentialActionsProps: PropTypes.shape({
     revokeSingleCredential: PropTypes.func,
     signSingleCredential: PropTypes.func,
     sendSingleCredential: PropTypes.func,
@@ -92,7 +92,7 @@ CredentialsIssued.propTypes = {
       signSelectedCredentials: PropTypes.func,
       sendSelectedCredentials: PropTypes.func
     }).isRequired
-  },
+  }),
   showCredentialData: PropTypes.func.isRequired
 };
 

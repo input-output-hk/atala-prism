@@ -4,7 +4,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import ManualImport from './ManualImport';
 import Logger from '../../helpers/Logger';
-import { credentialShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
+import { contactShape, credentialTypeShape, groupShape } from '../../helpers/propShapes';
 import { useApi } from '../../hooks/useApi';
 
 const ManualImportContainer = ({
@@ -57,7 +57,7 @@ ManualImportContainer.propTypes = {
   credentialType: credentialTypeShape,
   hasSelectedRecipients: PropTypes.bool.isRequired,
   setContacts: PropTypes.func.isRequired,
-  recipients: PropTypes.arrayOf(credentialShape),
+  recipients: PropTypes.arrayOf(contactShape),
   selectedGroupIds: PropTypes.arrayOf(groupShape).isRequired,
   setSelectedGroupIds: PropTypes.func.isRequired,
   addEntity: PropTypes.func.isRequired
