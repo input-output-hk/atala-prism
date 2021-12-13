@@ -26,8 +26,8 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
   return validCategories.map(category => {
     const templatesForThisCategory = filteredTemplatesByCategory(category);
     return templatesForThisCategory.length ? (
-      <>
-        <p>{category.name}</p>
+      <div className="CredentialTemplatesContainer">
+        <p className="CategoryTitle">{category.name}</p>
         <Row>
           {templatesForThisCategory.map(ct => (
             <TypeCard
@@ -41,7 +41,7 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
             />
           ))}
         </Row>
-      </>
+      </div>
     ) : null;
   });
 });
