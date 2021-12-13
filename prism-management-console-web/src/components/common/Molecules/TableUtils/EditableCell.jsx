@@ -4,6 +4,7 @@ import moment from 'moment';
 import { Input, Form, DatePicker } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { futureDate, generateRequiredRule, pastDate } from '../../../../helpers/formRules';
+import { humanizeCamelCaseString } from '../../../../helpers/genericHelpers';
 
 import './editableCell.scss';
 
@@ -38,7 +39,9 @@ const EditableCell = ({
         cb(message);
       },
       message: t('manualImport.table.uniqueFieldRequirement', {
-        field: t(`contacts.table.columns.${dataIndex}`)
+        field: t(`contacts.table.columns.${dataIndex}`, {
+          defaultValue: humanizeCamelCaseString(dataIndex)
+        })
       })
     },
     checkPreexisting: {
@@ -47,19 +50,25 @@ const EditableCell = ({
         else cb();
       },
       message: t('manualImport.table.checkPreexistingRequirement', {
-        field: t(`contacts.table.columns.${dataIndex}`)
+        field: t(`contacts.table.columns.${dataIndex}`, {
+          defaultValue: humanizeCamelCaseString(dataIndex)
+        })
       })
     },
     futureDate: {
       validator: (_rule, value, cb) => futureDate(value, cb, moment.now()),
       message: t('manualImport.table.futureDateRequirement', {
-        field: t(`contacts.table.columns.${dataIndex}`)
+        field: t(`contacts.table.columns.${dataIndex}`, {
+          defaultValue: humanizeCamelCaseString(dataIndex)
+        })
       })
     },
     pastDate: {
       validator: (_rule, value, cb) => pastDate(value, cb, moment.now()),
       message: t('manualImport.table.pastDateRequirement', {
-        field: t(`contacts.table.columns.${dataIndex}`)
+        field: t(`contacts.table.columns.${dataIndex}`, {
+          defaultValue: humanizeCamelCaseString(dataIndex)
+        })
       })
     }
   };
