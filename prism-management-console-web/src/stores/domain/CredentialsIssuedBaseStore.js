@@ -151,6 +151,7 @@ export default class CredentialsIssuedBaseStore {
       sortDirection,
       setSortingBy,
       setFilterValue,
+      textFilter,
       toggleSortDirection
     } = this;
     return {
@@ -159,6 +160,7 @@ export default class CredentialsIssuedBaseStore {
       sortDirection,
       setSortingBy,
       setFilterValue,
+      textFilter,
       toggleSortDirection
     };
   }

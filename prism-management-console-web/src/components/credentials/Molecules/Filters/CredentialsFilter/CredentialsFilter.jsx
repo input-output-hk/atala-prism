@@ -10,7 +10,6 @@ import {
   NORMALIZED_CONNECTION_STATUSES,
   CREDENTIAL_STATUSES
 } from '../../../../../helpers/constants';
-import { credentialTypeShape } from '../../../../../helpers/propShapes';
 import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
 import { useTemplateStore } from '../../../../../hooks/useTemplateStore';
 
@@ -132,20 +131,7 @@ CredentialsFilter.defaultProps = {
 };
 
 CredentialsFilter.propTypes = {
-  isIssued: PropTypes.bool,
-  filterProps: PropTypes.shape({
-    name: PropTypes.string,
-    setName: PropTypes.func,
-    credentialTypes: PropTypes.arrayOf(credentialTypeShape),
-    credentialType: PropTypes.string,
-    setCredentialType: PropTypes.func,
-    credentialStatus: PropTypes.number,
-    setCredentialStatus: PropTypes.func,
-    contactStatus: PropTypes.string,
-    setContactStatus: PropTypes.func,
-    date: PropTypes.string,
-    setDate: PropTypes.func
-  }).isRequired
+  isIssued: PropTypes.bool
 };
 
 export default CredentialsFilter;

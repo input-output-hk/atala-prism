@@ -97,18 +97,19 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     </div>
   );
 
-  const getCredentialStatusBadge = () => {
+  const getCredentialStatusBadgeData = () => {
+    if (credentialRevoked || batchRevoked) return ['revoked', invalidIcon, 'InvalidButton'];
+    if (invalidMerkleProof || invalidKey || keyRevoked || invalidSignature) {
+      return ['invalid', invalidIcon, 'InvalidButton'];
+    }
     if (!credentialSigned) return ['draft', pendingIcon, 'PendingButton'];
     if (!credentialPublished) return ['pendingPublication', pendingIcon, 'PendingButton'];
-    if (credentialRevoked || batchRevoked) return ['revoked', invalidIcon, 'InvalidButton'];
-    if (invalidMerkleProof || invalidKey || keyRevoked || invalidSignature)
-      return ['invalid', invalidIcon, 'InvalidButton'];
     return ['valid', verifiedIcon, 'ValidButton'];
   };
 
-  const [credentialStatus, validityIcon, badgeClassName] = getCredentialStatusBadge();
+  const [credentialStatus, validityIcon, badgeClassName] = getCredentialStatusBadgeData();
 
-  const extraJsx = (
+  const credentialStatusBadge = (
     <div className={badgeClassName}>
       <img src={validityIcon} alt="verifiedIcon" />
       <p>{t(`credentials.detail.${credentialStatus}`)}</p>
@@ -173,7 +174,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
           <DetailCard
             title={t('credentials.detail.statusTitle')}
             info={infoFirstCard}
-            badge={extraJsx}
+            badge={credentialStatusBadge}
           >
             <DataDetail
               img={hashedFile}
