@@ -56,5 +56,11 @@ export const blobToBase64 = file =>
     reader.onerror = error => reject(error);
   });
 
+const upperCaseOrNumberRegex = /([A-Z0-9])/g;
+
 export const humanizeCamelCaseString = string =>
-  string.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  string
+    // add spacing to each lower -> upper case change (or number) change
+    .replace(upperCaseOrNumberRegex, ' $1')
+    // capitalize each word
+    .replace(/^./, str => str.toUpperCase());
