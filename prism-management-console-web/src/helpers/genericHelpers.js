@@ -55,3 +55,6 @@ export const blobToBase64 = file =>
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
   });
+
+export const humanizeCamelCaseString = string =>
+  string.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase());

@@ -14,6 +14,7 @@ import {
 } from '../../../../helpers/constants';
 import DynamicForm from '../../../dynamicForm/DynamicForm';
 import { DynamicFormContext } from '../../../providers/DynamicFormProvider';
+import { humanizeCamelCaseString } from '../../../../helpers/genericHelpers';
 
 const CredentialCreationTable = ({ recipients, credentialType }) => {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ const CredentialCreationTable = ({ recipients, credentialType }) => {
   ];
 
   const specificColumns = credentialType.fields.map(f => ({
-    title: t(`contacts.table.columns.${f.key}`),
+    title: t(`contacts.table.columns.${f.key}`, { defaultValue: humanizeCamelCaseString(f.key) }),
     dataIndex: f.key,
     editable: true,
     type: f.type,

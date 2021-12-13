@@ -7,6 +7,7 @@ import { COMMON_CREDENTIALS_HEADERS, IMPORT_CREDENTIALS_DATA } from '../../helpe
 import { validateCredentialDataBulk } from '../../helpers/credentialDataValidation';
 import { contactShape, credentialTypeShape } from '../../helpers/propShapes';
 import { DynamicFormProvider } from '../providers/DynamicFormProvider';
+import { humanizeCamelCaseString } from '../../helpers/genericHelpers';
 
 const ImportCredentialsData = ({
   recipients,
@@ -27,7 +28,9 @@ const ImportCredentialsData = ({
 
     return noRepeatedHeaders.map(headerKey => ({
       key: headerKey,
-      translation: t(`contacts.table.columns.${headerKey}`)
+      translation: t(`contacts.table.columns.${headerKey}`, {
+        defaultValue: humanizeCamelCaseString(headerKey)
+      })
     }));
   };
 
