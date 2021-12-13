@@ -40,7 +40,7 @@ const OptionCard = ({ option, isSelected, onSelect, img, useCase, disabled, disa
         role="button"
         tabIndex={disabled ? null : index[option]}
       >
-        <div className="CheckBox">
+        <div className="OptionCardCheckBoxContainer">
           <Checkbox checked={isSelected} />
         </div>
         <div className="ContaierImageText">

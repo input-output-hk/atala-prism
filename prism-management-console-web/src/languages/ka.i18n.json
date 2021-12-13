@@ -450,7 +450,7 @@
       "step5": ""
     },
     "subtitle": {
-      "step1": "Select Credential Template",
+      "step1": "",
       "step2": "Select groups or contacts to issue credentials",
       "embeddedStep1": "Select an Import Method",
       "embeddedStep2": {
@@ -463,6 +463,12 @@
       },
       "step4": "",
       "step5": ""
+    },
+    "step1": {
+      "headerText": {
+        "title": "Select a template from the category list",
+        "info": "You can also filter to select"
+      }
     },
     "steps": {
       "step1": "Select Credential Template",
@@ -547,7 +553,7 @@
     "checkInfo": "Check the data below"
   },
   "templates": {
-    "model": "Templates",
+    "model": "Template",
     "title": "Credential Templates",
     "table": {
       "unknownValue": "Unknown",
@@ -627,7 +633,7 @@
       "uploadButton": "Upload",
       "gallery": "Gallery",
       "save": "Save",
-      "allowedFormats": "Allowed formats are {{allowedFormats}}"
+      "allowedFormats": "Allowed format is {{allowedFormats}}, and the max file size is {{maxSize}}"
     },
     "templateCategory": {
       "title": "Select a Category",

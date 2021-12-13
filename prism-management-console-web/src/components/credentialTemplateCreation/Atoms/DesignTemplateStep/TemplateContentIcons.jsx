@@ -1,29 +1,39 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Upload } from 'antd';
+import { Button, message, Upload } from 'antd';
+import prettyBytes from 'pretty-bytes';
 import { PictureOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import { templateLayouts } from '../../../../helpers/templateLayouts/templates';
 import { blobToBase64 } from '../../../../helpers/genericHelpers';
+import { MAX_ICON_FILE_SIZE } from '../../../../helpers/constants';
 import './_style.scss';
+
+const isValidSize = file => file.size < MAX_ICON_FILE_SIZE;
+
+const allowedFormats = '.jpg, .jpeg, .png, .svg';
 
 const TemplateContentIcons = observer(() => {
   const { t } = useTranslation();
-  const { templateSketch, setSketchState } = useTemplateSketch();
+  const { templateSketch, setSketchState } = useTemplateCreationStore();
 
   const { images } = templateLayouts[templateSketch.layout];
 
   const uploaderProps = {
-    accept: '.svg',
+    accept: allowedFormats,
     listType: 'picture',
     fileList: []
   };
 
   const setImagePreview = async (file, key) => {
     const src = await blobToBase64(file);
-    setSketchState({ [key]: src });
-    return src;
+    if (!isValidSize(file)) {
+      message.error(t('errors.saveFile.tooLarge', { maxSize: prettyBytes(MAX_ICON_FILE_SIZE) }));
+    } else {
+      setSketchState({ [key]: src });
+      return src;
+    }
   };
 
   return (

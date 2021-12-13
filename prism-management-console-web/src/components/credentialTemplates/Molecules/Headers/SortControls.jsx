@@ -1,17 +1,15 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Menu } from 'antd';
 import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { useTemplateUiState } from '../../../../hooks/useTemplateStore';
 
 const { ascending } = SORTING_DIRECTIONS;
 
-const SortControls = observer(() => {
+const SortControls = ({ sortDirection, toggleSortDirection, sortingBy, setSortingBy }) => {
   const { t } = useTranslation();
-  const { sortDirection, toggleSortDirection, sortingBy, setSortingBy } = useTemplateUiState();
 
   const sortingOptions = Object.keys(TEMPLATES_SORTING_KEYS);
 
@@ -49,6 +47,13 @@ const SortControls = observer(() => {
       </div>
     </div>
   );
-});
+};
+
+SortControls.propTypes = {
+  sortDirection: PropTypes.string.isRequired,
+  toggleSortDirection: PropTypes.func.isRequired,
+  sortingBy: PropTypes.string.isRequired,
+  setSortingBy: PropTypes.func.isRequired
+};
 
 export default SortControls;

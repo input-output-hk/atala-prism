@@ -101,6 +101,8 @@ export const ALLOWED_IMAGE_TYPES = [JPEG, PNG];
 export const ALLOWED_EXCEL_TYPES = [ODS, XLS, XLSX];
 export const ALLOWED_TYPES = [...ALLOWED_EXCEL_TYPES, ...ALLOWED_IMAGE_TYPES];
 export const MAX_FILE_SIZE = 1073741824; // 1 Gb as maximum just so all my images can pass
+// eslint-disable-next-line no-magic-numbers
+export const MAX_ICON_FILE_SIZE = 1000 * 1000 * 2;
 export const IMAGE = 'image';
 export const EXCEL = 'excel';
 export const ANY = 'any';

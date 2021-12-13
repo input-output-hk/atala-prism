@@ -1,21 +1,28 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import TemplateFilters from './TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
-import { useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { templateCategoryShape } from '../../../../helpers/propShapes';
 
-const TemplateFiltersContainer = observer(({ showDateFilters }) => {
+const TemplateFiltersContainer = ({
+  templateCategories,
+  showDateFilters,
+  ...filterSortingProps
+}) => {
   const { t } = useTranslation();
 
-  const { nameFilter, hasAditionalFiltersApplied, setFilterValue } = useTemplateUiState();
+  const { nameFilter, hasAditionalFiltersApplied, setFilterValue } = filterSortingProps;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <TemplateFilters showDateFilter={showDateFilters} />
+      <TemplateFilters
+        templateCategories={templateCategories}
+        showDateFilter={showDateFilters}
+        {...filterSortingProps}
+      />
     </Menu>
   );
 
@@ -36,13 +43,17 @@ const TemplateFiltersContainer = observer(({ showDateFilters }) => {
       </Badge>
     </>
   );
-});
+};
 
 TemplateFiltersContainer.defaultProps = {
   showDateFilters: false
 };
 
 TemplateFiltersContainer.propTypes = {
+  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired,
+  nameFilter: PropTypes.string.isRequired,
+  hasAditionalFiltersApplied: PropTypes.bool.isRequired,
+  setFilterValue: PropTypes.func.isRequired,
   showDateFilters: PropTypes.bool
 };
 

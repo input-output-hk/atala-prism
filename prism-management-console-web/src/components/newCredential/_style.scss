@@ -3,13 +3,13 @@
 .CredentialMainContent {
   display: flex;
   width: 100%;
-  padding: 0 1em;
+  padding: 1em 2em;
   flex-direction: column;
   .StepHeader {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    padding-top: 12px;
+    margin: 1em 0;
   }
   .WizardContentContainer {
     display: flex;
@@ -45,3 +45,8 @@
     }
   }
 }
+
+.EmbeddedImportStep {
+  padding: 0;
+}
+

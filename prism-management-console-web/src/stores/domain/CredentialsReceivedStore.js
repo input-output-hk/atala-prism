@@ -3,6 +3,7 @@ import { makeAutoObservable } from 'mobx';
 const fallback = {
   credentialsList: []
 };
+
 export default class CredentialsReceivedStore {
   isFetching = true;
 
