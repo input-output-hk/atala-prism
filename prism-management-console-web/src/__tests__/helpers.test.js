@@ -10,7 +10,7 @@ import { mockContactHeadersMapping } from './__mocks__/mockHelpers';
 import { filterByManyFields } from '../helpers/filterHelpers';
 import { CONTACT_NAME_KEY, EXTERNAL_ID_KEY } from '../helpers/constants';
 import { isValueInListByKey, isValueUniqueInObjectListByKey } from '../helpers/formRules';
-import { blobToBase64 } from '../helpers/genericHelpers';
+import { blobToBase64, humanizeCamelCaseString } from '../helpers/genericHelpers';
 
 it('parses array of arrays to an object', () => {
   const testInput = validContacts.inputAoA;
@@ -148,5 +148,16 @@ describe('svgEncoding', () => {
     const expectedB64 =
       'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTUiIGhlaWdodD0iNTkiIHZpZXdCb3g9IjAgMCA1NSA1OSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAuNTU2Mzk2IDMuNjI1NUMwLjU1NjM5NiAxLjY4Mjc5IDIuMTMxMjcgMC4xMDc5MSA0LjA3Mzk4IDAuMTA3OTFMNTAuOTcxNiAwLjEwNzkxQzUyLjkxNDMgMC4xMDc5MSA1NC40ODkyIDEuNjgyNzkgNTQuNDg5MiAzLjYyNTVWNTUuNDgyNEM1NC40ODkyIDU3LjQyNTEgNTIuOTE0MyA1OSA1MC45NzE2IDU5SDQuMDczOTlDMi4xMzEyOCA1OSAwLjU1NjM5NiA1Ny40MjUxIDAuNTU2Mzk2IDU1LjQ4MjRMMC41NTYzOTYgMy42MjU1WiIgZmlsbD0iI0Q4RDhEOCIvPgo8cGF0aCBkPSJNMjcuNjkzOSAyOS4xOTkzQzMxLjI5MTcgMjkuMTk5MyAzNC4yMDg2IDI1LjY1MzIgMzQuMjA4NiAyMS4yNzg4QzM0LjIwODYgMTYuOTA0MyAzMy4yNTEgMTMuMzU4MiAyNy42OTM5IDEzLjM1ODJDMjIuMTM2OCAxMy4zNTgyIDIxLjE3OSAxNi45MDQzIDIxLjE3OSAyMS4yNzg4QzIxLjE3OSAyNS42NTMyIDI0LjA5NTkgMjkuMTk5MyAyNy42OTM5IDI5LjE5OTNaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTUuMzg5NyA0MS4yOTQyQzE1LjM4ODYgNDEuMDI2NyAxNS4zODc1IDQxLjIxODggMTUuMzg5NyA0MS4yOTQyVjQxLjI5NDJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMzkuOTk5OCA0MS41MDI1QzQwLjAwMzMgNDEuNDI5MyA0MC4wMDEgNDAuOTk0NCAzOS45OTk4IDQxLjUwMjVWNDEuNTAyNVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zOS45ODQzIDQwLjk3MjhDMzkuODYzNiAzMy4zNTI1IDM4Ljg2OTMgMzEuMTgxMSAzMS4yNjA4IDI5LjgwNjZDMzEuMjYwOCAyOS44MDY2IDMwLjE4OTggMzEuMTcyNyAyNy42OTM1IDMxLjE3MjdDMjUuMTk3MiAzMS4xNzI3IDI0LjEyNiAyOS44MDY2IDI0LjEyNiAyOS44MDY2QzE2LjYwMDUgMzEuMTY2MSAxNS41NDU4IDMzLjMwNTMgMTUuNDA3MSA0MC43MjUzQzE1LjM5NTcgNDEuMzMxMSAxNS4zOTA1IDQxLjM2MyAxNS4zODg0IDQxLjI5MjZDMTUuMzg4OSA0MS40MjQ0IDE1LjM4OTQgNDEuNjY4MiAxNS4zODk0IDQyLjA5MzNDMTUuMzg5NCA0Mi4wOTMzIDE3LjIwMDggNDUuNzQ4NCAyNy42OTM1IDQ1Ljc0ODRDMzguMTg2IDQ1Ljc0ODQgMzkuOTk3NiA0Mi4wOTMzIDM5Ljk5NzYgNDIuMDkzM0MzOS45OTc2IDQxLjgyMDIgMzkuOTk3OCA0MS42MzAzIDM5Ljk5OCA0MS41MDExQzM5Ljk5NiA0MS41NDQ2IDM5Ljk5MTkgNDEuNDYwMiAzOS45ODQzIDQwLjk3MjhaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K';
     expect(encodedIcon).toEqual(expectedB64);
+  });
+});
+
+describe('humanizeCamelCaseString', () => {
+  it('camelCaseKey is correctly transformed to Human Readable Text', () => {
+    const testStrings = ['test0', 'thisIsATest', ''];
+    const expectedTransformations = ['Test 0', 'This Is A Test', ''];
+
+    testStrings.forEach((input, index) =>
+      expect(humanizeCamelCaseString(input)).toEqual(expectedTransformations[index])
+    );
   });
 });
