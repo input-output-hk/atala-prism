@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.repositories
 
 import cats.effect.{Async, Resource, Sync}
-import com.zaxxer.hikari.HikariConfig
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
 import org.flywaydb.core.Flyway
@@ -38,23 +37,15 @@ object TransactorFactory {
 
     // https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
     val poolSize = (config.awaitConnectionThreads * 2) + 1
-    val hikariConfig = new HikariConfig()
-    hikariConfig.setJdbcUrl(config.jdbcUrl)
-    hikariConfig.setUsername(config.username)
-    hikariConfig.setPassword(config.password)
-    hikariConfig.setAutoCommit(false)
-    hikariConfig.setLeakDetectionThreshold(60000)
-    hikariConfig.setMinimumIdle(poolSize)
-    hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
-    hikariConfig.setDriverClassName("org.postgresql.Driver")
-    hikariConfig.addDataSourceProperty("cachePrepStmts", "true")
-    hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250")
-    hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
     for {
-      // Resource yielding a transactor configured with a bounded connect EC and an unbounded
-      // transaction EC. Everything will be closed and shut down cleanly after use.
-      ce <- ExecutionContexts.fixedThreadPool[A](config.awaitConnectionThreads) // our connect EC
-      xa <- HikariTransactor.fromHikariConfig[A](hikariConfig, ce)
+      ce <- ExecutionContexts.fixedThreadPool[A](poolSize) // our connect EC
+      xa <- HikariTransactor.newHikariTransactor[A](
+        "org.postgresql.Driver",
+        config.jdbcUrl,
+        config.username,
+        config.password,
+        ce
+      )
     } yield xa
   }
 
