@@ -247,13 +247,13 @@
         "actionables": "{{actionables}} credential(s)",
         "actionablesHelperText": "Revoked credentials will not be able to be shared",
         "nonActionables": "{{nonActionables}} credential(s) ",
-        "nonActionablesHelperText": "cannot be revoked because they have not been signed"
+        "nonActionablesHelperText": "cannot be revoked because their connections are pending and/or they have not been signed"
       },
       "signCredentials": {
         "title": "You are about to sign:",
         "actionables": "{{actionables}} credential(s)",
         "nonActionables": "{{nonActionables}} credential(s) ",
-        "nonActionablesHelperText": "cannot be signed because they have already been signed"
+        "nonActionablesHelperText": "cannot be signed because their connections are pending and/or they have already been signed"
       },
       "sendCredentials": {
         "title": "You are about to send:",
