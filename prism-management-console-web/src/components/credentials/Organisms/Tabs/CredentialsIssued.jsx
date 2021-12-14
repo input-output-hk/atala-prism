@@ -38,7 +38,7 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
 
   const selectedLength = selectedCredentials.length;
 
-  let isLoading = isSearching || isRefreshing;
+  const isLoading = isSearching || isRefreshing;
 
   const expandedTableProps = {
     ...credentialActionsProps,
