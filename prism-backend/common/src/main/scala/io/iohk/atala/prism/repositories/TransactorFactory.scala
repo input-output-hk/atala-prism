@@ -40,7 +40,7 @@ object TransactorFactory {
     val poolSize = (config.awaitConnectionThreads * 2) + 1
     for {
       ce <- ExecutionContexts.fixedThreadPool[A](poolSize) // our connect EC
-      xa <- i.newHikariTransactor[A](
+      xa <- HikariTransactor.newHikariTransactor[A](
         "org.postgresql.Driver",
         config.jdbcUrl,
         config.username,
