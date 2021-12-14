@@ -1,6 +1,8 @@
 name: "Main Workflow"
 on:
   push:
+    tags:
+      - "**"
     branches:
       - master
       - develop*
@@ -127,7 +129,7 @@ jobs:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package') || startsWith(github.ref, 'refs/heads/1-')
+    if: github.ref_name == 'master' || startsWith(github.ref_name, 'package') || startsWith(github.ref_name, '1-')
     defaults:
       run:
         working-directory: prism-backend
@@ -162,14 +164,14 @@ jobs:
   build-prism-management-console-web:
     name: "Build Prism MC Web"
     if: |
-      github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1-') ||
-      startsWith(github.ref, 'refs/heads/develop') ||
-      startsWith(github.ref, 'refs/heads/test') ||
-      startsWith(github.ref, 'refs/heads/geud-test') ||
-      startsWith(github.ref, 'refs/heads/demo') ||
-      startsWith(github.ref, 'refs/heads/qa') ||
-      startsWith(github.ref, 'refs/heads/sandbox')
+      github.ref_name == 'master' ||
+      startsWith(github.ref_name, '1-') ||
+      startsWith(github.ref_name, 'develop') ||
+      startsWith(github.ref_name, 'test') ||
+      startsWith(github.ref_name, 'geud-test') ||
+      startsWith(github.ref_name, 'demo') ||
+      startsWith(github.ref_name, 'qa') ||
+      startsWith(github.ref_name, 'sandbox')
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -203,14 +205,14 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [build-prism-management-console-web, build-prism-backend]
     if: |
-      github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1-') ||
-      startsWith(github.ref, 'refs/heads/develop') ||
-      startsWith(github.ref, 'refs/heads/test') ||
-      startsWith(github.ref, 'refs/heads/geud-test') ||
-      startsWith(github.ref, 'refs/heads/demo') ||
-      startsWith(github.ref, 'refs/heads/qa') ||
-      startsWith(github.ref, 'refs/heads/sandbox')
+      github.ref_name == 'master' ||
+      startsWith(github.ref_name, '1-') ||
+      startsWith(github.ref_name, 'develop') ||
+      startsWith(github.ref_name, 'test') ||
+      startsWith(github.ref_name, 'geud-test') ||
+      startsWith(github.ref_name, 'demo') ||
+      startsWith(github.ref_name, 'qa') ||
+      startsWith(github.ref_name, 'sandbox')
     permissions:
       packages: write
       contents: read
@@ -252,13 +254,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
 
-      - name: Set tag convention
+      - name: Set ENV & TAG convention
         run: |
           branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-          revCount=$(git rev-list HEAD --count)
-          shaShort=$(git rev-parse --short HEAD)
-          tag="${branchPrefix}-${revCount}-${shaShort}"
-          echo "TAG=$tag" >> $GITHUB_ENV;
+          if [[ ${GITHUB_REF_TYPE} == "tag" ]]
+          then
+              tag=$(echo $GITHUB_REF_NAME)
+              echo "TAG=$tag" >> $GITHUB_ENV
+          else
+              revCount=$(git rev-list HEAD --count)
+              shaShort=$(git rev-parse --short HEAD)
+              tag="${branchPrefix}-${revCount}-${shaShort}"
+              echo "TAG=$tag" >> $GITHUB_ENV;
+          fi
           echo "ENV=$branchPrefix" >> $GITHUB_ENV;
           . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
@@ -321,13 +329,15 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [deploy-ecr-images]
     if: |
-      github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1-') ||
-      startsWith(github.ref, 'refs/heads/develop') ||
-      startsWith(github.ref, 'refs/heads/test') ||
-      startsWith(github.ref, 'refs/heads/qa') ||
-      startsWith(github.ref, 'refs/heads/sandbox') ||
-      github.ref == 'refs/heads/demo'
+      (github.ref_name == 'master' ||
+      startsWith(github.ref_name, '1-') ||
+      startsWith(github.ref_name, 'develop') ||
+      startsWith(github.ref_name, 'test') ||
+      startsWith(github.ref_name, 'qa') ||
+      startsWith(github.ref_name, 'sandbox') ||
+      github.ref_name == 'demo') &&
+      github.ref_type != 'tag'
+
     env:
       ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY: ${{ secrets.ATALA_MIRROR_CONNECTOR_DID_PRIVATE_KEY }}
       ATALA_MIRROR_CONNECTOR_DID: ${{ secrets.ATALA_MIRROR_CONNECTOR_DID}}
@@ -348,29 +358,29 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set Master Environment
-        if: github.ref == 'refs/heads/master'
+        if: github.ref_name == 'master'
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set 1. Release Environment
-        if: startsWith(github.ref, 'refs/heads/1-')
+        if: startsWith(github.ref_name, '1-')
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Dev Environment
-        if: startsWith(github.ref, 'refs/heads/develop')
+        if: startsWith(github.ref_name, 'develop')
         run: echo "ENABLED_COMPONENTS=all" >> $GITHUB_ENV;
 
       - name: Set Test Environment
-        if: startsWith(github.ref, 'refs/heads/test')
+        if: startsWith(github.ref_name, 'test')
         run: echo "ENABLED_COMPONENTS=" >> $GITHUB_ENV;
 
       - name: Set QA Environment
         if: |
-          startsWith(github.ref, 'refs/heads/qa') ||
-          startsWith(github.ref, 'refs/heads/sandbox')
+          startsWith(github.ref_name, 'qa') ||
+          startsWith(github.ref_name, 'sandbox')
         run: echo "ENABLED_COMPONENTS=geud,intdemo" >> $GITHUB_ENV;
 
       - name: Set Demo Environment
-        if: github.ref == 'refs/heads/demo'
+        if: github.ref_name == 'demo'
         run: echo "ENABLED_COMPONENTS=geud" >> $GITHUB_ENV;
 
       - name: Set tag convention
