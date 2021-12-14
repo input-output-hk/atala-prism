@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.repositories
 
 import cats.effect.{Async, Resource, Sync}
-import com.zaxxer.hikari.HikariConfig
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
 import org.flywaydb.core.Flyway
