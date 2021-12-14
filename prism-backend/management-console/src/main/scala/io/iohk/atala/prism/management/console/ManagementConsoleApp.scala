@@ -138,7 +138,10 @@ object ManagementConsoleApp extends IOApp {
         txTraceIdLifted,
         managementConsoleLogs
       )
-
+      credentialTypeCategoryRepository <- CredentialTypeCategoryRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
       contactsIntegrationService <-
         ContactsIntegrationService.makeResource(
           contactsRepository,
@@ -159,6 +162,10 @@ object ManagementConsoleApp extends IOApp {
         )
       credentialTypesService <- CredentialTypesService.makeResource(
         credentialTypeRepository,
+        managementConsoleLogs
+      )
+      credentialTypeCategoryService <- CredentialTypeCategoryService.makeResource(
+        credentialTypeCategoryRepository,
         managementConsoleLogs
       )
       credentialsStoreService <-
