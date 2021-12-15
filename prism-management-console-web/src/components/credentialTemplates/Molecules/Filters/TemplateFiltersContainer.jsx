@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Badge, Dropdown, Menu } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
 import TemplateFilters from './TemplateFilters';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
+import FilterIconComponent from '../../../common/Atoms/Icons/FilterIconComponent';
 
 const TemplateFiltersContainer = ({
   templateCategories,
@@ -38,7 +38,7 @@ const TemplateFiltersContainer = ({
           overlay={filtersMenu}
           trigger={['click']}
           className="SelectBtn theme-outline"
-          icon={<FilterOutlined />}
+          icon={<FilterIconComponent />}
         />
       </Badge>
     </>

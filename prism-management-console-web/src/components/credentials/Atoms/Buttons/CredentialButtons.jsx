@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import CredentialsFilter from '../../Molecules/Filters/CredentialsFilter/CredentialsFilter';
+import FilterIconComponent from '../../../common/Atoms/Icons/FilterIconComponent';
 import {
   REVOKE_CREDENTIALS,
   SEND_CREDENTIALS,
@@ -90,7 +90,7 @@ const CredentialButtons = observer(
             overlay={filtersMenu}
             trigger={['click']}
             className="SelectBtn theme-outline"
-            icon={<FilterOutlined />}
+            icon={<FilterIconComponent />}
           />
         </Badge>
       </div>
