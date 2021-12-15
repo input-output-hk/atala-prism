@@ -1,17 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import { useRedirector } from '../../../../hooks/useRedirector';
 
-const AddUsersButton = ({ onClick }) => {
+const CreateContactButton = () => {
   const { t } = useTranslation();
+  const { redirectToImportContacts } = useRedirector();
 
   return (
     <div className="ControlButtons">
       <CustomButton
         buttonProps={{
           className: 'theme-outline',
-          onClick
+          onClick: redirectToImportContacts
         }}
         buttonText={t('contacts.buttons.import')}
       />
@@ -19,8 +20,4 @@ const AddUsersButton = ({ onClick }) => {
   );
 };
 
-AddUsersButton.propTypes = {
-  onClick: PropTypes.func.isRequired
-};
-
-export default AddUsersButton;
+export default CreateContactButton;

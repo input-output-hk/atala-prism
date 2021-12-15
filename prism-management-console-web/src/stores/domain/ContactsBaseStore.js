@@ -118,11 +118,15 @@ export default class ContactsBaseStore {
   }
 
   get hasFiltersApplied() {
-    return this.hasTextFilterApplied || this.hasDateFilterApplied || this.hasStatusFilterApplied;
+    return this.hasTextFilterApplied || this.hasAdditionalFiltersApplied;
   }
 
   get hasTextFilterApplied() {
     return Boolean(this.textFilter);
+  }
+
+  get hasAdditionalFiltersApplied() {
+    return this.hasDateFilterApplied || this.hasStatusFilterApplied;
   }
 
   get hasDateFilterApplied() {
@@ -148,6 +152,7 @@ export default class ContactsBaseStore {
       toggleSortDirection,
       hasFiltersApplied,
       hasTextFilterApplied,
+      hasAdditionalFiltersApplied,
       hasDateFilterApplied,
       hasStatusFilterApplied
     } = this;
@@ -158,6 +163,7 @@ export default class ContactsBaseStore {
       toggleSortDirection,
       hasFiltersApplied,
       hasTextFilterApplied,
+      hasAdditionalFiltersApplied,
       hasDateFilterApplied,
       hasStatusFilterApplied
     };

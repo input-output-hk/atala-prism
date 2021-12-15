@@ -6,3 +6,22 @@
   }
 }
 
+.ContactFilters {
+  .FiltersButton {
+    .ant-btn:first-child {
+      display: none !important;
+    }
+    .ant-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .ant-btn:hover,
+    .ant-btn:focus,
+    .ant-btn:active {
+      color: white;
+      border-color: transparent;
+      background-color: $secondary-color;
+    }
+  }
+}

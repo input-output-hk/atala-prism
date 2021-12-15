@@ -9,6 +9,7 @@ import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent'
 import noContacts from '../../../../images/noConnections.svg';
 import { useSession } from '../../../../hooks/useSession';
 import { CONFIRMED, CONTACT_ID_KEY } from '../../../../helpers/constants';
+import CreateContactButton from '../../Atoms/ActionButtons/CreateContactButton';
 
 import './_style.scss';
 
@@ -25,8 +26,7 @@ const ConnectionsTable = observer(
     selectedContactIds,
     inviteContact,
     viewContactDetail,
-    shouldSelectRecipients,
-    newContactButton
+    shouldSelectRecipients
   }) => {
     const { t } = useTranslation();
     const { accountStatus } = useSession();
@@ -34,14 +34,13 @@ const ConnectionsTable = observer(
     const emptyProps = {
       photoSrc: noContacts,
       model: t('contacts.title'),
-      isFilter: hasFiltersApplied,
-      button: newContactButton
+      isFilter: hasFiltersApplied
     };
 
     const renderEmpty = () => (
       <EmptyComponent
         {...emptyProps}
-        button={accountStatus === CONFIRMED ? newContactButton : undefined}
+        button={accountStatus === CONFIRMED ? <CreateContactButton /> : undefined}
       />
     );
 
@@ -77,8 +76,7 @@ ConnectionsTable.defaultProps = {
   selectedContactIds: [],
   inviteContact: null,
   viewContactDetail: null,
-  shouldSelectRecipients: true,
-  newContactButton: null
+  shouldSelectRecipients: true
 };
 
 ConnectionsTable.propTypes = {
@@ -93,8 +91,7 @@ ConnectionsTable.propTypes = {
   selectedContactIds: PropTypes.arrayOf(PropTypes.string),
   inviteContact: PropTypes.func,
   viewContactDetail: PropTypes.func,
-  shouldSelectRecipients: PropTypes.bool,
-  newContactButton: PropTypes.node
+  shouldSelectRecipients: PropTypes.bool
 };
 
 export default ConnectionsTable;

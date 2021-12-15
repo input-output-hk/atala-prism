@@ -2,13 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
-import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
+import ContactActionsHeader from './Molecules/Header/ContactActionsHeader';
 import ConnectionsTable from './Organisms/table/ConnectionsTable';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
-import AddUsersButton from './Atoms/AddUsersButtons/AddUsersButton';
 import { useContactsPageStore } from '../../hooks/useContactsPageStore';
 import { useRedirector } from '../../hooks/useRedirector';
 
@@ -17,7 +16,7 @@ import './_style.scss';
 const Connections = observer(
   ({ qrModalIsVisible, connectionToken, onCloseQR, onInviteContact }) => {
     const { t } = useTranslation();
-    const { redirectToContactDetails, redirectToImportContacts } = useRedirector();
+    const { redirectToContactDetails } = useRedirector();
     const { accountStatus } = useSession();
     const {
       contacts,
@@ -30,8 +29,6 @@ const Connections = observer(
     } = useContactsPageStore();
     const { hasFiltersApplied } = filterSortingProps;
 
-    const newGroupButton = <AddUsersButton onClick={redirectToImportContacts} />;
-
     return (
       <div className="ConnectionsContainer Wrapper">
         {accountStatus === UNCONFIRMED && <WaitBanner />}
@@ -40,8 +37,9 @@ const Connections = observer(
             <h1>{t('contacts.title')}</h1>
           </div>
           <div className="ConnectionFilterWrapper">
-            <ConnectionsFilter filterSortingProps={filterSortingProps} />
-            {accountStatus === CONFIRMED && newGroupButton}
+            {accountStatus === CONFIRMED && (
+              <ContactActionsHeader filterSortingProps={filterSortingProps} />
+            )}
           </div>
         </div>
         <div className="ConnectionsTable InfiniteScrollTableContainer">
@@ -55,7 +53,6 @@ const Connections = observer(
             inviteContact={onInviteContact}
             viewContactDetail={redirectToContactDetails}
             searchDueGeneralScroll
-            newContactButton={newGroupButton}
           />
         </div>
         <QRModal

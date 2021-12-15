@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import { Col, Row, Button } from 'antd';
-import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
+import SimpleContactFilter from '../connections/Molecules/filter/SimpleContactFilter';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
@@ -189,7 +189,7 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
         <h3>{t('groupEditing.contacts')}</h3>
         <div className="filterContainer">
           <div className="connectionFilter">
-            <ConnectionsFilter filterSortingProps={filterSortingProps} showFullFilter={false} />
+            <SimpleContactFilter filterSortingProps={filterSortingProps} />
           </div>
           <SelectAllButton
             isLoadingSelection={isLoadingSelection}

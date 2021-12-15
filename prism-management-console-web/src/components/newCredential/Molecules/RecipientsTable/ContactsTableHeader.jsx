@@ -5,7 +5,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import SelectAllButton from './SelectAllButton';
-import ConnectionsFilter from '../../../connections/Molecules/filter/ConnectionsFilter';
+import SimpleContactFilter from '../../../connections/Molecules/filter/SimpleContactFilter';
 import { useCreateCredentialPageStore } from '../../../../hooks/useCreateCredentialPageStore';
 import './_style.scss';
 
@@ -30,7 +30,7 @@ const ContactsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSele
 
   return (
     <div className="RecipientsSelectionTableHeader">
-      <ConnectionsFilter filterSortingProps={contactsFilterSortingProps} showFullFilter={false} />
+      <SimpleContactFilter filterSortingProps={contactsFilterSortingProps} />
       <SelectAllButton
         isLoadingSelection={isLoadingContactsSelection}
         selectedEntities={selectedContactIds}
