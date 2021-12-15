@@ -22,6 +22,7 @@ const TableOptions = observer(() => {
     selectAllCheckboxStateProps,
     selectedCredentials,
     isLoadingSelection,
+    isRefreshing,
     refreshCredentials,
     selectAllCredentials,
     filterSortingProps: { sortingBy, setSortingBy, sortDirection, toggleSortDirection }
@@ -76,6 +77,7 @@ const TableOptions = observer(() => {
         className="RefreshButton no-border"
         icon={<RedoOutlined />}
         onClick={refreshCredentials}
+        disabled={isRefreshing}
       >
         {t('credentials.actions.refreshTable')}
       </Button>

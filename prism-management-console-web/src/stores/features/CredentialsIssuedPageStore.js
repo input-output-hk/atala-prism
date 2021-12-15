@@ -68,6 +68,10 @@ export default class CredentialsIssuedPageStore {
     return this.credentialsIssuedBaseStore.isFetching;
   }
 
+  get isRefreshing() {
+    return this.credentialsIssuedBaseStore.isRefreshing;
+  }
+
   get isLoadingFirstPage() {
     return this.credentialsIssuedBaseStore.isLoadingFirstPage;
   }

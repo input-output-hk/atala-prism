@@ -253,7 +253,7 @@
         "title": "You are about to sign:",
         "actionables": "{{actionables}} credential(s)",
         "nonActionables": "{{nonActionables}} credential(s) ",
-        "nonActionablesHelperText": "cannot be signed because they have already been signed"
+        "nonActionablesHelperText": "cannot be signed because their connections are pending and/or they have already been signed"
       },
       "sendCredentials": {
         "title": "You are about to send:",
