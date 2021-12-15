@@ -14,8 +14,6 @@ export default class TemplatesBaseStore {
 
   templateCategories = [];
 
-  mockedTemplateCategories = [];
-
   nameFilter = '';
 
   categoryFilter = '';
@@ -73,7 +71,7 @@ export default class TemplatesBaseStore {
   // FILTERS
   // ********************** //
 
-  get hasAditionalFiltersApplied() {
+  get hasAdditionalFiltersApplied() {
     return Boolean(this.categoryFilter || this.lastEditedFilter);
   }
 
@@ -82,7 +80,7 @@ export default class TemplatesBaseStore {
   }
 
   get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
+    return this.hasNameFilterApplied || this.hasAdditionalFiltersApplied;
   }
 
   get filteredTemplates() {
