@@ -1,61 +1,41 @@
 package io.iohk.atala.prism.node.logging
 
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.protos.node_internal.AtalaObject
+import net.logstash.logback.argument.StructuredArguments.kv
+import org.slf4j.Logger
 import scalapb.GeneratedMessage
 import io.iohk.atala.prism.tracing.Tracing._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-import derevo.derive
-import tofu.logging.derivation.loggable
-import tofu.logging.Logs
-import cats.data.ReaderT
-import cats.effect.IO
-import tofu.logging.LoggableContext
-import tofu.logging.Logging
-import cats.data.Kleisli
-import scala.concurrent.ExecutionContext
-
-@derive(loggable)
-final case class TraceIdAndMethodName(traceId: String, methodName: String)
-
 object NodeLogging {
-  type IOWithTraceIdAndMethodNameContext[T] = ReaderT[IO, TraceIdAndMethodName, T]
-
-  def logs: Logs[IO, IOWithTraceIdAndMethodNameContext] = {
-    implicit lazy val loggableCtxIO = LoggableContext.of[IOWithTraceIdAndMethodNameContext].instance
-    Logs.withContext[IO, IOWithTraceIdAndMethodNameContext]
-  }
 
   def withLog[Response <: GeneratedMessage, Req <: GeneratedMessage](
       methodName: String,
       request: Req
-  )(code: TraceId => Future[Response])(implicit
-      ec: ExecutionContext,
-      runtime: cats.effect.unsafe.IORuntime,
-      logger: Logging[NodeLogging.IOWithTraceIdAndMethodNameContext]
-  ): Future[Response] = {
+  )(
+      code: TraceId => Future[Response]
+  )(implicit ec: ExecutionContext, logger: Logger): Future[Response] = {
     trace { traceId =>
-      logger
-        .info(s"methodName:$methodName; request = ${request.toProtoString}")
-        .flatMap(_ =>
-          Kleisli.apply { ctx: TraceIdAndMethodName =>
-            IO.fromFuture(IO(code(traceId)))
-              .handleErrorWith {
-                case NonFatal(ex) =>
-                  logger.errorCause(s"methodName:$methodName; Non Fatal Error Exception", ex).run(ctx) *>
-                    IO.raiseError(ex)
-                case ex => IO.raiseError(ex)
-              }
-          }
-        )
-        .flatMap(response =>
-          logger.info(s"methodName:$methodName; response = ${response.toProtoString}").map(_ => response)
-        )
-        .run(TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName))
-        .unsafeToFuture()
-        .recover { case NonFatal(ex) => throw ex }
+      logger.info(
+        s"methodName:$methodName traceId = $traceId request = ${request.toProtoString}",
+        kv("methodName", methodName),
+        kv("traceId", traceId)
+      )
+      try {
+        code(traceId).map(resp => logAndReturnResponse(methodName, traceId, resp))
+      } catch {
+        case NonFatal(ex) =>
+          logger.error(
+            s"methodName:$methodName Error: Non Fatal Error traceId = $traceId \n Exception : $ex",
+            kv("methodName", methodName),
+            kv("traceId", traceId)
+          )
+          throw new RuntimeException(ex)
+      }
     }
   }
 
@@ -63,9 +43,44 @@ object NodeLogging {
       methodName: String,
       traceId: TraceId,
       argsToLog: (String, String)*
-  )(implicit logger: Logging[NodeLogging.IOWithTraceIdAndMethodNameContext]): IO[Unit] = {
-    logger
-      .info(s"methodName:$methodName ${argsToLog.map(x => s"${x._1}=${x._2}").mkString(",")}")
-      .run(TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName))
+  )(implicit
+      logger: Logger
+  ): Unit = {
+    logger.info(
+      s"methodName:$methodName traceId = $traceId, \n  ${argsToLog
+        .map(x => s"${x._1}=${x._2}")
+        .mkString(",")}",
+      kv("methodName", methodName),
+      kv("traceId", traceId)
+    )
   }
+
+  def logOperationIds(methodName: String, message: String, obj: AtalaObject)(implicit
+      logger: Logger
+  ): Unit = {
+    obj.blockContent.foreach { block =>
+      val atalaOperationIds = block.operations.toList.map(AtalaOperationId.of)
+      logger.error(
+        s"methodName:$methodName , message: $message, AtalaObjectId : ${obj.toString},\n atalaOperationIds = [${atalaOperationIds
+          .mkString(",")}]"
+      )
+    }
+  }
+
+  def logAndReturnResponse[Response <: GeneratedMessage](
+      methodName: String,
+      traceId: TraceId,
+      response: Response
+  )(implicit
+      logger: Logger
+  ): Response = {
+    ("traceId" -> traceId)
+    logger.info(
+      s"$methodName \n traceId = $traceId \n response = ${response.toProtoString}",
+      kv("methodName", methodName),
+      kv("traceId", traceId)
+    )
+    response
+  }
+
 }

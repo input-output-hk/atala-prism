@@ -7,11 +7,10 @@ import io.iohk.atala.prism.node.cardano.models.WalletId
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
 import io.iohk.atala.prism.node.services.{CardanoLedgerService, KeyValueService}
 import io.iohk.atala.prism.tracing.Tracing._
-import tofu.logging.{Logs, Logging}
-import cats.effect.IO
 import kamon.Kamon
 import kamon.metric.{Gauge, PeriodSnapshot}
 import kamon.module.MetricReporter
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -20,10 +19,11 @@ class NodeReporter(
     walletId: WalletId,
     cardanoClient: CardanoClient[IOWithTraceIdContext],
     keyValueService: KeyValueService[IOWithTraceIdContext],
-    blockNumberSyncStart: Int,
-    logger: Logging[IOWithTraceIdContext]
+    blockNumberSyncStart: Int
 )(implicit ec: ExecutionContext, runtime: IORuntime)
     extends MetricReporter {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val nextBlockToSyncGauge: Gauge =
     Kamon.gauge("node.next.block.to.sync.by.prism").withoutTags()
@@ -85,8 +85,7 @@ object NodeReporter {
   def apply(
       config: CardanoLedgerService.Config,
       cardanoClient: CardanoClient[IOWithTraceIdContext],
-      keyValueService: KeyValueService[IOWithTraceIdContext],
-      logs: Logs[IO, IOWithTraceIdContext]
+      keyValueService: KeyValueService[IOWithTraceIdContext]
   )(implicit ec: ExecutionContext, runtime: IORuntime): NodeReporter = {
     val walletId = WalletId
       .from(config.walletId)
@@ -100,8 +99,7 @@ object NodeReporter {
       walletId,
       cardanoClient,
       keyValueService,
-      config.blockNumberSyncStart,
-      logger = logs.forService[NodeReporter].unsafeRunSync()
+      config.blockNumberSyncStart
     )
   }
 }
