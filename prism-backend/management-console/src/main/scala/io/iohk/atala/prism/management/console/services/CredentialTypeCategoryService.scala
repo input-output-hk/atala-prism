@@ -5,8 +5,8 @@ import cats.effect.Resource
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
-import cats.syntax.functor._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.management.console.repositories.CredentialTypeCategoryRepository
@@ -31,12 +31,10 @@ trait CredentialTypeCategoryService[F[_]] {
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]]
 
   def archiveCredentialTypeCategory(
-      institutionId: ParticipantId,
       credentialTypeCategoryId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]]
 
   def unArchiveCredentialTypeCategory(
-      institutionId: ParticipantId,
       credentialTypeCategoryId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]]
 
@@ -87,16 +85,14 @@ private final class CredentialTypeCategoryServiceImpl[F[_]](
     credentialTypeCategoryRepository.create(participantId, createCredentialTypeCategory)
 
   override def archiveCredentialTypeCategory(
-      institutionId: ParticipantId,
       credentialTypeCategoryId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]] =
-    credentialTypeCategoryRepository.archive(credentialTypeCategoryId, institutionId)
+    credentialTypeCategoryRepository.archive(credentialTypeCategoryId)
 
   override def unArchiveCredentialTypeCategory(
-      institutionId: ParticipantId,
       credentialTypeCategoryId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]] =
-    credentialTypeCategoryRepository.unArchive(credentialTypeCategoryId, institutionId)
+    credentialTypeCategoryRepository.unArchive(credentialTypeCategoryId)
 
 }
 
@@ -129,7 +125,7 @@ private final class CredentialTypeCategoryServiceLogs[
       .flatTap(
         _.fold(
           e => error"encountered an error while creating credential type category: $e",
-          _ => info"Creating credential type category - $createCredentialTypeCategory - successfully done"
+          _ => info"Creating credential type category - ${createCredentialTypeCategory.toString} - successfully done"
         )
       )
       .onError(
@@ -140,10 +136,9 @@ private final class CredentialTypeCategoryServiceLogs[
   }
 
   override def archiveCredentialTypeCategory(
-      institutionId: ParticipantId,
       credentialTypeCategoryId: CredentialTypeCategoryId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = { in =>
-    info"Archiving credential type category - $credentialTypeCategoryId for the user - $institutionId" *> in
+    info"Archiving credential type category - $credentialTypeCategoryId" *> in
       .flatTap(
         _.fold(
           e => error"encountered an error while archiving credential type category: $e",
@@ -156,10 +151,9 @@ private final class CredentialTypeCategoryServiceLogs[
   }
 
   override def unArchiveCredentialTypeCategory(
-      institutionId: ParticipantId,
       credentialTypeCategoryId: CredentialTypeCategoryId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = { in =>
-    info"unarchiving credential type category - $credentialTypeCategoryId for the user - $institutionId" *> in
+    info"unarchiving credential type category - $credentialTypeCategoryId for the user" *> in
       .flatTap(
         _.fold(
           e => error"encountered an error while unarchiving credential type category: $e",

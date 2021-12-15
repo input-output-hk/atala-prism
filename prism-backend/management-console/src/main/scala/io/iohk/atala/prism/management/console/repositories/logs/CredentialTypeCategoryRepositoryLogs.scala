@@ -48,9 +48,8 @@ private[repositories] final class CredentialTypeCategoryRepositoryLogs[
 
   override def archive(
       credentialTypeId: CredentialTypeCategoryId,
-      institutionId: ParticipantId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = { in =>
-    info"Archiving credential type category with id - $credentialTypeId, of participant - $institutionId " *> in
+    info"Archiving credential type category with id - $credentialTypeId" *> in
       .flatTap(
         _.fold(
           e => error"encountered an error while archiving credential type category: $e",
@@ -65,9 +64,8 @@ private[repositories] final class CredentialTypeCategoryRepositoryLogs[
 
   override def unArchive(
       credentialTypeId: CredentialTypeCategoryId,
-      institutionId: ParticipantId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = { in =>
-    info"Unarchiving credential type category with id - $credentialTypeId, of participant - $institutionId " *> in
+    info"Unarchiving credential type category with id - $credentialTypeId" *> in
       .flatTap(
         _.fold(
           e => error"encountered an error while unarchiving credential type category: $e",
