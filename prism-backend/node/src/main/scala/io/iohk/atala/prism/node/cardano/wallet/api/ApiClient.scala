@@ -35,6 +35,8 @@ private[wallet] class ApiClient[F[_]: Functor](
     config: ApiClient.Config,
     backend: SttpBackend[F, Any]
 ) extends CardanoWalletApiClient[F] {
+  private val routingHeaderKey = "x-service-route-id"
+
   override def estimateTransactionFee(
       walletId: WalletId,
       payments: List[Payment],
@@ -76,6 +78,7 @@ private[wallet] class ApiClient[F[_]: Functor](
     basicRequest
       .contentType(ApplicationJson)
       .response(asString)
+      .header(routingHeaderKey, config.routingHeader)
       .method(
         method.httpMethod,
         Uri.apply(config.host, config.port).withWholePath(method.path)
@@ -95,7 +98,7 @@ private[wallet] class ApiClient[F[_]: Functor](
 
 private[wallet] object ApiClient {
 
-  case class Config(host: String, port: Int)
+  case class Config(host: String, port: Int, routingHeader: Option[String])
 
   private[wallet] def defaultBackend[F[_]: Async]: Resource[F, SttpBackend[F, Any]] =
     AsyncHttpClientCatsBackend.resource[F]()

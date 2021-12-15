@@ -62,6 +62,28 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       )
     }
 
+    "estimate the fee of a transaction with header" in {
+      val client =
+        FakeCardanoWalletApiClient.Success[IO](
+          expectedPath,
+          expectedJsonRequest,
+          readResource("estimateTransactionFee_success_response.json"),
+          Some("RoutingHeaderValue")
+        )
+
+      val estimatedFee =
+        client
+          .estimateTransactionFee(walletId, List(payment), Some(metadata))
+          .unsafeToFuture()
+          .futureValue
+          .toOption
+          .value
+
+      estimatedFee must be(
+        EstimatedFee(min = Lovelace(133713), max = Lovelace(1000000))
+      )
+    }
+
     "fail on server error" in {
       val client =
         FakeCardanoWalletApiClient.Fail[IO](
@@ -102,12 +124,36 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     val expectedPath = s"v2/wallets/$walletId/transactions"
     val expectedJsonRequest = readResource("postTransaction_request.json")
 
-    "post a new transaction" in {
+    "post a new transaction with no header" in {
       val client =
         FakeCardanoWalletApiClient.Success[IO](
           expectedPath,
           expectedJsonRequest,
           readResource("postTransaction_success_response.json")
+        )
+
+      val transaction =
+        client
+          .postTransaction(walletId, List(payment), Some(metadata), passphrase)
+          .unsafeToFuture()
+          .futureValue
+
+      transaction must beRight(
+        TransactionId
+          .from(
+            "1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1"
+          )
+          .value
+      )
+    }
+
+    "post a new transaction with header" in {
+      val client =
+        FakeCardanoWalletApiClient.Success[IO](
+          expectedPath,
+          expectedJsonRequest,
+          readResource("postTransaction_success_response.json"),
+          Some("RoutingHeaderValue")
         )
 
       val transaction =
@@ -175,6 +221,25 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       )
     }
 
+    "get transaction details with header" in {
+      val client =
+        FakeCardanoWalletApiClient.Success[IO](
+          expectedPath,
+          "",
+          readResource("getTransaction_success_response.json"),
+          Some("RoutingHeaderValue")
+        )
+
+      val transactionDetails = client
+        .getTransaction(walletId, transactionId)
+        .unsafeToFuture()
+        .futureValue
+
+      transactionDetails must beRight(
+        TransactionDetails(transactionId, TransactionStatus.InLedger)
+      )
+    }
+
     "fail on server error" in {
       val client =
         FakeCardanoWalletApiClient.Fail[IO](
@@ -215,6 +280,15 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
         .futureValue
     }
 
+    "delete a transaction with header" in {
+      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", "", Some("RoutingHeaderValue"))
+
+      client
+        .deleteTransaction(walletId, transactionId)
+        .unsafeToFuture()
+        .futureValue
+    }
+
     "fail on server error" in {
       val client =
         FakeCardanoWalletApiClient.Fail[IO](
@@ -246,6 +320,18 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     "return available funds and state data" in {
       val client = FakeCardanoWalletApiClient
         .Success[IO](expectedPath, "", readResource("getWallet.json"))
+
+      val result = client.getWallet(walletId).unsafeToFuture().futureValue
+      result.isRight mustBe true
+
+      val Right(data) = result
+      data.balance.available mustBe BigInt(42000000)
+      data.state.status mustBe WalletStatus.Ready
+    }
+
+    "return available funds and state data with header" in {
+      val client = FakeCardanoWalletApiClient
+        .Success[IO](expectedPath, "", readResource("getWallet.json"), Some("RoutingHeaderValue"))
 
       val result = client.getWallet(walletId).unsafeToFuture().futureValue
       result.isRight mustBe true

@@ -11,19 +11,23 @@ import sttp.model.StatusCode
 
 object FakeCardanoWalletApiClient {
 
+  private val routingHeaderKey = "x-service-route-id"
+
   /** Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
     */
   object Success {
     def apply[F[_]: Async](
         expectedPath: String,
         expectedJsonRequest: String,
-        responseBody: String
+        responseBody: String,
+        routingHeader: Option[String] = Option.empty
     ): CardanoWalletApiClient[F] = {
       FakeCardanoWalletApiClient(
         expectedPath,
         expectedJsonRequest,
         200,
-        responseBody
+        responseBody,
+        routingHeader
       )
     }
   }
@@ -41,7 +45,8 @@ object FakeCardanoWalletApiClient {
         expectedPath,
         expectedJsonRequest,
         400,
-        createJsonErrorResponse(errorCode, errorMessage)
+        createJsonErrorResponse(errorCode, errorMessage),
+        Option.empty
       )
     }
   }
@@ -50,7 +55,7 @@ object FakeCardanoWalletApiClient {
     */
   object NotFound {
     def apply[F[_]: Async](): CardanoWalletApiClient[F] = {
-      val config = ApiClient.Config("localhost", 8090)
+      val config = ApiClient.Config("localhost", 8090, Option.empty)
       val backend = AsyncHttpClientCatsBackend.stub
       new ApiClient(config, backend)
     }
@@ -60,18 +65,24 @@ object FakeCardanoWalletApiClient {
       expectedPath: String,
       expectedJsonRequest: String,
       responseCode: Int,
-      responseBody: String
+      responseBody: String,
+      maybeRoutingHeader: Option[String]
   ): CardanoWalletApiClient[F] = {
-    val config = ApiClient.Config("localhost", 8090)
+    val config = ApiClient.Config("localhost", 8090, maybeRoutingHeader)
     val backend = AsyncHttpClientCatsBackend.stub
       .whenRequestMatches(request =>
         request.uri.host.exists(
           _ == config.host
-        ) && request.uri.port.value == config.port && request.uri.path
-          .mkString("/") == expectedPath && sameJson(
-          request.body.asInstanceOf[StringBody].s,
-          expectedJsonRequest
-        )
+        ) && request.uri.port.value == config.port
+          && request
+            .header(routingHeaderKey)
+            .forall(currentRountingHeader => maybeRoutingHeader.contains(currentRountingHeader))
+          && request.uri.path
+            .mkString("/") == expectedPath
+          && sameJson(
+            request.body.asInstanceOf[StringBody].s,
+            expectedJsonRequest
+          )
       )
       .thenRespondWithCode(StatusCode.apply(responseCode), responseBody)
 

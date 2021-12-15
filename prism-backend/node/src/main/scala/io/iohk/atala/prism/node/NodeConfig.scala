@@ -8,6 +8,8 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.repositories.TransactorFactory
 
+import scala.util.Try
+
 object NodeConfig {
 
   def cardanoConfig(config: Config): CardanoLedgerService.Config = {
@@ -38,6 +40,7 @@ object NodeConfig {
   def cardanoWalletConfig(config: Config): CardanoWalletApiClient.Config = {
     val host = config.getString("host")
     val port = config.getInt("port")
-    CardanoWalletApiClient.Config(host, port)
+    val routingHeader = Try("routingHeader").map(config.getString).toOption
+    CardanoWalletApiClient.Config(host, port, routingHeader)
   }
 }
