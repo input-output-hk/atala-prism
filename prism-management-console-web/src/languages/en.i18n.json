@@ -10,7 +10,8 @@
     "done": "Done",
     "save": "Save",
     "saveForLater": "Save & Continue later",
-    "sortBy": "Sort by"
+    "sortBy": "Sort by",
+    "sortingBy": "Sorting by {{column}}"
   },
   "commonWords": {
     "and": "and",

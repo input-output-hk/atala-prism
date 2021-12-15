@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Modal, Row, Col } from 'antd';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
-import SimpleContactFilter from '../../connections/Molecules/filter/SimpleContactFilter';
+import SimpleContactFilter from '../../connections/Molecules/Filters/SimpleContactFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
 import { useCurrentGroupStore } from '../../../hooks/useGroupStore';
 import SelectAllButton from '../../newCredential/Molecules/RecipientsTable/SelectAllButton';

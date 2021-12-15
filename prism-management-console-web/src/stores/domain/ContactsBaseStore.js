@@ -147,6 +147,7 @@ export default class ContactsBaseStore {
   get filterSortingProps() {
     const {
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
       toggleSortDirection,
@@ -158,6 +159,7 @@ export default class ContactsBaseStore {
     } = this;
     return {
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
       toggleSortDirection,

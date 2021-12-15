@@ -5,11 +5,11 @@ import FilterIconComponent from '../../../common/Atoms/Icons/FilterIconComponent
 import ContactAdditionalFiltersMenu from './ContactAdditionalFiltersMenu';
 
 const ContactAdditionalFilters = ({ filterSortingProps }) => {
-  const { hasAdditionalFiltersApplied } = filterSortingProps;
+  const { hasAdditionalFiltersApplied, setFilterValue } = filterSortingProps;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <ContactAdditionalFiltersMenu {...filterSortingProps} />
+      <ContactAdditionalFiltersMenu setFilterValue={setFilterValue} />
     </Menu>
   );
 
@@ -27,7 +27,8 @@ const ContactAdditionalFilters = ({ filterSortingProps }) => {
 
 ContactAdditionalFilters.propTypes = {
   filterSortingProps: PropTypes.shape({
-    hasAdditionalFiltersApplied: PropTypes.bool
+    hasAdditionalFiltersApplied: PropTypes.bool,
+    setFilterValue: PropTypes.func.isRequired
   }).isRequired
 };
 

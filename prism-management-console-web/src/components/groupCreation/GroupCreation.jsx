@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { GROUP_NAME_STATES } from '../../helpers/constants';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
-import SimpleContactFilter from '../connections/Molecules/filter/SimpleContactFilter';
+import SimpleContactFilter from '../connections/Molecules/Filters/SimpleContactFilter';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { refPropShape } from '../../helpers/propShapes';

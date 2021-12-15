@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import { Col, Row, Button } from 'antd';
-import SimpleContactFilter from '../connections/Molecules/filter/SimpleContactFilter';
+import SimpleContactFilter from '../connections/Molecules/Filters/SimpleContactFilter';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';

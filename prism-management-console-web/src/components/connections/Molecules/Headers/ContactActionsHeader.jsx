@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
-import ContactAdditionalFilters from '../filter/ContactAdditionalFilters';
+import ContactAdditionalFilters from '../Filters/ContactAdditionalFilters';
 import CreateContactButton from '../../Atoms/ActionButtons/CreateContactButton';
 
 const ContactActionsHeader = observer(({ filterSortingProps }) => {

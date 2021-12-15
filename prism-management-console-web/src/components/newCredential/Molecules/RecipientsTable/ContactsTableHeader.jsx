@@ -5,7 +5,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import SelectAllButton from './SelectAllButton';
-import SimpleContactFilter from '../../../connections/Molecules/filter/SimpleContactFilter';
+import SimpleContactFilter from '../../../connections/Molecules/Filters/SimpleContactFilter';
 import { useCreateCredentialPageStore } from '../../../../hooks/useCreateCredentialPageStore';
 import './_style.scss';
 

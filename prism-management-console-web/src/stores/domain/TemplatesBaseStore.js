@@ -97,6 +97,7 @@ export default class TemplatesBaseStore {
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
       toggleSortDirection
@@ -105,6 +106,7 @@ export default class TemplatesBaseStore {
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
       toggleSortDirection
