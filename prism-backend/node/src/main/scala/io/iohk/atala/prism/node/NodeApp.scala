@@ -21,7 +21,8 @@ import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.atala.prism.utils.IOUtils._
 import kamon.Kamon
 import kamon.module.Module
-import tofu.logging.{Logs, Logging}
+import org.slf4j.LoggerFactory
+import tofu.logging.Logs
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -41,17 +42,17 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   implicit val runtime: IORuntime = IORuntime.global
 
-  private val logger = Logging.Make.plain[IO].forService[NodeApp]
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private def start(): Resource[IO, (SubmissionSchedulingService, Server)] = {
-    def logs = TraceId.logs
     for {
       globalConfig <- loadConfig()
       _ <- startMetrics(globalConfig)
       databaseConfig = TransactorFactory.transactorConfig(globalConfig)
-      _ <- applyDatabaseMigrations(databaseConfig)
+      _ = applyDatabaseMigrations(databaseConfig)
       transactor <- connectToTheDb(databaseConfig)
       liftedTransactor = transactor.mapK(TraceId.liftToIOWithTraceId)
+      logs = Logs.withContext[IO, IOWithTraceIdContext]
       protocolVersionRepository <- ProtocolVersionRepository.resource(
         liftedTransactor,
         logs
@@ -136,10 +137,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       Kamon.addReporter("uptime", new UptimeReporter(config))
     })(_ => IO.fromFuture(IO(Kamon.stop())))
 
-  private def loadConfig(): Resource[IO, Config] = {
-    Resource
-      .eval(logger.info("Loading config"))
-      .map(_ => ConfigFactory.load())
+  private def loadConfig(): Resource[IO, Config] = Resource.pure[IO, Config] {
+    logger.info("Loading config")
+    ConfigFactory.load()
   }
 
   private def initializeCardano(
@@ -153,7 +153,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     createCardanoClient(config.cardanoClientConfig, logs).flatMap { cardanoClient =>
       Kamon.addReporter(
         "node-reporter",
-        NodeReporter(config, cardanoClient, keyValueService, logs)
+        NodeReporter(config, cardanoClient, keyValueService)
       )
       CardanoLedgerService.resource[IOWithTraceIdContext, IO](
         config,
@@ -170,19 +170,17 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       cardanoClientConfig: CardanoClient.Config,
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, CardanoClient[IOWithTraceIdContext]] = {
+    logger.info("Creating cardano client")
     CardanoClient
       .makeResource[IO, IOWithTraceIdContext](cardanoClientConfig, logs)
       .mapK(TraceId.unLiftIOWithTraceId())
-      .preAllocate(logger.info("Creating cardano client"))
-
   }
 
   private def connectToTheDb(
       dbConfig: TransactorFactory.Config
   ): Resource[IO, HikariTransactor[IO]] = {
-    TransactorFactory
-      .transactor[IO](dbConfig)
-      .preAllocate(logger.info("Connecting to the database"))
+    logger.info("Connecting to the database")
+    TransactorFactory.transactor[IO](dbConfig)
   }
 
   private def onCardanoBlockOp(
@@ -215,34 +213,31 @@ class NodeApp(executionContext: ExecutionContext) { self =>
           logs
         )
       case "in-memory" =>
-        InMemoryLedgerService
-          .resource(onAtalaObject, logs)
-          .preAllocate(logger.info("Using in-memory ledger"))
+        logger.info("Using in-memory ledger")
+        InMemoryLedgerService.resource(onAtalaObject, logs)
     }
 
   private def startServer(nodeService: NodeGrpcServiceImpl): Resource[IO, Server] =
-    Resource.make[IO, Server](
-      logger.info("Starting server") *>
-        IO {
-          import io.grpc.protobuf.services.ProtoReflectionService
-          val server = ServerBuilder
-            .forPort(NodeApp.port)
-            .intercept(new TraceExposeInterceptor)
-            .intercept(new TraceReadInterceptor)
-            .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
-            .addService(
-              _root_.grpc.health.v1.health.HealthGrpc
-                .bindService(new HealthService, executionContext)
-            )
-            .addService(
-              ProtoReflectionService.newInstance()
-            ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
-            .build()
-            .start()
-          server
-        } <*
-        logger.info("Server started, listening on " + NodeApp.port)
-    )(server =>
+    Resource.make[IO, Server](IO {
+      logger.info("Starting server")
+      import io.grpc.protobuf.services.ProtoReflectionService
+      val server = ServerBuilder
+        .forPort(NodeApp.port)
+        .intercept(new TraceExposeInterceptor)
+        .intercept(new TraceReadInterceptor)
+        .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
+        .addService(
+          _root_.grpc.health.v1.health.HealthGrpc
+            .bindService(new HealthService, executionContext)
+        )
+        .addService(
+          ProtoReflectionService.newInstance()
+        ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
+        .build()
+        .start()
+      logger.info("Server started, listening on " + NodeApp.port)
+      server
+    })(server =>
       IO {
         System.err.println(
           "*** shutting down gRPC server since JVM is shutting down"
@@ -255,13 +250,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def applyDatabaseMigrations(
       databaseConfig: TransactorFactory.Config
-  ): Resource[IO, Unit] = {
-    Resource
-      .eval(logger.info("Applying database migrations"))
-      .map(_ => SchemaMigrations.migrate(databaseConfig))
-      .evalMap {
-        case 0 => logger.info("Database up to date")
-        case appliedMigrations => logger.info(s"$appliedMigrations migration scripts applied")
-      }
+  ): Unit = {
+    logger.info("Applying database migrations")
+    val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
+    if (appliedMigrations == 0) {
+      logger.info("Database up to date")
+    } else {
+      logger.info(s"$appliedMigrations migration scripts applied")
+    }
   }
 }
