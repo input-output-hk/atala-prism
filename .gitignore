@@ -24,3 +24,5 @@ prism-interactive-demo-web/src/protos/intdemo
 *.aux 
 *.toc
 *.pdf
+.gradle/
+node-cli/app/build/
