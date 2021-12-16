@@ -27,7 +27,7 @@ import io.iohk.atala.prism.node.models.WalletDetails
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import tofu.syntax.monadic._
 import sttp.model.MediaType.ApplicationJson
-import sttp.model.Uri
+import sttp.model.{Header, Uri}
 
 /** Implementation of the `CardanoWalletApiClient` that accesses the REST API provided by `cardano-wallet`.
   */
@@ -35,6 +35,7 @@ private[wallet] class ApiClient[F[_]: Functor](
     config: ApiClient.Config,
     backend: SttpBackend[F, Any]
 ) extends CardanoWalletApiClient[F] {
+
   override def estimateTransactionFee(
       walletId: WalletId,
       payments: List[Payment],
@@ -76,6 +77,7 @@ private[wallet] class ApiClient[F[_]: Functor](
     basicRequest
       .contentType(ApplicationJson)
       .response(asString)
+      .headers(config.routingHeader.toList: _*)
       .method(
         method.httpMethod,
         Uri.apply(config.host, config.port).withWholePath(method.path)
@@ -95,7 +97,7 @@ private[wallet] class ApiClient[F[_]: Functor](
 
 private[wallet] object ApiClient {
 
-  case class Config(host: String, port: Int)
+  case class Config(host: String, port: Int, routingHeader: Option[Header])
 
   private[wallet] def defaultBackend[F[_]: Async]: Resource[F, SttpBackend[F, Any]] =
     AsyncHttpClientCatsBackend.resource[F]()

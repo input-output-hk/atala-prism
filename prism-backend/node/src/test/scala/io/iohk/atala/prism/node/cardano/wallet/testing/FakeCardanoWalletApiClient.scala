@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import org.scalatest.OptionValues._
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import sttp.model.StatusCode
+import sttp.model.{Header, StatusCode}
 
 object FakeCardanoWalletApiClient {
 
@@ -17,13 +17,15 @@ object FakeCardanoWalletApiClient {
     def apply[F[_]: Async](
         expectedPath: String,
         expectedJsonRequest: String,
-        responseBody: String
+        responseBody: String,
+        routingHeader: Option[Header] = Option.empty
     ): CardanoWalletApiClient[F] = {
       FakeCardanoWalletApiClient(
         expectedPath,
         expectedJsonRequest,
         200,
-        responseBody
+        responseBody,
+        routingHeader
       )
     }
   }
@@ -41,7 +43,8 @@ object FakeCardanoWalletApiClient {
         expectedPath,
         expectedJsonRequest,
         400,
-        createJsonErrorResponse(errorCode, errorMessage)
+        createJsonErrorResponse(errorCode, errorMessage),
+        Option.empty
       )
     }
   }
@@ -50,7 +53,7 @@ object FakeCardanoWalletApiClient {
     */
   object NotFound {
     def apply[F[_]: Async](): CardanoWalletApiClient[F] = {
-      val config = ApiClient.Config("localhost", 8090)
+      val config = ApiClient.Config("localhost", 8090, Option.empty)
       val backend = AsyncHttpClientCatsBackend.stub
       new ApiClient(config, backend)
     }
@@ -60,18 +63,21 @@ object FakeCardanoWalletApiClient {
       expectedPath: String,
       expectedJsonRequest: String,
       responseCode: Int,
-      responseBody: String
+      responseBody: String,
+      maybeRoutingHeader: Option[Header]
   ): CardanoWalletApiClient[F] = {
-    val config = ApiClient.Config("localhost", 8090)
+    val config = ApiClient.Config("localhost", 8090, maybeRoutingHeader)
     val backend = AsyncHttpClientCatsBackend.stub
       .whenRequestMatches(request =>
-        request.uri.host.exists(
-          _ == config.host
-        ) && request.uri.port.value == config.port && request.uri.path
-          .mkString("/") == expectedPath && sameJson(
-          request.body.asInstanceOf[StringBody].s,
-          expectedJsonRequest
-        )
+        request.uri.host.contains(config.host)
+          && request.uri.port.value == config.port
+          && maybeRoutingHeader.forall(expectedRoutingHeader => request.headers.contains(expectedRoutingHeader))
+          && request.uri.path
+            .mkString("/") == expectedPath
+          && sameJson(
+            request.body.asInstanceOf[StringBody].s,
+            expectedJsonRequest
+          )
       )
       .thenRespondWithCode(StatusCode.apply(responseCode), responseBody)
 
