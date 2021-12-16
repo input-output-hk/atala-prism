@@ -17,7 +17,7 @@ export const ImportResults = ({ results, importType, useCaseProps }) =>
   );
 
 ImportResults.propTypes = {
-  results: PropTypes.oneOf([
+  results: PropTypes.oneOfType([
     PropTypes.shape({
       fileData: PropTypes.shape({
         fileObj: PropTypes.shape({ name: PropTypes.string })

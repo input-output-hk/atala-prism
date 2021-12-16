@@ -2,36 +2,26 @@ package io.iohk.atala.prism.node
 
 import _root_.grpc.health.v1.health._
 import io.grpc.stub.StreamObserver
-import io.iohk.atala.prism.logging.TraceId
-import cats.effect.unsafe.implicits.global
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 
 /** Simple Health service, for now, the service is healthy if the request is received.
   */
 class HealthService extends HealthGrpc.Health {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val loggerIO = TraceId.logs.forService[HealthService]
-
-  def check(request: HealthCheckRequest): Future[HealthCheckResponse] = loggerIO
-    .flatMap(logger =>
-      TraceId.unLiftIOWithTraceId()(logger.info(s"Replying to health request, service = ${request.service}"))
-    )
-    .map(_ => servingResponse)
-    .unsafeToFuture()
+  def check(request: HealthCheckRequest): Future[HealthCheckResponse] = {
+    logger.info(s"Replying to health request, service = ${request.service}")
+    Future.successful(servingResponse)
+  }
 
   def watch(
       request: HealthCheckRequest,
       responseObserver: StreamObserver[HealthCheckResponse]
   ): Unit = {
-    responseObserver.onNext(
-      loggerIO
-        .flatMap(logger =>
-          TraceId.unLiftIOWithTraceId()(logger.info(s"Watch for health changes, service = ${request.service}"))
-        )
-        .map(_ => servingResponse)
-        .unsafeRunSync()
-    )
+    logger.info(s"Watch for health changes, service = ${request.service}")
+    responseObserver.onNext(servingResponse)
   }
 
   private val servingResponse =

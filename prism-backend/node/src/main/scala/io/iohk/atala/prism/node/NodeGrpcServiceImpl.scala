@@ -11,8 +11,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog, IOWithTraceIdAndMethodNameContext}
-import io.iohk.atala.prism.node.logging.NodeLogging
+import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -33,6 +32,7 @@ import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -42,9 +42,6 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
-import tofu.logging.Logging
-import io.iohk.atala.prism.node.logging.TraceIdAndMethodName
-import cats.effect.IO
 
 class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implicit
     ec: ExecutionContext,
@@ -53,7 +50,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
 
   import NodeGrpcServiceImpl._
 
-  private implicit val loggerIO = NodeLogging.logs.forService[NodeGrpcServiceImpl].unsafeRunSync()
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def healthCheck(
       request: HealthCheckRequest
@@ -78,21 +75,21 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[GetBatchStateResponse] = {
     val methodName = "getBatchState"
 
+    val batchIdF = getFromOptionOrFailF(
+      Option(CredentialBatchId.fromString(request.batchId)),
+      s"Invalid batch id: ${request.batchId}",
+      methodName
+    )
+
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
-        val ctx = TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName)
-        val batchIdF = getFromOptionOrFailF(
-          Option(CredentialBatchId.fromString(request.batchId)),
-          s"Invalid batch id: ${request.batchId}",
-          ctx
-        )
         for {
           batchId <- batchIdF
-          _ <- logWithTraceId(
+          _ = logWithTraceId(
             methodName,
             traceId,
             "batchId" -> s"${batchId.getId}"
-          ).unsafeToFuture()
+          )
           stateEither <- nodeService
             .getBatchState(batchId)
             .run(traceId)
@@ -111,6 +108,12 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[GetCredentialRevocationTimeResponse] = {
     val methodName = "getCredentialRevocationTime"
 
+    val batchIdF = getFromOptionOrFailF(
+      Option(CredentialBatchId.fromString(request.batchId)),
+      s"Invalid batch id: ${request.batchId}",
+      methodName
+    )
+
     val credentialHashF = Future
       .fromTry(Try(SHA256Digest.fromBytes(request.credentialHash.toByteArray)))
       .countErrorOnFail(
@@ -120,21 +123,19 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       )
     measureRequestFuture(serviceName, methodName) {
       withLog(methodName, request) { traceId =>
-        val ctx = TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName)
-        val batchIdF = getFromOptionOrFailF(
-          Option(CredentialBatchId.fromString(request.batchId)),
-          s"Invalid batch id: ${request.batchId}",
-          ctx
-        )
         for {
           batchId <- batchIdF
-          _ <- logWithTraceId(methodName, traceId, "batchId" -> s"${batchId.getId}").unsafeToFuture()
+          _ = logWithTraceId(
+            methodName,
+            traceId,
+            "batchId" -> s"${batchId.getId}"
+          )
           credentialHash <- credentialHashF
-          _ <- logWithTraceId(
+          _ = logWithTraceId(
             methodName,
             traceId,
             "credentialHash" -> s"${credentialHash.getHexValue}"
-          ).unsafeToFuture()
+          )
           timeEither <-
             nodeService
               .getCredentialRevocationData(batchId, credentialHash)
@@ -190,11 +191,11 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
         for {
           operations <- operationsF
           operationIds = operations.map(AtalaOperationId.of)
-          _ <- logWithTraceId(
+          _ = logWithTraceId(
             methodName,
             traceId,
             "operations" -> operationIds.map(_.toString).mkString(",")
-          ).unsafeToFuture()
+          )
           outputs <- Future.sequence(
             operations.map { op =>
               errorEitherToFutureAndCount(methodName, getOperationOutput(op))
@@ -230,12 +231,12 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       val atalaOperationId = AtalaOperationId.fromVectorUnsafe(
         request.operationId.toByteArray.toVector
       )
+      logWithTraceId(
+        methodName,
+        traceId,
+        "atalaOperationId" -> s"${atalaOperationId.toString}"
+      )
       for {
-        _ <- logWithTraceId(
-          methodName,
-          traceId,
-          "atalaOperationId" -> s"${atalaOperationId.toString}"
-        ).unsafeToFuture()
         operationInfo <- nodeService
           .getOperationInfo(atalaOperationId)
           .run(traceId)
@@ -268,16 +269,13 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       traceId: TraceId
   ): Future[GetDidDocumentResponse] = {
     val didTry = Try(PrismDid.fromString(didRequestStr))
-    val ctx = TraceIdAndMethodName(traceId = traceId.traceId, methodName = methodName)
     didTry.fold(
-      _ => failWith(s"Invalid DID: $didRequestStr", ctx),
-      e => {
-        nodeService
-          .getDidDocumentByDid(e)
-          .map(_.fold(handleGetDidDocumentError(didRequestStr, _, ctx), did => succeedWithV2(did, ctx)))
-          .run(traceId)
-          .unsafeRunSync()
-      }
+      _ => failWith(s"Invalid DID: $didRequestStr", methodName),
+      nodeService
+        .getDidDocumentByDid(_)
+        .map(_.fold(handleGetDidDocumentError(methodName, didRequestStr, _), succeedWithV2))
+        .run(traceId)
+        .unsafeRunSync()
     )
   }
 
@@ -378,16 +376,12 @@ object NodeGrpcServiceImpl {
     response.withLastSyncedBlockTimestamp(in.lastSyncedTimestamp.toProtoTimestamp)
   }
 
-  private def succeedWithV2(didData: DidDocument, ctx: TraceIdAndMethodName)(implicit
-      runtime: cats.effect.unsafe.IORuntime,
-      logger: Logging[IOWithTraceIdAndMethodNameContext]
-  ): Future[node_api.GetDidDocumentResponse] = {
+  private def succeedWithV2(
+      didData: DidDocument
+  )(implicit logger: Logger): Future[node_api.GetDidDocumentResponse] = {
     val response = node_api.GetDidDocumentResponse(document = didData.maybeData)
-    logger
-      .info(s"response = ${response.toProtoString}")
-      .map(_ => response.withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp))
-      .run(ctx)
-      .unsafeToFuture()
+    logger.info(s"response = ${response.toProtoString}")
+    Future.successful(response.withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp))
   }
 // We need to rewrite the node service
   private def countAndThrowNodeError(
@@ -403,44 +397,40 @@ object NodeGrpcServiceImpl {
     throw asStatus.asRuntimeException()
   }
 
-  private def handleGetDidDocumentError[I](
-      didRequestStr: String,
-      error: GettingDidError,
-      ctx: TraceIdAndMethodName
-  )(implicit runtime: cats.effect.unsafe.IORuntime, logger: Logging[IOWithTraceIdAndMethodNameContext]): Future[I] =
-    error match {
-      case GettingCanonicalPrismDidError(nodeError) =>
-        val asStatus = nodeError.toStatus
-        RequestMeasureUtil.increaseErrorCounter(
-          serviceName,
-          ctx.methodName,
-          asStatus.getCode.value()
-        )
-        throw asStatus.asRuntimeException()
-      case UnsupportedDidFormat => failWith(s"Invalid DID: $didRequestStr", ctx)
-    }
+  private def handleGetDidDocumentError[I](methodName: String, didRequestStr: String, error: GettingDidError)(implicit
+      logger: Logger
+  ): Future[I] = error match {
+    case GettingCanonicalPrismDidError(nodeError) =>
+      val asStatus = nodeError.toStatus
+      RequestMeasureUtil.increaseErrorCounter(
+        serviceName,
+        methodName,
+        asStatus.getCode.value()
+      )
+      throw asStatus.asRuntimeException()
+    case UnsupportedDidFormat => failWith(s"Invalid DID: $didRequestStr", methodName)
+  }
 
-  private def getFromOptionOrFailF[I](in: Option[I], msg: String, ctx: TraceIdAndMethodName)(implicit
+  private def getFromOptionOrFailF[I](
+      in: Option[I],
+      msg: String,
+      methodName: String
+  )(implicit
       ec: ExecutionContext,
-      runtime: cats.effect.unsafe.IORuntime,
-      logger: Logging[IOWithTraceIdAndMethodNameContext]
+      logger: Logger
   ): Future[I] =
-    in.fold { failWith[I](msg, ctx) }(_.pure[Future])
+    in.fold { failWith[I](msg, methodName) }(_.pure[Future])
 
-  private def failWith[I](msg: String, ctx: TraceIdAndMethodName)(implicit
-      runtime: cats.effect.unsafe.IORuntime,
-      logger: Logging[IOWithTraceIdAndMethodNameContext]
+  private def failWith[I](msg: String, methodName: String)(implicit
+      logger: Logger
   ): Future[I] = {
+    logger.info(s"Failed with message: $msg")
     RequestMeasureUtil.increaseErrorCounter(
       serviceName,
-      ctx.methodName,
+      methodName,
       Status.INTERNAL.getCode.value()
     )
-    logger
-      .info(s"Failed with message: $msg")
-      .andThen(_ => IO.raiseError(new RuntimeException(msg)))
-      .run(ctx)
-      .unsafeToFuture()
+    Future.failed(new RuntimeException(msg))
   }
 
   private def getOperationOutput(

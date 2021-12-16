@@ -45,7 +45,6 @@ SuccessPage.defaultProps = {
 
 SuccessPage.propTypes = {
   contactCreations: PropTypes.number,
-  redirector: PropTypes.shape({ redirectToContacts: PropTypes.func.isRequired }).isRequired,
   credentialDataImported: PropTypes.number,
   continueCallback: PropTypes.func,
   importType: PropTypes.oneOf([MANUAL_IMPORT, BULK_IMPORT]).isRequired,

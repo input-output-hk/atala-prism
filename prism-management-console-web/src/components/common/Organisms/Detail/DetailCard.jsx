@@ -19,7 +19,7 @@ DetailCard.defaultProps = {
 };
 
 DetailCard.propTypes = {
-  title: PropTypes.string,
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   badge: PropTypes.node,
   info: PropTypes.node,
   children: PropTypes.node

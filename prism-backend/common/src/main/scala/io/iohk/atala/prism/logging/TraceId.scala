@@ -11,15 +11,12 @@ import tofu.logging.derivation.loggable
 
 import java.util.UUID
 import scala.concurrent.Future
-import tofu.logging.Logs
 
 @derive(loggable)
 final case class TraceId(traceId: String) extends AnyVal
 
 object TraceId {
   type IOWithTraceIdContext[T] = ReaderT[IO, TraceId, T]
-
-  def logs: Logs[IO, IOWithTraceIdContext] = Logs.withContext[IO, IOWithTraceIdContext]
 
   def liftToIOWithTraceId: IO ~> IOWithTraceIdContext =
     λ[IO ~> IOWithTraceIdContext](i => ReaderT.liftF(i))

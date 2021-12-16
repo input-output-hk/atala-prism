@@ -9,11 +9,11 @@ import {
   getNewFixedTextAttribute
 } from '../../../../helpers/templateHelpers';
 import SortableAttributes from './SortableAttributes';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 
 const BodyEditor = observer(() => {
   const { t } = useTranslation();
-  const { templateSketch } = useTemplateSketch();
+  const { templateSketch } = useTemplateCreationStore();
 
   return (
     <Form.List

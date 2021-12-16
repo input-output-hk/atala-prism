@@ -35,7 +35,11 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
               <>
                 <Row className="HeaderRow">
                   {columns.map(col => (
-                    <span style={{ width: col.width || DEFAULT_WIDTH_INPUT }} className="HeaderCol">
+                    <span
+                      key={col.label}
+                      style={{ width: col.width || DEFAULT_WIDTH_INPUT }}
+                      className="HeaderCol"
+                    >
                       {col.label}
                     </span>
                   ))}
@@ -43,6 +47,7 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
                 </Row>
                 {fields.map((field, index) => (
                   <IndividualForm
+                    key={field.key}
                     field={field}
                     skeleton={skeleton}
                     columns={columns}
@@ -62,7 +67,7 @@ const DynamicForm = ({ columns, skeleton, initialValues, useCase }) => {
 DynamicForm.defaultProps = {};
 
 DynamicForm.propTypes = {
-  initialValues: PropTypes.shape({}).isRequired,
+  initialValues: PropTypes.array.isRequired,
   columns: columnShape.isRequired,
   skeleton: skeletonShape.isRequired,
   useCase: importUseCasePropType.isRequired

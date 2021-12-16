@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
-import { Form, Select } from 'antd';
+import { Form, message, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import { useTemplateStore } from '../../../../hooks/useTemplateStore';
-import { useTemplateSketch } from '../../../../hooks/useTemplateSketch';
+import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import './_style.scss';
+import Logger from '../../../../helpers/Logger';
 
 const ENABLED_STATE = 1;
 
@@ -20,13 +20,26 @@ const i18nPrefix = 'credentialTemplateCreation.templateCategory';
 
 const TemplateCategorySection = observer(() => {
   const { t } = useTranslation();
-  const { templateCategories, isLoadingCategories, createTemplateCategory } = useTemplateStore();
-  const { templateSketch } = useTemplateSketch();
+
+  const {
+    templateCategories,
+    isLoadingCategories,
+    createTemplateCategory,
+    templateSketch
+  } = useTemplateCreationStore();
   const [open, setOpen] = useState(false);
 
-  const handleCreateCategory = newCategoryName => {
+  const handleCreateCategory = async newCategoryName => {
     const categoryName = normalize(newCategoryName);
-    createTemplateCategory({ categoryName });
+    try {
+      await createTemplateCategory({ categoryName });
+    } catch (error) {
+      Logger.error(
+        '[templateStore.createTemplateCategory] Error while saving Template Category',
+        error
+      );
+      message.error(t('errors.saving', { model: t('templates.table.columns.category') }));
+    }
   };
 
   const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);

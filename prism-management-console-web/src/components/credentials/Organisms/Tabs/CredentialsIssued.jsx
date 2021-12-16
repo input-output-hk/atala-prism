@@ -17,6 +17,7 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
   const {
     filterSortingProps: { hasFiltersApplied },
     isSearching,
+    isRefreshing,
     credentials,
     selectedCredentials,
     handleCherryPickSelection,
@@ -37,6 +38,8 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
 
   const selectedLength = selectedCredentials.length;
 
+  const isLoading = isSearching || isRefreshing;
+
   const expandedTableProps = {
     ...credentialActionsProps,
     selectionType: {
@@ -47,16 +50,16 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
     credentials,
     tab: CREDENTIALS_ISSUED,
     onView: showCredentialData,
-    isFetching,
+    isFetching: !isLoading ? isFetching : false, // this is just isFetchingMore case actually
     hasMore,
-    loading: isSearching
+    loading: isLoading
   };
 
   const emptyProps = {
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
     isFilter: hasFiltersApplied,
-    button: accountStatus === CONFIRMED && <CreateCredentialsButton />
+    button: accountStatus === CONFIRMED ? <CreateCredentialsButton /> : null
   };
 
   return (
@@ -83,7 +86,7 @@ CredentialsIssued.defaultProps = {
 };
 
 CredentialsIssued.propTypes = {
-  credentialActionsProps: {
+  credentialActionsProps: PropTypes.shape({
     revokeSingleCredential: PropTypes.func,
     signSingleCredential: PropTypes.func,
     sendSingleCredential: PropTypes.func,
@@ -92,7 +95,7 @@ CredentialsIssued.propTypes = {
       signSelectedCredentials: PropTypes.func,
       sendSelectedCredentials: PropTypes.func
     }).isRequired
-  },
+  }),
   showCredentialData: PropTypes.func.isRequired
 };
 

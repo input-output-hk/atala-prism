@@ -108,7 +108,6 @@ export const getCredentialsIssuedColumns = (
     key: 'actions',
     render: credential => {
       const { status, credentialId } = credential;
-      const loadingProps = { size: 3, color: '#F83633' };
       const actionButtons = (
         <div>
           {shouldShowRevokeButton(status) && (
@@ -123,7 +122,6 @@ export const getCredentialsIssuedColumns = (
               }}
               buttonText={i18n.t('credentials.actions.revokeOneCredential')}
               loading={loadingRevokeSingle}
-              loadingProps={loadingProps}
             />
           )}
           {shouldShowSignButton(status) && (
@@ -135,7 +133,6 @@ export const getCredentialsIssuedColumns = (
               }}
               buttonText={i18n.t('credentials.actions.signOneCredential')}
               loading={loadingSignSingle}
-              loadingProps={{ size: 3, color: '#F83633' }}
             />
           )}
           {shouldShowSendButton(status) && (
@@ -147,7 +144,6 @@ export const getCredentialsIssuedColumns = (
               }}
               buttonText={i18n.t('credentials.actions.sendOneCredential')}
               loading={loadingSendSingle}
-              loadingProps={{ size: 3, color: '#F83633' }}
             />
           )}
           <CustomButton

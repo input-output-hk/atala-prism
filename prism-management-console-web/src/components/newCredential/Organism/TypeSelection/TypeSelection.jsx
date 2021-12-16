@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import { CONFIRMED } from '../../../../helpers/constants';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { useTemplatesByCategoryStore } from '../../../../hooks/useTemplatesPageStore';
 import TemplatesList from './TemplatesList';
 import CreateTemplateButton from '../../../credentialTemplates/Atoms/Buttons/CreateTemplateButton';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
@@ -16,8 +16,8 @@ import './_style.scss';
 const TypeSelection = observer(({ selectedType, onTypeSelection }) => {
   const { t } = useTranslation();
   const { accountStatus } = useSession();
-  const { isLoading } = useTemplateStore();
-  const { filteredTemplates, hasFiltersApplied } = useTemplateUiState();
+  const { filteredTemplates, isLoading, filterSortingProps } = useTemplatesByCategoryStore();
+  const { hasFiltersApplied } = filterSortingProps;
 
   const noTemplates = !filteredTemplates?.length;
 
@@ -35,6 +35,10 @@ const TypeSelection = observer(({ selectedType, onTypeSelection }) => {
     <div className="TypeSelectionWrapper">
       <div className="TypeSelectionContainer">
         <div className="TypeSelection">
+          <div className="HeaderTextContainer">
+            <h3 className="StepTitle">{t('newCredential.step1.headerText.title')}</h3>
+            <p className="StepInfo">{t('newCredential.step1.headerText.info')}</p>
+          </div>
           <TemplatesList selectedType={selectedType} onTypeSelection={onTypeSelection} />
         </div>
       </div>

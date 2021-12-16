@@ -10,9 +10,7 @@ import {
   NORMALIZED_CONNECTION_STATUSES,
   CREDENTIAL_STATUSES
 } from '../../../../../helpers/constants';
-import { credentialTypeShape } from '../../../../../helpers/propShapes';
 import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
-import { useTemplateStore } from '../../../../../hooks/useTemplateStore';
 
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
@@ -20,6 +18,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const { t } = useTranslation();
 
   const {
+    credentialTypes,
     filterSortingProps: {
       credentialTypeFilter,
       credentialStatusFilter,
@@ -27,7 +26,6 @@ const CredentialsFilter = observer(({ isIssued }) => {
       setFilterValue
     }
   } = useCredentialsIssuedPageStore();
-  const { credentialTemplates: credentialTypes } = useTemplateStore();
 
   const setFilterByKey = key => value => setFilterValue(key, value);
 
@@ -132,20 +130,7 @@ CredentialsFilter.defaultProps = {
 };
 
 CredentialsFilter.propTypes = {
-  isIssued: PropTypes.bool,
-  filterProps: PropTypes.shape({
-    name: PropTypes.string,
-    setName: PropTypes.func,
-    credentialTypes: PropTypes.arrayOf(credentialTypeShape),
-    credentialType: PropTypes.string,
-    setCredentialType: PropTypes.func,
-    credentialStatus: PropTypes.number,
-    setCredentialStatus: PropTypes.func,
-    contactStatus: PropTypes.string,
-    setContactStatus: PropTypes.func,
-    date: PropTypes.string,
-    setDate: PropTypes.func
-  }).isRequired
+  isIssued: PropTypes.bool
 };
 
 export default CredentialsFilter;

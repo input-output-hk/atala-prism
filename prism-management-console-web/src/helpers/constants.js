@@ -101,6 +101,8 @@ export const ALLOWED_IMAGE_TYPES = [JPEG, PNG];
 export const ALLOWED_EXCEL_TYPES = [ODS, XLS, XLSX];
 export const ALLOWED_TYPES = [...ALLOWED_EXCEL_TYPES, ...ALLOWED_IMAGE_TYPES];
 export const MAX_FILE_SIZE = 1073741824; // 1 Gb as maximum just so all my images can pass
+// eslint-disable-next-line no-magic-numbers
+export const MAX_ICON_FILE_SIZE = 1000 * 1000 * 2;
 export const IMAGE = 'image';
 export const EXCEL = 'excel';
 export const ANY = 'any';
@@ -201,13 +203,14 @@ export const COMPACT_WIDTH_INPUT = 250;
 // Usefull css classes
 export const MAIN_CONTAINER_CLASS = 'MainContainer';
 
+// TODO: Implement some kind of flags or enums in backend, rather than parsing error messages!
 // credential verification errors
-const CREDENTIAL_REVOKED = 'The credential was revoked';
-const BATCH_REVOKED = 'The batch where the credential was issued is revoked';
-const INVALID_MERKLE_PROOF = 'Invalid Merkle proof';
-const INVALID_KEY = 'The signing key was added after the credential was issued.';
-const KEY_REVOKED = 'The signing key was revoked before the credential was issued.';
-const INVALID_SIGNATURE = 'The credential signature was invalid';
+const CREDENTIAL_REVOKED = 'Credential was revoked.';
+const BATCH_REVOKED = 'Batch was revoked.';
+const INVALID_MERKLE_PROOF = 'Invalid Merkle proof.';
+const INVALID_KEY = 'Invalid key. Key added after issuance.';
+const KEY_REVOKED = 'Key was revoked before credential issuance.';
+const INVALID_SIGNATURE = 'Invalid signature.';
 
 export const CREDENTIAL_VERIFICATION_ERRORS = {
   credentialRevoked: CREDENTIAL_REVOKED,

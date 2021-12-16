@@ -225,12 +225,14 @@ const ImportDataContainer = ({
 
   const getSteps = () => {
     const baseSteps = [
-      { back: onCancel, next },
-      { back, next: handleSave },
-      hasErrors ? { back } : { next: continueCallback || results?.continueCallback }
+      { key: 'B1', back: onCancel, next },
+      { key: 'B2', back, next: handleSave },
+      hasErrors
+        ? { key: 'B3', back }
+        : { key: 'B4', next: continueCallback || results?.continueCallback }
     ];
     if (!isEmbedded[useCase]) return baseSteps;
-    return [{}, {}, baseSteps[currentStep], {}, {}];
+    return [{ key: '1' }, { key: '2' }, baseSteps[currentStep], { key: '4' }, { key: '5' }];
   };
 
   const getTranslationSuffix = () => {

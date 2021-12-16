@@ -72,8 +72,8 @@ IndividualForm.defaultProps = {};
 
 IndividualForm.propTypes = {
   field: PropTypes.shape({
-    name: PropTypes.string,
-    key: PropTypes.oneOf([PropTypes.string, PropTypes.number])
+    name: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    key: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }).isRequired,
   columns: columnShape.isRequired,
   onRemove: PropTypes.func.isRequired,

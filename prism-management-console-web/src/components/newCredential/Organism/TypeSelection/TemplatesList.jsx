@@ -8,14 +8,13 @@ import {
   CREDENTIAL_TYPE_STATUSES,
   VALID_CREDENTIAL_TYPE_STATUSES
 } from '../../../../helpers/constants';
-import { useTemplateStore, useTemplateUiState } from '../../../../hooks/useTemplateStore';
+import { useTemplatesByCategoryStore } from '../../../../hooks/useTemplatesPageStore';
 
 import './_style.scss';
 
 const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
   const { t } = useTranslation();
-  const { templateCategories } = useTemplateStore();
-  const { filteredTemplatesByCategory } = useTemplateUiState();
+  const { templateCategories, filteredTemplatesByCategory } = useTemplatesByCategoryStore();
 
   const isValidState = state => VALID_CREDENTIAL_TYPE_STATUSES.includes(state);
   const isMockedState = state => state === CREDENTIAL_TYPE_STATUSES.MOCKED;
@@ -27,8 +26,8 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
   return validCategories.map(category => {
     const templatesForThisCategory = filteredTemplatesByCategory(category);
     return templatesForThisCategory.length ? (
-      <>
-        <p>{category.name}</p>
+      <div key={category.id} className="CredentialTemplatesContainer">
+        <p className="CategoryTitle">{category.name}</p>
         <Row>
           {templatesForThisCategory.map(ct => (
             <TypeCard
@@ -42,7 +41,7 @@ const TemplatesList = observer(({ selectedType, onTypeSelection }) => {
             />
           ))}
         </Row>
-      </>
+      </div>
     ) : null;
   });
 });

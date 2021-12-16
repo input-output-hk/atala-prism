@@ -12,6 +12,7 @@ import { DynamicFormProvider } from '../providers/DynamicFormProvider';
 import { useAllContacts } from '../../hooks/useContactStore';
 import { useApi } from '../../hooks/useApi';
 import { useRedirector } from '../../hooks/useRedirector';
+import { humanizeCamelCaseString } from '../../helpers/genericHelpers';
 
 import './_style.scss';
 
@@ -61,7 +62,9 @@ const ImportContactsContainer = observer(() => {
 
   const headersMapping = COMMON_CONTACT_HEADERS.map(headerKey => ({
     key: headerKey,
-    translation: t(`contacts.table.columns.${headerKey}`)
+    translation: t(`contacts.table.columns.${headerKey}`, {
+      defaultValue: humanizeCamelCaseString(headerKey)
+    })
   }));
 
   return (
