@@ -62,8 +62,8 @@ object CredentialTypeCategoryRepository {
   def unsafe[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Comonad](
       transactor: Transactor[F],
       logs: Logs[R, F]
-  ): CredentialTypeRepository[F] =
-    CredentialTypeRepository(transactor, logs).extract
+  ): CredentialTypeCategoryRepository[F] =
+    CredentialTypeCategoryRepository(transactor, logs).extract
 
   def makeResource[F[_]: TimeMeasureMetric: MonadCancelThrow, R[_]: Monad](
       transactor: Transactor[F],
