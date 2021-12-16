@@ -7,11 +7,9 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import org.scalatest.OptionValues._
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import sttp.model.StatusCode
+import sttp.model.{Header, StatusCode}
 
 object FakeCardanoWalletApiClient {
-
-  private val routingHeaderKey = "x-service-route-id"
 
   /** Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
     */
@@ -20,7 +18,7 @@ object FakeCardanoWalletApiClient {
         expectedPath: String,
         expectedJsonRequest: String,
         responseBody: String,
-        routingHeader: Option[String] = Option.empty
+        routingHeader: Option[Header] = Option.empty
     ): CardanoWalletApiClient[F] = {
       FakeCardanoWalletApiClient(
         expectedPath,
@@ -66,17 +64,14 @@ object FakeCardanoWalletApiClient {
       expectedJsonRequest: String,
       responseCode: Int,
       responseBody: String,
-      maybeRoutingHeader: Option[String]
+      maybeRoutingHeader: Option[Header]
   ): CardanoWalletApiClient[F] = {
     val config = ApiClient.Config("localhost", 8090, maybeRoutingHeader)
     val backend = AsyncHttpClientCatsBackend.stub
       .whenRequestMatches(request =>
-        request.uri.host.exists(
-          _ == config.host
-        ) && request.uri.port.value == config.port
-          && request
-            .header(routingHeaderKey)
-            .forall(currentRountingHeader => maybeRoutingHeader.contains(currentRountingHeader))
+        request.uri.host.contains(config.host)
+          && request.uri.port.value == config.port
+          && maybeRoutingHeader.forall(expectedRoutingHeader => request.headers.contains(expectedRoutingHeader))
           && request.uri.path
             .mkString("/") == expectedPath
           && sameJson(

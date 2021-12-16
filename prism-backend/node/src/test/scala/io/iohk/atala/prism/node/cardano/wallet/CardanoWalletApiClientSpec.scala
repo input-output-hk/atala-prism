@@ -15,6 +15,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
+import sttp.model.Header
 
 import scala.concurrent.ExecutionContext
 
@@ -68,7 +69,7 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
           expectedPath,
           expectedJsonRequest,
           readResource("estimateTransactionFee_success_response.json"),
-          Some("RoutingHeaderValue")
+          Some(Header("RoutingHeaderName", "RoutingHeaderValue"))
         )
 
       val estimatedFee =
@@ -153,7 +154,7 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
           expectedPath,
           expectedJsonRequest,
           readResource("postTransaction_success_response.json"),
-          Some("RoutingHeaderValue")
+          Some(Header("RoutingHeaderName", "RoutingHeaderValue"))
         )
 
       val transaction =
@@ -227,7 +228,7 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
           expectedPath,
           "",
           readResource("getTransaction_success_response.json"),
-          Some("RoutingHeaderValue")
+          Some(Header("RoutingHeaderName", "RoutingHeaderValue"))
         )
 
       val transactionDetails = client
@@ -281,7 +282,8 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     }
 
     "delete a transaction with header" in {
-      val client = FakeCardanoWalletApiClient.Success[IO](expectedPath, "", "", Some("RoutingHeaderValue"))
+      val client = FakeCardanoWalletApiClient
+        .Success[IO](expectedPath, "", "", Some(Header("RoutingHeaderName", "RoutingHeaderValue")))
 
       client
         .deleteTransaction(walletId, transactionId)
@@ -331,7 +333,12 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
     "return available funds and state data with header" in {
       val client = FakeCardanoWalletApiClient
-        .Success[IO](expectedPath, "", readResource("getWallet.json"), Some("RoutingHeaderValue"))
+        .Success[IO](
+          expectedPath,
+          "",
+          readResource("getWallet.json"),
+          Some(Header("RoutingHeaderName", "RoutingHeaderValue"))
+        )
 
       val result = client.getWallet(walletId).unsafeToFuture().futureValue
       result.isRight mustBe true
