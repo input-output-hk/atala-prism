@@ -25,7 +25,7 @@ class CredentialTypesCategoryServiceImplSpec extends ManagementConsoleRpcSpecBas
 
       val createCredentialTypeCategory1 =
         CreateCredentialTypeCategory("some category1", CredentialTypeCategoryState.Ready)
-      // create credential type
+
       val created = credentialTypeCategoryRepository
         .create(participantId, createCredentialTypeCategory1)
         .run(TraceId.generateYOLO)

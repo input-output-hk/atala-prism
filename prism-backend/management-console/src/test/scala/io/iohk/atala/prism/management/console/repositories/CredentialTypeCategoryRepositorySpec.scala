@@ -11,7 +11,6 @@ import org.scalatest.OptionValues._
 import tofu.logging.Logs
 import doobie.implicits._
 
-//sbt "project management-console" "testOnly *CredentialTypeRepositorySpec"
 class CredentialTypeCategoryRepositorySpec extends AtalaWithPostgresSpec {
 
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
