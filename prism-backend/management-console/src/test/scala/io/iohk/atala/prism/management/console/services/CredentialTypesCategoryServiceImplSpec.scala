@@ -8,13 +8,9 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
-import io.iohk.atala.prism.management.console.models.{
-  CreateCredentialTypeCategory,
-  CredentialTypeCategoryState
-}
+import io.iohk.atala.prism.management.console.models.{CreateCredentialTypeCategory, CredentialTypeCategoryState}
 import io.iohk.atala.prism.protos.{console_api, console_models}
 import org.scalatest.OptionValues
-
 
 class CredentialTypesCategoryServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil with OptionValues {
 

@@ -5,8 +5,19 @@ import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
-import io.iohk.atala.prism.management.console.grpc.{ConsoleGrpcService, ContactsGrpcService, CredentialIssuanceGrpcService, CredentialTypeCategoryGrpcService, CredentialTypesGrpcService, CredentialsGrpcService}
-import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, CredentialsIntegrationService, ParticipantsIntegrationService}
+import io.iohk.atala.prism.management.console.grpc.{
+  ConsoleGrpcService,
+  ContactsGrpcService,
+  CredentialIssuanceGrpcService,
+  CredentialTypeCategoryGrpcService,
+  CredentialTypesGrpcService,
+  CredentialsGrpcService
+}
+import io.iohk.atala.prism.management.console.integrations.{
+  ContactsIntegrationService,
+  CredentialsIntegrationService,
+  ParticipantsIntegrationService
+}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
