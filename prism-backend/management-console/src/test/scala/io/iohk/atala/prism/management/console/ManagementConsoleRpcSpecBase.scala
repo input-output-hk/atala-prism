@@ -5,18 +5,8 @@ import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
-import io.iohk.atala.prism.management.console.grpc.{
-  ConsoleGrpcService,
-  ContactsGrpcService,
-  CredentialIssuanceGrpcService,
-  CredentialTypesGrpcService,
-  CredentialsGrpcService
-}
-import io.iohk.atala.prism.management.console.integrations.{
-  ContactsIntegrationService,
-  CredentialsIntegrationService,
-  ParticipantsIntegrationService
-}
+import io.iohk.atala.prism.management.console.grpc.{ConsoleGrpcService, ContactsGrpcService, CredentialIssuanceGrpcService, CredentialTypeCategoryGrpcService, CredentialTypesGrpcService, CredentialsGrpcService}
+import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, CredentialsIntegrationService, ParticipantsIntegrationService}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.protos.console_api
@@ -52,6 +42,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
           credentialTypeService,
           executionContext
         ),
+      console_api.CredentialTypeCategoriesServiceGrpc
+        .bindService(
+          credentialTypeCategoryService,
+          executionContext
+        ),
       console_api.CredentialsServiceGrpc
         .bindService(
           credentialsService,
@@ -85,6 +80,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialsRepository =
     CredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val credentialTypeRepository = CredentialTypeRepository.unsafe(
+    dbLiftedToTraceIdIO,
+    managementConsoleTestLogs
+  )
+
+  lazy val credentialTypeCategoryRepository = CredentialTypeCategoryRepository.unsafe(
     dbLiftedToTraceIdIO,
     managementConsoleTestLogs
   )
@@ -133,6 +133,12 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialTypeService = new CredentialTypesGrpcService(
     CredentialTypesService
       .unsafe(credentialTypeRepository, managementConsoleTestLogs),
+    authenticator
+  )
+
+  lazy val credentialTypeCategoryService = new CredentialTypeCategoryGrpcService(
+    CredentialTypeCategoryService
+      .unsafe(credentialTypeCategoryRepository, managementConsoleTestLogs),
     authenticator
   )
 
@@ -188,6 +194,17 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   ] = {
     usingApiAsConstructor(
       new console_api.CredentialTypesServiceGrpc.CredentialTypesServiceBlockingStub(
+        _,
+        _
+      )
+    )
+  }
+
+  val usingApiAsCredentialTypeCategory: ApiTestHelper[
+    console_api.CredentialTypeCategoriesServiceGrpc.CredentialTypeCategoriesServiceBlockingStub
+  ] = {
+    usingApiAsConstructor(
+      new console_api.CredentialTypeCategoriesServiceGrpc.CredentialTypeCategoriesServiceBlockingStub(
         _,
         _
       )

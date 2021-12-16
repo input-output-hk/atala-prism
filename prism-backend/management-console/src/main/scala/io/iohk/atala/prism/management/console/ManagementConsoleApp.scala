@@ -239,7 +239,8 @@ object ManagementConsoleApp extends IOApp {
           .bindService(credentialsStoreGrpcService, ec),
         console_api.CredentialTypesServiceGrpc
           .bindService(credentialTypesGrpcService, ec),
-        console_api.CredentialTypeCategoriesServiceGrpc.bindService(credentialTypeCategoryGrpcService, ec)
+        console_api.CredentialTypeCategoriesServiceGrpc
+          .bindService(credentialTypeCategoryGrpcService, ec)
       )
     } yield grpcServer
   }

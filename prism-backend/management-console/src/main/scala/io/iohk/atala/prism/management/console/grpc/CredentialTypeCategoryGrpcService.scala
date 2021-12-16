@@ -111,7 +111,7 @@ class CredentialTypeCategoryGrpcService(
     auth[UnArchiveCredentialTypeCategory]("unArchiveCredentialTypeCategory", request) {
       (_, unArchiveCredentialTypeCategoryData, traceId) =>
         credentialTypeCategoryService
-          .archiveCredentialTypeCategory(unArchiveCredentialTypeCategoryData.id)
+          .unArchiveCredentialTypeCategory(unArchiveCredentialTypeCategoryData.id)
           .run(traceId)
           .unsafeToFuture()
           .toFutureEither
