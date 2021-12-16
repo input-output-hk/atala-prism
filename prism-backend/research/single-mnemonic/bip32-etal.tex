@@ -248,9 +248,20 @@ derived in non-hardened mode.
 
 \subsection{Variations in the Cardano Ecosystem}
 
-\paragraph{Lightwallet.}
+\paragraph{Lightwallet.} HD wallets in Cardano are mostly BIP44-compatible
+wallets, with the exception that the used elliptic curve is Ed25519 \needcite,
+instead of Secp256k1 \needcite, like Bitcoin's BIP32 (and thus, BIP44). This
+difference is marked by using index 1852 for hardened child derivation at
+layer 1 (purpose level), as specified in CIP1852%
+\footnote{\url{https://cips.cardano.org/cips/cip1852/}. Last access, December
+  15th, 2021.}.
 
-\paragraph{Atala.}
+\paragraph{Atala.} HD wallets in Atala follow a slightly different tree
+organisation, layer-wise. Namely, it defines 4 layers: root, DID number, key
+type, and index. All child derivations are done in hardened mode. The elliptic
+curve is Secp256k1, as BIP44. See the key derivation document for details%
+\footnote{\url{https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/protocol/key-derivation.md}. Last access December 15th, 2021. \textbf{WARNING!
+    Internal link!}}.
 
 \subsection{Comments on a Recent Security Evaluation}
 
