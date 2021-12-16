@@ -210,6 +210,27 @@ object ProtoCodecs {
       .transform
   }
 
+  def toCredentialTypeCategoryProto(
+      credentialTypeCategory: CredentialTypeCategory
+  ): console_models.CredentialTypeCategory = {
+    credentialTypeCategory
+      .into[console_models.CredentialTypeCategory]
+      .withFieldComputed(_.id, _.id.uuid.toString)
+      .withFieldComputed(_.institutionId, _.institutionId.uuid.toString)
+      .withFieldComputed(
+        _.state,
+        _.state match {
+          case CredentialTypeCategoryState.Draft =>
+            console_models.CredentialTypeCategoryState.CREDENTIAL_TYPE_CATEGORY_DRAFT
+          case CredentialTypeCategoryState.Ready =>
+            console_models.CredentialTypeCategoryState.CREDENTIAL_TYPE_CATEGORY_READY
+          case CredentialTypeCategoryState.Archived =>
+            console_models.CredentialTypeCategoryState.CREDENTIAL_TYPE_CATEGORY_ARCHIVED
+        }
+      )
+      .transform
+  }
+
   def toCredentialTypeWithRequiredFieldsProto(
       withFields: CredentialTypeWithRequiredFields
   ): console_models.CredentialTypeWithRequiredFields = {

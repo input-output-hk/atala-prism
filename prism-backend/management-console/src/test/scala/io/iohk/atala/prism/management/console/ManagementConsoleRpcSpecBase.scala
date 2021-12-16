@@ -9,6 +9,7 @@ import io.iohk.atala.prism.management.console.grpc.{
   ConsoleGrpcService,
   ContactsGrpcService,
   CredentialIssuanceGrpcService,
+  CredentialTypeCategoryGrpcService,
   CredentialTypesGrpcService,
   CredentialsGrpcService
 }
@@ -52,6 +53,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
           credentialTypeService,
           executionContext
         ),
+      console_api.CredentialTypeCategoriesServiceGrpc
+        .bindService(
+          credentialTypeCategoryService,
+          executionContext
+        ),
       console_api.CredentialsServiceGrpc
         .bindService(
           credentialsService,
@@ -85,6 +91,11 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialsRepository =
     CredentialsRepository.unsafe(dbLiftedToTraceIdIO, managementConsoleTestLogs)
   lazy val credentialTypeRepository = CredentialTypeRepository.unsafe(
+    dbLiftedToTraceIdIO,
+    managementConsoleTestLogs
+  )
+
+  lazy val credentialTypeCategoryRepository = CredentialTypeCategoryRepository.unsafe(
     dbLiftedToTraceIdIO,
     managementConsoleTestLogs
   )
@@ -133,6 +144,12 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialTypeService = new CredentialTypesGrpcService(
     CredentialTypesService
       .unsafe(credentialTypeRepository, managementConsoleTestLogs),
+    authenticator
+  )
+
+  lazy val credentialTypeCategoryService = new CredentialTypeCategoryGrpcService(
+    CredentialTypeCategoryService
+      .unsafe(credentialTypeCategoryRepository, managementConsoleTestLogs),
     authenticator
   )
 
@@ -188,6 +205,17 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   ] = {
     usingApiAsConstructor(
       new console_api.CredentialTypesServiceGrpc.CredentialTypesServiceBlockingStub(
+        _,
+        _
+      )
+    )
+  }
+
+  val usingApiAsCredentialTypeCategory: ApiTestHelper[
+    console_api.CredentialTypeCategoriesServiceGrpc.CredentialTypeCategoriesServiceBlockingStub
+  ] = {
+    usingApiAsConstructor(
+      new console_api.CredentialTypeCategoriesServiceGrpc.CredentialTypeCategoriesServiceBlockingStub(
         _,
         _
       )

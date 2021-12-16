@@ -995,6 +995,59 @@ package object grpc {
         .map(MarkAsArchivedCredentialType)
     }
 
+  implicit val getCredentialTypeCategoriesConverter: ProtoConverter[
+    GetCredentialTypeCategoriesRequest,
+    GetCredentialTypeCategories
+  ] =
+    (_: GetCredentialTypeCategoriesRequest, _) => Success(GetCredentialTypeCategories())
+
+  implicit val createCredentialTypeCategoriesConverter: ProtoConverter[
+    CreateCredentialTypeCategoryRequest,
+    CreateCredentialTypeCategory
+  ] =
+    (request: CreateCredentialTypeCategoryRequest, _) => {
+      request.credentialTypeCategory
+        .toRight(new IllegalArgumentException("Empty credentialTypeCategory field"))
+        .toTry
+        .flatMap { createCredentialTypeCategory =>
+          Try(
+            createCredentialTypeCategory
+              .into[CreateCredentialTypeCategory]
+              .withFieldComputed(
+                _.state,
+                _.state match {
+                  case console_models.CredentialTypeCategoryState.CREDENTIAL_TYPE_CATEGORY_DRAFT =>
+                    CredentialTypeCategoryState.Draft
+                  case console_models.CredentialTypeCategoryState.CREDENTIAL_TYPE_CATEGORY_READY =>
+                    CredentialTypeCategoryState.Ready
+                  case console_models.CredentialTypeCategoryState.CREDENTIAL_TYPE_CATEGORY_ARCHIVED =>
+                    CredentialTypeCategoryState.Archived
+                  case _ => CredentialTypeCategoryState.Ready
+                }
+              )
+              .transform
+          )
+        }
+    }
+
+  implicit val ArchiveCredentialTypeCategoriesConverter: ProtoConverter[
+    ArchiveCredentialTypeCategoryRequest,
+    ArchiveCredentialTypeCategory
+  ] = (request: ArchiveCredentialTypeCategoryRequest, _) => {
+    CredentialTypeCategoryId
+      .from(request.credentialTypeCategoryId)
+      .map(ArchiveCredentialTypeCategory)
+  }
+
+  implicit val unArchiveCredentialTypeCategoriesConverter: ProtoConverter[
+    UnArchiveCredentialTypeCategoryRequest,
+    UnArchiveCredentialTypeCategory
+  ] = (request: UnArchiveCredentialTypeCategoryRequest, _) => {
+    CredentialTypeCategoryId
+      .from(request.credentialTypeCategoryId)
+      .map(UnArchiveCredentialTypeCategory)
+  }
+
   implicit val participantProfileConverter: ProtoConverter[
     ConsoleUpdateProfileRequest,
     UpdateParticipantProfile

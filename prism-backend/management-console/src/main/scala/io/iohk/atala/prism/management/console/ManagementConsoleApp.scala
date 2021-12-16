@@ -15,6 +15,7 @@ import io.iohk.atala.prism.management.console.grpc.{
   ConsoleGrpcService,
   ContactsGrpcService,
   CredentialIssuanceGrpcService,
+  CredentialTypeCategoryGrpcService,
   CredentialTypesGrpcService,
   CredentialsGrpcService,
   CredentialsStoreGrpcService,
@@ -138,7 +139,10 @@ object ManagementConsoleApp extends IOApp {
         txTraceIdLifted,
         managementConsoleLogs
       )
-
+      credentialTypeCategoryRepository <- CredentialTypeCategoryRepository.makeResource(
+        txTraceIdLifted,
+        managementConsoleLogs
+      )
       contactsIntegrationService <-
         ContactsIntegrationService.makeResource(
           contactsRepository,
@@ -159,6 +163,10 @@ object ManagementConsoleApp extends IOApp {
         )
       credentialTypesService <- CredentialTypesService.makeResource(
         credentialTypeRepository,
+        managementConsoleLogs
+      )
+      credentialTypeCategoryService <- CredentialTypeCategoryService.makeResource(
+        credentialTypeCategoryRepository,
         managementConsoleLogs
       )
       credentialsStoreService <-
@@ -223,6 +231,10 @@ object ManagementConsoleApp extends IOApp {
         credentialTypesService,
         authenticator
       )
+      credentialTypeCategoryGrpcService = new CredentialTypeCategoryGrpcService(
+        credentialTypeCategoryService,
+        authenticator
+      )
 
       // gRPC server
       grpcServer <- GrpcUtils.createGrpcServer[IO](
@@ -239,7 +251,9 @@ object ManagementConsoleApp extends IOApp {
         console_api.CredentialsStoreServiceGrpc
           .bindService(credentialsStoreGrpcService, ec),
         console_api.CredentialTypesServiceGrpc
-          .bindService(credentialTypesGrpcService, ec)
+          .bindService(credentialTypesGrpcService, ec),
+        console_api.CredentialTypeCategoriesServiceGrpc
+          .bindService(credentialTypeCategoryGrpcService, ec)
       )
     } yield grpcServer
   }
