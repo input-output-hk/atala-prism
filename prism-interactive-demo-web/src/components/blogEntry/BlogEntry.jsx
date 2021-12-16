@@ -27,6 +27,7 @@ const BlogEntry = ({ post, query }) => {
               <h2 className="h2" itemProp="headline">
                 {query ? (
                   <Highlighter
+                    data-testid="highlighted-title"
                     highlightClassName="Highlighted"
                     searchWords={[query]}
                     textToHighlight={title}
@@ -43,6 +44,7 @@ const BlogEntry = ({ post, query }) => {
               <p className="copete" itemProp="description">
                 {query ? (
                   <Highlighter
+                    data-testid="highlighted-description"
                     highlightClassName="Highlighted"
                     searchWords={[query]}
                     textToHighlight={description}
@@ -89,6 +91,7 @@ const BlogEntry = ({ post, query }) => {
               </Link>
               {query ? (
                 <Highlighter
+                  data-testid="highlighted-body"
                   highlightClassName="Highlighted"
                   searchWords={[query]}
                   textToHighlight={displayBody}

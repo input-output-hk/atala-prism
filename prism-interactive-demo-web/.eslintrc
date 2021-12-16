@@ -3,7 +3,8 @@
   "env": {
     "browser": true,
     "mocha": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
   "rules": {
     "func-names": "error",
@@ -68,7 +69,8 @@
     "react",
     "css-modules",
     "cypress",
-    "chai-friendly"
+    "chai-friendly",
+    "jest"
   ],
   "globals": {
     "artifacts": false,
