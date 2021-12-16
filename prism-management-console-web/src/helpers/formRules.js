@@ -1,5 +1,6 @@
 import moment from 'moment';
 import i18n from 'i18next';
+import { humanizeCamelCaseString } from './genericHelpers';
 
 export const isValueInListByKey = (list, value, field) =>
   !!value && list?.some(item => item[field] === value);
@@ -105,7 +106,9 @@ export const generateRequiredRule = (isDate, dataIndex) =>
       : { required: true, whitespace: true },
     {
       message: i18n.t('manualImport.table.required', {
-        field: i18n.t(`contacts.table.columns.${dataIndex}`)
+        field: i18n.t(`contacts.table.columns.${dataIndex}`, {
+          defaultValue: humanizeCamelCaseString(dataIndex)
+        })
       })
     }
   );

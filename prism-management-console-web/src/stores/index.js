@@ -1,5 +1,4 @@
 import { createContext } from 'react';
-import { RootStore } from './RootStore';
 import SessionState from './ui/SessionState';
 import CurrentGroupStore from './features/CurrentGroupStore';
 import CurrentContactState from './features/CurrentContactState';
@@ -9,11 +8,12 @@ import CreateGroupStore from './features/CreateGroupStore';
 import CredentialsIssuedPageStore from './features/CredentialsIssuedPageStore';
 import CredentialsReceivedStore from './domain/CredentialsReceivedStore';
 import CreateCredentialPageStore from './features/CeateCredentialPageStore';
+import TemplatesPageStore from './features/TemplatesPageStore';
+import TemplatesByCategoryStore from './features/TemplatesByCategoryStore';
+import TemplateCreationStore from './features/TemplateCreationStore';
 
 export const createStores = api => {
   const sessionState = new SessionState(api);
-  // TODO: spread the rest of the entity stores into separate Root<Entity>Store
-  const rootStore = new RootStore(api, sessionState);
   const groupsPageStore = new GroupsPageStore(api, sessionState);
   const currentGroupStore = new CurrentGroupStore(api, sessionState);
   const createGroupStore = new CreateGroupStore(api, sessionState);
@@ -22,10 +22,11 @@ export const createStores = api => {
   const credentialsIssuedPageStore = new CredentialsIssuedPageStore(api, sessionState);
   const credentialsReceivedStore = new CredentialsReceivedStore(api, sessionState);
   const createCredentialPageStore = new CreateCredentialPageStore(api, sessionState);
+  const templatesPageStore = new TemplatesPageStore(api, sessionState);
+  const templatesByCategoryStore = new TemplatesByCategoryStore(api, sessionState);
+  const templateCreationStore = new TemplateCreationStore(api, sessionState);
 
   return {
-    ...rootStore.uiState,
-    ...rootStore.prismStore,
     sessionState,
     groupsPageStore,
     currentGroupStore,
@@ -34,7 +35,10 @@ export const createStores = api => {
     currentContactState,
     credentialsIssuedPageStore,
     credentialsReceivedStore,
-    createCredentialPageStore
+    createCredentialPageStore,
+    templatesPageStore,
+    templatesByCategoryStore,
+    templateCreationStore
   };
 };
 

@@ -32,13 +32,13 @@ export default class CreateCredentialPageStore {
     reaction(() => this.groupsBaseStore.nameFilter, this.resetGroupsSelection);
   }
 
-  initRecipients = async () => {
+  *initRecipients() {
     this.isInitRecipientsInProgress = true;
     this.contactsSelectStore.resetSelection();
     this.groupsSelectStore.resetSelection();
-    await Promise.all([this.contactsBaseStore.initContactStore(), this.groupsBaseStore.init()]);
+    yield Promise.all([this.contactsBaseStore.initContactStore(), this.groupsBaseStore.init()]);
     this.isInitRecipientsInProgress = false;
-  };
+  }
 
   // contacts
 

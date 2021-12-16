@@ -62,7 +62,7 @@ const RecipientsList = ({ recipients }) => {
 };
 
 RecipientsList.propTypes = {
-  recipients: PropTypes.arrayOf(PropTypes.oneOf([groupShape, contactShape])).isRequired
+  recipients: PropTypes.arrayOf(PropTypes.oneOfType([groupShape, contactShape])).isRequired
 };
 
 export default RecipientsList;

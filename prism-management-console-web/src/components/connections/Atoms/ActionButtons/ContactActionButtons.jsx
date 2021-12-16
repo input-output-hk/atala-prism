@@ -5,6 +5,7 @@ import { message } from 'antd';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { studentShape } from '../../../../helpers/propShapes';
 import { CONNECTION_STATUSES } from '../../../../helpers/constants';
+import { humanizeCamelCaseString } from '../../../../helpers/genericHelpers';
 
 const showQR = ({ connectionStatus }) =>
   [
@@ -38,7 +39,9 @@ const ContactActionButtons = ({ inviteContact, viewContactDetail, contact }) => 
                 className: 'theme-link',
                 onClick: a.call || defaultAction
               }}
-              buttonText={t(`contacts.table.columns.${a.name}`)}
+              buttonText={t(`contacts.table.columns.${a.name}`, {
+                defaultValue: humanizeCamelCaseString(a.name)
+              })}
             />
           )
       )}

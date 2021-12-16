@@ -27,6 +27,8 @@ export default class CredentialsIssuedBaseStore {
 
   isSearching = false;
 
+  isRefreshing = false;
+
   textFilter = '';
 
   credentialStatusFilter = '';
@@ -87,6 +89,7 @@ export default class CredentialsIssuedBaseStore {
     this.resetCredentials();
     this.isFetching = false;
     this.isSearching = false;
+    this.isRefreshing = false;
     this.textFilter = '';
     this.dateFilter = '';
     this.credentialStatusFilter = '';
@@ -151,6 +154,7 @@ export default class CredentialsIssuedBaseStore {
       sortDirection,
       setSortingBy,
       setFilterValue,
+      textFilter,
       toggleSortDirection
     } = this;
     return {
@@ -159,6 +163,7 @@ export default class CredentialsIssuedBaseStore {
       sortDirection,
       setSortingBy,
       setFilterValue,
+      textFilter,
       toggleSortDirection
     };
   }
@@ -284,9 +289,17 @@ export default class CredentialsIssuedBaseStore {
       : this.credentials.concat(response.credentialsList);
   }
 
-  refreshCredentials() {
+  *refreshCredentials() {
     this.hasMore = true;
-    return this.fetchMoreData({ startFromTheTop: true, pageSize: this.credentials.length });
+    this.isRefreshing = true;
+    try {
+      yield this.fetchMoreData({
+        startFromTheTop: true,
+        pageSize: this.credentials.length
+      });
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 
   *fetchAllCredentials() {

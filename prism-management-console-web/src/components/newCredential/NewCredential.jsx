@@ -13,6 +13,7 @@ import {
 } from '../../helpers/constants';
 import TemplateFiltersContainer from '../credentialTemplates/Molecules/Filters/TemplateFiltersContainer';
 import { useRedirector } from '../../hooks/useRedirector';
+import { useTemplatesByCategoryStore } from '../../hooks/useTemplatesPageStore';
 
 import './_style.scss';
 
@@ -28,6 +29,8 @@ const NewCredential = ({
 }) => {
   const { t } = useTranslation();
   const { redirectToCredentials } = useRedirector();
+
+  const { filterSortingProps, templateCategories } = useTemplatesByCategoryStore();
 
   const goToSelectTargets = () => {
     if (selectedCredentialTypeId) changeStep(SELECT_RECIPIENTS_STEP);
@@ -58,42 +61,46 @@ const NewCredential = ({
     { key: '4', back: goBack, next: redirectToCredentials }
   ];
 
-  const isLastStep = currentStep + 1 === steps.length;
-
   const renderStepHeader = () => (
-    <div className="StepHeader">
+    <div key="step-header" className="StepHeader">
       <WizardTitle
         title={t(`newCredential.title.step${currentStep + 1}`)}
         subtitle={t(`newCredential.subtitle.step${currentStep + 1}`)}
       />
       {currentStep === SELECT_CREDENTIAL_TYPE_STEP && (
         <div className="ActionsHeader EmbeddedTempalteFilters flex">
-          <TemplateFiltersContainer />
+          <TemplateFiltersContainer
+            templateCategories={templateCategories}
+            {...filterSortingProps}
+          />
         </div>
       )}
     </div>
   );
 
+  const isEmbeddedImportStep = currentStep === IMPORT_CREDENTIAL_DATA_STEP;
+
   return (
     <React.Fragment>
-      <div className="CredentialMainContent">
+      <div className={`CredentialMainContent ${isEmbeddedImportStep ? 'EmbeddedImportStep' : ''}`}>
         <div className="TitleContainer">
-          {currentStep !== IMPORT_CREDENTIAL_DATA_STEP && [
-            <GenericStepsButtons
-              steps={steps}
-              currentStep={currentStep}
-              disableBack={isLoading}
-              disableNext={isLoading}
-              loading={isLoading && isLastStep}
-            />,
-            renderStepHeader()
-          ]}
+          {!isEmbeddedImportStep && (
+            <>
+              <GenericStepsButtons
+                key="steps"
+                steps={steps}
+                currentStep={currentStep}
+                disableBack={isLoading}
+                disableNext={isLoading}
+                loading={isLoading}
+              />
+              {renderStepHeader()}
+            </>
+          )}
         </div>
         <div
           className={
-            currentStep !== IMPORT_CREDENTIAL_DATA_STEP
-              ? 'WizardContentContainer InfiniteScrollTableContainer'
-              : ''
+            !isEmbeddedImportStep ? 'WizardContentContainer InfiniteScrollTableContainer' : ''
           }
         >
           {renderStep()}

@@ -28,13 +28,6 @@
 
 .EmbeddedImportWrapper {
   width: 100%;
-  .OptionCardsContainer {
-    .Selected {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-  }
   .EmbeddedHeader {
     padding: 1em 3em !important;
     h1 {
