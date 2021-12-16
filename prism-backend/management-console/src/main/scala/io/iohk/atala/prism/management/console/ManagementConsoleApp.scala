@@ -11,8 +11,21 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.config.DefaultCredentialTypeConfig
-import io.iohk.atala.prism.management.console.grpc.{ConsoleGrpcService, ContactsGrpcService, CredentialIssuanceGrpcService, CredentialTypeCategoryGrpcService, CredentialTypesGrpcService, CredentialsGrpcService, CredentialsStoreGrpcService, GroupsGrpcService}
-import io.iohk.atala.prism.management.console.integrations.{ContactsIntegrationService, CredentialsIntegrationService, ParticipantsIntegrationService}
+import io.iohk.atala.prism.management.console.grpc.{
+  ConsoleGrpcService,
+  ContactsGrpcService,
+  CredentialIssuanceGrpcService,
+  CredentialTypeCategoryGrpcService,
+  CredentialTypesGrpcService,
+  CredentialsGrpcService,
+  CredentialsStoreGrpcService,
+  GroupsGrpcService
+}
+import io.iohk.atala.prism.management.console.integrations.{
+  ContactsIntegrationService,
+  CredentialsIntegrationService,
+  ParticipantsIntegrationService
+}
 import io.iohk.atala.prism.management.console.repositories._
 import io.iohk.atala.prism.management.console.services._
 import io.iohk.atala.prism.metrics.UptimeReporter

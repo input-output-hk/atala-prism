@@ -29,12 +29,12 @@ final class CredentialTypeCategoryRepositoryMetrics[F[
     _.measureOperationTime(createTimer)
 
   override def archive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] =
     _.measureOperationTime(archiveTimer)
 
   override def unArchive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = _.measureOperationTime(unArchiveTimer)
 
   override def findByInstitution(

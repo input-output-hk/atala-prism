@@ -12,7 +12,6 @@ import io.iohk.atala.prism.management.console.models.{
   CredentialTypeCategoryState
 }
 
-
 object CredentialTypeCategoryDao {
 
   def create(

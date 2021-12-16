@@ -14,7 +14,11 @@ import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniquen
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository
-import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{CreateCredentialBulk, CreateCredentialIssuance, GetCredentialIssuance}
+import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRepository.{
+  CreateCredentialBulk,
+  CreateCredentialIssuance,
+  GetCredentialIssuance
+}
 import io.iohk.atala.prism.management.console.validations.JsonValidator
 import io.iohk.atala.prism.protos.{common_models, console_models}
 import io.iohk.atala.prism.protos.common_models.SortByDirection

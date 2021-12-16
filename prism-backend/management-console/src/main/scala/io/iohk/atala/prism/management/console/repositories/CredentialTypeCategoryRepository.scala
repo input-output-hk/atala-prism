@@ -32,11 +32,11 @@ trait CredentialTypeCategoryRepository[F[_]] {
   def findByInstitution(institution: ParticipantId): F[Either[ManagementConsoleError, List[CredentialTypeCategory]]]
 
   def archive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]]
 
   def unArchive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]]
 
 }
@@ -95,7 +95,7 @@ private final class CredentialTypeCategoryRepositoryImpl[F[_]: MonadCancelThrow]
     .transact(xa)
 
   override def archive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]] = CredentialTypeCategoryDao
     .updateState(credentialTypeId, CredentialTypeCategoryState.Archived)
     .map(_.asRight[ManagementConsoleError])
@@ -103,7 +103,7 @@ private final class CredentialTypeCategoryRepositoryImpl[F[_]: MonadCancelThrow]
     .transact(xa)
 
   override def unArchive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): F[Either[ManagementConsoleError, CredentialTypeCategory]] = CredentialTypeCategoryDao
     .updateState(credentialTypeId, CredentialTypeCategoryState.Ready)
     .map(_.asRight[ManagementConsoleError])

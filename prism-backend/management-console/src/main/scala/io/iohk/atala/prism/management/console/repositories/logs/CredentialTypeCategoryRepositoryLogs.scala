@@ -47,7 +47,7 @@ private[repositories] final class CredentialTypeCategoryRepositoryLogs[
   }
 
   override def archive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = { in =>
     info"Archiving credential type category with id - $credentialTypeId" *> in
       .flatTap(
@@ -63,7 +63,7 @@ private[repositories] final class CredentialTypeCategoryRepositoryLogs[
   }
 
   override def unArchive(
-      credentialTypeId: CredentialTypeCategoryId,
+      credentialTypeId: CredentialTypeCategoryId
   ): Mid[F, Either[ManagementConsoleError, CredentialTypeCategory]] = { in =>
     info"Unarchiving credential type category with id - $credentialTypeId" *> in
       .flatTap(
