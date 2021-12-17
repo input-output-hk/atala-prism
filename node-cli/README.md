@@ -1,50 +1,69 @@
-## To build fat jar
+# node-cli
+A simple command-line application to interact with the PRISM Node,
+the goal is to be able to easily verify that a PRISM Node is running correctly.
+
+## Github Packages and Personal Access Token (PAT)
+Gradle project will look for `GITHUB_TOKEN` and `GITHUB_ACTOR` environment
+variables to use to authenticate on Github Packages and download all
+private dependencies from the IOHK packages archive.
+
+To properly set your PAT to use with packages, refer to the links below:
+- [Creating a Github Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+- [Working with the Gradle registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry)
+
+## fatJar building
 `./gradlew fatJar`
 
-You can a built jar in `app/build/libs` folder.
+Build a fat jar with `./gradlew fatJar`, which stores the jar in `app/build/libs`.
+This jar contains all the dependencies, so you don't need to provide them in your classpath.
 
-## To run a CLI app
+## Run the CLI app
 Move to `app/build/libs` and exec
 `java -jar app.jar -h`
 
-As result, you will see something like that
+As result, you will see something like:
 ```
 Usage: node-cli options_list
 Subcommands:
-    create-did - Created DID
+    create-did - Created DID and wait until the operation gets confirmed
     health-check - Node health check
     build-info - Get Node build info
-    resolve-did - Resolve DID document
+    resolve-did - Resolve DID document by DID
+
+Options:
+    --host, -H [master.atalaprism.io] -> Node host { String }
+    --port, -p [50053] -> Node port { Int }
+    --help, -h -> Usage info
 ```
 
 ## CLI commands and options
 
-### Environment
-To specify an environment host and port pass `-ho` and `-p`, like:
+### Environment (host and port)
+To specify an environment host and port pass `-H` and `-p`, like:
 
-`java -jar app.jar -ho ppp.atalaprism.io build-info` will print PPP build version:
+`java -jar app.jar -H ppp.atalaprism.io build-info` will print PPP build version:
 
 ```
 GetNodeBuildInfoResponse(version=1.2-92429cb5, scalaVersion=2.13.6, sbtVersion=1.5.5, unknownFields={})
 ```
 
-By default (if `-ho` omitted) CLI will request `master.atalaprism.io:50053`.
+By default (if `-H` omitted) CLI will request `master.atalaprism.io:50053`.
 
 The following requests to the node are supported.
 
-### Health Check:
+### Health Check
 
 `java -jar app.jar health-check`
 ```Node is up!```
 
-### Get build info:
+### Get build info
 
 `java -jar app.jar build-info`
 ```
 GetNodeBuildInfoResponse(version=1.2-1ca39231, scalaVersion=2.13.7, sbtVersion=1.5.5, unknownFields={})
 ```
 
-### Resolve DID:
+### Resolve DID
 
 `java -jar app.jar resolve-did --did did:prism:3557f05be968a630042026ecb6bedad1ebc2b532c63f938883663e08753a4f71`
 
@@ -55,7 +74,7 @@ GetNodeBuildInfoResponse(version=1.2-1ca39231, scalaVersion=2.13.7, sbtVersion=1
 
 ### Create DID
 
-`java -jar app.jar -ho ppp.atalaprism.io create-did`
+`java -jar app.jar -H ppp.atalaprism.io create-did`
 
 ```
 Generates and registers a DID

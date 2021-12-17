@@ -14,7 +14,8 @@ import kotlinx.cli.*
 data class HostPort(var host: String, val port: Int)
 
 @OptIn(ExperimentalCli::class)
-class CreateDidCommand(val createDid: () -> Unit) : Subcommand("create-did", "Created DID") {
+class CreateDidCommand(val createDid: () -> Unit) :
+    Subcommand("create-did", "Created DID and wait until the operation gets confirmed") {
     override fun execute() = createDid()
 }
 
@@ -29,7 +30,7 @@ class GetBuildInfoCommand(val getBuildInfo: () -> Unit) : Subcommand("build-info
 }
 
 @OptIn(ExperimentalCli::class)
-class ResolveDIDCommand(val resolveDid: (PrismDid) -> Unit) : Subcommand("resolve-did", "Resolve DID document") {
+class ResolveDIDCommand(val resolveDid: (PrismDid) -> Unit) : Subcommand("resolve-did", "Resolve DID document by DID") {
     val rawDid by option(ArgType.String, "did", "d", "Short form DID")
     lateinit var did: PrismDid
 
@@ -50,7 +51,7 @@ interface CommandsHandlers {
 @OptIn(ExperimentalCli::class, PrismSdkInternal::class)
 fun parseArgs(args: Array<String>, handlers: CommandsHandlers) {
     val parser = ArgParser("node-cli")
-    val host by parser.option(ArgType.String, "host", "ho", "Node host").default("master.atalaprism.io")
+    val host by parser.option(ArgType.String, "host", "H", "Node host").default("master.atalaprism.io")
     val port by parser.option(ArgType.Int, "port", "p", "Node port").default(50053)
 
     val createDid = CreateDidCommand {
