@@ -66,7 +66,7 @@ const Searchbar = () => {
         onChange={setSearchValue}
         dataSource={filteredWordList}
       >
-        <Search style={{ width: 250 }} onSearch={searchBlogs} />
+        <Search style={{ width: 250 }} onSearch={searchBlogs} data-testid="searchbox" />
       </AutoComplete>
     </div>
   );
