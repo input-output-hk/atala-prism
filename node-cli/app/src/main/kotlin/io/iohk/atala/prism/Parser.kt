@@ -51,26 +51,30 @@ interface CommandsHandlers {
 @OptIn(ExperimentalCli::class, PrismSdkInternal::class)
 fun parseArgs(args: Array<String>, handlers: CommandsHandlers) {
     val parser = ArgParser("node-cli")
-    val host by parser.option(ArgType.String, "host", "H", "Node host").default("master.atalaprism.io")
-    val port by parser.option(ArgType.Int, "port", "p", "Node port").default(50053)
+    val scheme by parser.option(ArgType.String, "scheme", "s", "Protocol of connection (http or https)")
+        .default("https")
+    val host by parser.option(ArgType.String, "host", "H", "Node host")
+        .default("master.atalaprism.io")
+    val port by parser.option(ArgType.Int, "port", "p", "Node port")
+        .default(50053)
 
     val createDid = CreateDidCommand {
-        val nodeAuthApi = NodeAuthApiImpl(GrpcOptions("https", host, port))
-        val asyncClient = NodeServiceCoroutine.Client(GrpcClient(GrpcOptions("https", host, port)))
+        val nodeAuthApi = NodeAuthApiImpl(GrpcOptions(scheme, host, port))
+        val asyncClient = NodeServiceCoroutine.Client(GrpcClient(GrpcOptions(scheme, host, port)))
         handlers.createDid(asyncClient, nodeAuthApi)
     }
 
     val healthCheck = HealthCheckCommand {
-        val nodePublicApi = NodePublicApiImpl(GrpcOptions("https", host, port))
+        val nodePublicApi = NodePublicApiImpl(GrpcOptions(scheme, host, port))
         handlers.healthCheck(nodePublicApi)
     }
 
     val buildInfo = GetBuildInfoCommand {
-        handlers.getBuildInfo(NodeServiceCoroutine.Client(GrpcClient(GrpcOptions("https", host, port))))
+        handlers.getBuildInfo(NodeServiceCoroutine.Client(GrpcClient(GrpcOptions(scheme, host, port))))
     }
 
     val resolveDIDCommand = ResolveDIDCommand {
-        val nodePublicApi = NodePublicApiImpl(GrpcOptions("https", host, port))
+        val nodePublicApi = NodePublicApiImpl(GrpcOptions(scheme, host, port))
         handlers.resolveDid(nodePublicApi, it)
     }
 

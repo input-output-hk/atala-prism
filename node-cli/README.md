@@ -38,16 +38,19 @@ Options:
 
 ## CLI commands and options
 
-### Environment (host and port)
-To specify an environment host and port pass `-H` and `-p`, like:
+### Environment (scheme, host and port)
+You can specify the environment you are connecting to:
+- `-s` (or `--scheme`) for protocol (`http` or `https), `https` by default
+- `-H` (or `--host`) for host, `master.atalaprism.io` by default
+- `-p` (or `--port`) for port, `50053` by default
 
-`java -jar app.jar -H ppp.atalaprism.io build-info` will print PPP build version:
+For example:
+
+`java -jar app.jar --scheme https -H ppp.atalaprism.io build-info` will print PPP build version:
 
 ```
 GetNodeBuildInfoResponse(version=1.2-92429cb5, scalaVersion=2.13.6, sbtVersion=1.5.5, unknownFields={})
 ```
-
-By default (if `-H` omitted) CLI will request `master.atalaprism.io:50053`.
 
 The following requests to the node are supported.
 
