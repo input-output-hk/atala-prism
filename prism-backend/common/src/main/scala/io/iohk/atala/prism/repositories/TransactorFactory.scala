@@ -43,7 +43,7 @@ object TransactorFactory {
     hikariConfig.setUsername(config.username)
     hikariConfig.setPassword(config.password)
     hikariConfig.setAutoCommit(false)
-    hikariConfig.setLeakDetectionThreshold(600000)
+    hikariConfig.setLeakDetectionThreshold(300000)
     hikariConfig.setMinimumIdle(poolSize)
     hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
     hikariConfig.setDriverClassName("org.postgresql.Driver")
