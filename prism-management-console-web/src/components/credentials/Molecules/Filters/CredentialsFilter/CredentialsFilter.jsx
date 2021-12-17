@@ -12,6 +12,8 @@ import {
 } from '../../../../../helpers/constants';
 import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
 
+import './_style.scss';
+
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
 const CredentialsFilter = observer(({ isIssued }) => {
@@ -30,7 +32,9 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const setFilterByKey = key => value => setFilterValue(key, value);
 
   const renderContactStatusFilter = () => (
-    <div>
+    <div className="selectLabel">
+      {/* TODO: add i18n */}
+      <p>Filter by</p>
       <Select
         id="connectionStatusFilter"
         value={connectionStatusFilter}
@@ -44,11 +48,15 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
+      {/* TODO: replace style prop with scss class */}
+      <hr style={{ borderColor: '#e1e1e16b' }} />
     </div>
   );
 
   const renderCredentialStatusFilter = () => (
-    <div>
+    <div className="selectLabel">
+      {/* TODO: add i18n */}
+      <p>Filter by Contact</p>
       <Select
         id="credentialStatusFilter"
         value={credentialStatusFilter}
@@ -65,11 +73,15 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
+      {/* TODO: replace style prop with scss class */}
+      <hr style={{ borderColor: '#e1e1e16b' }} />
     </div>
   );
 
   const renderCredentialTypeFilter = () => (
-    <div>
+    <div className="selectLabel">
+      {/* TODO: add i18n */}
+      <p>Filter by Credential</p>
       <Select
         id="credentialTypeFilter"
         value={credentialTypeFilter}
@@ -83,6 +95,8 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
+      {/* TODO: replace style prop with scss class */}
+      <hr style={{ borderColor: '#e1e1e16b' }} />
     </div>
   );
 
@@ -96,7 +110,9 @@ const CredentialsFilter = observer(({ isIssued }) => {
     };
 
     return (
-      <div>
+      <div className="selectLabel">
+        {/* TODO: add i18n */}
+        <p>Filter by Date</p>
         <CustomInputGroup prefixIcon="calendar">
           <CustomDatePicker {...datePickerProps} />
         </CustomInputGroup>

@@ -130,11 +130,11 @@ export default class GroupsBaseStore {
 
   get filterSortingProps() {
     const {
+      hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
-      toggleSortDirection,
-      hasAdditionalFiltersApplied
+      toggleSortDirection
     } = this;
     return {
       hasAdditionalFiltersApplied,

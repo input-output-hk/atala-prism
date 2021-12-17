@@ -84,7 +84,6 @@ const CredentialButtons = observer(
           loading={loadingByKey === SEND_CREDENTIALS}
           buttonText={t('credentials.actions.sendSelectedCredentials')}
         />
-
         <Badge dot={hasAdditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
           <Dropdown.Button
             overlay={filtersMenu}

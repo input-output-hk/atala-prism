@@ -24,19 +24,23 @@ const TemplateFilters = ({
 
   return (
     <div className="FiltersMenu">
-      <Select
-        id="categoryFilter"
-        value={categoryFilter}
-        placeholder={t('templates.table.columns.category')}
-        allowClear
-        onChange={value => setFilterValue('categoryFilter', value)}
-      >
-        {allowedTemplateCategories.map(category => (
-          <Option key={category.id} value={category.id}>
-            {category.name}
-          </Option>
-        ))}
-      </Select>
+      <div className="selectLabel">
+        {/* TODO: add i18n */}
+        <p>Filter by Category</p>
+        <Select
+          id="categoryFilter"
+          value={categoryFilter}
+          placeholder={t('templates.table.columns.category')}
+          allowClear
+          onChange={value => setFilterValue('categoryFilter', value)}
+        >
+          {allowedTemplateCategories.map(category => (
+            <Option key={category.id} value={category.id}>
+              {category.name}
+            </Option>
+          ))}
+        </Select>
+      </div>
       {showDateFilter && (
         <CustomInputGroup prefixIcon="calendar">
           <CustomDatePicker

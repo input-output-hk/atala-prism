@@ -15,7 +15,7 @@ const GroupAdditionalFilters = ({ filterSortingProps }) => {
   );
 
   return (
-    <Badge dot={hasAdditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
+    <Badge dot={hasAdditionalFiltersApplied} style={{ top: '1em', right: '1.5em', zIndex: 500 }}>
       <Dropdown.Button
         overlay={filtersMenu}
         trigger={['click']}

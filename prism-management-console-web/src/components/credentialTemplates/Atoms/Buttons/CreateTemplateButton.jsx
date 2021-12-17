@@ -9,7 +9,7 @@ const CreateTemplatesButtons = () => {
   const { redirectToCredentialTemplateCreation } = useRedirector();
 
   return (
-    <div className="MainOption">
+    <div className="ControlButtons">
       <CustomButton
         buttonProps={{
           className: 'theme-outline',
