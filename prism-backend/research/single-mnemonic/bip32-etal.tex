@@ -163,7 +163,7 @@ the inverse process has to be followed (verifying the checksum).
 
 Given the mnemonic, it is converted back into a bitstring as just described.
 Then, this bitstring is processed with an HMAC function, using the string
-``Bitcoin seed'' as key \needcite~based on SHA512 -- hence producing 512 bits of
+``Bitcoin seed'' as key based on SHA512 -- hence producing 512 bits of
 output. The first 256 bits are set as master secret key, and the last 256 bits
 as master chaincode (i.e., $k_{0,0}$ and $c_{0,0}$, in our previous notation).
 
@@ -246,26 +246,63 @@ layer 3 extended public key from which the layer 4 parent derives is also
 compromised, the entire account will be compromised too, as layer 4 is also
 derived in non-hardened mode.
 
-\subsection{Variations in the Cardano Ecosystem}
+\subsection{Comments on a Recent Security Evaluation of BIP32 Wallets}
 
-\paragraph{Lightwallet.} HD wallets in Cardano are mostly BIP44-compatible
-wallets, with the exception that the used elliptic curve is Ed25519 \needcite,
-instead of Secp256k1 \needcite, like Bitcoin's BIP32 (and thus, BIP44). This
-difference is marked by using index 1852 for hardened child derivation at
-layer 1 (purpose level), as specified in CIP1852%
-\footnote{\url{https://cips.cardano.org/cips/cip1852/}. Last access, December
-  15th, 2021.}.
+Very recently, \cite{def+21} was published in CCS'21, a major applied
+cryptography and security conference. The paper builds on prior work from
+2019 \cite{dfl19}, and analyses the security of BIP32-like wallets. For this purpose,
+the authors first model and analyse (additively) re-randomizable signatures
+built on ECDSA. They prove security, as long as every message is signed at
+most once, at the cost of a security loss proportional to the number of
+signature re-randomizations performed by the adversary\footnote{They also prove
+  this security loss to be unavoidable with additive re-randomization, although
+  I have not checked that proof.}. Then, they build a model for HD wallets,
+and provide a generic construction using additively re-randomizable signatures.
+The properties considered in this HD wallet model are unlinkability and
+unforgeability (restricted to only one signature per message). The unlinkability
+property expects that an adversary cannot distinguish (uncompromised) keys
+derived from a non-hardened node, from keys derived from keys derived from an
+independent master key. The unforgeability property is the usual one, excluding
+the one message restriction (which seems reasonable, as long as new randomness
+is included in every signed message); namely, the adversary should not be able
+to create a valid signature under a hardened key that has not been compromised,
+or a non-hardened key.
 
-\paragraph{Atala.} HD wallets in Atala follow a slightly different tree
-organisation, layer-wise. Namely, it defines 4 layers: root, DID number, key
-type, and index. All child derivations are done in hardened mode. The elliptic
-curve is Secp256k1, as BIP44. See the key derivation document for details%
-\footnote{\url{https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/protocol/key-derivation.md}. Last access December 15th, 2021. \textbf{WARNING!
-    Internal link!}}.
+An interesting extension is mentioned, to achieve forward unlinkability in case
+of compromise of non-hardened node public key and chaincode. Namely, if that
+happens, the adversary will be able to derive the public extended keys for
+all the subtree, which breaks unlinkability for the subtree. The proposal is to
+keep a state along with every node. On every child derivation in the tree, the
+state of the existing nodes is refreshed. Then, in case of compromise of a
+node, the keys previously derived in subtrees of it are not affected (assuming
+that previous states are securely erased).
 
-\subsection{Comments on a Recent Security Evaluation}
+Building on the proven security of the additively re-randomizable ECDSA, they
+prove security of their generic construction, which now also depends on the
+number of leaked hardened keys. Assuming that roughly $1\%$ of the total number
+of (additively re-randomized) hardened keys are compromised, the estimated
+security level for ECDSA of 256-bit keys (hence, 128-bit security) is 91-bit
+security.
 
-\cite{def+21}
+\paragraph{Discussion.} %
+The model does seem to follow BIP32, but \textbf{assuming a hot/cold approach}.
+Concretely, they assume that non-hardened secret keys are always kept in a cold
+wallet, and therefore cannot be compromised. On the other hand, hardened secret
+keys are assumed \emph{not} to be stored in cold wallets, and therefore can be
+compromised (this is reflected in the model with corresponding oracles or lack
+thereof). The underlying reasoning being that hardened derivation is used to
+share keys with not fully trusted entities (e.g., employees in a company). Also,
+hardened keys are assumed to be leafs (i.e., keys used directly for signing); or,
+alternatively, roots of independent subtrees. Under this modelling, if the
+partially trusted entity leaks the hardened key, this would only affect the
+security of its subtree (if it exists), but certainly not siblings or ancestors.
+However, this may not be fit for BIP44 wallets, where hardened derivation is
+expected to be used directly for the first 3 layers, and the leaves are actually
+computed with non-hardened derivation.
+
+The property of forward unlinkability is interesting for identity-related
+wallets.
+
 
 %%% Local Variables:
 %%% mode: latex

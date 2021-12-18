@@ -1,6 +1,95 @@
 \section{Discussion}
 \label{sec:discussion}
 
+From a theoretical point of view, it seems very reasonable to derive all
+keys, even for different purposes (payments, staking, or identities) from
+the same mnemonic. However, there are some aspects that may need careful
+consideration, as they may have impact in the overall security and privacy
+properties of the wallet (and related systems).
+
+\paragraph{Domain separation when different cryptosystems are
+  necessary.} %
+As mentioned, Cardano uses EdDSA (i.e., it is based on Ed25519 curve),
+while Atala uses ECDSA with Secp256k1. It is \emph{not} a good idea%
+\footnote{I have not been able to find a concrete paper that describes
+  some concrete related attack or gives some impossibility result for
+  proving security under this circumstance but, at the least, it seems to
+  be folklore knowledge. See Lindell's answer at
+  \url{https://crypto.stackexchange.com/a/54666/52362} for instance.
+  \cite{dlp12+,thorm21} seem good references to study this topic further, if
+  needed.} to use the same key for different cryptosystems, nor for different
+curves, even though ``structurally'' it may be possible (e.g., in EdDSA and
+ECDSA, private keys are 32-byte random numbers). However, this is easily
+avoidable by ensuring domain separation in the key derivation functions that
+are applied on the common seed. Since this would be handled by the 
+
+\paragraph{Ensure a correct hierarchical key derivation strategy.} %
+We need to take into account what specific usage we expect from the wallets
+and, from there, define hierarchical derivation rules that ensure a correct
+separation. For instance, related to the previous paragraph, we should make
+sure that keys that are aimed to be used in different cryptosystems, are
+derived in tree branches that ensure domain separation (just using a
+different \texttt{purpose} branch, or \texttt{coin type} branch, would probably
+be enough). Similarly, one needs to consider if specific subtrees are expected
+to be used in an standalone manner, even probably by different (but related)
+entities. For instance, different faculties of a university may need to maintain
+their own subrees for the sake of efficiency (i.e., each one independently
+deriving keys as needed). But then, compromises to one of them should not
+affect the other. Again, this can be easily achieved using hardened
+derivation in BIP44 slang (e.g., at the \texttt{account} level). From this
+point of view, a formalization along the lines of \cite{def+21} would be
+desirable, but the one given there is probably too strict (as, for instance,
+it assumes that hardened nodes are leaves of the tree, and secret key
+compromise of non-hardened nodes, is not possible.)
+
+\paragraph{Malleability considerations when combining multiple
+  attributes into one address.} %
+Are the keys for the different purposes going to be used \emph{only} in a
+standalone manner? Or, rather, it can be expected that they are somehow
+encoded and distributed jointly? The latter seems to be the case for PoS
+wallets, which are expected to be used in the Cardano ecosystem. As pointed
+out by \cite{kkl20}, naive encoding of keys with different purposes, into
+a single address, may enable certain (malleability) attacks.
+
+\paragraph{Careful consideration of extra security properties.} %
+The main related work analysed so far\footnote{BIP32, BIP44, \cite{def+21}
+  and, partially, \cite{kkl20}.} analyses the security of either BIP44
+wallets, or PoS wallets. The introduction of identity-related (frequently
+associated to actual people) data may require additional properties, only
+mentioned in these works (or not considered, as in the BIPs). For instance,
+some sort of forward security will be very desirable. While, for the case of
+payments or staking, the impact of a compromise (either of a leaf node --
+i.e., a key -- or a complete subtree) can be mitigated by prompt detection
+and transfer of funds to an uncompromised address, this may be harder for
+keys representing in some way real world identities. Most probably, the
+latter will frequently be long-lived keys, that also can, in turn, be used
+to issue further identities (e.g., as in the case of identity providers).
+Thus, the consequences of a compromise may be more cumbersome to address
+(re-issuing credentials, distributing revocation lists, etc.) and,
+consequently, it seems desirable to look for constructions that give some
+sort of guarantee about the security of keys produced at time $t' < t$, if a
+compromise happens at time $t$.
+
+Also, it cannot be discarded that further desirable privacy or security
+properties arise, as we get more familiar with the targetted use cases.
+  
+\subsection{Further related work}
+
+There seems to be a large body of related research, which is specially
+growing lately (probably, due to the rise of cryptocurrencies). Here,
+I just include some of the main references I've come across for
+self-bookkeeping (besides \cite{kkl20} and \cite{def+21}, already
+mentioned in earlier sections). Note that they, in turn, include references
+to further related work.
+
+\begin{itemize}
+\item ``Arcula: A Secure Hierarchical Deterministic Wallet for Multi-asset
+  Blockchains'', \cite{lfa20}.
+\item ``Simple, Efficient and Strongly KI-Secure Hierarchical Key Assignment
+  Schemes'', \cite{fpp13}.
+\item ``A Formal Treatment of Deterministic Wallets'', \cite{dfl19}.
+\end{itemize}
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "single-mnemonic"

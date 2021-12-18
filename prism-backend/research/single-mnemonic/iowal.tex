@@ -1,0 +1,32 @@
+\section{IO Ecosystem Specifics}
+\label{sec:io}
+
+\paragraph{Lightwallet.} HD wallets in Cardano are mostly BIP44-compatible
+wallets, with the exception that the used elliptic curve is Ed25519,
+instead of Secp256k1, like Bitcoin's BIP32 (and thus, BIP44). This
+difference is marked by using index 1852 for hardened child derivation at
+layer 1 (purpose level), as specified in CIP1852%
+\footnote{\url{https://cips.cardano.org/cips/cip1852/}. Last access, December
+  15th, 2021.}.
+
+\paragraph{Atala.} HD wallets in Atala follow a slightly different tree
+organisation, layer-wise. Namely, it defines 4 layers: root, DID number, key
+type, and index. All child derivations are done in hardened mode. The elliptic
+curve is Secp256k1, as BIP44. See the key derivation document for details%
+\footnote{\url{https://github.com/input-output-hk/atala-prism/blob/master/prism-backend/docs/protocol/key-derivation.md}. Last access December 15th, 2021. \textbf{WARNING!
+    Internal link!}}.
+
+\paragraph{Related effots.} There seems to be an effort to analyse the security
+of wallets that manage addresses combining payment and staking keys \cite{kkl20}.
+These wallets are referred to as PoS wallets. The paper identifies a series of
+malleability attacks, depending on how the addresses are derived from the
+associated staking and payment keys. A core wallet functionality is proposed,
+and a base protocol realizing that functionality is given. While the proposal
+seems to be somehow compatible with BIP44 wallets, the proposal seems to be
+somehow orthogonal to the way keys are derived -- instead, they focus on how
+to generate addresses, and check that produced/received addresses are correct.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "single-mnemonic"
+%%% End:
