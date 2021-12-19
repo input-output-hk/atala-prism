@@ -18,7 +18,7 @@ object versions {
   val logback = "1.2.7"
   val logbackLogstash = "7.0.1"
   val jaxb = "2.3.1"
-  val mockito = "1.16.46"
+  val mockito = "1.16.49"
   val playJson = "2.9.1"
   val postgresql = "42.3.1"
   val scalatest = "3.2.10"
