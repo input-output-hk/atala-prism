@@ -21,7 +21,9 @@ while Atala uses ECDSA with Secp256k1. It is \emph{not} a good idea%
 curves, even though ``structurally'' it may be possible (e.g., in EdDSA and
 ECDSA, private keys are 32-byte random numbers). However, this is easily
 avoidable by ensuring domain separation in the key derivation functions that
-are applied on the common seed. Since this would be handled by the 
+are applied on the common seed. This is an important concern on its own; yet,
+it should be addressed natively through the considerations in the next
+paragraph.
 
 \paragraph{Ensure a correct hierarchical key derivation strategy.} %
 We need to take into account what specific usage we expect from the wallets
