@@ -78,10 +78,8 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
   def saveObject(
       notification: AtalaObjectNotification
   ): F[Either[SaveObjectError, Boolean]] = {
-    // TODO: just add the object to processing queue, instead of processing here
-    val updateAction = atalaObjectsTransactionsRepository
-      .setObjectTransactionDetails(notification)
-      .flatMap {
+    val applyTransaction = (objMaybe: Option[AtalaObjectInfo]) =>
+      objMaybe match {
         case Some(obj) =>
           for {
             // Update transaction submission status to InLedger
@@ -108,8 +106,12 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
               s"Could not save object from notification: txId: ${notification.transaction.transactionId}, ledger: ${notification.transaction.ledger}"
             ).asLeft[Boolean]
           )
-
       }
+
+    val updateAction = for {
+      objectInfoMaybe <- atalaObjectsTransactionsRepository.setObjectTransactionDetails(notification)
+      appliedE <- applyTransaction(objectInfoMaybe)
+    } yield appliedE
 
     // Apply operations from the AtalaObject only if Node supports the protocol version corresponding to the public ledger
     protocolVersionsRepository

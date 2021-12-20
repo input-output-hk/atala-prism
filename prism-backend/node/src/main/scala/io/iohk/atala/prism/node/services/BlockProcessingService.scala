@@ -130,10 +130,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
                           )
                         ) {
                           AtalaOperationsDAO
-                            .updateAtalaOperationStatus(
-                              atalaOperationId,
-                              AtalaOperationStatus.REJECTED
-                            )
+                            .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED, err.toString)
                         } else {
                           connection.unit
                         }

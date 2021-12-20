@@ -30,11 +30,13 @@ object AtalaOperationsDAO {
 
   def updateAtalaOperationStatus(
       atalaOperationId: AtalaOperationId,
-      atalaOperationStatus: AtalaOperationStatus
+      atalaOperationStatus: AtalaOperationStatus,
+      statusDescription: String = ""
   ): ConnectionIO[Unit] = {
     sql"""
          |UPDATE atala_operations
-         |SET atala_operation_status = $atalaOperationStatus
+         |SET atala_operation_status = $atalaOperationStatus,
+         |    status_description = $statusDescription
          |WHERE signed_atala_operation_id = $atalaOperationId""".stripMargin.update.run.void
   }
 
