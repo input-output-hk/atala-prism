@@ -27,6 +27,8 @@
   &:focus {
     background-color: $primary-color-darker;
     color: $white;
+    opacity: 0.7;
+    transition: 0.7s;
   }
 }
 
@@ -38,6 +40,8 @@
   &:focus {
     background-color: $black;
     color: $white;
+    opacity: 0.8;
+    transition: 0.7s;
   }
 }
 
@@ -49,6 +53,8 @@
   &:focus {
     border-color: $secondary-color;
     color: $secondary-color;
+    opacity: 0.7;
+    transition: 0.7s;
   }
 }
 
@@ -69,6 +75,8 @@
   background-color: transparent;
   border-color: transparent;
   color: $primary-color;
+  opacity: 0.7;
+  transition: 0.7s;
 }
 
 .theme-text,
@@ -77,6 +85,8 @@
   background-color: transparent;
   border-color: transparent;
   color: $black;
+  opacity: 0.7;
+  transition: 0.7s;
 }
 
 .theme-filter {
@@ -88,6 +98,8 @@
   &:focus {
     background-color: $dark-grey;
     color: $white;
+    opacity: 0.7;
+    transition: 0.7s;
   }
 }
 

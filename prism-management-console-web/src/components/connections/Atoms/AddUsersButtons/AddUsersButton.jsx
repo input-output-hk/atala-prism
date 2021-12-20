@@ -11,9 +11,8 @@ const AddUsersButton = ({ onClick }) => {
     <div className="ControlButtons">
       <CustomButton
         buttonProps={{
-          className: 'theme-secondary',
-          onClick,
-          icon: <PlusOutlined />
+          className: 'theme-outline',
+          onClick
         }}
         buttonText={t('contacts.buttons.import')}
       />

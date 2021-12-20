@@ -3,19 +3,20 @@
 .ActionsHeader {
   .SelectBtn {
     .ant-btn:first-child {
-      display: none !important;
+      display: none!important;
     }
     .ant-btn {
       display: flex;
       justify-content: center;
       align-items: center;
+      border-radius: 2px;
+      border: 1.5px solid $secondary-color;
     }
-    .ant-btn:hover,
-    .ant-btn:focus,
-    .ant-btn:active {
-      color: white;
-      border-color: transparent;
-      background-color: $secondary-color;
+    .ant-btn:hover, .ant-btn:focus, .ant-btn:active {
+      img {
+        opacity: 0.8;
+      transition: 0.5s;
+      }
     }
   }
 }

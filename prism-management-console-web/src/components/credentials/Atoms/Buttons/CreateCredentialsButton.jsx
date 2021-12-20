@@ -12,11 +12,10 @@ const CredentialsButtons = () => {
     <div className="MainOption">
       <CustomButton
         buttonProps={{
-          className: 'theme-secondary',
+          className: 'theme-outline',
           onClick: redirectToNewCredential
         }}
         buttonText={t('credentials.actions.createCredential')}
-        icon={<PlusOutlined />}
       />
     </div>
   );

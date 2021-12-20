@@ -172,7 +172,7 @@
       "createdAt": "Date Created",
       "numberOfContacts": "Contacts"
     },
-    "createNewGroup": "Create New Group",
+    "createNewGroup": "Create",
     "onCreateNewGroupClick": "New Groups can not yet be created",
     "modal": {
       "title": "Delete Group",
@@ -267,7 +267,7 @@
       "credentialsReceived": "Credential(s) Received"
     },
     "actions": {
-      "createCredential": "Create Credential",
+      "createCredential": "Create",
       "revokeSelectedCredentials": "Revoke",
       "signSelectedCredentials": "Sign",
       "sendSelectedCredentials": "Send",
