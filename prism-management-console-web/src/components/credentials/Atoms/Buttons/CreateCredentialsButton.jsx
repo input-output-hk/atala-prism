@@ -1,5 +1,4 @@
 import React from 'react';
-import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { useRedirector } from '../../../../hooks/useRedirector';

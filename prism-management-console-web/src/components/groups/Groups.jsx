@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { PlusOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';

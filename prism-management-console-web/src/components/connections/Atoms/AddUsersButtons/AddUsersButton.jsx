@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 const AddUsersButton = ({ onClick }) => {
