@@ -98,6 +98,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -163,6 +164,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.REJECTED,
+        "",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -205,6 +207,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.REJECTED,
+        "",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -286,13 +289,14 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.head,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo1 must be(expectedAtalaOperationInfo1)
 
       val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "", None)
       atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
 
       val atalaOperationInfo3 =
@@ -301,6 +305,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.last,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo3 must be(expectedAtalaOperationInfo3)
@@ -387,6 +392,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.head,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       createDidSignedOperationInfo must be(expectedAtalaOperationInfo1)
@@ -394,7 +400,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val updateDidSignedOperation1Info =
         DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.APPLIED, None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.APPLIED, "", None)
       updateDidSignedOperation1Info must be(expectedAtalaOperationInfo2)
 
       val updateDidSignedOperation2Info =
@@ -403,6 +409,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.last,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       updateDidSignedOperation2Info must be(expectedAtalaOperationInfo3)
@@ -518,13 +525,14 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.head,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo1 must be(expectedAtalaOperationInfo1)
 
       val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "", None)
       atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
 
       val atalaOperationInfo3 =
@@ -533,6 +541,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.last,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo3 must be(expectedAtalaOperationInfo3)

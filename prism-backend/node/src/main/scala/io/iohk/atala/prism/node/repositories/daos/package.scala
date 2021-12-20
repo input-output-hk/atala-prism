@@ -181,6 +181,7 @@ package object daos extends BaseDAO {
           AtalaOperationId,
           AtalaObjectId,
           AtalaOperationStatus,
+          String,
           Option[AtalaObjectTransactionSubmissionStatus],
           Option[TransactionId]
       )

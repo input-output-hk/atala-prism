@@ -76,6 +76,7 @@ package object models {
       operationId: AtalaOperationId,
       objectId: AtalaObjectId,
       operationStatus: AtalaOperationStatus,
+      operationStatusDetails: String,
       transactionSubmissionStatus: Option[
         AtalaObjectTransactionSubmissionStatus
       ] = None,

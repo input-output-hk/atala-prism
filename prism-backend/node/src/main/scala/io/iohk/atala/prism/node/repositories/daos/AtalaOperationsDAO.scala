@@ -31,12 +31,12 @@ object AtalaOperationsDAO {
   def updateAtalaOperationStatus(
       atalaOperationId: AtalaOperationId,
       atalaOperationStatus: AtalaOperationStatus,
-      statusDescription: String = ""
+      statusDetails: String = ""
   ): ConnectionIO[Unit] = {
     sql"""
          |UPDATE atala_operations
          |SET atala_operation_status = $atalaOperationStatus,
-         |    status_description = $statusDescription
+         |    status_details = $statusDetails
          |WHERE signed_atala_operation_id = $atalaOperationId""".stripMargin.update.run.void
   }
 
@@ -74,7 +74,7 @@ object AtalaOperationsDAO {
       atalaOperationId: AtalaOperationId
   ): ConnectionIO[Option[AtalaOperationInfo]] = {
     sql"""
-         |SELECT ops.signed_atala_operation_id, ops.atala_object_id, ops.atala_operation_status, tx.status, tx.transaction_id
+         |SELECT ops.signed_atala_operation_id, ops.atala_object_id, ops.atala_operation_status, ops.status_details, tx.status, tx.transaction_id
          |FROM atala_operations as ops
          |  LEFT OUTER JOIN atala_object_tx_submissions AS tx ON tx.atala_object_id = ops.atala_object_id
          |WHERE signed_atala_operation_id = $atalaOperationId
