@@ -164,7 +164,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.REJECTED,
-        "",
+        "InvalidSignature()",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -296,7 +296,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "", None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "InvalidSignature()", None)
       atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
 
       val atalaOperationInfo3 =
@@ -532,7 +532,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "", None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "InvalidSignature()", None)
       atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
 
       val atalaOperationInfo3 =
