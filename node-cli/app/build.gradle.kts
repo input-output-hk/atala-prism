@@ -28,9 +28,13 @@ repositories {
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
         }
     }
+    // Needed for Kotlin coroutines that support new memory management mode
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
+    }
 }
 
-val prismSdkVersion = "1.2.0"
+val prismSdkVersion = "1.3.0-build-33-bfbdc87c"
 
 dependencies {
 
