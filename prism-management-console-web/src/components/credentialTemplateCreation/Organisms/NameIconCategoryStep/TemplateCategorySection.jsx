@@ -9,8 +9,9 @@ import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
 import './_style.scss';
 import Logger from '../../../../helpers/Logger';
+import { CREDENTIAL_TYPE_CATEGORY_STATUSES } from '../../../../helpers/constants';
 
-const ENABLED_STATE = 1;
+const { READY } = CREDENTIAL_TYPE_CATEGORY_STATUSES;
 
 const { Option } = Select;
 
@@ -42,7 +43,7 @@ const TemplateCategorySection = observer(() => {
     }
   };
 
-  const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
+  const categories = templateCategories.filter(({ state }) => state === READY);
 
   const hasPickableOption = ({ options, searchValue }) =>
     Boolean(options.filter(op => handleFilter(searchValue, op.label)).length);

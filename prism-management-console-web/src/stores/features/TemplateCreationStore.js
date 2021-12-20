@@ -2,7 +2,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { makeAutoObservable } from 'mobx';
 import TemplatesBaseStore from '../domain/TemplatesBaseStore';
 import TemplateSketchStore from './TemplateSketchStore';
-import { CREDENTIAL_TYPE_STATUSES } from '../../helpers/constants';
+import {
+  CREDENTIAL_TYPE_CATEGORY_STATUSES,
+  CREDENTIAL_TYPE_STATUSES
+} from '../../helpers/constants';
+
+const { READY } = CREDENTIAL_TYPE_CATEGORY_STATUSES;
 
 export default class TemplateCreationStore {
   constructor(api, sessionState) {
@@ -73,7 +78,7 @@ export default class TemplateCreationStore {
   *createTemplateCategory(newCategoryData) {
     this.isFetchingCategories = true;
     const { categoryName } = newCategoryData;
-    const newCategory = { id: uuidv4(), name: categoryName, state: 1 };
+    const newCategory = { id: uuidv4(), name: categoryName, state: READY };
     const response = yield this.api.credentialTypesManager.createCategory(newCategory);
     this.templatesBaseStore.fetchCategories();
     this.isFetchingCategories = false;
