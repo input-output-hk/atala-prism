@@ -27,12 +27,12 @@ object VaultApp extends IOApp {
   private val port = 50054
 
   override def run(args: List[String]): IO[ExitCode] = {
-    new VaultApp().start().use(_ => IO.never)
+    new VaultApp(ExecutionContext.global).start().use(_ => IO.never)
   }
 
 }
 
-class VaultApp() {
+class VaultApp(executionContext: ExecutionContext) {
   self =>
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val runtime: IORuntime = IORuntime.global
@@ -101,6 +101,10 @@ class VaultApp() {
         .forPort(VaultApp.port)
         .addService(
           vault_api.EncryptedDataVaultServiceGrpc.bindService(encryptedDataVaultGrpcService, ec)
+        )
+        .addService(
+          _root_.grpc.health.v1.health.HealthGrpc
+            .bindService(new HealthService, executionContext)
         )
         .build()
         .start()

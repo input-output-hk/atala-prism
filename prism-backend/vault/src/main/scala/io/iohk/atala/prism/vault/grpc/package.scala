@@ -14,16 +14,9 @@ package object grpc {
     StoreRecordRequest
   ] = { (request: vault_api.StoreRecordRequest, _) =>
     for {
-      record <- Try {
-        if (request.record.isEmpty)
-          throw new RuntimeException("Record is required")
-        else request.record.get
-      }
-
-      type_ <- Try(Record.Type.unsafeFrom(record.`type`.toByteArray))
-      id <- Try(Record.Id.unsafeFrom(record.id.toByteArray))
-      payload <- Try(Record.Payload.unsafeFrom(record.payload.toByteArray))
-
+      type_ <- Try(Record.Type.unsafeFrom(request.`type`.toByteArray))
+      id <- Try(Record.Id.unsafeFrom(request.id.toByteArray))
+      payload <- Try(Record.Payload.unsafeFrom(request.payload.toByteArray))
     } yield StoreRecordRequest(Record(type_, id, payload))
   }
 

@@ -3,21 +3,12 @@ package io.iohk.atala.prism.vault.services
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.protos.{common_models, vault_api}
+import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.vault.TestUtils.{createRequest, randomRecordId, randomRecordType}
 import io.iohk.atala.prism.vault.VaultRpcSpecBase
 import org.scalatest.OptionValues
 
 class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValues {
-
-  "health check" should {
-    "respond" in {
-      val response = vaultGrpcService
-        .healthCheck(common_models.HealthCheckRequest())
-        .futureValue
-      response must be(common_models.HealthCheckResponse())
-    }
-  }
 
   "store" should {
     "create a payload" in {
@@ -26,7 +17,7 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       val (request, _) = createRequest(payload, type_)
 
       usingApiAs.unlogged { serviceStub =>
-        val responseRecord = serviceStub.storeRecord(request).record.get
+        val response = serviceStub.storeRecord(request)
 
         val storedPayloads =
           recordsRepository
@@ -37,8 +28,8 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
         storedPayloads.size must be(1)
         val storedPayload = storedPayloads.head
 
-        storedPayload.id.encrypted must be(responseRecord.id.toByteArray.toVector)
-        storedPayload.type_.encrypted must be(responseRecord.`type`.toByteArray.toVector)
+        storedPayload.id.encrypted must be(response.id.toByteArray.toVector)
+        storedPayload.type_.encrypted must be(response.`type`.toByteArray.toVector)
       }
     }
 
@@ -68,13 +59,13 @@ class EncryptedDataVaultGrpcServiceSpec extends VaultRpcSpecBase with OptionValu
       val (request1, _) = createRequest(payload1, recordType)
 
       val id1 = usingApiAs.unlogged { serviceStub =>
-        serviceStub.storeRecord(request1).record.get.id
+        serviceStub.storeRecord(request1).id
       }
 
       val payload2 = "encrypted_data_1"
       val (request2, _) = createRequest(payload2, recordType)
       val id2 = usingApiAs.unlogged { serviceStub =>
-        serviceStub.storeRecord(request2).record.get.id
+        serviceStub.storeRecord(request2).id
       }
 
       val request3 =

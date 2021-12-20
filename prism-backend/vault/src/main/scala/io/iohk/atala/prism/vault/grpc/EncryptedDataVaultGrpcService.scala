@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.vault.grpc
 
 import cats.effect.unsafe.IORuntime
+import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
-import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
 import io.iohk.atala.prism.vault.errors.{VaultError, VaultErrorSupport}
@@ -31,14 +30,6 @@ class EncryptedDataVaultGrpcService(
   override protected val serviceName: String = "encrypted-data-vault-service"
   override val IOruntime: IORuntime = runtime
 
-  override def healthCheck(
-      request: HealthCheckRequest
-  ): Future[HealthCheckResponse] = {
-    measureRequestFuture(serviceName, "healthCheck")(
-      Future(HealthCheckResponse())
-    )
-  }
-
   override def storeRecord(
       request: vault_api.StoreRecordRequest
   ): Future[vault_api.StoreRecordResponse] = {
@@ -49,7 +40,14 @@ class EncryptedDataVaultGrpcService(
           req.record.id,
           req.record.payload
         )
-        .map(record => Right(vault_api.StoreRecordResponse(Some(record.toProto))))
+        .map(record =>
+          Right(
+            vault_api.StoreRecordResponse(
+              `type` = ByteString.copyFrom(record.type_.encrypted.toArray),
+              id = ByteString.copyFrom(record.id.encrypted.toArray)
+            )
+          )
+        )
         .run(traceId)
         .unsafeToFuture()
         .toFutureEither

@@ -3,7 +3,6 @@ package io.iohk.atala.prism.vault
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.protos.vault_api
 import io.iohk.atala.prism.protos.vault_api.StoreRecordRequest
-import io.iohk.atala.prism.protos.vault_models.EncryptedRecord
 import io.iohk.atala.prism.vault.model.Record
 
 import scala.util.Random
@@ -27,13 +26,9 @@ object TestUtils {
     val rec = Record(type_, id, Record.Payload(payloadBytes.toVector))
     (
       vault_api.StoreRecordRequest(
-        Some(
-          EncryptedRecord(
-            `type` = ByteString.copyFrom(type_.encrypted.toArray),
-            id = ByteString.copyFrom(id.encrypted.toArray),
-            payload = ByteString.copyFrom(payloadBytes)
-          )
-        )
+        `type` = ByteString.copyFrom(type_.encrypted.toArray),
+        id = ByteString.copyFrom(id.encrypted.toArray),
+        payload = ByteString.copyFrom(payloadBytes)
       ),
       rec
     )

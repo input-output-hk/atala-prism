@@ -32,7 +32,7 @@ object versions {
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
   val prismSdk = "1.3.0-8c0c018c"
-  val vaultSdk = "0.1.0-1b6cc276"
+  val vaultSdk = "0.1.0-6dd6e024"
 }
 
 object Dependencies {
