@@ -52,6 +52,8 @@ export default class TemplatesBaseStore {
     this.contactIdFilter = contactId;
     yield this.fetchTemplates();
     yield this.fetchCategories();
+
+    this.handleMissingDefaultCategories();
   }
 
   resetTemplatesAndCategories() {
@@ -67,6 +69,13 @@ export default class TemplatesBaseStore {
     this.lastEditedFilter = '';
     this.sortDirection = ascending;
     this.sortingBy = TEMPLATES_SORTING_KEYS.name;
+  }
+
+  /**
+   * Create the default categories if not existing already
+   */
+  handleMissingDefaultCategories() {
+    shouldCreateCategories = ['educational','identity']. this.templateCategories.includes()
   }
 
   // ********************** //

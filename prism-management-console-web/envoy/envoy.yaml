@@ -73,6 +73,9 @@ static_resources:
               - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypesService" }
                 route:
                   cluster: console_service
+              - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypeCategoriesService" }
+                route:
+                  cluster: console_service
               - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
                 route:
                   cluster: console_service

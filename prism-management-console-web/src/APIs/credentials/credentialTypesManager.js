@@ -1,12 +1,21 @@
 import _ from 'lodash';
-import { CredentialTypesServicePromiseClient } from '../../protos/console_api_grpc_web_pb';
+import {
+  CredentialTypesServicePromiseClient,
+  CredentialTypeCategoriesServicePromiseClient
+} from '../../protos/console_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import {
   GetCredentialTypesRequest,
   GetCredentialTypeRequest,
-  CreateCredentialTypeRequest
+  CreateCredentialTypeRequest,
+  GetCredentialTypeCategoriesRequest,
+  CreateCredentialTypeCategoryRequest
 } from '../../protos/console_api_pb';
-import { CreateCredentialType, CreateCredentialTypeField } from '../../protos/console_models_pb';
+import {
+  CreateCredentialType,
+  CreateCredentialTypeField,
+  CreateCredentialTypeCategory
+} from '../../protos/console_models_pb';
 import { adaptCredentialType } from '../helpers/credentialTypeHelpers';
 import { VALIDATION_KEYS } from '../../helpers/constants';
 
@@ -17,7 +26,10 @@ async function getCredentialTypes() {
   const { metadata, sessionError } = await this.auth.getMetadata(getCredentialTypesRequest);
   if (sessionError) return [];
 
-  const response = await this.client.getCredentialTypes(getCredentialTypesRequest, metadata);
+  const response = await this.credentialTypesServiceClient.getCredentialTypes(
+    getCredentialTypesRequest,
+    metadata
+  );
 
   const { credentialTypesList } = response.toObject();
   const adaptedCredentialTypesList = credentialTypesList.map(adaptCredentialType);
@@ -43,7 +55,10 @@ async function getCredentialTypeDetails(id) {
   const { metadata, sessionError } = await this.auth.getMetadata(getCredentialTypeDetailsRequest);
   if (sessionError) return [];
 
-  const response = await this.client.getCredentialType(getCredentialTypeDetailsRequest, metadata);
+  const response = await this.credentialTypesServiceClient.getCredentialType(
+    getCredentialTypeDetailsRequest,
+    metadata
+  );
 
   const { credentialType } = response.toObject();
   const mappedCredentialType = {
@@ -79,7 +94,10 @@ async function createCredentialType(values) {
   const { metadata, sessionError } = await this.auth.getMetadata(createCredentialTypeRequest);
   if (sessionError) return [];
 
-  const response = await this.client.createCredentialType(createCredentialTypeRequest, metadata);
+  const response = await this.credentialTypesServiceClient.createCredentialType(
+    createCredentialTypeRequest,
+    metadata
+  );
 
   const responseObject = response.toObject();
   const {
@@ -97,15 +115,45 @@ async function createCredentialType(values) {
   return credentialType;
 }
 
-function getTemplateCategories() {
-  return this.config.getMockedTemplateCategories();
+async function getTemplateCategories() {
+  const getCredentialTypeCategoriesRequest = new GetCredentialTypeCategoriesRequest();
+
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    getCredentialTypeCategoriesRequest
+  );
+
+  if (sessionError) return [];
+  const response = await this.categoriesServiceClient.getCredentialTypeCategories(
+    getCredentialTypeCategoriesRequest,
+    metadata
+  );
+  const { credentialTypeCategoriesList } = response.toObject();
+
+  return credentialTypeCategoriesList;
 }
 
-function createCategory(values) {
-  const currentTemplateCategories = this.getTemplateCategories();
-  const updatedCategories = currentTemplateCategories.concat(values);
-  this.config.saveMockedTemplateCategories(updatedCategories);
-  return values;
+async function createCategory(values) {
+  const createCredentialTypeCategoryRequest = new CreateCredentialTypeCategoryRequest();
+
+  const credentialTypeCategoryModel = new CreateCredentialTypeCategory();
+  credentialTypeCategoryModel.setName(values.name);
+  credentialTypeCategoryModel.setState(values.state);
+
+  createCredentialTypeCategoryRequest.setCredentialTypeCategory(credentialTypeCategoryModel);
+
+  const { metadata, sessionError } = await this.auth.getMetadata(
+    createCredentialTypeCategoryRequest
+  );
+  if (sessionError) return [];
+
+  const response = await this.categoriesServiceClient.createCredentialTypeCategory(
+    createCredentialTypeCategoryRequest,
+    metadata
+  );
+
+  const { credentialTypeCategory } = response.toObject();
+
+  return credentialTypeCategory;
 }
 
 const mapCredentialTypeField = field => ({
@@ -117,7 +165,16 @@ const mapCredentialTypeField = field => ({
 function CredentialTypesManager(config, auth) {
   this.config = config;
   this.auth = auth;
-  this.client = new CredentialTypesServicePromiseClient(config.grpcClient, null, null);
+  this.credentialTypesServiceClient = new CredentialTypesServicePromiseClient(
+    config.grpcClient,
+    null,
+    null
+  );
+  this.categoriesServiceClient = new CredentialTypeCategoriesServicePromiseClient(
+    config.grpcClient,
+    null,
+    null
+  );
 }
 
 CredentialTypesManager.prototype.getCredentialTypes = getCredentialTypes;
