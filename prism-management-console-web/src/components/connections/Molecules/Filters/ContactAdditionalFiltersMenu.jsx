@@ -3,17 +3,25 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
+import moment from 'moment';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
-import { CONNECTED, PENDING_CONNECTION } from '../../../../helpers/constants';
+import { CONNECTED, DEFAULT_DATE_FORMAT, PENDING_CONNECTION } from '../../../../helpers/constants';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
-const ContactAdditionalFiltersMenu = ({ setFilterValue }) => {
+const ContactAdditionalFiltersMenu = ({
+  statusFilter,
+  dateFilter,
+  setFilterValue,
+  resetFilters
+}) => {
   const { t } = useTranslation();
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
 
   const datePickerProps = {
+    value: dateFilter && moment(dateFilter, DEFAULT_DATE_FORMAT),
     placeholder: t('contacts.filters.createdAt'),
     suffixIcon: <DownOutlined />,
     onChange: (_, selectedDate) => setFilterValue('dateFilter', selectedDate)
@@ -25,6 +33,7 @@ const ContactAdditionalFiltersMenu = ({ setFilterValue }) => {
         <p>{t('actions.filterBy', { column: t('contacts.filters.status') })}</p>
         <Select
           allowClear
+          value={statusFilter}
           onChange={value => setFilterValue('statusFilter', value)}
           placeholder={t('contacts.filters.status')}
         >
@@ -39,14 +48,25 @@ const ContactAdditionalFiltersMenu = ({ setFilterValue }) => {
         <CustomInputGroup prefixIcon="calendar">
           <CustomDatePicker {...datePickerProps} />
         </CustomInputGroup>
-        {/* TODO: add clear all filters button here */}
+        <div className="ClearFiltersButton">
+          <CustomButton
+            buttonProps={{
+              onClick: resetFilters,
+              className: 'theme-link'
+            }}
+            buttonText={t('actions.clear')}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
 ContactAdditionalFiltersMenu.propTypes = {
-  setFilterValue: PropTypes.func.isRequired
+  statusFilter: PropTypes.string.isRequired,
+  dateFilter: PropTypes.string.isRequired,
+  setFilterValue: PropTypes.func.isRequired,
+  resetFilters: PropTypes.func.isRequired
 };
 
 export default ContactAdditionalFiltersMenu;

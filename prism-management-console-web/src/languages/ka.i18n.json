@@ -12,7 +12,8 @@
     "saveForLater": "Save & Continue later",
     "sortBy": "Sort by",
     "sortingBy": "Sorting by {{column}}",
-    "filterBy": "Filter by {{column}}"
+    "filterBy": "Filter by {{column}}",
+    "clear": "Clear"
   },
   "commonWords": {
     "and": "and",
