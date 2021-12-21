@@ -85,7 +85,7 @@ async function getCredentialTypes() {
   /**
    * This additional mapping injects the credential types with the corresponding category,
    * stored in the local storage (for now)
-   * TODO: remove when backend supports categories
+   * TODO: remove when backend supports credentialType--category relationships
    */
   const categoriesAssociatedWithCredentialTypes = this.config.getCredentialTypesWithCategories();
   const credentialTypesWithCategories = credentialTypesList.map(c => ({
@@ -160,8 +160,8 @@ async function createCredentialType(values) {
     credentialType: { credentialType }
   } = responseObject;
   /**
-   * Here we persist the credential type -- category relationship in the local storage
-   * TODO: remove when backend supports categories
+   * Here we persist the credentialType--category relationship in the local storage
+   * TODO: remove when backend supports credentialType--category relationships
    */
   this.config.saveCredentialTypeWithCategory({
     credentialTypeId: credentialType.id,
@@ -226,11 +226,6 @@ async function markCredentialTypeAsReady(template) {
     markAsReadyCredentialTypeRequest,
     metadata
   );
-
-  /**
-   * Here we persist the credential type -- category relationship in the local storage
-   * TODO: remove when backend supports categories
-   */
 
   return response.toObject();
 }
