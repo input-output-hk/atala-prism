@@ -11,6 +11,7 @@ import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import { useContactsPageStore } from '../../hooks/useContactsPageStore';
 import { useRedirector } from '../../hooks/useRedirector';
 import ContactsPageTableOptions from './Molecules/Headers/ContactsPageTableOptions';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
@@ -45,17 +46,21 @@ const Connections = observer(
         </div>
         <ContactsPageTableOptions filterSortingProps={filterSortingProps} />
         <div className="ConnectionsTable InfiniteScrollTableContainer">
-          <ConnectionsTable
-            contacts={contacts}
-            fetchMoreData={fetchMoreData}
-            hasMore={hasMore}
-            hasFiltersApplied={hasFiltersApplied}
-            isLoading={isLoadingFirstPage || isSearching}
-            isFetchingMore={isFetching}
-            inviteContact={onInviteContact}
-            viewContactDetail={redirectToContactDetails}
-            searchDueGeneralScroll
-          />
+          {isLoadingFirstPage ? (
+            <SimpleLoading size="md" />
+          ) : (
+            <ConnectionsTable
+              contacts={contacts}
+              fetchMoreData={fetchMoreData}
+              hasMore={hasMore}
+              hasFiltersApplied={hasFiltersApplied}
+              isLoading={isSearching}
+              isFetchingMore={isFetching}
+              inviteContact={onInviteContact}
+              viewContactDetail={redirectToContactDetails}
+              searchDueGeneralScroll
+            />
+          )}
         </div>
         <QRModal
           visible={qrModalIsVisible}

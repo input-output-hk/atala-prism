@@ -6,6 +6,7 @@ import { Select } from 'antd';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import { CONNECTED, PENDING_CONNECTION } from '../../../../helpers/constants';
+import './_style.scss';
 
 const ContactAdditionalFiltersMenu = ({ setFilterValue }) => {
   const { t } = useTranslation();

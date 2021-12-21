@@ -11,6 +11,7 @@ import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
 import { useGroupsPageStore } from '../../hooks/useGroupStore';
 import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import GroupActionsHeader from './Molecules/Headers/GroupActionsHeader';
+import GroupsPageTableOptions from './Molecules/Headers/GroupsPageTableOptions';
 
 import './_style.scss';
 
@@ -88,6 +89,7 @@ const Groups = observer(({ handleGroupDeletion, copyGroup }) => {
           )}
         </div>
       </div>
+      <GroupsPageTableOptions filterSortingProps={filterSortingProps} />
       <div className="GroupContentContainer InfiniteScrollTableContainer">
         {isLoadingFirstPage ? (
           <SimpleLoading size="md" />

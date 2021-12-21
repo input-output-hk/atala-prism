@@ -5,3 +5,52 @@
     margin: 0 1em 0 0 !important;
   }
 }
+
+.FilterControls {
+  .GroupFilters {
+    display: flex;
+    .FiltersButton {
+      .ant-btn:first-child {
+        display: none !important;
+      }
+      .ant-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1.5px solid $secondary-color;
+      }
+      .ant-btn:hover,
+      .ant-btn:focus,
+      .ant-btn:active {
+        img {
+          opacity: 0.7;
+          transition: 0.5s;
+        }
+      }
+    }
+    .InputContainer {
+      margin-left: 1em;
+      .ChildrenContainer {
+        width: 150px;
+        .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+          background-color: transparent;
+        }
+        .ant-select {
+          border-color: lightgray;
+        }
+      }
+    }
+    .ant-input-affix-wrapper {
+      margin-right: 1em;
+    }
+  }
+}
+
+.SortControlContainer .ant-select-selection-item,
+.SortControlContainer .ant-select-clear {
+  color: $secondary-color;
+}
+
+.anticon-close-circle {
+  color: $primary-color;
+}

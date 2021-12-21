@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Badge, Dropdown, Menu } from 'antd';
 import FilterIcon from '../../../common/Atoms/Icons/FilterIcon';
 import ContactAdditionalFiltersMenu from './ContactAdditionalFiltersMenu';
+import './_style.scss';
 
 const ContactAdditionalFilters = ({ filterSortingProps }) => {
   const { hasAdditionalFiltersApplied, setFilterValue } = filterSortingProps;

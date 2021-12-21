@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { DownOutlined } from '@ant-design/icons';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
+import './_style.scss';
 
 const GroupAdditionalFiltersMenu = ({ setFilterValue }) => {
   const { t } = useTranslation();

@@ -1,22 +1,30 @@
 @import '../../../../css/general_styling';
 
-.FilterControls {
-  .GroupFilters {
+.GroupsPageTableOptions {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  align-items: baseline;
+  .LeftOptions {
     display: flex;
-    .InputContainer {
-      margin-left: 1em;
-      .ChildrenContainer {
-        width: 150px;
-        .ant-select:not(.ant-select-customize-input) .ant-select-selector {
-          background-color: transparent;
-        }
-        .ant-select {
-          border-color: lightgray;
-        }
+    justify-content: space-between;
+    align-items: baseline;
+    margin-left: .5em;
+    .TableOptionButton {
+      margin: .5em;
+      padding: 0;
+      color: $black;
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+      span {
+        margin-right: .5em;
       }
     }
-    .ant-input-affix-wrapper {
-      margin-right: 1em;
-    }
+  }
+
+  .no-border {
+    border: none;
   }
 }
