@@ -6,8 +6,9 @@ import { DownOutlined } from '@ant-design/icons';
 import CustomInputGroup from '../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import CustomDatePicker from '../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
+import { CREDENTIAL_TYPE_CATEGORY_STATUSES } from '../../../../helpers/constants';
 
-const ENABLED_STATE = 1;
+const { READY } = CREDENTIAL_TYPE_CATEGORY_STATUSES;
 
 const TemplateFilters = ({
   templateCategories,
@@ -19,9 +20,7 @@ const TemplateFilters = ({
   const { t } = useTranslation();
   const { Option } = Select;
 
-  const allowedTemplateCategories = templateCategories.filter(
-    ({ state }) => state === ENABLED_STATE
-  );
+  const allowedTemplateCategories = templateCategories.filter(({ state }) => state === READY);
 
   return (
     <div className="FiltersMenu">
