@@ -21,7 +21,7 @@ const defaultValues = {
   isFetching: false,
   isSearching: false,
   nameFilter: '',
-  dateFilter: [],
+  dateFilter: '',
   sortDirection: ascending,
   sortingBy: GROUP_SORTING_KEYS.name
 };
@@ -109,7 +109,7 @@ export default class GroupsBaseStore {
   }
 
   get hasDateFilterApplied() {
-    return Boolean(this.dateFilter.every(Boolean));
+    return Boolean(this.dateFilter);
   }
 
   get hasCustomSorting() {
@@ -164,8 +164,9 @@ export default class GroupsBaseStore {
     this.isFetching = true;
 
     try {
-      const { nameFilter, dateFilter = [], sortDirection, sortingBy } = this;
-      const [createdAfter, createdBefore] = dateFilter;
+      const { nameFilter, dateFilter, sortDirection, sortingBy } = this;
+      const createdAfter = dateFilter;
+      const createdBefore = dateFilter;
 
       const response = yield this.api.groupsManager.getGroups({
         offset,

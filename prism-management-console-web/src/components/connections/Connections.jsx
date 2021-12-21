@@ -37,7 +37,7 @@ const Connections = observer(
           <div className="title">
             <h1>{t('contacts.title')}</h1>
           </div>
-          <div className="ConnectionFilterWrapper">
+          <div className="ContactActionsHeaderWrapper">
             {accountStatus === CONFIRMED && (
               <ContactActionsHeader filterSortingProps={filterSortingProps} />
             )}
