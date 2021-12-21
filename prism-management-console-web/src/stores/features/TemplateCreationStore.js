@@ -41,7 +41,7 @@ export default class TemplateCreationStore {
   }
 
   get credentialTemplates() {
-    return this.templatesBaseStore.templateCategories;
+    return this.templatesBaseStore.credentialTemplates;
   }
 
   get templateCategories() {
