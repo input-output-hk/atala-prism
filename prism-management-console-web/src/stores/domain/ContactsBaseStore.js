@@ -89,6 +89,14 @@ export default class ContactsBaseStore {
     return this.fetchMoreData({ startFromTheTop: true });
   }
 
+  resetContactsAndFilters() {
+    this.isFetching = defaultValues.isFetching;
+    this.isSearching = defaultValues.isSearching;
+    this.resetContacts();
+    this.resetFilters();
+    this.resetSorting();
+  }
+
   resetContacts() {
     this.contacts = defaultValues.contacts;
     this.scrollId = defaultValues.scrollId;
@@ -96,6 +104,10 @@ export default class ContactsBaseStore {
 
   resetFilters() {
     this.textFilter = defaultValues.textFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
     this.statusFilter = defaultValues.statusFilter;
     this.dateFilter = defaultValues.lastEditedFilter;
   }
@@ -103,14 +115,6 @@ export default class ContactsBaseStore {
   resetSorting() {
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
-  }
-
-  resetContactsAndFilters() {
-    this.isFetching = defaultValues.isFetching;
-    this.isSearching = defaultValues.isSearching;
-    this.resetContacts();
-    this.resetFilters();
-    this.resetSorting();
   }
 
   // ********************** //
@@ -162,7 +166,7 @@ export default class ContactsBaseStore {
       sortingBy,
       setSortingBy,
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       toggleSortDirection,
       hasFiltersApplied,
       hasTextFilterApplied,
@@ -178,7 +182,7 @@ export default class ContactsBaseStore {
       sortingBy,
       setSortingBy,
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       toggleSortDirection,
       hasFiltersApplied,
       hasTextFilterApplied,

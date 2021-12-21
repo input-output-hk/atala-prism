@@ -9,7 +9,7 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { DEFAULT_DATE_FORMAT } from '../../../../helpers/constants';
 import './_style.scss';
 
-const GroupAdditionalFiltersMenu = ({ dateFilter, setFilterValue, resetFilters }) => {
+const GroupAdditionalFiltersMenu = ({ dateFilter, setFilterValue, resetAdditionalFilters }) => {
   const { t } = useTranslation();
 
   const datePickerProps = {
@@ -29,7 +29,7 @@ const GroupAdditionalFiltersMenu = ({ dateFilter, setFilterValue, resetFilters }
         <div className="ClearFiltersButton">
           <CustomButton
             buttonProps={{
-              onClick: resetFilters,
+              onClick: resetAdditionalFilters,
               className: 'theme-link'
             }}
             buttonText={t('actions.clear')}
@@ -43,7 +43,7 @@ const GroupAdditionalFiltersMenu = ({ dateFilter, setFilterValue, resetFilters }
 GroupAdditionalFiltersMenu.propTypes = {
   dateFilter: PropTypes.string.isRequired,
   setFilterValue: PropTypes.func.isRequired,
-  resetFilters: PropTypes.func.isRequired
+  resetAdditionalFilters: PropTypes.func.isRequired
 };
 
 export default GroupAdditionalFiltersMenu;

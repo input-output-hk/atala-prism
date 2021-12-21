@@ -20,7 +20,7 @@ const TemplateFilters = ({
   categoryFilter,
   lastEditedFilter,
   setFilterValue,
-  resetFilters,
+  resetAdditionalFilters,
   showDateFilter
 }) => {
   const { t } = useTranslation();
@@ -62,7 +62,7 @@ const TemplateFilters = ({
         <div className="ClearFiltersButton">
           <CustomButton
             buttonProps={{
-              onClick: resetFilters,
+              onClick: resetAdditionalFilters,
               className: 'theme-link'
             }}
             buttonText={t('actions.clear')}
@@ -82,7 +82,7 @@ TemplateFilters.propTypes = {
   categoryFilter: PropTypes.string.isRequired,
   lastEditedFilter: PropTypes.string.isRequired,
   setFilterValue: PropTypes.func.isRequired,
-  resetFilters: PropTypes.func.isRequired,
+  resetAdditionalFilters: PropTypes.func.isRequired,
   showDateFilter: PropTypes.bool
 };
 

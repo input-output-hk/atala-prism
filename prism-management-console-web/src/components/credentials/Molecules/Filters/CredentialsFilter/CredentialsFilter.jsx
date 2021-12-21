@@ -26,7 +26,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
     credentialTypes,
     filterSortingProps: {
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       dateFilter,
       credentialStatusFilter,
       connectionStatusFilter,
@@ -129,7 +129,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
       <div className="ClearFiltersButton">
         <CustomButton
           buttonProps={{
-            onClick: resetFilters,
+            onClick: resetAdditionalFilters,
             className: 'theme-link'
           }}
           buttonText={t('actions.clear')}

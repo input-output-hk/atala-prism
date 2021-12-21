@@ -74,6 +74,10 @@ export default class TemplatesBaseStore {
 
   resetFilters() {
     this.nameFilter = defaultValues.nameFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
     this.categoryFilter = defaultValues.categoryFilter;
     this.lastEditedFilter = defaultValues.lastEditedFilter;
   }
@@ -119,7 +123,7 @@ export default class TemplatesBaseStore {
       sortingBy,
       setSortingBy,
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       toggleSortDirection
     } = this;
     return {
@@ -132,7 +136,7 @@ export default class TemplatesBaseStore {
       sortingBy,
       setSortingBy,
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       toggleSortDirection
     };
   }

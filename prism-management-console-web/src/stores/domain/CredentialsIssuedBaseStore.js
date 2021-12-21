@@ -96,25 +96,6 @@ export default class CredentialsIssuedBaseStore {
     return this.fetchMoreData({ startFromTheTop: true });
   }
 
-  resetCredentials() {
-    this.hasMore = true;
-    this.credentials = [];
-  }
-
-  resetFilters() {
-    this.textFilter = defaultValues.textFilter;
-    this.dateFilter = defaultValues.dateFilter;
-    this.credentialStatusFilter = defaultValues.credentialStatusFilter;
-    this.connectionStatusFilter = defaultValues.connectionStatusFilter;
-    this.credentialTypeFilter = defaultValues.credentialTypeFilter;
-    this.contactIdFilter = defaultValues.contactIdFilter;
-  }
-
-  resetSorting() {
-    this.sortDirection = ascending;
-    this.sortingBy = undefined;
-  }
-
   resetCredentialsAndFilters() {
     this.isFetching = false;
     this.isSearching = false;
@@ -122,6 +103,29 @@ export default class CredentialsIssuedBaseStore {
     this.resetCredentials();
     this.resetFilters();
     this.resetSorting();
+  }
+
+  resetCredentials() {
+    this.hasMore = true;
+    this.credentials = [];
+  }
+
+  resetFilters() {
+    this.textFilter = defaultValues.textFilter;
+    this.contactIdFilter = defaultValues.contactIdFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
+    this.dateFilter = defaultValues.dateFilter;
+    this.credentialStatusFilter = defaultValues.credentialStatusFilter;
+    this.connectionStatusFilter = defaultValues.connectionStatusFilter;
+    this.credentialTypeFilter = defaultValues.credentialTypeFilter;
+  }
+
+  resetSorting() {
+    this.sortDirection = ascending;
+    this.sortingBy = undefined;
   }
 
   // ********************** //
@@ -179,7 +183,7 @@ export default class CredentialsIssuedBaseStore {
       sortingBy,
       setSortingBy,
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       textFilter,
       dateFilter,
       credentialStatusFilter,
@@ -194,7 +198,7 @@ export default class CredentialsIssuedBaseStore {
       sortingBy,
       setSortingBy,
       setFilterValue,
-      resetFilters,
+      resetAdditionalFilters,
       textFilter,
       dateFilter,
       credentialStatusFilter,

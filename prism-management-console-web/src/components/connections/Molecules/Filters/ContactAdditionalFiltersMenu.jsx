@@ -14,7 +14,7 @@ const ContactAdditionalFiltersMenu = ({
   statusFilter,
   dateFilter,
   setFilterValue,
-  resetFilters
+  resetAdditionalFilters
 }) => {
   const { t } = useTranslation();
 
@@ -51,7 +51,7 @@ const ContactAdditionalFiltersMenu = ({
         <div className="ClearFiltersButton">
           <CustomButton
             buttonProps={{
-              onClick: resetFilters,
+              onClick: resetAdditionalFilters,
               className: 'theme-link'
             }}
             buttonText={t('actions.clear')}
@@ -66,7 +66,7 @@ ContactAdditionalFiltersMenu.propTypes = {
   statusFilter: PropTypes.string.isRequired,
   dateFilter: PropTypes.string.isRequired,
   setFilterValue: PropTypes.func.isRequired,
-  resetFilters: PropTypes.func.isRequired
+  resetAdditionalFilters: PropTypes.func.isRequired
 };
 
 export default ContactAdditionalFiltersMenu;
