@@ -53,12 +53,27 @@ wallets, which are expected to be used in the Cardano ecosystem. As pointed
 out by \cite{kkl20}, naive encoding of keys with different purposes, into
 a single address, may enable certain (malleability) attacks.
 
+\paragraph{Concrete differences in prior security analysis} %
+The security analysis in \cite{def+21} is on BIP32, not BIP44. While BIP44
+is actually a subset of BIP32, it further specifies it in concrete ways
+that may alter the result of the analysis. For instance, \cite{def+21}
+assumes that non-hardened nodes are leaves of the tree (which, alternatively,
+can be seen as roots in new trees). However, in BIP44 the leaves are
+non-hardened nodes, and intermediate nodes are mostly hardened. Yet another
+possible source of discrepancy is that the analysis assumes that non-hardened
+nodes are maintained in a hot/cold wallet setting and, thus, the private keys
+cannot be compromised. This assumption may not hold for all use cases, and
+that would change completely the security reasoning. If we want to determine
+the concrete security level we want/need in some specific use cases that differ
+from the analysis of \cite{def+21} as mentioned above, a new model might be
+necessary.
+
 \paragraph{Careful consideration of extra security properties.} %
 The main related work analysed so far\footnote{BIP32, BIP44, \cite{def+21}
-  and, partially, \cite{kkl20}.} analyses the security of either BIP44
-wallets, or PoS wallets. The introduction of identity-related (frequently
-associated to actual people) data may require additional properties, only
-mentioned in these works (or not considered, as in the BIPs). For instance,
+  and, partially, \cite{kkl20}.} study the security of either BIP32
+wallets for payments, or PoS wallets. The introduction of identity-related
+(frequently associated to actual people) data may require additional properties,
+only mentioned in these works (or not considered, as in the BIPs). For instance,
 some sort of forward security will be very desirable. While, for the case of
 payments or staking, the impact of a compromise (either of a leaf node --
 i.e., a key -- or a complete subtree) can be mitigated by prompt detection
@@ -74,6 +89,30 @@ compromise happens at time $t$.
 
 Also, it cannot be discarded that further desirable privacy or security
 properties arise, as we get more familiar with the targetted use cases.
+
+\paragraph{On ``generic'' interoperability issues.} %
+Interoperability can mean many things. Hence, in this discussion, we restrict
+to the structure of the (hierarchically and deterministically) produced tree,
+and on the mnemonic length, which are two differing aspects in Atala and
+Cardano (lightwallet). On the length of the mnemonic, Atala uses 12-word
+mnemonics, while Cardano uses 24 words. According to BIP39, 12 words encode
+128 bits of entropy, and 24 words encode 256. Taking into account that ECDSA
+(in the case of Atala) provides a security level of roughly half of the size
+of the key, and that the deterministic approach to derive keys from the seed
+(HMAC-SHA512) does not amplify entropy \cite{rfc5869}, it is advisable to move
+to 24-word mnemonics. Even more, considering the analysis of \cite{def+21},
+that concludes that the construction of HD wallets based on additively
+re-randomized ECDSA results in a security loss of 31 bits.
+
+Related to the structure of the tree, it is worth mentioning that the Cardano
+light wallet uses the conventional BIP44 hierarchy, composed of a 6-levels tree
+(including the master seed), where the first four levels are derived in
+hardened mode, and the last one in non-hardened mode; on the other hand, Atala
+uses a 4-levels tree (again, including the master seed), all of them derived
+in hardened mode. Essentially, the Atala wallet ``prunes'' the last two levels.
+While the format of the produced keys is of course the same (they are just
+random bitstrings), this discrepancy may lead to issues implementation-wise,
+that should be further evaluated.
   
 \subsection{Further related work}
 
