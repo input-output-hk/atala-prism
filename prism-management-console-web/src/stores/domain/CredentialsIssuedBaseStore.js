@@ -43,7 +43,7 @@ export default class CredentialsIssuedBaseStore {
 
   sortDirection = ascending;
 
-  sortingBy = CREDENTIAL_SORTING_KEYS.createdOn;
+  sortingBy = undefined;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -97,7 +97,7 @@ export default class CredentialsIssuedBaseStore {
     this.credentialTypeFilter = '';
     this.contactIdFilter = '';
     this.sortDirection = ascending;
-    this.sortingBy = CREDENTIAL_SORTING_KEYS.createdOn;
+    this.sortingBy = undefined;
   }
 
   // ********************** //
@@ -152,6 +152,7 @@ export default class CredentialsIssuedBaseStore {
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
       textFilter,
@@ -161,6 +162,7 @@ export default class CredentialsIssuedBaseStore {
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
       textFilter,
