@@ -10,9 +10,8 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-left: .5em;
     .TableOptionButton {
-      margin: .5em;
+      margin: .5em .5em .5em 0;
       padding: 0;
       color: $black;
       display: flex;
