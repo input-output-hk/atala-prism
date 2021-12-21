@@ -1,4 +1,4 @@
-@import "../../../../../src/css/general_styling";
+@import '../../../../../src/css/general_styling';
 
 .RecipientsSelectionTableHeader {
   .FilterControls {
@@ -15,7 +15,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      border:1.5px solid $secondary-color;
+      border: 1.5px solid $secondary-color;
     }
     .ant-btn:hover,
     .ant-btn:focus,
@@ -28,7 +28,8 @@
   }
 }
 
-.SortControlContainer .ant-select-selection-item, .SortControlContainer .ant-select-clear {
+.SortControlContainer .ant-select-selection-item,
+.SortControlContainer .ant-select-clear {
   color: $secondary-color;
 }
 
