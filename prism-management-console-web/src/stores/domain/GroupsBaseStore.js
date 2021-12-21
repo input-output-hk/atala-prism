@@ -86,14 +86,22 @@ export default class GroupsBaseStore {
     this.totalNumberOfGroups = defaultValues.totalNumberOfGroups;
   }
 
-  resetGroupsAndFilters() {
-    this.resetGroups();
-    this.isFetching = defaultValues.isFetching;
-    this.isSearching = defaultValues.isSearching;
+  resetFilters() {
     this.nameFilter = defaultValues.nameFilter;
     this.dateFilter = defaultValues.dateFilter;
+  }
+
+  resetSorting() {
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
+  }
+
+  resetGroupsAndFilters() {
+    this.isFetching = defaultValues.isFetching;
+    this.isSearching = defaultValues.isSearching;
+    this.resetGroups();
+    this.resetFilters();
+    this.resetSorting();
   }
 
   get sortingKey() {
@@ -130,17 +138,23 @@ export default class GroupsBaseStore {
 
   get filterSortingProps() {
     const {
+      nameFilter,
+      dateFilter,
       hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
+      resetFilters,
       toggleSortDirection
     } = this;
     return {
+      nameFilter,
+      dateFilter,
       hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
+      resetFilters,
       toggleSortDirection
     };
   }

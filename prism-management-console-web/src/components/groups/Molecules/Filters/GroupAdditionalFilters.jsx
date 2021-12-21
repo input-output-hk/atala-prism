@@ -6,11 +6,11 @@ import GroupAdditionalFiltersMenu from './GroupAdditionalFiltersMenu';
 import './_style.scss';
 
 const GroupAdditionalFilters = ({ filterSortingProps }) => {
-  const { hasAdditionalFiltersApplied, setFilterValue } = filterSortingProps;
+  const { hasAdditionalFiltersApplied } = filterSortingProps;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <GroupAdditionalFiltersMenu setFilterValue={setFilterValue} />
+      <GroupAdditionalFiltersMenu {...filterSortingProps} />
     </Menu>
   );
 

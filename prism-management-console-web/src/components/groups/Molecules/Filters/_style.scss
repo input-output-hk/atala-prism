@@ -8,12 +8,30 @@
 
 .FilterControls {
   .GroupFilters {
+    .selectLabel {
+      p {
+        margin: 0;
+        @include primary-text(9px, $dark-grey);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .FilterDivider {
+        border-color: #e1e1e16b;
+      }
+      .ClearFiltersButton {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 1em;
+      }
+    }
+
     display: flex;
     .searchBox {
-      margin:0 0.5em;
+      margin: 0 0.5em;
     }
     .ControlButtons {
-      margin:0 0.5em;
+      margin: 0 0.5em;
     }
     .ant-badge {
       margin: 0 0 0 0.5em;
