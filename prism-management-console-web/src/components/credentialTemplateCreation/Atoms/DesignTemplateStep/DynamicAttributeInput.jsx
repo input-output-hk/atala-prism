@@ -31,7 +31,7 @@ const DynamicAttributeInput = ({ value }) => {
       >
         <Select>
           {dynamicAttributeTypeOptions.map(option => (
-            <Option key={option.type} value={option.value}>
+            <Option key={option.label} value={option.value}>
               {t(
                 `credentialTemplateCreation.step2.content.dynamicAttributeTypeOptions.${
                   option.label

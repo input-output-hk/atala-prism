@@ -13,9 +13,14 @@ const WizardTitle = ({ title, subtitle }) => (
   </div>
 );
 
+WizardTitle.defaultProps = {
+  title: '',
+  subtitle: ''
+};
+
 WizardTitle.propTypes = {
-  title: PropTypes.string.isRequired,
-  subtitle: PropTypes.string.isRequired
+  title: PropTypes.string,
+  subtitle: PropTypes.string
 };
 
 export default WizardTitle;

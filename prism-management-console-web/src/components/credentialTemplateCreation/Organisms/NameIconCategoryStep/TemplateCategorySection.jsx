@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Form, message, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
-import './_style.scss';
 import Logger from '../../../../helpers/Logger';
 import { CREDENTIAL_TYPE_CATEGORY_STATUSES } from '../../../../helpers/constants';
+
+import './_style.scss';
 
 const { READY } = CREDENTIAL_TYPE_CATEGORY_STATUSES;
 
@@ -92,7 +91,7 @@ const TemplateCategorySection = observer(() => {
           dropdownRender={dropdownRender}
         >
           {categories.map(cat => (
-            <Option value={cat.id} label={cat.name}>
+            <Option key={cat.id} value={cat.id} label={cat.name}>
               {cat.name}
             </Option>
           ))}
@@ -101,9 +100,5 @@ const TemplateCategorySection = observer(() => {
     </div>
   );
 });
-
-TemplateCategorySection.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
-};
 
 export default TemplateCategorySection;

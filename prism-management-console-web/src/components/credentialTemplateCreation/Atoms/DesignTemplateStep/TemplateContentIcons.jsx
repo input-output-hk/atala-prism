@@ -42,6 +42,7 @@ const TemplateContentIcons = observer(() => {
         <h3>{t('credentialTemplateCreation.step2.style.customizeHeader')}</h3>
         {images.map(key => (
           <Upload
+            key={key}
             name="logo"
             action="/upload.do"
             beforeUpload={file => setImagePreview(file, key)}
