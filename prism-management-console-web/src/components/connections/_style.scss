@@ -17,6 +17,7 @@
     display: flex;
     justify-content: space-between;
     flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     border-bottom: 1px solid $light-grey;
     .title {

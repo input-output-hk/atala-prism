@@ -31,7 +31,7 @@
 
 .ContentHeader {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   border-bottom: 1px solid $light-grey;
   .title {
     width: 100%;
