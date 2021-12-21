@@ -2,17 +2,20 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import CustomInputGroup from '../../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import {
   NORMALIZED_CONNECTION_STATUSES,
-  CREDENTIAL_STATUSES
+  CREDENTIAL_STATUSES,
+  DEFAULT_DATE_FORMAT
 } from '../../../../../helpers/constants';
 import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
 
 import './_style.scss';
+import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
@@ -22,10 +25,12 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const {
     credentialTypes,
     filterSortingProps: {
-      credentialTypeFilter,
+      setFilterValue,
+      resetFilters,
+      dateFilter,
       credentialStatusFilter,
       connectionStatusFilter,
-      setFilterValue
+      credentialTypeFilter
     }
   } = useCredentialsIssuedPageStore();
 
@@ -96,6 +101,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
 
   const renderCredentialDateFilter = () => {
     const datePickerProps = {
+      value: dateFilter && moment(dateFilter, DEFAULT_DATE_FORMAT),
       placeholder: t(
         `credentials.filters.${isIssued ? 'dateSignedPlaceholder' : 'dateReceivedPlaceholder'}`
       ),
@@ -120,7 +126,15 @@ const CredentialsFilter = observer(({ isIssued }) => {
       {renderCredentialStatusFilter()}
       {renderCredentialTypeFilter()}
       {renderCredentialDateFilter()}
-      {/* TODO: add clear all filters button here */}
+      <div className="ClearFiltersButton">
+        <CustomButton
+          buttonProps={{
+            onClick: resetFilters,
+            className: 'theme-link'
+          }}
+          buttonText={t('actions.clear')}
+        />
+      </div>
     </>
   );
 
