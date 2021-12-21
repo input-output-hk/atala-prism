@@ -9,6 +9,15 @@
 .FilterControls {
   .GroupFilters {
     display: flex;
+    .searchBox {
+      margin: 0 0.5em;
+    }
+    button {
+      margin: 0 0.5em;
+    }
+    .ant-badge {
+      margin: 0 0 0 0.5em;
+    }
     .FiltersButton {
       .ant-btn:first-child {
         display: none !important;
