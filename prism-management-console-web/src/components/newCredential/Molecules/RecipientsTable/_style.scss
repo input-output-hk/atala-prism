@@ -5,9 +5,10 @@
 }
 
 .SelectAllCheckboxContainer {
-  height: 1em;
   display: flex;
   flex-direction: row-reverse;
+  margin: 0 1em;
+  height: 1em;
   span {
     @include primary-text($label, $black);
   }
