@@ -243,15 +243,16 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
           .unsafeToFuture()
         maybeOperationInfo = operationInfo.maybeOperationInfo
       } yield {
-        val operationStatus = maybeOperationInfo
-          .fold[common_models.OperationStatus](
-            common_models.OperationStatus.UNKNOWN_OPERATION
-          ) { case AtalaOperationInfo(_, _, opStatus, maybeTxStatus, _) =>
-            evalOperationStatus(opStatus, maybeTxStatus)
+        val (operationStatus, operationStatusDetails) = maybeOperationInfo
+          .fold[(common_models.OperationStatus, String)](
+            (common_models.OperationStatus.UNKNOWN_OPERATION, "")
+          ) { case AtalaOperationInfo(_, _, opStatus, opStatusDetails, maybeTxStatus, _) =>
+            (evalOperationStatus(opStatus, maybeTxStatus), opStatusDetails)
           }
         val response = node_api
           .GetOperationInfoResponse()
           .withOperationStatus(operationStatus)
+          .withDetails(operationStatusDetails)
           .withLastSyncedBlockTimestamp(operationInfo.lastSyncedTimestamp.toProtoTimestamp)
         val responseWithTransactionId = maybeOperationInfo
           .flatMap(_.transactionId)

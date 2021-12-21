@@ -193,7 +193,6 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     objectManagementService
       .saveObject(notification)
       .void
-
   }
 
   private def createLedger(

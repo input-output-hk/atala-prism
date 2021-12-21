@@ -596,6 +596,7 @@ class NodeServiceSpec
         operationId = operationId,
         objectId = AtalaObjectId.of("random".getBytes),
         operationStatus = AtalaOperationStatus.APPLIED,
+        "",
         transactionSubmissionStatus = Some(AtalaObjectTransactionSubmissionStatus.InLedger),
         transactionId = Some(dummyLedgerData.transactionId)
       )

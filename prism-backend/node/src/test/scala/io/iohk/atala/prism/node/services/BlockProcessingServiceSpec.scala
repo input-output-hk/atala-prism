@@ -15,6 +15,7 @@ import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus
 import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, UpdateDIDOperationSpec}
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 
@@ -40,6 +41,9 @@ object BlockProcessingServiceSpec {
   val signedCreateDidOperation =
     signOperation(createDidOperation, "master", masterKeys.getPrivateKey)
   val signedCreateDidOperationId = AtalaOperationId.of(signedCreateDidOperation)
+
+  val signedUpdateDidOperation: SignedAtalaOperation =
+    signOperation(updateDidOperation, "master", masterKeys.getPrivateKey)
 
   val exampleBlock = node_internal.AtalaBlock(
     operations = Seq(signedCreateDidOperation)
@@ -98,6 +102,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -126,6 +131,44 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       // shouldn't add new operations to the table
       val count = DataPreparation.getOperationsCount()
       count must be(0)
+    }
+
+    "not apply operation when entity is missing" in {
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(signedUpdateDidOperation),
+        AtalaOperationStatus.RECEIVED
+      )
+      opIds.size must be(1)
+      val atalaOperationId = opIds.head
+
+      val atalaBlock = node_internal.AtalaBlock(
+        operations = Seq(signedUpdateDidOperation)
+      )
+
+      val result = service
+        .processBlock(
+          atalaBlock,
+          dummyTransactionId,
+          dummyLedger,
+          dummyTimestamp,
+          dummyABSequenceNumber
+        )
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      result mustBe true
+
+      val atalaOperationInfo =
+        DataPreparation.getOperationInfo(atalaOperationId).value
+      val expectedAtalaOperationInfo = AtalaOperationInfo(
+        atalaOperationId,
+        objId,
+        AtalaOperationStatus.REJECTED,
+        s"EntityMissing(did suffix,${signedUpdateDidOperation.getOperation.getUpdateDid.id})",
+        None
+      )
+      atalaOperationInfo must be(expectedAtalaOperationInfo)
     }
 
     "not apply operation when signature is wrong" in {
@@ -163,6 +206,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.REJECTED,
+        "InvalidSignature()",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -205,6 +249,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         atalaOperationId,
         objId,
         AtalaOperationStatus.REJECTED,
+        "",
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
@@ -286,13 +331,14 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.head,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo1 must be(expectedAtalaOperationInfo1)
 
       val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "InvalidSignature()", None)
       atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
 
       val atalaOperationInfo3 =
@@ -301,6 +347,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.last,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo3 must be(expectedAtalaOperationInfo3)
@@ -387,6 +434,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.head,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       createDidSignedOperationInfo must be(expectedAtalaOperationInfo1)
@@ -394,7 +442,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val updateDidSignedOperation1Info =
         DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.APPLIED, None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.APPLIED, "", None)
       updateDidSignedOperation1Info must be(expectedAtalaOperationInfo2)
 
       val updateDidSignedOperation2Info =
@@ -403,6 +451,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.last,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       updateDidSignedOperation2Info must be(expectedAtalaOperationInfo3)
@@ -518,13 +567,14 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.head,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo1 must be(expectedAtalaOperationInfo1)
 
       val atalaOperationInfo2 = DataPreparation.getOperationInfo(opIds(1)).value
       val expectedAtalaOperationInfo2 =
-        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, None)
+        AtalaOperationInfo(opIds(1), objId, AtalaOperationStatus.REJECTED, "InvalidSignature()", None)
       atalaOperationInfo2 must be(expectedAtalaOperationInfo2)
 
       val atalaOperationInfo3 =
@@ -533,6 +583,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         opIds.last,
         objId,
         AtalaOperationStatus.APPLIED,
+        "",
         None
       )
       atalaOperationInfo3 must be(expectedAtalaOperationInfo3)
