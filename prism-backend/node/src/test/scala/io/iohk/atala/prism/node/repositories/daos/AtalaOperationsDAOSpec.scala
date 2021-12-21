@@ -13,7 +13,7 @@ class AtalaOperationsDAOSpec extends AtalaWithPostgresSpec {
   val atalaObjectId: AtalaObjectId = AtalaObjectId.of(objectBytes)
 
   "AtalaOperationsDAO.updateAtalaOperationStatus" should {
-    "update status details" in {
+    "update status and status details" in {
       AtalaObjectsDAO
         .insert(AtalaObjectCreateData(atalaObjectId, objectBytes))
         .transact(database)
