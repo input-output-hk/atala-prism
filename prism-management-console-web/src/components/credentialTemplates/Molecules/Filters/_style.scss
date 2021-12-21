@@ -1,10 +1,14 @@
 @import "../../../../css/general_styling";
 
 .selectLabel {
-    p {
-        margin: 0;
-        @include primary-text(9px, $dark-grey);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+  p {
+    margin: 0;
+    @include primary-text(9px, $dark-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .FilterDivider {
+    border-color: #e1e1e16b;
+  }
 }

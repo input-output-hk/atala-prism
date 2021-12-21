@@ -25,8 +25,7 @@ const TemplateFilters = ({
   return (
     <div className="FiltersMenu">
       <div className="selectLabel">
-        {/* TODO: add i18n */}
-        <p>Filter by Category</p>
+        <p>{t('actions.filterBy', { column: t('templates.table.columns.category') })}</p>
         <Select
           id="categoryFilter"
           value={categoryFilter}
@@ -40,17 +39,22 @@ const TemplateFilters = ({
             </Option>
           ))}
         </Select>
+        {showDateFilter && (
+          <>
+            <hr className="FilterDivider" />
+            <p>{t('actions.filterBy', { column: t('templates.table.columns.lastEdited') })}</p>
+            <CustomInputGroup prefixIcon="calendar">
+              <CustomDatePicker
+                value={lastEditedFilter}
+                placeholder={t('templates.table.columns.lastEdited')}
+                suffixIcon={<DownOutlined />}
+                onChange={value => setFilterValue('lastEditedFilter', value)}
+              />
+            </CustomInputGroup>
+          </>
+        )}
+        {/* TODO: add clear all filters button here */}
       </div>
-      {showDateFilter && (
-        <CustomInputGroup prefixIcon="calendar">
-          <CustomDatePicker
-            value={lastEditedFilter}
-            placeholder={t('templates.table.columns.lastEdited')}
-            suffixIcon={<DownOutlined />}
-            onChange={value => setFilterValue('lastEditedFilter', value)}
-          />
-        </CustomInputGroup>
-      )}
     </div>
   );
 };

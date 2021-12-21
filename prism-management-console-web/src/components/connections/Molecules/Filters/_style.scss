@@ -1,4 +1,4 @@
-@import '../../../../../src/css/general_styling';
+@import "../../../../../src/css/general_styling";
 
 .RecipientsSelectionTableHeader {
   .FilterControls {
@@ -31,4 +31,16 @@
 .SortControlContainer .ant-select-selection-item,
 .SortControlContainer .ant-select-clear {
   color: $secondary-color;
+}
+
+.selectLabel {
+  p {
+    margin: 0;
+    @include primary-text(9px, $dark-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .FilterDivider {
+    border-color: #e1e1e16b;
+  }
 }

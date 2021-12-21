@@ -21,21 +21,26 @@ const ContactAdditionalFiltersMenu = ({ setFilterValue }) => {
 
   return (
     <div className="FiltersMenu">
-      <Select
-        allowClear
-        onChange={value => setFilterValue('statusFilter', value)}
-        placeholder={t('contacts.filters.status')}
-      >
-        {statuses.map(statusType => (
-          <Select.Option key={statusType} value={statusType}>
-            {t(`holders.status.${statusType}`)}
-          </Select.Option>
-        ))}
-      </Select>
-
-      <CustomInputGroup prefixIcon="calendar">
-        <CustomDatePicker {...datePickerProps} />
-      </CustomInputGroup>
+      <div className="selectLabel">
+        <p>{t('actions.filterBy', { column: t('contacts.filters.status') })}</p>
+        <Select
+          allowClear
+          onChange={value => setFilterValue('statusFilter', value)}
+          placeholder={t('contacts.filters.status')}
+        >
+          {statuses.map(statusType => (
+            <Select.Option key={statusType} value={statusType}>
+              {t(`holders.status.${statusType}`)}
+            </Select.Option>
+          ))}
+        </Select>
+        <hr className="FilterDivider" />
+        <p>{t('actions.filterBy', { column: t('contacts.filters.createdAt') })}</p>
+        <CustomInputGroup prefixIcon="calendar">
+          <CustomDatePicker {...datePickerProps} />
+        </CustomInputGroup>
+        {/* TODO: add clear all filters button here */}
+      </div>
     </div>
   );
 };

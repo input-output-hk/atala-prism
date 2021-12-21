@@ -10,16 +10,20 @@ const GroupAdditionalFiltersMenu = ({ setFilterValue }) => {
   const { t } = useTranslation();
 
   const datePickerProps = {
-    placeholder: t('contacts.filters.createdAt'),
+    placeholder: t('groups.filters.createdAt'),
     suffixIcon: <DownOutlined />,
     onChange: (_, selectedDate) => setFilterValue('dateFilter', selectedDate)
   };
 
   return (
     <div className="FiltersMenu">
-      <CustomInputGroup prefixIcon="calendar">
-        <CustomDatePicker {...datePickerProps} />
-      </CustomInputGroup>
+      <div className="selectLabel">
+        <p>{t('actions.filterBy', { column: t('groups.filters.createdAt') })}</p>
+        <CustomInputGroup prefixIcon="calendar">
+          <CustomDatePicker {...datePickerProps} />
+        </CustomInputGroup>
+        {/* TODO: add clear all filters button here */}
+      </div>
     </div>
   );
 };

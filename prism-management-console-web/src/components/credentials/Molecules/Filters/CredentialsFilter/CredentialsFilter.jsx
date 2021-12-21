@@ -33,8 +33,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
 
   const renderContactStatusFilter = () => (
     <div className="selectLabel">
-      {/* TODO: add i18n */}
-      <p>Filter by</p>
+      <p>{t('actions.filterBy', { column: t('credentials.filters.connectionStatusFilter') })}</p>
       <Select
         id="connectionStatusFilter"
         value={connectionStatusFilter}
@@ -48,15 +47,13 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
-      {/* TODO: replace style prop with scss class */}
-      <hr style={{ borderColor: '#e1e1e16b' }} />
+      <hr className="FilterDivider" />
     </div>
   );
 
   const renderCredentialStatusFilter = () => (
     <div className="selectLabel">
-      {/* TODO: add i18n */}
-      <p>Filter by Contact</p>
+      <p>{t('actions.filterBy', { column: t('credentials.filters.credentialStatusFilter') })}</p>
       <Select
         id="credentialStatusFilter"
         value={credentialStatusFilter}
@@ -73,19 +70,17 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
-      {/* TODO: replace style prop with scss class */}
-      <hr style={{ borderColor: '#e1e1e16b' }} />
+      <hr className="FilterDivider" />
     </div>
   );
 
   const renderCredentialTypeFilter = () => (
     <div className="selectLabel">
-      {/* TODO: add i18n */}
-      <p>Filter by Credential</p>
+      <p>{t('actions.filterBy', { column: t('credentials.filters.credentialTypePlaceholder') })}</p>
       <Select
         id="credentialTypeFilter"
         value={credentialTypeFilter}
-        placeholder={t('credentials.filters.credentialTypePlaceholder')}
+        placeholder={t('credentials.filters.credentialTypeFilter')}
         allowClear
         onChange={setFilterByKey('credentialTypeFilter')}
       >
@@ -95,8 +90,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
-      {/* TODO: replace style prop with scss class */}
-      <hr style={{ borderColor: '#e1e1e16b' }} />
+      <hr className="FilterDivider" />
     </div>
   );
 
@@ -111,8 +105,8 @@ const CredentialsFilter = observer(({ isIssued }) => {
 
     return (
       <div className="selectLabel">
-        {/* TODO: add i18n */}
-        <p>Filter by Date</p>
+        <p>{t('actions.filterBy', { column: t('credentials.filters.dateSignedFilter') })}</p>
+
         <CustomInputGroup prefixIcon="calendar">
           <CustomDatePicker {...datePickerProps} />
         </CustomInputGroup>
@@ -126,6 +120,7 @@ const CredentialsFilter = observer(({ isIssued }) => {
       {renderCredentialStatusFilter()}
       {renderCredentialTypeFilter()}
       {renderCredentialDateFilter()}
+      {/* TODO: add clear all filters button here */}
     </>
   );
 
