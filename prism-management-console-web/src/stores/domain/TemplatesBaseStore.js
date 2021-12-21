@@ -1,16 +1,9 @@
 import _ from 'lodash';
 import { computed, makeAutoObservable } from 'mobx';
-import {
-  CREDENTIAL_TYPE_CATEGORY_STATUSES,
-  SORTING_DIRECTIONS,
-  TEMPLATES_SORTING_KEYS
-} from '../../helpers/constants';
+import { SORTING_DIRECTIONS, TEMPLATES_SORTING_KEYS } from '../../helpers/constants';
 import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpers';
 
 const { ascending, descending } = SORTING_DIRECTIONS;
-const { READY } = CREDENTIAL_TYPE_CATEGORY_STATUSES;
-
-const defaultCategoryNames = ['Identity', 'Educational', 'Health', 'Employment'];
 
 export default class TemplatesBaseStore {
   isFetchingTemplates = false;
@@ -59,10 +52,6 @@ export default class TemplatesBaseStore {
     this.contactIdFilter = contactId;
     yield this.fetchTemplates();
     yield this.fetchCategories();
-
-    // TODO: remove when backend provides default categories from the start
-    yield this.handleMissingDefaultCategories();
-    yield this.handleMissingDefaultCredentialTypes();
   }
 
   resetTemplatesAndCategories() {
@@ -78,23 +67,6 @@ export default class TemplatesBaseStore {
     this.lastEditedFilter = '';
     this.sortDirection = ascending;
     this.sortingBy = TEMPLATES_SORTING_KEYS.name;
-  }
-
-  /**
-   * Create the default categories if not existing already
-   * TODO: remove when backend provides default categories from the start
-   */
-  *handleMissingDefaultCategories() {
-    const existingCategoryNames = this.templateCategories.map(c => c.name);
-    const missingDefaultCategories = defaultCategoryNames.filter(
-      defaultCategoryName => !existingCategoryNames.includes(defaultCategoryName)
-    );
-
-    const promisesArray = missingDefaultCategories.map(categoryName =>
-      this.api.credentialTypesManager.createCategory({ name: categoryName, state: READY })
-    );
-
-    yield Promise.all(promisesArray);
   }
 
   // ********************** //
