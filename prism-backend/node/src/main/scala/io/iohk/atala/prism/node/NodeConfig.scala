@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node
 
+import cats.Applicative
 import com.typesafe.config.Config
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
@@ -7,6 +8,8 @@ import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.services.CardanoLedgerService
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.repositories.TransactorFactory
+
+import scala.util.Try
 
 object NodeConfig {
 
@@ -37,6 +40,11 @@ object NodeConfig {
   def cardanoWalletConfig(config: Config): CardanoWalletApiClient.Config = {
     val host = config.getString("host")
     val port = config.getInt("port")
-    CardanoWalletApiClient.Config(host, port)
+    val routingHeaderName = Try("routingHeaderName").map(config.getString).toOption
+    val routingHeaderValue = Try("routingHeaderValue").map(config.getString).toOption
+    val routingHeader = Applicative[Option]
+      .map2(routingHeaderName, routingHeaderValue)((headerName, headerValue) => Map(headerName -> headerValue))
+
+    CardanoWalletApiClient.Config(host, port, routingHeader.getOrElse(Map.empty))
   }
 }

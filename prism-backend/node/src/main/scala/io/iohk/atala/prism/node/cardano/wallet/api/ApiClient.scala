@@ -66,6 +66,7 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
     sttp
       .contentType(MediaTypes.Json)
       .response(asString)
+      .headers(config.customHeaders)
       .method(method.httpMethod, Uri.apply(config.host, config.port).path(method.path))
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send()
@@ -83,7 +84,7 @@ private[wallet] class ApiClient(config: ApiClient.Config)(implicit
 
 private[wallet] object ApiClient {
 
-  case class Config(host: String, port: Int)
+  case class Config(host: String, port: Int, customHeaders: Map[String, String])
 
   private[wallet] val DefaultBackend: SttpBackend[Future, Nothing] = AsyncHttpClientFutureBackend()
 
