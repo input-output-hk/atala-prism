@@ -246,6 +246,16 @@ layer 3 extended public key from which the layer 4 parent derives is also
 compromised, the entire account will be compromised too, as layer 4 is also
 derived in non-hardened mode.
 
+\paragraph{Notation.} It is frequent that the values used to derive keys in
+the different layers are written in a short form like \texttt{m/a'/b'/c'/d'/e/f},
+where \texttt{m} denotes the master seed (mnemonic); and each value between
+bars is the number used to derive the key for the node at the corresponding
+layer, where a tilded value denotes hardened derivation, and a non-tilded value
+denotes non-hardened derivation. For instance, in the previous path, \texttt{a'}
+denotes that the value \texttt{a} is used to derive, in hardened mode, the second
+level of the path; or the value \texttt{f}  is used to derive, in non-hardened
+mode, the last node in the path.
+
 \subsection{Comments on a Recent Security Evaluation of BIP32 Wallets}
 
 Very recently, \cite{def+21} was published in CCS'21, a major applied
