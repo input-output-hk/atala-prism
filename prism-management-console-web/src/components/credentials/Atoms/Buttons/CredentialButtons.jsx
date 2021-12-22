@@ -5,13 +5,13 @@ import { Badge, Dropdown, Menu } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import CredentialsFilter from '../../Molecules/Filters/CredentialsFilter/CredentialsFilter';
-import FilterIconComponent from '../../../common/Atoms/Icons/FilterIconComponent';
 import {
   REVOKE_CREDENTIALS,
   SEND_CREDENTIALS,
   SIGN_CREDENTIALS
 } from '../../../../helpers/constants';
 import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
+import FilterIcon from '../../../common/Atoms/Icons/FilterIconComponent';
 
 import './_style.scss';
 
@@ -90,7 +90,7 @@ const CredentialButtons = observer(
             overlay={filtersMenu}
             trigger={['click']}
             className="SelectBtn theme-outline"
-            icon={<FilterIconComponent />}
+            buttonsRender={<FilterIcon />}
           />
         </Badge>
       </div>

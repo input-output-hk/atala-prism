@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Badge, Dropdown, Menu } from 'antd';
 import TemplateFilters from './TemplateFilters';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import FilterIconComponent from '../../../common/Atoms/Icons/FilterIconComponent';
+import FilterIcon from '../../../common/Atoms/Icons/FilterIconComponent';
 
 const TemplatesAdditionalFilters = ({
   templateCategories,
@@ -28,7 +28,7 @@ const TemplatesAdditionalFilters = ({
         overlay={filtersMenu}
         trigger={['click']}
         className="SelectBtn theme-outline"
-        icon={<FilterIconComponent />}
+        icon={<FilterIcon />}
       />
     </Badge>
   );
