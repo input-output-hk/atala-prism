@@ -101,7 +101,11 @@ export default class GroupsBaseStore {
   }
 
   get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasDateFilterApplied;
+    return this.hasNameFilterApplied || this.hasAdditionalFiltersApplied;
+  }
+
+  get hasAdditionalFiltersApplied() {
+    return this.hasDateFilterApplied;
   }
 
   get hasNameFilterApplied() {
@@ -125,8 +129,15 @@ export default class GroupsBaseStore {
   }
 
   get filterSortingProps() {
-    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
+    const {
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      toggleSortDirection,
+      hasAdditionalFiltersApplied
+    } = this;
     return {
+      hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
