@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Badge, Dropdown, Menu } from 'antd';
 import TemplateFilters from './TemplateFilters';
 import { templateCategoryShape } from '../../../../helpers/propShapes';
-import FilterIcon from '../../../common/Atoms/Icons/FilterIconComponent';
+import FilterIcon from '../../../common/Atoms/Icons/FilterIcon';
 
 const TemplatesAdditionalFilters = ({
   templateCategories,

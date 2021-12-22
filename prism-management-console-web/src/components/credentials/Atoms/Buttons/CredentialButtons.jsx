@@ -11,7 +11,7 @@ import {
   SIGN_CREDENTIALS
 } from '../../../../helpers/constants';
 import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
-import FilterIcon from '../../../common/Atoms/Icons/FilterIconComponent';
+import FilterIcon from '../../../common/Atoms/Icons/FilterIcon';
 
 import './_style.scss';
 
@@ -90,7 +90,7 @@ const CredentialButtons = observer(
             overlay={filtersMenu}
             trigger={['click']}
             className="SelectBtn theme-outline"
-            buttonsRender={<FilterIcon />}
+            icon={<FilterIcon />}
           />
         </Badge>
       </div>
