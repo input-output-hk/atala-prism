@@ -49,6 +49,21 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       estimatedFee must be(EstimatedFee(min = Lovelace(133713), max = Lovelace(1000000)))
     }
 
+    "estimate the fee of a transaction with header" in {
+      val client =
+        FakeCardanoWalletApiClient.Success(
+          expectedPath,
+          expectedJsonRequest,
+          readResource("estimateTransactionFee_success_response.json"),
+          Map("RoutingHeaderName" -> "RoutingHeaderValue")
+        )
+
+      val estimatedFee =
+        client.estimateTransactionFee(walletId, List(payment), Some(metadata)).value.futureValue.toOption.value
+
+      estimatedFee must be(EstimatedFee(min = Lovelace(133713), max = Lovelace(1000000)))
+    }
+
     "fail on server error" in {
       val client =
         FakeCardanoWalletApiClient.Fail(
@@ -76,12 +91,29 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
     val expectedPath = s"v2/wallets/$walletId/transactions"
     val expectedJsonRequest = readResource("postTransaction_request.json")
 
-    "post a new transaction" in {
+    "post a new transaction with no headers" in {
       val client =
         FakeCardanoWalletApiClient.Success(
           expectedPath,
           expectedJsonRequest,
           readResource("postTransaction_success_response.json")
+        )
+
+      val transaction =
+        client.postTransaction(walletId, List(payment), Some(metadata), passphrase).value.futureValue
+
+      transaction must beRight(
+        TransactionId.from("1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1").value
+      )
+    }
+
+    "post a new transaction with header" in {
+      val client =
+        FakeCardanoWalletApiClient.Success(
+          expectedPath,
+          expectedJsonRequest,
+          readResource("postTransaction_success_response.json"),
+          Map("RoutingHeaderName" -> "RoutingHeaderValue")
         )
 
       val transaction =
@@ -121,6 +153,19 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       transactionDetails must beRight(TransactionDetails(transactionId, TransactionStatus.InLedger))
     }
 
+    "get transaction details with header" in {
+      val client = FakeCardanoWalletApiClient.Success(
+        expectedPath,
+        "",
+        readResource("getTransaction_success_response.json"),
+        Map("RoutingHeaderName" -> "RoutingHeaderValue")
+      )
+
+      val transactionDetails = client.getTransaction(walletId, transactionId).value.futureValue
+
+      transactionDetails must beRight(TransactionDetails(transactionId, TransactionStatus.InLedger))
+    }
+
     "fail on server error" in {
       val client =
         FakeCardanoWalletApiClient.Fail(
@@ -146,6 +191,13 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
       client.deleteTransaction(walletId, transactionId).value.futureValue
     }
 
+    "delete a transaction with header" in {
+      val client =
+        FakeCardanoWalletApiClient.Success(expectedPath, "", "", Map("RoutingHeaderName" -> "RoutingHeaderValue"))
+
+      client.deleteTransaction(walletId, transactionId).value.futureValue
+    }
+
     "fail on server error" in {
       val client =
         FakeCardanoWalletApiClient.Fail(
@@ -166,6 +218,22 @@ class CardanoWalletApiClientSpec extends AnyWordSpec with ScalaFutures {
 
     "return available funds and state data" in {
       val client = FakeCardanoWalletApiClient.Success(expectedPath, "", readResource("getWallet.json"))
+
+      val result = client.getWallet(walletId).value.futureValue
+      result.isRight mustBe true
+
+      val Right(data) = result
+      data.balance.available mustBe BigInt(42000000)
+      data.state.status mustBe WalletStatus.Ready
+    }
+
+    "return available funds and state data with header" in {
+      val client = FakeCardanoWalletApiClient.Success(
+        expectedPath,
+        "",
+        readResource("getWallet.json"),
+        Map("RoutingHeaderName" -> "RoutingHeaderValue")
+      )
 
       val result = client.getWallet(walletId).value.futureValue
       result.isRight mustBe true

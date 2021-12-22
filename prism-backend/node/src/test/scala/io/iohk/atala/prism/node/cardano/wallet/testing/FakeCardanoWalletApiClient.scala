@@ -17,11 +17,12 @@ object FakeCardanoWalletApiClient {
     def apply(
         expectedPath: String,
         expectedJsonRequest: String,
-        responseBody: String
+        responseBody: String,
+        customHeaders: Map[String, String] = Map.empty
     )(implicit
         ec: ExecutionContext
     ): CardanoWalletApiClient = {
-      FakeCardanoWalletApiClient(expectedPath, expectedJsonRequest, 200, responseBody)
+      FakeCardanoWalletApiClient(expectedPath, expectedJsonRequest, 200, responseBody, customHeaders)
     }
   }
 
@@ -51,7 +52,7 @@ object FakeCardanoWalletApiClient {
     def apply()(implicit
         ec: ExecutionContext
     ): CardanoWalletApiClient = {
-      val config = ApiClient.Config("localhost", 8090)
+      val config = ApiClient.Config("localhost", 8090, Map.empty)
       val backend = SttpBackendStub.asynchronousFuture
 
       new ApiClient(config)(backend, ec)
@@ -62,15 +63,17 @@ object FakeCardanoWalletApiClient {
       expectedPath: String,
       expectedJsonRequest: String,
       responseCode: Int,
-      responseBody: String
+      responseBody: String,
+      customHeaders: Map[String, String] = Map.empty
   )(implicit
       ec: ExecutionContext
   ): CardanoWalletApiClient = {
-    val config = ApiClient.Config("localhost", 8090)
+    val config = ApiClient.Config("localhost", 8090, customHeaders)
     val backend = SttpBackendStub.asynchronousFuture
       .whenRequestMatches(request =>
         request.uri.host == config.host && request.uri.port.value == config.port && request.uri.path
-          .mkString("/") == expectedPath && sameJson(request.body.asInstanceOf[StringBody].s, expectedJsonRequest)
+          .mkString("/") == expectedPath && sameJson(request.body.asInstanceOf[StringBody].s, expectedJsonRequest) &&
+          customHeaders.forall(header => request.headers.contains(header))
       )
       .thenRespondWithCode(responseCode, responseBody)
 
