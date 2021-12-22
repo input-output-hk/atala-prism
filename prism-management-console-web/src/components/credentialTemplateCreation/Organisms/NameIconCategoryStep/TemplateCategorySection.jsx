@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Form, message, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { templateCategoryShape } from '../../../../helpers/propShapes';
 import { useTemplateCreationStore } from '../../../../hooks/useTemplatesPageStore';
-import './_style.scss';
 import Logger from '../../../../helpers/Logger';
+import { CREDENTIAL_TYPE_CATEGORY_STATUSES } from '../../../../helpers/constants';
 
-const ENABLED_STATE = 1;
+import './_style.scss';
+
+const { READY } = CREDENTIAL_TYPE_CATEGORY_STATUSES;
 
 const { Option } = Select;
 
@@ -42,7 +42,7 @@ const TemplateCategorySection = observer(() => {
     }
   };
 
-  const categories = templateCategories.filter(({ state }) => state === ENABLED_STATE);
+  const categories = templateCategories.filter(({ state }) => state === READY);
 
   const hasPickableOption = ({ options, searchValue }) =>
     Boolean(options.filter(op => handleFilter(searchValue, op.label)).length);
@@ -91,7 +91,7 @@ const TemplateCategorySection = observer(() => {
           dropdownRender={dropdownRender}
         >
           {categories.map(cat => (
-            <Option value={cat.id} label={cat.name}>
+            <Option key={cat.id} value={cat.id} label={cat.name}>
               {cat.name}
             </Option>
           ))}
@@ -100,9 +100,5 @@ const TemplateCategorySection = observer(() => {
     </div>
   );
 });
-
-TemplateCategorySection.propTypes = {
-  templateCategories: PropTypes.arrayOf(templateCategoryShape).isRequired
-};
 
 export default TemplateCategorySection;

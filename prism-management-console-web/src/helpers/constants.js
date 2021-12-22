@@ -76,6 +76,14 @@ export const CREDENTIAL_TYPE_FIELD_TYPES = {
   DATE: 4
 };
 
+export const CREDENTIAL_TYPE_CATEGORY_STATUSES = {
+  UNKNOWN: 0,
+  DRAFT: 1,
+  READY: 2,
+  ARCHIVED: 3,
+  MOCKED: 4
+};
+
 export const VALID_CREDENTIAL_TYPE_STATUSES = [
   // Default types come as Draft. We consider them valid for now.
   CREDENTIAL_TYPE_STATUSES.DRAFT,

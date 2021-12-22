@@ -17,6 +17,8 @@ const RecipientsList = ({ recipients }) => {
   const tpc = useTranslationWithPrefix(contactsPrefix);
   const tpg = useTranslationWithPrefix(groupsPrefix);
 
+  const recipientsWithKeys = recipients.map((r, index) => ({ ...r, key: index }));
+
   return (
     <div className="RecipientsList">
       <Table
@@ -55,7 +57,7 @@ const RecipientsList = ({ recipients }) => {
               )
           }
         ]}
-        dataSource={recipients}
+        dataSource={recipientsWithKeys}
       />
     </div>
   );
