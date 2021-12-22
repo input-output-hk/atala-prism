@@ -84,6 +84,8 @@ static_resources:
                           route: { cluster: management_console_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
                           route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypeCategoriesService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
                       cors:
                         allow_origin_string_match: { suffix: "$ATALA_PRISM_DOMAIN" }
                         allow_methods: GET, PUT, DELETE, POST, OPTIONS
@@ -142,6 +144,8 @@ static_resources:
                         - match: { prefix: "/io.iohk.atala.prism.protos.GroupsService" }
                           route: { cluster: management_console_service, max_grpc_timeout: 0s }
                         - match: { prefix: "/io.iohk.atala.prism.protos.CredentialsStoreService" }
+                          route: { cluster: management_console_service, max_grpc_timeout: 0s }
+                        - match: { prefix: "/io.iohk.atala.prism.protos.CredentialTypeCategoriesService" }
                           route: { cluster: management_console_service, max_grpc_timeout: 0s }
                 http_filters:
                   - name: envoy.filters.http.grpc_stats
