@@ -11,7 +11,7 @@
     .selectLabel {
       p {
         margin: 0;
-        @include primary-text(9px, $dark-grey);
+        @include primary-text(9px, $black);
         text-transform: uppercase;
         letter-spacing: 1px;
       }
@@ -64,6 +64,9 @@
         }
         .ant-select {
           border-color: lightgray;
+        }
+        .InputPrefix {
+          color: $black;
         }
       }
     }
