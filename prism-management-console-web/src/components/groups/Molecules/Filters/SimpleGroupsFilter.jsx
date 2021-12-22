@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { observer } from 'mobx-react-lite';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
 import './_style.scss';
 
-const SimpleGroupsFilter = observer(({ filterSortingProps }) => {
+const SimpleGroupsFilter = ({ filterSortingProps }) => {
   const { t } = useTranslation();
 
   const { setFilterValue } = filterSortingProps;
@@ -20,12 +19,12 @@ const SimpleGroupsFilter = observer(({ filterSortingProps }) => {
       </div>
     </div>
   );
-});
+};
 
 SimpleGroupsFilter.propTypes = {
   filterSortingProps: PropTypes.shape({
     setFilterValue: PropTypes.func.isRequired
-  })
+  }).isRequired
 };
 
 export default SimpleGroupsFilter;
