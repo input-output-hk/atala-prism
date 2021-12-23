@@ -3,7 +3,7 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 
-const items = [
+export const items = [
   { title: 'landing.trust.titlebenefit1', description: 'landing.trust.benefit1' },
   { title: 'landing.trust.titlebenefit2', description: 'landing.trust.benefit2' },
   { title: 'landing.trust.titlebenefit3', description: 'landing.trust.benefit3' },
@@ -22,7 +22,7 @@ const TrustSection = () => {
       </div>
       <div className="BenefitsContainer">
         {items.map(({ title, description }) => (
-          <div className="BenefitItem">
+          <div className="BenefitItem" key={title}>
             <h3>{t(title)}</h3>
             <p>{t(description)}</p>
           </div>

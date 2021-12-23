@@ -4,14 +4,10 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 
+const { TabPane } = Tabs;
+
 const UseCasesPanel = () => {
   const { t } = useTranslation();
-
-  const { TabPane } = Tabs;
-
-  function callback(key) {
-    console.log(key);
-  }
 
   return (
     <div className="UseCasesPanel">
@@ -20,7 +16,7 @@ const UseCasesPanel = () => {
         <h3>{t('landing.useCasesPanel.subtitle')}</h3>
       </div>
       <div className="UseCasesContainer">
-        <Tabs defaultActiveKey="1" onChange={callback}>
+        <Tabs defaultActiveKey="1">
           <TabPane tab="Education" key="1">
             <div className="TabContent">
               <div className="TabImage">

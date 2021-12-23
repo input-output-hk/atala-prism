@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Collapse, Icon } from 'antd';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 
@@ -19,10 +20,10 @@ const ItemCollapse = ({ name }) => {
   };
 
   const bulletsRender = () => {
-    let bullets = [];
+    const bullets = [];
     for (let i = 1; i <= bulletsNumber; i++) {
       bullets.push(
-        <li>
+        <li key={`${name}${i}`}>
           <p>{t(`landing.intro.itemIcon.${name}.bullet${i}`)}</p>
         </li>
       );
@@ -45,6 +46,10 @@ const ItemCollapse = ({ name }) => {
       </Collapse>
     </div>
   );
+};
+
+ItemCollapse.propTypes = {
+  name: PropTypes.string.isRequired
 };
 
 export default ItemCollapse;

@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
+import Contact from '../../../../app/components/contact/Organisms/Contact/Contact';
 
 import './_style.scss';
-import Contact from '../../../../app/components/contact/Organisms/Contact/Contact';
 
 const ContactPanel = () => {
   const { t } = useTranslation();

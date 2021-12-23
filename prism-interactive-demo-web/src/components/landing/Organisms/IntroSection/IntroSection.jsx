@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import IntroItem from '../../Molecules/IntroItem/IntroItem';
+import ItemCollapse from '../../Molecules/ItemCollapse/ItemCollapse';
 
 import './_style.scss';
-import ItemCollapse from '../../Molecules/ItemCollapse/ItemCollapse';
 
 const IntroSection = () => {
   const { t } = useTranslation();
@@ -12,8 +12,8 @@ const IntroSection = () => {
 
   const separator = key => <hr key={key} className="lineSeparatorSide" />;
 
-  const createIntroItem = (key, pictureNumber) => (
-    <div className="ItemVision">
+  const createIntroItem = key => (
+    <div className="ItemVision" key={key}>
       <IntroItem
         key={key}
         itemIcon={t(`landing.intro.itemIcon.${key}.image`)}
@@ -29,13 +29,13 @@ const IntroSection = () => {
       <h1>{t('landing.intro.question')}</h1>
       <div className="IntroItemContainer">
         {keys
-          .map((key, index) => createIntroItem(key, index + 2))
+          .map(key => createIntroItem(key))
           .reduce(
             (acumulator, currentIntroItem) => {
               const withSeparator = acumulator.concat(separator(acumulator.length));
               return withSeparator.concat(currentIntroItem);
             },
-            [createIntroItem('credentials', 1)]
+            [createIntroItem('credentials')]
           )}
       </div>
     </div>

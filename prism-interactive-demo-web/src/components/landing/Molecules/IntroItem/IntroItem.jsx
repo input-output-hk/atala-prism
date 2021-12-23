@@ -16,12 +16,7 @@ const IntroItem = ({ itemIcon, itemTitle, itemText }) => (
 IntroItem.propTypes = {
   itemIcon: PropTypes.string.isRequired,
   itemTitle: PropTypes.string.isRequired,
-  itemText: PropTypes.string.isRequired,
-  bulletText1: PropTypes.string.isRequired,
-  bulletText2: PropTypes.string.isRequired,
-  bulletText3: PropTypes.string.isRequired,
-  bulletText4: PropTypes.string.isRequired,
-  bulletText5: PropTypes.string.isRequired
+  itemText: PropTypes.string.isRequired
 };
 
 export default IntroItem;
