@@ -7,15 +7,6 @@
 }
 
 .AddContactsModal {
-  height: 80vh;
-  .groupsCheckbox {
-    display: flex;
-    align-items: flex-end;
-    margin-right: 20px;
-  }
-  .ContactFilters {
-    width: 100% !important;
-  }
   .ant-modal {
     &-title {
       font-family: 'Circular-bold', sans-serif;
@@ -23,15 +14,46 @@
       color: $secondary-color;
     }
     &-body {
-      height: 75%;
+      .ModalContactsContainer {
+        padding: 1em 0;
+      }
     }
     &-content {
       height: 100%;
+      padding: 0.5em 1em;
     }
     &-footer {
-      height: 80px;
+      display: none;
+    }
+  .ant-modal-header {
+    @include primary-text($h2, $secondary-color);
+    font-variant: normal;
+  }
+}
+
+.modal-filter-container {
+  display: flex;
+  justify-content: space-between;
+  .SelectAllCheckboxContainer {
+    padding: 1em 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin:0;
+  }
+  .searchAndBtnContainer {
+    display: flex; 
+    align-items: center;
+    .FilterControls .searchBox {
+      width: 200px!important;
     }
   }
+  .ant-btn {
+    margin: 0 0 0 1em;
+  }
+}
+
+.AddContactsModal {
 
   .ModalContactsContainer {
     overflow-y: auto;
@@ -43,9 +65,5 @@
       height: 92%;
     }
   }
-
-  .FooterContainer {
-    display: flex;
-    justify-content: center;
-  }
+}
 }

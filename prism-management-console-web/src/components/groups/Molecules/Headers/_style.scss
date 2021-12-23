@@ -17,9 +17,8 @@
       display: flex;
       flex-direction: row-reverse;
       align-items: center;
-      span {
-        margin-right: .5em;
-      }
+      justify-content: center;
+      background-color: $light-grey;
     }
   }
 

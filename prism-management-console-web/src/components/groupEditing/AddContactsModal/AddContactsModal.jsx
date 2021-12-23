@@ -67,20 +67,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     onChange: handleSelectAll
   };
 
-  const confirmButton = (
-    <Row>
-      <Col span={24} className="FooterContainer">
-        <CustomButton
-          buttonProps={{
-            className: 'theme-secondary',
-            onClick: handleConfirm,
-            disabled: selectedContactIds.length === 0
-          }}
-          buttonText={t('groupEditing.buttons.addContacts')}
-        />
-      </Col>
-    </Row>
-  );
+  const confirmButton = <div />;
 
   return (
     <Modal
@@ -91,24 +78,31 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
       className="AddContactsModal"
       footer={confirmButton}
     >
-      <Row type="flex" align="middle" className="mb-3">
-        <Col span={5}>
-          <SelectAllButton
-            isLoadingSelection={false}
-            selectedEntities={selectedContactIds}
-            checkboxProps={checkboxProps}
-          />
-        </Col>
-        <Col span={17}>
+      {/* @dbrosio could you insert the rest of the filters? AZ, sort by and select all*/}
+      <div className="modal-filter-container">
+        <SelectAllButton
+          isLoadingSelection={false}
+          selectedEntities={selectedContactIds}
+          checkboxProps={checkboxProps}
+        />
+        <div className="searchAndBtnContainer">
           <SimpleContactFilter
             localStateFilter={{
               value: textFilter,
               setValue: (_key, value) => setTextFilter(value)
             }}
           />
-        </Col>
-      </Row>
-      <Row className="ModalContactsContainer">
+          <CustomButton
+            buttonProps={{
+              className: 'theme-outline',
+              onClick: handleConfirm,
+              disabled: selectedContactIds.length === 0
+            }}
+            buttonText={t('groupEditing.buttons.addContacts')}
+          />
+        </div>
+      </div>
+      <div className="ModalContactsContainer">
         <Col span={24}>
           <ConnectionsTable
             // TODO: add pagination for getting group members
@@ -123,7 +117,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
             hasMore={false}
           />
         </Col>
-      </Row>
+      </div>
     </Modal>
   );
 });
