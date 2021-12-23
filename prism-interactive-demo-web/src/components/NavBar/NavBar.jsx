@@ -67,8 +67,12 @@ const NavBar = ({ currentSection }) => {
   );
 };
 
+NavBar.defaultProps = {
+  currentSection: null
+};
+
 NavBar.propTypes = {
-  currentSection: PropTypes.oneOf(keys).isRequired
+  currentSection: PropTypes.oneOf(keys)
 };
 
 export default NavBar;

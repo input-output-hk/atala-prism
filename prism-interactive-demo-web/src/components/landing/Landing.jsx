@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'gatsby';
 import { useTranslation } from 'gatsby-plugin-react-i18next';
 import Header from '../Header/Header';
@@ -29,7 +30,7 @@ import CustomButton from '../customButton/CustomButton';
 
 import './_style.scss';
 
-const Landing = () => {
+const Landing = ({ isTesting }) => {
   const { t } = useTranslation();
 
   const [currentSection, setCurrentSection] = useState(null);
@@ -83,7 +84,7 @@ const Landing = () => {
         onMouseOver={() => setCurrentSection(DEMO_NAME)}
         onFocus={() => setCurrentSection(DEMO_NAME)}
       >
-        <FindCredential />
+        <FindCredential isTesting={isTesting} />
       </div>
       <div
         id={COMPONENTS_NAME}
@@ -145,6 +146,14 @@ const Landing = () => {
       <SupportButton />
     </div>
   );
+};
+
+Landing.defaultProps = {
+  isTesting: false
+};
+
+Landing.propTypes = {
+  isTesting: PropTypes.bool
 };
 
 export default Landing;
