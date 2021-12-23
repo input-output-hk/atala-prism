@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.repositories
 
 import java.util.concurrent.Executors
-
-import cats.effect.{Sync, Async, Blocker, ContextShift, Resource}
+import cats.effect.{Async, Blocker, ContextShift, Resource, Sync}
+import com.zaxxer.hikari.HikariConfig
 import doobie.hikari.HikariTransactor
 import org.flywaydb.core.Flyway
 
@@ -40,12 +40,23 @@ object TransactorFactory {
     val executeJdbcBlocker =
       Blocker.liftExecutionContext(ExecutionContext.fromExecutor(Executors.newCachedThreadPool()))
 
+    val poolSize = (config.awaitConnectionThreads * 3) + 1
+    val hikariConfig = new HikariConfig()
+    hikariConfig.setJdbcUrl(config.jdbcUrl)
+    hikariConfig.setUsername(config.username)
+    hikariConfig.setPassword(config.password)
+    hikariConfig.setAutoCommit(false)
+    hikariConfig.setLeakDetectionThreshold(60000)
+    hikariConfig.setMinimumIdle(poolSize)
+    hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
+    hikariConfig.setDriverClassName("org.postgresql.Driver")
+    hikariConfig.addDataSourceProperty("cachePrepStmts", "true")
+    hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250")
+    hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+
     // Hikari transactor is used in order to reuse connections to database
-    HikariTransactor.newHikariTransactor[A](
-      "org.postgresql.Driver",
-      config.jdbcUrl,
-      config.username,
-      config.password,
+    HikariTransactor.fromHikariConfig[A](
+      hikariConfig,
       awaitConnectionExecutor, // await connection here
       executeJdbcBlocker // execute JDBC operations here
     )
