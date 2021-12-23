@@ -60,7 +60,7 @@
       "externalId": "External ID"
     },
     "buttons": {
-      "import": "Add New"
+      "import": "Import"
     },
     "table": {
       "columns": {
@@ -69,7 +69,7 @@
         "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
         "email": "Email",
-        "invite": "QR Code",
+        "invite": "Connect",
         "delete": "Delete",
         "remove": "Remove",
         "view": "View",
