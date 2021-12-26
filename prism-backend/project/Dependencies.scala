@@ -15,7 +15,7 @@ object versions {
   val flyway = "8.2.2"
   val grpc = "1.43.0"
   val kamon = "2.4.2"
-  val logback = "1.2.9"
+  val logback = "1.2.10"
   val logbackLogstash = "7.0.1"
   val jaxb = "2.3.1"
   val mockito = "1.16.49"
