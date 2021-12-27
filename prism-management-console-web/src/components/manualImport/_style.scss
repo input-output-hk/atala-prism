@@ -14,6 +14,7 @@
   border: 1px solid #c5d0de;
   border-radius: 6px;
   margin: 0 1em;
+  width: fit-content;
   .ManualImportContent {
     overflow: auto;
   }
@@ -22,7 +23,6 @@
 .ManualImportWrapper {
   display: flex;
   flex-direction: column;
-  width: fit-content;
   max-width: calc(100% - 2em);
   .ContentHeader {
     padding: 0 2em;
