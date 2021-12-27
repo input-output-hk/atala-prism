@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Badge, Dropdown, Menu } from 'antd';
-import FilterIconComponent from '../../../common/Atoms/Icons/FilterIconComponent';
+import FilterIcon from '../../../common/Atoms/Icons/FilterIcon';
 import ContactAdditionalFiltersMenu from './ContactAdditionalFiltersMenu';
 
 const ContactAdditionalFilters = ({ filterSortingProps }) => {
@@ -19,7 +19,7 @@ const ContactAdditionalFilters = ({ filterSortingProps }) => {
         overlay={filtersMenu}
         trigger={['click']}
         className="FiltersButton theme-outline"
-        icon={<FilterIconComponent />}
+        icon={<FilterIcon />}
       />
     </Badge>
   );
