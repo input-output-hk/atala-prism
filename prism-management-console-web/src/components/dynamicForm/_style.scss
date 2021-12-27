@@ -53,6 +53,9 @@ $last-col-width: 200px;
         &:last-child {
           width: fit-content;
           min-width: $last-col-width;
+          float: right;
+          display: flex;
+          justify-content: center;
         }
       }
     }
@@ -73,6 +76,12 @@ $last-col-width: 200px;
         padding: $cell-padding;
         &:last-child {
           min-width: $last-col-width;
+          float: right;
+          display: flex;
+          justify-content: center;
+          button {
+            margin: 7px;
+          }
         }
       }
     }
