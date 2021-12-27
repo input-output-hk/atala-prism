@@ -90,9 +90,13 @@ async function getCredentialTypes() {
   const categoriesAssociatedWithCredentialTypes = this.config.getCredentialTypesWithCategories();
   const credentialTypesWithCategories = credentialTypesList.map(c => ({
     ...c,
+    // The `lastEdited` attribute is not provided by the backend.
+    // However, it's value is equal to creation date since editing is not supported yet.
+    lastEdited: c.createdAt,
     icon: `${b64ImagePrefix},${c.icon}`,
     category: categoriesAssociatedWithCredentialTypes[c.id]
   }));
+
   Logger.info('got credential types: ', credentialTypesWithCategories);
 
   return credentialTypesWithCategories;
