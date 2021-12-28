@@ -29,18 +29,13 @@ const SimpleContactFilter = observer(({ filterSortingProps, localStateFilter }) 
 
 SimpleContactFilter.defaultProps = {
   filterSortingProps: {},
-  showFullFilter: true,
   localStateFilter: null
 };
 
 SimpleContactFilter.propTypes = {
   filterSortingProps: PropTypes.shape({
-    sortDirection: PropTypes.string,
-    setSortingBy: PropTypes.func,
-    setFilterValue: PropTypes.func,
-    toggleSortDirection: PropTypes.func
+    setFilterValue: PropTypes.func
   }),
-  showFullFilter: PropTypes.bool,
   localStateFilter: PropTypes.shape({
     setValue: PropTypes.func
   })

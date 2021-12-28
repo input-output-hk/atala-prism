@@ -1,23 +1,24 @@
-@import "../../../../css/general_styling";
+@import '../../../../css/general_styling';
 
-.TableOptions {
+.GroupsPageTableOptions {
   display: flex;
+  flex-direction: row;
+  width: 100%;
   justify-content: space-between;
   align-items: baseline;
-  margin-left: 0.5em;
   .LeftOptions {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     .TableOptionButton {
-      margin: 0.5em 0.5em 0.5em 0;
+      margin: .5em .5em .5em 0;
       padding: 0;
       color: $black;
       display: flex;
       flex-direction: row-reverse;
       align-items: center;
       span {
-        margin-right: 0.5em;
+        margin-right: .5em;
       }
     }
   }

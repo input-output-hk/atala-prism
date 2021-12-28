@@ -2,33 +2,29 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import SearchBar from '../../../common/Atoms/SearchBar/SearchBar';
-import ContactAdditionalFilters from '../Filters/ContactAdditionalFilters';
-import CreateContactButton from '../../Atoms/ActionButtons/CreateContactButton';
+import './_style.scss';
 
-const ContactActionsHeader = ({ filterSortingProps }) => {
+const SimpleGroupsFilter = ({ filterSortingProps }) => {
   const { t } = useTranslation();
 
   const { setFilterValue } = filterSortingProps;
 
   return (
     <div className="FilterControls">
-      <div className="ContactFilters">
+      <div className="GroupsFilter">
         <SearchBar
           setSearchText={textValue => setFilterValue('textFilter', textValue)}
-          placeholder={t('contacts.filters.search')}
+          placeholder={t('groups.filters.search')}
         />
-        <CreateContactButton />
-        <ContactAdditionalFilters filterSortingProps={filterSortingProps} />
       </div>
     </div>
   );
 };
 
-ContactActionsHeader.propTypes = {
+SimpleGroupsFilter.propTypes = {
   filterSortingProps: PropTypes.shape({
-    hasAdditionalFiltersApplied: PropTypes.bool,
     setFilterValue: PropTypes.func.isRequired
   }).isRequired
 };
 
-export default ContactActionsHeader;
+export default SimpleGroupsFilter;

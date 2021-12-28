@@ -4,9 +4,9 @@ import { Checkbox } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
-import GroupFilters from '../../../groups/Molecules/Filters/GroupFilters';
 import SelectAllButton from './SelectAllButton';
 import { useCreateCredentialPageStore } from '../../../../hooks/useCreateCredentialPageStore';
+import SimpleGroupsFilter from '../../../groups/Molecules/Filters/SimpleGroupsFilter';
 import './_style.scss';
 
 const GroupsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSelectRecipients }) => {
@@ -30,7 +30,7 @@ const GroupsTableHeader = observer(({ shouldSelectRecipients, toggleShouldSelect
 
   return (
     <div className="RecipientsSelectionTableHeader">
-      <GroupFilters filterSortingProps={groupsFilterSortingProps} showFullFilter={false} />
+      <SimpleGroupsFilter filterSortingProps={groupsFilterSortingProps} />
       <SelectAllButton
         isLoadingSelection={isLoadingGroupsSelection}
         selectedEntities={selectedGroupIds}

@@ -2,15 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Badge, Dropdown, Menu } from 'antd';
 import FilterIcon from '../../../common/Atoms/Icons/FilterIcon';
-import ContactAdditionalFiltersMenu from './ContactAdditionalFiltersMenu';
+import GroupAdditionalFiltersMenu from './GroupAdditionalFiltersMenu';
 import './_style.scss';
 
-const ContactAdditionalFilters = ({ filterSortingProps }) => {
+const GroupAdditionalFilters = ({ filterSortingProps }) => {
   const { hasAdditionalFiltersApplied } = filterSortingProps;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <ContactAdditionalFiltersMenu {...filterSortingProps} />
+      <GroupAdditionalFiltersMenu {...filterSortingProps} />
     </Menu>
   );
 
@@ -26,11 +26,11 @@ const ContactAdditionalFilters = ({ filterSortingProps }) => {
   );
 };
 
-ContactAdditionalFilters.propTypes = {
+GroupAdditionalFilters.propTypes = {
   filterSortingProps: PropTypes.shape({
     hasAdditionalFiltersApplied: PropTypes.bool,
     setFilterValue: PropTypes.func.isRequired
   }).isRequired
 };
 
-export default ContactAdditionalFilters;
+export default GroupAdditionalFilters;

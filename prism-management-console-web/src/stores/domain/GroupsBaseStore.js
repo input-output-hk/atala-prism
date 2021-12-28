@@ -21,7 +21,7 @@ const defaultValues = {
   isFetching: false,
   isSearching: false,
   nameFilter: '',
-  dateFilter: [],
+  dateFilter: '',
   sortDirection: ascending,
   sortingBy: GROUP_SORTING_KEYS.name
 };
@@ -81,17 +81,29 @@ export default class GroupsBaseStore {
     return this.isFetching && this.totalNumberOfGroups && !this.isSearching;
   }
 
+  resetGroupsAndFilters() {
+    this.isFetching = defaultValues.isFetching;
+    this.isSearching = defaultValues.isSearching;
+    this.resetGroups();
+    this.resetFilters();
+    this.resetSorting();
+  }
+
   resetGroups() {
     this.groups = defaultValues.groups;
     this.totalNumberOfGroups = defaultValues.totalNumberOfGroups;
   }
 
-  resetGroupsAndFilters() {
-    this.resetGroups();
-    this.isFetching = defaultValues.isFetching;
-    this.isSearching = defaultValues.isSearching;
+  resetFilters() {
     this.nameFilter = defaultValues.nameFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
     this.dateFilter = defaultValues.dateFilter;
+  }
+
+  resetSorting() {
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
   }
@@ -101,7 +113,11 @@ export default class GroupsBaseStore {
   }
 
   get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasDateFilterApplied;
+    return this.hasNameFilterApplied || this.hasAdditionalFiltersApplied;
+  }
+
+  get hasAdditionalFiltersApplied() {
+    return this.hasDateFilterApplied;
   }
 
   get hasNameFilterApplied() {
@@ -109,7 +125,7 @@ export default class GroupsBaseStore {
   }
 
   get hasDateFilterApplied() {
-    return Boolean(this.dateFilter.every(Boolean));
+    return Boolean(this.dateFilter);
   }
 
   get hasCustomSorting() {
@@ -125,11 +141,24 @@ export default class GroupsBaseStore {
   }
 
   get filterSortingProps() {
-    const { sortDirection, setSortingBy, setFilterValue, toggleSortDirection } = this;
-    return {
+    const {
+      nameFilter,
+      dateFilter,
+      hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
+      toggleSortDirection
+    } = this;
+    return {
+      nameFilter,
+      dateFilter,
+      hasAdditionalFiltersApplied,
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      resetAdditionalFilters,
       toggleSortDirection
     };
   }
@@ -164,8 +193,9 @@ export default class GroupsBaseStore {
     this.isFetching = true;
 
     try {
-      const { nameFilter, dateFilter = [], sortDirection, sortingBy } = this;
-      const [createdAfter, createdBefore] = dateFilter;
+      const { nameFilter, dateFilter, sortDirection, sortingBy } = this;
+      const createdAfter = dateFilter;
+      const createdBefore = dateFilter;
 
       const response = yield this.api.groupsManager.getGroups({
         offset,

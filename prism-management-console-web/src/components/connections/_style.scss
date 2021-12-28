@@ -20,6 +20,7 @@
     flex-wrap: nowrap;
     align-items: center;
     border-bottom: 1px solid $light-grey;
+    padding: 0 0 1em 0;
     .title {
       width: 50%;
     }
@@ -43,6 +44,15 @@
   .FilterControls {
     .ContactFilters {
       display: flex;
+      .searchBox {
+        margin:0 0.5em;
+      }
+      .ControlButtons {
+        margin:0 0.5em;
+      }
+      .ant-badge {
+        margin: 0 0 0 0.5em;
+      }
       .InputContainer {
         margin-left: 1em;
         .ChildrenContainer {
@@ -77,4 +87,24 @@
   button {
     margin-left: 1em;
   }
+}
+
+.ant-input-affix-wrapper:focus {
+  border-color: red!important;
+  outline: 0;
+  -webkit-box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+}
+
+.ant-input-affix-wrapper:hover {
+  border-color: red!important;
+  -webkit-box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+}
+
+.ant-input-affix-wrapper:focus, .ant-input-affix-wrapper-focused {
+  border-color: red!important;
+  outline: 0;
+  -webkit-box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
 }
