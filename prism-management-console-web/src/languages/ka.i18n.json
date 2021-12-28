@@ -10,7 +10,10 @@
     "done": "Done",
     "save": "Save",
     "saveForLater": "Save & Continue later",
-    "sortBy": "Sort by"
+    "sortBy": "Sort by",
+    "sortingBy": "Sorting by {{column}}",
+    "filterBy": "Filter by {{column}}",
+    "clear": "Clear"
   },
   "commonWords": {
     "and": "and",
@@ -59,7 +62,7 @@
       "externalId": "External ID"
     },
     "buttons": {
-      "import": "Add New"
+      "import": "Import"
     },
     "table": {
       "columns": {
@@ -68,7 +71,7 @@
         "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
         "email": "Email",
-        "invite": "QR Code",
+        "invite": "Connect",
         "delete": "Delete",
         "remove": "Remove",
         "view": "View",

@@ -18,7 +18,7 @@
   }
 }
 
-.Groups {
+.GroupsContainer {
   .GroupContentContainer {
     height: calc(100vh - 220px);
     margin-top: 1em;
@@ -31,10 +31,11 @@
 
 .ContentHeader {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   border-bottom: 1px solid $light-grey;
+  padding: 0 0 1em 0;
   .title {
-    width: 100%;
+    width: 50%;
     h1 {
       @include primary-text($h1, $black);
       font-weight: bold;
@@ -42,36 +43,6 @@
     }
     h3 {
       @include primary-text($h3, $grey);
-    }
-  }
-  .filterSection {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin: 1.5em 0 1em 0;
-    .InputContainer {
-      margin-left: 1em;
-      .ChildrenContainer {
-        width: 150px;
-        .ant-select:not(.ant-select-customize-input) .ant-select-selector {
-          background-color: transparent;
-        }
-        .ant-select {
-          border-color: lightgray;
-        }
-      }
-    }
-    .filterContainer {
-      .w-100 div, .CredentialRawDetail .Card div {
-        margin: 0;
-      }
-      .w-100 {
-        display: flex;
-        .InputContainer:last-child {
-          margin-left: 1em;
-        }
-      }
     }
   }
 }

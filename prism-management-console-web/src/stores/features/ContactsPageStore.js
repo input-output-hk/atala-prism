@@ -38,6 +38,10 @@ export default class ContactsPageStore {
     return this.contactsBaseStore.isFetching;
   }
 
+  get isLoadingFirstPage() {
+    return this.contactsBaseStore.isLoadingFirstPage;
+  }
+
   fetchMoreData() {
     return this.contactsBaseStore.fetchMoreData();
   }

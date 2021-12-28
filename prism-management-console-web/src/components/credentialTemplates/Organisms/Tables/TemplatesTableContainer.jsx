@@ -9,8 +9,8 @@ import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 import EmptyComponent from '../../../common/Atoms/EmptyComponent/EmptyComponent';
 import TemplatesTable from './TemplatesTable';
 import noTemplatesPicture from '../../../../images/noTemplates.svg';
-import SortControls from '../../Molecules/Headers/SortControls';
 import { useTemplatesPageStore } from '../../../../hooks/useTemplatesPageStore';
+import TemplatesSortControls from '../../Molecules/Headers/TemplatesSortControls';
 
 const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
   const { t } = useTranslation();
@@ -37,7 +37,11 @@ const TemplatesTableContainer = observer(({ showTemplatePreview }) => {
     if (noTemplates) return <EmptyComponent {...emptyProps} />;
     return (
       <>
-        <SortControls {...filterSortingProps} />
+        <div className="TemplatesTableOptions">
+          <div className="LeftOptions">
+            <TemplatesSortControls filterSortingProps={filterSortingProps} />
+          </div>
+        </div>
         <TemplatesTable
           credentialTemplates={filteredTemplates}
           templateCategories={templateCategories}

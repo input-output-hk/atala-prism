@@ -214,6 +214,22 @@ input[type='number']::-webkit-outer-spin-button {
   margin: 0;
 }
 
+/* Focus Style input */
+
+.ant-input-affix-wrapper:focus, .ant-input-affix-wrapper-focused {
+  border-color: $primary-color!important;
+  box-shadow: rgb(255, 197, 197)!important;
+}
+
+.ant-input-affix-wrapper:hover {
+  border-color: $primary-color!important;
+}
+
+.ant-input-affix-wrapper:focus-within {
+  border-color: $primary-color!important;
+  box-shadow: rgb(255, 197, 197)!important;
+}
+
 /* Remove controls from Firefox */
 input[type='number'] {
   -moz-appearance: textfield;
@@ -230,7 +246,7 @@ input[type='number'] {
 }
 .ant-input:focus {
   border-color: $primary-color;
-  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2);
+  box-shadow: rgb(255, 197, 197)!important;
 }
 .ant-select-selection:hover {
   border-color: $primary-color;
@@ -240,7 +256,12 @@ input[type='number'] {
 }
 .ant-select-selection:focus {
   border-color: $primary-color;
-  box-shadow: 0 0 0 2px rgba(255, 24, 24, 0.2);
+  box-shadow: rgb(255, 197, 197)!important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-color: $primary-color;
+  box-shadow: 0px 0px 0px 2px rgb(255, 197, 197)!important;
 }
 // Responsive
 

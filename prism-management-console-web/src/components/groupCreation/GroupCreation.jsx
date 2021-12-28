@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { GROUP_NAME_STATES } from '../../helpers/constants';
 import ConnectionsTable from '../connections/Organisms/table/ConnectionsTable';
-import ConnectionsFilter from '../connections/Molecules/filter/ConnectionsFilter';
+import SimpleContactFilter from '../connections/Molecules/Filters/SimpleContactFilter';
 import GroupName from '../common/Molecules/GroupForm/GroupFormContainer';
 import SelectAllButton from '../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { refPropShape } from '../../helpers/propShapes';
@@ -71,7 +71,7 @@ const GroupCreation = observer(
 
           <div className="flex">
             <div className="SearchBar">
-              <ConnectionsFilter filterSortingProps={filterSortingProps} showFullFilter={false} />
+              <SimpleContactFilter filterSortingProps={filterSortingProps} />
             </div>
 
             <div className="groupsButtonContainer">

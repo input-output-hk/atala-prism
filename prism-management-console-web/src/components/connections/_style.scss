@@ -1,4 +1,4 @@
-@import '../../css/general_styling';
+@import "../../css/general_styling";
 
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
   background: rgb(255, 221, 221);
@@ -15,21 +15,24 @@
   .ContentHeader {
     width: 100%;
     display: flex;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
     border-bottom: 1px solid $light-grey;
+    padding: 0 0 1em 0;
     .title {
-      width: 100%;
+      width: 50%;
     }
-
     .ConnectionFilterWrapper {
-      width: 100%;
       display: flex;
-      justify-content: space-between;
       align-items: center;
       margin: 1.5em 0 1em 0;
+      div {
+        margin: 0 0.5em;
+      }
     }
   }
-
 
   .ConnectionsTable {
     margin-top: 1em;
@@ -41,6 +44,15 @@
   .FilterControls {
     .ContactFilters {
       display: flex;
+      .searchBox {
+        margin:0 0.5em;
+      }
+      .ControlButtons {
+        margin:0 0.5em;
+      }
+      .ant-badge {
+        margin: 0 0 0 0.5em;
+      }
       .InputContainer {
         margin-left: 1em;
         .ChildrenContainer {
@@ -75,4 +87,24 @@
   button {
     margin-left: 1em;
   }
+}
+
+.ant-input-affix-wrapper:focus {
+  border-color: red!important;
+  outline: 0;
+  -webkit-box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+}
+
+.ant-input-affix-wrapper:hover {
+  border-color: red!important;
+  -webkit-box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+}
+
+.ant-input-affix-wrapper:focus, .ant-input-affix-wrapper-focused {
+  border-color: red!important;
+  outline: 0;
+  -webkit-box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 152, 0.452)!important;
 }

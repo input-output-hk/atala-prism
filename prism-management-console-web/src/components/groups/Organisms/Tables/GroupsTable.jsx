@@ -11,6 +11,7 @@ import { CONFIRMED, GROUP_ID_KEY } from '../../../../helpers/constants';
 import { groupShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
+import CreateGroupButton from '../../Atoms/Buttons/CreateGroupButton';
 
 const GroupsTable = observer(
   ({
@@ -22,7 +23,6 @@ const GroupsTable = observer(
     isLoading,
     onCopy,
     setGroupToDelete,
-    newGroupButton,
     selectedGroupIds,
     onSelect,
     shouldSelectRecipients
@@ -33,14 +33,13 @@ const GroupsTable = observer(
     const emptyProps = {
       photoSrc: noGroups,
       model: t('groups.title'),
-      isFilter: hasFiltersApplied,
-      button: newGroupButton
+      isFilter: hasFiltersApplied
     };
 
     const renderEmpty = () => (
       <EmptyComponent
         {...emptyProps}
-        button={accountStatus === CONFIRMED ? newGroupButton : undefined}
+        button={accountStatus === CONFIRMED ? <CreateGroupButton /> : undefined}
       />
     );
 

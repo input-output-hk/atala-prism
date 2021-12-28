@@ -1,4 +1,4 @@
-@import '../../css/general_styling';
+@import "../../css/general_styling";
 
 .ImportContactWrapper {
   flex-direction: column;
@@ -8,7 +8,7 @@
   .ContentHeader {
     border-bottom: 1px solid $light-grey;
     padding: 2em 0;
-    display: block!important;
+    display: block !important;
     h1 {
       @include primary-text($h1, $black);
       font-weight: bold;
@@ -16,5 +16,18 @@
     p {
       @include primary-text($body, $dark-grey);
     }
+  }
+}
+
+.anticon-close-circle {
+  color: $grey;
+  :hover {
+    -webkit-transition: color 0.3s;
+    transition: color 0.3s;
+    transition-property: color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+    transition-delay: 0s;
+    color: $dark-grey;
   }
 }
