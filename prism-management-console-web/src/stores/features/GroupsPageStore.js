@@ -32,10 +32,6 @@ export default class GroupsPageStore {
     return this.groupsBaseStore.groups;
   }
 
-  get isLoadingFirstPage() {
-    return this.groupsBaseStore.isLoadingFirstPage;
-  }
-
   get hasFiltersApplied() {
     return this.groupsBaseStore.hasFiltersApplied;
   }
@@ -58,6 +54,10 @@ export default class GroupsPageStore {
 
   get isFetchingMore() {
     return this.groupsBaseStore.isFetchingMore;
+  }
+
+  get isLoadingFirstPage() {
+    return this.groupsBaseStore.isLoadingFirstPage;
   }
 
   fetchMoreData() {

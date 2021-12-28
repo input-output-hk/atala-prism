@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Badge, Dropdown, Menu } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import CredentialsFilter from '../../Molecules/Filters/CredentialsFilter/CredentialsFilter';
@@ -12,6 +11,7 @@ import {
   SIGN_CREDENTIALS
 } from '../../../../helpers/constants';
 import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
+import FilterIcon from '../../../common/Atoms/Icons/FilterIcon';
 
 import './_style.scss';
 
@@ -84,13 +84,12 @@ const CredentialButtons = observer(
           loading={loadingByKey === SEND_CREDENTIALS}
           buttonText={t('credentials.actions.sendSelectedCredentials')}
         />
-
         <Badge dot={hasAdditionalFiltersApplied} style={{ top: '1em', right: '1em', zIndex: 500 }}>
           <Dropdown.Button
             overlay={filtersMenu}
             trigger={['click']}
             className="SelectBtn theme-outline"
-            icon={<FilterOutlined />}
+            icon={<FilterIcon />}
           />
         </Badge>
       </div>

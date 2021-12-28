@@ -2,22 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
-import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
+import ContactActionsHeader from './Molecules/Headers/ContactActionsHeader';
 import ConnectionsTable from './Organisms/table/ConnectionsTable';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import WaitBanner from '../dashboard/Atoms/WaitBanner/WaitBanner';
 import { useSession } from '../../hooks/useSession';
 import { CONFIRMED, UNCONFIRMED } from '../../helpers/constants';
-import AddUsersButton from './Atoms/AddUsersButtons/AddUsersButton';
 import { useContactsPageStore } from '../../hooks/useContactsPageStore';
 import { useRedirector } from '../../hooks/useRedirector';
+import ContactsPageTableOptions from './Molecules/Headers/ContactsPageTableOptions';
+import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
 
 const Connections = observer(
   ({ qrModalIsVisible, connectionToken, onCloseQR, onInviteContact }) => {
     const { t } = useTranslation();
-    const { redirectToContactDetails, redirectToImportContacts } = useRedirector();
+    const { redirectToContactDetails } = useRedirector();
     const { accountStatus } = useSession();
     const {
       contacts,
@@ -30,8 +31,6 @@ const Connections = observer(
     } = useContactsPageStore();
     const { hasFiltersApplied } = filterSortingProps;
 
-    const newGroupButton = <AddUsersButton onClick={redirectToImportContacts} />;
-
     return (
       <div className="ConnectionsContainer Wrapper">
         {accountStatus === UNCONFIRMED && <WaitBanner />}
@@ -39,24 +38,29 @@ const Connections = observer(
           <div className="title">
             <h1>{t('contacts.title')}</h1>
           </div>
-          <div className="ConnectionFilterWrapper">
-            <ConnectionsFilter filterSortingProps={filterSortingProps} />
-            {accountStatus === CONFIRMED && newGroupButton}
+          <div className="ContactActionsHeaderWrapper">
+            {accountStatus === CONFIRMED && (
+              <ContactActionsHeader filterSortingProps={filterSortingProps} />
+            )}
           </div>
         </div>
+        <ContactsPageTableOptions filterSortingProps={filterSortingProps} />
         <div className="ConnectionsTable InfiniteScrollTableContainer">
-          <ConnectionsTable
-            contacts={contacts}
-            fetchMoreData={fetchMoreData}
-            hasMore={hasMore}
-            hasFiltersApplied={hasFiltersApplied}
-            isLoading={isLoadingFirstPage || isSearching}
-            isFetchingMore={isFetching}
-            inviteContact={onInviteContact}
-            viewContactDetail={redirectToContactDetails}
-            searchDueGeneralScroll
-            newContactButton={newGroupButton}
-          />
+          {isLoadingFirstPage ? (
+            <SimpleLoading size="md" />
+          ) : (
+            <ConnectionsTable
+              contacts={contacts}
+              fetchMoreData={fetchMoreData}
+              hasMore={hasMore}
+              hasFiltersApplied={hasFiltersApplied}
+              isLoading={isSearching}
+              isFetchingMore={isFetching}
+              inviteContact={onInviteContact}
+              viewContactDetail={redirectToContactDetails}
+              searchDueGeneralScroll
+            />
+          )}
         </div>
         <QRModal
           visible={qrModalIsVisible}

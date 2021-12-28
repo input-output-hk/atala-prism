@@ -9,16 +9,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-    }
-    .ant-btn:hover,
-    .ant-btn:focus,
-    .ant-btn:active {
-      color: white;
-      border-color: transparent;
-      background-color: $secondary-color;
+      border-radius: 2px;
+      border: 1px solid $secondary-color;
+      margin-left: 1em;
     }
   }
-}
-.ActionsHeader div {
-  margin: 0 0.5em;
 }

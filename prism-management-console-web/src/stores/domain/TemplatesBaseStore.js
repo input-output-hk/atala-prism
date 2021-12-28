@@ -5,26 +5,36 @@ import { filterByExactMatch, filterByInclusion } from '../../helpers/filterHelpe
 
 const { ascending, descending } = SORTING_DIRECTIONS;
 
+const defaultValues = {
+  isFetchingTemplates: false,
+  isFetchingCategories: false,
+  credentialTemplates: [],
+  templateCategories: [],
+  nameFilter: undefined,
+  categoryFilter: undefined,
+  lastEditedFilter: undefined,
+  sortDirection: ascending,
+  sortingBy: TEMPLATES_SORTING_KEYS.name
+};
+
 export default class TemplatesBaseStore {
-  isFetchingTemplates = false;
+  isFetchingTemplates = defaultValues.isFetchingTemplates;
 
-  isFetchingCategories = false;
+  isFetchingCategories = defaultValues.isFetchingCategories;
 
-  credentialTemplates = [];
+  credentialTemplates = defaultValues.credentialTemplates;
 
-  templateCategories = [];
+  templateCategories = defaultValues.templateCategories;
 
-  mockedTemplateCategories = [];
+  nameFilter = defaultValues.nameFilter;
 
-  nameFilter = '';
+  categoryFilter = defaultValues.categoryFilter;
 
-  categoryFilter = '';
+  lastEditedFilter = defaultValues.lastEditedFilter;
 
-  lastEditedFilter = '';
+  sortDirection = defaultValues.sortDirection;
 
-  sortDirection = ascending;
-
-  sortingBy = TEMPLATES_SORTING_KEYS.name;
+  sortingBy = defaultValues.sortingBy;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -49,31 +59,39 @@ export default class TemplatesBaseStore {
   *initTemplateStore(contactId) {
     this.resetTemplatesAndCategories();
     this.resetFilters();
+    this.resetSorting();
     this.contactIdFilter = contactId;
     yield this.fetchTemplates();
     yield this.fetchCategories();
   }
 
   resetTemplatesAndCategories() {
-    this.credentialTemplates = [];
-    this.templateCategories = [];
-    this.isFetchingTemplates = false;
-    this.isFetchingCategories = false;
+    this.credentialTemplates = defaultValues.credentialTemplates;
+    this.templateCategories = defaultValues.templateCategories;
+    this.isFetchingTemplates = defaultValues.isFetchingTemplates;
+    this.isFetchingCategories = defaultValues.isFetchingCategories;
   }
 
   resetFilters() {
-    this.nameFilter = '';
-    this.categoryFilter = '';
-    this.lastEditedFilter = '';
-    this.sortDirection = ascending;
-    this.sortingBy = TEMPLATES_SORTING_KEYS.name;
+    this.nameFilter = defaultValues.nameFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
+    this.categoryFilter = defaultValues.categoryFilter;
+    this.lastEditedFilter = defaultValues.lastEditedFilter;
+  }
+
+  resetSorting() {
+    this.sortDirection = defaultValues.sortDirection;
+    this.sortingBy = defaultValues.sortingBy;
   }
 
   // ********************** //
   // FILTERS
   // ********************** //
 
-  get hasAditionalFiltersApplied() {
+  get hasAdditionalFiltersApplied() {
     return Boolean(this.categoryFilter || this.lastEditedFilter);
   }
 
@@ -82,7 +100,7 @@ export default class TemplatesBaseStore {
   }
 
   get hasFiltersApplied() {
-    return this.hasNameFilterApplied || this.hasAditionalFiltersApplied;
+    return this.hasNameFilterApplied || this.hasAdditionalFiltersApplied;
   }
 
   get filteredTemplates() {
@@ -96,19 +114,29 @@ export default class TemplatesBaseStore {
 
   get filterSortingProps() {
     const {
+      nameFilter,
+      categoryFilter,
+      lastEditedFilter,
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
       toggleSortDirection
     } = this;
     return {
+      nameFilter,
+      categoryFilter,
+      lastEditedFilter,
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
       toggleSortDirection
     };
   }

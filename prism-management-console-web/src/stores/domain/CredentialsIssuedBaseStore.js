@@ -14,36 +14,52 @@ const { ascending, descending } = SORTING_DIRECTIONS;
 const { CONTACT_NAME, EXTERNAL_ID, DATE_SIGNED } = CREDENTIAL_SORTING_KEYS_TRANSLATION;
 const unsupportedSorting = [CONTACT_NAME, EXTERNAL_ID, DATE_SIGNED];
 
+const defaultValues = {
+  credentials: [],
+  hasMore: true,
+  isFetching: false,
+  isSearching: false,
+  isRefreshing: false,
+  textFilter: '',
+  credentialStatusFilter: undefined,
+  connectionStatusFilter: undefined,
+  dateFilter: undefined,
+  credentialTypeFilter: undefined,
+  contactIdFilter: undefined,
+  sortDirection: ascending,
+  sortingBy: undefined
+};
+
 const fallback = {
   credentialsList: []
 };
 
 export default class CredentialsIssuedBaseStore {
-  credentials = [];
+  credentials = defaultValues.credentials;
 
-  hasMore = true;
+  hasMore = defaultValues.hasMore;
 
-  isFetching = false;
+  isFetching = defaultValues.isFetching;
 
-  isSearching = false;
+  isSearching = defaultValues.isSearching;
 
-  isRefreshing = false;
+  isRefreshing = defaultValues.isRefreshing;
 
-  textFilter = '';
+  textFilter = defaultValues.textFilter;
 
-  credentialStatusFilter = '';
+  credentialStatusFilter = defaultValues.credentialStatusFilter;
 
-  connectionStatusFilter = '';
+  connectionStatusFilter = defaultValues.connectionStatusFilter;
 
-  dateFilter = '';
+  dateFilter = defaultValues.dateFilter;
 
-  credentialTypeFilter = '';
+  credentialTypeFilter = defaultValues.credentialTypeFilter;
 
-  contactIdFilter = '';
+  contactIdFilter = defaultValues.contactIdFilter;
 
-  sortDirection = ascending;
+  sortDirection = defaultValues.sortDirection;
 
-  sortingBy = CREDENTIAL_SORTING_KEYS.createdOn;
+  sortingBy = defaultValues.sortingBy;
 
   constructor(api, sessionState) {
     this.api = api;
@@ -80,24 +96,36 @@ export default class CredentialsIssuedBaseStore {
     return this.fetchMoreData({ startFromTheTop: true });
   }
 
+  resetCredentialsAndFilters() {
+    this.isFetching = false;
+    this.isSearching = false;
+    this.isRefreshing = false;
+    this.resetCredentials();
+    this.resetFilters();
+    this.resetSorting();
+  }
+
   resetCredentials() {
     this.hasMore = true;
     this.credentials = [];
   }
 
-  resetCredentialsAndFilters() {
-    this.resetCredentials();
-    this.isFetching = false;
-    this.isSearching = false;
-    this.isRefreshing = false;
-    this.textFilter = '';
-    this.dateFilter = '';
-    this.credentialStatusFilter = '';
-    this.connectionStatusFilter = '';
-    this.credentialTypeFilter = '';
-    this.contactIdFilter = '';
+  resetFilters() {
+    this.textFilter = defaultValues.textFilter;
+    this.contactIdFilter = defaultValues.contactIdFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
+    this.dateFilter = defaultValues.dateFilter;
+    this.credentialStatusFilter = defaultValues.credentialStatusFilter;
+    this.connectionStatusFilter = defaultValues.connectionStatusFilter;
+    this.credentialTypeFilter = defaultValues.credentialTypeFilter;
+  }
+
+  resetSorting() {
     this.sortDirection = ascending;
-    this.sortingBy = CREDENTIAL_SORTING_KEYS.createdOn;
+    this.sortingBy = undefined;
   }
 
   // ********************** //
@@ -152,18 +180,30 @@ export default class CredentialsIssuedBaseStore {
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
       textFilter,
+      dateFilter,
+      credentialStatusFilter,
+      connectionStatusFilter,
+      credentialTypeFilter,
       toggleSortDirection
     } = this;
     return {
       hasFiltersApplied,
       hasAdditionalFiltersApplied,
       sortDirection,
+      sortingBy,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
       textFilter,
+      dateFilter,
+      credentialStatusFilter,
+      connectionStatusFilter,
+      credentialTypeFilter,
       toggleSortDirection
     };
   }
@@ -239,7 +279,7 @@ export default class CredentialsIssuedBaseStore {
         // credentialStatusFilter,
         // connectionStatusFilter,
         credentialTypeFilter,
-        dateFilter = [],
+        dateFilter,
         sortDirection,
         sortingBy
       } = this;

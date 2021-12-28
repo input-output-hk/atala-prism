@@ -1,0 +1,55 @@
+@import "../../../../../src/css/general_styling";
+
+.RecipientsSelectionTableHeader {
+  .FilterControls {
+    margin: 0 1em 0 0 !important;
+  }
+}
+
+.FilterControls {
+  .ContactFilters {
+    .FiltersButton {
+      .ant-btn:first-child {
+        display: none !important;
+      }
+      .ant-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1.5px solid $secondary-color;
+      }
+      .ant-btn:hover,
+      .ant-btn:focus,
+      .ant-btn:active {
+        img {
+          opacity: 0.7;
+          transition: 0.5s;
+        }
+      }
+    }
+  }
+}
+
+.SortControlContainer .ant-select-selection-item,
+.SortControlContainer .ant-select-clear {
+  color: $secondary-color;
+}
+
+// @ana-alleva I cannot embed these classes inside `ContactFilters`
+.selectLabel {
+  p {
+    margin: 0;
+    @include primary-text(9px, $black);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .FilterDivider {
+    border-color: #e1e1e16b;
+  }
+  .ClearFiltersButton {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1em;
+  }
+}
