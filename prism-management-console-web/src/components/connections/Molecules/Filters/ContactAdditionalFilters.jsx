@@ -6,11 +6,11 @@ import ContactAdditionalFiltersMenu from './ContactAdditionalFiltersMenu';
 import './_style.scss';
 
 const ContactAdditionalFilters = ({ filterSortingProps }) => {
-  const { hasAdditionalFiltersApplied, setFilterValue } = filterSortingProps;
+  const { hasAdditionalFiltersApplied } = filterSortingProps;
 
   const filtersMenu = (
     <Menu className="FiltersMenuContainer">
-      <ContactAdditionalFiltersMenu setFilterValue={setFilterValue} />
+      <ContactAdditionalFiltersMenu {...filterSortingProps} />
     </Menu>
   );
 

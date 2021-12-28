@@ -81,17 +81,29 @@ export default class GroupsBaseStore {
     return this.isFetching && this.totalNumberOfGroups && !this.isSearching;
   }
 
+  resetGroupsAndFilters() {
+    this.isFetching = defaultValues.isFetching;
+    this.isSearching = defaultValues.isSearching;
+    this.resetGroups();
+    this.resetFilters();
+    this.resetSorting();
+  }
+
   resetGroups() {
     this.groups = defaultValues.groups;
     this.totalNumberOfGroups = defaultValues.totalNumberOfGroups;
   }
 
-  resetGroupsAndFilters() {
-    this.resetGroups();
-    this.isFetching = defaultValues.isFetching;
-    this.isSearching = defaultValues.isSearching;
+  resetFilters() {
     this.nameFilter = defaultValues.nameFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
     this.dateFilter = defaultValues.dateFilter;
+  }
+
+  resetSorting() {
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
   }
@@ -130,17 +142,23 @@ export default class GroupsBaseStore {
 
   get filterSortingProps() {
     const {
-      sortDirection,
-      setSortingBy,
-      setFilterValue,
-      toggleSortDirection,
-      hasAdditionalFiltersApplied
-    } = this;
-    return {
+      nameFilter,
+      dateFilter,
       hasAdditionalFiltersApplied,
       sortDirection,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
+      toggleSortDirection
+    } = this;
+    return {
+      nameFilter,
+      dateFilter,
+      hasAdditionalFiltersApplied,
+      sortDirection,
+      setSortingBy,
+      setFilterValue,
+      resetAdditionalFilters,
       toggleSortDirection
     };
   }

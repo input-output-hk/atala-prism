@@ -7,13 +7,15 @@ const CreateGroupButton = () => {
   const { t } = useTranslation();
   const { redirectToGroupCreation } = useRedirector();
   return (
-    <CustomButton
-      buttonProps={{
-        onClick: redirectToGroupCreation,
-        className: 'theme-outline'
-      }}
-      buttonText={t('groups.createNewGroup')}
-    />
+    <div className="ControlButtons">
+      <CustomButton
+        buttonProps={{
+          onClick: redirectToGroupCreation,
+          className: 'theme-outline'
+        }}
+        buttonText={t('groups.createNewGroup')}
+      />
+    </div>
   );
 };
 

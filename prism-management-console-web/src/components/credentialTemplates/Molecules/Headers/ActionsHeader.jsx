@@ -22,6 +22,7 @@ const ActionsHeader = observer(() => {
       />
       <CreateTemplateButton />
       <TemplatesAdditionalFilters
+        showDateFilters
         templateCategories={templateCategories}
         filterSortingProps={filterSortingProps}
       />

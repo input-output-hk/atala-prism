@@ -20,10 +20,10 @@ const defaultValues = {
   scrollId: undefined,
   isFetching: false,
   isSearching: false,
-  textFilter: '',
-  statusFilter: '',
-  dateFilter: '',
-  groupNameFilter: '',
+  textFilter: undefined,
+  statusFilter: undefined,
+  dateFilter: undefined,
+  groupNameFilter: undefined,
   sortDirection: ascending,
   sortingBy: CONTACT_SORTING_KEYS.name
 };
@@ -89,17 +89,30 @@ export default class ContactsBaseStore {
     return this.fetchMoreData({ startFromTheTop: true });
   }
 
+  resetContactsAndFilters() {
+    this.isFetching = defaultValues.isFetching;
+    this.isSearching = defaultValues.isSearching;
+    this.resetContacts();
+    this.resetFilters();
+    this.resetSorting();
+  }
+
   resetContacts() {
     this.contacts = defaultValues.contacts;
     this.scrollId = defaultValues.scrollId;
   }
 
-  resetContactsAndFilters() {
-    this.resetContacts();
-    this.isFetching = defaultValues.isFetching;
-    this.isSearching = defaultValues.isSearching;
+  resetFilters() {
     this.textFilter = defaultValues.textFilter;
+    this.resetAdditionalFilters();
+  }
+
+  resetAdditionalFilters() {
+    this.statusFilter = defaultValues.statusFilter;
     this.dateFilter = defaultValues.lastEditedFilter;
+  }
+
+  resetSorting() {
     this.sortDirection = defaultValues.sortDirection;
     this.sortingBy = defaultValues.sortingBy;
   }
@@ -146,10 +159,14 @@ export default class ContactsBaseStore {
 
   get filterSortingProps() {
     const {
+      textFilter,
+      statusFilter,
+      dateFilter,
       sortDirection,
       sortingBy,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
       toggleSortDirection,
       hasFiltersApplied,
       hasTextFilterApplied,
@@ -158,10 +175,14 @@ export default class ContactsBaseStore {
       hasStatusFilterApplied
     } = this;
     return {
+      textFilter,
+      statusFilter,
+      dateFilter,
       sortDirection,
       sortingBy,
       setSortingBy,
       setFilterValue,
+      resetAdditionalFilters,
       toggleSortDirection,
       hasFiltersApplied,
       hasTextFilterApplied,
