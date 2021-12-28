@@ -65,17 +65,15 @@ const CredentialsIssued = observer(({ credentialActionsProps, showCredentialData
   return (
     <>
       <BulkActionsHeader bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
+      <TableOptions bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
       {isLoadingFirstPage ? (
         <SimpleLoading size="md" />
       ) : (
-        <>
-          <TableOptions bulkActionsProps={bulkActionsProps} selectedLength={selectedLength} />
-          <CredentialsTable
-            getMoreData={fetchMoreData}
-            emptyProps={emptyProps}
-            {...expandedTableProps}
-          />
-        </>
+        <CredentialsTable
+          getMoreData={fetchMoreData}
+          emptyProps={emptyProps}
+          {...expandedTableProps}
+        />
       )}
     </>
   );

@@ -2,15 +2,20 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 import CustomDatePicker from '../../../../common/Atoms/CustomDatePicker/CustomDatePicker';
 import CustomInputGroup from '../../../../common/Atoms/CustomInputGroup/CustomInputGroup';
 import {
   NORMALIZED_CONNECTION_STATUSES,
-  CREDENTIAL_STATUSES
+  CREDENTIAL_STATUSES,
+  DEFAULT_DATE_FORMAT
 } from '../../../../../helpers/constants';
 import { useCredentialsIssuedPageStore } from '../../../../../hooks/useCredentialsIssuedPageStore';
+
+import './_style.scss';
+import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 
 const credentialStatuses = Object.keys(CREDENTIAL_STATUSES);
 
@@ -20,17 +25,20 @@ const CredentialsFilter = observer(({ isIssued }) => {
   const {
     credentialTypes,
     filterSortingProps: {
-      credentialTypeFilter,
+      setFilterValue,
+      resetAdditionalFilters,
+      dateFilter,
       credentialStatusFilter,
       connectionStatusFilter,
-      setFilterValue
+      credentialTypeFilter
     }
   } = useCredentialsIssuedPageStore();
 
   const setFilterByKey = key => value => setFilterValue(key, value);
 
   const renderContactStatusFilter = () => (
-    <div>
+    <div className="selectLabel">
+      <p>{t('actions.filterBy', { column: t('credentials.filters.connectionStatusFilter') })}</p>
       <Select
         id="connectionStatusFilter"
         value={connectionStatusFilter}
@@ -44,11 +52,13 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
+      <hr className="FilterDivider" />
     </div>
   );
 
   const renderCredentialStatusFilter = () => (
-    <div>
+    <div className="selectLabel">
+      <p>{t('actions.filterBy', { column: t('credentials.filters.credentialStatusFilter') })}</p>
       <Select
         id="credentialStatusFilter"
         value={credentialStatusFilter}
@@ -65,15 +75,17 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
+      <hr className="FilterDivider" />
     </div>
   );
 
   const renderCredentialTypeFilter = () => (
-    <div>
+    <div className="selectLabel">
+      <p>{t('actions.filterBy', { column: t('credentials.filters.credentialTypePlaceholder') })}</p>
       <Select
         id="credentialTypeFilter"
         value={credentialTypeFilter}
-        placeholder={t('credentials.filters.credentialTypePlaceholder')}
+        placeholder={t('credentials.filters.credentialTypeFilter')}
         allowClear
         onChange={setFilterByKey('credentialTypeFilter')}
       >
@@ -83,11 +95,13 @@ const CredentialsFilter = observer(({ isIssued }) => {
           </Select.Option>
         ))}
       </Select>
+      <hr className="FilterDivider" />
     </div>
   );
 
   const renderCredentialDateFilter = () => {
     const datePickerProps = {
+      value: dateFilter && moment(dateFilter, DEFAULT_DATE_FORMAT),
       placeholder: t(
         `credentials.filters.${isIssued ? 'dateSignedPlaceholder' : 'dateReceivedPlaceholder'}`
       ),
@@ -96,7 +110,9 @@ const CredentialsFilter = observer(({ isIssued }) => {
     };
 
     return (
-      <div>
+      <div className="selectLabel">
+        <p>{t('actions.filterBy', { column: t('credentials.filters.dateSignedFilter') })}</p>
+
         <CustomInputGroup prefixIcon="calendar">
           <CustomDatePicker {...datePickerProps} />
         </CustomInputGroup>
@@ -110,6 +126,15 @@ const CredentialsFilter = observer(({ isIssued }) => {
       {renderCredentialStatusFilter()}
       {renderCredentialTypeFilter()}
       {renderCredentialDateFilter()}
+      <div className="ClearFiltersButton">
+        <CustomButton
+          buttonProps={{
+            onClick: resetAdditionalFilters,
+            className: 'theme-link'
+          }}
+          buttonText={t('actions.clear')}
+        />
+      </div>
     </>
   );
 

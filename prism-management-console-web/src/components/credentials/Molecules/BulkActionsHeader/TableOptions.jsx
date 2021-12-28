@@ -1,17 +1,15 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
+import { RedoOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 import {
-  DownOutlined,
-  RedoOutlined,
-  SortAscendingOutlined,
-  SortDescendingOutlined
-} from '@ant-design/icons';
-import { Button, Dropdown, Menu } from 'antd';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { CREDENTIAL_SORTING_KEYS, SORTING_DIRECTIONS } from '../../../../helpers/constants';
+  CREDENTIAL_SORTING_KEYS,
+  CREDENTIAL_SORTING_KEYS_TRANSLATION
+} from '../../../../helpers/constants';
 import SelectAllButton from '../../../newCredential/Molecules/RecipientsTable/SelectAllButton';
 import { useCredentialsIssuedPageStore } from '../../../../hooks/useCredentialsIssuedPageStore';
+import SortControls from '../../../common/Molecules/Sorting/SortControls';
 
 import './_style.scss';
 
@@ -25,20 +23,13 @@ const TableOptions = observer(() => {
     isRefreshing,
     refreshCredentials,
     selectAllCredentials,
-    filterSortingProps: { sortingBy, setSortingBy, sortDirection, toggleSortDirection }
+    filterSortingProps
   } = useCredentialsIssuedPageStore();
 
-  const sortingOptions = Object.keys(CREDENTIAL_SORTING_KEYS);
-
-  const sortingOptionsMenu = (
-    <Menu onClick={({ key }) => setSortingBy(key)}>
-      {sortingOptions.map(column => (
-        <Menu.Item key={column}>{t(`credentials.table.columns.${column}`)}</Menu.Item>
-      ))}
-    </Menu>
-  );
-
-  const sortAscending = sortDirection === SORTING_DIRECTIONS.ascending;
+  const sortingOptions = Object.values(CREDENTIAL_SORTING_KEYS).map(column => ({
+    key: column,
+    label: t(`credentials.table.columns.${CREDENTIAL_SORTING_KEYS_TRANSLATION[column]}`)
+  }));
 
   const checkboxProps = {
     ...selectAllCheckboxStateProps,
@@ -49,29 +40,12 @@ const TableOptions = observer(() => {
   return (
     <div className="TableOptions">
       <div className="LeftOptions">
-        <Button
-          className="TableOptionButton no-border"
-          onClick={toggleSortDirection}
-          icon={
-            sortAscending ? (
-              <SortAscendingOutlined style={{ fontSize: '16px' }} />
-            ) : (
-              <SortDescendingOutlined style={{ fontSize: '16px' }} />
-            )
-          }
-        />
+        <SortControls options={sortingOptions} {...filterSortingProps} />
         <SelectAllButton
           isLoadingSelection={isLoadingSelection}
           selectedEntities={selectedCredentials}
           checkboxProps={checkboxProps}
         />
-        <Dropdown overlay={sortingOptionsMenu} trigger={['click']}>
-          <CustomButton
-            overrideClassName="theme-link TableOptionButton"
-            buttonProps={{ icon: <DownOutlined /> }}
-            buttonText={t(sortingBy ? `credentials.table.columns.${sortingBy}` : 'actions.sortBy')}
-          />
-        </Dropdown>
       </div>
       <Button
         className="RefreshButton no-border"

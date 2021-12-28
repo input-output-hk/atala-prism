@@ -3,23 +3,15 @@
 .ActionsHeader {
   .SelectBtn {
     .ant-btn:first-child {
-      display: none!important;
+      display: none !important;
     }
     .ant-btn {
       display: flex;
       justify-content: center;
       align-items: center;
       border-radius: 2px;
-      border: 1.5px solid $secondary-color;
-    }
-    .ant-btn:hover, .ant-btn:focus, .ant-btn:active {
-      img {
-        opacity: 0.8;
-      transition: 0.5s;
-      }
+      border: 1px solid $secondary-color;
+      margin-left: 1em;
     }
   }
-}
-.ActionsHeader div {
-  margin: 0 0.5em;
 }
