@@ -62,8 +62,10 @@
     "@babel/preset-env": "7.16.0",
     "@babel/preset-react": "7.16.0",
     "@input-output-hk/atala-prism-protos": "0.1.0-ff1968f",
+    "@testing-library/react": "12.1.2",
     "babel-core": "6.26.3",
     "babel-jest": "27.3.1",
+    "babel-plugin-transform-scss": "1.1.0",
     "env-cmd": "10.0.1",
     "eslint": "7.24.0",
     "eslint-config-airbnb": "17.1.0",
@@ -74,12 +76,14 @@
     "eslint-plugin-css-modules": "2.11.0",
     "eslint-plugin-cypress": "2.7.0",
     "eslint-plugin-import": "2.18.0",
+    "eslint-plugin-jest": "25.3.0",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-prettier": "3.1.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.14.2",
     "jest": "27.3.1",
     "jest-sonar-reporter": "2.0.0",
+    "jest-transform-stub": "2.0.0",
     "prettier": "1.16.1",
     "regenerator-runtime": "0.13.9"
   },
@@ -91,7 +95,7 @@
     "pretest-no-watch": "./scripts/compile-protos.sh",
     "start": "gatsby develop -p 3000",
     "build": "gatsby build",
-    "test": "jest --coverage"
+    "test": "jest --coverage --env=jsdom"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -109,7 +113,11 @@
     ]
   },
   "jest": {
-    "testResultsProcessor": "jest-sonar-reporter"
+    "testResultsProcessor": "jest-sonar-reporter",
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest",
+      "^.+\\.svg$": "jest-transform-stub"
+    }
   },
   "jestSonar": {
     "reportPath": "coverage",

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'gatsby';
 import author from '../../images/user.svg';
 import emailIcon from '../../images/mail.svg';
@@ -45,7 +46,7 @@ const AuthorPill = ({
       ].map(
         ({ href, src, alt }) =>
           href && (
-            <a href={href}>
+            <a href={href} key={alt}>
               <img src={src} alt={alt} />
             </a>
           )
@@ -53,5 +54,28 @@ const AuthorPill = ({
     </div>
   </div>
 );
+
+AuthorPill.defaultProps = {
+  photo: null,
+  company: null,
+  email: null,
+  youtube: null,
+  twitter: null,
+  linkedIn: null,
+  github: null
+};
+
+AuthorPill.propTypes = {
+  photo: PropTypes.string,
+  name: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  position: PropTypes.string.isRequired,
+  company: PropTypes.string,
+  email: PropTypes.string,
+  youtube: PropTypes.string,
+  twitter: PropTypes.string,
+  linkedIn: PropTypes.string,
+  github: PropTypes.string
+};
 
 export default AuthorPill;
