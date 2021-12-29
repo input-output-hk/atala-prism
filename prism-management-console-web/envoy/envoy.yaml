@@ -1,3 +1,9 @@
+# Warning: every change applied here will only affect the local enviroment.
+# The `prism-backend/infra` directory contains the files that affect the deployment.
+
+# For example:
+#   services must also be added to `prism-backend/infra/docker/prism-lb-envoy/envoy.yml`
+
 layered_runtime:
   layers:
   - name: disable_apple_dns

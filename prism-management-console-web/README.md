@@ -135,6 +135,11 @@ You should avoid destructuring or `...` operator with Api object in components. 
 
 In some components, you should also find some functions wrapped in other functions that look as unnecessary. This is a hack to preserve "this" context.
 
+**About envoy configurations:**
+ - The local enviroment follows the configuration in `envoy/envoy.yaml`.
+ - Deployments are built following the configuration in the `../prism-backend/infra/` directory. 
+ - The envoy configuration is specifically in `../prism-backend/infra/docker/prism-lb-envoy/envoy.yml`.
+
 ## scripts
 
 - [compile-protos.sh](./scripts/compile-protos.sh): Compile the js bindings for the gRPC API.
