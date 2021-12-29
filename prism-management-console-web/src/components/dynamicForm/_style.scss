@@ -78,3 +78,29 @@ $last-col-width: 200px;
     }
   }
 }
+
+.ContactsImport {
+  .DynamicForm {
+    .HeaderRow {
+      .HeaderCol {
+        &:last-child {
+          float: right;
+          display: flex;
+          justify-content: center;
+        }
+      }
+    }
+    .IndividualFormRow {
+      .IndividualFormCol {
+        &:last-child {
+          float: right;
+          display: flex;
+          justify-content: center;
+          button {
+            margin: 7px;
+          }
+        }
+      }
+    }
+  }
+}

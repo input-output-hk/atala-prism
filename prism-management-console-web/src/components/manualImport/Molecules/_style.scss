@@ -1,10 +1,11 @@
 @import "../../../css/general_styling";
 
 .ManualImportWrapper {
-    .ManualImportContent {
-        .ant-input-number, .ant-picker {
-            width: 100%;
-            border: 1px solid #b3bec5;
-        }
+  .ManualImportContent {
+    .ant-input-number,
+    .ant-picker {
+      width: 100%;
+      border: 1px solid #b3bec5;
     }
+  }
 }
