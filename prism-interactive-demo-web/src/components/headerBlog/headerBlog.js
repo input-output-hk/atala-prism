@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import Logo from '../../images/logo-atala.svg';
 import BackArrow from './backArrow';
 
@@ -12,5 +13,9 @@ const HeaderBlog = ({ backTo }) => (
     <BackArrow backTo={backTo} />
   </header>
 );
+
+HeaderBlog.propTypes = {
+  backTo: PropTypes.string.isRequired
+};
 
 export default HeaderBlog;
