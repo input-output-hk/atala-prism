@@ -39,7 +39,7 @@ export const getTemplatesColumns = (templateCategories, tableActions) => {
       key: 'lastEdited',
       width: 100,
       render: ({ lastEdited }) => (
-        <CellRenderer title={tp('lastEdited')} value={backendDateFormat(lastEdited)} light />
+        <CellRenderer title={tp('lastEdited')} value={backendDateFormat(lastEdited?.seconds)} />
       )
     }
   ];
