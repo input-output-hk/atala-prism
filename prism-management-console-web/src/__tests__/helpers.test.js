@@ -7,7 +7,6 @@ import {
   contactListToFilter
 } from './__mocks__/mockContactsData';
 import { mockContactHeadersMapping } from './__mocks__/mockHelpers';
-import { filterByManyFields } from '../helpers/filterHelpers';
 import { CONTACT_NAME_KEY, EXTERNAL_ID_KEY } from '../helpers/constants';
 import { isValueInListByKey, isValueUniqueInObjectListByKey } from '../helpers/formRules';
 import { blobToBase64, humanizeCamelCaseString } from '../helpers/genericHelpers';
@@ -33,22 +32,6 @@ it('parses array of arrays with invalid keys to an object', () => {
 
   const parsedAoA = arrayOfArraysToObjects(testInput);
   expect(parsedAoA).toEqual(expectedOutput);
-});
-
-it('filter a list based on a single text and given list fields', () => {
-  const contacts = contactListToFilter.list;
-
-  const { externalId, contactName } = contactListToFilter.input;
-  const filteredByName = filterByManyFields(contacts, contactName, [
-    CONTACT_NAME_KEY,
-    EXTERNAL_ID_KEY
-  ]);
-  const filteredByExternalId = filterByManyFields(contacts, externalId, [
-    CONTACT_NAME_KEY,
-    EXTERNAL_ID_KEY
-  ]);
-
-  expect(filteredByName).toEqual(filteredByExternalId);
 });
 
 describe('isValueInListByKey', () => {

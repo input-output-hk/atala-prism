@@ -9,7 +9,6 @@ import {
   arrayOf,
   element,
   objectOf,
-  instanceOf,
   node,
   any
 } from 'prop-types';
@@ -24,13 +23,6 @@ import {
 } from './constants';
 
 export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
-export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
-
-export const contactCreationShape = {
-  contactName: string,
-  externalId: string,
-  key: number.isRequired
-};
 
 export const contactShape = shape({
   contactName: string,
@@ -43,23 +35,6 @@ export const groupShape = shape({
   groupid: string,
   name: string
 });
-
-export const credentialSummaryShape = {
-  id: string,
-  user: shape({
-    icon: string,
-    name: string
-  }),
-  date: number,
-  totalCredentials: number
-};
-
-export const refShape = oneOfType([
-  func,
-  shape({
-    current: instanceOf(Element)
-  })
-]);
 
 export const dateObjectShape = {
   day: number,
@@ -76,12 +51,6 @@ export const studentShape = {
   id: string,
   issuerid: string,
   universityassignedid: string
-};
-
-export const infiniteTableProps = {
-  loading: bool.isRequired,
-  getMoreData: func.isRequired,
-  hasMore: bool.isRequired
 };
 
 export const credentialTypeDetailsShape = shape({
@@ -169,8 +138,6 @@ export const credentialTypesManagerShape = shape({
 
 export const refPropShape = oneOfType([func, shape({ current: any })]);
 
-export const antdV4FormShape = shape({ validateFields: func, resetFields: func });
-
 export const templateBodyAttributeShape = shape({
   key: number,
   name: number,
@@ -186,20 +153,6 @@ export const templateCreationStepShape = oneOf([
   DESIGN_TEMPLATE,
   TEMPLATE_CREATION_RESULT
 ]);
-
-export const templateFiltersShape = {
-  name: string,
-  category: string,
-  lastEdited: string,
-  setName: func,
-  setCategory: func,
-  setLastEdited: func
-};
-
-export const templateSortingShape = {
-  sortingBy: string,
-  setSortingBy: func
-};
 
 export const checkboxPropShape = shape({
   checked: bool.isRequired,

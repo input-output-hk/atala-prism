@@ -8,12 +8,10 @@ export const TIMEOUT_MULTIPLIER_MS = 100; // Delay for fetching each entity
 // Delay before checking if the extension has injected its SDK
 export const BROWSER_WALLET_CHECK_INTERVAL_MS = 500;
 export const SEARCH_DELAY_MS = 1000;
-export const MOCK_API_CALL_DELAY = 500;
 export const DEFAULT_PAGE_SIZE = 10;
 export const CONTACT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const GROUP_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const CREDENTIAL_PAGE_SIZE = DEFAULT_PAGE_SIZE;
-export const PAYMENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export const MAX_CONTACT_PAGE_SIZE = 100;
 export const MAX_GROUP_PAGE_SIZE = 100;
 export const MAX_CREDENTIAL_PAGE_SIZE = 100;
@@ -21,7 +19,6 @@ export const MAX_CREDENTIAL_PAGE_SIZE = 100;
 export const xScroll = 1300;
 export const yScroll = 600;
 export const drawerWidth = 450;
-export const AVATAR_WIDTH = 50;
 
 export const CONNECTED = 'CONNECTED';
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
@@ -37,25 +34,11 @@ export const NORMALIZED_CONNECTION_STATUSES = [CONNECTED, PENDING_CONNECTION];
 
 export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
 
-export const INDIVIDUAL_STATUSES = {
-  created: 1,
-  invited: 2,
-  connected: 3,
-  revoked: 4
-};
-export const INDIVIDUAL_STATUSES_TRANSLATOR = __.invert(INDIVIDUAL_STATUSES);
-
 export const CREDENTIAL_STATUSES = {
   credentialDraft: 1,
   credentialSigned: 2,
   credentialSent: 3,
   credentialRevoked: 4
-};
-
-export const VALID_CREDENTIAL_STATUSES = {
-  credentialDraft: 1,
-  credentialSigned: 2,
-  credentialSent: 3
 };
 
 export const CREDENTIAL_STATUSES_TRANSLATOR = __.invert(CREDENTIAL_STATUSES);
@@ -91,13 +74,7 @@ export const VALID_CREDENTIAL_TYPE_STATUSES = [
   CREDENTIAL_TYPE_STATUSES.MOCKED
 ];
 
-// eslint-disable-next-line quotes
-export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
-export const EXAMPLE_UNIVERSITY_NANE = 'Free University Tbilisi';
 export const EXAMPLE_AWARD = 'First-Class Honours';
-export const EXAMPLE_FULL_NAME = 'Student Name';
-export const EXAMPLE_START_DATE = 1555005000;
-export const EXAMPLE_GRADUATION_DATE = 1555005000;
 
 // File constants
 const JPEG = 'image/jpeg';
@@ -132,10 +109,6 @@ export const UNCONFIRMED = 'UNCONFIRMED';
 export const UNLOCKED = 'UNLOCKED';
 export const LOCKED = 'LOCKED';
 export const MISSING_WALLET_ERROR = Error('errors.walletNotRunning');
-export const WALLET_NOT_REGISTERED_ERROR = Error('errors.walletNotRegistered');
-
-// Connection status
-export const STATUS_CONNECTION_ACCEPTED = 3;
 
 // Import contacts methods
 export const BULK_IMPORT = 'bulkImport';
@@ -151,17 +124,14 @@ export const ASSIGN_TO_GROUPS = 1;
 // Entities keys
 export const CONTACT_NAME_KEY = 'contactName';
 export const EXTERNAL_ID_KEY = 'externalId';
-export const GROUP_NAME_KEY = 'name';
 export const CONTACT_ID_KEY = 'contactId';
 export const GROUP_ID_KEY = 'id';
 export const CREDENTIAL_ID_KEY = 'credentialId';
 
 // Bulk import data
 export const COMMON_CONTACT_HEADERS = [CONTACT_NAME_KEY, EXTERNAL_ID_KEY];
-export const CONTACT_METADATA_KEYS = ['index', 'originalArray'];
 export const COMMON_CREDENTIALS_HEADERS = [EXTERNAL_ID_KEY, CONTACT_NAME_KEY];
 // Keys
-export const ENTER = 'Enter';
 export const ARROW_LEFT = 'ArrowLeft';
 export const ARROW_RIGHT = 'ArrowRight';
 
@@ -188,11 +158,6 @@ export const SELECT_RECIPIENTS_STEP = 1;
 export const IMPORT_CREDENTIAL_DATA_STEP = 2;
 export const PREVIEW_AND_SIGN_CREDENTIAL_STEP = 3;
 export const CREATE_CREDENTIALS_RESULT = 4;
-export const NEW_CREDENTIAL_STEP_COUNT = 5;
-
-// status flags
-export const FAILED = 'failed';
-export const SUCCESS = 'success';
 
 // this format also allows: 'DD/MM/YYYY', 'DD-MM-YY' and 'DD/MM/YY'
 export const DEFAULT_DATE_FORMAT = 'DD/MM/YYYY';

@@ -41,59 +41,6 @@ export const noEmptyInput = message => ({
   message
 });
 
-export const noEmptyInputExternalValue = (value, cb) => {
-  if (!value) cb('error');
-  else cb();
-};
-
-export const minOneElement = (value, cb) => {
-  if (value && value.length) cb();
-  else cb('error');
-};
-
-export const passwordValidation = (value, cb, otherPass) => {
-  if (!value || !otherPass || value === otherPass) cb();
-  else cb('error');
-};
-
-const validations = [
-  { name: 'number', regex: /\d/ }, // At least 1 number
-  { name: 'lowercase', regex: /[a-z]/ }, // At least 1 lower case
-  { name: 'uppercase', regex: /[A-Z]/ }, // At least 1 upper case
-  { name: 'minlength', regex: /.{8,}/ }, // At leas 8 characters
-  { name: 'nospaces', regex: /^((?! ).)*$/ } // No blank spaces
-];
-
-const validatePassword = (value = '') =>
-  validations.reduce(
-    (accum, current) => (current.regex.test(value) ? accum : accum.concat(current.name)),
-    []
-  );
-
-const formatPasswordErrors = errors => {
-  const prefix = 'registration.password.invalidPassword';
-  const initialValue = i18n.t(`${prefix}.initial`);
-  const and = i18n.t(`${prefix}.and`);
-
-  return errors.reduce((accum, current, currentIndex) => {
-    let link = '';
-    /* eslint no-magic-numbers: "off" */
-    if (currentIndex < errors.length - 2) link = ',';
-    else if (currentIndex < errors.length - 1) link = ` ${and}`;
-    else if (currentIndex === errors.length - 1) link = '.';
-
-    const currentError = i18n.t(`${prefix}.${current}`);
-
-    return `${accum} ${currentError}${link}`;
-  }, initialValue);
-};
-
-export const passwordFormatValidation = (value, cb) => {
-  const errors = validatePassword(value);
-  if (!errors.length) cb();
-  else cb(formatPasswordErrors(errors));
-};
-
 export const generateRequiredRule = (isDate, dataIndex) =>
   Object.assign(
     isDate
