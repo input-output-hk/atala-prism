@@ -26,13 +26,20 @@ describe('<SEO />', () => {
 
     expect(seoTitle).toBe(title);
     expect(metaTags.length).toBe(15);
+    expect(metaTags[1].content).toBe(title);
+    expect(metaTags[10].content).toBe(title);
+    expect(metaTags[0].content).toBe(description);
+    expect(metaTags[2].content).toBe(description);
+    expect(metaTags[11].content).toBe(description);
   });
 
   it('sets custom title', () => {
     render(<SEO title={prefix} />);
-    const { title: seoTitle } = Helmet.peek();
+    const { title: seoTitle, metaTags } = Helmet.peek();
 
     expect(seoTitle).toBe(customTitle);
+    expect(metaTags[1].content).toBe(customTitle);
+    expect(metaTags[10].content).toBe(customTitle);
   });
 
   it('sets custom description', () => {
@@ -40,5 +47,7 @@ describe('<SEO />', () => {
     const { metaTags } = Helmet.peek();
 
     expect(metaTags[0].content).toBe(customDescription);
+    expect(metaTags[2].content).toBe(customDescription);
+    expect(metaTags[11].content).toBe(customDescription);
   });
 });
