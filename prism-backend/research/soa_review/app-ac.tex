@@ -684,6 +684,7 @@ so I suspect that they are more academic than real-world systems.
 \item \cite{bckl08}.
 \item \cite{sand20}.
 \item \cite{kkl+16}: achieves similar results to \cite{cgm16} with a different approach?
+\item \cite{hkrw21}: multi-party revocation in Sovrin.
 \end{itemize}
 
 A recurrent claim in schemes avoiding using zero-knowledge proofs of knowledge
@@ -724,10 +725,9 @@ How to compare efficiency of AC systems?
 \subsection{Industry Systems Review}
 
 \begin{itemize}
-\item Evernym. \url{https://www.evernym.com/}
+\item Evernym and Sovrin. \url{https://www.evernym.com/}
   \begin{itemize}
-  \item {\bf Introduction}. Evernym is a software company that is some kind of
-    relative of Sovrin. Their solution builds completely on the Sovrin system.
+  \item {\bf Introduction}. Evernym is a software company that produced Sovrin.
   \item \emph{``How Sovrin Works''}%
     \footnote{\url{https://www.evernym.com/wp-content/uploads/2017/07/How-Sovrin-Works.pdf}}.
     Describes from a high-level perspective what information the Sovrin system
@@ -794,6 +794,99 @@ How to compare efficiency of AC systems?
     approach Indy adopted, and they have their own user base and formats;
     JSON-LD BBS+ is the approach of MATTR, which Evernym (the descendant of
     Sovrin/Indy) seems to be adopting too.
+  \end{itemize}
+\item Hyperledger Fabric \& Idemix: \url{https://hyperledger-fabric.readthedocs.io/en/release-2.2/idemix.html}.
+  \begin{itemize}
+  \item Hyperledger Fabric is the private and permissioned blockchain, initially
+    created by IBM, and then used to seed the Hyperledger framework. Fabric's
+    participants are authenticated via certificates issued by a Membership
+    Service Provider (MSP) entity. In Fabric's first versions, the MSP was a
+    conventional Certificate Authority (or a set of them, forming a traditional
+    PKI system).
+  \item Since v1.3, Fabric has included support for Idemix-based credentials
+    \url{https://idemix.wordpress.com/}. Idemix credentials were initially based
+    on CL signatures, but the current implementation seems to build on BBS+
+    signatures\footnote{See \url{https://hyperledger-fabric.readthedocs.io/en/release-2.2/idemix.html\#underlying-cryptographic-protocols}.}.    
+    With Idemix-based credentials, users (including transactors of the system)
+    can restrict the attributes that they share with verifiers, and their
+    operations are anonymous and unlinkable (up to the revealed attributes). Not
+    even the MSP can link them.
+  \item An interesting practical aspect: the documentation advises to use at
+    most one Idemix-based MSP per channel (or, per network). This is because
+    the MDP identity is always revealed when showing a credential (as it is
+    needed for verification). Therefore, the more MSPs, the easier it is to
+    deanonymize users. They mention that it may be possible in the future to
+    extend Idemix to support hierarchies of Idemix issuers and, therefore,
+    provide more flexibility.
+  \end{itemize}
+\item Hyperledger Indy, Aries, and Ursa:
+  \begin{itemize}
+  \item \url{https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/getting-started/indy-walkthrough.html}
+  \item \url{https://www.hyperledger.org/use/aries}
+  \item \url{https://github.com/hyperledger/ursa}
+  \end{itemize}
+\item Indy is Hyperledger's project for digital identity. It was originated by
+  the donation of the Sovrin codebase by Evernym, so the essentials explained
+  for Sovrin mostly apply here too. It is therefore also based on CL anonymous
+  credentials -- although, according to the online documentation%
+  \footnote{\url{https://hyperledger-indy.readthedocs.io/projects/hipe/en/latest/text/0109-anoncreds-protocol/README.html}.}%
+  , it uses actual CL signatures (the original ones from 2002, based on RSA), as
+  opposed to Evernym/Sovrin, that have migrated to the BBS+ equivalent.
+\item In a nutshell, Indy covers layer 1 of the ToIP stack%
+  \footnote{\url{https://trustoverip.org/}}, and Aries
+  covers layers 2 and 3\footnote{According to this:
+    \url{https://www.youtube.com/watch?v=FfuhlF9ZYPM}.}. This means that Indy
+  manages DIDs \doubt{Does Indy also take care of writing credential schemas,
+    etc. into the blockchain?}, and Aries uses the DIDs from Indy to establish
+  secure connections and exchange verifiable credentials. Ursa is the
+  cryptographic library that both projects use.
+\item PrivacyPass \cite{dgs+18}.
+  \begin{itemize}
+  \item PrivacyPass is not an anonymous credential system per se, although
+    probably some techniques can be leveraged. It is actually closer to
+    Nymble, PEREA... and the line of anonymous blacklisting systems. Each
+    time a user proves ``being human'', e.g., through a CAPTCHA, it gets
+    $N$ blindly signed messages from a user, along with a batched
+    zero-knowledge proof of knowledge of all of them being signed with the
+    same secret key. To access a resource, the user then derives a MAC
+    from the blindly signed value, and sends the result along with a tag
+    that allows the server to reproduce the calculations and compare with
+    the received MAC. If the comparison succeeds, the user is granted access.
+    The server needs to keep a list of all used tags. Cryptographically, this
+    is simple (and thus, it should be efficient). A main advantage seems to
+    be that it is easily integrated in current web infrastructure. There is an
+    open source implementation, avaliable in
+    \url{https://privacypass.github.io/} that has been integrated in the
+    Trust Token API \url{https://github.com/WICG/trust-token-api}.
+  \end{itemize}
+\item Whatsapp's DIT (formerly known as Private Stats) \cite{hij+21}.
+  Note: the report seems to have been taken offline. I managed to find a copy
+  (I did not take note of the URL). The only available information seems
+  to be this URL: \url{https://engineering.fb.com/2021/04/16/security/dit/}.
+  \begin{itemize}
+  \item This system is inspired by PrivacyPass, focusing on authentication of
+    clients that need to log data in the context of Whatsapp -- hence,
+    efficiency is very relevant. It indeed follows a similar execution flow to
+    PrivacyPass: clients first authenticate against an authentication server,
+    who requests to an anonymous credential server, on their behalf, a sort of
+    anonymous credential using a blinded value received from the client. The
+    received blinded credential is then unblinded, and can be used to authenticate
+    subsequent ``anonymous connections''. Roughly, the anonymous credential is
+    build from an attribute-based VOPRF inspired by Naor and Reingold
+    \cite{nr04}. To authenticate a connection, similarly to PrivacyPass, the
+    server recomputes a MAC, using as key a value reproduced through the VOPRF,
+    using a tag that determines the attributes contained in the ``anonymous
+    credential''. While the system seems very practical -- and indeed, its
+    greatest merit is that it seems to be very well integrated in Whatsapp's
+    infrastructure --, its relation to anonymous credentials is barely
+    justifiable, despite it is mentioned several times in the paper. Its only
+    common point is the support for different attributes. However multiple
+    authentications with the same credential are linkable and, even though
+    multiple attributes are supported, the client cannot choose which subset
+    of the credentials are revealed. Moreover, security is defined for the
+    VRF component, but no model or formalization whatsoever is given that
+    resembles the usual ones for Anonymous Credentiasl (e.g., there is no
+    property for unforgeability or anonymity of credentials).
   \end{itemize}
 \end{itemize}
 
