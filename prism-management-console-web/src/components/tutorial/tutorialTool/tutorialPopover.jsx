@@ -5,9 +5,6 @@ import { Popover } from 'antd';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
-/**
- * @param {Boolean} visible enables/disables the tutorial visibility
- */
 const TutorialPopover = ({ visible, children }) => {
   const { t } = useTranslation();
 
