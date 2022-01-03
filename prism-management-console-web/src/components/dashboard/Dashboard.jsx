@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { message } from 'antd';
+import { useLocation } from 'react-router';
 import Welcome from './Atoms/Welcome/Welcome';
 import DashboardCardGroup from './organism/DashboardCardGroup';
 import DashboardCardCredential from './organism/DashboardCardCredential';
@@ -21,9 +22,10 @@ import SimpleLoading from '../common/Atoms/SimpleLoading/SimpleLoading';
 import TutorialModal from '../tutorial/tutorialModal';
 import TutorialTool from '../tutorial/tutorialTool/tutorialTool';
 import TutorialPopover from '../tutorial/tutorialTool/tutorialPopover';
+import { useApi } from '../../hooks/useApi';
+import DashboardCard from './organism/DashboardCard';
 
 import './_style.scss';
-import { useApi } from '../../hooks/useApi';
 
 const Dashboard = observer(({ name }) => {
   const { t } = useTranslation();
@@ -32,8 +34,11 @@ const Dashboard = observer(({ name }) => {
     summaryManager,
     configuration: { tutorialProgress: storedTutorialProgress, saveTutorialProgress }
   } = useApi();
+
+  const { pathname } = useLocation();
+
   const [tutorialProgress, setTutorialProgress] = useState(storedTutorialProgress);
-  const [, setContactsStats] = useState();
+  const [contactsStats, setContactsStats] = useState();
   const [groupsStats, setGroupsStats] = useState();
   const [credentialsStats, setCredentialsStats] = useState();
   const [loading, setLoading] = useState(false);
@@ -108,7 +113,12 @@ const Dashboard = observer(({ name }) => {
       <div className="DashboardContentBottom">
         <h1>{tp('titleBottom')}</h1>
         <div className="dashboardCardContainer">
-          <TutorialPopover currentStep={tutorialProgress.basicSteps} />
+          <TutorialPopover
+            visible={pathname.includes('tutorial')}
+            currentStep={tutorialProgress.basicSteps}
+          >
+            <DashboardCard data={contactsStats} loading={loading} />
+          </TutorialPopover>
           <DashboardCardGroup data={groupsStats} loading={loading} />
           <DashboardCardCredential data={credentialsStats} loading={loading} />
         </div>
