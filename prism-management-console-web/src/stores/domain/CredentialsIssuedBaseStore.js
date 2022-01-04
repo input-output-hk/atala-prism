@@ -350,7 +350,7 @@ export default class CredentialsIssuedBaseStore {
         // credentialStatusFilter,
         // connectionStatusFilter,
         credentialTypeFilter,
-        dateFilter = [],
+        dateFilter,
         sortDirection,
         sortingBy
       } = this;
