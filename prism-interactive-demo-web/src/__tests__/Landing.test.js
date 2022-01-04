@@ -51,13 +51,18 @@ jest.mock('../components/Header/Header', () => props => {
   return <mock-Header />;
 });
 
+jest.mock('atala-prism-demo', () => {
+  const AtalaPrismDemo = () => <div />;
+  return { AtalaPrismDemo };
+});
+
 describe('<Landing />', () => {
   afterEach(() => {
     cleanup();
   });
 
   it('renders', () => {
-    render(<Landing isTesting />);
+    render(<Landing />);
 
     expect(screen.getByText('landing.start.info')).toBeTruthy();
     expect(screen.getByText('landing.start.subtitle')).toBeTruthy();
@@ -68,7 +73,7 @@ describe('<Landing />', () => {
   });
 
   it('mouse over event is triggered for each section', () => {
-    render(<Landing isTesting />);
+    render(<Landing />);
 
     expect(mockHeader).toHaveBeenCalledWith({ currentSection: null });
 
@@ -79,7 +84,7 @@ describe('<Landing />', () => {
   });
 
   it('focus event is triggered for each section', () => {
-    render(<Landing isTesting />);
+    render(<Landing />);
 
     expect(mockHeader).toHaveBeenCalledWith({ currentSection: null });
 

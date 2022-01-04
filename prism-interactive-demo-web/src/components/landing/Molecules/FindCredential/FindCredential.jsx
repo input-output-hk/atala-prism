@@ -10,7 +10,7 @@ import { GET_CREDENTIALS_EVENT } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const FindCredential = ({ redirector: { redirectToCredentials }, isTesting }) => {
+const FindCredential = ({ redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
   const isSsr = typeof window === 'undefined';
@@ -46,18 +46,13 @@ const FindCredential = ({ redirector: { redirectToCredentials }, isTesting }) =>
           />
         </div>
       </div>
-      {!isTesting && !isSsr && <InteractiveMap controlsEnabled={false} />}
+      {!isSsr && <InteractiveMap controlsEnabled={false} />}
     </div>
   );
 };
 
-FindCredential.defaultProps = {
-  isTesting: false
-};
-
 FindCredential.propTypes = {
-  redirector: PropTypes.shape({ redirectToCredentials: PropTypes.func }).isRequired,
-  isTesting: PropTypes.bool
+  redirector: PropTypes.shape({ redirectToCredentials: PropTypes.func }).isRequired
 };
 
 export default withRedirector(FindCredential);

@@ -26,13 +26,18 @@ jest.mock('gatsby-plugin-firebase', () => {
   return { analytics };
 });
 
+jest.mock('atala-prism-demo', () => {
+  const AtalaPrismDemo = () => <div />;
+  return { AtalaPrismDemo };
+});
+
 describe('<FindCredential />', () => {
   afterEach(() => {
     cleanup();
   });
 
   it('renders', () => {
-    render(<FindCredential isTesting />);
+    render(<FindCredential />);
 
     expect(screen.getByText('landing.findCredential.title')).toBeTruthy();
 
