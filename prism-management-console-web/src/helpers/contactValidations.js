@@ -226,6 +226,3 @@ const renameProperties = (contact, headersMapping) =>
     (acc, { key, translation }) => Object.assign(acc, { [key]: contact[translation] }),
     {}
   );
-
-export const isEmptyContact = dataRow =>
-  _.keys(_.omit(dataRow, ['key'])).every(attribute => !dataRow[attribute]);

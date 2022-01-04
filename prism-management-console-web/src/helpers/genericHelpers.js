@@ -15,8 +15,6 @@ export const getInitials = (name = '') => {
 
 export const getLogoAsBase64 = logo => `data:image/png;base64,${logo}`;
 
-export const getLastArrayElementOrEmpty = array => (array.length ? array[array.length - 1] : {});
-
 const modifyChar = (char, modifier) => (char.match(/[a-z]/i) ? modifier(char) : char);
 
 const customCharByCharModifier = (string, modifier) => {
@@ -30,13 +28,8 @@ const customCharByCharModifier = (string, modifier) => {
 };
 
 const upperCase = string => string.toUpperCase();
-const lowerCase = string => string.toLowerCase();
 
 export const customUpperCase = string => customCharByCharModifier(string, upperCase);
-
-export const customLowerCase = string => customCharByCharModifier(string, lowerCase);
-
-export const mockDelay = timeoutMs => new Promise(resolve => setTimeout(resolve, timeoutMs));
 
 export const getAditionalTimeout = entities =>
   entities > DEFAULT_PAGE_SIZE ? entities * TIMEOUT_MULTIPLIER_MS : 0;

@@ -430,5 +430,3 @@ const generateNotAFutureDateError = (row, col, key) => ({
 const arrayContainsErrors = validationsArray => validationsArray.some(array => array.length);
 
 const excludeCommonHeadersFilter = ({ key }) => !COMMON_CREDENTIALS_HEADERS.includes(key);
-
-export const isEmptyCredential = (dataRow, fields) => fields.every(({ key }) => !dataRow[key]);
