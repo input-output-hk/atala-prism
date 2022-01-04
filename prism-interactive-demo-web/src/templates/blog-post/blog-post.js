@@ -17,8 +17,7 @@ import './_style.scss';
 import '../../pages/blog.scss';
 
 const BlogPostTemplate = ({ data: { post }, location, pageContext }) => {
-  const backTo =
-    location && location.state && location.state.fromResources ? '/resources' : '/blog';
+  const backTo = location.state && location.state.fromResources ? '/resources' : '/blog';
 
   useEffect(() => {
     firebase.analytics().logEvent(`${BLOG_POST_EVENT}${_.snakeCase(post.frontmatter.title)}`);
