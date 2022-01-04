@@ -39,11 +39,10 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
   const {
     encodedSignedCredential,
     proof,
+    status,
     contactData: { contactName },
     credentialData: { credentialTypeDetails },
     verificationResult: {
-      credentialSigned,
-      credentialPublished,
       credentialRevoked,
       batchRevoked,
       invalidMerkleProof,
@@ -52,6 +51,10 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
       invalidSignature
     } = {}
   } = credential;
+
+  const credentialSigned = status === CREDENTIAL_STATUSES.credentialSigned;
+
+  const credentialPublished = status === CREDENTIAL_STATUSES.credentialSent;
 
   const tabs = {
     summary: {
@@ -89,7 +92,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
       <CustomButton
         buttonProps={{
           className: 'theme-link',
-          disabled: !isCredentialReceived,
+          disabled: isCredentialReceived,
           onClick: () => setRawVisible(true)
         }}
         buttonText="View"
@@ -120,7 +123,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     <>
       <div className="credentialStatusContent">
         <span>{t('credentials.detail.source')}</span>
-        <p>{credential?.issuer}</p>
+        <p>{credential?.issuerName}</p>
       </div>
       <div className="credentialStatusContent">
         <span>{t('credentials.detail.integrity.title')}</span>
