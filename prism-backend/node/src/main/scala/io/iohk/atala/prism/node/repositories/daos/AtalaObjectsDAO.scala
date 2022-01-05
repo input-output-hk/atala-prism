@@ -17,7 +17,7 @@ object AtalaObjectsDAO {
   case class AtalaObjectCreateData(
       objectId: AtalaObjectId,
       byteContent: Array[Byte],
-      status: AtalaObjectStatus = AtalaObjectStatus.Pending
+      status: AtalaObjectStatus = AtalaObjectStatus.Scheduled
   )
   case class AtalaObjectSetTransactionInfo(
       objectId: AtalaObjectId,
@@ -94,6 +94,13 @@ object AtalaObjectsDAO {
          |WHERE atala_object_id = $objectId
       """.stripMargin.update.run.void
   }
+
+  def updateObjectStatus(oldObjectStatus: AtalaObjectStatus, newObjectStatus: AtalaObjectStatus): ConnectionIO[Int] =
+    sql"""
+         |UPDATE atala_objects
+         |SET atala_object_status = $newObjectStatus
+         |WHERE atala_object_status = $oldObjectStatus
+       """.stripMargin.update.run
 
   def updateObjectStatusBatch(
       objectIds: List[AtalaObjectId],

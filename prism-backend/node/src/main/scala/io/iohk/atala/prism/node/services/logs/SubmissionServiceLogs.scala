@@ -9,8 +9,8 @@ import io.iohk.atala.prism.node.services.models.RefreshTransactionStatusesResult
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
-
 import cats.MonadThrow
+import io.iohk.atala.prism.node.errors.NodeError
 
 private[services] final class SubmissionServiceLogs[
     F[_]: ServiceLogging[*[_], SubmissionService[F]]: MonadThrow
@@ -38,4 +38,21 @@ private[services] final class SubmissionServiceLogs[
             _
           )
         )
+
+  override def scheduledObjectsToPending: Mid[F, Either[NodeError, Int]] = {
+    val description = "move scheduled objects to pending status"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            numUpdated => info"$description - successfully updated $numUpdated objects"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
 }
