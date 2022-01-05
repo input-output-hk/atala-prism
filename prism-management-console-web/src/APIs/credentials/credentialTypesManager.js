@@ -140,7 +140,10 @@ async function createCredentialType(values) {
   credentialTypeModel.setTemplate(values.template);
   credentialTypeModel.setIcon(iconData);
 
-  const fields = values.credentialBody.map(fieldData => {
+  // fixed text fields shouldn't be setted as a CredentialTypeField
+  const dynamicFields = values.credentialBody.filter(field => !field.isFixedText);
+
+  const fields = dynamicFields.map(fieldData => {
     const fieldObj = new CreateCredentialTypeField();
     fieldObj.setName(_.camelCase(fieldData.attributeLabel));
     fieldObj.setDescription('');
