@@ -6,7 +6,7 @@ import CredentialSummaryDetail from '../../../../common/Organisms/Detail/Credent
 import { backendDateFormat } from '../../../../../helpers/formatters';
 import { credentialReceivedShape, credentialShape } from '../../../../../helpers/propShapes';
 
-import './style.scss';
+import './_style.scss';
 
 const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }) => {
   const { publicationstoredat } = credential;
@@ -52,8 +52,12 @@ const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }
         />
       )}
       <div className="credentialDataContainer">
-        <div className="img">
-          <img className="icons" src={credentialTypeIcon} alt={credentialTypeName || ''} />
+        <div className="credentialTypeIconContainer">
+          <img
+            className="credentialTypeIcon"
+            src={credentialTypeIcon}
+            alt={credentialTypeName || ''}
+          />
         </div>
         <div className="credentialData">
           <p>{t('credentials.table.columns.credentialType')}</p>
