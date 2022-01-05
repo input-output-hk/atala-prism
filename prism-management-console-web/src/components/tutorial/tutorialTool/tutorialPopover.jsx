@@ -1,11 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Popover } from 'antd';
-import './_style.scss';
-import DashboardCard from '../../dashboard/organism/DashboardCard';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
+import './_style.scss';
 
-const TutorialPopover = () => {
+const TutorialPopover = ({ visible, children }) => {
   const { t } = useTranslation();
 
   const content = (
@@ -32,13 +32,24 @@ const TutorialPopover = () => {
       </div>
     </div>
   );
+
+  if (!visible) return children;
+
   return (
     <Popover overlayClassName="TutorialPopover" placement="right" content={content}>
-      <div className="step1">
-        <DashboardCard />
-      </div>
+      <div className="step1">{children}</div>
     </Popover>
   );
+};
+
+TutorialPopover.defaultProps = {
+  visible: true,
+  children: null
+};
+
+TutorialPopover.propTypes = {
+  visible: PropTypes.bool,
+  children: PropTypes.node
 };
 
 export default TutorialPopover;
