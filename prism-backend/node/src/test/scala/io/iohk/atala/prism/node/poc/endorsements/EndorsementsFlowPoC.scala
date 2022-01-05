@@ -123,8 +123,8 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     // this service needs to pull operations from the database and to send them to the ledger
     submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(
-        refreshTransactionStatusesPeriod = 1.days, // no retries during this test
-        operationSubmissionPeriod = 1.second
+        refreshTransactionStatusesPeriod = 1.second,
+        operationSubmissionPeriod = 2.second
       ),
       submissionService
     )

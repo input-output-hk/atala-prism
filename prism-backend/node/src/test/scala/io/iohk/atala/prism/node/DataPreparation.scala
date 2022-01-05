@@ -92,6 +92,24 @@ object DataPreparation {
     )
   )
 
+  def moveToPendingAndSubmit(implicit
+      submissionService: SubmissionService[IOWithTraceIdContext],
+      executionContext: ExecutionContext
+  ): Future[Either[NodeError, Int]] =
+    for {
+      _ <- submissionService.scheduledObjectsToPending
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+      _ <- submissionService
+        .refreshTransactionStatuses()
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+      numE <- submissionService
+        .submitReceivedObjects()
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+    } yield numE
+
   def publishSingleOperationAndFlush(
       signedAtalaOperation: SignedAtalaOperation
   )(implicit
@@ -105,10 +123,8 @@ object DataPreparation {
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
       atalaOperationIdE = atalaOperationIdList.head
-      _ <- submissionService
-        .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
+
+      _ <- moveToPendingAndSubmit
     } yield atalaOperationIdE
   }
 
@@ -122,10 +138,8 @@ object DataPreparation {
         .scheduleAtalaOperations(ops: _*)
         .run(TraceId.generateYOLO)
         .unsafeToFuture()
-      _ <- submissionService
-        .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
+
+      _ <- moveToPendingAndSubmit
     } yield ids
   }
 

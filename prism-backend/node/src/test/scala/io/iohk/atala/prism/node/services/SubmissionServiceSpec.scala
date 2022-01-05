@@ -106,12 +106,8 @@ class SubmissionServiceSpec
       }
 
       scheduleOpsForBatching(ops)
-      submissionService
-        .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
-        .unsafeRunSync()
-        .toOption
-        .nonEmpty must be(
+
+      DataPreparation.moveToPendingAndSubmit.futureValue.toOption.nonEmpty must be(
         true
       )
 
@@ -176,12 +172,7 @@ class SubmissionServiceSpec
       )
 
       scheduleOpsForBatching(ops)
-      submissionService
-        .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
-        .unsafeRunSync()
-        .toOption
-        .nonEmpty must be(
+      DataPreparation.moveToPendingAndSubmit.futureValue.toOption.nonEmpty must be(
         true
       )
 
@@ -215,6 +206,8 @@ class SubmissionServiceSpec
         publications.dropRight(1).last.transaction.transactionId,
         TransactionStatus.Pending
       )
+
+      submissionService.scheduledObjectsToPending.run(TraceId.generateYOLO).unsafeRunSync()
 
       // updates statuses for inLedger submissions
       // note that we're not resubmitting the first object here since it wasn't published at all
@@ -411,16 +404,7 @@ class SubmissionServiceSpec
         TransactionStatus.Expired
       )
 
-      submissionService
-        .refreshTransactionStatuses()
-        .run(TraceId.generateYOLO)
-        .unsafeRunSync()
-
-      submissionService
-        .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
-        .unsafeRunSync()
-
+      DataPreparation.moveToPendingAndSubmit.futureValue
       // It should have published twice and deleted the first one
       verify(ledger, times(2)).publish(atalaObject)
       verify(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
