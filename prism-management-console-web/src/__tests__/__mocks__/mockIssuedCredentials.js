@@ -29,7 +29,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: '5d6ad6db-b506-4108-b5ff-638747e3b5b5',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -60,7 +63,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: 'af4c2c2b-7aec-419a-a95b-0af796e77fac',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -91,7 +97,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '8905b238f27e228c96f0c0fcac2a2ae9258a754fc6cd233f00e1dd730f1a4232',
     credentialId: 'b9226e86-b534-404f-a6a8-bc3ce89130ba',
-    publicationstoredat: 1615838070055,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceproof: {
       transactionid: '5a2098cc389fd76900b38489c15eeecf1ee816638bc575475a6f13d19d4041d3',
       ledger: 1
@@ -127,7 +136,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: '944b9486-2693-49bf-b42c-2bf189acb76f',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -158,7 +170,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: '1276a6d2-12e6-4257-bd38-b16c9600a651',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -189,7 +204,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '70ea308dc95e92accdd665d32f932498f5219478015988b21e26d0d550d855b8',
     credentialId: '5a03acaf-9d85-4e4f-a207-a3c6deb3c048',
-    publicationstoredat: 1615838072807,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceproof: {
       transactionid: 'c71a3593ceee1a3154882aacb81332a7c344f9745de4939f01c56e4639113d76',
       ledger: 1
@@ -225,7 +243,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: 'eb0086a7-44dc-4100-ac79-528308f4a372',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -256,7 +277,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: 'c79d67e8-bfed-4eb7-9d52-ba9940222cad',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -287,7 +311,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: '09df98d4-a2da-4026-a589-8ea89bd671a8',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
@@ -318,7 +345,10 @@ export const mockCredentials = [
     countryOfCitizenship: 'argentina',
     batchid: '',
     credentialId: '71b94eac-ea35-486e-a7ca-eba39428fb53',
-    publicationstoredat: 0,
+    publicationStoredAt: {
+      nanoseconds: 0,
+      seconds: 0
+    },
     issuanceoperationhash: '',
     batchinclusionproof: '',
     sharedat: 0,
