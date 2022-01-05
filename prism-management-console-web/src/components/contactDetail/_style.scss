@@ -50,7 +50,7 @@
   }
   .detailSection {
     display: flex;
-    max-height: 85vh;
+    max-height: calc(100vh - 16em);
     overflow-y: auto;
     margin-top: 1em;
     h3 {
@@ -60,7 +60,7 @@
     }
     .ContactInfo {
       width: 50%;
-      padding:0 1em 0 0;
+      padding: 0 1em 0 0;
     }
     .CredentialInfo {
       padding: 0 0 0 1em;
