@@ -52,7 +52,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 
-import java.time.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._
@@ -124,8 +123,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     // this service needs to pull operations from the database and to send them to the ledger
     submissionSchedulingService = SubmissionSchedulingService(
       SubmissionSchedulingService.Config(
-        ledgerPendingTransactionTimeout = Duration.ZERO,
-        transactionRetryPeriod = 1.days, // no retries during this test
+        refreshTransactionStatusesPeriod = 1.days, // no retries during this test
         operationSubmissionPeriod = 1.second
       ),
       submissionService
