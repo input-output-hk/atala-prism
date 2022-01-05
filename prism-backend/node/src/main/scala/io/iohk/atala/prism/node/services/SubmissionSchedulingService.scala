@@ -35,10 +35,14 @@ class SubmissionSchedulingService private (
   private def scheduleRefreshTransactionStatuses(
       delay: FiniteDuration
   ): Unit = trace[Id, Unit] { traceId =>
+    val refreshAndSubmitQuery = for {
+      _ <- submissionService.refreshTransactionStatuses()
+      _ <- submissionService.submitReceivedObjects()
+    } yield ()
+
     (IO.sleep(delay) *> IO(
       // Ensure run is scheduled after completion, even if current run fails
-      submissionService
-        .refreshTransactionStatuses()
+      refreshAndSubmitQuery
         .run(traceId)
         .unsafeToFuture()
         .onComplete { _ =>
@@ -52,8 +56,7 @@ class SubmissionSchedulingService private (
   private def scheduleSubmitReceivedObjects(delay: FiniteDuration): Unit = {
     def run(): Unit = trace { traceId =>
       // Ensure run is scheduled after completion, even if current run fails
-      submissionService
-        .submitReceivedObjects()
+      submissionService.scheduledObjectsToPending
         .run(traceId)
         .unsafeToFuture()
     }.void
