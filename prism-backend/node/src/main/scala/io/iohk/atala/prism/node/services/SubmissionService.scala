@@ -18,6 +18,7 @@ import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalle
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -46,6 +47,10 @@ trait SubmissionService[F[_]] {
     * back to PENDING status.
     */
   def refreshTransactionStatuses(): F[RefreshTransactionStatusesResult]
+
+  /** Marks all SCHEDULED objects as PENDING making them visible for further submission
+    */
+  def scheduledObjectsToPending: F[Either[NodeError, Int]]
 }
 
 object SubmissionService {
@@ -137,6 +142,9 @@ private class SubmissionServiceImpl[F[_]: Monad](
 
     submissionET.value
   }
+
+  def scheduledObjectsToPending: F[Either[NodeError, Int]] =
+    atalaObjectsTransactionsRepository.updateObjectStatus(AtalaObjectStatus.Scheduled, AtalaObjectStatus.Pending)
 
   def refreshTransactionStatuses(): F[RefreshTransactionStatusesResult] = {
     val getOldPendingTransactions =

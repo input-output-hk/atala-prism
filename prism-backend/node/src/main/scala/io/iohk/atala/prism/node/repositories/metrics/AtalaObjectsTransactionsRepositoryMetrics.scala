@@ -7,6 +7,7 @@ import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -40,6 +41,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
       repoName,
       "updateSubmissionStatusIfExists"
     )
+
+  private lazy val updateObjectStatusTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "updateObjectStatus")
 
   private lazy val storeTransactionSubmissionTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "storeTransactionSubmission")
@@ -84,4 +88,11 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
       notification: AtalaObjectNotification
   ): Mid[F, Option[AtalaObjectInfo]] =
     _.measureOperationTime(setObjectTransactionDetailsTimer)
+
+  def updateObjectStatus(
+      oldObjectStatus: AtalaObjectStatus,
+      newObjectStatus: AtalaObjectStatus
+  ): Mid[F, Either[NodeError, Int]] =
+    _.measureOperationTime(updateObjectStatusTimer)
+
 }
