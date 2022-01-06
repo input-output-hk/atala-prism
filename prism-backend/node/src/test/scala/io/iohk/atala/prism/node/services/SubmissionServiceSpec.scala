@@ -22,7 +22,6 @@ import io.iohk.atala.prism.node.repositories.{
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.atala.prism.node.services.models.RefreshTransactionStatusesResult
 import io.iohk.atala.prism.protos.node_internal
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.utils.IOUtils._
