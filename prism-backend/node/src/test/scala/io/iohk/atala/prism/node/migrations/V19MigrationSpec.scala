@@ -51,7 +51,9 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
          |   added_on_transaction_id, ledger)
          |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes,
          |   ${Instant
-      .ofEpochMilli(addedOn.getAtalaBlockTimestamp)}, ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
+      .ofEpochMilli(
+        addedOn.getAtalaBlockTimestamp
+      )}, ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.runUpdate()
   }
