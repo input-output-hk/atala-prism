@@ -159,11 +159,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
       // Query old pending transactions
       pendingTransactions <- getOldPendingTransactions
 
+      // Retrieve up-to-date status information from Cardano wallet
       transactionsWithDetails <-
         pendingTransactions
           .traverse(getTransactionDetails)
           .map(_.flatten)
 
+      // Retrieve transactions that are already in a public ledger
       (inLedgerTransactions, notInLedgerTransactions) = transactionsWithDetails
         .partitionMap {
           case (transaction, TransactionStatus.InLedger) =>
@@ -171,13 +173,16 @@ private class SubmissionServiceImpl[F[_]: Monad](
           case txWithStatus =>
             Right(txWithStatus)
         }
+      // Update statuses for inLedger transactions
       numInLedgerSynced <- syncInLedgerTransactions(inLedgerTransactions)
 
+      // Retrieve transactions that are considered Expired on Cardano wallet side
       expiredTransactions = notInLedgerTransactions.collect {
         case (transaction, status) if status == TransactionStatus.Expired =>
           transaction
       }
 
+      // Mark expired transactions as `Deleted`
       deletedTransactions <- deleteTransactions(expiredTransactions)
     } yield RefreshTransactionStatusesResult(pendingTransactions.size, numInLedgerSynced, deletedTransactions.size)
   }

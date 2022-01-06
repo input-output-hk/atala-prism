@@ -11,12 +11,12 @@ import io.iohk.atala.prism.tracing.Tracing._
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
-/** Scheduler which calls submitReceivedObjects and retryOldPendingTransactions periodically.
+/** Scheduler which calls updates statuses and publishes new transactions periodically.
   *
   * @param config
-  *   configuration of waiting timeouts between submissions and retries
+  *   configuration of waiting timeouts between submissions and updates
   * @param submissionService
-  *   service which implements submitReceivedObjects & retryOldPendingTransactions methods
+  *   service which implements refreshTransactionStatuses, submitReceivedObjects & scheduledObjectsToPending methods
   */
 class SubmissionSchedulingService private (
     config: Config,
@@ -25,14 +25,13 @@ class SubmissionSchedulingService private (
   type CancelToken = () => Future[Unit]
 
   // Schedule first run
-  // NOTE: retryOldPendingTransactions is not thread-safe, so race-conditions may occur in a concurrent mode.
-  scheduleRefreshTransactionStatuses(config.refreshTransactionStatusesPeriod)
+  // NOTE: refreshAndSubmit is not thread-safe, so race-conditions may occur in a concurrent mode.
+  scheduleRefreshAndSubmit(config.refreshAndSubmitPeriod)
 
-  // NOTE: submitReceivedObjects is not thread-safe, so race-conditions may occur in a concurrent mode.
-  scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
+  scheduleMoveScheduledToPending(config.moveScheduledToPendingPeriod)
 
   // Every `delay` units of time, calls submissionService.retryOldPendingTransactions
-  private def scheduleRefreshTransactionStatuses(
+  private def scheduleRefreshAndSubmit(
       delay: FiniteDuration
   ): Unit = trace[Id, Unit] { traceId =>
     val refreshAndSubmitQuery = for {
@@ -46,14 +45,14 @@ class SubmissionSchedulingService private (
         .run(traceId)
         .unsafeToFuture()
         .onComplete { _ =>
-          scheduleRefreshTransactionStatuses(config.refreshTransactionStatusesPeriod)
+          scheduleRefreshAndSubmit(config.refreshAndSubmitPeriod)
         }
     )).unsafeRunAndForget()
   }
 
   // Every delay calls submissionService.submitReceivedObjects
   // if immediate is set, then call submissionService.submitReceivedObjects without waiting
-  private def scheduleSubmitReceivedObjects(delay: FiniteDuration): Unit = {
+  private def scheduleMoveScheduledToPending(delay: FiniteDuration): Unit = {
     def run(): Unit = trace { traceId =>
       // Ensure run is scheduled after completion, even if current run fails
       submissionService.scheduledObjectsToPending
@@ -61,7 +60,7 @@ class SubmissionSchedulingService private (
         .unsafeToFuture()
     }.void
       .onComplete { _ =>
-        scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
+        scheduleMoveScheduledToPending(config.moveScheduledToPendingPeriod)
       }
 
     (IO.sleep(delay) *> IO(run())).unsafeRunAndForget()
@@ -70,8 +69,8 @@ class SubmissionSchedulingService private (
 
 object SubmissionSchedulingService {
   case class Config(
-      refreshTransactionStatusesPeriod: FiniteDuration = 20.seconds,
-      operationSubmissionPeriod: FiniteDuration = 20.seconds
+      refreshAndSubmitPeriod: FiniteDuration = 20.seconds,
+      moveScheduledToPendingPeriod: FiniteDuration = 20.seconds
   )
 
   def apply(
