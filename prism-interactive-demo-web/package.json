@@ -84,6 +84,7 @@
     "eslint-plugin-react": "7.14.2",
     "jest": "27.3.1",
     "jest-canvas-mock": "2.3.1",
+    "jest-scss-transform": "1.0.1",
     "jest-sonar-reporter": "2.0.0",
     "jest-transform-stub": "2.0.0",
     "prettier": "1.16.1",
@@ -118,7 +119,8 @@
     "testResultsProcessor": "jest-sonar-reporter",
     "transform": {
       "^.+\\.jsx?$": "babel-jest",
-      "^.+\\.svg$": "jest-transform-stub"
+      "^.+\\.svg$": "jest-transform-stub",
+      "^.+\\.scss$": "jest-scss-transform"
     },
     "setupFiles": [
       "jest-canvas-mock"
