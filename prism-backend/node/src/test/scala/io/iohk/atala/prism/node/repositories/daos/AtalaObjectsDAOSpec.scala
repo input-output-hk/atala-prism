@@ -166,7 +166,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       byteContent: Array[Byte]
   ): Unit = {
     AtalaObjectsDAO
-      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
+      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent, AtalaObjectStatus.Scheduled))
       .transact(database)
       .unsafeToFuture()
       .void

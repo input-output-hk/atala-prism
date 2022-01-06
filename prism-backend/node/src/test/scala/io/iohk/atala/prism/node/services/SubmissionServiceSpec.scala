@@ -5,7 +5,6 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
@@ -16,7 +15,6 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.node.DataPreparation._
-import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -105,11 +103,13 @@ class SubmissionServiceSpec
         )
       }
 
-      scheduleOpsForBatching(ops)
+      objectManagementService
+        .scheduleAtalaOperations(ops: _*)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
 
-      DataPreparation.moveToPendingAndSubmit.futureValue.toOption.nonEmpty must be(
-        true
-      )
+      DataPreparation.moveToPendingAndSubmit.futureValue must be(Right(atalaObjectsMerged.size))
 
       verify(ledger, times(2))
         .publish(*) // publish only merged objects
@@ -145,7 +145,7 @@ class SubmissionServiceSpec
       val (_, atalaObjectsMerged, publications, ops) =
         setUpMultipleOperationsPublishing(numOps = 40)
 
-      // first publishing is failed
+      // the publication of the first object is failed
       doReturn(
         ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
           Left(
@@ -158,7 +158,7 @@ class SubmissionServiceSpec
       ).when(ledger)
         .publish(atalaObjectsMerged.head)
 
-      // second is ok
+      // the publication of the second object is successful
       doReturn(
         ReaderT.pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
           Right(publications.last)
@@ -166,28 +166,35 @@ class SubmissionServiceSpec
       )
         .when(ledger)
         .publish(atalaObjectsMerged.last)
+      // status of the second publication is Pending
       mockTransactionStatus(
         publications.last.transaction.transactionId,
         TransactionStatus.Pending
       )
 
-      scheduleOpsForBatching(ops)
-      DataPreparation.moveToPendingAndSubmit.futureValue.toOption.nonEmpty must be(
-        true
-      )
+      objectManagementService
+        .scheduleAtalaOperations(ops: _*)
+        .run(TraceId.generateYOLO)
+        .unsafeToFuture()
+        .futureValue
+
+      DataPreparation.moveToPendingAndSubmit.futureValue must be(Right(1))
 
       verify(ledger, times(2))
-        .publish(*) // publish only merged objects
+        .publish(*) // publish merged objects
 
       DataPreparation
         .getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.Pending)
         .size must be(1)
+
+      submissionService.scheduledObjectsToPending.run(TraceId.generateYOLO).unsafeRunSync() must be(Right(0))
+
       val notPublishedObjects =
         AtalaObjectsDAO.getNotPublishedObjectInfos
           .transact(database)
           .unsafeToFuture()
           .futureValue
-      notPublishedObjects.size must be(1) // no pending objects
+      notPublishedObjects.size must be(1)
 
       // after publication second transaction becomes InLedger
       mockTransactionStatus(
@@ -206,8 +213,6 @@ class SubmissionServiceSpec
         publications.dropRight(1).last.transaction.transactionId,
         TransactionStatus.Pending
       )
-
-      submissionService.scheduledObjectsToPending.run(TraceId.generateYOLO).unsafeRunSync()
 
       // updates statuses for inLedger submissions
       // note that we're not resubmitting the first object here since it wasn't published at all
@@ -240,73 +245,6 @@ class SubmissionServiceSpec
   "SubmissionService.refreshTransactionStatuses" should {
     val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
     val atalaObject = createAtalaObject(block = createBlock(atalaOperation))
-
-    "not delete already published transaction" in {
-      val (atalaObjects, atalaObjectsMerged, publications, ops) =
-        setUpMultipleOperationsPublishing(numOps = 3, numPubsAdditional = 1)
-      val opInLedger = BlockProcessingServiceSpec.signOperation(
-        DataPreparation.exampleOperation,
-        s"master${ops.size}",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
-      )
-      val objInLedger = createAtalaObject(block = createBlock(opInLedger))
-
-      (atalaObjects ++ atalaObjectsMerged :+ objInLedger)
-        .zip(publications)
-        .foreach { case (atalaObject, publicationInfo) =>
-          doReturn(
-            ReaderT
-              .pure[IO, TraceId, Either[CardanoWalletError, PublicationInfo]](
-                Right(publicationInfo)
-              )
-          )
-            .when(ledger)
-            .publish(atalaObject)
-          mockTransactionStatus(
-            publicationInfo.transaction.transactionId,
-            TransactionStatus.Expired
-          )
-        }
-      publications.take(atalaObjects.size).foreach { publicationInfo =>
-        doReturn(
-          ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](Right(()))
-        )
-          .when(ledger)
-          .deleteTransaction(publicationInfo.transaction.transactionId)
-      }
-      val inLedgerTransactionId =
-        publications
-          .drop(atalaObjects.size + atalaObjectsMerged.size)
-          .head
-          .transaction
-          .transactionId
-      doReturn(
-        ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](
-          Left(
-            CardanoWalletError(
-              "Too late",
-              CardanoWalletErrorCode.TransactionAlreadyInLedger
-            )
-          )
-        )
-      ).when(ledger).deleteTransaction(inLedgerTransactionId)
-
-      publishOpsSequentially(ops :+ opInLedger)
-
-      DataPreparation
-        .getSubmissionsByStatus(AtalaObjectTransactionSubmissionStatus.InLedger)
-        .size must be(0)
-      submissionService
-        .refreshTransactionStatuses()
-        .run(TraceId.generateYOLO)
-        .unsafeRunSync() mustBe RefreshTransactionStatusesResult(4, 0, 3)
-
-      val inLedgerTxs = DataPreparation.getSubmissionsByStatus(
-        AtalaObjectTransactionSubmissionStatus.InLedger
-      )
-      inLedgerTxs.size must be(1)
-      inLedgerTxs.head.transactionId must be(inLedgerTransactionId)
-    }
 
     "ignore in-ledger transactions" in {
       doReturn(
@@ -410,10 +348,11 @@ class SubmissionServiceSpec
       verify(ledger).deleteTransaction(dummyTransactionInfo.transactionId)
     }
 
-    "merge several operations in one transaction while retrying" in {
+    "merge several operations in one transaction while resubmitting expired transactions" in {
       val (atalaObjects, atalaObjectsMerged, publications, ops) =
         setUpMultipleOperationsPublishing(numOps = 40)
 
+      // `publish` and `getTransactionDetails` should be called on every input object and on every merged object
       (atalaObjects ++ atalaObjectsMerged).zip(publications).foreach { case (atalaObject, publicationInfo) =>
         doReturn(
           ReaderT
@@ -425,10 +364,12 @@ class SubmissionServiceSpec
           .publish(atalaObject)
         mockTransactionStatus(
           publicationInfo.transaction.transactionId,
-          TransactionStatus.Expired
+          TransactionStatus.Pending
         )
       }
-      publications.dropRight(atalaObjectsMerged.size).foreach { publicationInfo =>
+
+      // all initial objects should be deleted because corresponding transactions are expired on Cardano wallet side
+      publications.take(atalaObjects.size).foreach { publicationInfo =>
         doReturn(
           ReaderT.pure[IO, TraceId, Either[CardanoWalletError, Unit]](
             Right(())
@@ -441,13 +382,21 @@ class SubmissionServiceSpec
       // publish operations sequentially because we want to preserve the order by timestamps
       publishOpsSequentially(ops)
 
-      // deletes all expired transactions, so that the corresponding objects become in status pending again
+      // after all operations are sent to the Cardano wallet, the corresponding transactions become Expired
+      publications.take(atalaObjects.size).foreach { publicationInfo =>
+        mockTransactionStatus(
+          publicationInfo.transaction.transactionId,
+          TransactionStatus.Expired
+        )
+      }
+
+      // delete all `Expired` transactions, so that the corresponding objects become in status `Pending` again
       submissionService
         .refreshTransactionStatuses()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 
-      // submits two objects containing 40 pending operations
+      // submit two objects containing 40 pending operations in total
       submissionService
         .submitReceivedObjects()
         .run(TraceId.generateYOLO)
@@ -540,14 +489,6 @@ class SubmissionServiceSpec
     }
   }
 
-  private def scheduleOpsForBatching(ops: List[SignedAtalaOperation]): List[Either[NodeError, AtalaOperationId]] = {
-    objectManagementService
-      .scheduleAtalaOperations(ops: _*)
-      .run(TraceId.generateYOLO)
-      .unsafeToFuture()
-      .futureValue
-  }
-
   private def publishOpsSequentially(ops: List[SignedAtalaOperation]): Unit =
     ops.zipWithIndex.foreach { case (atalaOperation, index) =>
       withClue(s"publishing operation #$index and flushing") {
@@ -555,6 +496,8 @@ class SubmissionServiceSpec
       }
     }
 
+  // Utility method to create new samples of operations and the corresponding publication data
+  // It takes amount of operations required and amount of additional publication structures
   private def setUpMultipleOperationsPublishing(
       numOps: Int,
       numPubsAdditional: Int = 0
@@ -564,6 +507,7 @@ class SubmissionServiceSpec
       List[PublicationInfo],
       List[SignedAtalaOperation]
   ) = {
+    // Create a list of `numOps` operations
     val atalaOperations = (0 until numOps).toList.map { masterId =>
       BlockProcessingServiceSpec.signOperation(
         DataPreparation.exampleOperation,
@@ -572,6 +516,7 @@ class SubmissionServiceSpec
       )
     }
 
+    // Create a new AtalaObject for every operation
     val atalaObjects = atalaOperations.map { op =>
       createAtalaObject(block = createBlock(op))
     }
@@ -600,6 +545,10 @@ class SubmissionServiceSpec
     }
     if (oldObj != null) atalaObjectsMerged.append(oldObj)
 
+    // Create a new publication information for every object
+    // `atalaOperations.size` is amount of initial objects
+    // `atalaObjectsMerged.size` is amount of merged objects
+    // `numPubsAdditional` is amount of additional publications needed
     val dummyTransactionIds =
       (0 until (atalaOperations.size + atalaObjectsMerged.size + numPubsAdditional))
         .map { index =>

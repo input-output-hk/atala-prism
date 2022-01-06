@@ -9,6 +9,7 @@ import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -330,7 +331,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       byteContent: Array[Byte]
   ): Unit = {
     AtalaObjectsDAO
-      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
+      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent, AtalaObjectStatus.Scheduled))
       .transact(database)
       .unsafeToFuture()
       .void
