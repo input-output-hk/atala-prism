@@ -3,7 +3,7 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 
-const items = [
+export const items = [
   { title: 'landing.credential.titlecomponent1', description: 'landing.credential.component1' },
   { title: 'landing.credential.titlecomponent3', description: 'landing.credential.component3' },
   { title: 'landing.credential.titlecomponent2', description: 'landing.credential.component2' },
@@ -30,7 +30,7 @@ const CredentialSection = () => {
           <h1>{t('landing.credential.title')}</h1>
           <div className="ComponentsContainer">
             {items.map(({ title, description, extra }) => (
-              <div className="ComponentItem">
+              <div className="ComponentItem" key={title}>
                 <h3>{t(title)}</h3>
                 {extra && <p className="ComingSoon">{t(extra)}</p>}
                 <p>{t(description)}</p>

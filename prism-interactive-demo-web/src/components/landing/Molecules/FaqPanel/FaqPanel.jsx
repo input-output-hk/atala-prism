@@ -3,7 +3,7 @@ import { useTranslation } from 'gatsby-plugin-react-i18next';
 
 import './_style.scss';
 
-const faqs = [
+export const faqs = [
   { title: 'landing.faqPanel.titlefaq1', description: 'landing.faqPanel.faq1' },
   { title: 'landing.faqPanel.titlefaq2', description: 'landing.faqPanel.faq2' },
   { title: 'landing.faqPanel.titlefaq3', description: 'landing.faqPanel.faq3' },
@@ -25,7 +25,7 @@ const FaqPanel = () => {
         <h1>{t('landing.faqPanel.title')}</h1>
         <div className="FaqContainer">
           {faqs.map(({ title, description }) => (
-            <div className="FaqItem">
+            <div className="FaqItem" key={title}>
               <h3>{t(title)}</h3>
               <p>{t(description)}</p>
             </div>
