@@ -33,7 +33,7 @@ const commonColumns = [
     // eslint-disable-next-line react/prop-types
     render: ({ credentialData: { credentialTypeDetails } }) => (
       <img
-        style={{ width: '40px', height: '40px' }}
+        className="credentialTypeIcon"
         src={credentialTypeDetails?.icon || freeUniLogo}
         alt={`${credentialTypeDetails?.key} icon`}
       />
