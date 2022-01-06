@@ -105,9 +105,10 @@ const CredentialSummaryDetail = ({ drawerInfo, credential }) => {
     if (invalidMerkleProof || invalidKey || keyRevoked || invalidSignature) {
       return ['invalid', invalidIcon, 'InvalidButton'];
     }
-    if (!credentialSigned) return ['draft', pendingIcon, 'PendingButton'];
-    if (!credentialPublished) return ['pendingPublication', pendingIcon, 'PendingButton'];
-    return ['valid', verifiedIcon, 'ValidButton'];
+    if (credentialPublished) return ['valid', verifiedIcon, 'ValidButton'];
+    if (credentialSigned) return ['pendingPublication', pendingIcon, 'PendingButton'];
+
+    return ['draft', pendingIcon, 'PendingButton'];
   };
 
   const [credentialStatus, validityIcon, badgeClassName] = getCredentialStatusBadgeData();
