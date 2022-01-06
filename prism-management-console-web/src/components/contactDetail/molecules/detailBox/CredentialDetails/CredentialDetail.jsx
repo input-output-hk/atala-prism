@@ -9,7 +9,7 @@ import { credentialReceivedShape, credentialShape } from '../../../../../helpers
 import './style.scss';
 
 const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }) => {
-  const { publicationstoredat } = credential;
+  const { publicationStoredAt } = credential;
   const { t } = useTranslation();
 
   const [currentCredential, setCurrentCredential] = useState();
@@ -32,8 +32,8 @@ const CredentialDetail = ({ credential, isCredentialIssued, onVerifyCredential }
     <div className="credentialData">
       <p>{t('credentials.detail.dateSigned')}</p>
       <span>
-        {publicationstoredat?.seconds
-          ? backendDateFormat(publicationstoredat?.seconds)
+        {publicationStoredAt?.seconds
+          ? backendDateFormat(publicationStoredAt?.seconds)
           : t('credentials.detail.notPublished')}
       </span>
     </div>
