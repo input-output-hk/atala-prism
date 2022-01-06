@@ -17,7 +17,7 @@ object AtalaObjectsDAO {
   case class AtalaObjectCreateData(
       objectId: AtalaObjectId,
       byteContent: Array[Byte],
-      status: AtalaObjectStatus = AtalaObjectStatus.Scheduled
+      status: AtalaObjectStatus
   )
   case class AtalaObjectSetTransactionInfo(
       objectId: AtalaObjectId,

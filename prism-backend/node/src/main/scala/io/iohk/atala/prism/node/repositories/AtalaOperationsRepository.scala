@@ -87,7 +87,7 @@ private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Either[NodeError, (Int, Int)]] = {
     val query = for {
       numInsertObject <- AtalaObjectsDAO.insert(
-        AtalaObjectCreateData(objectId, objectBytes)
+        AtalaObjectCreateData(objectId, objectBytes, AtalaObjectStatus.Scheduled)
       )
       numInsertOperations <- AtalaOperationsDAO.insert(
         (atalaOperationId, objectId, atalaOperationStatus)
@@ -105,7 +105,7 @@ private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[Either[NodeError, Unit]] = {
     val query = for {
       _ <- AtalaObjectsDAO.insert(
-        AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent)
+        AtalaObjectCreateData(atalaObject.objectId, atalaObject.byteContent, AtalaObjectStatus.Pending)
       )
       _ <- AtalaOperationsDAO.updateAtalaOperationObjectBatch(
         operations.map(AtalaOperationId.of),

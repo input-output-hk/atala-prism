@@ -18,6 +18,7 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -93,22 +94,15 @@ object DataPreparation {
   )
 
   def moveToPendingAndSubmit(implicit
-      submissionService: SubmissionService[IOWithTraceIdContext],
-      executionContext: ExecutionContext
-  ): Future[Either[NodeError, Int]] =
-    for {
+      submissionService: SubmissionService[IOWithTraceIdContext]
+  ): Future[Either[NodeError, Int]] = {
+    val query = for {
       _ <- submissionService.scheduledObjectsToPending
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-      _ <- submissionService
-        .refreshTransactionStatuses()
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-      numE <- submissionService
-        .submitReceivedObjects()
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
+      _ <- submissionService.refreshTransactionStatuses()
+      numE <- submissionService.submitReceivedObjects()
     } yield numE
+    query.run(TraceId.generateYOLO).unsafeToFuture()
+  }
 
   def publishSingleOperationAndFlush(
       signedAtalaOperation: SignedAtalaOperation
@@ -336,7 +330,7 @@ object DataPreparation {
 
     val query = for {
       insertObject <- AtalaObjectsDAO.insert(
-        AtalaObjectCreateData(objId, objBytes)
+        AtalaObjectCreateData(objId, objBytes, AtalaObjectStatus.Scheduled)
       )
       insertOperations <- AtalaOperationsDAO.insertMany(atalaOperationData)
     } yield (insertObject, insertOperations)
