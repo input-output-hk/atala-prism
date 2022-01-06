@@ -61,6 +61,8 @@ const GroupCreation = observer(
       onChange: ev => selectAllContacts(ev, filterValues.textFilter)
     };
 
+    const nextButtonIsDisabled = !groupName || nameState !== GROUP_NAME_STATES.possible;
+
     return (
       <div className="WrapperGroupCreation">
         <div className="Header">
@@ -78,7 +80,7 @@ const GroupCreation = observer(
               <CustomButton
                 buttonProps={{
                   className: 'theme-primary',
-                  disabled: nameState === GROUP_NAME_STATES.failed,
+                  disabled: nextButtonIsDisabled,
                   onClick: () => createGroup(groupName)
                 }}
                 buttonText={t('groupCreation.form.buttonText')}
