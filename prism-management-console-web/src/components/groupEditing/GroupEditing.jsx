@@ -110,6 +110,8 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
     sm: 6
   };
 
+  const saveGroupRenameIsDisabled = !groupName || nameState !== GROUP_NAME_STATES.possible;
+
   const renderNameSection = () => {
     if (isLoadingGroup) return <SimpleLoading size="sm" />;
     if (editing)
@@ -163,7 +165,11 @@ const GroupEditing = observer(({ onGroupRename, onRemoveContacts, onAddContacts 
             {renderNameSection()}
             {editing ? (
               <>
-                <Button {...editButtonProps} disabled={!groupName} onClick={handleSaveGroupName}>
+                <Button
+                  {...editButtonProps}
+                  disabled={saveGroupRenameIsDisabled}
+                  onClick={handleSaveGroupName}
+                >
                   {t('groupEditing.buttons.save')}
                 </Button>
                 <Button {...editButtonProps} onClick={handleCancelClick}>
