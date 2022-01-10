@@ -1,6 +1,57 @@
 \section{Introduction}
 \label{sec:introduction}
 
+Hierarchical Deterministic Wallets (HD wallets, for short) in the cryptocurrency
+domain derive from the BIP32 specification%
+\footnote{\url{https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki}.
+  Last access, December 13th, 2021.}
+The motivation behind creating this type of wallets is clear if one thinks about
+how typical cryptocurrency systems work: each address is associated with a key
+pair and, in order to achieve high security and privacy levels, it is best to
+limit the reusage of addresses (thus, key pairs). Therefore, a too high number
+of needed key pairs is quickly reached. If each key is generated independently
+at random, management becomes too complex -- especially, if several devices
+are expected to be synchronised. As a solution to this challenge, a hierachical
+tree-based data structure was proposed, in which each parent node can be used to
+derive multiple child nodes, deterministically. This approach seems also useful
+to foster some sort of separation -- i.e., create sub-trees that are
+(computationally) independent from one another, in the sense that a compromise
+in one does not lead to a compromise in the other. Typically, the root node
+of the tree is derived from a seed encoded as a mnemonic. BIP39%
+\footnote{\url{https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki}.
+  Last access, December 13th, 2021.} is the main specification for this latter
+purpose.
+
+\subsection{Preliminaries}
+
+In the sequel, the processes that compose an (BIP44-compliant) HD wallet are
+described, including high-level cryptographic algorithms. For the sake of
+readability of non-cryptography savvy audience, we give informal descriptions of
+the cryptographic concepts and schemes mentioned next.
+
+\paragraph{Signature schemes.} A signature scheme uses an asymmetric key pair,
+composed of a public key and a private key (also frequently referred to as
+verification key and signing key, respectively). Intuitively, the owner of the
+signing key can produce a digital signature over arbitrary messages, which can
+be verified by anyone with the verification key, which is frequently somehow
+made publicly accessible. Secure signature schemes ensure that only the owner
+of the signing key can produce signatures verifiable with the corresponding
+verifying key. In the HD wallets studied next, typical signing algorithms are
+ECDSA and EdDSA.
+
+\paragraph{HMACs and HKDFs.} A Hash-based Message Authentication Code scheme is
+a concrete approach to build MAC functions, using cryptographic hashes as main
+building block. A MAC function is a kind of symmetric equivalent to digital
+signature -- i.e., it relies on a shared secret rather than on an asymmetric key
+pair. HMACs have been proved to be secure pseudo random number
+generators \cite{bck96}, which is a useful building block to build secure HKDFs
+\cite{kraw10}, or Hash-based Key Derivation Functions. Specifically, an HKDF, as
+defined in \cite{kraw10}, can be applied to produce secure cryptographic keys
+from low entropy sources, by applying a two-phase process of randomness
+extraction and expansion (the extract-expand approach). In summary, given a
+(possibly low-entropy) bitstring, an HKDF produces an arbitrarily long pseudo
+random bitstring that is fit for cryptographic purposes.
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "single-mnemonic"

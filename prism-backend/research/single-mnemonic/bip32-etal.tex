@@ -1,26 +1,6 @@
 \section{An Overview of BIP32-based HD Wallets}
 \label{sec:bip32}
 
-Hierarchical Deterministic Wallets (HD wallets, for short) in the cryptocurrency
-domain derive from the BIP32 specification%
-\footnote{\url{https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki}.
-  Last access, December 13th, 2021.}
-The motivation behind creating this type of wallets is clear if one thinks about
-how typical cryptocurrency systems work: each address is associated with a key
-pair and, in order to achieve high security and privacy levels, it is best to
-limit the reusage of addresses (thus, key pairs). Therefore, a too high number
-of needed key pairs is quickly reached. If each key is generated independently
-at random, management becomes too complex -- especially, if several devices
-are expected to be synchronised. As a solution to this challenge, a hierachical
-tree-based data structure was proposed, in which each parent node can be used to
-derive multiple child nodes, deterministically. This approach seems also useful
-to foster some sort of separation -- i.e., create sub-trees that are
-(computationally) independent from one another, in the sense that a compromise
-in one does not lead to a compromise in the other. Typically, the root node
-of the tree is derived from a seed encoded as a mnemonic. BIP39%
-\footnote{\url{https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki}.
-  Last access, December 13th, 2021.} is the main specification for this purpose.
-
 In this section, we give a brief overview of the BIP32 specification, and
 provide a ``full path'' from mnemonic to key pair. To avoid repeating already
 well documented processes, the overview will refer to the specifications when
@@ -29,21 +9,89 @@ appropriate.
 In a final subsection, we will also overview how does all this apply to the
 Cardano Lightwallet and Atala Prism cases.
 
-\subsection{Main Specifications}
+\subsection{Main Specifications: A Brief History of BIPs for Wallets}
 
-While the main specification is BIP32, it essentially gives the basic guidelines
-to create HD wallets. To avoid ambiguity leading to incompatible
-implementations, BIP43%
+BIPs, or Bitcoin Improvement Proposals, are ``standards'' in the Bitcoin domain
+that specify how concrete components of the ecosystem work and/or should be
+implemented. Being Bitcoin the first blockchain, many others import these
+standards.
+
+In 2013, BIP32 was published. It defines an approach to HD wallets
+using a tree structure in which each node can be associated to a key pair. It
+also defines two ways to derive child nodes from parent nodes: one that allows,
+given a public key of a node, to derive the public and private keys of all its
+descendants; and another one that requires the private key for derivation of
+its child nodes. Based on this child derivation processes, it also specifies a
+basic strategy for building HD structures for payments.
+
+However, although BIP32 does specify a basic structure, it does not mandate that
+it has to be followed. According to BIP43%
 \footnote{\url{https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki}.
-  Last access, December 13th, 2021.} and BIP44%
+  Last access, December 13th, 2021.}, published in 2014, this led to a set of
+self-claimed BIP32-compliant wallets not to be compliant between themselves.
+BIP43 requires that the first level of child derivation (directly from the
+root) be dedicated to define a ``purpose''. BIP44%
 \footnote{\url{https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki}.
-  Last access, December 13th, 2021.} specify how to organize HD wallets so
-that the resulting tree structure enables the most common use cases (which, at
-least initially, focus on the cryptocurrency scenario). In addition, the
-specification that defines how to encode (pseudo-)random bitstrings as
-mnemonic is given in BIP39.
+  Last access, December 13th, 2021.}, published simultaneously to BIP43, further
+refines this, by establishing 6 different levels (which we introduce in
+subsequent sections). Thus, BIP44 is an specialization of BIP43, which is itself
+an specialization of BIP32.
+
+Somehow orthoghonally to these, BIP39 defines how to encode random binary seeds
+into mnemonic sentences, and back. In this manner, the root node of a BIP44
+wallet is decoded into a bitstring, from a mnemonic, using BIP39. Then, this
+root node and its child nodes are computed as defined in BIP44. \tabref{tab:bips}
+summarizes the mentioned standards.
+
+\begin{table}[ht!]
+  \centering
+  \scalebox{0.95}{
+    \begin{tabular}{|c|c|l|}
+      \hline
+      \bf BIP & \bf Year & \bf Description \\
+      \hline
+      BIP32 & 2013 & Basic structure and derivation rules for HD wallets. \\
+      BIP43 & 2014 & Definition of ``purpose'' level. \\
+      BIP44 & 2014 & Definition of 6-level structure (root, purpose, coin type,
+                     account, change, address.) \\
+      BIP32 & 2013 & Encoding/decoding of bitstrings to/from mnemonic sentences. \\
+      \hline
+    \end{tabular}
+  }
+  \caption{Summary of BIPs for HD wallets.}
+  \label{tab:bips}
+\end{table}
+
+HD wallets that follow the BIP44 specification have to define a value of 44
+(with hardened derivation; see next) at the ``purpose'' layer. Wallets following
+a different structure, but still compatible with BIP32, can (should?) define
+their own code, for the sake of ensuring compatibility across implementations.
+For instance, Cardano defines the code 1852 (again, hardened derivation), as
+it has some minor variations with respect to BIP44. There are several well-known
+wallets that follow this specification. For instance, Trezor%
+\footnote{\url{https://docs.trezor.io/trezor-firmware/misc/coins-bip44-paths.html}.
+  Last access, January 10th, 2022.}, or Ledger%
+\footnote{\url{https://support.ledger.com/hc/en-us/articles/4404388633489-Export-your-accounts?docs=true}.
+Last access, January 10th, 2022.}.
+
+Additionally, Satoshi Labs SLIP44 maintains a registry of the different
+cryptocurrencies that have ``registered'' codes for wallet specifications
+that follow BIP44. That is, this registry contains codes for the ``coin type''
+level of BIP44. Examples of registered coins include Bitcoin mainnet and testnet,
+Litecoin, Cardano, Ether, and many others (currently, there are several
+hundreds).
+
+
+% While the main specification is BIP32, it essentially gives the basic guidelines
+% to create HD wallets. To avoid ambiguity leading to incompatible
+% implementations, BIP43 and BIP44 specify how to organize HD wallets so
+% that the resulting tree structure enables the most common use cases (which, at
+% least initially, focus on the cryptocurrency scenario). In addition, the
+% specification that defines how to encode (pseudo-)random bitstrings as
+% mnemonic is given in BIP39.
 
 \subsection{Main Concepts}
+\label{ssec:mainhdconcepts}
 
 \begin{description}
 \item[HD wallet tree structure.] HD wallets are organised as trees, where the
@@ -146,6 +194,19 @@ The following description is based on BIP39 for the processing of mnemonics,
 and BIP44 (which is a restriction of BIP43 and BIP32) for general structure of
 an HD wallet, which we depict in \figref{fig:bip44-tree}.
 
+\paragraph{Path notation.} As can be seen in \figref{fig:bip44-tree}, the
+hierarchical structure of an HD wallet is defined in layers (or levels), where
+different indexes are used to derive the cryptographic values associated to
+different nodes in a same layer, with the exception of the root node (at layer
+0), which is frequently just denoted with an \texttt{m}, after master seed.
+Thus, for instance, paths  \texttt{m/1} and \texttt{m/2} denote a tree with two
+layer 1 nodes computed with index \texttt{1} and index \texttt{2},
+respectively. If a child node index is \emph{primed}, it means that hardened
+derivation is used (whereas the absence of a prime means non-hardened
+derivation). More specifically, since BIP44 wallets have up to layer 6, paths
+look like \texttt{m/a'/b'/c'/d'/e/f}. Note that layers 1 to 3 are derived in
+hardened mode, and layers 4 and 5 are derived in non-hardened mode.
+
 \begin{figure}[ht!]
   \includegraphics[width=\textwidth]{figures/bip44_tree.png}
   \caption{Basic tree structure of a BIP44-based HD wallet.}
@@ -170,17 +231,18 @@ as master chaincode (i.e., $k_{0,0}$ and $c_{0,0}$, in our previous notation).
 \paragraph{Layer 1: \emph{isolated} subtrees per \texttt{purpose}} %
 The first layer of a BIP44-compatible HD wallet is composed of up to $2^{31}$
 nodes of hardened childs: i.e., layer 1 is composed of childs $(1,2^{31})$
-to $(1,2^{62}-1)$, where the second element in the pair is the $i$ value used
-in the child derivation processes, and denotes for what ``purpose'' the
-descendant keys will be used -- this roughly translates to the system (e.g.,
-Bitcoin, Cardano... or even non-blockchain systems, in theory).
+to $(1,2^{62}-1)$, where the second element in the pair is the index $i$,
+whose value is used in the child derivation processes, and denotes for what
+``purpose'' the descendant keys will be used -- this roughly translates to the
+system (e.g., Bitcoin, Cardano... or even non-blockchain systems, in theory).
 
 Note that, being layer 1 computed in hardened mode, a private key compromise
 of one node in layer 1 does not affect the master node, nor other layer 1
 siblings. Hence, this is an ``isolated'' subtree, according to our terminology.
 
-For BIP44-compatible wallets, the expected index is $44$. Cardano, since
-the Shelley era, uses $1852$%
+For BIP44-compatible wallets, the expected value for the $i$ index is $44$, so
+all paths begin with \texttt{m/44'}. Cardano, since the Shelley era, uses index
+$1852$ (and thus, Cardano paths begin with \texttt{m/1852'}%
 \footnote{\url{https://cips.cardano.org/cips/cip1852/}. Last access, December
   14th, 2021.}. Note that, since these are hardened indexes, the encoding
 rules translate this into $1852+2^{31}$ (resp. $44+2^{31}$ for BIP44); see
@@ -201,7 +263,8 @@ siblings. Hence, this is an ``isolated'' subtree, according to our terminology.
 Although not mandatory, each coin is expected to have an assigned coin type
 index. The complete list of reserved indexes is available in SLIP44%
 \footnote{\url{https://github.com/satoshilabs/slips/blob/master/slip-0044.md}.
-  Last access, December 14th, 2021.}.
+  Last access, December 14th, 2021.}. For instance, Cardano's ADA has an index
+of 1815 in hardened mode -- thus, its path prefix is \texttt{m/1852'/1815'}.
 
 \paragraph{Layer 3: \emph{isolated} subtrees per \texttt{account}} %
 The third layer is again composed of up to $2^{31}$ nodes of hardened childs:
@@ -221,18 +284,24 @@ non-hardened childs: i.e., layer 4 can be composed of childs $(4,0)$ to
 $(4,2^{31}-1)$ per each child node of layer 3. However, in BIP44, only
 non-hardened childs 0 and 1 are used: i.e., each node of layer 3 will only have
 non-hardened childs $(4,0)$ and $(4,1)$. This layer is used to differentiate
-whether the descendant nodes will be used as a change addresses, or not. I.e.,
+whether the descendant nodes will be used as change addresses, or not. I.e.,
 child $(4,0)$ will \emph{not} be used for receiving change in payments, and
 therefore is expected to be associated to an address that may be published
 outside of the wallet; while child $(4,1)$ is expected to be used for receiving
-change in payments.
+change in payments, and will typically not be published outside of the
+transaction.
 
-Note that, since the 4th layer is not derived in hardened mode, if the private
-key of the $(4,0)$ child of some layer 3 node is compromised along with the
-extended public key of the node at layer 3, then the entire subtree of that
-layer 3 node will be compromised (but not the subtrees of other layer 3 nodes,
-as layer 3 is derived in hardened mode). That is, all the addresses (change or
-not) of an specific account of some cryptocurrency, will be compromised.
+Note that, since nodes in layer 4 are not derived in hardened mode, if the private
+key of a layer 4 node is compromised, along with the extended public key of its
+layer 3 parent, then the entire subtree of that layer 3 node will be compromised
+(but not the subtrees of other layer 3 nodes, as layer 3 is derived in hardened
+mode). For example, take the derivation path of a layer 4 node to be
+\texttt{m/x'/y'/z'/0}. If the private key of \texttt{m/x'/y'/z'/0} is leaked to
+an attacker, who also gains access to the \emph{extended public} key (i.e.,
+the public key and chaincode) of \texttt{m/x'/y'/z'}, then the attacker will
+be able to compute the extended private (and public) keys of the sibling node
+\texttt{m/x'/y'/z'/1}. This is precisely the attack explained in the last
+paragraph of \secref{ssec:mainhdconcepts}.
 
 \paragraph{Layer 5: \emph{non-isolated} final key pairs (\texttt{index})} %
 The fifth and last layer is used to derive final key pairs. It can be composed
@@ -245,16 +314,6 @@ private key is compromised, as well as its parent extended public key of layer
 layer 3 extended public key from which the layer 4 parent derives is also
 compromised, the entire account will be compromised too, as layer 4 is also
 derived in non-hardened mode.
-
-\paragraph{Notation.} It is frequent that the values used to derive keys in
-the different layers are written in a short form like \texttt{m/a'/b'/c'/d'/e/f},
-where \texttt{m} denotes the master seed (mnemonic); and each value between
-bars is the number used to derive the key for the node at the corresponding
-layer, where a tilded value denotes hardened derivation, and a non-tilded value
-denotes non-hardened derivation. For instance, in the previous path, \texttt{a'}
-denotes that the value \texttt{a} is used to derive, in hardened mode, the second
-level of the path; or the value \texttt{f}  is used to derive, in non-hardened
-mode, the last node in the path.
 
 \subsection{Comments on a Recent Security Evaluation of BIP32 Wallets}
 
