@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
-import { Modal, Row, Col } from 'antd';
+import { Modal, Col } from 'antd';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import SimpleContactFilter from '../../connections/Molecules/Filters/SimpleContactFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
@@ -67,48 +67,38 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     onChange: handleSelectAll
   };
 
-  const confirmButton = (
-    <Row>
-      <Col span={24} className="FooterContainer">
-        <CustomButton
-          buttonProps={{
-            className: 'theme-secondary',
-            onClick: handleConfirm,
-            disabled: selectedContactIds.length === 0
-          }}
-          buttonText={t('groupEditing.buttons.addContacts')}
-        />
-      </Col>
-    </Row>
-  );
-
   return (
     <Modal
+      className="AddContactsModal"
       title={t('groupEditing.selectContacts')}
       visible={visible}
       onCancel={onCancel}
-      width={800}
-      className="AddContactsModal"
-      footer={confirmButton}
+      width={900}
     >
-      <Row type="flex" align="middle" className="mb-3">
-        <Col span={5}>
-          <SelectAllButton
-            isLoadingSelection={false}
-            selectedEntities={selectedContactIds}
-            checkboxProps={checkboxProps}
-          />
-        </Col>
-        <Col span={17}>
+      <div className="modal-filter-container">
+        <SelectAllButton
+          isLoadingSelection={false}
+          selectedEntities={selectedContactIds}
+          checkboxProps={checkboxProps}
+        />
+        <div className="searchAndBtnContainer">
           <SimpleContactFilter
             localStateFilter={{
               value: textFilter,
               setValue: (_key, value) => setTextFilter(value)
             }}
           />
-        </Col>
-      </Row>
-      <Row className="ModalContactsContainer">
+          <CustomButton
+            buttonProps={{
+              className: 'theme-outline',
+              onClick: handleConfirm,
+              disabled: selectedContactIds.length === 0
+            }}
+            buttonText={t('groupEditing.buttons.addContacts')}
+          />
+        </div>
+      </div>
+      <div className="ModalContactsContainer">
         <Col span={24}>
           <ConnectionsTable
             // TODO: add pagination for getting group members
@@ -123,7 +113,7 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
             hasMore={false}
           />
         </Col>
-      </Row>
+      </div>
     </Modal>
   );
 });
