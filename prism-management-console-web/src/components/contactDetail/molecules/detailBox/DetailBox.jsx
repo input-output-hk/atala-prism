@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import RowInfo from '../../atoms/row/Row';
+import RowInfo from '../../atoms/RowInfo/RowInfo';
 import SimpleLoading from '../../../common/Atoms/SimpleLoading/SimpleLoading';
 
 import './_style.scss';
