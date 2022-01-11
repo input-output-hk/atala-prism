@@ -5,7 +5,7 @@
   padding: 1em;
   background-color: #f8f9f9;
   border-radius: 6px;
-  justify-content: flex-start;
+  justify-content: space-between;
   p {
     @include primary-text($label, $dark-grey);
     margin: 0;
@@ -24,7 +24,7 @@
     p {
       @include primary-text($label, #011727);
       font-weight: bold;
-      margin-top: 0.5em!important;
+      margin-top: 5px;
     }
     span {
       @include primary-text($label, #99a2a9);
