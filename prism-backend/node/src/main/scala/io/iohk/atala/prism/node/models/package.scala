@@ -73,6 +73,7 @@ package object models {
     val CREDENTIAL_ID_RE: Regex = "^[0-9a-f]{64}$".r
   }
 
+  @derive(loggable)
   case class AtalaOperationInfo(
       operationId: AtalaOperationId,
       objectId: AtalaObjectId,
@@ -84,6 +85,7 @@ package object models {
       transactionId: Option[TransactionId] = None
   )
 
+  @derive(loggable)
   sealed trait AtalaOperationStatus extends EnumEntry with UpperSnakecase
 
   object AtalaOperationStatus extends Enum[AtalaOperationStatus] {

@@ -2,8 +2,8 @@ package io.iohk.atala.prism.node.services.logs
 
 import cats.MonadThrow
 import cats.implicits.toTraverseOps
-import cats.syntax.apply._
 import cats.syntax.applicativeError._
+import cats.syntax.apply._
 import cats.syntax.flatMap._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -23,7 +23,7 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
     info"$description" *> in
       .flatTap(
         _.fold(
-          err => error"encountered an error while $description $err",
+          err => error"encountered an error while $description: $err",
           _ => info"$description - successfully done"
         )
       )
@@ -34,8 +34,8 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
     info"getting batch state $batchId" *> in
       .flatTap(
         _.fold(
-          err => error"encountered an error while getting batch state $err",
-          _ => info"getting batch state - successfully done"
+          err => error"encountered an error while getting batch $batchId state: $err",
+          _ => info"getting batch $batchId state - successfully done"
         )
       )
       .onError(errorCause"encountered an error while getting batch state" (_))
@@ -43,20 +43,22 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
   override def getCredentialRevocationData(
       batchIdStr: String,
       credentialHashBS: ByteString
-  ): Mid[F, Either[errors.NodeError, CredentialRevocationTime]] = in =>
-    info"getting credential revocation data [batchId=$batchIdStr, credentialHash=${credentialHashBS.toByteArray.map("%02X" format _).mkString}]" *> in
+  ): Mid[F, Either[errors.NodeError, CredentialRevocationTime]] = { in =>
+    val credentialHashHex = credentialHashBS.toByteArray.map("%02X" format _).mkString
+    info"getting credential revocation data [batchId=$batchIdStr, credentialHash=$credentialHashHex]" *> in
       .flatTap(
         _.fold(
-          err => error"encountered an error while getting credential revocation data $err",
-          _ => info"getting credential revocation data - successfully done"
+          err => error"encountered an error while getting credential revocation data for $credentialHashHex: $err",
+          _ => info"getting credential revocation data for $credentialHashHex - successfully done"
         )
       )
       .onError(errorCause"encountered an error while getting credential revocation data " (_))
+  }
 
   override def scheduleAtalaOperations(
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] = in =>
-    info"scheduling atala operations" *> in
+    info"scheduling Atala operations" *> in
       .flatTap(_.traverse {
         _.fold(
           err => error"encountered an error while scheduling operation $err",
@@ -81,14 +83,14 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       .flatTap(
         _.fold(
           err => error"encountered an error while $description: $err",
-          _ => info"$description - successfully done"
+          res => info"$description - done: $res"
         )
       )
       .onError(errorCause"encountered an error while $description" (_))
   }
 
   override def getLastSyncedTimestamp: Mid[F, Instant] = in =>
-    info"flushing operations buffer" *> in
-      .flatTap(_ => info"flushing operations buffer - done")
-      .onError(errorCause"encountered an error while flushing operations buffer" (_))
+    info"getting last synced timestamp" *> in
+      .flatTap(res => info"getting last synced timestamp - done: $res")
+      .onError(errorCause"encountered an error while getting last synced timestamp" (_))
 }
