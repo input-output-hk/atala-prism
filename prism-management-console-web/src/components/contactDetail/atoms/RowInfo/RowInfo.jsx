@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import './_style.scss';
 import IdIcon from '../../../../images/IdIcon.svg';
 import peopleIcon from '../../../../images/iconpeople.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import './_style.scss';
 
-const Row = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
+const RowInfo = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
   const { t } = useTranslation();
   const classname = `RowInfo ${theme}`;
   return (
@@ -42,13 +42,13 @@ const Row = ({ theme, groupName, contacts, groupId, contactId, onDelete }) => {
   );
 };
 
-Row.defaultProps = {
+RowInfo.defaultProps = {
   theme: 'row-info',
   onDelete: null,
   contactId: ''
 };
 
-Row.propTypes = {
+RowInfo.propTypes = {
   theme: PropTypes.string,
   groupName: PropTypes.string.isRequired,
   contacts: PropTypes.number.isRequired,
@@ -57,4 +57,4 @@ Row.propTypes = {
   onDelete: PropTypes.func
 };
 
-export default Row;
+export default RowInfo;
