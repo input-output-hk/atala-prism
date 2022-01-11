@@ -99,7 +99,7 @@ object DataPreparation {
     val query = for {
       _ <- submissionService.scheduledObjectsToPending
       _ <- submissionService.refreshTransactionStatuses()
-      numE <- submissionService.submitReceivedObjects()
+      numE <- submissionService.submitPendingObjects()
     } yield numE
     query.run(TraceId.generateYOLO).unsafeToFuture()
   }

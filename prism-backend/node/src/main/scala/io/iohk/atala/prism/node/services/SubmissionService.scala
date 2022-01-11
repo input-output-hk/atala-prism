@@ -39,9 +39,9 @@ import cats.MonadThrow
 @derive(applyK)
 trait SubmissionService[F[_]] {
 
-  /** Returns number of published transactions
+  /** Submits all objects with status PENDING to the Cardano Wallet. Returns number of published transactions
     */
-  def submitReceivedObjects(): F[Either[NodeError, Int]]
+  def submitPendingObjects(): F[Either[NodeError, Int]]
 
   /** Syncs all transaction statuses between PRISM Node database and Cardano wallet's state. Moves expired transactions
     * back to PENDING status.
@@ -121,7 +121,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
   // gets all pending operations from the database and merges them into bigger AtalaObjects
   // then publishes these objects to the ledger as transaction metadata.
   // every AtalaObject corresponds to one transaction metadata
-  def submitReceivedObjects(): F[Either[NodeError, Int]] = {
+  def submitPendingObjects(): F[Either[NodeError, Int]] = {
     val submissionET = for {
       // execute SQL query to get all pending objects
       atalaObjects <- EitherT(
