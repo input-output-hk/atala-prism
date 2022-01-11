@@ -8,3 +8,14 @@
     }
   }
 }
+
+.Groups {
+  .TableLabel {
+    text-align: left!important;
+  }
+  .light {
+    color: $secondary-color;
+    text-align: left;
+    margin-top: 0.3em;
+  }
+}
