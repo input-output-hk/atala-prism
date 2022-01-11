@@ -36,7 +36,7 @@ class SubmissionSchedulingService private (
   ): Unit = trace[Id, Unit] { traceId =>
     val refreshAndSubmitQuery = for {
       _ <- submissionService.refreshTransactionStatuses()
-      _ <- submissionService.submitReceivedObjects()
+      _ <- submissionService.submitPendingObjects()
     } yield ()
 
     (IO.sleep(delay) *> IO(

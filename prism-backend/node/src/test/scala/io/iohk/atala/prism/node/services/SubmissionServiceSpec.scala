@@ -225,7 +225,7 @@ class SubmissionServiceSpec
 
       // resubmits object1
       submissionService
-        .submitReceivedObjects()
+        .submitPendingObjects()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
         .toOption
@@ -397,7 +397,7 @@ class SubmissionServiceSpec
 
       // submit two objects containing 40 pending operations in total
       submissionService
-        .submitReceivedObjects()
+        .submitPendingObjects()
         .run(TraceId.generateYOLO)
         .unsafeRunSync()
 

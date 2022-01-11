@@ -15,7 +15,7 @@ import io.iohk.atala.prism.node.errors.NodeError
 private[services] final class SubmissionServiceLogs[
     F[_]: ServiceLogging[*[_], SubmissionService[F]]: MonadThrow
 ] extends SubmissionService[Mid[F, *]] {
-  override def submitReceivedObjects(): Mid[F, Either[errors.NodeError, Int]] = {
+  override def submitPendingObjects(): Mid[F, Either[errors.NodeError, Int]] = {
     val description = "submitting pending objects"
     in =>
       info"$description" *> in
