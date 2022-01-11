@@ -36,6 +36,34 @@
     .ant-tabs-content-holder {
       overflow-y: auto;
     }
+    .contentContainer {
+      .inputContainer {
+        .ant-row {
+          width: 45%;
+        }
+      }
+      .bodyItemContainer {
+        .row {
+          .sortable {
+            .ant-space{
+              .ant-space-item {
+                .firstGroupInputContainer {
+                  .dynamicAttributeInputContainer {
+                    width: 43%;
+                    margin: 0;
+                  }
+                  .dynamicAttributeInputContainer:nth-child(2) {
+                    width: 42%;
+                    margin-left: 2%;
+                    margin-right: 1%;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     .templateTab {
       width: 90%;
       .ant-tabs-nav-wrap {
