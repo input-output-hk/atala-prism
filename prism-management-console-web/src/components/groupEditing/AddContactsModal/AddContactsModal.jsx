@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
-import { Modal, Row, Col } from 'antd';
+import { Modal, Col } from 'antd';
 import ConnectionsTable from '../../connections/Organisms/table/ConnectionsTable';
 import SimpleContactFilter from '../../connections/Molecules/Filters/SimpleContactFilter';
 import CustomButton from '../../common/Atoms/CustomButton/CustomButton';
@@ -67,18 +67,14 @@ const AddContactsModal = observer(({ visible, onCancel, onConfirm }) => {
     onChange: handleSelectAll
   };
 
-  const confirmButton = <div />;
-
   return (
     <Modal
+      className="AddContactsModal"
       title={t('groupEditing.selectContacts')}
       visible={visible}
       onCancel={onCancel}
-      width={800}
-      className="AddContactsModal"
-      footer={confirmButton}
+      width={900}
     >
-      {/* @dbrosio could you insert the rest of the filters? AZ, sort by and select all*/}
       <div className="modal-filter-container">
         <SelectAllButton
           isLoadingSelection={false}
