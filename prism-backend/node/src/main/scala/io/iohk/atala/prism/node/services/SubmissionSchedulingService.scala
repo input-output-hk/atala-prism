@@ -11,12 +11,12 @@ import io.iohk.atala.prism.tracing.Tracing._
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
-/** Scheduler which calls updates statuses and publishes new transactions periodically.
+/** Scheduler which updates statuses and publishes new transactions periodically.
   *
   * @param config
   *   configuration of waiting timeouts between submissions and updates
   * @param submissionService
-  *   service which implements refreshTransactionStatuses, submitReceivedObjects & scheduledObjectsToPending methods
+  *   service which implements refreshTransactionStatuses, submitPendingObjects & scheduledObjectsToPending methods
   */
 class SubmissionSchedulingService private (
     config: Config,
@@ -30,7 +30,7 @@ class SubmissionSchedulingService private (
 
   scheduleMoveScheduledToPending(config.moveScheduledToPendingPeriod)
 
-  // Every `delay` units of time, calls submissionService.retryOldPendingTransactions
+  // Every `delay` units of time, calls refreshTransactionStatuses and then submitPendingObjects
   private def scheduleRefreshAndSubmit(
       delay: FiniteDuration
   ): Unit = trace[Id, Unit] { traceId =>
