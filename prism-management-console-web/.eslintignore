@@ -1,6 +1,0 @@
-src/protos/
-src/serviceWorker.js
-cypress/
-
-node_modules/
-build
