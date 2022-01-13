@@ -18,8 +18,9 @@ import io.iohk.atala.prism.node.models.AtalaOperationInfo
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
+import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.{DIDData, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.logging.derivation.loggable
@@ -40,6 +41,8 @@ trait NodeService[F[_]] {
   ): F[Either[NodeError, CredentialRevocationTime]]
 
   def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
+
+  def parseOperations(ops: Seq[node_models.SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]]
 
   def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo]
 
@@ -140,6 +143,21 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
       maybeTime <- credentialBatchesRepository.getCredentialRevocationTime(batchId, credentialHash)
       credentialRevocationTime = maybeTime.map(CredentialRevocationTime(_, lastSyncedTimestamp))
     } yield credentialRevocationTime
+
+  override def parseOperations(ops: Seq[SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]] =
+    Applicative[F].pure {
+      for {
+        // pre-validation of the complete batch
+        _ <- validateScheduleOperationsRequest(ops)
+        // parse and validate operations with mock data
+        operationOutputs <- ops
+          .traverse(getOperationOutput)
+          .left
+          .map { err =>
+            NodeError.InvalidArgument(err.render)
+          }
+      } yield operationOutputs.toList
+    }
 
   override def scheduleAtalaOperations(ops: SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]] =
     objectManagement.scheduleAtalaOperations(ops: _*)

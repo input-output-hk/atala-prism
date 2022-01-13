@@ -8,8 +8,9 @@ import cats.syntax.flatMap._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors
+import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
@@ -63,6 +64,16 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
         )
       })
       .onError(errorCause"encountered an error while scheduling atala operations" (_))
+
+  override def parseOperations(ops: Seq[SignedAtalaOperation]): Mid[F, Either[NodeError, List[OperationOutput]]] = in =>
+    info"parsing ${ops.size} operations" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while parsing operations: $err",
+          _ => info"parsing ${ops.size} operations - successfully done"
+        )
+      )
+      .onError(errorCause"encountered an error while parsing operations" (_))
 
   override def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, OperationInfo] = in =>
     info"getting operation info $atalaOperationId" *> in

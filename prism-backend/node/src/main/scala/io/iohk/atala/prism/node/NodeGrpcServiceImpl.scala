@@ -6,7 +6,7 @@ import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
-import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
+import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
@@ -15,28 +15,23 @@ import io.iohk.atala.prism.node.models.{
   AtalaOperationInfo,
   AtalaOperationStatus
 }
-import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{
   BatchData,
   GettingCanonicalPrismDidError,
   GettingDidError,
   NodeService,
-  ObjectManagementService,
   UnsupportedDidFormat
 }
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
-import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.protos.{common_models, node_api}
 import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 
 class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implicit
@@ -114,66 +109,21 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[node_api.ScheduleOperationsResponse] = {
     val methodName = "scheduleOperations"
 
-    val operationsF = Future
-      .fromTry {
-        Try {
-          require(
-            request.signedOperations.nonEmpty,
-            "there must be at least one operation to be published"
-          )
-
-          request.signedOperations.map { signedAtalaOperation =>
-            val obj = ObjectManagementService.createAtalaObject(
-              List(signedAtalaOperation)
-            )
-            val operationId = AtalaOperationId.of(signedAtalaOperation)
-            require(
-              AtalaObjectMetadata.estimateTxMetadataSize(
-                obj
-              ) <= cardano.TX_METADATA_MAX_SIZE,
-              s"atala operation $operationId is too big"
-            )
-            signedAtalaOperation
-          }
-        }
-      }
-      .countErrorOnFail(
-        serviceName,
-        methodName,
-        Status.INTERNAL.getCode.value()
-      )
-
     measureRequestFuture(serviceName, methodName) {
-      withLog(methodName, request) { traceId =>
-        for {
-          operations <- operationsF
-          operationIds = operations.map(AtalaOperationId.of)
-          _ = logWithTraceId(
-            methodName,
-            traceId,
-            "operations" -> operationIds.map(_.toString).mkString(",")
-          )
-          outputs <- Future.sequence(
-            operations.map { op =>
-              errorEitherToFutureAndCount(methodName, getOperationOutput(op))
-            }
-          )
-          operationIds <-
-            nodeService
-              .scheduleAtalaOperations(operations: _*)
-              .run(traceId)
-              .unsafeToFuture()
-          outputsWithOperationIds = outputs.zip(operationIds).map {
+      trace { traceId =>
+        val query = for {
+          operationOutputsE <- nodeService.parseOperations(request.signedOperations)
+          operationOutputs = operationOutputsE.fold(err => countAndThrowNodeError(methodName, err), outs => outs)
+
+          operationIds <- nodeService.scheduleAtalaOperations(request.signedOperations: _*)
+          outputsWithOperationIds = operationOutputs.zip(operationIds).map {
             case (out, Right(opId)) =>
               out.withOperationId(opId.toProtoByteString)
             case (out, Left(err)) =>
               out.withError(err.toString)
           }
-        } yield {
-          node_api
-            .ScheduleOperationsResponse()
-            .withOutputs(outputsWithOperationIds)
-        }
+        } yield node_api.ScheduleOperationsResponse().withOutputs(outputsWithOperationIds)
+        query.run(traceId).unsafeToFuture()
       }
     }
   }
@@ -304,20 +254,6 @@ object NodeGrpcServiceImpl {
 
   val serviceName = "node-service"
 
-  private def errorEitherToFutureAndCount[T](
-      methodName: String,
-      either: Either[ValidationError, T]
-  ): Future[T] =
-    either.left.map { error =>
-      val statusError = Status.INVALID_ARGUMENT.withDescription(error.render)
-      RequestMeasureUtil.increaseErrorCounter(
-        serviceName,
-        methodName,
-        statusError.getCode.value()
-      )
-      statusError.asRuntimeException()
-    }.toFuture
-
   private def toGetBatchResponse(
       in: BatchData
   ) = {
@@ -345,7 +281,7 @@ object NodeGrpcServiceImpl {
       methodName,
       asStatus.getCode.value()
     )
-    throw new RuntimeException(asStatus.getDescription)
+    throw asStatus.asRuntimeException()
   }
 
   private def countAndThrowGetDidDocumentError[I](
@@ -366,38 +302,4 @@ object NodeGrpcServiceImpl {
     )
     throw errStatus.asRuntimeException()
   }
-
-  private def getOperationOutput(
-      operation: SignedAtalaOperation
-  ): Either[ValidationError, OperationOutput] =
-    parseOperationWithMockedLedger(operation).map {
-      case CreateDIDOperation(id, _, _, _) =>
-        OperationOutput(
-          OperationOutput.Result.CreateDidOutput(
-            node_models.CreateDIDOutput(id.getValue)
-          )
-        )
-      case UpdateDIDOperation(_, _, _, _, _) =>
-        OperationOutput(
-          OperationOutput.Result.UpdateDidOutput(
-            node_models.UpdateDIDOutput()
-          )
-        )
-      case IssueCredentialBatchOperation(credentialBatchId, _, _, _, _) =>
-        OperationOutput(
-          OperationOutput.Result.BatchOutput(
-            node_models.IssueCredentialBatchOutput(credentialBatchId.getId)
-          )
-        )
-      case RevokeCredentialsOperation(_, _, _, _, _) =>
-        OperationOutput(
-          OperationOutput.Result.RevokeCredentialsOutput(
-            node_models.RevokeCredentialsOutput()
-          )
-        )
-      case other =>
-        throw new IllegalArgumentException(
-          "Unknown operation type: " + other.getClass
-        )
-    }
 }
