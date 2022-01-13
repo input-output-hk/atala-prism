@@ -4,12 +4,10 @@ import cats.effect.unsafe.IORuntime
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.logging.NodeLogging.{logWithTraceId, withLog}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -131,42 +129,34 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   override def getOperationInfo(
       request: node_api.GetOperationInfoRequest
   ): Future[node_api.GetOperationInfoResponse] = {
-
     val methodName = "getOperationInfo"
 
-    withLog(methodName, request) { traceId =>
-      val atalaOperationId = AtalaOperationId.fromVectorUnsafe(
-        request.operationId.toByteArray.toVector
-      )
-      logWithTraceId(
-        methodName,
-        traceId,
-        "atalaOperationId" -> s"${atalaOperationId.toString}"
-      )
-      for {
-        operationInfo <- nodeService
-          .getOperationInfo(atalaOperationId)
-          .run(traceId)
-          .unsafeToFuture()
-        maybeOperationInfo = operationInfo.maybeOperationInfo
-      } yield {
-        val (operationStatus, operationStatusDetails) = maybeOperationInfo
-          .fold[(common_models.OperationStatus, String)](
-            (common_models.OperationStatus.UNKNOWN_OPERATION, "")
-          ) { case AtalaOperationInfo(_, _, opStatus, opStatusDetails, maybeTxStatus, _) =>
-            (evalOperationStatus(opStatus, maybeTxStatus), opStatusDetails)
-          }
-        val response = node_api
-          .GetOperationInfoResponse()
-          .withOperationStatus(operationStatus)
-          .withDetails(operationStatusDetails)
-          .withLastSyncedBlockTimestamp(operationInfo.lastSyncedTimestamp.toProtoTimestamp)
-        val responseWithTransactionId = maybeOperationInfo
-          .flatMap(_.transactionId)
-          .map(_.toString)
-          .fold(response)(response.withTransactionId)
+    measureRequestFuture(serviceName, methodName) {
+      trace { traceId =>
+        val query = for {
+          operationInfoE <- nodeService.getOperationInfo(request.operationId)
+          operationInfo = operationInfoE.fold(err => countAndThrowNodeError(methodName, err), info => info)
+          maybeOperationInfo = operationInfo.maybeOperationInfo
+        } yield {
+          val (operationStatus, operationStatusDetails) = maybeOperationInfo
+            .fold[(common_models.OperationStatus, String)](
+              (common_models.OperationStatus.UNKNOWN_OPERATION, "")
+            ) { case AtalaOperationInfo(_, _, opStatus, opStatusDetails, maybeTxStatus, _) =>
+              (evalOperationStatus(opStatus, maybeTxStatus), opStatusDetails)
+            }
+          val response = node_api
+            .GetOperationInfoResponse()
+            .withOperationStatus(operationStatus)
+            .withDetails(operationStatusDetails)
+            .withLastSyncedBlockTimestamp(operationInfo.lastSyncedTimestamp.toProtoTimestamp)
+          val responseWithTransactionId = maybeOperationInfo
+            .flatMap(_.transactionId)
+            .map(_.toString)
+            .fold(response)(response.withTransactionId)
 
-        responseWithTransactionId
+          responseWithTransactionId
+        }
+        query.run(traceId).unsafeToFuture()
       }
     }
   }
@@ -235,7 +225,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getNodeBuildInfo"
 
     measureRequestFuture(serviceName, methodName)(
-      withLog(methodName, request) { _ =>
+      trace { _ =>
         Future
           .successful(
             node_api

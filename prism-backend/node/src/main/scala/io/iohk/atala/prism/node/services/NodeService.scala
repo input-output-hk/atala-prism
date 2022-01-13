@@ -44,7 +44,7 @@ trait NodeService[F[_]] {
 
   def parseOperations(ops: Seq[node_models.SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]]
 
-  def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo]
+  def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]]
 
   def getLastSyncedTimestamp: F[Instant]
 }
@@ -162,7 +162,19 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   override def scheduleAtalaOperations(ops: SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]] =
     objectManagement.scheduleAtalaOperations(ops: _*)
 
-  override def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo] = for {
+  override def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]] =
+    for {
+      atalaOperationIdE <- Applicative[F].pure(
+        Try(AtalaOperationId.fromVectorUnsafe(atalaOperationIdBS.toByteArray.toVector)).toEither.left
+          .map(err => NodeError.InvalidArgument(err.getMessage): NodeError)
+      )
+      atalaOperationInfoE <- atalaOperationIdE.fold(
+        err => Applicative[F].pure(err.asLeft[OperationInfo]),
+        opId => getOperationInfo(opId).map(_.asRight[NodeError])
+      )
+    } yield atalaOperationInfoE
+
+  private def getOperationInfo(atalaOperationId: AtalaOperationId): F[OperationInfo] = for {
     lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
     maybeOperationInfo <- objectManagement.getOperationInfo(atalaOperationId)
     result = OperationInfo(maybeOperationInfo, lastSyncedTimestamp)

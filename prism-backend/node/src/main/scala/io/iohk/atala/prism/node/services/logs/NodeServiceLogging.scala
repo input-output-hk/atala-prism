@@ -75,10 +75,17 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       )
       .onError(errorCause"encountered an error while parsing operations" (_))
 
-  override def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, OperationInfo] = in =>
-    info"getting operation info $atalaOperationId" *> in
-      .flatTap(_ => info"getting operation info - done")
-      .onError(errorCause"encountered an error while getting operation info" (_))
+  override def getOperationInfo(atalaOperationIdBS: ByteString): Mid[F, Either[NodeError, OperationInfo]] = { in =>
+    val description = s"getting operation info ${atalaOperationIdBS.toByteArray.map("%02X" format _).mkString}"
+    info"$description" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while $description: $err",
+          _ => info"$description - successfully done"
+        )
+      )
+      .onError(errorCause"encountered an error while $description" (_))
+  }
 
   override def getLastSyncedTimestamp: Mid[F, Instant] = in =>
     info"flushing operations buffer" *> in
