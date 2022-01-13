@@ -1,12 +1,10 @@
 package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
-import cats.syntax.applicative._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.{FutureMetricsOps, measureRequestFuture}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -20,7 +18,6 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.services.{
   BatchData,
-  DidDocument,
   GettingCanonicalPrismDidError,
   GettingDidError,
   NodeService,
@@ -31,13 +28,12 @@ import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheck
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.tracing.Tracing._
 import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
-import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
@@ -63,7 +59,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getDidDocument"
 
     measureRequestFuture(serviceName, methodName) {
-      withLog(methodName, request) { traceId =>
+      trace { traceId =>
         getDidDocument(request.did, methodName, traceId)
       }
     }
@@ -75,29 +71,15 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[GetBatchStateResponse] = {
     val methodName = "getBatchState"
 
-    val batchIdF = getFromOptionOrFailF(
-      Option(CredentialBatchId.fromString(request.batchId)),
-      s"Invalid batch id: ${request.batchId}",
-      methodName
-    )
-
     measureRequestFuture(serviceName, methodName) {
-      withLog(methodName, request) { traceId =>
-        for {
-          batchId <- batchIdF
-          _ = logWithTraceId(
-            methodName,
-            traceId,
-            "batchId" -> s"${batchId.getId}"
-          )
-          stateEither <- nodeService
-            .getBatchState(batchId)
-            .run(traceId)
-            .unsafeToFuture()
-        } yield stateEither.fold(
+      trace { traceId =>
+        val query = for {
+          batchState <- nodeService.getBatchState(request.batchId)
+        } yield batchState.fold(
           countAndThrowNodeError(methodName, _),
           toGetBatchResponse
         )
+        query.run(traceId).unsafeToFuture()
       }
 
     }
@@ -108,40 +90,15 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[GetCredentialRevocationTimeResponse] = {
     val methodName = "getCredentialRevocationTime"
 
-    val batchIdF = getFromOptionOrFailF(
-      Option(CredentialBatchId.fromString(request.batchId)),
-      s"Invalid batch id: ${request.batchId}",
-      methodName
-    )
-
-    val credentialHashF = Future
-      .fromTry(Try(SHA256Digest.fromBytes(request.credentialHash.toByteArray)))
-      .countErrorOnFail(
-        serviceName,
-        methodName,
-        Status.INTERNAL.getCode.value()
-      )
     measureRequestFuture(serviceName, methodName) {
-      withLog(methodName, request) { traceId =>
+      trace { traceId =>
         for {
-          batchId <- batchIdF
-          _ = logWithTraceId(
-            methodName,
-            traceId,
-            "batchId" -> s"${batchId.getId}"
-          )
-          credentialHash <- credentialHashF
-          _ = logWithTraceId(
-            methodName,
-            traceId,
-            "credentialHash" -> s"${credentialHash.getHexValue}"
-          )
-          timeEither <-
+          revocationTimeEither <-
             nodeService
-              .getCredentialRevocationData(batchId, credentialHash)
+              .getCredentialRevocationData(request.batchId, request.credentialHash)
               .run(traceId)
               .unsafeToFuture()
-        } yield timeEither match {
+        } yield revocationTimeEither match {
           case Left(error) => countAndThrowNodeError(methodName, error)
           case Right(ledgerData) =>
             GetCredentialRevocationTimeResponse(
@@ -269,15 +226,16 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       methodName: String,
       traceId: TraceId
   ): Future[GetDidDocumentResponse] = {
-    val didTry = Try(PrismDid.fromString(didRequestStr))
-    didTry.fold(
-      _ => failWith(s"Invalid DID: $didRequestStr", methodName),
-      nodeService
-        .getDidDocumentByDid(_)
-        .map(_.fold(handleGetDidDocumentError(methodName, didRequestStr, _), succeedWithV2))
-        .run(traceId)
-        .unsafeRunSync()
+    val query = for {
+      didE <- nodeService.getDidDocumentByDid(didRequestStr)
+    } yield didE.fold(
+      countAndThrowGetDidDocumentError(methodName, didRequestStr, _),
+      didData =>
+        node_api
+          .GetDidDocumentResponse(document = didData.maybeData)
+          .withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp)
     )
+    query.run(traceId).unsafeToFuture()
   }
 
   // This method returns statuses only for operations
@@ -307,17 +265,16 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
   ): Future[node_api.GetLastSyncedBlockTimestampResponse] = {
     val methodName = "lastSyncedTimestamp"
     measureRequestFuture(serviceName, methodName)(
-      withLog(methodName, request) { traceId =>
-        nodeService.getLastSyncedTimestamp
-          .map { lastSyncedBlockTimestamp =>
-            node_api
-              .GetLastSyncedBlockTimestampResponse()
-              .withLastSyncedBlockTimestamp(
-                lastSyncedBlockTimestamp.toProtoTimestamp
-              )
-          }
-          .run(traceId)
-          .unsafeToFuture()
+      trace { traceId =>
+        val query =
+          for {
+            lastSyncedBlockTimestamp <- nodeService.getLastSyncedTimestamp
+          } yield node_api
+            .GetLastSyncedBlockTimestampResponse()
+            .withLastSyncedBlockTimestamp(
+              lastSyncedBlockTimestamp.toProtoTimestamp
+            )
+        query.run(traceId).unsafeToFuture()
       }
     )
   }
@@ -377,13 +334,6 @@ object NodeGrpcServiceImpl {
     response.withLastSyncedBlockTimestamp(in.lastSyncedTimestamp.toProtoTimestamp)
   }
 
-  private def succeedWithV2(
-      didData: DidDocument
-  )(implicit logger: Logger): Future[node_api.GetDidDocumentResponse] = {
-    val response = node_api.GetDidDocumentResponse(document = didData.maybeData)
-    logger.info(s"response = ${response.toProtoString}")
-    Future.successful(response.withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp))
-  }
 // We need to rewrite the node service
   private def countAndThrowNodeError(
       methodName: String,
@@ -395,43 +345,26 @@ object NodeGrpcServiceImpl {
       methodName,
       asStatus.getCode.value()
     )
-    throw asStatus.asRuntimeException()
+    throw new RuntimeException(asStatus.getDescription)
   }
 
-  private def handleGetDidDocumentError[I](methodName: String, didRequestStr: String, error: GettingDidError)(implicit
-      logger: Logger
-  ): Future[I] = error match {
-    case GettingCanonicalPrismDidError(nodeError) =>
-      val asStatus = nodeError.toStatus
-      RequestMeasureUtil.increaseErrorCounter(
-        serviceName,
-        methodName,
-        asStatus.getCode.value()
-      )
-      throw asStatus.asRuntimeException()
-    case UnsupportedDidFormat => failWith(s"Invalid DID: $didRequestStr", methodName)
-  }
-
-  private def getFromOptionOrFailF[I](
-      in: Option[I],
-      msg: String,
-      methodName: String
-  )(implicit
-      ec: ExecutionContext,
-      logger: Logger
-  ): Future[I] =
-    in.fold { failWith[I](msg, methodName) }(_.pure[Future])
-
-  private def failWith[I](msg: String, methodName: String)(implicit
-      logger: Logger
-  ): Future[I] = {
-    logger.info(s"Failed with message: $msg")
+  private def countAndThrowGetDidDocumentError[I](
+      methodName: String,
+      didRequestStr: String,
+      error: GettingDidError
+  ): I = {
+    val errStatus = error match {
+      case GettingCanonicalPrismDidError(nodeError) =>
+        nodeError.toStatus
+      case UnsupportedDidFormat =>
+        Status.INTERNAL.withDescription(s"Invalid DID: $didRequestStr")
+    }
     RequestMeasureUtil.increaseErrorCounter(
       serviceName,
       methodName,
-      Status.INTERNAL.getCode.value()
+      errStatus.getCode.value()
     )
-    Future.failed(new RuntimeException(msg))
+    throw errStatus.asRuntimeException()
   }
 
   private def getOperationOutput(

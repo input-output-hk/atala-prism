@@ -3,6 +3,7 @@ package io.iohk.atala.prism.node.services
 import cats.effect.Resource
 import cats.{Applicative, Comonad, Functor, MonadThrow}
 import cats.implicits._
+import com.google.protobuf.ByteString
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -24,17 +25,18 @@ import tofu.logging.{Logs, ServiceLogging}
 import tofu.logging.derivation.loggable
 
 import java.time.Instant
+import scala.util.Try
 
 @derive(applyK)
 trait NodeService[F[_]] {
 
-  def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]]
+  def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]]
 
-  def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]]
+  def getBatchState(batchId: String): F[Either[NodeError, BatchData]]
 
   def getCredentialRevocationData(
-      batchId: CredentialBatchId,
-      credentialHash: Sha256Digest
+      batchId: String,
+      credentialHash: ByteString
   ): F[Either[NodeError, CredentialRevocationTime]]
 
   def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
@@ -49,7 +51,13 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
     objectManagement: ObjectManagementService[F],
     credentialBatchesRepository: CredentialBatchesRepository[F]
 ) extends NodeService[F] {
-  override def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]] = {
+  override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
+    Try(PrismDid.fromString(didStr)).fold(
+      _ => Applicative[F].pure(UnsupportedDidFormat.asLeft),
+      did => getDidDocumentByDid(did)
+    )
+
+  private def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]] = {
     val getDidResultF: F[Either[GettingDidError, Option[DIDData]]] = did match {
       case canon: CanonicalPrismDid =>
         didDataRepository.findByDid(canon).map(_.bimap(GettingCanonicalPrismDidError, toDidDataProto(_, canon)))
@@ -83,7 +91,15 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[DIDData] =
     in.map(didDataState => ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState))
 
-  override def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]] =
+  override def getBatchState(batchIdStr: String): F[Either[NodeError, BatchData]] = {
+    // NOTE: CredentialBatchId.fromString returns null and doesn't throw an error when string wasn't successfully parsed
+    Option(CredentialBatchId.fromString(batchIdStr))
+      .fold(
+        Applicative[F].pure((NodeError.InvalidArgument(s"Invalid batch id: $batchIdStr"): NodeError).asLeft[BatchData])
+      )(batchId => getBatchState(batchId))
+  }
+
+  private def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]] =
     for {
       lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       maybeBatchStateE <- credentialBatchesRepository.getBatchState(batchId)
@@ -91,6 +107,31 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
     } yield batchData
 
   override def getCredentialRevocationData(
+      batchIdStr: String,
+      credentialHashBS: ByteString
+  ): F[Either[NodeError, CredentialRevocationTime]] = {
+    // NOTE: CredentialBatchId.fromString returns null and doesn't throw an error when string wasn't successfully parsed
+    Option(CredentialBatchId.fromString(batchIdStr))
+      .fold(
+        Applicative[F].pure(
+          (NodeError.InvalidArgument(s"Invalid batch id: $batchIdStr"): NodeError).asLeft[CredentialRevocationTime]
+        )
+      )(batchId =>
+        Try(Sha256Digest.fromBytes(credentialHashBS.toByteArray)).fold(
+          _ =>
+            Applicative[F].pure(
+              NodeError
+                .InvalidArgument(
+                  s"The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes: ${credentialHashBS.toByteArray.map("%02X" format _).mkString}"
+                )
+                .asLeft
+            ),
+          credentialHash => getCredentialRevocationData(batchId, credentialHash)
+        )
+      )
+  }
+
+  private def getCredentialRevocationData(
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
   ): F[Either[NodeError, CredentialRevocationTime]] =

@@ -82,6 +82,14 @@ package object errors {
 
       override def name: String = "unsupported-protocol-version"
     }
+
+    case class InvalidArgument(description: String) extends NodeError {
+      override def toStatus: Status = {
+        Status.INVALID_ARGUMENT.withDescription(description)
+      }
+
+      override def name: String = "invalid-argument"
+    }
   }
 
 }

@@ -792,11 +792,11 @@ class NodeServiceSpec
       val requestWithInvalidCredentialHash =
         GetCredentialRevocationTimeRequest(
           batchId = validBatchId.getId,
-          credentialHash = ByteString.EMPTY
+          credentialHash = ByteString.copyFrom(Array[Byte](0x4a))
         )
 
       val expectedMessage =
-        "INTERNAL: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes"
+        "INTERNAL: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes: 4A"
 
       doReturn(
         fake[Instant](dummySyncTimestamp)
