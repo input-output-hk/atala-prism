@@ -37,6 +37,7 @@ package object models {
   object AtalaObjectStatus extends Enum[AtalaObjectStatus] {
     val values = findValues
 
+    case object Scheduled extends AtalaObjectStatus
     case object Pending extends AtalaObjectStatus
     case object Merged extends AtalaObjectStatus
     case object Processed extends AtalaObjectStatus
