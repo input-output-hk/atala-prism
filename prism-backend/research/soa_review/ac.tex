@@ -220,8 +220,8 @@ be checked with expressive policies.
 
 \paragraph{Revocation.} %
 Perhaps surprisingly, revocation is not a common functionality, although it is
-certainly considered by several works, e.g. \cite{cl01,cks10,ckl+15}, and for
-some it is just sketched \cite{hs21}.
+certainly considered by several works, e.g. \cite{cl01,cks10,ckl+15,bran00}, and
+for some it is just sketched \cite{hs21}.
 
 \paragraph{Credential aggregation.} %
 And, finally, an interesting variation that only one work seems to target,
@@ -299,13 +299,91 @@ trying to connect both. Specifically, the following questions:
 \subsection{Real World Deployments}
 \label{ssec:acrealworld}
 
-\comment{This section is just a placeholder for now...}
+Anonymous credential systems saw a first phase of real world deployment during
+the first years of the 2010s, mostly through IBM's Idemix%
+\footnote{\url{https://idemix.wordpress.com/} (last access, January 15th, 2022).}
+and Microsoft's U-Prove%
+\footnote{\url{https://www.microsoft.com/en-us/research/project/u-prove/} (last
+access, January 15th, 2022).}. Idemix is based on the CL line of works, and
+thus inherits their security and privacy properties (multi-show, selective
+disclosure). U-Prove is based on on Brands's work, and thus it features
+one-show credentials with selective disclosure. Both approaches also support
+proving, in zero-knowledge, arbitrary predicates on the credentials' attributes
+(albeit with linear costs). \todo{Verify the last claim -- they do, but I'm not
+  sure if this is specified in their corresponding papers.}
 
-\begin{itemize}
-\item Idemix.
-\item Hyperledger Indy.
-\item U-Prove.
-\end{itemize}
+In the late 2010s, anonymous credential systems started receiving increased
+attention by the industry, as a consequence of the W3C's Decentralised
+Identities%
+\footnote{\url{https://www.w3.org/TR/did-core/} (last access, January 15th, 2022).}
+and Verifiable Credentials%
+\footnote{\url{https://www.w3.org/TR/vc-data-model/} (last access, January 15th,
+  2022).} initiatives, associated to the blockchain world. Idemix made its way
+into Hyperldedger Fabric%
+\footnote{See \url{https://hyperledger-fabric.readthedocs.io/en/release-2.2/idemix.html} (last access, January 15th, 2022).}
+, which since version 1.3 allows the distribution of Idemix credentials
+(although they have migrated from CL-based credentials to BBS+-based ones).
+Also within the umbrella of the Hyperledger consortium, we can find Indy
+\needcite, which directly focuses on digital identity (as opposed to Fabric,
+which is a general-purpose permissioned blockchain system). Indy is, in turn,
+the evolution of Sovrin%
+\footnote{\url{https://sovrin.org/} (last access, January 15th, 2022).}, one of
+the main proponents of verifiable credentials, building on CL anonymous credentials%
+\footnote{Note, as opposed to Idemix, which migrated to BBS+ credentials,
+  Indy/Sovrin seems to stick to CL credentials, according to online
+  documentation \url{https://hyperledger-indy.readthedocs.io/projects/hipe/en/latest/text/0109-anoncreds-protocol/README.html} (last access, January 15th, 2022).}
+Indy has related subprojects Aries%
+\footnote{\url{https://www.hyperledger.org/use/aries} (last access, January
+  15th, 2022.)} and Ursa%
+\footnote{\url{https://www.hyperledger.org/use/ursa} (last access, January 15th,
+  2022).}; Aries deals
+with other layers of the approach to credential systems defined by the W3C's
+VC initiative, and Ursa is the library implementing the underlying cryptographic
+primitives (e.g., CL signatures). With respect to W3C's DID and VC initiatives,
+the one that is closely related to anonymous credentials is VC. Basically, this
+is a set of specifications that define how to represent digital credentials and
+their associated processes. Having been heavily influenced by the literature
+on anonymous credentials, the specifications include (or are working on)
+definitions for CL and BBS+ credentials. Within this community, there seems to
+be some controversy as to the appropriate type of credentials to support.
+According to a blog post%
+\footnote{``Why the Verifiable Credentials Community Should Converge on BBS+'',
+  \url{https://www.evernym.com/blog/bbs-verifiable-credentials/} (last
+  access, January 15th, 2022).} by a cryptographer in Evernym (the company
+that created Sovrin, which led to Indy) the complexity, engineering-wise, of a
+verifiable credentials system with support to prove arbitrary claims on the
+attributes of the credentials, makes it more desirable to restrict to
+credentials supporting only selective disclosure%
+\footnote{Interestingly, and confusingly, (parts of) this community equate BBS+
+  credentials to selective disclosure, even though using BBS+ credentials does
+  not (in theory) restrict the expressiveness of the claims that one can prove.
+  This confusion seems to derive from the solution offered by the company MATTR,
+  which has become one of the most popular proponents of BBS+ credentials
+  restricted to selective disclosure.}
+. Note that, related to the Verifiable Credentials effort, there are tens (maybe
+even hundreds) of different initiatives that build credential systems claiming
+to take into account privacy requirements (e.g., for healthcare use-cases, as a
+consequence of the popular health passports originated from the COVID-19
+pandemic). However, most of these initiatives lack formal, or even technical,
+publicly accessible documentation, or have some public documentation but, as
+of the moment of this writing, we are not aware of actual implementations
+(like Microsoft's zero-knoweldge credentials%
+\footnote{``Zero-knowledge credentials with deferred revocation checks'' white
+  paper, available at \url{url{https://github.com/decentralized-identity/snark-credentials/blob/master/whitepaper.pdf}}
+  (last access, January 15th, 2022.)}). Hence, we do not cover them here. 
+
+Finally, there are also related works that have seen real world deployments
+which, although do not implement an anonymous credential systems, are somehow
+influenced by them. Among these, we can find Cloudflare's PrivacyPass \cite{dgs+18},
+which uses blind issuance of tokens associated to a secret key, through which
+service providers can implement privacy-preserving blacklisting (in this sense,
+they are closer to works like PEREA \cite{atk11} or Nymble \cite{tkcs11}, than
+to anonymous credentials). A similar approach is followed by Whatsapp's DIT
+system \cite{hij+21} (formerly known as PrivateStats), which further supports
+the inclusion of attributes in the produced tokens. In this case, DIT is
+designed to support privacy-preserving logging. Both in PrivacyPass and DIT, the
+produced tokens are one-use, meaning that multiple uses of the same token are
+linkable.
 
 %%% Local Variables:
 %%% mode: latex

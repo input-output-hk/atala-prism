@@ -872,7 +872,7 @@ How to compare efficiency of AC systems?
     anonymous credential using a blinded value received from the client. The
     received blinded credential is then unblinded, and can be used to authenticate
     subsequent ``anonymous connections''. Roughly, the anonymous credential is
-    build from an attribute-based VOPRF inspired by Naor and Reingold
+    built from an attribute-based VOPRF inspired by Naor and Reingold
     \cite{nr04}. To authenticate a connection, similarly to PrivacyPass, the
     server recomputes a MAC, using as key a value reproduced through the VOPRF,
     using a tag that determines the attributes contained in the ``anonymous
@@ -885,8 +885,44 @@ How to compare efficiency of AC systems?
     multiple attributes are supported, the client cannot choose which subset
     of the credentials are revealed. Moreover, security is defined for the
     VRF component, but no model or formalization whatsoever is given that
-    resembles the usual ones for Anonymous Credentiasl (e.g., there is no
+    resembles the usual ones for Anonymous Credentials (e.g., there is no
     property for unforgeability or anonymity of credentials).
+  \end{itemize}
+\item Microsoft's zero-knowledge credentials \url{https://github.com/decentralized-identity/snark-credentials/blob/master/whitepaper.pdf}.
+  \begin{itemize}
+  \item The system presented by Microsoft is something that approximates
+    anonymous credentials, but is not strictly an AC system. Note: this may just
+    be because the authors do not properly model their proposal. It indeed
+    follows an approach that resembles much the framework defined in \cite{cl01},
+    where users have to establish pseudonyms with issuers and each RP, and can
+    run presentations in which they prove that they have pseudonyms with both
+    some issuer and the verifiying RP, such that the credential attributes
+    associated to the issuer's pseudonym meet some claim. They further require
+    some practical properties related to revocation: namely, deferred revocation
+    and deferred revocation status check -- which are not very formally defined,
+    though. They also make some informal claims about inherent limitations of
+    these type of systems. Also, it is noteworthy that their proposal is one-show,
+    although they sketch how to make it multi-show by relying on anonymous
+    credentials. For expressiveness, they rely on ZK-SNARKS, and make some
+    preliminary analysis based on popular choices of cryptographic algorithms.
+  \end{itemize}
+\item Microsoft U-Prove \url{https://www.microsoft.com/en-us/research/publication/u-prove-technology-overview-v1-1-revision-2/}.
+  \begin{itemize}
+  \item Along with Idemix, U-Prove is probably the most mature application of
+    ACs to date. It has both a solid scientific background, and seems that it
+    reached a reasonably mature level implementation-wise.
+  \item According to the technology overview report linked above, it supports
+    the main functionalities for one-use ACs. Namely, it allows selective
+    disclosure and blind issuance of attributes; as well as some of the also
+    frequent variations, including several approaches for revocation, measures
+    to desincentivize transferability, reuse-prevention, and scope-exclusive
+    pseudonyms (note: most of these are natively provided by the system, and
+    are even somehow related between themselves, like the reuse-prevention and
+    the scope-exclusive pseudonyms). Integration with smartcards or similar
+    trusted execution environments is also considered as a way to reach higher
+    security in certain scenarios. However, this is an aspect that is not very
+    formally treated even in \cite{bran00}, and is certainly a well-known source
+    of complications, as learned from related works on DAA.
   \end{itemize}
 \end{itemize}
 
