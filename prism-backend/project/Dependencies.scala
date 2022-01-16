@@ -9,7 +9,7 @@ object versions {
   val diffx = "0.7.0"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
-  val doobie = "1.0.0-RC1"
+  val doobie = "1.0.0-RC2"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
   val flyway = "8.4.2"
