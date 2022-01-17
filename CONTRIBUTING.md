@@ -5,7 +5,7 @@ These are the Atala PRISM contributing guidelines, which apply to all our reposi
 ## Branches
 Atala PRISM intends to have two working versions:
 - The latest version, which includes everything, `master` right now.
-- The long-term supported version (LTS), like `1-2-x`, which we maintain by applying critical bugfixes only.
+- The long-term supported version (LTS), like `1-3-x`, which we maintain by applying critical bugfixes only.
 
 Most Pull Requests (PRs) will be sent to `master`, critical bugfixes will be backported to the LTS version.
 
@@ -23,22 +23,21 @@ Branch names use this format `ATA-XXXX-short-feature-name` where:
 Besides `master`, there are some special branches, which are in a code-freeze, meaning that they will only accept changes that are strictly necessary, pushing code to these branches is restricted to Technical Architects:
 
 - `www` has the version running in production (found at `https://www.atalaprism.io` and `https://atalaprism.io`), at the moment, production is the interactive demo connected to the mobile apps from PlayStore/AppStore.
-- `1-2-x` has the code for `1.2.x`, at the moment, runs the code use by the people involved in the Prism Pioneer Program (PPP).
+- `1-3-x` has the code for `1.3.x`, at the moment, runs the code use by the people involved in the Prism Pioneer Program (PPP).
 
 
 ## Pull Requests and bug fixes
 
 Most times, PRs will be sent to `master`, in the case of a bug fix, it must be submitted to the branch where the bug was reported (back-porting to special branches when necessary), for example:
 
-- When a bug is reported for `1.2.x`, we'll submit a PR to `1-2.x` and `master.
+- When a bug is reported for `1.3.x`, we'll submit a PR to `1-3-x` and `master`.
 - When a bug is reported for `master`, we'll submit a PR to fix `master`, if we detect that the bugfix is required by any special branch, we'll back-port the fix to such special branch.
 
 ### Pull Request naming
 
 Pull Requests are expected to me named like `ATA-XXXX: A short description` (ticket id as prefix with a short but understandable description).
 
-From time to time - Only when it is worth, we'll bump the patch number for `1.2.x` and create a release.
-we send PRs named `no-jira: A short description` which is done when submitting a minimal improvement that is unrelated to what we have in Jira.
+Sometimes, creating a Jira ticket has more overhead than submitting a small fix, these are commonly named like `no-jira: A short description`.
 
 ### Pull Request checklist
 
