@@ -1,9 +1,52 @@
 # Contributing
-This document explain the rules for contributing to the project.
+These are the Atala PRISM contributing guidelines, which apply to all our repositories.
 
 
 ## Branches
-Each feature branch must have the ticket id as prefix, which is usually `ATA-XXXX`, for example, the `ATA-9999-update-docs` branch is related to the ticket `ATA-9999`.
+Atala PRISM intends to have two working versions:
+- The latest version, which includes everything, `master` right now.
+- The long-term supported version (LTS), like `1-2-x`, which we maintain by applying critical bugfixes only.
+
+Most Pull Requests (PRs) will be sent to `master`, critical bugfixes will be backported to the LTS version.
+
+
+### Naming
+
+Branch names use this format `ATA-XXXX-short-feature-name` where:
+
+- `ATA-XXXX` is the Jira ticket related to the branch.
+- `short-feature-name` is a short name for the ticket (used to get an idea about the branch without opening Jira).
+
+
+### Special branches
+
+Besides `master`, there are some special branches, which are in a code-freeze, meaning that they will only accept changes that are strictly necessary, pushing code to these branches is restricted to Technical Architects:
+
+- `www` has the version running in production (found at `https://www.atalaprism.io` and `https://atalaprism.io`), at the moment, production is the interactive demo connected to the mobile apps from PlayStore/AppStore.
+- `1-2-x` has the code for `1.2.x`, at the moment, runs the code use by the people involved in the Prism Pioneer Program (PPP).
+
+
+## Pull Requests and bug fixes
+
+Most times, PRs will be sent to `master`, in the case of a bug fix, it must be submitted to the branch where the bug was reported (back-porting to special branches when necessary), for example:
+
+- When a bug is reported for `1.2.x`, we'll submit a PR to `1-2.x` and `master.
+- When a bug is reported for `master`, we'll submit a PR to fix `master`, if we detect that the bugfix is required by any special branch, we'll back-port the fix to such special branch.
+
+### Pull Request naming
+
+Pull Requests are expected to me named like `ATA-XXXX: A short description` (ticket id as prefix with a short but understandable description).
+
+From time to time - Only when it is worth, we'll bump the patch number for `1.2.x` and create a release.
+we send PRs named `no-jira: A short description` which is done when submitting a minimal improvement that is unrelated to what we have in Jira.
+
+### Pull Request checklist
+
+Most Pull Requests will get a checklist that everyone is expected to follow, failing to do so might delay people getting to review it.
+
+### Pull Request merging
+
+Once the Pull Request is ready to be merged, you will be required to use the `Squash and Merge` feature from Github, which combines all the PR commits into a single one, you are expected to review the auto-generated message and update it as necessary to get a decent commit message.
 
 
 ## Commits
@@ -49,6 +92,14 @@ And the drawbacks:
 
 The team consensus is that the advantages greatly outweigh the disadvantages.
 
+
+## Releases
+When we are ready to release a new LTS version, we should:
+- Create a branch, like `1-3-x`.
+- QA will run their acceptance tests, we should fix anything that QA require us to fix.
+- We'll create a tag, like `1.3.0`.
+- We'll create a github release with proper release notes.
+- We'll update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository to include the new released version details.
 
 ## More
 - See [singing-commits.md](./signing-commits.md)
