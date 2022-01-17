@@ -8,7 +8,7 @@ that should be taken into account prior to unifying Cardano and Atala
 wallets under the same mnemonic, to avoid security pitfalls. In addition to
 those,  there are also some aspects that may need careful consideration, as they
 may have impact in the overall security and privacy properties of the wallet
-(and related systems).
+and related systems.
 
 \paragraph{Malleability considerations when combining multiple
   attributes into one address.} %
@@ -57,8 +57,42 @@ compromise happens at time $t$.
 Also, it cannot be discarded that further desirable privacy or security
 properties arise, as we get more familiar with the targetted use cases.
 
+\paragraph{Secure wallet storage.} %
+Currently, Atala has some basic support for encrypted storage%
+\footnote{\url{https://github.com/input-output-hk/atala-prism/tree/53f3414a34c88a4a8e54b6d2128d4b14ce2ee8b9/prism-backend/docs/data-vault}
+  {\bf WARNING! Internal link.}}, that basically allows storing and
+fetching data encrypted with a public key owned by a user. Some secure
+storage proposals for cryptocurrency wallets already exist, like Aries's
+RFC0050%
+\footnote{\url{https://github.com/hyperledger/aries-rfcs/blob/main/concepts/0050-wallets/README.md}
+  (last access January 18th, 2022).} or, in a more generic sense,
+Identity Foundation's Confidential Storage%
+\footnote{\url{https://identity.foundation/confidential-storage} (last access
+  January 18th, 2022).}. However, a careful analysis would be needed depending
+on the features we want to support (e.g., some sort of generic search on
+encrypted data vs just specific types of search), and also the expected
+infrastructure (e.g., an oblivious centralized secure storage service vs
+multiple user-owned devices that synchronize ``automagically'').
+%
+Although initially, these may be highly orthogonal topics to the hierarchical
+derivation of cryptographic keys, decissions in one domain may affect the other
+-- e.g., if we are to implement some sort of forward security mechanism in
+an identity wallet, how can we ensure that proper re-encryption is done in
+a centralized oblivious secure storage system?
+
+\paragraph{Trust registries.} %
+A core component of a decentralized identity system will be one that lets
+parties, a priori unknown to each other, derive some sort of trust based on the
+system itself. It is reasonable to expect that cryptographic keys (in the
+shape of DIDs, or related notions) are used to identify parties in the system,
+and assign them some sort of trust metric. As in the topic of secure storage,
+this would initially seem an orthogonal issue. But some properties (like, again,
+some notion of forward security), may require ad hoc updates of trust registries
+in a coordinated manner with an identity wallet -- which might have some
+implications into the security analysis.
+
 \paragraph{Are you aware of further challenges that may be worth
-  looking into?} Please, reach out to us:
+  looking into? Have some feedback?} Please, reach out to us:
 
 \begin{itemize}
 \item Jesus Diaz Vico (Atala Semantics team).
