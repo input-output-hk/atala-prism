@@ -88,15 +88,12 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         logs
       )
       didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
-      ledgerPendingTransactionTimeout = globalConfig.getDuration(
-        "ledgerPendingTransactionTimeout"
-      )
-      transactionRetryPeriod = FiniteDuration(
-        globalConfig.getDuration("transactionRetryPeriod").toNanos,
+      refreshAndSubmitPeriod = FiniteDuration(
+        globalConfig.getDuration("refreshAndSubmitPeriod").toNanos,
         TimeUnit.NANOSECONDS
       )
-      operationSubmissionPeriod = FiniteDuration(
-        globalConfig.getDuration("operationSubmissionPeriod").toNanos,
+      moveScheduledToPendingPeriod = FiniteDuration(
+        globalConfig.getDuration("moveScheduledToPendingPeriod").toNanos,
         TimeUnit.NANOSECONDS
       )
       transactionsPerSecond = globalConfig.getInt("transactionsPerSecond")
@@ -105,16 +102,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         atalaOperationsRepository,
         atalaObjectsTransactionsRepository,
         SubmissionService.Config(
-          maxNumberTransactionsToSubmit = operationSubmissionPeriod.toSeconds.toInt * transactionsPerSecond,
-          maxNumberTransactionsToRetry = transactionRetryPeriod.toSeconds.toInt * transactionsPerSecond
+          maxNumberTransactionsToSubmit = moveScheduledToPendingPeriod.toSeconds.toInt * transactionsPerSecond
         ),
         logs
       )
       submissionSchedulingService = SubmissionSchedulingService(
         SubmissionSchedulingService.Config(
-          ledgerPendingTransactionTimeout = ledgerPendingTransactionTimeout,
-          transactionRetryPeriod = transactionRetryPeriod,
-          operationSubmissionPeriod = operationSubmissionPeriod
+          refreshAndSubmitPeriod = refreshAndSubmitPeriod,
+          moveScheduledToPendingPeriod = moveScheduledToPendingPeriod
         ),
         submissionService
       )

@@ -61,6 +61,11 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
   def setObjectTransactionDetails(
       notification: AtalaObjectNotification
   ): F[Option[AtalaObjectInfo]]
+
+  def updateObjectStatus(
+      oldObjectStatus: AtalaObjectStatus,
+      newObjectStatus: AtalaObjectStatus
+  ): F[Either[NodeError, Int]]
 }
 
 object AtalaObjectsTransactionsRepository {
@@ -128,6 +133,16 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
   def getNotPublishedObjects: F[Either[NodeError, List[AtalaObjectInfo]]] = {
     val opDescription = "Extract not submitted objects."
     connectionIOSafe(AtalaObjectsDAO.getNotPublishedObjectInfos.logSQLErrorsV2(opDescription)).transact(xa)
+  }
+
+  def updateObjectStatus(
+      oldObjectStatus: AtalaObjectStatus,
+      newObjectStatus: AtalaObjectStatus
+  ): F[Either[NodeError, Int]] = {
+    val opDescription = s"Updating statuses for objects $oldObjectStatus -> $newObjectStatus"
+    connectionIOSafe(
+      AtalaObjectsDAO.updateObjectStatus(oldObjectStatus, newObjectStatus).logSQLErrorsV2(opDescription)
+    ).transact(xa)
   }
 
   def updateSubmissionStatus(

@@ -8,16 +8,15 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
 import io.iohk.atala.prism.tracing.Tracing._
 
-import java.time.Duration
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
-/** Scheduler which calls submitReceivedObjects and retryOldPendingTransactions periodically.
+/** Scheduler which updates statuses and publishes new transactions periodically.
   *
   * @param config
-  *   configuration of waiting timeouts between submissions and retries
+  *   configuration of waiting timeouts between submissions and updates
   * @param submissionService
-  *   service which implements submitReceivedObjects & retryOldPendingTransactions methods
+  *   service which implements refreshTransactionStatuses, submitPendingObjects & scheduledObjectsToPending methods
   */
 class SubmissionSchedulingService private (
     config: Config,
@@ -26,40 +25,42 @@ class SubmissionSchedulingService private (
   type CancelToken = () => Future[Unit]
 
   // Schedule first run
-  // NOTE: retryOldPendingTransactions is not thread-safe, so race-conditions may occur in a concurrent mode.
-  scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
+  // NOTE: refreshAndSubmit is not thread-safe, so race-conditions may occur in a concurrent mode.
+  scheduleRefreshAndSubmit(config.refreshAndSubmitPeriod)
 
-  // NOTE: submitReceivedObjects is not thread-safe, so race-conditions may occur in a concurrent mode.
-  scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
+  scheduleMoveScheduledToPending(config.moveScheduledToPendingPeriod)
 
-  // Every `delay` units of time, calls submissionService.retryOldPendingTransactions
-  private def scheduleRetryOldPendingTransactions(
+  // Every `delay` units of time, calls refreshTransactionStatuses and then submitPendingObjects
+  private def scheduleRefreshAndSubmit(
       delay: FiniteDuration
   ): Unit = trace[Id, Unit] { traceId =>
+    val refreshAndSubmitQuery = for {
+      _ <- submissionService.refreshTransactionStatuses()
+      _ <- submissionService.submitPendingObjects()
+    } yield ()
+
     (IO.sleep(delay) *> IO(
       // Ensure run is scheduled after completion, even if current run fails
-      submissionService
-        .retryOldPendingTransactions(config.ledgerPendingTransactionTimeout)
+      refreshAndSubmitQuery
         .run(traceId)
         .unsafeToFuture()
         .onComplete { _ =>
-          scheduleRetryOldPendingTransactions(config.transactionRetryPeriod)
+          scheduleRefreshAndSubmit(config.refreshAndSubmitPeriod)
         }
     )).unsafeRunAndForget()
   }
 
   // Every delay calls submissionService.submitReceivedObjects
   // if immediate is set, then call submissionService.submitReceivedObjects without waiting
-  private def scheduleSubmitReceivedObjects(delay: FiniteDuration): Unit = {
+  private def scheduleMoveScheduledToPending(delay: FiniteDuration): Unit = {
     def run(): Unit = trace { traceId =>
       // Ensure run is scheduled after completion, even if current run fails
-      submissionService
-        .submitReceivedObjects()
+      submissionService.scheduledObjectsToPending
         .run(traceId)
         .unsafeToFuture()
     }.void
       .onComplete { _ =>
-        scheduleSubmitReceivedObjects(config.operationSubmissionPeriod)
+        scheduleMoveScheduledToPending(config.moveScheduledToPendingPeriod)
       }
 
     (IO.sleep(delay) *> IO(run())).unsafeRunAndForget()
@@ -68,9 +69,8 @@ class SubmissionSchedulingService private (
 
 object SubmissionSchedulingService {
   case class Config(
-      ledgerPendingTransactionTimeout: Duration,
-      transactionRetryPeriod: FiniteDuration = 20.seconds,
-      operationSubmissionPeriod: FiniteDuration = 20.seconds
+      refreshAndSubmitPeriod: FiniteDuration = 20.seconds,
+      moveScheduledToPendingPeriod: FiniteDuration = 20.seconds
   )
 
   def apply(

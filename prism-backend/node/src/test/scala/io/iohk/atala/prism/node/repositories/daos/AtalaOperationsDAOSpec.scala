@@ -4,7 +4,7 @@ import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationStatus}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectStatus, AtalaOperationStatus}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 
 class AtalaOperationsDAOSpec extends AtalaWithPostgresSpec {
@@ -15,7 +15,7 @@ class AtalaOperationsDAOSpec extends AtalaWithPostgresSpec {
   "AtalaOperationsDAO.updateAtalaOperationStatus" should {
     "update status and status details" in {
       AtalaObjectsDAO
-        .insert(AtalaObjectCreateData(atalaObjectId, objectBytes))
+        .insert(AtalaObjectCreateData(atalaObjectId, objectBytes, AtalaObjectStatus.Pending))
         .transact(database)
         .unsafeRunSync()
 

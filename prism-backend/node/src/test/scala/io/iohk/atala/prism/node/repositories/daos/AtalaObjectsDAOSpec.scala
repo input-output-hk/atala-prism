@@ -37,7 +37,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction mustBe None
-      retrieved.status mustBe AtalaObjectStatus.Pending
+      retrieved.status mustBe AtalaObjectStatus.Scheduled
     }
   }
 
@@ -57,7 +57,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction.value mustBe transactionInfo
-      retrieved.status mustBe AtalaObjectStatus.Pending
+      retrieved.status mustBe AtalaObjectStatus.Scheduled
     }
 
     "fail to set the transaction info of a nonexistent object" in {
@@ -98,7 +98,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction mustBe None
-      retrieved.status mustBe AtalaObjectStatus.Pending
+      retrieved.status mustBe AtalaObjectStatus.Scheduled
     }
 
     "get an object with transaction info" in {
@@ -116,7 +116,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.objectId mustBe objectId
       retrieved.byteContent mustBe byteContent
       retrieved.transaction.value mustBe transactionInfo
-      retrieved.status mustBe AtalaObjectStatus.Pending
+      retrieved.status mustBe AtalaObjectStatus.Scheduled
     }
   }
 
@@ -143,6 +143,10 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
         )
         insert(objId, byteContent)
       }
+      AtalaObjectsDAO
+        .updateObjectStatus(AtalaObjectStatus.Scheduled, AtalaObjectStatus.Pending)
+        .transact(database)
+        .unsafeRunSync()
       val retrieved = AtalaObjectsDAO.getNotPublishedObjectInfos
         .transact(database)
         .unsafeRunSync()
@@ -162,7 +166,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       byteContent: Array[Byte]
   ): Unit = {
     AtalaObjectsDAO
-      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent))
+      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent, AtalaObjectStatus.Scheduled))
       .transact(database)
       .unsafeToFuture()
       .void

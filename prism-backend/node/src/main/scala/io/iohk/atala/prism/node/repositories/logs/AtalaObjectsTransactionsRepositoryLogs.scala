@@ -9,6 +9,7 @@ import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
@@ -143,6 +144,26 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
             _
           )
         )
+
+  def updateObjectStatus(
+      oldObjectStatus: AtalaObjectStatus,
+      newObjectStatus: AtalaObjectStatus
+  ): Mid[F, Either[NodeError, Int]] = {
+    val description = s"updating object statuses from $oldObjectStatus to $newObjectStatus"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            numUpdated => info"$description - successfully updated $numUpdated objects"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
 
   private def logRetrieveResult(in: List[Either[NodeError, Option[AtalaObjectInfo]]]): F[List[Unit]] = {
     in.traverse(
