@@ -39,6 +39,33 @@ encode 256-bit random bitstrings.
   \label{fig:atalatree}
 \end{figure}
 
+\paragraph{Note on the different cryptographic choices.} As stated, Cardano's
+Lightwallet CIP1852 follows a variation of BIP44 where the chosen singing
+algorithm is EdDSA, which uses Ed25519 as elliptic curve; whereas Atala builds
+from BIP32, thus employs ECDSA with a secp256k1 curve. The reason behind this
+difference seems just circumstancial, and due to the fact that Atala started to
+build from a different specification. From a cryptographic point of view, it is
+possible to unify under the same curve, or to stick to different ones. In the
+latter case, however, we must make sure that domain separation is correctly
+done: i.e., even if having a sort of unified wallet derived from the same
+mnemonic, it should not be possible to generate the same key to be used for
+payment purposes and identity purposes. More detail on this is given in
+\secref{ssec:unification}.
+
+Other than the previous, either choice seems to have its pros and cons. On the
+one hand, having both Cardano and Atala use the same curve would make it
+possible to benefit from joint development efforts. Also, it would avoid
+pitfalls such as using the same key in different curves, which can lead to
+security issues as described next (however, this can also be avoided with proper
+domain separation). Also, Edwards curves (such as Ed25519) are, at least in
+theory, more efficient. On the other hand, Secp256k1 is an standardized curve,
+which has seen more implementation and optimization effort. This means that the
+better theoretical efficiency of Ed25519 may somehow ``mitigated'' by more
+efficient implementations in Secp256k1. Also, Secp256k1 probably has more
+availability of implementations in different programming languages. In any case,
+this is something that needs to be considered by the development/engineering
+teams.
+
 \paragraph{Related effots.} There seems to be an effort to analyse the security
 of wallets that manage addresses combining payment and staking keys \cite{kkl20}.
 These wallets are referred to as PoS wallets. The paper identifies a series of
