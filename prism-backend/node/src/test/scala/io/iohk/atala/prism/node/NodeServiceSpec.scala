@@ -632,7 +632,7 @@ class NodeServiceSpec
     "fail when batchId is not valid" in {
       val invalidBatchId = "invalid@_?"
       val requestWithInvalidId = GetBatchStateRequest(batchId = invalidBatchId)
-      val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
+      val expectedMessage = s"INVALID_ARGUMENT: Invalid batch id: $invalidBatchId"
 
       doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
@@ -775,7 +775,7 @@ class NodeServiceSpec
           batchId = invalidBatchId,
           credentialHash = ByteString.copyFrom(validCredentialHash.getValue)
         )
-      val expectedMessage = s"INTERNAL: Invalid batch id: $invalidBatchId"
+      val expectedMessage = s"INVALID_ARGUMENT: Invalid batch id: $invalidBatchId"
 
       doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
@@ -792,11 +792,11 @@ class NodeServiceSpec
       val requestWithInvalidCredentialHash =
         GetCredentialRevocationTimeRequest(
           batchId = validBatchId.getId,
-          credentialHash = ByteString.EMPTY
+          credentialHash = ByteString.copyFrom(Array[Byte](0x4a))
         )
 
       val expectedMessage =
-        "INTERNAL: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes"
+        "INVALID_ARGUMENT: The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes: 4A"
 
       doReturn(
         fake[Instant](dummySyncTimestamp)
@@ -904,7 +904,7 @@ class NodeServiceSpec
       }
 
       val expectedMessage =
-        "INTERNAL: requirement failed: there must be at least one operation to be published"
+        "INVALID_ARGUMENT: requirement failed: there must be at least one operation to be published"
       error.getMessage must be(expectedMessage)
     }
 
