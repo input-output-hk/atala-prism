@@ -56,7 +56,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
 ) extends NodeService[F] {
   override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
     Try(PrismDid.fromString(didStr)).fold(
-      _ => Applicative[F].pure(UnsupportedDidFormat.asLeft),
+      _ => Applicative[F].pure(UnsupportedDidFormat.asLeft[DidDocument]),
       did => getDidDocumentByDid(did)
     )
 
