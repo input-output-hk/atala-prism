@@ -5,7 +5,7 @@ These are the Atala PRISM contributing guidelines, which apply to all our reposi
 ## Branches
 Atala PRISM intends to have two working versions:
 - The latest version, which includes everything, `master` right now.
-- The long-term supported version (LTS), like `1-3-x`, which we maintain by applying critical bugfixes only.
+- The long-term supported version (LTS), like `1-3-x`, which we maintain by applying critical bugfixes.
 
 Most Pull Requests (PRs) will be sent to `master`, critical bugfixes will be backported to the LTS version.
 
@@ -36,8 +36,6 @@ Most times, PRs will be sent to `master`, in the case of a bug fix, it must be s
 ### Pull Request naming
 
 Pull Requests are expected to me named like `ATA-XXXX: A short description` (ticket id as prefix with a short but understandable description).
-
-Sometimes, creating a Jira ticket has more overhead than submitting a small fix, these are commonly named like `no-jira: A short description`.
 
 ### Pull Request checklist
 
@@ -94,11 +92,12 @@ The team consensus is that the advantages greatly outweigh the disadvantages.
 
 ## Releases
 When we are ready to release a new LTS version, we should:
-- Create a branch, like `1-3-x`.
-- QA will run their acceptance tests, we should fix anything that QA require us to fix.
-- We'll create a tag, like `1.3.0`.
-- We'll create a github release with proper release notes.
-- We'll update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository to include the new released version details.
+
+1. Create a branch, like `1-3-x` (fix required to use `1.3.x` instead).
+1. QA will run their acceptance tests, we should fix anything that QA require us to fix.
+1. We'll create a tag, like `v1.3.0`.
+1. We'll create a github release with proper release notes.
+1. We'll update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository to include the new released version details.
 
 ## More
 - See [singing-commits.md](./signing-commits.md)
