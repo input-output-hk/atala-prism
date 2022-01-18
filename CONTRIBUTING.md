@@ -87,13 +87,16 @@ When we are ready to release a new LTS version, we need to follow this process, 
 
 **NOTE** Our plan is to keep a single LTS version, hence, `master` becomes the `LTS` version, the previous `LTS` version is drop.
 
-Let's take this assumptions:
+
+### Assumptions
 
 1. Our release is called `Core DID`, this name covers all the components that are being released together (even if each component has a different release name).
 1. Our next version for the SDK/Node is `1.3.0`.
 example release, how do we branch, checkout, take release notes, etc
 1. `master` branch CI build passed, having any neccessary artifact published/deployed.
 
+
+### Per-repository process
 
 The process applies to all repositories involved in a release (SDK/Node in this example):
 
@@ -105,12 +108,16 @@ The process applies to all repositories involved in a release (SDK/Node in this 
 1. Prepare the release notes and create a realease in Github with those.
 
 
+### Final process
 Once all repositories are released:
 
+1. Coordinate with our internal DevOps team to release `1.3.0` to the environment intended for our consumers (like `ppp.atalaprism.io`).
+1. Share the new environment to our QA team, who will execute their acceptance tests.
+1. If anything went wrong, go back to the [Per-repository process](#Per-repository process).
 1. Collect the relevant release notes for a public facing release.
-1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository inlcude the new released version.
-
-
+1. Draft the official release notes, then, share those with our Technical Writer to polish them.
+1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository include the new released version details (`Core DID`).
+1. Celebrate. 
 
 
 ## More
