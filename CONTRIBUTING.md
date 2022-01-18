@@ -92,7 +92,6 @@ When we are ready to release a new LTS version, we need to follow this process, 
 
 1. Our release is called `Core DID`, this name covers all the components that are being released together (even if each component has a different release name).
 1. Our next version for the SDK/Node is `1.3.0`.
-example release, how do we branch, checkout, take release notes, etc
 1. `master` branch CI build passed, having any neccessary artifact published/deployed.
 
 
