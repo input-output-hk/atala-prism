@@ -74,11 +74,11 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
       transactionId: TransactionId
   ): Mid[F, Result[TransactionDetails]] =
     in =>
-      info"getting transaction" *> in
+      info"getting transaction $transactionId in wallet $walletId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting transaction $err",
-            transaction => info"getting transaction - successfully done ${transaction.id}"
+            err => error"Encountered an error while getting transaction $transactionId: $err",
+            transaction => info"getting transaction ${transaction.id} - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while getting transaction" (_))
@@ -96,15 +96,15 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
       transactionId: TransactionId
   ): Mid[F, Result[Unit]] =
     in =>
-      info"deleting transaction" *> in
+      info"deleting transaction $transactionId in wallet $walletId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while deleting transaction $err",
-            _ => info"deleting transaction - successfully done"
+            err => error"Encountered an error while deleting transaction $transactionId in wallet $walletId: $err",
+            _ => info"deleting transaction $transactionId in wallet $walletId - successfully done"
           )
         )
         .onError(
-          errorCause"Encountered an error while deleting transaction" (_)
+          errorCause"Encountered an error while deleting transaction $transactionId in wallet $walletId" (_)
         )
 
   /** Get detailed information about the given wallet.
@@ -114,12 +114,12 @@ private[wallet] final class CardanoWalletApiClientLogs[F[_]: ServiceLogging[
     */
   override def getWallet(walletId: WalletId): Mid[F, Result[WalletDetails]] =
     in =>
-      info"getting wallet" *> in
+      info"getting wallet $walletId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting wallet $err",
-            _ => info"getting wallet - successfully done"
+            err => error"Encountered an error while getting wallet $walletId: $err",
+            res => info"getting wallet $walletId - successfully done: $res"
           )
         )
-        .onError(errorCause"Encountered an error while getting wallet" (_))
+        .onError(errorCause"Encountered an error while getting wallet $walletId" (_))
 }

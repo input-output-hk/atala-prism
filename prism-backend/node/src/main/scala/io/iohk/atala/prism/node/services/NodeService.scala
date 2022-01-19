@@ -230,6 +230,7 @@ final case class CredentialRevocationTime(maybeLedgerData: Option[LedgerData], l
 
 final case class DidDocument(maybeData: Option[DIDData], lastSyncedTimeStamp: Instant)
 
+@derive(loggable)
 final case class OperationInfo(maybeOperationInfo: Option[AtalaOperationInfo], lastSyncedTimestamp: Instant)
 
 @derive(loggable)

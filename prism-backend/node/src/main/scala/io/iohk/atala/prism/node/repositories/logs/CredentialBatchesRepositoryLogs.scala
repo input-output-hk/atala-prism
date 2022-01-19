@@ -27,28 +27,28 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[
       info"getting batch state $batchId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting batch state $err",
-            res => info"getting batch state - successfully done, state found - ${res.isDefined}"
+            err => error"Encountered an error while getting batch state $batchId: $err",
+            res => info"getting batch state $batchId - successfully done, state found - ${res.isDefined}"
           )
         )
-        .onError(errorCause"Encountered an error while getting batch state" (_))
+        .onError(errorCause"Encountered an error while getting batch state $batchId" (_))
 
   override def getCredentialRevocationTime(
       batchId: CredentialBatchId,
       credentialHash: Sha256Digest
   ): Mid[F, Either[errors.NodeError, Option[nodeState.LedgerData]]] =
     in =>
-      info"getting credential revocation time $batchId" *> in
+      info"getting credential revocation time for $batchId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting credential revocation time $err",
+            err => error"Encountered an error while getting credential revocation time: $err",
             res =>
-              info"getting credential revocation time - successfully done ${res
+              info"getting credential revocation time for $batchId - successfully done ${res
                 .map(_.transactionId)}"
           )
         )
         .onError(
-          errorCause"Encountered an error while getting credential revocation time" (
+          errorCause"Encountered an error while getting credential revocation time for $batchId" (
             _
           )
         )

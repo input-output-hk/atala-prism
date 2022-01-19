@@ -33,7 +33,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       transactions: List[AtalaObjectTransactionSubmission]
   ): Mid[F, List[Either[NodeError, Option[AtalaObjectInfo]]]] =
     in =>
-      info"retrieving objects, transactions size - ${transactions.size}" *> in
+      info"retrieving objects for ${transactions.size} transactions" *> in
         .flatTap(logRetrieveResult)
         .onError(errorCause"Encountered an error while retrieving objects" (_))
 
@@ -45,7 +45,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       info"getting old pending transactions ${ledgerPendingTransactionTimeout.toString} ${ledger.entryName}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting old pending transactions $err",
+            err => error"Encountered an error while getting old pending transactions: $err",
             res => info"getting old pending transactions - successfully done, got ${res.size} entities"
           )
         )
@@ -60,7 +60,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       info"getting not published objects" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting not published objects $err",
+            err => error"Encountered an error while getting not published objects: $err",
             list => info"getting not published objects - successfully done, got ${list.size} entities"
           )
         )
@@ -75,22 +75,25 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
   ): Mid[F, Either[NodeError, Unit]] =
     in =>
-      info"""updating submission status ${submission.transactionId} old status - ${submission.status.entryName}
+      info"""updating submission status for transaction ${submission.transactionId}, old status - ${submission.status.entryName}
             new status - ${newSubmissionStatus.entryName} ${submission.ledger.entryName}""" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while updating submission status $err",
+            err =>
+              error"Encountered an error while updating submission status for tx ${submission.transactionId}: $err",
             _ => {
               if (newSubmissionStatus == submission.status) {
                 warn"current status of transaction submission [${submission.transactionId}] is already ${newSubmissionStatus.entryName} Skipping"
               } else {
-                info"updating submission status - successfully done"
+                info"updating submission status for transaction ${submission.transactionId} to ${newSubmissionStatus.entryName} - successfully done"
               }
             }
           )
         )
         .onError(
-          errorCause"Encountered an error while updating submission status" (_)
+          errorCause"Encountered an error while updating submission status for transaction ${submission.transactionId} to ${newSubmissionStatus.entryName}" (
+            _
+          )
         )
 
   override def updateSubmissionStatusIfExists(
@@ -99,15 +102,18 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       newSubmissionStatus: AtalaObjectTransactionSubmissionStatus
   ): Mid[F, Either[NodeError, Unit]] =
     in =>
-      info"updating submission status new status - ${newSubmissionStatus.entryName}, ${ledger.entryName}" *> in
+      info"updating submission status for transaction $transactionId, new status - ${newSubmissionStatus.entryName}, ${ledger.entryName}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while updating submission status $err",
-            _ => info"updating submission status - successfully done"
+            err =>
+              error"Encountered an error while updating submission status for transaction $transactionId to ${newSubmissionStatus.entryName}: $err",
+            _ => info"updating submission status for transaction $transactionId to ${newSubmissionStatus.entryName} - successfully done"
           )
         )
         .onError(
-          errorCause"Encountered an error while updating submission status" (_)
+          errorCause"Encountered an error while updating submission status for transaction $transactionId to ${newSubmissionStatus.entryName}" (
+            _
+          )
         )
 
   def storeTransactionSubmission(
@@ -115,16 +121,16 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       publication: PublicationInfo
   ): Mid[F, Either[NodeError, AtalaObjectTransactionSubmission]] =
     in =>
-      info"storing transaction submission - ${atalaObjectInfo.objectId.toString}" *> in
+      info"storing transaction submission for ${atalaObjectInfo.objectId}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while storing transaction submission $err",
+            err => error"Encountered an error while storing transaction submission: $err",
             result =>
-              info"storing transaction submission - successfully done ${result.ledger.entryName} ${result.transactionId}"
+              info"storing transaction submission for ${atalaObjectInfo.objectId} - successfully done ${result.ledger.entryName} ${result.transactionId}"
           )
         )
         .onError(
-          errorCause"Encountered an error while storing transaction submission" (
+          errorCause"Encountered an error while storing transaction submission for ${atalaObjectInfo.objectId}" (
             _
           )
         )
@@ -135,12 +141,12 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
     in =>
       info"setting object transaction details - ${notification.transaction.transactionId} ${notification.transaction.ledger.entryName}" *> in
         .flatTap(
-          _.fold(error"setting object transaction details - got nothing")(obj =>
-            info"setting object transaction details - successfully done ${obj.objectId}"
+          _.fold(error"setting object transaction ${notification.transaction.transactionId} details - got nothing")(obj =>
+            info"setting object transaction ${notification.transaction.transactionId} details - successfully done ${obj.objectId}"
           )
         )
         .onError(
-          errorCause"Encountered an error while setting object transaction details" (
+          errorCause"Encountered an error while setting object transaction details ${notification.transaction.transactionId}" (
             _
           )
         )
@@ -168,7 +174,7 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
   private def logRetrieveResult(in: List[Either[NodeError, Option[AtalaObjectInfo]]]): F[List[Unit]] = {
     in.traverse(
       _.fold(
-        err => error"encountered an error while retrieving object $err",
+        err => error"encountered an error while retrieving object: $err",
         info => info"retrieving object - successfully done, object found - ${info.isDefined}"
       )
     )

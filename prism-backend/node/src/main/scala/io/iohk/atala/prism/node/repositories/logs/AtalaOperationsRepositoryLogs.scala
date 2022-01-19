@@ -28,14 +28,14 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
       atalaOperationStatus: models.AtalaOperationStatus
   ): Mid[F, Either[errors.NodeError, (Int, Int)]] =
     in =>
-      info"inserting operation $objectId $atalaOperationId status - ${atalaOperationStatus.entryName}" *>
+      info"inserting operation $objectId $atalaOperationId, status - ${atalaOperationStatus.entryName}" *>
         in.flatTap(
           _.fold(
-            err => error"Encountered an error while inserting operation $err",
-            _ => info"inserting operation - successfully done"
+            err => error"Encountered an error while inserting operation $objectId $atalaOperationId: $err",
+            _ => info"inserting operation $objectId $atalaOperationId - successfully done"
           )
         ).onError(
-          errorCause"Encountered an error while inserting operation" (_)
+          errorCause"Encountered an error while inserting operation $objectId $atalaOperationId" (_)
         )
 
   override def updateMergedObjects(
@@ -44,14 +44,14 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
       oldObjects: List[AtalaObjectInfo]
   ): Mid[F, Either[errors.NodeError, Unit]] =
     in =>
-      info"updating merged objects ${atalaObject.objectId} operations - ${operations.size} old objects - ${oldObjects.size}" *>
+      info"updating merged objects from ${atalaObject.objectId}, operations size ${operations.size}, old objects size ${oldObjects.size}" *>
         in.flatTap(
           _.fold(
-            err => error"Encountered an error while updating merged objects $err",
-            _ => info"updating merged objects - successfully done"
+            err => error"Encountered an error while updating merged objects from ${atalaObject.objectId}: $err",
+            _ => info"updating merged objects from ${atalaObject.objectId} - successfully done"
           )
         ).onError(
-          errorCause"Encountered an error while updating merged objects" (_)
+          errorCause"Encountered an error while updating merged objects from ${atalaObject.objectId}" (_)
         )
 
   override def getOperationInfo(
@@ -61,10 +61,11 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
       info"getting operation info $atalaOperationId" *>
         in.flatTap(
           _.fold(
-            err => error"Encountered an error while getting operation info $err",
-            maybeResult => info"getting operation info - got ${maybeResult.fold("nothing")(_.transactionId.toString)}"
+            err => error"Encountered an error while getting operation info $atalaOperationId: $err",
+            maybeResult =>
+              info"getting operation info $atalaOperationId - got ${maybeResult.fold("nothing")(_.transactionId.toString)}"
           )
         ).onError(
-          errorCause"Encountered an error while updating merged objects" (_)
+          errorCause"Encountered an error while getting operation info $atalaOperationId" (_)
         )
 }
