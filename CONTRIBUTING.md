@@ -5,7 +5,7 @@ These are the Atala PRISM contributing guidelines, which apply to all our reposi
 ## Branches
 Atala PRISM intends to two working versions:
 - The latest version, which has the latest state of the code, `master` right now.
-- The long-term supported version (LTS), like `1-3-x`, which we maintain by applying critical bugfixes.
+- The long-term supported version (LTS), like `1.3.x`, which we maintain by applying critical bugfixes.
 
 Most Pull Requests (PRs) will be sent to `master`, critical bugfixes will be backported to the current LTS version.
 
@@ -23,7 +23,7 @@ Branch names use this format `ATA-XXXX-short-feature-name` where:
 Besides `master`, there are some special branches, which are in a code-freeze, meaning that they will only accept changes that are strictly necessary, pushing code to these branches is restricted to Technical Architects:
 
 - `www` has the version running in production (found at `https://www.atalaprism.io` and `https://atalaprism.io`), at the moment, production is the interactive demo connected to the mobile apps from PlayStore/AppStore.
-- `1-3-x` has the code for `1.3.x`, at the moment, runs the code use by the people involved in the Prism Pioneer Program (PPP).
+- `1.3.x` has the code for `1.3.x`, at the moment, runs the code use by the people involved in the Prism Pioneer Program (PPP).
 
 
 
@@ -53,7 +53,7 @@ Each pull request should be small enough to be reviewed in less than 30 minutes,
 
 Most times, PRs will be sent to `master`, in the case of a bug fix, it must be submitted to the branch where the bug was reported (back-porting to special branches when necessary), for example:
 
-- When a bug is reported for `1.3.x`, we'll submit a PR to `1-3-x` and `master`.
+- When a bug is reported for `1.3.x`, we'll submit a PR to `1.3.x` and `master`.
 - When a bug is reported for `master`, we'll submit a PR to fix `master`, if we detect that the bugfix is required by any special branch, we'll back-port the fix to such special branch.
 
 ### Pull Request naming
@@ -99,23 +99,24 @@ When we are ready to release a new LTS version, we need to follow this process, 
 
 The process applies to all repositories involved in a release (SDK/Node in this example):
 
-1. Create a new branch based on `master`: `git checkout 1.3.0`.
-1. Coordinate with our internal DevOps team to make sure `1.3.0` gets deployed to a new environment.
+1. Create a new release candidate (rc) branch based on `master` called `1.3.x`.
+1. Coordinate with our internal DevOps team to make sure `1.3.x` gets deployed to a new environment.
 1. Share the new branch/environment to our QA team, who will execute their acceptance tests.
-1. If the is any problem, let's fix it, submitting a PR to `1.3.0` as well as submitting it to `master`, then go to step 2.
-1. If there are no problems, let's tag the commit from `1.3.0` as `v1.3.0`.
+1. If the is any problem, let's fix it, submitting a PR to `1.3.x` as well as submitting it to `master`, then go to step 2.
+1. If there are no problems, let's tag the commit from `1.3.x` as `v1.3.0-rc1` (increase the `rc` suffix if `v1.3.0-rc1` already exists).
 1. Prepare the release notes and create a realease in Github with those.
 
 
 ### Final process
 Once all repositories are released:
 
-1. Coordinate with our internal DevOps team to release `1.3.0` to the environment intended for our consumers (like `ppp.atalaprism.io`).
+1. Coordinate with our internal DevOps team to release `1.3.x` to the environment intended for our consumers (like `ppp.atalaprism.io`).
 1. Share the new environment to our QA team, who will execute their acceptance tests.
 1. If anything went wrong, go back to the [Per-repository process](#Per-repository process).
 1. Collect the relevant release notes for a public facing release.
 1. Draft the official release notes, then, share those with our Technical Writer to polish them.
-1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository include the new released version details (`Core DID`).
+1. Create a tag in each repository with the released version, `1.3.0` in this case.
+1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository include the new released version details (`Core DID`), be sure to link to artifacts related to `1.3.0` instead of the release candidates.
 1. Celebrate. 
 
 
