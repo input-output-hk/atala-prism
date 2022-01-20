@@ -100,23 +100,23 @@ When we are ready to release a new LTS version, we need to follow this process, 
 The process applies to all repositories involved in a release (SDK/Node in this example):
 
 1. Create a new release candidate (rc) branch based on `master` called `1.3.x`.
+1. Tag the latest commit from `1.3.x` as `v1.3.0-rc1` (increase the `rc` suffix if `v1.3.0-rc1` already exists).
 1. Coordinate with our internal DevOps team to make sure `1.3.x` gets deployed to a new environment.
-1. Share the new branch/environment to our QA team, who will execute their acceptance tests.
+1. Share the tag and environment with our QA team, who will execute their acceptance tests.
 1. If the is any problem, let's fix it, submitting a PR to `1.3.x` as well as submitting it to `master`, then go to step 2.
-1. If there are no problems, let's tag the commit from `1.3.x` as `v1.3.0-rc1` (increase the `rc` suffix if `v1.3.0-rc1` already exists).
-1. Prepare the release notes and create a realease in Github with those.
+1. Prepare the release notes and create a realease in Github with those for `v1.3.0-rc1`.
 
 
 ### Final process
 Once all repositories are released:
 
-1. Coordinate with our internal DevOps team to release `1.3.x` to the environment intended for our consumers (like `ppp.atalaprism.io`).
+1. Share the latest `rc` tags for each project to our internal DevOps team, which will release `1.3.x` to the environment intended for our consumers (like `ppp.atalaprism.io`).
 1. Share the new environment to our QA team, who will execute their acceptance tests.
-1. If anything went wrong, go back to the [Per-repository process](#Per-repository process).
+1. If anything went wrong, go back to the [Per-repository process](#Per-repository process) increasing the `rc` number.
 1. Collect the relevant release notes for a public facing release.
 1. Draft the official release notes, then, share those with our Technical Writer to polish them.
-1. Create a tag in each repository with the released version, `1.3.0` in this case.
-1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository include the new released version details (`Core DID`), be sure to link to artifacts related to `1.3.0` instead of the release candidates.
+1. Create a tag in each repository with the released version, `v1.3.0` in this case.
+1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository include the new released version details (`Core DID`), be sure to link to artifacts related to `v1.3.0` instead of the release candidates.
 1. Celebrate. 
 
 
