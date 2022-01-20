@@ -104,7 +104,7 @@ The process applies to all repositories involved in a release (SDK/Node in this 
 1. Coordinate with our internal DevOps team to make sure `1.3.x` gets deployed to a new environment.
 1. Share the tag and environment with our QA team, who will execute their acceptance tests.
 1. If the is any problem, let's fix it, submitting a PR to `1.3.x` as well as submitting it to `master`, then go to step 2.
-1. Prepare the release notes and create a realease in Github with those for `v1.3.0-rc1`.
+1. Prepare the release notes and create a release in Github with those for the latest tag, e.g. `v1.3.0-rc2`.
 
 
 ### Final process
