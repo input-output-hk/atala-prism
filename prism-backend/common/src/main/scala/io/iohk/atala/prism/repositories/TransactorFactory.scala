@@ -53,7 +53,7 @@ object TransactorFactory {
     for {
       // Resource yielding a transactor configured with a bounded connect EC and an unbounded
       // transaction EC. Everything will be closed and shut down cleanly after use.
-      ce <- ExecutionContexts.fixedThreadPool[A](config.awaitConnectionThreads) // our connect EC
+      ce <- ExecutionContexts.cachedThreadPool[A] // our connect EC
       xa <- HikariTransactor.fromHikariConfig[A](hikariConfig, ce)
     } yield xa
   }
