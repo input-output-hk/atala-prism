@@ -37,7 +37,7 @@ object TransactorFactory {
   ): Resource[A, HikariTransactor[A]] = {
 
     // https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
-    val poolSize = (config.awaitConnectionThreads * 2) + 1
+    val poolSize = 100 //(config.awaitConnectionThreads * 2) + 1
     val hikariConfig = new HikariConfig()
     hikariConfig.setJdbcUrl(config.jdbcUrl)
     hikariConfig.setUsername(config.username)
