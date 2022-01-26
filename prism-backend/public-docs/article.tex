@@ -31,7 +31,7 @@ This document describes the current state of the protocol that supports PRISM. P
 
 \section{Introduction and protocol description}
 
-In this section we will informally describe a protocol to create and manage DIDs (\textbf{D}ecentralized textbf{Id}entifiers), that also allows to manage the creation, revocation and presentation of verifiable credentials.
+In this section we will informally describe a protocol to create and manage DIDs (\textbf{D}ecentralized \textbf{Id}entifiers), that also allows to manage the creation, revocation and presentation of verifiable credentials.
 
 \subsection{DIDs management}
 
@@ -62,8 +62,8 @@ In order to create a DID, a user will follow the steps below:
       There must be at least one key with the master role in this initial list.
 \item The resulting list is encoded and hashed producing an encoded \emph{initial\_state} and a \emph{hash}.
 \item The \emph{hash} is encoded in hexadecimal form producing an \emph{encoded\_hash}.
-\item The user DID is constructed as \emph{did:prism:encoded\_hash}.
-\item The user will send in the metadata of a blockchain transaction a signed \emph{CreateDID} event. 
+\item The user's DID is constructed as \emph{did:prism:encoded\_hash}.
+\item The user will a signed \emph{CreateDID} event in the transaction metadata that is submitted to a blockchain.
       The event contains the list of public keys with their identifiers and roles.
       The signature will be performed using the private key associated to any of the master keys in the initial list of keys.
 \end{itemize}
@@ -91,7 +91,7 @@ Updating a DID means that the user controlling a master key associated to it, wi
 \item Sign the event with one of the \emph{currently associated} master keys of the DID, and publish the event inside the metadata of a transaction.
 \end{itemize}
 
-When the event added to the blockchain with enough confirmations, all parties will process the event. This is, they will validate the signature, and update their internal knowledge of the updated DID. The newly added keys and the revoked keys will be timestamped using the time of the carrier transaction.
+When the event added to the blockchain has enough confirmations, all parties will process the event. This is, they will validate the signature, and update their internal knowledge of the updated DID. The newly added keys and the revoked keys will be timestamped using the time of the carrier transaction.
 
 With these two events we have shown how to create and update DIDs. 
 
@@ -138,9 +138,8 @@ In order to issue a batch of an arbitrary number $N$ of credentials, the issuer 
 \item The issuer encodes each individual credential using a base64URL encoding.
 \item The issuer signs each individual encoded credential with an \emph{issuing key} associated to his publicly known DID. 
       The signing key corresponds to the key id in the credentials' claims.
-\item The issuer encodes each signature, and concatenate them to their corresponding credentials using a dot (".") as separator.
-      This produces strings of the form $\langle{}encoded\_credentials\rangle{}.\langle{}encoded\_signature\rangle{}$. We call these strings asa
-      \emph{signed credentials}.
+\item The issuer encodes each signature, and concatenates them to their corresponding credentials using a dot (".") as separator.
+      This produces strings of the form $\langle{}encoded\_credentials\rangle{}.\langle{}encoded\_signature\rangle{}$. We call these strings \emph{signed credentials}.
 \item Now, the issuer takes all the signed credentials, and computes a merkle root from them.
 \item The issuer creates an \emph{IssueBatch} event that contains the merkle root and issuer DID, and signs the event with an \emph{issuing key} associated to this DID. 
 \textbf{Note}: Today we use the same issuing key for the event signature and the individual credentials signature, but those could be different keys.
