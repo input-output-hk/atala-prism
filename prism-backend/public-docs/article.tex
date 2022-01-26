@@ -97,7 +97,7 @@ With these two events we have shown how to create and update DIDs.
 
 \subsubsection{Obtain the list of keys associated to a DID}
 
-Now, we can define the process that a protocol participant must follow to obtain the keys associated to a list. 
+Now, we can define the process that a protocol participant must follow to obtain the keys associated to a DID. 
 We mentioned that a DID can be presented in long form (or as an unpublished DID), or in its short form. Hence, we will describe the process in the two cases.
 
 In order to obtain the keys associated to a DID in short form, we simply read the state we have constructed so far by processing the \emph{CreateDID} and \emph{UpdateDID} events we read from the blockchain. The list of keys associated to the DID, is the one we see in our internal state. If we do not find the DID as a published one in our state, we return a \emph{DID unknown} response.
