@@ -283,7 +283,7 @@ object NodeGrpcServiceImpl {
       case GettingCanonicalPrismDidError(nodeError) =>
         nodeError.toStatus
       case UnsupportedDidFormat =>
-        Status.INTERNAL.withDescription(s"Invalid DID: $didRequestStr")
+        Status.INVALID_ARGUMENT.withDescription(s"Invalid DID: $didRequestStr")
     }
     RequestMeasureUtil.increaseErrorCounter(
       serviceName,

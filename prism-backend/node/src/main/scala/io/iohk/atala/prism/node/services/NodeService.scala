@@ -1,17 +1,15 @@
 package io.iohk.atala.prism.node.services
 
 import cats.effect.Resource
-import cats.{Applicative, Comonad, Functor, MonadThrow}
 import cats.implicits._
+import cats.{Applicative, Comonad, Functor, MonadThrow}
 import com.google.protobuf.ByteString
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
-import io.iohk.atala.prism.interop.toScalaProtos.AtalaOperationInterop
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaOperationInfo
@@ -22,8 +20,8 @@ import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateSch
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
 import tofu.higherKind.Mid
-import tofu.logging.{Logs, ServiceLogging}
 import tofu.logging.derivation.loggable
+import tofu.logging.{Logs, ServiceLogging}
 
 import java.time.Instant
 import scala.util.Try
@@ -55,40 +53,20 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
     credentialBatchesRepository: CredentialBatchesRepository[F]
 ) extends NodeService[F] {
   override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
-    Try(PrismDid.fromString(didStr)).fold(
+    Try(PrismDid.canonicalFromString(didStr)).fold(
       _ => Applicative[F].pure(UnsupportedDidFormat.asLeft[DidDocument]),
       did => getDidDocumentByDid(did)
     )
 
-  private def getDidDocumentByDid(did: PrismDid): F[Either[GettingDidError, DidDocument]] = {
-    val getDidResultF: F[Either[GettingDidError, Option[DIDData]]] = did match {
-      case canon: CanonicalPrismDid =>
-        didDataRepository.findByDid(canon).map(_.bimap(GettingCanonicalPrismDidError, toDidDataProto(_, canon)))
-      case longForm: LongFormPrismDid =>
-        didDataRepository.findByDid(did.asCanonical()).map(handleFindByLongFormResult(_, longForm, did))
-      case _ => Applicative[F].pure(UnsupportedDidFormat.asLeft)
-    }
+  private def getDidDocumentByDid(canon: CanonicalPrismDid): F[Either[GettingDidError, DidDocument]] = {
+    val getDidResultF: F[Either[GettingDidError, Option[DIDData]]] =
+      didDataRepository.findByDid(canon).map(_.bimap(GettingCanonicalPrismDidError, toDidDataProto(_, canon)))
+
     for {
       lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       getDidResult <- getDidResultF
       res = getDidResult.map(DidDocument(_, lastSyncedTimestamp))
     } yield res
-  }
-
-  private def handleFindByLongFormResult(
-      result: Either[NodeError, Option[DIDDataState]],
-      longForm: LongFormPrismDid,
-      did: PrismDid
-  ): Either[GettingDidError, Option[DIDData]] = {
-    def returnInitialState: Option[DIDData] =
-      ProtoCodecs.atalaOperationToDIDDataProto(DidSuffix(did.getSuffix), longForm.getInitialState.asScala).some
-    // if it was not published or we have an error, we return the encoded initial state
-    result.fold(
-      _ => returnInitialState.asRight[GettingDidError],
-      _.fold(returnInitialState.asRight[GettingDidError])(state =>
-        ProtoCodecs.toDIDDataProto(did.getSuffix, state).some.asRight[GettingDidError]
-      )
-    )
   }
 
   private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[DIDData] =

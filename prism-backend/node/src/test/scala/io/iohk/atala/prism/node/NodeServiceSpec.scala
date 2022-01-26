@@ -11,33 +11,33 @@ import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.operations._
+import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
-import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_api._
+import io.iohk.atala.prism.protos.node_models.OperationOutput
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._
+import tofu.logging.Logs
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import io.iohk.atala.prism.protos.node_models.OperationOutput
-import tofu.logging.Logs
 
 class NodeServiceSpec
     extends AtalaWithPostgresSpec
@@ -160,140 +160,19 @@ class NodeServiceSpec
       )
     }
 
-    "return DID document for an unpublished DID" in {
+    "return error for a long form DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
       val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
       doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
         .getLastSyncedTimestamp
 
-      val response = service.getDidDocument(
-        node_api.GetDidDocumentRequest(longFormDID.getValue)
-      )
-      val document = response.document.value
-      document.id mustBe longFormDID.getSuffix
-      document.publicKeys.size mustBe 1
-
-      val publicKey = document.publicKeys.headOption.value
-      publicKey.id mustBe DID.getDEFAULT_MASTER_KEY_ID
-      publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
-      publicKey.addedOn mustBe empty
-      publicKey.revokedOn mustBe empty
-
-      ParsingUtils.parseCompressedECKey(
-        ValueAtPath(publicKey.getCompressedEcKeyData, Path.root)
-      ) must beRight(
-        masterKey
-      )
-      response.lastSyncedBlockTimestamp must be(
-        Some(dummySyncTimestamp.toProtoTimestamp)
-      )
-    }
-
-    "return DID document for a long form DID after it was published" in {
-      val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val issuingKey = CreateDIDOperationSpec.issuingKeys.getPublicKey
-      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
-
-      // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
-      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
-      val key1 = DIDPublicKey(
-        didSuffix,
-        DID.getDEFAULT_MASTER_KEY_ID,
-        KeyUsage.MasterKey,
-        masterKey
-      )
-      val key2 =
-        DIDPublicKey(didSuffix, "issuance0", KeyUsage.IssuingKey, issuingKey)
-
-      (DIDDataDAO
-        .insert(didSuffix, didDigest, dummyLedgerData)
-        .transact(database) >>
-        PublicKeysDAO.insert(key1, dummyLedgerData).transact(database) >>
-        PublicKeysDAO.insert(key2, dummyLedgerData).transact(database))
-        .unsafeRunSync()
-
-      doReturn(fake[Instant](dummySyncTimestamp))
-        .when(objectManagementService)
-        .getLastSyncedTimestamp
-
-      // we now resolve the long form DID
-      val response = service.getDidDocument(
-        node_api.GetDidDocumentRequest(longFormDID.getValue)
-      )
-      val document = response.document.value
-      document.id mustBe longFormDID.getSuffix
-      document.publicKeys.length mustBe 2
-
-      val publicKey1 =
-        document.publicKeys.find(_.id == DID.getDEFAULT_MASTER_KEY_ID).value
-      publicKey1.usage mustBe node_models.KeyUsage.MASTER_KEY
-      publicKey1.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
-      publicKey1.revokedOn mustBe empty
-      ParsingUtils.parseECKey(
-        ValueAtPath(publicKey1.getEcKeyData, Path.root)
-      ) must beRight(masterKey)
-
-      val publicKey2 = document.publicKeys.find(_.id == "issuance0").value
-      publicKey2.usage mustBe node_models.KeyUsage.ISSUING_KEY
-      publicKey2.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
-      publicKey2.revokedOn mustBe empty
-      ParsingUtils.parseECKey(
-        ValueAtPath(publicKey2.getEcKeyData, Path.root)
-      ) must beRight(issuingKey)
-
-      response.lastSyncedBlockTimestamp must be(
-        Some(dummySyncTimestamp.toProtoTimestamp)
-      )
-    }
-
-    "return DID document for a long form DID with revoked key after it was published" in {
-      val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
-
-      // we simulate the publication of the DID and the addition of an issuing key
-      val didDigest = Sha256Digest.fromHex(longFormDID.asCanonical().getSuffix)
-      val didSuffix = DidSuffix(didDigest.getHexValue)
-      val key = DIDPublicKey(
-        didSuffix,
-        DID.getDEFAULT_MASTER_KEY_ID,
-        KeyUsage.MasterKey,
-        masterKey
-      )
-
-      (DIDDataDAO
-        .insert(didSuffix, didDigest, dummyLedgerData)
-        .transact(database) >>
-        PublicKeysDAO.insert(key, dummyLedgerData).transact(database) >>
-        PublicKeysDAO
-          .revoke(didSuffix, key.keyId, dummyLedgerData)
-          .transact(database)).unsafeRunSync()
-
-      doReturn(fake[Instant](dummySyncTimestamp))
-        .when(objectManagementService)
-        .getLastSyncedTimestamp
-
-      // we now resolve the long form DID
-      val response = service.getDidDocument(
-        node_api.GetDidDocumentRequest(longFormDID.getValue)
-      )
-      val document = response.document.value
-      document.id mustBe longFormDID.getSuffix
-      document.publicKeys.length mustBe 1
-
-      val publicKey =
-        document.publicKeys.find(_.id == DID.getDEFAULT_MASTER_KEY_ID).value
-      publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
-      publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
-      publicKey.revokedOn mustBe Some(ProtoCodecs.toLedgerData(dummyLedgerData))
-      ParsingUtils.parseECKey(
-        ValueAtPath(publicKey.getEcKeyData, Path.root)
-      ) must beRight(masterKey)
-
-      response.lastSyncedBlockTimestamp must be(
-        Some(dummySyncTimestamp.toProtoTimestamp)
-      )
+      val error = intercept[StatusRuntimeException] {
+        service.getDidDocument(
+          node_api.GetDidDocumentRequest(longFormDID.getValue)
+        )
+      }
+      error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }
   }
 
