@@ -1,5 +1,5 @@
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.2")
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.3")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.0-M4")
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.5.1")
 addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.20")
 addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.12")
