@@ -7,6 +7,7 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperation,
   IssueCredentialBatchOperation,
+  ProtocolVersionUpdateOperation,
   RevokeCredentialsOperation,
   UpdateDIDOperation,
   ValidationError,
@@ -58,6 +59,12 @@ package object models {
         OperationOutput(
           OperationOutput.Result.RevokeCredentialsOutput(
             node_models.RevokeCredentialsOutput()
+          )
+        )
+      case ProtocolVersionUpdateOperation(_, _, _, _, _, _) =>
+        OperationOutput(
+          OperationOutput.Result.ProtocolVersionUpdateOutput(
+            node_models.ProtocolVersionUpdateOutput()
           )
         )
       case other =>
