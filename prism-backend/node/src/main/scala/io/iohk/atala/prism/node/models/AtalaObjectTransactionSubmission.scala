@@ -1,10 +1,12 @@
 package io.iohk.atala.prism.node.models
 
-import java.time.Instant
+import derevo.derive
 
+import java.time.Instant
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import tofu.logging.derivation.loggable
 
 import scala.collection.immutable.IndexedSeq
 
@@ -16,6 +18,7 @@ case class AtalaObjectTransactionSubmission(
     status: AtalaObjectTransactionSubmissionStatus
 )
 
+@derive(loggable)
 sealed trait AtalaObjectTransactionSubmissionStatus extends EnumEntry with UpperSnakecase
 
 object AtalaObjectTransactionSubmissionStatus extends Enum[AtalaObjectTransactionSubmissionStatus] {

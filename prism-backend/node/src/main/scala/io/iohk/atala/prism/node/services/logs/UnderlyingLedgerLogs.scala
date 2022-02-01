@@ -28,7 +28,8 @@ class UnderlyingLedgerLogs[
         .flatTap(
           _.fold(
             er => error"Encountered an error while publishing object $er ${getOperationsIds(obj)}",
-            result => info"publishing object - successfully done ${result.transaction.transactionId}"
+            result =>
+              info"publishing object - successfully done within a transaction ${result.transaction.transactionId}"
           )
         )
         .onError(errorCause"Encountered an error while publishing object" (_))
@@ -40,8 +41,9 @@ class UnderlyingLedgerLogs[
       info"getting transaction details $transactionId" *> in
         .flatTap(
           _.fold(
-            er => error"Encountered an error while getting transaction details $er",
-            result => info"getting transaction details - successfully done ${result.status.entryName}"
+            er => error"Encountered an error while getting transaction details: $er",
+            result =>
+              info"getting transaction details about tx ${result.id} - successfully done: ${result.status.entryName}"
           )
         )
         .onError(
@@ -56,7 +58,7 @@ class UnderlyingLedgerLogs[
         .flatTap(
           _.fold(
             er => error"Encountered an error while deleting transaction $er",
-            _ => info"deleting transaction - successfully done"
+            _ => info"deleting transaction $transactionId - successfully done"
           )
         )
         .onError(

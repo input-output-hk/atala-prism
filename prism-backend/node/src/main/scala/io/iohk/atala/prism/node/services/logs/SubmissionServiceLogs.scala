@@ -21,7 +21,7 @@ private[services] final class SubmissionServiceLogs[
       info"$description" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while $description $err",
+            err => error"Encountered an error while $description: $err",
             publishedTransactionsNumber =>
               info"$description - successfully done, $publishedTransactionsNumber transactions were created in Cardano wallet"
           )

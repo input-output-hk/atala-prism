@@ -24,8 +24,8 @@ private[repositories] final class CardanoBlockRepositoryLogs[F[
       info"getting full block $blockNo" *> in
         .flatTap(
           _.fold(
-            er => error"Encountered an error while getting full block $er",
-            _ => info"getting full block - successfully done"
+            er => error"Encountered an error while getting full block $blockNo: $er",
+            fb => info"getting full block with header ${fb.header} - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while getting full block" (_))
@@ -36,7 +36,7 @@ private[repositories] final class CardanoBlockRepositoryLogs[F[
         .flatTap(
           _.fold(
             er => error"Encountered an error while getting latest block $er",
-            res => info"getting latest block - successfully done blockNo ${res.header.blockNo}"
+            res => info"getting latest block with header ${res.header} - successfully done"
           )
         )
         .onError(

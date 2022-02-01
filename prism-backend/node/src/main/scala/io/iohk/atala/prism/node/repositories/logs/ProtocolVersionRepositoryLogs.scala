@@ -40,12 +40,12 @@ private[repositories] final class ProtocolVersionRepositoryLogs[F[
     in =>
       debug"marking effective protocol versions that get effective after or at block level $blockLevel" *> in
         .flatTap(
-          _.fold(debug"No protocol versions to mark effective")(pv =>
+          _.fold(debug"No protocol versions to mark effective for $blockLevel")(pv =>
             info"Protocol version ${pv.versionName} ${pv.protocolVersion} turned effective"
           )
         )
         .onError(
-          errorCause"Encountered an error while marking protocol versions effective" (
+          errorCause"Encountered an error while marking protocol versions effective for $blockLevel" (
             _
           )
         )
