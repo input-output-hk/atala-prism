@@ -88,7 +88,7 @@ object Dependencies {
     "org.http4s" %% "http4s-blaze-server" % versions.http4s
   val http4sBlazeClient =
     "org.http4s" %% "http4s-blaze-client" % versions.http4s
-  val fs2 =  "co.fs2" %% "fs2-io" %  versions.fs2
+  val fs2 = "co.fs2" %% "fs2-io" % versions.fs2
 
   // SDK dependencies
 
