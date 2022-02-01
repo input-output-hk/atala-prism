@@ -375,12 +375,6 @@ class ConnectorService(
           recipientId = recipientId,
           lastSeenMessageId = lastSeenMessageId
         )
-        .onFinalize {
-          // This is crucial to prevent the db stream opened indefinitely - producting a connection leak per client
-          // TODO: This should likely go in MessagesRepositoryImpl but I'm not sure about the implications, hence,
-          //       let's leave this here until we understand the issue better.
-          TraceId.liftToIOWithTraceId(cats.effect.IO.unit)
-        }
 
       val newMessageStream = messageNotificationService
         .stream(recipientId)

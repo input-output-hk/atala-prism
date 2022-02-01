@@ -2,8 +2,9 @@ import Dependencies._
 import com.typesafe.sbt.GitVersioning
 import com.typesafe.sbt.GitPlugin.autoImport._
 import play.twirl.sbt.SbtTwirl
-import sbt.Keys._
+import sbt.Keys.{libraryDependencySchemes, _}
 import sbt._
+import sbt.internal.RetrieveUnit.Scheme
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
@@ -114,10 +115,13 @@ object PrismBuild {
             Seq(
               diffx,
               flyway,
-              typesafeConfig
+              typesafeConfig,
+              fs2
             ) ++
             prismDependencies ++
             scalapbDependencies,
+            libraryDependencySchemes += "org.tpolecat" %% "doobie-core"  %  "always",
+
         Compile / PB.targets := Seq(
           scalapb.gen() -> (Compile / sourceManaged).value / "proto"
         )
@@ -176,6 +180,7 @@ object PrismBuild {
     commonServerProject("node")
       .settings(
         name := "node",
+        libraryDependencySchemes += "org.tpolecat" %% "doobie-core"  %  VersionScheme.Always,
         Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp")
       )
       .dependsOn(common % "compile->compile;test->test")
@@ -188,7 +193,8 @@ object PrismBuild {
           "io.iohk.atala.prism.connector.ConnectorApp"
         ),
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
-        libraryDependencies += twirlApi
+        libraryDependencies += twirlApi,
+        libraryDependencySchemes += "org.tpolecat" %% "doobie-core"  %  VersionScheme.Always
       )
       .dependsOn(common % "compile->compile;test->test")
       .enablePlugins(SbtTwirl)
@@ -200,7 +206,8 @@ object PrismBuild {
         resolvers += Resolver.sonatypeRepo("snapshots"),
         libraryDependencies ++= Seq(
           enumeratum
-        )
+        ),
+        libraryDependencySchemes += "org.tpolecat" %% "doobie-core"  %  VersionScheme.Always
       )
       .dependsOn(common)
 
@@ -208,7 +215,8 @@ object PrismBuild {
     commonServerProject("vault")
       .settings(
         name := "vault",
-        Compile / run / mainClass := Some("io.iohk.atala.prism.vault.VaultApp")
+        Compile / run / mainClass := Some("io.iohk.atala.prism.vault.VaultApp"),
+        libraryDependencySchemes += "org.tpolecat" %% "doobie-core"  %  VersionScheme.Always
       )
       .dependsOn(common % "compile->compile;test->test")
 
@@ -218,7 +226,8 @@ object PrismBuild {
         name := "management-console",
         Compile / run / mainClass := Some(
           "io.iohk.atala.prism.management.console.ManagementConsoleApp"
-        )
+        ),
+        libraryDependencySchemes += "org.tpolecat" %% "doobie-core"  %  VersionScheme.Always
       )
       .dependsOn(common % "compile->compile;test->test")
 
