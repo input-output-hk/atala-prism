@@ -1,3 +1,4 @@
+import sbt.Keys.libraryDependencySchemes
 import sbt._
 
 object versions {
@@ -156,6 +157,7 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
   )
+  val overrideVersionSchemes = libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always
 
   // cardano-address library binary
   val cardanoAddressBinaryUrl =

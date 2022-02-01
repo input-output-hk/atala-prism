@@ -4,7 +4,6 @@ import com.typesafe.sbt.GitPlugin.autoImport._
 import play.twirl.sbt.SbtTwirl
 import sbt.Keys.{libraryDependencySchemes, _}
 import sbt._
-import sbt.internal.RetrieveUnit.Scheme
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
@@ -120,7 +119,7 @@ object PrismBuild {
             ) ++
             prismDependencies ++
             scalapbDependencies,
-        libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % "always",
+        overrideVersionSchemes,
         Compile / PB.targets := Seq(
           scalapb.gen() -> (Compile / sourceManaged).value / "proto"
         )
@@ -179,7 +178,7 @@ object PrismBuild {
     commonServerProject("node")
       .settings(
         name := "node",
-        libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always,
+        overrideVersionSchemes,
         Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp")
       )
       .dependsOn(common % "compile->compile;test->test")
@@ -193,7 +192,7 @@ object PrismBuild {
         ),
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
         libraryDependencies += twirlApi,
-        libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always
+        overrideVersionSchemes
       )
       .dependsOn(common % "compile->compile;test->test")
       .enablePlugins(SbtTwirl)
@@ -206,7 +205,7 @@ object PrismBuild {
         libraryDependencies ++= Seq(
           enumeratum
         ),
-        libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always
+        overrideVersionSchemes
       )
       .dependsOn(common)
 
@@ -215,7 +214,7 @@ object PrismBuild {
       .settings(
         name := "vault",
         Compile / run / mainClass := Some("io.iohk.atala.prism.vault.VaultApp"),
-        libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always
+        overrideVersionSchemes
       )
       .dependsOn(common % "compile->compile;test->test")
 
@@ -226,7 +225,7 @@ object PrismBuild {
         Compile / run / mainClass := Some(
           "io.iohk.atala.prism.management.console.ManagementConsoleApp"
         ),
-        libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always
+        overrideVersionSchemes
       )
       .dependsOn(common % "compile->compile;test->test")
 
