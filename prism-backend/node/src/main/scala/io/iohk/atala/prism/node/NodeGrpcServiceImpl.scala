@@ -252,6 +252,7 @@ object NodeGrpcServiceImpl {
       val responseBase = GetBatchStateResponse()
         .withIssuerDid(state.issuerDIDSuffix.getValue)
         .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.getHash.getValue))
+        .withIssuanceHash(ByteString.copyFrom(state.lastOperation.getValue))
         .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
       revocationLedgerData.fold(responseBase)(
         responseBase.withRevocationLedgerData
