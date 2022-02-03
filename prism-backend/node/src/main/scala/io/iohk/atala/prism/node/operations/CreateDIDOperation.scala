@@ -7,8 +7,8 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.DIDPublicKey
+import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
@@ -88,6 +88,11 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
           )
         }
       }
+      _ <- Either.cond(
+        reversedKeys.exists(_.keyUsage == MasterKey),
+        (),
+        keysValue.invalid("At least one master key has to be among CreateDID public keys")
+      )
     } yield reversedKeys.reverse
   }
 

@@ -308,6 +308,24 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
           )
       }
     }
+
+    "return error when master key doesn't exist" in {
+      val invalidOperation = exampleOperation
+        .update(
+          _.createDid.didData
+            .publicKeys(0)
+            .usage := node_models.KeyUsage.ISSUING_KEY
+        )
+
+      inside(CreateDIDOperation.parse(invalidOperation, dummyLedgerData)) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector(
+            "createDid",
+            "didData",
+            "publicKeys"
+          )
+      }
+    }
   }
 
   "CreateDIDOperation.getCorrectnessData" should {
