@@ -1,6 +1,8 @@
 name: "Main Workflow"
 on:
   push:
+    tags:
+      - "**"
     branches:
       - master
       - develop*
@@ -9,7 +11,7 @@ on:
       - qa*
       - sandbox*
       - package*
-      - 1-*
+      - 1.*
   pull_request:
     paths:
       - 'prism-backend/**'
@@ -112,7 +114,6 @@ jobs:
             mkdir -p $dest
             cp $reports/* $dest
           done
-
       - name: Publish Backend Unit Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v1
@@ -127,7 +128,7 @@ jobs:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/package') || startsWith(github.ref, 'refs/heads/1-')
+    if: github.ref_name == 'master' || startsWith(github.ref_name, 'package') || startsWith(github.ref_name, '1.')
     defaults:
       run:
         working-directory: prism-backend
@@ -158,7 +159,6 @@ jobs:
       - name: Build and publish Docker images
         run: |
           GITHUB=1 sbt "${{ matrix.image }}/dockerBuildAndPush"
-
   deploy-ecr-images:
     strategy:
       matrix:
@@ -167,14 +167,14 @@ jobs:
     runs-on: ubuntu-20.04
     needs: build-prism-backend
     if: |
-      github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/heads/1-') ||
-      startsWith(github.ref, 'refs/heads/develop') ||
-      startsWith(github.ref, 'refs/heads/test') ||
-      startsWith(github.ref, 'refs/heads/geud-test') ||
-      startsWith(github.ref, 'refs/heads/demo') ||
-      startsWith(github.ref, 'refs/heads/qa') ||
-      startsWith(github.ref, 'refs/heads/sandbox')
+      github.ref_name == 'master' ||
+      startsWith(github.ref_name, '1.') ||
+      startsWith(github.ref_name, 'develop') ||
+      startsWith(github.ref_name, 'test') ||
+      startsWith(github.ref_name, 'geud-test') ||
+      startsWith(github.ref_name, 'demo') ||
+      startsWith(github.ref_name, 'qa') ||
+      startsWith(github.ref_name, 'sandbox')
     permissions:
       packages: write
       contents: read
@@ -190,14 +190,12 @@ jobs:
           curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v"3.11.4"/$archive.zip
           sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
           rm -rf ${archive}.zip
-
       - name: Install protoc-gen-grpc-web
         run: |
           archive=protoc-gen-grpc-web-1.0.7-linux-x86_64
           curl -O -L https://github.com/grpc/grpc-web/releases/download/1.0.7/$archive
           chmod +x $archive
           sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
-
       - name: Restore Cache
         uses: actions/cache@v2
         with:
@@ -206,7 +204,6 @@ jobs:
             ~/.cache/coursier
             ~/.ivy2
             ~/.m2
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
         with:
@@ -218,15 +215,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
 
-      - name: Set tag convention
-        id: set-tag
+      - name: Set ENV & TAG convention
         run: |
           branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-          revCount=$(git rev-list HEAD --count)
-          shaShort=$(git rev-parse --short HEAD)
-          tag="${branchPrefix}-${revCount}-${shaShort}"
-          echo "TAG=$tag" >> $GITHUB_ENV;
-          echo "::set-output name=tag::$tag"
+          if [[ ${GITHUB_REF_TYPE} == "tag" ]]
+          then
+              tag=$(echo $GITHUB_REF_NAME)
+              echo "TAG=$tag" >> $GITHUB_ENV
+              echo "::set-output name=tag::$tag"
+          else
+              revCount=$(git rev-list HEAD --count)
+              shaShort=$(git rev-parse --short HEAD)
+              tag="${branchPrefix}-${revCount}-${shaShort}"
+              echo "TAG=$tag" >> $GITHUB_ENV;
+              echo "::set-output name=tag::$tag"
+          fi
           echo "ENV=$branchPrefix" >> $GITHUB_ENV;
           . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
@@ -239,7 +242,6 @@ jobs:
         run: |
           cd prism-backend
           sbt "${{ matrix.image }}/dockerBuildAndPush"
-
       - name: Build and push prism-lb-envoy
         if: matrix.image == 'prism-lb-envoy'
         run: |
@@ -249,6 +251,7 @@ jobs:
 
   workflow-dispach:
     runs-on: ubuntu-20.04
+    if: github.ref_type != 'tag'
     needs: deploy-ecr-images
     steps:
       - name: Workflow Dispatch
@@ -264,7 +267,7 @@ jobs:
   trigger-integration-tests:
     runs-on: ubuntu-20.04
     needs: workflow-dispach
-    if: github.head_ref == 'qa'
+    if: github.ref_name == 'qa'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
