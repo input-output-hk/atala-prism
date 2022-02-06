@@ -1,8 +1,22 @@
-# State of the Art Review
+# Protocol description
 
-This directory contains some notes on our ongoing review of the academic 
-literature related to (privacy-preserving) authentication, signatures,
-credentials, etc.
+This folder contains a compact description of the protocol behind PRISM.
+In order to compile the document, you only need `pdflatex` installed.
+Once installed you could either run:
 
-To compile the LaTeX sources into a PDF, given a local installation of 
-LaTeX, run `$ make`.
+```bash
+$ pdflatex article.tex
+```
+
+or use the Makefile by running: 
+
+```bash
+$ make
+```
+
+You can delete the generated files by running:
+
+```
+$ make clean
+```
+

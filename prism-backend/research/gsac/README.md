@@ -1,8 +1,8 @@
-# State of the Art Review
+# Group Signatures meet Anonymous Credentials
 
-This directory contains some notes on our ongoing review of the academic 
-literature related to (privacy-preserving) authentication, signatures,
-credentials, etc.
+This directory contains ongoing work to combine Group Signautres (GS) and
+anonymous credentials (AC) into a unified type of cryptographic system.
+Hence, lacking a better name, GSAC.
 
 To compile the LaTeX sources into a PDF, given a local installation of 
 LaTeX, run `$ make`.
