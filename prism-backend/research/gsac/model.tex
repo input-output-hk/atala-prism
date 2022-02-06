@@ -1,0 +1,309 @@
+\section{Model for GSAC Systems}
+\label{sec:model}
+
+While group signatures and anonymous credentials share quite common syntax and
+security properties, which are even frequently formalised in a similar way,
+there are aspects that need to be considered with care.
+
+The first choice that has to be made is whether to make sign/show and
+verification a non-interactive or an interactive process -- in group signatures,
+we are in the former case, whereas in anonymous credentials, we are in the
+latter. While both options are of course valid, this has direct impact in the
+modelling. We choose the non-interactive approach, and then prove how to
+generically translate it into an interactive process. The reason is that this
+results in a more flexible building block, suitable for a wider set of
+scenarios. And, syntactically, it seems more natural to combine two
+non-interactive processes into an interactive one, than the other way around.
+
+We also need to take into account that, in group signature schemes, users only
+get one membership credential -- typically bound to their personal secret
+key --, which they then use to create as many group signatures as they want. On
+the other hand, in anonymous credentials, users can get as many credentials as
+they desire, which can (typically) then be showed also arbitrarily many times.
+In this regard, we follow a somehow intermediate approach: users own a single
+personal secret key, which they can use to get as many credentials as they wish.
+Subsequently, they can use any of those credentials to create GSAC signatures.
+This has, as expected, some nuanced impact in the modelling. For instance, in
+group signatures, tracing and non-frameability are frequently dependent on the
+open function, which (among other things) returns an index pointing to the join
+transcript associated with the user who produced the signature given by the
+adversary as a response to the game's challenge. In our approach, though, each
+user may have many such transcripts -- one per credential that the user
+obtains. However, note that what actually provides meaning to these notions
+is not the index; but the associated user key pair, which is moreover necessary
+to prove that the opening has been performed honestly. Thus, with some
+restructuring of the corresponding games, we can still capture the main
+meaning of these traceability and non-frameability notions from group
+signatures. This also impacts anonymity, since in group signatures, this is
+modelled by challenging the adversary to guess which user (which implicitly
+translates to ``which user credential'') out of two challenge users was
+leveraged to produce the challenge signature. But again, in our case, users may
+have multiple credentials. However, it seems sufficient to adopt a similar
+anonymity flavour to that of anonymous credentials, where the adversary has to
+distinguish between presentations (signatures) produced from two arbitrary
+credentials, independently on whether these credentials were obtained by the
+same user, or not.
+
+Getting closer to the anonymity definition of anonymous credentials also has the
+side effect to introduce the notions of attributes for free into the domain of
+group signatures -- which, up to now, had considered membership credentials
+\emph{without} attributes. Yet another side effect of introducing multiple
+attributes (if we think from a group signature perspective) is that, in order
+to avoid trivial wins, the anonymity game has to enforce that both challenge
+credentials reveal the same predicate on their attributes.
+
+In the model described below, we follow closely the definitions from
+\cite{bsz05} for group signatures, and \cite{fhs19} for anonymous credentials
+(which are in turn influenced by \cite{bsz05}).
+
+\subsection{Syntax}
+\label{ssec:syntax}
+
+\begin{description}
+\item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
+  returns a global system parameter variable \parm.
+\item[$(\ipk,\isk) \gets \IKeyGen(\parm)$.] Given global system parameters
+  \parm, returns the issuer's key pair. Hereafter, we assume that the public
+  part \ipk is added to the group public key \gpk.
+\item[$(\opk,\osk) \gets \OKeyGen(\parm)$.] Given global system parameters
+  \parm, returns an opener's key pair. Hereafter, we assume that the public part
+  \opk is added to the group public key \gpk.
+\item[$(\upk,\usk) \gets \UKeyGen(\parm)$.] Given global system parameters
+  \parm, returns a user's key pair.
+\item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
+  \langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\upk,\Attrs) \rangle$.]
+  This interactive protocol lets a user with key pair (\upk,\usk) running the
+  \Obtain process, obtain a credential \cred with attributes \Attrs, by
+  communicating with an issuer, with private key \isk, running the \Issue
+  counterpart. The user outputs the produced credential \cred, while the issuer
+  outputs the protocol transcript \utrans for the produced credential.
+\item[$\sig \gets \Sign(\gpk,\usk,\cred,\Attrs,\DAttrs,\msg)$.] The user with
+  with secret key \usk, who obtained a credential \cred for attributes \Attrs,
+  produces a signature over message \msg, revealing subset \DAttrs of \Attrs.
+\item[$1/0 \gets \Verify(\gpk,\sig,\DAttrs,\msg)$.] Checks whether \sig is a
+  valid signature revealing the attribute set \DAttrs of its signing credential,
+  over message \msg.
+\item[$(\upk,\oproof) \gets \Open(\gpk,\osk,\utrans,\sig,\DAttrs,\msg)$.]
+  Given a signature \sig over message \msg, produced by a credential with
+  attributes containing the set \DAttrs, associated to transcript \utrans,
+  returns the user public key that was used to obtain the credential, and a
+  proof of opening correctness \oproof.  
+\item[$1/0 \gets \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg)$.] Checks if
+  \oproof is a valid opening correctness proof stating that the user with public
+  key \upk generated the signature \sig over message \msg, by using a credential
+  with attributes containing the set \DAttrs. 
+\end{description}
+
+The correctness and security properties are defined with the help of the
+following sets of oracles, and global variables that help oracles and games
+keep consistent state.
+
+\paragraph{Global Variables.} %
+All the honestly generated users (i.e., all honestly generated user key pairs,
+since we assume a one-to-one relationship between user and user key pair), as
+well as all honestly generated credentials, are assigned identifiers. That we
+typically write as \uid for users, and \cid for credentials. The adversary can
+refer to any individual user or credential using the corresponding identifier --
+even though he may not know the actual contents of the key pairs or credentials.
+In games that involve challenge user or credential identifiers, we use \cuid and
+\ccid to refer to these challenge user/credential.
+%
+The games, usually through the oracles, keep track of the users (through
+set \USK) and credentials (through table \CRED) that are created as a result of
+oracle calls by the adversary, as well as the attributes that each credential
+is associated (through table \ATTR), and the user to which each credential has
+been issued to (through table \OWNR). We use the user and credential identifiers
+to reference specific user key pairs, credentials, and credential attributes.
+For instance, $\USK[\uid]$ refers to the user key pair corresponding to user
+with identifier \uid, $\PUBUSK[\uid]$ refers to the public key of that key pair,
+and $\PRVUSK[\uid]$ to the private key; credential $\CRED[\cid]$ refers to the
+credential data associated to the credential with identifier \cid; $\ATTR[\cid]$
+is the set of attributes that was assigned to the credential with identifier
+\cid; and $\OWNR[\cid]$ is set to the \uid corresponding to the user that
+credential \cid was issued to.
+%
+Additionally, the games keep track of all honest and corrupt users that have
+been generated, through sets \HU and \CU, respectively. They also keep track of
+the signatures that have been honestly produced, through the \SIG table. Since
+signatures are produced through credentials, the \SIG table is indexed with
+{\cid}s.
+%
+All global variables are initially set by the games to undefined values (denoted
+with $\bot$, and all tables/sets are initialized as empty tables/sets, denoted
+with $\empty$. Also, for readability, we abuse the syntax as follows: we write
+$\CRED[\uid]$ to mean $\CRED[\cid]$ for all $\cid$ such that
+$\OWNR[\cid] = \uid$; \todo{Something else?}
+
+\paragraph{Oracles.} %
+Oracles are the interface of the adversary with the corresponding games. In
+other words: through these oracles, the game enviroment exposes to the adversary
+functionality that could otherwise be executed only by honest parties with
+private knowledge -- knowledge that would make the adversary capable of
+trivially breaking the security properties formalized in the experiments.
+In the game-based definitions of our GSAC model, we leverage the following
+oracles, which are formally defined in \figref{fig:oracles}
+
+\begin{description}
+\item[$\HUGEN$.] Adds a new honest user to the game, by honestly generating
+  the user's key pair.
+\item[$\CUGEN$.] If the specified user identifier is not already in the game,
+  sets the user public key to a value given by the adversary. If it already
+  exists, and is associated to an honest user, then it reveals to the adversary
+  the user's secret key.
+\item[$\OBTISS$.] Lets the adversary add a new honestly generated credential to
+  the game, on behalf of an honest user.
+\item[$\OBTAIN$.] Enables the adversary to play the role of a dishonest issuer
+  in games that support it, by letting it interact with honest users who want to
+  receive credentials.
+\item[$\ISSUE$.] Allows the adversary to play the role of dishonest users,
+  requesting an honest issuer to produce credentials fo them.
+\item[$\SIGN$.] Lets the adversary get signatures from credentials belonging
+  to honest users.
+\item[$\OPEN$.] Given an honestly produced signature, lets the adversary learn
+  which credential was used to produce it.
+\item[$\CHALb$.] Upon receiving two challenge credentials, a common intersecting
+  set of attributes, and a message, returns a signature produced by one of these
+  two credentials, defined by the bit $b$, which is established in the anonymity
+  game.
+\end{description}
+
+{%\setlength\intextsep{\sep}
+  \begin{figure*}[htp!]
+    \centering
+    \scalebox{0.9}{
+
+      \begin{minipage}[t]{0.55\textwidth}
+
+        \procedure{$\HUGEN(\uid)$}{%
+          \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
+          (\upk,\usk) \gets \UKeyGen(\parm) \\
+          \USK[\uid] \gets (\upk,\usk);
+          \HU \gets \HU \cup \lbrace  \uid \rbrace \\
+          \pcreturn \top \\
+        }        
+        
+        \procedure{$\CUGEN(\uid,\upk)$}{%
+          \pcif \uid \in \CU: \pcreturn \bot \\
+          \CU \gets \CU \cup \lbrace \uid \rbrace \\          
+          \pcif \uid \in \HU: \\
+          \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
+          \pcind \pcreturn (\USK[\uid],\CRED[\uid]) \\
+          \pcelse: \USK[\uid] = (\upk,\bot) \\          
+          \pcreturn \top \\
+        }
+
+        \procedure{$\OBTISS(\uid,\cid,\Attrs)$}{%
+          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cred, \utrans \rangle \gets
+          \langle \Obtain(\gpk,\PRVUSK[\uid],\Attrs), \\
+          \pcind \pcind \pcind \pcind \pcind \pcind
+          \Issue(\gpk,\isk,\PUBUSK[\uid],\Attrs) \rangle \\
+          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \pcreturn \top \\
+        }        
+
+        \procedure{$\OBTAIN(\uid,\cid,\Attrs)$}{%
+          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cred, \cdot \rangle \gets
+          \langle \Obtain(\gpk,\PRVUSK[\uid],\Attrs),\Adv \rangle \\
+          \CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \pcreturn \top \\
+        }
+        
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      
+      \begin{minipage}[t]{.5\textwidth}
+
+        \procedure{$\ISSUE(\uid,\cid,\Attrs)$}{%
+          \pcif \uid \notin \CU: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cdot, \utrans \rangle \gets
+          \langle \Adv, \Issue(\gpk,\isk,\PUBUSK[\uid],\Attrs) \rangle \\
+          \trans[\cid] \gets \utrans \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \pcreturn \top \\          
+        }        
+
+        \procedure{$\SIGN(\cid,\DAttrs,\msg)$}{%
+          \uid \gets \OWNR[\cid] \\
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \cred \gets \CRED[\cid] \\
+          \sig \gets \Sign(\gpk,\PRVUSK[\uid],\cred,\ATTR[\cid],\DAttrs,\msg) \\
+          \SIG[\cid] \gets \SIG[\cid] \cup \lbrace (\sig,\DAttrs,\msg) \rbrace \\
+          \pcreturn \sig \\
+        }
+
+        \procedure{$\OPEN(\sig)$}{%
+          \textrm{Let}~\cid~\textrm{be s.t.}~(\sig,\DAttrs,\msg) \in \SIG[\cid] \\
+          \pcif \textrm{no such \cid exists, or there is more than one}:
+          \pcreturn \bot \\
+          \pcif \trans[\cid] = \bot: \pcreturn \bot \\
+          (\upk,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\DAttrs,\msg) \\
+          \pcreturn (\upk,\oproof) \\
+        }
+
+        \procedure{$\CHALb(\ccid_0,\ccid_1,\DAttrs,\msg)$}{%
+          \pcif \ATTR[\ccid_0] \cap \ATTR[\ccid_1] \nsubseteq \DAttrs:
+          \pcreturn \bot \\
+          \pcif \cuid_0 \neq \bot \lor \cuid_1 \neq \bot: \pcreturn \bot \\
+          \cuid_0 = \OWNR[\ccid_0];~\cuid_1 = \OWNR[\ccid_1] \\
+          \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
+          \csig \gets \Sign(\gpk,\USK[\cuid_b],\CRED[\ccid_b],
+          \ATTR[\ccid_b],\DAttrs,\msg) \\
+          \pcreturn \csig
+        }
+        
+      \end{minipage}
+      
+    }
+
+    \caption{Detailed oracles available in our model.}
+    \label{fig:oracles}
+  \end{figure*}
+}
+
+\paragraph{Correctness.} %
+Correctness of GSAC schemes is formalized through the experiment in
+\figref{fig:exp-gsac-corr}. It states that a signature for some message \msg,
+revealing attributes \DAttrs, which was honestly produced though a credential
+that was obtained by an honest user interacting with an honest issuer, with a
+set of attributes \Attrs such that $\DAttrs \subseteq \Attrs$, must be accepted
+by \Verify. Moreover, an honestly produced correctness proof of opening for such
+signature, revealing the public key pair of the user, must also be accepted by
+\Judge.
+
+\begin{figure}[htp!]
+  \procedure{$\ExpCorrect(1^\secpar)$}{%
+     \parm \gets \Setup(1^\secpar) \\
+     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+     \gpk \gets (\ipk,\opk) \\
+    (\cid,\Attrs,\DAttrs,\msg) \gets \adv^{\HUGEN,\OBTISS}(\gpk) \\
+    \pcif \DAttrs \nsubseteq \Attrs \lor \Attrs \nsubseteq \ATTR[\cid] :
+    \pcreturn \bot \\
+    \sig \gets \Sign(\gpk,\USK[\OWNR[\cid]],\CRED[\cid],\Attrs,\DAttrs,\msg) \\
+    (\upk,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\DAttrs,\msg) \\
+    \pcif \Verify(\gpk, \sig, \DAttrs,\msg) = 0 \lor
+    \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0:
+    \pcreturn 1 \\
+    \pcreturn 0
+  }
+  \caption{Correctness experiment for GSAC schemes.}
+  \label{fig:exp-gsac-corr}
+  \end{figure}
+
+\subsection{Security Properties}
+\label{ssec:security}
+
+\subsection{Tranformation to Interactive Presentations}
+\label{ssec:interactivetransform}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "gsac"
+%%% End:

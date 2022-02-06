@@ -1,6 +1,11 @@
 \section{Relationships Between Primitives}
 \label{sec:relationships}
 
+\todo{DISCLAIMER: This section contains a line of work we've put on hold for
+  now. Leaving it here just for archival purposes -- the reference definitions
+  for GS and AC may be of use (if we refine them!), at least for informational
+  purposes..}
+
 In this section, we explore relationships between Group Signatures and Anonymous
 Crednetials. Naturally, the wide range of constructions in both fields (of which
 we have given some account in \secref{sec:gs} and \secref{sec:ac}) makes it
@@ -143,13 +148,6 @@ due to our slightly different syntax.
 \subsection{Reference AC Model}
 \label{ssec:refac}
 
-As stated in \secref{sec:ac}, multi-show, multi-attribute anonymous credential
-schemes are the most frequent ones in the AC domain. While there are variations
-in the offered functionality (like those improving expressiveness of the
-supported claims) we assume selective disclosure as the base scheme. Also,
-we begin by modelling one-show schemes, which will ease our analysis.
-\doubt{Not $100\%$ sure of the latter yet, but take it as running hypothesis.}
-
 \subsubsection{One-Show Multi-Attribute AC with Selective Disclosure.} %
 We recall that, in an One-Show Multi-Attribute AC Scheme with Selective
 Disclosure (OMACSD), if a user shows the same credential more than once, these
@@ -239,107 +237,6 @@ The syntax met by Multi-Show Multi-Attribute AC Systems with Selective
 Disclosure (MMACSD) is exactly the same as that of OMACSD systems. Correctness
 and unforgeability properties are also the same. The only difference lies on
 the anonymity property.
-
-\subsection{From GS to AC schemes; or Not}
-\label{ssec:gs2ac}
-
-Next, we describe black-box implications of separations when trying to build
-anonymous credential schemes from group signature ones. \todo{Currently, I think
-  it is possible to build \OMACSD from \PDGS, but not \MMACSD from \PDGS
-  (although it should be possible to build \MMACSD from multi-group
-  signatures...)}.
-
-\subsubsection{Black-Box Construction of \OMACSD from \PDGS.} %
-\doubt{I guess it is ok to have a black-box construction in which obatin/issue
-  requires much more interaction... is it?}
-
-\begin{figure}[ht!]
-  \begin{center}
-    \scalebox{0.9}{
-      \begin{minipage}[t]{0.5\textwidth}
-        \procedure{$\OMACSDSetup(1^\OMACSDsec,1^\OMACSDnattr)$} {
-          \PDGSparam \gets \PDGSSetup(1^\OMACSDsec) \\
-          \pcreturn (1^\OMACSDsec,1^\OMACSDnattr,\PDGSparam) \\
-        }
-
-        \procedure{$\OMACSDUKeyGen(\OMACSDparam)$}{
-          \textrm{Parse \OMACSDparam as $(1^\OMACSDsec,1^\OMACSDnattr,\PDGSparam)$} \\
-          (\PDGSusk,\PDGSupk) \gets \PDGSUKeyGen(\PDGSparam) \\          
-          \pcreturn \PDGSusk \\
-        }
-
-        \procedure{$\OMACSDShow(\OMACSDipk,\OMACSDattr,\OMACSDdattr,\OMACSDcred),$\\
-          $\OMACSDVerify(\OMACSDipk,\OMACSDdattr)$}{
-          \textrm{- \underline{Verifier}: Send random nonce $c$ to User} \\
-          \textrm{- \underline{User}: } \\
-          \pcind \textrm{Parse \OMACSDcred as
-            $(\PDGSusk,n,\PDGSsig_n,\lbrace \PDGSsig_i \rbrace_{i \in [\OMACSDattr}])$} \\
-          \pcind \PDGSsig_c \gets \PDGSSign(\PDGSusk,\PDGSgpk^u,c) \\
-          \pcind \textrm{Send $(\PDGSsig_c,n,
-            \PDGSsig_n,\lbrace \PDGSsig_i \rbrace_{i \in [\OMACSDdattr}])$ to Verifier} \\
-          \textrm{- \underline{Verifier}:} \pccomment{If any check fails, abort} \\
-          \pcind \PDGSVerify(\PDGSgpk^u,\PDGSsig_c,c) \\
-          \pcind \pcfor i \in [\OMACSDdattr]: \\
-          \pcind \pcind \PDGSVerify(\PDGSgpk^a,) \\
-        }
-        
-      \end{minipage}
-    }
-    ~
-    \scalebox{0.9}{
-      \begin{minipage}[t]{0.5\textwidth}
-        \procedure{$\OMACSDIKeyGen(\OMACSDparam)$}{
-          \textrm{Parse \OMACSDparam as $(1^\OMACSDsec,1^\OMACSDnattr,\PDGSparam)$} \\
-          (\PDGSisk^a,\PDGSipk^a) \gets \PDGSIKeyGen(\PDGSparam)
-          ~\pccomment{Attributes group} \\
-          (\PDGSosk^a,\PDGSopk^a) \gets \PDGSOKeyGen(\PDGSparam) \\
-          (\PDGSisk^u,\PDGSipk^u) \gets \PDGSIKeyGen(\PDGSparam) 
-          ~\pccomment{Users group} \\
-          (\PDGSosk^u,\PDGSopk^u) \gets \PDGSOKeyGen(\PDGSparam) \\
-          \PDGSgpk^a \gets (\PDGSipk^a,\PDGSopk^a);
-          \PDGSgpk^u \gets (\PDGSipk^u,\PDGSopk^u); \\
-          \pcfor i \in [\OMACSDnattr]:
-          ~\pccomment{Add one member per attribute} \\
-          \pcind (\PDGSusk^a_i,\PDGSupk^a_i) \gets \PDGSUKeyGen(\PDGSparam) \\
-          \pcind
-          \PDGSucred^a_i \gets \langle \PDGSJoin(\PDGSgpk^a,\PDGSusk^a_i),
-          \PDGSIssue(\PDGSgpk^a, \PDGSisk^a, \PDGSupk^a_i) \rangle \\
-          \pcind \PDGSusk^a_i \gets (\PDGSusk^a_i, \PDGSucred^a_i) \\
-          \pcreturn ((\PDGSisk_a,\PDGSisk_u,\PDGSosk_u,
-          \lbrace \PDGSusk^a_i, \PDGSupk^a_i \rbrace_{i \in [\OMACSDnattr]}),
-                     (\PDGSgpk_a,\PDGSosk_a,\PDGSgpk_u)) \\
-        }
-
-        \procedure{$\OMACSDObtain(\OMACSDusk,\OMACSDipk,\OMACSDattr),
-          \OMACSDIssue(\OMACSDisk,\OMACSDupk,\OMACSDattr)$}{
-          \pccomment{User and Issuer run the PDGS join/issue protocol}  \\
-          \langle \PDGSucred,\PDGSutrans \rangle \gets
-          \langle \PDGSJoin(\PDGSgpk^u,\PDGSusk),
-          \PDGSIssue(\PDGSgpk^u, \PDGSisk^u, \PDGSupk) \rangle \\
-          \PDGSusk \gets (\PDGSusk, \PDGSucred) \\
-          \pccomment{User requests an OMAC} \\
-          \textrm{- \underline{Issuer}: Send random nonce $n$ to User} \\
-          \textrm{- \underline{User}: } \PDGSsig_n \gets \PDGSSign(\PDGSusk,\PDGSgpk,n);
-          \textrm{Send $\PDGSsig_n$ to Issuer} \\
-          \textrm{- \underline{Issuer}: } \\
-          \pcind \pcif \PDGSVerify(\PDGSgpk,\PDGSsig_n,n) = 1~\textrm{and}\\
-          \pcind \pcind \PDGSOpen(\PDGSgpk^u,\PDGSosk^u,\PDGSalltrans,\PDGSsig_n,n) = (\PDGSupk, \cdot): \\
-          \pcind \pcind \pcfor i \in [\OMACSDattr]:
-          \PDGSsig_i \gets \PDGSSign(\PDGSusk^a_i,\PDGSgpk^a,\PDGSsig_n) \\
-          \pcind \textrm{Send $\lbrace \PDGSsig_i \rbrace_{i \in [\OMACSDnattr]}$ to User }
-          \textrm{and \pcreturn 1} \\
-          \textrm{- \underline{User}: } \\
-          \pcind \pcfor i \in [\OMACSDattr]:
-          \pcif \PDGSVerify(\PDGSgpk^a,\PDGSsig_i,\PDGSsig_n) = 0: \textrm{abort} \\
-          \pcind \pcreturn (\PDGSusk, n,\PDGSsig_n,\lbrace \PDGSsig_i \rbrace_{i \in [\OMACSDattr}]) \\
-        }
-        
-      \end{minipage}
-    }
-  \end{center}
-  \caption{Black-box constrction of \OMACSD from \PDGS.
-    \todo{In Show/Verify, user/issuer need to get \PDGSgpk from somewhere!}}
-\end{figure}
 
 %%% Local Variables:
 %%% mode: latex
