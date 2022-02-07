@@ -3,11 +3,11 @@ These are the Atala PRISM contributing guidelines, which apply to all our reposi
 
 
 ## Branches
-Atala PRISM intends to two working versions:
+Atala PRISM commits to two working versions:
 - The latest version, which has the latest state of the code, `master` right now.
-- The long-term supported version (LTS), like `1.3.x`, which we maintain by applying critical bugfixes.
+- The long-term supported version (LTS), like `1.3.0` or `1.4.0` etc..., which we maintain by applying critical bugfixes.
 
-Most Pull Requests (PRs) will be sent to `master`, critical bugfixes will be backported to the current LTS version.
+Most Pull Requests (PRs) will be sent to `master`, critical bugfixes will be back-ported to the current LTS version.
 
 
 ### Naming
@@ -23,12 +23,12 @@ Branch names use this format `ATA-XXXX-short-feature-name` where:
 Besides `master`, there are some special branches, which are in a code-freeze, meaning that they will only accept changes that are strictly necessary, pushing code to these branches is restricted to Technical Architects:
 
 - `www` has the version running in production (found at `https://www.atalaprism.io` and `https://atalaprism.io`), at the moment, production is the interactive demo connected to the mobile apps from PlayStore/AppStore.
-- `1.3.x` has the code for `1.3.x`, at the moment, runs the code use by the people involved in the Prism Pioneer Program (PPP).
+- Branch that has the long term supported version, such as `1.3.0` or `1.3.1` or whatever the latest release branch is.
 
 
 
 ## Commits
-All commits must be signed and verified, otherwise, the Pull Request won't be merged, for that you will need to set up PGP for git (check [More](#More) for the revelant docs). These rules are enforced on these branches:
+All commits must be signed and verified, otherwise, the Pull Request won't be merged, for that you will need to set up PGP for git (check [More](#More) for the relevant docs). These rules are enforced on these branches:
 - master
 - ATA* (`ATA` prefix on the branch name).
 
@@ -53,7 +53,7 @@ Each pull request should be small enough to be reviewed in less than 30 minutes,
 
 Most times, PRs will be sent to `master`, in the case of a bug fix, it must be submitted to the branch where the bug was reported (back-porting to special branches when necessary), for example:
 
-- When a bug is reported for `1.3.x`, we'll submit a PR to `1.3.x` and `master`.
+- When a bug is reported for `1.3.1`, we'll submit a PR to `1.3.1` and `master`. There will always be only one LTS version, which is the latest release
 - When a bug is reported for `master`, we'll submit a PR to fix `master`, if we detect that the bugfix is required by any special branch, we'll back-port the fix to such special branch.
 
 ### Pull Request naming
@@ -85,39 +85,52 @@ You are responsible to merge your PRs when they are ready, before that, ensure t
 ## Releases
 When we are ready to release a new LTS version, we need to follow this process, be sure to update the necessary placeholders.
 
-**NOTE** Our plan is to keep a single LTS version, hence, `master` becomes the `LTS` version, the previous `LTS` version is drop.
+**NOTE** Our plan is to keep a single LTS version, hence, `master` becomes the LTS version, the previous LTS version is dropped.
 
 
 ### Assumptions
 
-1. Our release is called `Core DID`, this name covers all the components that are being released together (even if each component has a different release name).
-1. Our next version for the SDK/Node is `1.3.0`.
-1. `master` branch CI build passed, having any neccessary artifact published/deployed.
+1. Our next release is called `Core DID`, this name covers all the components that are being released together (even if each component has a different release name).
+1. Our next version for the SDK/Node is `1.4.0`.
+1. `master` branch CI build passed, having any necessary artifact published/deployed.
 
 
 ### Per-repository process
 
-The process applies to all repositories involved in a release (SDK/Node in this example):
+The process applies to all repositories involved in a release:
 
-1. Create a new release candidate (rc) branch based on `master` called `1.3.x`.
-1. Tag the latest commit from `1.3.x` as `v1.3.0-rc1` (increase the `rc` suffix if `v1.3.0-rc1` already exists).
-1. Coordinate with our internal DevOps team to make sure `1.3.x` gets deployed to a new environment.
-1. Share the tag and environment with our QA team, who will execute their acceptance tests.
-1. If the is any problem, let's fix it, submitting a PR to `1.3.x` as well as submitting it to `master`, then go to step 2.
-1. Prepare the release notes and create a release in Github with those for the latest tag, e.g. `v1.3.0-rc2`.
+1. Create a new release candidate (rc) branch based on `master` called `<release version number>` for example, if we are planning to release 1.4.0, branch will be `1.4.0`
+2. Tag the latest commit from that branch as `rc1-<branch name>`. Increase the `rc` suffix if `rc1` already exists. For example if `rc1-1.4.0` tag already exists, create a tag `rc2-1.4.0`
+3. Coordinate with our internal DevOps team to make sure code from the latest rc tag is deployed to environment for QA to test it (for SDK, deploy manually. Check [below](#SDK))
+4. Check the commit diff between upcoming release and latest release, and make sure that upcoming release commits only include tickets (alongside with maintenance PRs such as library updates, etc...) intended for this release
+   1. if that is not the case, and upcoming release has tickets that have been intended for future releases, move this tickets from future release in jira to the current one.
+   2. **Note:** this usually does not happen, but exceptions exist and we need to make sure that all tickets that are included in the release candidate are listed as tickets in jira, QA depends on it.
+5. Share the deployed environment to QA team to test it (in case of sdk, share published sdk version for testing)
+6. if QA finds an issue, introduce a PR fix to master, update release branch with master, tag the latest commit with new tag, in this case `rc2-<branch-name>`, go to step 3.
+7. repeat this process (step 1 to 6 except step 4, it only needs to be done once) until QA approves the release candidate
+8. from the latest commit create a release tag `v<branch name>`, in the case of example above, tag name would be `v1.4.0` 
+9. create a release from this tag in github, make sure to include release notes in release description. Notes should be derived from jira tickets of this release. Consider getting a help from our technical writer if release is major, with lots of changes and you need to polish them
+10. Coordinate with our internal devops team to release the code from release tag (`v1.4.0`) to production, this version will now become the LTS, previous LTS will be dropped.
+11. Update the [atala-releases](https://github.com/input-output-hk/atala-releases), repository include the new released version details (`Core DID` for example), be sure to link to artifacts related to `v1.4.0` instead of the release candidates.
+12. 🎉
 
+#### SDK
 
-### Final process
-Once all repositories are released:
+sdk with a custom name needs to be published manually from the shell, run this inside sdk repo root:
+```bash
+PRISM_VERSION=<verson mame to publish> ./gradlew publishAllPublicationsToGitHubPackagesRepository
+```
+if you are publishing rc-1.4.0 version of sdk for example, use `PRISM_VERSION=<rc-1.4.0>`
+this assumes you have environment variables `GITHUB_TOKEN` and `GITHUB_ACTOR` defined in your shell profile, if not run
 
-1. Share the latest `rc` tags for each project to our internal DevOps team, which will release `1.3.x` to the environment intended for our consumers (like `ppp.atalaprism.io`).
-1. Share the new environment to our QA team, who will execute their acceptance tests.
-1. If anything went wrong, go back to the [Per-repository process](#Per-repository process) increasing the `rc` number.
-1. Collect the relevant release notes for a public facing release.
-1. Draft the official release notes, then, share those with our Technical Writer to polish them.
-1. Create a tag in each repository with the released version, `v1.3.0` in this case.
-1. Update the [atala-releases](https://github.com/input-output-hk/atala-releases) repository include the new released version details (`Core DID`), be sure to link to artifacts related to `v1.3.0` instead of the release candidates.
-1. Celebrate. 
+```bash
+PRISM_VERSION=<verson mame to publish> GITHUB_TOKEN=<token> GITHUB_ACTOR=<your github username>  ./gradlew publishAllPublicationsToGitHubPackagesRepository
+
+```
+**NOTE:**
+* token must have `write:packages` access in order to be able to publish a package
+* Github access tokens are generated [here](https://github.com/settings/tokens)
+* `GITHUB_ACTOR` should have access to sdk package
 
 
 ## More
