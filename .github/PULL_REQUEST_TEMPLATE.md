@@ -12,10 +12,10 @@ Pre-submit checklist (Please check options that are relevant) :
 - [ ] New code has proper comments/documentation/tests
 - [ ] Any changes not covered by tests have been tested manually
 - [ ] The README files are updated
-- [ ] If new libraries are included, they have licenses compatible with our project
-- [ ] If there is a db migration altering existing tables, there is a proper migration test (back-end)
-- [ ] if any changes on envoy.yaml, Applied to envoy.yaml in infra repo as well.
-- [ ] if PR is related to bug fix on release branch please follow https://github.com/input-output-hk/atala-prism/blob/master/CONTRIBUTING.md
+- [ ] New libraries are included, they have licenses compatible with our project
+- [ ] Db migration altering existing tables, there is a proper migration test (back-end)
+- [ ] Changes on envoy.yaml, Applied to envoy.yaml in infra repo.
+- [ ] PR is related to bug fix on release branch please follow https://github.com/input-output-hk/atala-prism/blob/master/CONTRIBUTING.md
 
 Pre-merge checklist:
 - [ ] Commits have useful messages
