@@ -10,6 +10,7 @@ import doobie.postgres._
 import fs2.INothing
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
+import io.iohk.atala.prism.db.TransactorForStreaming
 import org.scalatest.{Assertion, Assertions}
 
 import scala.concurrent.duration._
@@ -20,7 +21,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   private def usingDbNotificationStreamer[A](
       f: DbNotificationStreamer => IO[A]
   ): Unit = {
-    val dbNotificationStreamer = DbNotificationStreamer(CHANNEL, db)
+    val dbNotificationStreamer = DbNotificationStreamer(CHANNEL, new TransactorForStreaming(db))
     try {
       f(dbNotificationStreamer).unsafeRunSync()
     } finally {

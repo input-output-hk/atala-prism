@@ -16,7 +16,7 @@ import java.util.concurrent.{CountDownLatch, TimeUnit}
 import scala.concurrent.duration._
 import cats.effect.{Ref, Temporal}
 
-class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(implicit
+class DbNotificationStreamer private (channelName: String, xa: TransactorForStreaming)(implicit
     temporal: Temporal[IO],
     runtime: IORuntime
 ) {
@@ -51,7 +51,7 @@ class DbNotificationStreamer private (channelName: String, xa: Transactor[IO])(i
 
     val notificationStream = for {
       liftToConnIO <- resource(WeakAsync.liftK[IO, ConnectionIO])
-      stream <- awakeEvery[IO](100.millis).through(inner(liftToConnIO).transact(xa))
+      stream <- awakeEvery[IO](100.millis).through(inner(liftToConnIO).transact(xa.transactor))
     } yield stream
 
     notificationStream.unNoneTerminate.map(notification => DbNotification(payload = notification.getParameter))
@@ -77,7 +77,7 @@ object DbNotificationStreamer {
 
   def apply(
       channelName: String,
-      xa: Transactor[IO]
+      xa: TransactorForStreaming
   )(implicit temporal: Temporal[IO], runtime: IORuntime): DbNotificationStreamer = {
     new DbNotificationStreamer(channelName, xa)
   }

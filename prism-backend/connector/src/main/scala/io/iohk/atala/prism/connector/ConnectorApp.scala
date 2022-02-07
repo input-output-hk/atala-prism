@@ -10,6 +10,7 @@ import io.iohk.atala.prism.auth.grpc._
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
+import io.iohk.atala.prism.db.TransactorForStreaming
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
 import io.iohk.atala.prism.intdemo._
@@ -58,6 +59,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
       databaseConfig = TransactorFactory.transactorConfig(globalConfig)
       _ = applyMigrations(databaseConfig)
       tx <- connectToTheDb(databaseConfig)
+      txStream <- connectToTheDb(databaseConfig).map(tx => new TransactorForStreaming(tx))
       whitelistDid = loadWhitelistDid(globalConfig)
       txTraceIdLifted = tx.mapK(TraceId.liftToIOWithTraceId)
       connectorLogs = Logs.withContext[IO, IOWithTraceIdContext]
@@ -89,7 +91,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
         connectorLogs
       )
       // Background services
-      messageNotificationService <- MessageNotificationService.resourceAndStart(tx)
+      messageNotificationService <- MessageNotificationService.resourceAndStart(tx, txStream)
       // connector services
       connectionsService <- ConnectionsService.resource(
         connectionsRepository,
