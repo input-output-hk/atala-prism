@@ -25,10 +25,11 @@
 
 \def\parm{\ensuremath{param}\xspace}
 \def\Exp{\ensuremath{\mathsf{Exp}}\xspace}
-\def\Adv{\ensuremath{\mathcal{A}}\xspace}
+\def\Adv{\ensuremath{\mathsf{Adv}}\xspace}
+\def\status{\ensuremath{\mathsf{st}}\xspace}
 
 % Symbols for GSAC
-\def\GSAC{\ensuremath{GSAC}\xspace}
+\def\GSAC{\ensuremath{\mathsf{GSAC}}\xspace}
 \def\HUGEN{\ensuremath{\mathsf{HUGEN}}\xspace}
 \def\CUGEN{\ensuremath{\mathsf{CUGEN}}\xspace}
 \def\OBTAIN{\ensuremath{\mathsf{OBTAIN}}\xspace}
@@ -46,6 +47,8 @@
 \def\HU{\ensuremath{\mathsf{HU}}\xspace}
 \def\CU{\ensuremath{\mathsf{CU}}\xspace}
 \def\SIG{\ensuremath{\mathsf{SIG}}\xspace}
+\def\CSIG{\ensuremath{\mathsf{CSIG}}\xspace}
+\def\CCRED{\ensuremath{\mathsf{CC}}\xspace}
 \def\secpar{\ensuremath{\kappa}\xspace}
 \def\param{\ensuremath{\param}\xspace}
 \def\isk{\ensuremath{isk}\xspace}
@@ -58,8 +61,8 @@
 \def\Attrs{\ensuremath{A}\xspace}
 \def\DAttrs{\ensuremath{D}\xspace}
 \def\cred{\ensuremath{cred}\xspace}
-\def\utrans{\ensuremath{trans}\xspace}
-\def\trans{\ensuremath{\MakeUppercase{trans}}\xspace}  
+\def\utrans{\ensuremath{reg}\xspace}
+\def\trans{\ensuremath{\MakeUppercase{reg}}\xspace}  
 \def\msg{\ensuremath{m}\xspace}
 \def\sig{\ensuremath{\sigma}\xspace}
 \def\oproof{\ensuremath{\pi}\xspace}
@@ -73,10 +76,17 @@
 \def\Verify{\ensuremath{Verify}\xspace}
 \def\Open{\ensuremath{Open}\xspace}
 \def\Judge{\ensuremath{Judge}\xspace}
-\def\ExpCorrect{\ensuremath{\Exp_{\GSAC,\Adv}^{corr}}\xspace}
-\def\ExpAnonb{\ensuremath{\Exp_{\GSAC,\Adv}^{anon-b}}\xspace}
-\def\ExpTrace{\ensuremath{\Exp_{\GSAC,\Adv}^{trace}}\xspace}
-\def\ExpNonframe{\ensuremath{\Exp_{\GSAC,\Adv}^{frame}}\xspace}
+\def\ExpCorrect{\ensuremath{\Exp_{\GSAC,\adv}^{corr}}\xspace}
+\def\ExpAnonb{\ensuremath{\Exp_{\GSAC,\adv}^{anon-b}}\xspace}
+\def\ExpAnonz{\ensuremath{\Exp_{\GSAC,\adv}^{anon-0}}\xspace}
+\def\ExpAnono{\ensuremath{\Exp_{\GSAC,\adv}^{anon-1}}\xspace}
+\def\AdvAnon{\ensuremath{\Adv_{\GSAC,\adv}^{anon}}\xspace}
+\def\ExpTrace{\ensuremath{\Exp_{\GSAC,\adv}^{trace}}\xspace}
+\def\AdvTrace{\ensuremath{\Adv_{\GSAC,\adv}^{trace}}\xspace}
+\def\ExpNonframe{\ensuremath{\Exp_{\GSAC,\adv}^{frame}}\xspace}
+\def\AdvNonframe{\ensuremath{\Adv_{\GSAC,\adv}^{frame}}\xspace}
+\def\choose{\ensuremath{\mathsf{choose}}\xspace}
+\def\guess{\ensuremath{\mathsf{guess}}\xspace}
 \def\uid{\ensuremath{\mathsf{uid}}\xspace}
 \def\cuid{\ensuremath{\mathsf{uid}^*}\xspace}
 \def\cid{\ensuremath{\mathsf{cid}}\xspace}
