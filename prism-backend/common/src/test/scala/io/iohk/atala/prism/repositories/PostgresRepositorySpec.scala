@@ -6,6 +6,8 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import doobie.implicits._
+import io.iohk.atala.prism.db.TransactorForStreaming
+import doobie.util.transactor
 
 case class PostgresConfig(
     host: String,
@@ -63,6 +65,18 @@ abstract class PostgresRepositorySpec[F[_]]
 
   lazy val (database, releaseDatabase) =
     TransactorFactory.transactor[IO](transactorConfig).allocated.unsafeRunSync()
+
+  lazy val databaseForStreaming = {
+    new TransactorForStreaming(
+      transactor.Transactor.fromDriverManager[IO](
+        "org.postgresql.Driver", // driver classname ...
+        transactorConfig.jdbcUrl, // connect URL (driver-specific)
+        transactorConfig.username, // user
+        transactorConfig.password // password
+      )
+    )
+
+  }
 
   private lazy val postgresConfig =
     getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
