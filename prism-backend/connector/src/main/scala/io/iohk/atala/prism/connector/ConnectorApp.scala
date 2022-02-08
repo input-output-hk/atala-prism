@@ -3,7 +3,7 @@ package io.iohk.atala.prism.connector
 import cats.effect.unsafe.IORuntime
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.typesafe.config.{Config, ConfigFactory}
-import doobie.hikari.HikariTransactor
+import doobie.util.transactor.Transactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.auth.grpc._
@@ -59,7 +59,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
       databaseConfig = TransactorFactory.transactorConfig(globalConfig)
       _ = applyMigrations(databaseConfig)
       tx <- connectToTheDb(databaseConfig)
-      txStream <- connectToTheDb(databaseConfig).map(tx => new TransactorForStreaming(tx))
+      txStream <- connectToTheDbForStreaming(databaseConfig)
       whitelistDid = loadWhitelistDid(globalConfig)
       txTraceIdLifted = tx.mapK(TraceId.liftToIOWithTraceId)
       connectorLogs = Logs.withContext[IO, IOWithTraceIdContext]
@@ -187,9 +187,26 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
 
   private def connectToTheDb(
       databaseConfig: TransactorFactory.Config
-  ): Resource[IO, HikariTransactor[IO]] = {
+  ): Resource[IO, Transactor[IO]] = {
     logger.info("Connecting to the database")
     TransactorFactory.transactor[IO](databaseConfig)
+  }
+
+  /** Like connectToTheDb but does not use a pool of connections. */
+  private def connectToTheDbForStreaming(
+      databaseConfig: TransactorFactory.Config
+  ): Resource[IO, TransactorForStreaming] = {
+    logger.info("Connecting to the database (Used for Streaming)")
+    Resource.pure(
+      new TransactorForStreaming(
+        Transactor.fromDriverManager[IO](
+          "org.postgresql.Driver", // driver classname ...
+          databaseConfig.jdbcUrl, // connect URL (driver-specific)
+          databaseConfig.username, // user
+          databaseConfig.password // password
+        )
+      )
+    )
   }
 
   private def loadWhitelistDid(config: Config): Set[PrismDid] = {
