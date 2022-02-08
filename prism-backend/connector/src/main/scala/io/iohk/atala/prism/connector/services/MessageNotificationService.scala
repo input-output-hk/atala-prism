@@ -131,12 +131,12 @@ object MessageNotificationService {
 
   def resourceAndStart(
       xa: Transactor[IO],
-      xaStream: TransactorForStreaming,
+      xaStream: TransactorForStreaming
   )(implicit timer: Temporal[IO], runtime: IORuntime): Resource[IO, MessageNotificationService] =
     Resource.make(
       for {
         streamQueuesRef <- Ref.of[IO, Map[ParticipantId, Queue[IO, Option[Message]]]](Map.empty)
-        service = MessageNotificationService(xa,xaStream, streamQueuesRef)
+        service = MessageNotificationService(xa, xaStream, streamQueuesRef)
         _ = service.start()
       } yield service
     )(service => IO(service.stop()))
