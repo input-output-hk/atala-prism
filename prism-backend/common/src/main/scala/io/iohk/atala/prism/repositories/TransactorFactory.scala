@@ -53,7 +53,7 @@ object TransactorFactory {
     // https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
     val poolSize = (config.awaitConnectionThreads * 2) + 1
     val hikariConfig = makeHikariConfig(config)
-    hikariConfig.setPoolName("DBStreamingPool") // FIXME name DBPool
+    hikariConfig.setPoolName("DBPool")
     hikariConfig.setLeakDetectionThreshold(2000) // (300000) //5 mins
     hikariConfig.setMinimumIdle(poolSize)
     hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
@@ -71,7 +71,6 @@ object TransactorFactory {
     val poolSize = 1 // The pool is only used by DbNotificationStreamer
     val hikariConfig = makeHikariConfig(config)
     hikariConfig.setPoolName("DBStreamingPool")
-
     hikariConfig.setLeakDetectionThreshold(0) // 0 => disabled
     hikariConfig.setMinimumIdle(poolSize)
     hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
