@@ -54,7 +54,7 @@ object TransactorFactory {
     val poolSize = (config.awaitConnectionThreads * 2) + 1
     val hikariConfig = makeHikariConfig(config)
     hikariConfig.setPoolName("DBPool")
-    hikariConfig.setLeakDetectionThreshold(2000) // (300000) //5 mins
+    hikariConfig.setLeakDetectionThreshold(300000) // 5 mins
     hikariConfig.setMinimumIdle(poolSize)
     hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
 
