@@ -197,16 +197,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
       databaseConfig: TransactorFactory.Config
   ): Resource[IO, TransactorForStreaming] = {
     logger.info("Connecting to the database (Used for Streaming)")
-    Resource.pure(
-      new TransactorForStreaming(
-        Transactor.fromDriverManager[IO](
-          "org.postgresql.Driver", // driver classname ...
-          databaseConfig.jdbcUrl, // connect URL (driver-specific)
-          databaseConfig.username, // user
-          databaseConfig.password // password
-        )
-      )
-    )
+    TransactorFactory.transactorForStreaming[IO](databaseConfig).map(new TransactorForStreaming(_))
   }
 
   private def loadWhitelistDid(config: Config): Set[PrismDid] = {
