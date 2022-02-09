@@ -100,13 +100,13 @@ When we are ready to release a new LTS version, we need to follow this process, 
 The process applies to all repositories involved in a release:
 
 1. Create a new release candidate (rc) branch based on `master` called `<release version number>` for example, if we are planning to release 1.4.0, branch will be `1.4.0`
-2. Tag the latest commit from that branch as `rc1-<branch name>`. Increase the `rc` suffix if `rc1` already exists. For example if `rc1-1.4.0` tag already exists, create a tag `rc2-1.4.0`
+2. Tag the latest commit from that branch as `<branch name>-rc1`. Increase the `rc` suffix if `rc1` already exists. For example if `1.4.0-rc1` tag already exists, create a tag `1.4.0-rc2`
 3. Coordinate with our internal DevOps team to make sure code from the latest rc tag is deployed to environment for QA to test it (for SDK, deploy manually. Check [below](#SDK))
 4. Check the commit diff between upcoming release and latest release, and make sure that upcoming release commits only include tickets (alongside with maintenance PRs such as library updates, etc...) intended for this release
    1. if that is not the case, and upcoming release has tickets that have been intended for future releases, move this tickets from future release in jira to the current one.
    2. **Note:** this usually does not happen, but exceptions exist and we need to make sure that all tickets that are included in the release candidate are listed as tickets in jira, QA depends on it.
 5. Share the deployed environment to QA team to test it (in case of sdk, share published sdk version for testing)
-6. if QA finds an issue, introduce a PR fix to master, update release branch with master, tag the latest commit with new tag, in this case `rc2-<branch-name>`, go to step 3.
+6. if QA finds an issue, introduce a PR fix to master, update release branch with master, tag the latest commit with new tag, in this case `<branch-name>-rc2`, go to step 3.
 7. repeat this process (step 1 to 6 except step 4, it only needs to be done once) until QA approves the release candidate
 8. from the latest commit create a release tag `v<branch name>`, in the case of example above, tag name would be `v1.4.0` 
 9. create a release from this tag in github, make sure to include release notes in release description. Notes should be derived from jira tickets of this release. Consider getting a help from our technical writer if release is major, with lots of changes and you need to polish them
@@ -120,7 +120,7 @@ sdk with a custom name needs to be published manually from the shell, run this i
 ```bash
 PRISM_VERSION=<verson mame to publish> ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
-if you are publishing rc-1.4.0 version of sdk for example, use `PRISM_VERSION=<rc-1.4.0>`
+if you are publishing 1.4.0-rc1 version of sdk for example, use `PRISM_VERSION=<1.4.0-rc1>`
 this assumes you have environment variables `GITHUB_TOKEN` and `GITHUB_ACTOR` defined in your shell profile, if not run
 
 ```bash
