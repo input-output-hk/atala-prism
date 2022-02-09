@@ -18,18 +18,18 @@ private[repositories] final class KeyValuesRepositoryLogs[F[_]: ServiceLogging[
   override def upsert(keyValue: KeyValue): Mid[F, Unit] =
     in =>
       info"upserting ${keyValue.key}" *> in
-        .flatTap(_ => info"upserting - successfully done")
-        .onError(errorCause"Encountered an error while upserting" (_))
+        .flatTap(_ => info"upserting ${keyValue.key} - successfully done")
+        .onError(errorCause"Encountered an error while upserting ${keyValue.key}" (_))
 
   override def upsertMany(keyValues: List[KeyValue]): Mid[F, Unit] =
     in =>
       info"uperting many ${keyValues.size}" *> in
-        .flatTap(_ => info"upserting many - successfully done")
-        .onError(errorCause"Encountered an error while upserting many" (_))
+        .flatTap(_ => info"upserting many ${keyValues.size} - successfully done")
+        .onError(errorCause"Encountered an error while upserting many ${keyValues.size}" (_))
 
   override def get(key: String): Mid[F, KeyValue] =
     in =>
       info"getting by key $key" *> in
-        .flatTap(_ => info"getting by key - successfully done")
-        .onError(errorCause"Encountered an error while getting by key" (_))
+        .flatTap(_ => info"getting by key $key - successfully done")
+        .onError(errorCause"Encountered an error while getting by key $key" (_))
 }

@@ -22,9 +22,9 @@ private[repositories] final class DIDDataRepositoryLogs[
       info"finding by did ${did.getSuffix}" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while finding by did $err",
-            res => info"finding by did - successfully done, found - ${res.isDefined}"
+            err => error"Encountered an error while finding by did ${did.getSuffix}: $err",
+            res => info"finding by did ${did.getSuffix} - successfully done, found - ${res.isDefined}"
           )
         )
-        .onError(errorCause"Encountered an error while finding by did" (_))
+        .onError(errorCause"Encountered an error while finding by did ${did.getSuffix}" (_))
 }

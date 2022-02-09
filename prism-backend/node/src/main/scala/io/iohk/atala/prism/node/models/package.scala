@@ -37,6 +37,7 @@ package object models {
   object AtalaObjectStatus extends Enum[AtalaObjectStatus] {
     val values = findValues
 
+    case object Scheduled extends AtalaObjectStatus
     case object Pending extends AtalaObjectStatus
     case object Merged extends AtalaObjectStatus
     case object Processed extends AtalaObjectStatus
@@ -72,6 +73,7 @@ package object models {
     val CREDENTIAL_ID_RE: Regex = "^[0-9a-f]{64}$".r
   }
 
+  @derive(loggable)
   case class AtalaOperationInfo(
       operationId: AtalaOperationId,
       objectId: AtalaObjectId,
@@ -83,6 +85,7 @@ package object models {
       transactionId: Option[TransactionId] = None
   )
 
+  @derive(loggable)
   sealed trait AtalaOperationStatus extends EnumEntry with UpperSnakecase
 
   object AtalaOperationStatus extends Enum[AtalaOperationStatus] {

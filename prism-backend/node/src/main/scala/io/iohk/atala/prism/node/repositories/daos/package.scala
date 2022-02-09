@@ -185,7 +185,16 @@ package object daos extends BaseDAO {
           Option[AtalaObjectTransactionSubmissionStatus],
           Option[TransactionId]
       )
-    ].map(AtalaOperationInfo.tupled)
+    ].map(
+      (x: (
+          AtalaOperationId,
+          AtalaObjectId,
+          AtalaOperationStatus,
+          String,
+          Option[AtalaObjectTransactionSubmissionStatus],
+          Option[TransactionId]
+      )) => AtalaOperationInfo(x._1, x._2, x._3, x._4, x._5, x._6)
+    )
   }
 
   implicit val atalaObjectRead: Read[AtalaObjectInfo] = {

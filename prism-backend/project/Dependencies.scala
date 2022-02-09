@@ -1,3 +1,4 @@
+import sbt.Keys.libraryDependencySchemes
 import sbt._
 
 object versions {
@@ -9,29 +10,30 @@ object versions {
   val diffx = "0.7.0"
   val dockerClient = "8.16.0"
   val dockerTestkit = "0.9.9"
-  val doobie = "1.0.0-RC1"
+  val doobie = "1.0.0-RC2"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.0"
-  val flyway = "8.4.0"
+  val flyway = "8.4.2"
   val grpc = "1.43.2"
   val kamon = "2.4.2"
   val logback = "1.2.10"
   val logbackLogstash = "7.0.1"
   val jaxb = "2.3.1"
-  val mockito = "1.16.49"
+  val mockito = "1.16.55"
   val playJson = "2.9.1"
   val postgresql = "42.3.1"
   val scalatest = "3.2.10"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.11.6"
-  val slf4j = "1.7.32"
-  val sttp = "3.3.18"
+  val slf4j = "1.7.33"
+  val sttp = "3.4.0"
   val tofu = "0.10.6"
   val tofuDerevo = "0.12.8"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.1"
   val http4s = "0.21.7"
-  val prismSdk = "1.3.0-build-35-f0b8a1c5"
+  val fs2 = "3.2.4"
+  val prismSdk = "1.3.1"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 
@@ -87,6 +89,7 @@ object Dependencies {
     "org.http4s" %% "http4s-blaze-server" % versions.http4s
   val http4sBlazeClient =
     "org.http4s" %% "http4s-blaze-client" % versions.http4s
+  val fs2 = "co.fs2" %% "fs2-io" % versions.fs2
 
   // SDK dependencies
 
@@ -154,6 +157,7 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
   )
+  val overrideVersionSchemes = libraryDependencySchemes += "org.tpolecat" %% "doobie-core" % VersionScheme.Always
 
   // cardano-address library binary
   val cardanoAddressBinaryUrl =

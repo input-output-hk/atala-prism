@@ -18,13 +18,14 @@ import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalle
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
   AtalaObjectInfo,
+  AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
 import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository}
 import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
-import io.iohk.atala.prism.node.services.models.RetryOldPendingTransactionsResult
+import io.iohk.atala.prism.node.services.models.RefreshTransactionStatusesResult
 import io.iohk.atala.prism.protos.node_internal
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -32,31 +33,35 @@ import tofu.logging.{Logs, ServiceLogging}
 import java.time.Duration
 import cats.MonadThrow
 
+/** Implements logic for retrieving pending operations from the internal database, and publishing these operations on
+  * the ledger.
+  */
 @derive(applyK)
 trait SubmissionService[F[_]] {
 
-  /** Returns number of published transactions
+  /** Submits all objects with status PENDING to the Cardano Wallet. Returns number of published transactions
     */
-  def submitReceivedObjects(): F[Either[NodeError, Int]]
+  def submitPendingObjects(): F[Either[NodeError, Int]]
 
-  def retryOldPendingTransactions(
-      ledgerPendingTransactionTimeout: Duration
-  ): F[RetryOldPendingTransactionsResult]
+  /** Syncs all transaction statuses between PRISM Node database and Cardano wallet's state. Moves expired transactions
+    * back to PENDING status.
+    */
+  def refreshTransactionStatuses(): F[RefreshTransactionStatusesResult]
 
+  /** Marks all SCHEDULED objects as PENDING making them visible for further submission
+    */
+  def scheduledObjectsToPending: F[Either[NodeError, Int]]
 }
 
 object SubmissionService {
 
-  case class Config(
-      maxNumberTransactionsToSubmit: Int,
-      maxNumberTransactionsToRetry: Int
-  )
+  case class Config(maxNumberTransactionsToSubmit: Int)
 
   def apply[F[_]: MonadThrow, R[_]: Functor](
       atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      config: Config = Config(Int.MaxValue),
       logs: Logs[R, F]
   ): R[SubmissionService[F]] =
     for {
@@ -78,7 +83,7 @@ object SubmissionService {
       atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      config: Config = Config(Int.MaxValue),
       logs: Logs[R, F]
   ): Resource[R, SubmissionService[F]] = Resource.eval(
     SubmissionService(
@@ -94,7 +99,7 @@ object SubmissionService {
       atalaReferenceLedger: UnderlyingLedger[F],
       atalaOperationsRepository: AtalaOperationsRepository[F],
       atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[F],
-      config: Config = Config(Int.MaxValue, Int.MaxValue),
+      config: Config = Config(Int.MaxValue),
       logs: Logs[R, F]
   ): SubmissionService[F] =
     SubmissionService(
@@ -116,7 +121,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
   // gets all pending operations from the database and merges them into bigger AtalaObjects
   // then publishes these objects to the ledger as transaction metadata.
   // every AtalaObject corresponds to one transaction metadata
-  def submitReceivedObjects(): F[Either[NodeError, Int]] = {
+  def submitPendingObjects(): F[Either[NodeError, Int]] = {
     val submissionET = for {
       // execute SQL query to get all pending objects
       atalaObjects <- EitherT(
@@ -138,13 +143,14 @@ private class SubmissionServiceImpl[F[_]: Monad](
     submissionET.value
   }
 
-  def retryOldPendingTransactions(
-      ledgerPendingTransactionTimeout: Duration
-  ): F[RetryOldPendingTransactionsResult] = {
+  def scheduledObjectsToPending: F[Either[NodeError, Int]] =
+    atalaObjectsTransactionsRepository.updateObjectStatus(AtalaObjectStatus.Scheduled, AtalaObjectStatus.Pending)
+
+  def refreshTransactionStatuses(): F[RefreshTransactionStatusesResult] = {
     val getOldPendingTransactions =
       atalaObjectsTransactionsRepository
         .getOldPendingTransactions(
-          ledgerPendingTransactionTimeout,
+          Duration.ZERO,
           atalaReferenceLedger.getType
         )
         .map(_.toList.flatten)
@@ -153,11 +159,13 @@ private class SubmissionServiceImpl[F[_]: Monad](
       // Query old pending transactions
       pendingTransactions <- getOldPendingTransactions
 
+      // Retrieve up-to-date status information from Cardano wallet
       transactionsWithDetails <-
         pendingTransactions
           .traverse(getTransactionDetails)
           .map(_.flatten)
 
+      // Retrieve transactions that are already in a public ledger
       (inLedgerTransactions, notInLedgerTransactions) = transactionsWithDetails
         .partitionMap {
           case (transaction, TransactionStatus.InLedger) =>
@@ -165,34 +173,18 @@ private class SubmissionServiceImpl[F[_]: Monad](
           case txWithStatus =>
             Right(txWithStatus)
         }
+      // Update statuses for inLedger transactions
       numInLedgerSynced <- syncInLedgerTransactions(inLedgerTransactions)
 
-      transactionsToRetry = notInLedgerTransactions.collect {
-        case (transaction, status) if status != TransactionStatus.Submitted =>
+      // Retrieve transactions that are considered Expired on Cardano wallet side
+      expiredTransactions = notInLedgerTransactions.collect {
+        case (transaction, status) if status == TransactionStatus.Expired =>
           transaction
       }
 
-      numPublished <- mergeAndRetryPendingTransactions(transactionsToRetry)
-    } yield RetryOldPendingTransactionsResult(pendingTransactions.size, numInLedgerSynced, numPublished)
-  }
-
-  private def mergeAndRetryPendingTransactions(
-      transactions: List[AtalaObjectTransactionSubmission]
-  ): F[Int] = {
-    for {
-      deletedTransactions <- deleteTransactions(transactions)
-      atalaObjects <-
-        atalaObjectsTransactionsRepository
-          .retrieveObjects(deletedTransactions)
-          .map(_.flatMap(_.toOption.flatten))
-      atalaObjectsMerged <- mergeAtalaObjects(atalaObjects)
-      atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
-        (obj, parseObjectContent(obj))
-      }
-      publishedTransactions <- publishObjectsAndRecordTransaction(
-        atalaObjectsWithParsedContent
-      )
-    } yield publishedTransactions.size
+      // Mark expired transactions as `Deleted`
+      deletedTransactions <- deleteTransactions(expiredTransactions)
+    } yield RefreshTransactionStatusesResult(pendingTransactions.size, numInLedgerSynced, deletedTransactions.size)
   }
 
   private def publishObjectsAndRecordTransaction(

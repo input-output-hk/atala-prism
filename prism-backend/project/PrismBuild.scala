@@ -2,7 +2,7 @@ import Dependencies._
 import com.typesafe.sbt.GitVersioning
 import com.typesafe.sbt.GitPlugin.autoImport._
 import play.twirl.sbt.SbtTwirl
-import sbt.Keys._
+import sbt.Keys.{libraryDependencySchemes, _}
 import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin
@@ -114,10 +114,12 @@ object PrismBuild {
             Seq(
               diffx,
               flyway,
-              typesafeConfig
+              typesafeConfig,
+              fs2
             ) ++
             prismDependencies ++
             scalapbDependencies,
+        overrideVersionSchemes,
         Compile / PB.targets := Seq(
           scalapb.gen() -> (Compile / sourceManaged).value / "proto"
         )
@@ -176,6 +178,7 @@ object PrismBuild {
     commonServerProject("node")
       .settings(
         name := "node",
+        overrideVersionSchemes,
         Compile / run / mainClass := Some("io.iohk.atala.prism.node.NodeApp")
       )
       .dependsOn(common % "compile->compile;test->test")
@@ -188,7 +191,8 @@ object PrismBuild {
           "io.iohk.atala.prism.connector.ConnectorApp"
         ),
         scalacOptions ~= (_ :+ "-Wconf:src=.*twirl/.*:silent"),
-        libraryDependencies += twirlApi
+        libraryDependencies += twirlApi,
+        overrideVersionSchemes
       )
       .dependsOn(common % "compile->compile;test->test")
       .enablePlugins(SbtTwirl)
@@ -200,7 +204,8 @@ object PrismBuild {
         resolvers += Resolver.sonatypeRepo("snapshots"),
         libraryDependencies ++= Seq(
           enumeratum
-        )
+        ),
+        overrideVersionSchemes
       )
       .dependsOn(common)
 
@@ -208,7 +213,8 @@ object PrismBuild {
     commonServerProject("vault")
       .settings(
         name := "vault",
-        Compile / run / mainClass := Some("io.iohk.atala.prism.vault.VaultApp")
+        Compile / run / mainClass := Some("io.iohk.atala.prism.vault.VaultApp"),
+        overrideVersionSchemes
       )
       .dependsOn(common % "compile->compile;test->test")
 
@@ -218,7 +224,8 @@ object PrismBuild {
         name := "management-console",
         Compile / run / mainClass := Some(
           "io.iohk.atala.prism.management.console.ManagementConsoleApp"
-        )
+        ),
+        overrideVersionSchemes
       )
       .dependsOn(common % "compile->compile;test->test")
 

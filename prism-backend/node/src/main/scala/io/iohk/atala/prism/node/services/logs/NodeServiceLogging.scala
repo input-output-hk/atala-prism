@@ -2,17 +2,15 @@ package io.iohk.atala.prism.node.services.logs
 
 import cats.MonadThrow
 import cats.implicits.toTraverseOps
-import cats.syntax.apply._
 import cats.syntax.applicativeError._
+import cats.syntax.apply._
 import cats.syntax.flatMap._
+import com.google.protobuf.ByteString
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.node.errors
+import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
@@ -20,43 +18,47 @@ import tofu.syntax.logging._
 import java.time.Instant
 
 class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow] extends NodeService[Mid[F, *]] {
-  override def getDidDocumentByDid(did: PrismDid): Mid[F, Either[GettingDidError, DidDocument]] = in =>
-    info"getting document by the DID $did" *> in
+  override def getDidDocumentByDid(didStr: String): Mid[F, Either[GettingDidError, DidDocument]] = { in =>
+    val description = s"getting document by the DID $didStr"
+    info"$description" *> in
       .flatTap(
         _.fold(
-          err => error"encountered an error while getting document by the DID $err",
-          _ => info"getting document by the DID - successfully done"
+          err => error"encountered an error while $description: $err",
+          _ => info"$description - successfully done"
         )
       )
-      .onError(errorCause"encountered an error while getting document by the DID" (_))
+      .onError(errorCause"encountered an error while $description" (_))
+  }
 
-  override def getBatchState(batchId: CredentialBatchId): Mid[F, Either[errors.NodeError, BatchData]] = in =>
+  override def getBatchState(batchId: String): Mid[F, Either[errors.NodeError, BatchData]] = in =>
     info"getting batch state $batchId" *> in
       .flatTap(
         _.fold(
-          err => error"encountered an error while getting batch state $err",
-          _ => info"getting batch state - successfully done"
+          err => error"encountered an error while getting batch $batchId state: $err",
+          _ => info"getting batch $batchId state - successfully done"
         )
       )
       .onError(errorCause"encountered an error while getting batch state" (_))
 
   override def getCredentialRevocationData(
-      batchId: CredentialBatchId,
-      credentialHash: Sha256Digest
-  ): Mid[F, Either[errors.NodeError, CredentialRevocationTime]] = in =>
-    info"getting credential revocation data [batchId=$batchId, credentialHash=${credentialHash.getHexValue}]" *> in
+      batchIdStr: String,
+      credentialHashBS: ByteString
+  ): Mid[F, Either[errors.NodeError, CredentialRevocationTime]] = { in =>
+    val credentialHashHex = credentialHashBS.toByteArray.map("%02X" format _).mkString
+    info"getting credential revocation data [batchId=$batchIdStr, credentialHash=$credentialHashHex]" *> in
       .flatTap(
         _.fold(
-          err => error"encountered an error while getting credential revocation data $err",
-          _ => info"getting credential revocation data - successfully done"
+          err => error"encountered an error while getting credential revocation data for $credentialHashHex: $err",
+          _ => info"getting credential revocation data for $credentialHashHex - successfully done"
         )
       )
       .onError(errorCause"encountered an error while getting credential revocation data " (_))
+  }
 
   override def scheduleAtalaOperations(
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] = in =>
-    info"scheduling atala operations" *> in
+    info"scheduling Atala operations" *> in
       .flatTap(_.traverse {
         _.fold(
           err => error"encountered an error while scheduling operation $err",
@@ -65,13 +67,30 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       })
       .onError(errorCause"encountered an error while scheduling atala operations" (_))
 
-  override def getOperationInfo(atalaOperationId: AtalaOperationId): Mid[F, OperationInfo] = in =>
-    info"getting operation info $atalaOperationId" *> in
-      .flatTap(_ => info"getting operation info - done")
-      .onError(errorCause"encountered an error while getting operation info" (_))
+  override def parseOperations(ops: Seq[SignedAtalaOperation]): Mid[F, Either[NodeError, List[OperationOutput]]] = in =>
+    info"parsing ${ops.size} operations" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while parsing operations: $err",
+          _ => info"parsing ${ops.size} operations - successfully done"
+        )
+      )
+      .onError(errorCause"encountered an error while parsing operations" (_))
+
+  override def getOperationInfo(atalaOperationIdBS: ByteString): Mid[F, Either[NodeError, OperationInfo]] = { in =>
+    val description = s"getting operation info ${atalaOperationIdBS.toByteArray.map("%02X" format _).mkString}"
+    info"$description" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while $description: $err",
+          res => info"$description - done: $res"
+        )
+      )
+      .onError(errorCause"encountered an error while $description" (_))
+  }
 
   override def getLastSyncedTimestamp: Mid[F, Instant] = in =>
-    info"flushing operations buffer" *> in
-      .flatTap(_ => info"flushing operations buffer - done")
-      .onError(errorCause"encountered an error while flushing operations buffer" (_))
+    info"getting last synced timestamp" *> in
+      .flatTap(res => info"getting last synced timestamp - done: $res")
+      .onError(errorCause"encountered an error while getting last synced timestamp" (_))
 }

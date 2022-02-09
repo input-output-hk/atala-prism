@@ -22,8 +22,8 @@ private[cardano] final class CardanoClientLogs[
       info"getting full block $blockNo" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting full block $err",
-            block => info"getting full block - successfully done, transactions ${block.transactions.size}"
+            err => error"Encountered an error while getting full block $blockNo: $err",
+            block => info"getting full block with header ${block.header} - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while getting full block" (_))
@@ -34,7 +34,7 @@ private[cardano] final class CardanoClientLogs[
         .flatTap(
           _.fold(
             err => error"Encountered an error while getting latest block $err",
-            block => info"getting latest block - successfully done, transactions ${block.header.blockNo}"
+            block => info"getting latest block with header ${block.header} - successfully done"
           )
         )
         .onError(
@@ -48,11 +48,11 @@ private[cardano] final class CardanoClientLogs[
       passphrase: String
   ): Mid[F, Either[CardanoWalletError, TransactionId]] =
     in =>
-      info"posting transaction" *> in
+      info"posting transaction to wallet $walletId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while posting transaction $err",
-            id => info"posting transaction - successfully done $id"
+            err => error"Encountered an error while posting transaction to wallet $walletId: $err",
+            id => info"posting transaction $id to wallet $walletId - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while posting transaction" (_))
@@ -65,8 +65,8 @@ private[cardano] final class CardanoClientLogs[
       info"getting transaction $transactionId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting transaction $err",
-            transactionDetails => info"getting transaction - successfully done ${transactionDetails.id}"
+            err => error"Encountered an error while getting transaction $transactionId: $err",
+            transactionDetails => info"getting transaction $transactionDetails - successfully done"
           )
         )
         .onError(errorCause"Encountered an error while getting transaction" (_))
@@ -79,8 +79,8 @@ private[cardano] final class CardanoClientLogs[
       info"deleting transaction $transactionId" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while deleting transaction $err",
-            _ => info"deleting transaction - successfully done"
+            err => error"Encountered an error while deleting transaction $transactionId: $err",
+            _ => info"deleting transaction $transactionId - successfully done"
           )
         )
         .onError(
@@ -91,11 +91,11 @@ private[cardano] final class CardanoClientLogs[
       walletId: WalletId
   ): Mid[F, Either[CardanoWalletError, WalletDetails]] =
     in =>
-      info"getting wallet details" *> in
+      info"getting wallet $walletId details" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while getting wallet details $err",
-            details => info"getting wallet details - successfully done $details"
+            err => error"Encountered an error while getting wallet $walletId details: $err",
+            details => info"getting wallet $walletId details - successfully done $details"
           )
         )
         .onError(

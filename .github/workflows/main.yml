@@ -177,7 +177,6 @@ jobs:
       - name: Build and publish Docker images
         run: |
           GITHUB=1 sbt "${{ matrix.image }}/dockerBuildAndPush"
-
   deploy-ecr-images:
     strategy:
       matrix:

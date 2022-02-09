@@ -159,6 +159,13 @@ class ObjectManagementServiceSpec
           )
       ).when(ledger).publish(*)
 
+      doReturn(
+        ReaderT
+          .pure[IO, TraceId, Either[CardanoWalletError, TransactionDetails]](
+            Right(TransactionDetails(dummyPublicationInfo.transaction.transactionId, TransactionStatus.Pending))
+          )
+      ).when(ledger).getTransactionDetails(dummyPublicationInfo.transaction.transactionId)
+
       val atalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
       val atalaOperationId =
         BlockProcessingServiceSpec.signedCreateDidOperationId

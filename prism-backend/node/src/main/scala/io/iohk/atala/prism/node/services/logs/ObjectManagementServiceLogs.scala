@@ -24,7 +24,7 @@ private[services] class ObjectManagementServiceLogs[
       notification: AtalaObjectNotification
   ): Mid[F, Either[SaveObjectError, Boolean]] =
     in =>
-      info"saving object txId: ${notification.transaction.transactionId}, ledger: ${notification.transaction.ledger}" *> in
+      info"saving object included in transaction ${notification.transaction}" *> in
         .flatTap {
           _.fold(
             err => error"saving object - failed cause: $err",
@@ -37,10 +37,10 @@ private[services] class ObjectManagementServiceLogs[
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] =
     in =>
-      info"scheduling atala operations, size - ${ops.size}" *> in
+      info"scheduling Atala operations, size - ${ops.size}" *> in
         .flatTap(_.traverse(logScheduleOperationResult))
         .onError(
-          errorCause"Encountered an error while scheduling atala operations" (_)
+          errorCause"Encountered an error while scheduling Atala operations" (_)
         )
 
   def getLastSyncedTimestamp: Mid[F, Instant] =
@@ -57,12 +57,12 @@ private[services] class ObjectManagementServiceLogs[
       atalaOperationId: AtalaOperationId
   ): Mid[F, Option[AtalaOperationInfo]] =
     in =>
-      info"getting operation info by AtalaOperationId ${atalaOperationId.hexValue}" *> in
+      info"getting operation info by $atalaOperationId" *> in
         .flatTap {
           _.fold(
             error"getting operation info by AtalaOperationId - finished with result: None"
           )(info => info"""getting operation info by AtalaOperationId - finished with result:
-        "AtalaOperationId(${info.operationId.hexValue}), AtalaObjectId(${info.objectId.hexValue})""")
+        "${info.operationId}, ${info.objectId}""")
         }
         .onError(
           errorCause"Encountered an error while getting operation info by AtalaOperationId" (
@@ -74,7 +74,7 @@ private[services] class ObjectManagementServiceLogs[
       result: Either[errors.NodeError, AtalaOperationId]
   ): F[Unit] =
     result.fold(
-      err => error"scheduling single atala operation - failed cause $err",
-      id => info"scheduling single atala operation - successfully done, result: ${id.hexValue}"
+      err => error"scheduling single Atala operation - failed cause: $err",
+      id => info"scheduling single Atala operation - successfully done, result: $id"
     )
 }

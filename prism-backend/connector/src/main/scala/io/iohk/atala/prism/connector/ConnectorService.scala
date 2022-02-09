@@ -370,11 +370,12 @@ class ConnectorService(
         lastSeenMessageId: Option[MessageId],
         traceId: TraceId
     ): Unit = {
-      val existingMessageStream =
-        messages.getMessageStream(
+      val existingMessageStream = messages
+        .getMessageStream(
           recipientId = recipientId,
           lastSeenMessageId = lastSeenMessageId
         )
+
       val newMessageStream = messageNotificationService
         .stream(recipientId)
         .translate(TraceId.liftToIOWithTraceId)
