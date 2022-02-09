@@ -28,9 +28,9 @@ verification a non-interactive or an interactive process -- in group signatures,
 we are in the former case, whereas in anonymous credentials, we are in the
 latter. While both options are of course valid, this has direct impact in the
 modelling. We choose the non-interactive approach, and then prove how to
-generically translate it into an interactive process. The reason is that this
-results in a more flexible building block, suitable for a wider set of
-scenarios. And, syntactically, it seems more natural to combine two
+generically translate it into an interactive process \todo{do we?}. The reason
+is that this results in a more flexible building block, suitable for a wider set
+of scenarios. And, syntactically, it seems more natural to combine two
 non-interactive processes into an interactive one, than the other way around.
 
 We also need to take into account that, in group signature schemes, users only
@@ -69,6 +69,8 @@ group signatures -- which, up to now, had considered membership credentials
 attributes (if we think from a group signature perspective) is that, in order
 to avoid trivial wins, the anonymity game has to enforce that both challenge
 credentials reveal the same predicate on their attributes.
+\commentwho{Jesus}{Again, taking into account ABGS, this is no longer true.
+  Cross-check and re-write.}
 
 In the model described below, we follow closely the definitions from
 \cite{bsz05} for group signatures, and \cite{fhs19} for anonymous credentials
@@ -121,8 +123,9 @@ keep consistent state.
 \paragraph{Global Variables.} %
 All the honestly generated users (i.e., all honestly generated user key pairs,
 since we assume a one-to-one relationship between user and user key pair), as
-well as all honestly generated credentials, are assigned identifiers. That we
-typically write as \uid for users, and \cid for credentials. The adversary can
+well as all honestly generated credentials, are assigned identifiers. Wex
+typically write as \uid for users' identifiers, and \cid for credentials'. The
+adversary can
 refer to any individual user or credential using the corresponding identifier --
 even though he may not know the actual contents of the key pairs or credentials.
 In games that involve challenge user or credential identifiers, we use \cuid and
@@ -150,10 +153,10 @@ signatures are produced through credentials, the \SIG table is indexed with
 signatures that the adversary has obtained, in order to prevent trivial wins
 by allowing any of them to be opened. 
 %
-All global variables are initially set by the games to undefined values (denoted
-with $\bot$, and all tables/sets are initialized as empty tables/sets, denoted
-with $\empty$. Also, for readability, we abuse the syntax as follows: we write
-$\CRED[\uid]$ to mean $\CRED[\cid]$ for all $\cid$ such that
+All global variables are initially set by the games to empty values (denoted
+with $\bot$), and all tables/sets are initialized as empty tables/sets, denoted
+with $\emptyset$. Also, for readability, we abuse the syntax as follows: we
+write $\CRED[\uid]$ to mean $\CRED[\cid]$ for all $\cid$ such that
 $\OWNR[\cid] = \uid$; \todo{Something else?}
 
 \paragraph{Oracles.} %
@@ -492,6 +495,11 @@ key and the credential that were used to create the signature.
   (even if possible) of their GS and AC counterparts. Specifically, anonymity
   of \GSAC is stronger than anonymity in GS and AC, and the same for trace and
   non-frame.}
+
+\todo{It would be nice to prove that a \GSAC scheme to which we remove the
+  \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
+  where all credentials have no attributes, and where we restrict to only
+  one credential per user, becomes a conventional GS scheme.}
 
 \subsection{Tranformation to Interactive Presentations}
 \label{ssec:interactivetransform}
