@@ -83,6 +83,23 @@ package object errors {
       override def name: String = "unsupported-protocol-version"
     }
 
+    case class TooManyDidPublicKeysAccessAttempt(limit: Int, accesses: Option[Int]) extends NodeError {
+      override def toStatus: Status = Status.ABORTED.withDescription(
+        accesses.fold(s"More than $limit public keys accessed during request to a DID.")(am =>
+          s"$am public keys accessed during request to a DID, though a limit is $limit."
+        ) + " Such API request prohibited for now."
+      )
+
+      override def name: String = "did-public-keys-limit-exceeded"
+    }
+
+    case class UnableToParseSignedOperation(msg: String) extends NodeError {
+      override def toStatus: Status =
+        Status.INVALID_ARGUMENT.withDescription(s"Unable to parse signed operation: $msg")
+
+      override def name: String = "unable-parse-signed-operation"
+    }
+
     case class InvalidArgument(description: String) extends NodeError {
       override def toStatus: Status = {
         Status.INVALID_ARGUMENT.withDescription(description)
