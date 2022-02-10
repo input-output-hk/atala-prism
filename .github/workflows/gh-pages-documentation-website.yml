@@ -1,0 +1,52 @@
+name: Generate_Documentation
+
+on:
+  schedule:
+    - cron: 0 0 * * 6 #At 00:00 on Saturday
+  push:
+    branches:
+      - "master"
+    paths:
+      - "prism-backend/docs/**"
+  workflow_dispatch:
+
+jobs:
+  generate-and-deploy:
+    name: Generate_Documentation
+    concurrency:
+      group: make-docs-website
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt-get install -y texlive-xetex pandoc pandoc-citeproc
+
+      - name: Make Site
+        run: |
+          mkdir website_folder
+          echo "theme: jekyll-theme-cayman" > website_folder/_config.yml
+          cat <<EOF > website_folder/README.md
+            # Documentation website
+
+            [Article](./article.pdf) about ...
+            
+            You can find the [Protocol here](./protocol.pdf).
+
+          EOF
+
+      - name: Generate Protocol's PDF
+        run: |
+          ./prism-backend/docs/protocol/make.sh 
+          cp ./prism-backend/docs/protocol/protocol.docx website_folder
+          cp ./prism-backend/docs/protocol/protocol.pdf website_folder
+
+      - name: Generate Article's PDF
+        run: |
+          make -C ./prism-backend/docs/article/
+          cp ./prism-backend/docs/article/article.pdf website_folder
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.2.3
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: website_folder # The folder the action should deploy.
