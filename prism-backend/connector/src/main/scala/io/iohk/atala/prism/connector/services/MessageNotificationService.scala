@@ -7,7 +7,7 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import io.iohk.atala.prism.connector.model.{Message, MessageId}
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
-import io.iohk.atala.prism.db.DbNotificationStreamer
+import io.iohk.atala.prism.db.{DbNotificationStreamer, TransactorForStreaming}
 import io.iohk.atala.prism.models.ParticipantId
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -119,22 +119,24 @@ object MessageNotificationService {
 
   def apply(
       xa: Transactor[IO],
+      xaStream: TransactorForStreaming,
       streamQueuesRef: Ref[IO, Map[ParticipantId, Queue[IO, Option[Message]]]]
   )(implicit
       timer: Temporal[IO],
       runtime: IORuntime
   ): MessageNotificationService = {
-    val dbNotificationStreamer = DbNotificationStreamer("new_messages", xa)
+    val dbNotificationStreamer = DbNotificationStreamer("new_messages", xaStream)
     new MessageNotificationService(dbNotificationStreamer, xa, streamQueuesRef)
   }
 
   def resourceAndStart(
-      xa: Transactor[IO]
+      xa: Transactor[IO],
+      xaStream: TransactorForStreaming
   )(implicit timer: Temporal[IO], runtime: IORuntime): Resource[IO, MessageNotificationService] =
     Resource.make(
       for {
         streamQueuesRef <- Ref.of[IO, Map[ParticipantId, Queue[IO, Option[Message]]]](Map.empty)
-        service = MessageNotificationService(xa, streamQueuesRef)
+        service = MessageNotificationService(xa, xaStream, streamQueuesRef)
         _ = service.start()
       } yield service
     )(service => IO(service.stop()))

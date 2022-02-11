@@ -12,13 +12,13 @@
         </rollingPolicy>
 
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="tofu.logging.ELKLayout"/>
+            <layout class="tofu.logging.ELKLayout" />
         </encoder>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="tofu.logging.ELKLayout"/>
+            <layout class="tofu.logging.ELKLayout" />
         </encoder>
     </appender>
 
@@ -32,9 +32,7 @@
 
     <logger name="application" level="DEBUG" />
     <logger name="io.iohk" level="DEBUG" />
-    <logger name="com.zaxxer.hikari.pool.HikariPool" level="DEBUG" />
-    <logger name="com.zaxxer.hikari.HikariConfig" level="DEBUG" />
-    <logger name="com.zaxxer.hikari.pool.PoolBase" level="DEBUG"/>
+
     <root level="INFO">
         <appender-ref ref="ASYNCFILE" />
         <appender-ref ref="ASYNCSTDOUT" />

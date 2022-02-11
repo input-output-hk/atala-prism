@@ -20,7 +20,7 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
   private def usingDbNotificationStreamer[A](
       f: DbNotificationStreamer => IO[A]
   ): Unit = {
-    val dbNotificationStreamer = DbNotificationStreamer(CHANNEL, db)
+    val dbNotificationStreamer = DbNotificationStreamer(CHANNEL, databaseForStreaming)
     try {
       f(dbNotificationStreamer).unsafeRunSync()
     } finally {

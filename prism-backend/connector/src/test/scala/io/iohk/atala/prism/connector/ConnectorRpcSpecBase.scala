@@ -29,6 +29,7 @@ import org.mockito.MockitoSugar._
 
 import java.time.Instant
 import java.util.UUID
+import io.iohk.atala.prism.db.TransactorForStreaming
 
 class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   override def services =
@@ -79,7 +80,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   lazy val registrationService =
     RegistrationService.unsafe(participantsRepository, nodeMock, testLogs)
   val streamQueuesRef = Ref.unsafe[IO, Map[ParticipantId, Queue[IO, Option[Message]]]](Map.empty)
-  lazy val messageNotificationService = MessageNotificationService(database, streamQueuesRef)
+  lazy val messageNotificationService =
+    MessageNotificationService(database, new TransactorForStreaming(database), streamQueuesRef)
   lazy val connectorService = new ConnectorService(
     connectionsService,
     messagesService,
