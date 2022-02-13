@@ -1,6 +1,10 @@
 \section{Introduction}
 \label{sec:introduction}
 
+\commentwho{Jesus}{The following will most probably change completely if we
+  are to submit this for publication. However, this should capture tha main
+  ideas.}
+
 In this work, we combine two closely related schemes -- group signatures (GS)
 and anonymous credentials (AC) -- which have followed a
 separate path up to now, beyond individual constructions from both fields
@@ -29,17 +33,15 @@ linking, but not to opening-related notions.
 Our goal is to get the best of both worlds: leverage the richer functionality
 of ACs in what respects to proving, in a privacy-preserving manner, useful
 claims on one's identity; and, at the same time support, through inspection
-capabilities, use cases that may require some sort of de-anonymiztion. We
-could target the ideal case of allowing to create proofs of arbitrary predicates
-on one's identity (as some AC systems do), as well as provide flexible or several
-notions of non-frameability. However, this being -- as far as we know -- the
-first work that explores this intersection, we opt for keeping things simple
-for the sake of facilitating technical precission and readability, and fostering
-discussion. Therefore, we focus on the case of selective attribute disclosure
-for ACs, and conventional opening for GSs, building a GSAC scheme that supports
-both. \commentwho{Jesus}{This being the first work in this direction is not (at
-  least in part) true. See the related work section. Then update this
-  accordingly.}
+capabilities, use cases that may require some sort of de-anonymization. This is
+not the first work that somehow follows this direction, though --
+Attribute-Based Group Signatures, covered in \secref{ssec:related}, propose
+group signatures with attributes (although mentions to AC works from the ABGS
+papers are non-existent, so the resemblance seems circumstancial). However, we
+believe that ABGS lack the flexibility that has made AC schemes gain popularity
+recently. Hence, we propose a different approach that directly integrates GS
+features and properties with those of AC, as closely as possible to their
+original notions.
 
 %%% Local Variables:
 %%% mode: latex
