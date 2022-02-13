@@ -26,7 +26,7 @@ object versions {
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.11.6"
   val slf4j = "1.7.33"
-  val sttp = "3.4.0"
+  val sttp = "3.4.1"
   val tofu = "0.10.6"
   val tofuDerevo = "0.12.8"
   val twirl = "1.5.1"
