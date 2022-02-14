@@ -8,12 +8,14 @@ import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
+import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import java.time.Instant
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
 import tofu.logging.Logging.Make
 import tofu.logging.Logging
 
@@ -67,7 +69,18 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
     "retrieve previously inserted DID data" in {
       DataPreparation.createDID(didData, dummyLedgerData)
       val did = didDataRepository
-        .findByDid(DID.buildCanonical(operationDigest))
+        .findByDid(DID.buildCanonical(operationDigest), None)
+        .unsafeRunSync()
+        .toOption
+        .value
+
+      did.value.didSuffix mustBe didSuffix
+    }
+
+    "retrieve previously inserted DID data when limit is specified" in {
+      DataPreparation.createDID(didData, dummyLedgerData)
+      val did = didDataRepository
+        .findByDid(DID.buildCanonical(operationDigest), Some(4))
         .unsafeRunSync()
         .toOption
         .value
@@ -82,7 +95,8 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
         .findByDid(
           DID.buildCanonical(
             Sha256Digest.fromHex(didSuffixFromDigest(digestGen(0, 2)).value)
-          )
+          ),
+          None
         )
         .unsafeRunSync()
         .toOption
@@ -91,6 +105,17 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       result must be(empty)
     }
 
-  }
+    "return error when too many public keys belong to a DID" in {
+      DataPreparation.createDID(didData, dummyLedgerData)
 
+      val result = didDataRepository
+        .findByDid(
+          DID.buildCanonical(operationDigest),
+          Some(3)
+        )
+        .unsafeRunSync()
+
+      result.left.value must be(TooManyDidPublicKeysAccessAttempt(3, None))
+    }
+  }
 }

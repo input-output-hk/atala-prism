@@ -16,7 +16,8 @@ private[repositories] final class DIDDataRepositoryMetrics[F[
   private lazy val findByDidTimer =
     TimeMeasureUtil.createDBQueryTimer("DIDDataRepository", "findByDid")
   override def findByDid(
-      did: CanonicalPrismDid
+      did: CanonicalPrismDid,
+      publicKeysLimit: Option[Int]
   ): Mid[F, Either[NodeError, Option[DIDDataState]]] =
     _.measureOperationTime(findByDidTimer)
 }
