@@ -54,6 +54,7 @@ class SubmissionServiceSpec
     )
   private val blockProcessing: BlockProcessingService =
     mock[BlockProcessingService]
+  private val publicKeysLimit = 10
 
   private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
     SubmissionService.unsafe(
@@ -70,6 +71,7 @@ class SubmissionServiceSpec
       keyValuesRepository,
       protocolVersionRepository,
       blockProcessing,
+      publicKeysLimit,
       dbLiftedToTraceIdIO,
       logs
     )

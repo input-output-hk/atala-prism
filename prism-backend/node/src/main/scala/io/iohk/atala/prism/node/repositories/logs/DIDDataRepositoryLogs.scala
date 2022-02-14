@@ -16,15 +16,21 @@ private[repositories] final class DIDDataRepositoryLogs[
     F[_]: ServiceLogging[*[_], DIDDataRepository[F]]: MonadThrow
 ] extends DIDDataRepository[Mid[F, *]] {
   override def findByDid(
-      did: CanonicalPrismDid
+      did: CanonicalPrismDid,
+      publicKeysLimit: Option[Int]
   ): Mid[F, Either[NodeError, Option[DIDDataState]]] =
     in =>
-      info"finding by did ${did.getSuffix}" *> in
+      info"finding by did ${did.getSuffix} with public keys limit $publicKeysLimit" *> in
         .flatTap(
           _.fold(
-            err => error"Encountered an error while finding by did ${did.getSuffix}: $err",
+            err =>
+              error"Encountered an error while finding by did ${did.getSuffix} with public keys limit $publicKeysLimit: $err",
             res => info"finding by did ${did.getSuffix} - successfully done, found - ${res.isDefined}"
           )
         )
-        .onError(errorCause"Encountered an error while finding by did ${did.getSuffix}" (_))
+        .onError(
+          errorCause"Encountered an error while finding by did ${did.getSuffix} with public keys limit $publicKeysLimit" (
+            _
+          )
+        )
 }

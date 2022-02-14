@@ -12,10 +12,14 @@ import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
-import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
+import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
+import io.iohk.atala.prism.node.errors.NodeError.{TooManyDidPublicKeysAccessAttempt, UnsupportedProtocolVersion}
+import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterKeys}
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
 import io.iohk.atala.prism.node.repositories.{
@@ -24,17 +28,20 @@ import io.iohk.atala.prism.node.repositories.{
   KeyValuesRepository,
   ProtocolVersionRepository
 }
+import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec.{
+  createDidOperation,
+  signOperation,
+  updateDidOperation
+}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
-import io.iohk.atala.prism.node.DataPreparation._
-import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
+import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures
 import tofu.logging.Logs
@@ -92,6 +99,7 @@ class ObjectManagementServiceSpec
       dbLiftedToTraceIdIO,
       logs
     )
+  private val publicKeysLimit = 4
 
   private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
     SubmissionService.unsafe(
@@ -108,6 +116,7 @@ class ObjectManagementServiceSpec
       keyValuesRepository,
       protocolVersionRepository,
       blockProcessing,
+      publicKeysLimit,
       dbLiftedToTraceIdIO,
       logs
     )
@@ -119,7 +128,7 @@ class ObjectManagementServiceSpec
     ()
   }
 
-  "ObjectManagementService.publishAtalaOperation" should {
+  "ObjectManagementService.scheduleAtalaOperations" should {
     "update status to received when operation was received, but haven't processed yet" in {
       doReturn(
         ReaderT
@@ -323,6 +332,40 @@ class ObjectManagementServiceSpec
       ) { err =>
         err.toString mustBe expectedException.toString
       }
+    }
+
+    "fail scheduling when CreateDID contains too much public keys" in {
+      val createOperation = createDidOperation.update(
+        _.createDid.didData.publicKeys :+= node_models.PublicKey(
+          "issuing1",
+          node_models.KeyUsage.ISSUING_KEY,
+          Some(
+            node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+          ),
+          None,
+          node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
+        )
+      )
+      val signedCreateDidOperation =
+        signOperation(createOperation, "master", masterKeys.getPrivateKey)
+
+      val result =
+        publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
+
+      result.left.value must be(TooManyDidPublicKeysAccessAttempt(4, Some(5)))
+    }
+
+    "fail scheduling when UpdateDID contains too much actions with public keys" in {
+      val updateOperation = updateDidOperation.update(
+        _.updateDid.actions.modify(act => act ++ act ++ act)
+      )
+      val signedUpdateDidOperation =
+        signOperation(updateOperation, "master", masterKeys.getPrivateKey)
+
+      val result =
+        publishSingleOperationAndFlush(signedUpdateDidOperation).futureValue
+
+      result.left.value must be(TooManyDidPublicKeysAccessAttempt(4, Some(6)))
     }
   }
 
