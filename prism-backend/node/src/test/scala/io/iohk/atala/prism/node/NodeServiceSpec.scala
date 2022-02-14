@@ -54,6 +54,7 @@ class NodeServiceSpec
     mock[ObjectManagementService[IOWithTraceIdContext]]
   private val credentialBatchesRepository =
     mock[CredentialBatchesRepository[IOWithTraceIdContext]]
+  private val publicKeysLimit = 4
 
   def fake[T](a: T): ReaderT[IO, TraceId, T] =
     ReaderT.apply[IO, TraceId, T](_ => IO.pure(a))
@@ -76,6 +77,7 @@ class NodeServiceSpec
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
+                publicKeysLimit,
                 logs
               )
             ),
@@ -158,6 +160,43 @@ class NodeServiceSpec
       response.lastSyncedBlockTimestamp must be(
         Some(dummySyncTimestamp.toProtoTimestamp)
       )
+    }
+
+    "return error when too many public keys in response" in {
+      val didDigest = Sha256.compute("test".getBytes())
+      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
+
+      DIDDataDAO
+        .insert(didSuffix, didDigest, dummyLedgerData)
+        .transact(database)
+        .unsafeRunSync()
+
+      val keys = (1 to 5).map { keyId =>
+        DIDPublicKey(
+          didSuffix,
+          "master" + keyId,
+          KeyUsage.MasterKey,
+          CreateDIDOperationSpec.masterKeys.getPublicKey
+        )
+      }
+
+      keys.foreach(key =>
+        PublicKeysDAO
+          .insert(key, dummyLedgerData)
+          .transact(database)
+          .unsafeRunSync()
+      )
+
+      doReturn(fake[Instant](dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+
+      val error = intercept[StatusRuntimeException] {
+        service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.getValue}"))
+      }
+
+      error.getStatus.getCode mustEqual Status.Code.ABORTED
+      error.getStatus.getDescription mustEqual "More than 4 public keys accessed during request to a DID. Such API request prohibited for now."
     }
 
     "return error for a long form DID" in {

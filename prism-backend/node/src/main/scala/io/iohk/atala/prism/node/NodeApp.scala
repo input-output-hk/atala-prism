@@ -68,12 +68,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       )
       atalaObjectsTransactionsRepository <- AtalaObjectsTransactionsRepository
         .resource(liftedTransactor, logs)
+      didPublicKeysLimit = globalConfig.getInt("didPublicKeysLimit")
       objectManagementService <- ObjectManagementService.resource(
         atalaOperationsRepository,
         atalaObjectsTransactionsRepository,
         keyValuesRepository,
         protocolVersionRepository,
         blockProcessingService,
+        didPublicKeysLimit,
         liftedTransactor,
         logs
       )
@@ -119,6 +121,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         didDataRepository,
         objectManagementService,
         credentialBatchesRepository,
+        didPublicKeysLimit,
         logs
       )
       nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
