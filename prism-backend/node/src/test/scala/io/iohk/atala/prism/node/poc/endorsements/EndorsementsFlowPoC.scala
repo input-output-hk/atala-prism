@@ -77,6 +77,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
+  private val publicKeysLimit = 10
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -106,6 +107,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       keyValuesRepository,
       protocolVersionsRepository,
       blockProcessingService,
+      publicKeysLimit,
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs
     )
@@ -142,6 +144,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
+                publicKeysLimit,
                 endorsementsFlowPoCLogs
               )
             ),

@@ -1,31 +1,32 @@
 package io.iohk.atala.prism.node.repositories
 
-import cats.{Applicative, Comonad, Functor}
 import cats.data.EitherT
-import cats.effect.Resource
+import cats.effect.{MonadCancelThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.functor._
+import cats.{Applicative, Comonad, Functor}
 import derevo.derive
 import derevo.tagless.applyK
+import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.identity.{CanonicalPrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.nodeState.DIDDataState
+import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
+import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
-import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait DIDDataRepository[F[_]] {
-  def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]]
+  def findByDid(did: DID, publicKeysLimit: Option[Int]): F[Either[NodeError, Option[DIDDataState]]]
 }
 
 object DIDDataRepository {
@@ -60,22 +61,33 @@ object DIDDataRepository {
 }
 
 private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
-  def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    getByCanonicalSuffix(DidSuffix(did.getSuffix))
+  def findByDid(did: DID, publicKeysLimit: Option[Int]): F[Either[NodeError, Option[DIDDataState]]] =
+    getByCanonicalSuffix(DidSuffix(did.getSuffix), publicKeysLimit)
 
   private def getByCanonicalSuffix(
-      canonicalSuffix: DidSuffix
+      canonicalSuffix: DidSuffix,
+      publicKeysLimit: Option[Int]
   ): F[Either[NodeError, Option[DIDDataState]]] = {
+    def fetchKeys(): EitherT[ConnectionIO, NodeError, List[DIDPublicKeyState]] = publicKeysLimit match {
+      case None => EitherT.liftF(PublicKeysDAO.listAllLimited(canonicalSuffix, None))
+      case Some(lim) =>
+        for {
+          keys <- EitherT.liftF(PublicKeysDAO.listAllLimited(canonicalSuffix, Some(lim + 1)))
+          _ <- EitherT.cond[ConnectionIO](
+            keys.size <= lim,
+            (),
+            TooManyDidPublicKeysAccessAttempt(lim, None): NodeError
+          )
+        } yield keys
+    }
     val query = for {
-      lastOperationMaybe <- DIDDataDAO.getLastOperation(canonicalSuffix)
-      keys <- PublicKeysDAO.findAll(canonicalSuffix)
+      lastOperationMaybe <- EitherT.liftF(DIDDataDAO.getLastOperation(canonicalSuffix))
+      keys <- fetchKeys()
     } yield lastOperationMaybe map { lastOperation =>
       DIDDataState(canonicalSuffix, keys, lastOperation)
     }
 
-    EitherT
-      .right[NodeError](query)
-      .value
+    query.value
       .logSQLErrorsV2(s"finding, did suffix - $canonicalSuffix")
       .transact(xa)
   }

@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.services
 
 import cats.data.EitherT
-import cats.effect.Resource
+import cats.effect.{MonadCancelThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.traverse._
@@ -23,6 +23,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.In
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
 import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
+import io.iohk.atala.prism.node.operations.{CreateDIDOperation, UpdateDIDOperation, parseOperationWithMockedLedger}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -43,7 +44,6 @@ import tofu.syntax.feither._
 import tofu.syntax.monadic._
 
 import java.time.Instant
-import cats.effect.MonadCancelThrow
 
 private class DuplicateAtalaBlock extends Exception
 private class DuplicateAtalaOperation extends Exception
@@ -71,6 +71,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     keyValuesRepository: KeyValuesRepository[F],
     protocolVersionsRepository: ProtocolVersionRepository[F],
     blockProcessing: BlockProcessingService,
+    didPublicKeysLimit: Int,
     xa: Transactor[F]
 ) extends ObjectManagementService[F] {
 
@@ -139,14 +140,18 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
 
     val queryIO: F[List[Either[NodeError, (Int, Int)]]] =
       opsWithObjects traverse { case (op, obj) =>
-        val objBytes = obj.toByteArray
-        atalaOperationsRepository
-          .insertOperation(
-            AtalaObjectId.of(objBytes),
-            objBytes,
-            AtalaOperationId.of(op),
-            AtalaOperationStatus.RECEIVED
-          )
+        preliminaryCheckOfScheduledOperation(op) match {
+          case Right(_) =>
+            val objBytes = obj.toByteArray
+            atalaOperationsRepository
+              .insertOperation(
+                AtalaObjectId.of(objBytes),
+                objBytes,
+                AtalaOperationId.of(op),
+                AtalaOperationStatus.RECEIVED
+              )
+          case Left(e) => e.asLeft[(Int, Int)].pure[F]
+        }
       }
 
     val resultEitherT: EitherT[F, NodeError, List[Either[NodeError, AtalaOperationId]]] =
@@ -240,6 +245,22 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       )
     } yield wasProcessed
   }
+
+  private def preliminaryCheckOfScheduledOperation(signedOperation: SignedAtalaOperation): Either[NodeError, Unit] = {
+    parseOperationWithMockedLedger(signedOperation).left
+      .map { validationError =>
+        NodeError.UnableToParseSignedOperation(validationError.explanation): NodeError
+      }
+      .flatMap(op =>
+        op match {
+          case CreateDIDOperation(_, keys, _, _) if keys.size > didPublicKeysLimit =>
+            Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, Some(keys.size)))
+          case UpdateDIDOperation(_, actions, _, _, _) if actions.size > didPublicKeysLimit =>
+            Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, Some(actions.size)))
+          case _ => Right(())
+        }
+      )
+  }
 }
 
 object ObjectManagementService {
@@ -275,6 +296,7 @@ object ObjectManagementService {
       keyValuesRepository: KeyValuesRepository[F],
       protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService,
+      didPublicKeysLimit: Int,
       xa: Transactor[F],
       logs: Logs[I, F]
   ): I[ObjectManagementService[F]] = {
@@ -292,6 +314,7 @@ object ObjectManagementService {
         keyValuesRepository,
         protocolVersionsRepository,
         blockProcessing,
+        didPublicKeysLimit,
         xa
       )
     }
@@ -303,6 +326,7 @@ object ObjectManagementService {
       keyValuesRepository: KeyValuesRepository[F],
       protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService,
+      didPublicKeysLimit: Int,
       xa: Transactor[F],
       logs: Logs[I, F]
   ): Resource[I, ObjectManagementService[F]] = Resource.eval(
@@ -313,6 +337,7 @@ object ObjectManagementService {
         keyValuesRepository,
         protocolVersionsRepository,
         blockProcessing,
+        didPublicKeysLimit,
         xa,
         logs
       )
@@ -324,6 +349,7 @@ object ObjectManagementService {
       keyValuesRepository: KeyValuesRepository[F],
       protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService,
+      didPublicKeysLimit: Int,
       xa: Transactor[F],
       logs: Logs[I, F]
   ): ObjectManagementService[F] =
@@ -334,6 +360,7 @@ object ObjectManagementService {
         keyValuesRepository,
         protocolVersionsRepository,
         blockProcessing,
+        didPublicKeysLimit,
         xa,
         logs
       )
