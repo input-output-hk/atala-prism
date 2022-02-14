@@ -15,7 +15,7 @@ object versions {
   val enumeratumDoobie = "1.7.0"
   val flyway = "8.4.4"
   val grpc = "1.43.2"
-  val kamon = "2.4.2"
+  val kamon = "2.4.7"
   val logback = "1.2.10"
   val logbackLogstash = "7.0.1"
   val jaxb = "2.3.1"
