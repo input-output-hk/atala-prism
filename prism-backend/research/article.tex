@@ -38,7 +38,7 @@ This document describes the current state of the protocol that supports PRISM. P
 
 \section{Introduction and protocol description}
 
-In this section we will informally describe a protocol to create and manage DIDs (\textbf{D}ecentralized textbf{Id}entifiers), that also allows to manage the creation, revocation and presentation of verifiable credentials.
+In this section we will informally describe a protocol to create and manage DIDs (\textbf{D}ecentralized \textbf{Id}entifiers), that also allows to manage the creation, revocation and presentation of verifiable credentials.
 
 \subsection{DIDs management}
 
@@ -144,14 +144,14 @@ In order to issue a batch of an arbitrary number $N$ of credentials, the issuer 
       The signing key corresponds to the key id in the credentials' claims.
 \item The issuer encodes each signature, and concatenate them to their corresponding credentials using a dot (".") as separator.
       This produces strings of the form $\langle{}encoded\_credentials\rangle{}.\langle{}encoded\_signature\rangle{}$. We call these strings as \emph{signed credentials}.
-\item Now, the issuer takes all the signed credentials, and computes a merkle root from them.
-\item The issuer creates an \emph{IssueBatch} event that contains the merkle root, and signs the event with an \emph{issuing key} associated to his publicly known DID. 
+\item Now, the issuer takes all the signed credentials, and computes a Merkle root from them.
+\item The issuer creates an \emph{IssueBatch} event that contains the Merkle root, and signs the event with an \emph{issuing key} associated to his publicly known DID. 
 \textbf{Note}: Today we use the same issuing key for the event signature and the individual credentials signature, but those could be different keys.
 \item The issuer attaches the signed event to the metadata of a transaction and sends it to the blockchain.
-\item The issuer gives to each user their corresponding signed credential along with their associated merkle inclusion proof.
+\item The issuer gives to each user their corresponding signed credential along with their associated Merkle inclusion proof.
 \end{itemize}
 
-Likewise previous protocol events, all parties will process the transaction once confirmed, validate the event signature and timestamp the merkle root with the time associated to the carrier transaction.
+Likewise previous protocol events, all parties will process the transaction once confirmed, validate the event signature and timestamp the Merkle root with the time associated to the carrier transaction.
 
 Note that, to issue credential batches, the issuer DID \emph{must be published} already. However, users' DIDs can remain unpublished.
 
@@ -160,11 +160,11 @@ Note that, to issue credential batches, the issuer DID \emph{must be published} 
 In order to revoke a credentials, issuers have two alternatives:
 \begin{enumerate}
 \item They revoke all the credentials in a batch.
-      This is done by signing a \emph{RevokeBath} event with a \emph{revocation} key associated to the issuer DID.
-      The signed event contains the merkle root to revoke.
+      This is done by signing a \emph{RevokeBatch} event with a \emph{revocation} key associated to the issuer DID.
+      The signed event contains the Merkle root to revoke.
 \item They revoke specific credentials associated to a batch.
       This is done by signing a \emph{RevokeCredentials} event with a \emph{revocation} key associated to the issuer DID. 
-      The signed event contains both the merkle root associated to the credentials to revoke, and the hashes of the specific credentials to revoke.
+      The signed event contains both the Merkle root associated to the credentials to revoke, and the hashes of the specific credentials to revoke.
 \end{enumerate}
 
 In both variants, the event is published on-chain and processed by all the participants. The participants will timestamp the new information with the carrier transaction time.
@@ -175,13 +175,13 @@ Once they receive credentials from issuers, subjects will present them to intere
 \begin{itemize}
 \item We assume a safe communication channel between the subject and verifier.
       We also assume that the channel can be identified by an identifier $ch$.
-\item The subject shares his credential and merkle inclusion proof to the verifier.
+\item The subject shares his credential and Merkle inclusion proof to the verifier.
 \item The verifier then: 
 	\begin{itemize}
-	\item computes the merkle root from the inclusion proof and the credential hash;
+	\item computes the Merkle root from the inclusion proof and the credential hash;
 	\item extracts the issuer DID and signing key id from the credential claims,
-	\item retrieves from the state he computed from the blockchain, the timestamps associated to the merkle root and the issuing key, 
-	\item checks if the merkle root or credential hash has been revoked
+	\item retrieves from the state he computed from the blockchain, the timestamps associated to the Merkle root and the issuing key, 
+	\item checks if the Merkle root or credential hash has been revoked
 	\item validates the issuer signature on the credential, and determines if it was signed at a time when the issuer key was valid.
 	\end{itemize}
   \textbf{Note:} The signature of the IssueBatch event has already been verified by the protocol participants at the time of batch publication. 
@@ -228,7 +228,7 @@ sends through the ECIES-secured channel. Note that we could involve the random
 value shared via the QR code for this. But that would force us to re-execute the
 first phase of the protocol even when the QR code is compromised after having
 completed the first phase of the protocol. Digital signatures using the issuer's
-keypair prevent this.
+key pair prevent this.
 
 Note that we are combining signature and encryption (plus, the MAC-based
 authentication natively provided by ECIES). This places us in the context put
@@ -255,9 +255,10 @@ While the protocol is simple, and is based on common cryptographic constructions
 it is easy to get such protocols wrong, as pointed out in numerous occasions
 \cite{davi01, kraw01}. Hence, we have used Tamarin%
 \footnote{https://tamarin-prover.github.io/ (Last access, October 5th, 2021.)}
-to model our protocol\footnote{Source code for the model available here
-  \url{https://github.com/input-output-hk/atala-prism/blob/research-tamarin-connector/prism-backend/research/formalizations/connector.spthy}
-  \todo{Update to final URL.}}, which is schematized in \figref{fig:e2econnector}
+to model our protocol% \footnote{Source code for the model available here
+  % \url{https://github.com/input-output-hk/atala-prism/blob/research-tamarin-connector/prism-backend/research/formalizations/connector.spthy}
+  % \todo{Update to final URL.}}
+, which is schematized in \figref{fig:e2econnector}
 
 \begin{figure}[ht!]
   \centering
