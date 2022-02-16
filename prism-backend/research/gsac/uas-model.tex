@@ -41,41 +41,43 @@ we assume that each has its own issuer and inspector.
   \parm, returns a user's key pair.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
-  \Obtain(\usk,\UAttrs,\DAttrs,\ldblbrace (gpk_i,\cred_i,\UAttrs_i,\DAttrs_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\DAttrs,\upk,\ldblbrace (\gpk_i,\DAttrs_i)\rdblbrace_{i \in \Issuers})
+  \Obtain(\usk,\uattrs,\dattrs,\ldblbrace (gpk_i,\cred_i,\uattrs_i,\dattrs_i)\rdblbrace_{i \in \Issuers}),
+  \Issue(\isk,\upk,\ldblbrace (\gpk_i,\dattrs_i)\rdblbrace_{i \in \Issuers})
   \rangle$.] %
   This interactive protocol lets a user with key pair (\upk,\usk) running the
   \Obtain process, obtain a credential \cred from an issuer in the system, on
-  attribute set $\UAttrs \cup \DAttrs$, where the attributes in $\UAttrs$ are
-  kept hidden from the issuer, while those in \DAttrs are revealed. In order
-  to get the credential, the user may leverage previously obtained credentials
-  $\cred_i$ from a multiset of other issuers (including the one to whom a new
-  credential is being requested) with public keys $\gpk_i$. Moreover, each
-  credential $\cred_i$ can be used to prove claims over undisclosed attributes
-  $\UAttrs_i$ that the user wishes to include in the new credential. The user
+  attribute set $\uattrs \cup \dattrs$, where the attributes in $\uattrs$ (and
+  the ones in the $\uattrs_i$'s) are kept hidden from the issuer, while those in
+  \dattrs (as well as those in the $\dattrs_i$'s) are revealed. Moreover,
+  $\uattrs \cup \dattrs$ must be a subset of $\bigcup_i (\uattrs_i \cup
+  \dattrs_i)$. In order to get the credential, the user may leverage previously
+  obtained credentials $\cred_i$ from a multiset of other issuers (including the
+  one to whom a new credential is being requested) with public keys $\gpk_i$.
+  Moreover, each credential $\cred_i$ can be used to prove claims over
+  undisclosed attributes $\uattrs_i$. The user
   outputs the produced credential \cred, while the issuer outputs the protocol
   transcript \utrans for the produced credential.
-\item[$\sig \gets \Sign(\usk,\ldblbrace (\gpk_i,\cred_i,\UAttrs_i,\DAttrs_i)
+\item[$\sig \gets \Sign(\usk,\ldblbrace (\gpk_i,\cred_i,\uattrs_i,\dattrs_i)
   \rdblbrace_{i \in \Issuers},\msg)$.] %
   The user with with secret key \usk, who obtained credentials $\cred_i$ from a
   multiset of issuers in the system, produces a signature \sig over message
   \msg. The produced signature proves arbitrary claims over the set of
-  disclosed attributes $\bigcup_i \DAttrs_i$ and undisclosed attributes
-  $\bigcup_i \UAttrs_i$.
+  disclosed attributes $\bigcup_i \dattrs_i$ and undisclosed attributes
+  $\bigcup_i \uattrs_i$.
 \item[$1/0 \gets
-  \Verify(\sig,\msg,\ldblbrace (\gpk_i,\DAttrs_i) \rdblbrace_{i \in \Issuers})$.]
+  \Verify(\sig,\msg,\ldblbrace (\gpk_i,\dattrs_i) \rdblbrace_{i \in \Issuers})$.]
   Checks whether \sig is a valid signature, over message \msg, satisfying
-  arbitrary claims over disclosed attributes $\bigcup_i \DAttrs_i$, as well as
+  arbitrary claims over disclosed attributes $\bigcup_i \dattrs_i$, as well as
   potentially other undisclosed attributes endorsed by issuers in the systsem
   with public keys $\bigcup_i \gpk_i$.
 \item[$(\y,\iproof)/\bot \gets
   \Inspect(\osk,\utrans,\sig,\msg,
-  \ldblbrace (\gpk_i,\DAttrs_i) \rdblbrace_{i \in \Issuers})$.] %
+  \ldblbrace (\gpk_i,\dattrs_i) \rdblbrace_{i \in \Issuers})$.] %
   \commentwho{Jesus}{I do not like this definition. It's complicated. This needs
     to be rephrased from scratch.}
   Executed by the inspector with opening key \osk. Receives a signature \sig
   over message \msg, produced by a set of credentials satisfying claims on
-  disclosed attributes $\bigcup_i \DAttrs_i$, as well as potentially undisclosed
+  disclosed attributes $\bigcup_i \dattrs_i$, as well as potentially undisclosed
   attributes, all endorsed by a multiset of issuers with public keys $\gpk_i$. 
   If \utrans is a valid transcript of the execution of a
   $\langle\Obtain,\Issue\rangle$ interactive protocol where the signer obtained
@@ -83,7 +85,7 @@ we assume that each has its own issuer and inspector.
   a value $\y$ derived from the signer's credential and public key, and the
   signed message, as well as a proof of correct inspection.
 \item[$1/0 \gets \Judge(\y,\iproof,\sig,\msg,
-  \ldblbrace (\gpk_i,\DAttrs_i)\rdblbrace_{i \in \Issuers})$.] %
+  \ldblbrace (\gpk_i,\dattrs_i)\rdblbrace_{i \in \Issuers})$.] %
   Checks if \iproof is a valid inspection correctness proof for the value \y,
   obtained by applying \Inspect to the the pair signature \sig over \msg. 
 \end{description}
@@ -104,14 +106,14 @@ In games that involve challenge user or credential identifiers, we use \cuid and
 \ccid to refer to these challenge user/credential.
 %
 The games, usually through the oracles, keep track of the users (through
-set \USK) and credentials (through table \CRED) that are created as a result of
+set \UK) and credentials (through table \CRED) that are created as a result of
 oracle calls by the adversary, as well as the attributes that each credential
 is associated (through table \ATTR), and the user to which each credential has
 been issued to (through table \OWNR). We use the user and credential identifiers
 to reference specific user key pairs, credentials, and credential attributes.
-For instance, $\USK[\uid]$ refers to the user key pair corresponding to user
-with identifier \uid, $\PUBUSK[\uid]$ refers to the public key of that key pair,
-and $\PRVUSK[\uid]$ to the private key; credential $\CRED[\cid]$ refers to the
+For instance, $\UK[\uid]$ refers to the user key pair corresponding to user
+with identifier \uid, $\PUBUK[\uid]$ refers to the public key of that key pair,
+and $\PRVUK[\uid]$ to the private key; credential $\CRED[\cid]$ refers to the
 credential data associated to the credential with identifier \cid; $\ATTR[\cid]$
 is the set of attributes that was assigned to the credential with identifier
 \cid; and $\OWNR[\cid]$ is set to the \uid corresponding to the user that
@@ -138,27 +140,34 @@ functionality that could otherwise be executed only by honest parties with
 private knowledge -- knowledge that would make the adversary capable of
 trivially breaking the security properties formalized in the experiments.
 In the game-based definitions of our \GSAC model, we leverage the following
-oracles, which are formally defined in \figref{fig:oracles}
+oracles, which are formally defined in \figref{fig:oracles}. Note that we
+identify issuers and inspectors by the group identifier.
 
 \begin{description}
-\item[$\HUGEN$.] Adds a new honest user to the game, by honestly generating
+\item[\HIGEN.] Adds a new honest issuer to the game, by honestly generating
+  its key pair.
+\item[\CIGEN.] Adds a new corrupt issuer to the game or, if the specified issuer
+  already exists and is honest, corrupts it.
+\item[\HOGEN.] Adds a new honest inspector to the game, by honestly generating
+  its key pair.
+\item[\COGEN.] Adds a new corrupt inspector to the game or, if the specified
+  inspector already exists and is honest, corrupts it. 
+\item[\HUGEN.] Adds a new honest user to the game, by honestly generating
   the user's key pair.
-\item[$\CUGEN$.] If the specified user identifier is not already in the game,
-  sets the user public key to a value given by the adversary. If it already
-  exists, and is associated to an honest user, then it reveals to the adversary
-  the user's secret key.
-\item[$\OBTISS$.] Lets the adversary add a new honestly generated credential to
+\item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
+  user already exists and is honest, corrupts it.
+\item[\OBTISS.] Lets the adversary add a new honestly generated credential to
   the game, on behalf of an honest user.
-\item[$\OBTAIN$.] Enables the adversary to play the role of a dishonest issuer
+\item[\OBTAIN.] Enables the adversary to play the role of a dishonest issuer
   in games that support it, by letting it interact with honest users who want to
   receive credentials.
-\item[$\ISSUE$.] Allows the adversary to play the role of dishonest users,
+\item[\ISSUE.] Allows the adversary to play the role of dishonest users,
   requesting an honest issuer to produce credentials for them.
-\item[$\SIGN$.] Lets the adversary get signatures from credentials belonging
+\item[\SIGN.] Lets the adversary get signatures from credentials belonging
   to honest users.
-\item[$\OPEN$.] Given an honestly produced signature, lets the adversary learn
+\item[\OPEN.] Given an honestly produced signature, lets the adversary learn
   which credential was used to produce it.
-\item[$\CHALb$.] Upon receiving two challenge credentials, a common intersecting
+\item[\CHALb.] Upon receiving two challenge credentials, a common intersecting
   set of attributes, and a message, returns a signature produced by one of these
   two credentials, defined by the bit $b$, which is established in the anonymity
   game.
@@ -171,43 +180,69 @@ oracles, which are formally defined in \figref{fig:oracles}
 
       \begin{minipage}[t]{0.55\textwidth}
 
-        \procedure{$\HUGEN(\uid)$}{%
-          \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
-          (\upk,\usk) \gets \UKeyGen(\parm) \\
-          \USK[\uid] \gets (\upk,\usk);
-          \HU \gets \HU \cup \lbrace  \uid \rbrace \\
-          \pcreturn \top \\
+        \procedure{$\HIGEN(\gid,\fissue)$}{%
+          \pcif \gid \in \HI \lor \gid \in \CI: \pcreturn \bot \\
+          (\ipk,\isk) \gets \IKeyGen(\parm) \\
+          \IK[\gid] \gets (\ipk,\isk,\fissue);
+          \HI \gets \HI \cup \lbrace \gid \rbrace \\
+          \pcreturn \ipk \\
         }        
         
-        \procedure{$\CUGEN(\uid,\upk)$}{%
-          \pcif \uid \in \CU: \pcreturn \bot \\
-          \CU \gets \CU \cup \lbrace \uid \rbrace \\          
-          \pcif \uid \in \HU: \\
-          \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
-          \pcind \pcreturn (\USK[\uid],\CRED[\uid]) \\
-          \pcelse: \USK[\uid] = (\upk,\bot) \\          
+        \procedure{$\CIGEN(\gid,\ipk,\fissue)$}{%
+          \pcif \gid \in \CI: \pcreturn \bot \\
+          \CI \gets \CI \cup \lbrace \gid \rbrace \\          
+          \pcif \gid \in \HI: \\
+          \pcind \HI \gets \HI \setminus \lbrace \gid \rbrace; \\
+          \pcind \pcreturn \IK[\gid] \\
+          \pcelse: \IK[\gid] = (\ipk,\bot,\fissue) \\          
           \pcreturn \top \\
         }
 
-        \procedure{$\OBTISS(\uid,\cid,\Attrs)$}{%
-          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cred, \utrans \rangle \gets
-          \langle \Obtain(\gpk,\PRVUSK[\uid],\Attrs), \\
-          \pcind \pcind \pcind \pcind \pcind \pcind
-          \Issue(\gpk,\isk,\PUBUSK[\uid],\Attrs) \rangle \\
-          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+        \procedure{$\HUGEN(\uid)$}{%
+          \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
+          (\upk,\usk) \gets \UKeyGen(\parm) \\
+          \UK[\uid] \gets (\upk,\usk);
+          \HU \gets \HU \cup \lbrace  \uid \rbrace \\
           \pcreturn \top \\
         }        
 
-        \procedure{$\OBTAIN(\uid,\cid,\Attrs)$}{%
+        \procedure{$\ISSUE(\cid,\uid,\gid,
+          \lbrace (\sgid,\scid,\dattrs) \rbrace)$}{%
+          \pcif \uid \notin \CU: \pcreturn \bot \\
+          \pcif \gid \notin \HI: \pcreturn \bot \\
+          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
+          \pcif \exists \cid \in \scid~\st~\CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cdot, \utrans \rangle \gets
+          \langle \adv, %
+          \Issue(\PRVIK[\gid],\PUBUK[\uid],(\GK[\gid],\dattrs)) \rangle \\
+          \trans[\cid] \gets \utrans \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid, \bot, \dattrs) \\
+          \pcreturn \top \\          
+        }                
+
+        \procedure{$\OBTISS(\cid,\uid,\gid,
+          \lbrace (\sgpk,\scid,\uattrs,\dattrs) \rbrace)$}{%
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \gid \notin \HI: \pcreturn \bot \\          
+          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
+          \pcif \exists \cid \in \scid~\st~\CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cred, \utrans \rangle \gets
+          \langle \Obtain(\gpk,\PRVUK[\uid],\attrs), \\
+          \pcind \pcind \pcind \pcind \pcind \pcind
+          \Issue(\gpk,\isk,\PUBUK[\uid],\attrs) \rangle \\
+          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \attrs \\
+          \pcreturn \top \\
+        }        
+
+        \procedure{$\OBTAIN(\cid,\uid,\gid,
+          \lbrace (\sgpk,\scid,\uattrs,\dattrs) \rbrace)$}{%
           \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\gpk,\PRVUSK[\uid],\Attrs),\adv \rangle \\
+          \langle \Obtain(\gpk,\PRVUK[\uid],\attrs),\adv \rangle \\
           \CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \attrs \\
           \pcreturn \top \\
         }
         
@@ -217,45 +252,65 @@ oracles, which are formally defined in \figref{fig:oracles}
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\ISSUE(\uid,\cid,\Attrs)$}{%
-          \pcif \uid \notin \CU: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cdot, \utrans \rangle \gets
-          \langle \adv, \Issue(\gpk,\isk,\PUBUSK[\uid],\Attrs) \rangle \\
-          \trans[\cid] \gets \utrans \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
-          \pcreturn \top \\          
+        \procedure{$\HOGEN(\gid,\feval,\finsp)$}{%
+          \pcif \gid \in \HO \lor \gid \in \CO: \pcreturn \bot \\
+          (\opk,\osk) \gets \OKeyGen(\parm) \\
+          \OK[\gid] \gets (\opk,\osk,\feval,\finsp);
+          \HO \gets \HO \cup \lbrace  \gid \rbrace \\
+          \pcreturn \opk \\
+        }        
+        
+        \procedure{$\COGEN(\gid,\opk,\feval,\finsp)$}{%
+          \pcif \gid \in \CO: \pcreturn \bot \\
+          \CO \gets \CO \cup \lbrace \gid \rbrace \\          
+          \pcif \gid \in \HO: \\
+          \pcind \HO \gets \HO \setminus \lbrace \gid \rbrace; \\
+          \pcind \pcreturn \OK[\gid]) \\
+          \pcelse: \OK[\gid] = (\opk,\bot,\feval,\finsp) \\
+          \pcreturn \top \\
+        }
+
+        \procedure{$\CUGEN(\uid,\upk)$}{%
+          \pcif \uid \in \CU: \pcreturn \bot \\
+          \CU \gets \CU \cup \lbrace \uid \rbrace \\          
+          \pcif \uid \in \HU: \\
+          \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
+          \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
+          \pcelse: \UK[\uid] = (\upk,\bot) \\          
+          \pcreturn \top \\
         }        
 
-        \procedure{$\SIGN(\cid,\DAttrs,\msg)$}{%
+        \procedure{$\SIGN(\msg,
+          \lbrace (\scid,\uattrs,\dattrs) \rbrace )$}{%
           \uid \gets \OWNR[\cid] \\
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \cred \gets \CRED[\cid] \\
-          \sig \gets \Sign(\gpk,\PRVUSK[\uid],\cred,\DAttrs,\msg) \\
-          \SIG[\cid] \gets \SIG[\cid] \cup \lbrace (\sig,\DAttrs,\msg) \rbrace \\
+          \sig \gets \Sign(\gpk,\PRVUK[\uid],\cred,\dattrs,\msg) \\
+          \SIG[\cid] \gets \SIG[\cid] \cup \lbrace (\sig,\dattrs,\msg) \rbrace \\
           \pcreturn \sig \\
         }
 
         \procedure{$\OPEN(\sig)$}{%
-          \textrm{Let}~\cid~\textrm{be s.t.}~(\sig,\DAttrs,\msg) \in \SIG[\cid] \\
+          \textrm{Let}~\cid~\textrm{be s.t.}~(\sig,\dattrs,\msg) \in \SIG[\cid] \\
           \pcif \textrm{no such \cid exists, or there is more than one}: \\
           \pcind \pcreturn \bot \\
           \pcif \sig \in \CSIG: \pcreturn \bot \\
-          (\upk,\cred,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\DAttrs,\msg) \\
+          (\upk,\cred,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\dattrs,\msg) \\
 %          \OSIG \gets \OSIG \cup \lbrace (\sig,\upk,\cred) \rbrace \\
 %          \CCRED \gets \CCRED \cup \lbrace \cid \rbrace \\
           \pcreturn (\upk,\cred,\oproof) \\
         }
 
-        \procedure{$\CHALb(\ccid_0,\ccid_1,\DAttrs,\msg)$}{%
-          \pcif \ATTR[\ccid_0] \cap \ATTR[\ccid_1] \nsubseteq \DAttrs:
+        \procedure{$\CHALb(\msg,
+          \lbrace (\cscid_0,\cscid_1,\uattrs,\dattrs) \rbrace )$}{%
+          \pcif \ATTR[\cscid_0] \cap \ATTR[\cscid_1] \nsubseteq \dattrs:
           \pcreturn \bot \\
           \pcif \cuid_0 \neq \bot \lor \cuid_1 \neq \bot: \pcreturn \bot \\
           \cuid_0 = \OWNR[\ccid_0];~\cuid_1 = \OWNR[\ccid_1] \\
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
  %         \pcif \ccid_0 \in \CCRED \lor \ccid_1 \in \CCRED: \pcreturn \bot \\
-          \csig \gets \Sign(\gpk,\PRVUSK[\cuid_b],\CRED[\ccid_b],
-          \DAttrs,\msg) \\
+          \csig \gets \Sign(\gpk,\PRVUK[\cuid_b],\CRED[\ccid_b],
+          \dattrs,\msg) \\
           \CSIG \gets \CSIG \cup \lbrace \csig \rbrace \\
           \pcreturn \csig
         }
@@ -272,9 +327,9 @@ oracles, which are formally defined in \figref{fig:oracles}
 \paragraph{Correctness.} %
 Correctness of \GSAC schemes is formalized through the experiment in
 \figref{fig:exp-gsac-corr}. It states that a signature for some message \msg,
-revealing attributes \DAttrs, which was honestly produced though a credential
+revealing attributes \dattrs, which was honestly produced though a credential
 that was obtained by an honest user interacting with an honest issuer, with a
-set of attributes \Attrs such that $\DAttrs \subseteq \Attrs$, must be accepted
+set of attributes \attrs such that $\dattrs \subseteq \attrs$, must be accepted
 by \Verify. Moreover, an honestly produced correctness proof of opening for such
 signature, revealing the public key pair of the user, must also be accepted by
 \Judge.
@@ -284,13 +339,13 @@ signature, revealing the public key pair of the user, must also be accepted by
      \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-    (\cid,\DAttrs,\msg) \gets \adv^{\HUGEN,\OBTISS}(\gpk) \\
-    \pcif \DAttrs \nsubseteq \ATTR[\cid] :
+    (\cid,\dattrs,\msg) \gets \adv^{\HUGEN,\OBTISS}(\gpk) \\
+    \pcif \dattrs \nsubseteq \ATTR[\cid] :
     \pcreturn \bot \\
-    \sig \gets \Sign(\gpk,\PRVUSK[\OWNR[\cid]],\CRED[\cid],\DAttrs,\msg) \\
-    (\upk,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\DAttrs,\msg) \\
-    \pcif \Verify(\gpk, \sig, \DAttrs,\msg) = 0 \lor
-    \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0:
+    \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\dattrs,\msg) \\
+    (\upk,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\dattrs,\msg) \\
+    \pcif \Verify(\gpk, \sig, \dattrs,\msg) = 0 \lor
+    \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 0:
     \pcreturn 1 \\
     \pcreturn 0
   }
@@ -369,10 +424,10 @@ Our notion of traceability for \GSAC combines both requirements. It assumes an
 honest issuer, as otherwise the adversary can create untraceable credentials at
 will. The game then lets the adversary add honest and corrupt users, create
 honest signatures, and open them. The adversary wins if, after this interaction,
-is able to produce a $(\sig,\DAttrs,\msg)$ tuple that is accepted by \Verify,
+is able to produce a $(\sig,\dattrs,\msg)$ tuple that is accepted by \Verify,
 but either cannot be opened, it can be opened by the proof is rejected by
 \Judge, or even though it is accepted by \Judge, there was no issued credential
-(honest or not) that contained the set of attributes \DAttrs. We formally
+(honest or not) that contained the set of attributes \dattrs. We formally
 define traceability in the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
 
 \begin{figure}[htp!]
@@ -380,20 +435,20 @@ define traceability in the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
      \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-     (\sig,\DAttrs,\msg) \gets
+     (\sig,\dattrs,\msg) \gets
      \adv^{\HUGEN,\CUGEN,\OBTISS,\ISSUE,\SIGN,\OPEN}(\gpk,\osk) \\
-     \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1~\land~( \\
+     \pcreturn 1~\pcif \Verify(\gpk,\sig,\dattrs,\msg) = 1~\land~( \\
      \pcind \pccomment{All \Obtain transcripts fail to open \sig} \\
      \pcind \forall \utrans \in \trans:
-     \Open(\gpk,\osk,\utrans,\sig,\DAttrs,\msg) = \bot~\lor \\
+     \Open(\gpk,\osk,\utrans,\sig,\dattrs,\msg) = \bot~\lor \\
      \pcind \pccomment{Such transcript exists, but ...} \\
-     \pcind \exists~\utrans~\st~\Open(\gpk,\osk,\utrans,\sig,\DAttrs,\msg) =
+     \pcind \exists~\utrans~\st~\Open(\gpk,\osk,\utrans,\sig,\dattrs,\msg) =
      (\upk,\cred,\oproof)~\land (\\
      \pcind \pcind \pccomment{... the opening proof is rejected by \Judge ...} \\
-     \pcind \pcind \Judge(\gpk,\upk,\cred,\oproof,\sig,\DAttrs,\msg) = 0~\lor \\
-     \pcind \pcind \pccomment{... or \Judge accepts the proof, but \DAttrs was
+     \pcind \pcind \Judge(\gpk,\upk,\cred,\oproof,\sig,\dattrs,\msg) = 0~\lor \\
+     \pcind \pcind \pccomment{... or \Judge accepts the proof, but \dattrs was
        not issued to any credential} \\
-     \pcind \pcind \DAttrs \nsubseteq \ATTR[\cred] \\
+     \pcind \pcind \dattrs \nsubseteq \ATTR[\cred] \\
      \pcind ) \\
      ) \\
      \pcreturn 0
@@ -424,7 +479,7 @@ by having open proofs output the identity of a user who did not create the
 signature being opened.
 %
 In \GSAC schemes, in order for a user to be framed, the adversary first needs to
-create a $(\sig,\DAttrs,\msg,\upk,\cred,\oproof)$ such that the signature,
+create a $(\sig,\dattrs,\msg,\upk,\cred,\oproof)$ such that the signature,
 attributes, and message are accepted by \Verify, and which, along with the user
 public key, credential, and open correctness proof, are accepted by \Judge.
 Then, the adversary wins the game if the owner of the credential is honest, but
@@ -441,13 +496,13 @@ key and the credential that were used to create the signature.
     \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-     (\sig,\DAttrs,\msg,\upk,\cred,\oproof) \gets
+     (\sig,\dattrs,\msg,\upk,\cred,\oproof) \gets
      \adv^{\HUGEN,\CUGEN,\OBTAIN,\SIGN}(\gpk,\isk,\osk) \\
-     \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1 \land
+     \pcreturn 1~\pcif \Verify(\gpk,\sig,\dattrs,\msg) = 1 \land
      \OWNR[\cred] \in \HU \\%\land \cred \notin \CCRED~\land\\
-     \pcind \Judge(\gpk,\upk,\cred,\oproof,\sig,\DAttrs,\msg) = 1~\land \\
+     \pcind \Judge(\gpk,\upk,\cred,\oproof,\sig,\dattrs,\msg) = 1~\land \\
      \pcind \pccomment{\sig was not produced by \SIGN, or \upk and \cred do not match} \\
-     \pcind (\sig \notin \SIG[\OWNR[\cred]] \lor \PUBUSK[\OWNR[\cred]] \neq \upk) \\
+     \pcind (\sig \notin \SIG[\OWNR[\cred]] \lor \PUBUK[\OWNR[\cred]] \neq \upk) \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \GSAC schemes.}

@@ -1,4 +1,3 @@
-
 \mathchardef\mhyphen="2D
 \newcommand*{\ldblbrace}{\{\mskip-5mu\{}
 \newcommand*{\rdblbrace}{\}\mskip-5mu\}}
@@ -10,6 +9,10 @@
 
 % Symbols for UAS
 \def\UAS{\ensuremath{\mathsf{UAS}}\xspace}
+\def\HIGEN{\ensuremath{\mathsf{HIGEN}}\xspace}
+\def\CIGEN{\ensuremath{\mathsf{CIGEN}}\xspace}
+\def\HOGEN{\ensuremath{\mathsf{HOGEN}}\xspace}
+\def\COGEN{\ensuremath{\mathsf{COGEN}}\xspace}
 \def\HUGEN{\ensuremath{\mathsf{HUGEN}}\xspace}
 \def\CUGEN{\ensuremath{\mathsf{CUGEN}}\xspace}
 \def\OBTAIN{\ensuremath{\mathsf{OBTAIN}}\xspace}
@@ -21,9 +24,20 @@
 \def\ATTR{\ensuremath{\mathsf{ATTR}}\xspace}
 \def\OWNR{\ensuremath{\mathsf{OWNR}}\xspace}
 \def\CRED{\ensuremath{\mathsf{CRED}}\xspace}
-\def\USK{\ensuremath{\mathsf{\MakeUppercase{\usk}}}\xspace}
-\def\PUBUSK{\ensuremath{\mathsf{P}\USK}\xspace}
-\def\PRVUSK{\ensuremath{\mathsf{S}\USK}\xspace}
+\def\IK{\ensuremath{\mathsf{IK}}\xspace}
+\def\OK{\ensuremath{\mathsf{OK}}\xspace}
+\def\UK{\ensuremath{\mathsf{UK}}\xspace}
+\def\GK{\ensuremath{\mathsf{GK}}\xspace}
+\def\PUBIK{\ensuremath{\mathsf{P}\IK}\xspace}
+\def\PRVIK{\ensuremath{\mathsf{S}\IK}\xspace}
+\def\PUBOK{\ensuremath{\mathsf{P}\OK}\xspace}
+\def\PRVOK{\ensuremath{\mathsf{S}\OK}\xspace}
+\def\PUBUK{\ensuremath{\mathsf{P}\UK}\xspace}
+\def\PRVUK{\ensuremath{\mathsf{S}\UK}\xspace}
+\def\HI{\ensuremath{\mathsf{HI}}\xspace}
+\def\CI{\ensuremath{\mathsf{CI}}\xspace}
+\def\HO{\ensuremath{\mathsf{HO}}\xspace}
+\def\CO{\ensuremath{\mathsf{CO}}\xspace}
 \def\HU{\ensuremath{\mathsf{HU}}\xspace}
 \def\CU{\ensuremath{\mathsf{CU}}\xspace}
 \def\SIG{\ensuremath{\mathsf{SIG}}\xspace}
@@ -36,14 +50,15 @@
 \def\osk{\ensuremath{osk}\xspace}
 \def\opk{\ensuremath{opk}\xspace}
 \def\gpk{\ensuremath{gpk}\xspace}
+\def\sgpk{\ensuremath{\mathbf{\gpk}}\xspace}
 \def\usk{\ensuremath{usk}\xspace}
 \def\upk{\ensuremath{upk}\xspace}
-\def\Attrs{\ensuremath{A}\xspace}
-\def\DAttrs{\ensuremath{D}\xspace}
-\def\UAttrs{\ensuremath{U}\xspace}
+\def\attrs{\ensuremath{\mathbf{a}}\xspace}
+\def\dattrs{\ensuremath{\mathbf{d}}\xspace}
+\def\uattrs{\ensuremath{\mathbf{u}}\xspace}
 \def\cred{\ensuremath{cred}\xspace}
 \def\utrans{\ensuremath{reg}\xspace}
-\def\trans{\ensuremath{\MakeUppercase{reg}}\xspace}  
+\def\trans{\ensuremath{\mathbf{reg}}\xspace}  
 \def\msg{\ensuremath{m}\xspace}
 \def\c{\ensuremath{c}\xspace}
 \def\y{\ensuremath{y}\xspace}
@@ -53,8 +68,8 @@
 \def\IKeyGen{\ensuremath{IKG}\xspace}
 \def\OKeyGen{\ensuremath{OKG}\xspace}
 \def\UKeyGen{\ensuremath{UKG}\xspace}
-\def\Obtain{\ensuremath{Obtain}\xspace}
-\def\Issue{\ensuremath{Issue}\xspace}
+\def\Obtain{\ensuremath{Obt}\xspace}
+\def\Issue{\ensuremath{Iss}\xspace}
 \def\Sign{\ensuremath{Sign}\xspace}
 \def\Verify{\ensuremath{Verify}\xspace}
 \def\Inspect{\ensuremath{Inspect}\xspace}
@@ -70,13 +85,20 @@
 \def\AdvNonframe{\ensuremath{\Adv_{\UAS,\adv}^{frame}}\xspace}
 \def\choose{\ensuremath{\mathsf{choose}}\xspace}
 \def\guess{\ensuremath{\mathsf{guess}}\xspace}
+\def\gid{\ensuremath{\mathsf{gid}}\xspace}
+\def\sgid{\ensuremath{\boldsymbol{\mathsf{gid}}}\xspace}
 \def\uid{\ensuremath{\mathsf{uid}}\xspace}
 \def\cuid{\ensuremath{\mathsf{uid}^*}\xspace}
 \def\cid{\ensuremath{\mathsf{cid}}\xspace}
+\def\scid{\ensuremath{\boldsymbol{\mathsf{cid}}}\xspace}
 \def\ccid{\ensuremath{\mathsf{cid}^*}\xspace}
+\def\cscid{\ensuremath{\scid^*}\xspace}
 \def\csig{\ensuremath{\mathsf{\sigma}^*}\xspace}
-\def\LangIss{\ensuremath{L_{iss}}\xspace}
-\def\LangIns{\ensuremath{L_{ins}}\xspace}
+\def\LangIss{\ensuremath{L_{is}}\xspace}
+\def\LangIns{\ensuremath{L_{in}}\xspace}
+\def\fissue{\ensuremath{f_{is}}\xspace}
+\def\feval{\ensuremath{f_{ev}}\xspace}
+\def\finsp{\ensuremath{f_{in}}\xspace}
 \def\Issuers{\ensuremath{\mathbb{I}}\xspace}
 
 
