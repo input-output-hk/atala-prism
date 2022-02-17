@@ -41,51 +41,56 @@ we assume that each has its own issuer and inspector.
   \parm, returns a user's key pair.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
-  \Obtain(\usk,\uattrs,\dattrs,\ldblbrace (gpk_i,\cred_i,\uattrs_i,\dattrs_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\upk,\ldblbrace (\gpk_i,\dattrs_i)\rdblbrace_{i \in \Issuers})
+  \Obtain(\usk,\uattrs,\dattrs,\ldblbrace (gpk_i,\cred_i,\tuattrs_i,\tdattrs_i)\rdblbrace_{i \in \Issuers}),
+  \Issue(\isk,\upk,\dattrs,\ldblbrace (\gpk_i,\tdattrs_i)\rdblbrace_{i \in \Issuers})
   \rangle$.] %
   This interactive protocol lets a user with key pair (\upk,\usk) running the
   \Obtain process, obtain a credential \cred from an issuer in the system, on
   attribute set $\uattrs \cup \dattrs$, where the attributes in $\uattrs$ (and
-  the ones in the $\uattrs_i$'s) are kept hidden from the issuer, while those in
-  \dattrs (as well as those in the $\dattrs_i$'s) are revealed. Moreover,
-  $\uattrs \cup \dattrs$ must be a subset of $\bigcup_i (\uattrs_i \cup
-  \dattrs_i)$. In order to get the credential, the user may leverage previously
+  the ones in the $\tuattrs_i$'s) are kept hidden from the issuer, while those
+  in \dattrs (as well as those in the $\tdattrs_i$'s) are revealed. Moreover,
+  $\uattrs \cup \dattrs$ must be a subset of $\bigcup_i (\tuattrs_i \cup
+  \tdattrs_i)$. In order to get the credential, the user may leverage previously
   obtained credentials $\cred_i$ from a multiset of other issuers (including the
   one to whom a new credential is being requested) with public keys $\gpk_i$.
   Moreover, each credential $\cred_i$ can be used to prove claims over
-  undisclosed attributes $\uattrs_i$. The user
-  outputs the produced credential \cred, while the issuer outputs the protocol
-  transcript \utrans for the produced credential.
-\item[$\sig \gets \Sign(\usk,\ldblbrace (\gpk_i,\cred_i,\uattrs_i,\dattrs_i)
-  \rdblbrace_{i \in \Issuers},\msg)$.] %
+  undisclosed attributes $\tuattrs_i$. The user outputs the produced credential
+  \cred, while the issuer outputs the protocol transcript \utrans for the
+  produced credential.
+\item[$\sig \gets \Sign(\usk,\msg,\uattrs,\dattrs,
+  \ldblbrace (\gpk_i,\cred_i,\tuattrs_i,\tdattrs_i)\rdblbrace_{i \in \Issuers})$.]
   The user with with secret key \usk, who obtained credentials $\cred_i$ from a
   multiset of issuers in the system, produces a signature \sig over message
   \msg. The produced signature proves arbitrary claims over the set of
   disclosed attributes $\bigcup_i \dattrs_i$ and undisclosed attributes
-  $\bigcup_i \uattrs_i$.
+  $\bigcup_i \uattrs_i$, which must be a subset of the corresponding disclosed
+  (resp. undisclosed) attributes \tdattrs (resp. \tuattrs) in the credentials
+  used to generate the signature.
 \item[$1/0 \gets
-  \Verify(\sig,\msg,\ldblbrace (\gpk_i,\dattrs_i) \rdblbrace_{i \in \Issuers})$.]
+  \Verify(\sig,\msg,\dattrs, \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})$.]
   Checks whether \sig is a valid signature, over message \msg, satisfying
-  arbitrary claims over disclosed attributes $\bigcup_i \dattrs_i$, as well as
+  arbitrary claims over disclosed attributes $\dattrs$, as well as
   potentially other undisclosed attributes endorsed by issuers in the systsem
   with public keys $\bigcup_i \gpk_i$.
 \item[$(\y,\iproof)/\bot \gets
-  \Inspect(\osk,\utrans,\sig,\msg,
-  \ldblbrace (\gpk_i,\dattrs_i) \rdblbrace_{i \in \Issuers})$.] %
-  \commentwho{Jesus}{I do not like this definition. It's complicated. This needs
+  \Inspect(\osk,\trans,\sig,\msg,\dattrs,
+  \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})$.] %
+  \commentwho{Jesus}{I do not like this description. It's complicated. This needs
     to be rephrased from scratch.}
   Executed by the inspector with opening key \osk. Receives a signature \sig
   over message \msg, produced by a set of credentials satisfying claims on
-  disclosed attributes $\bigcup_i \dattrs_i$, as well as potentially undisclosed
+  disclosed attributes $\dattrs$, as well as potentially undisclosed
   attributes, all endorsed by a multiset of issuers with public keys $\gpk_i$. 
-  If \utrans is a valid transcript of the execution of a
+  If \trans is a valid set of transcripts of the execution of a
   $\langle\Obtain,\Issue\rangle$ interactive protocol where the signer obtained
-  the credential associated to the inspector's group, then the function outputs
+  the credential associated to the inspector's group%
+  \footnote{Note: we are not constraining that the group to which the inspector
+    with key \osk belongs to, issued only one of the credentials used to
+    generate the signature being inspected.}, then the function outputs
   a value $\y$ derived from the signer's credential and public key, and the
   signed message, as well as a proof of correct inspection.
-\item[$1/0 \gets \Judge(\y,\iproof,\sig,\msg,
-  \ldblbrace (\gpk_i,\dattrs_i)\rdblbrace_{i \in \Issuers})$.] %
+\item[$1/0 \gets \Judge(\y,\iproof,\sig,\msg,\dattrs,
+  \ldblbrace \gpk_i\rdblbrace_{i \in \Issuers})$.] %
   Checks if \iproof is a valid inspection correctness proof for the value \y,
   obtained by applying \Inspect to the the pair signature \sig over \msg. 
 \end{description}
@@ -140,8 +145,9 @@ functionality that could otherwise be executed only by honest parties with
 private knowledge -- knowledge that would make the adversary capable of
 trivially breaking the security properties formalized in the experiments.
 In the game-based definitions of our \GSAC model, we leverage the following
-oracles, which are formally defined in \figref{fig:oracles}. Note that we
-identify issuers and inspectors by the group identifier.
+oracles, which are formally defined in \figref{fig:oracles1} and
+\figref{fig:oracles2}. Note that we identify issuers and inspectors by the group
+identifier.
 
 \begin{description}
 \item[\HIGEN.] Adds a new honest issuer to the game, by honestly generating
@@ -183,8 +189,9 @@ identify issuers and inspectors by the group identifier.
         \procedure{$\HIGEN(\gid,\fissue)$}{%
           \pcif \gid \in \HI \lor \gid \in \CI: \pcreturn \bot \\
           (\ipk,\isk) \gets \IKeyGen(\parm) \\
-          \IK[\gid] \gets (\ipk,\isk,\fissue);
+          \IK[\gid] \gets (\ipk,\isk,\fissue) \\
           \HI \gets \HI \cup \lbrace \gid \rbrace \\
+          \GK[\gid] \gets (\ipk,\fissue,\cdot,\cdot,\cdot) \\
           \pcreturn \ipk \\
         }        
         
@@ -194,7 +201,8 @@ identify issuers and inspectors by the group identifier.
           \pcif \gid \in \HI: \\
           \pcind \HI \gets \HI \setminus \lbrace \gid \rbrace; \\
           \pcind \pcreturn \IK[\gid] \\
-          \pcelse: \IK[\gid] = (\ipk,\bot,\fissue) \\          
+          \pcelse: \IK[\gid] = (\ipk,\bot,\fissue) \\ 
+          \GK[\gid] \gets (\ipk,\fissue,\cdot,\cdot,\cdot) \\         
           \pcreturn \top \\
         }
 
@@ -203,48 +211,8 @@ identify issuers and inspectors by the group identifier.
           (\upk,\usk) \gets \UKeyGen(\parm) \\
           \UK[\uid] \gets (\upk,\usk);
           \HU \gets \HU \cup \lbrace  \uid \rbrace \\
-          \pcreturn \top \\
+          \pcreturn \top
         }        
-
-        \procedure{$\ISSUE(\cid,\uid,\gid,
-          \lbrace (\sgid,\scid,\dattrs) \rbrace)$}{%
-          \pcif \uid \notin \CU: \pcreturn \bot \\
-          \pcif \gid \notin \HI: \pcreturn \bot \\
-          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
-          \pcif \exists \cid \in \scid~\st~\CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cdot, \utrans \rangle \gets
-          \langle \adv, %
-          \Issue(\PRVIK[\gid],\PUBUK[\uid],(\GK[\gid],\dattrs)) \rangle \\
-          \trans[\cid] \gets \utrans \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid, \bot, \dattrs) \\
-          \pcreturn \top \\          
-        }                
-
-        \procedure{$\OBTISS(\cid,\uid,\gid,
-          \lbrace (\sgpk,\scid,\uattrs,\dattrs) \rbrace)$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \gid \notin \HI: \pcreturn \bot \\          
-          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
-          \pcif \exists \cid \in \scid~\st~\CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cred, \utrans \rangle \gets
-          \langle \Obtain(\gpk,\PRVUK[\uid],\attrs), \\
-          \pcind \pcind \pcind \pcind \pcind \pcind
-          \Issue(\gpk,\isk,\PUBUK[\uid],\attrs) \rangle \\
-          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \attrs \\
-          \pcreturn \top \\
-        }        
-
-        \procedure{$\OBTAIN(\cid,\uid,\gid,
-          \lbrace (\sgpk,\scid,\uattrs,\dattrs) \rbrace)$}{%
-          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\gpk,\PRVUK[\uid],\attrs),\adv \rangle \\
-          \CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \attrs \\
-          \pcreturn \top \\
-        }
         
       \end{minipage}
     }
@@ -255,8 +223,9 @@ identify issuers and inspectors by the group identifier.
         \procedure{$\HOGEN(\gid,\feval,\finsp)$}{%
           \pcif \gid \in \HO \lor \gid \in \CO: \pcreturn \bot \\
           (\opk,\osk) \gets \OKeyGen(\parm) \\
-          \OK[\gid] \gets (\opk,\osk,\feval,\finsp);
+          \OK[\gid] \gets (\opk,\osk,\feval,\finsp) \\
           \HO \gets \HO \cup \lbrace  \gid \rbrace \\
+          \GK[\gid] \gets (\cdot,\cdot,\opk,\feval,\finsp) \\          
           \pcreturn \opk \\
         }        
         
@@ -267,6 +236,7 @@ identify issuers and inspectors by the group identifier.
           \pcind \HO \gets \HO \setminus \lbrace \gid \rbrace; \\
           \pcind \pcreturn \OK[\gid]) \\
           \pcelse: \OK[\gid] = (\opk,\bot,\feval,\finsp) \\
+          \GK[\gid] \gets (\cdot,\cdot,\opk,\feval,\finsp) \\
           \pcreturn \top \\
         }
 
@@ -277,41 +247,121 @@ identify issuers and inspectors by the group identifier.
           \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
           \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
           \pcelse: \UK[\uid] = (\upk,\bot) \\          
-          \pcreturn \top \\
-        }        
+          \pcreturn \top
+        }
+        
+      \end{minipage}
+      
+    }
 
-        \procedure{$\SIGN(\msg,
-          \lbrace (\scid,\uattrs,\dattrs) \rbrace )$}{%
-          \uid \gets \OWNR[\cid] \\
+    \caption{Detailed oracles available in our model (1/2). Oracles for
+      generating users, issuers, and inspectors.\\
+      \doubt{Do we need to specify the functions in the GEN Oracles? They do
+        not seem necessary in \SIGN/\CHALb/\INSPECT. Should they? Maybe there
+        is something wrong here... Maybe they are needed in the games...}}
+    \label{fig:oracles1}
+  \end{figure*}
+}
+
+{%\setlength\intextsep{\sep}
+  \begin{figure*}[htp!]
+    \centering
+    \scalebox{0.9}{
+
+      \begin{minipage}[t]{0.55\textwidth}
+
+        \procedure{$\ISSUE(\cid,\uid,\gid,\dattrs,
+          \ldblbrace (\sgid,\scid,\tdattrs) \rdblbrace)$}{%
+          \pcif \uid \notin \CU: \pcreturn \bot \\
+          \pcif \gid \notin \HI: \pcreturn \bot \\
+%          \pcif \exists \cid
+          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot: \pcreturn \bot \\
+          \langle \cdot, \utrans \rangle \gets
+          \langle \adv, \\
+          \pcind \pcind
+          \Issue(\PRVIK[\gid],\PUBUK[\uid],
+          \ldblbrace (\GK[\sgid],\tdattrs)\rdblbrace) \rangle \\
+          \trans[\cid] \gets \utrans \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid, \bot, \dattrs) \\
+          \pcreturn \top \\          
+        }                
+
+        \procedure{$\OBTAIN(\cid,\uid,\gid,\uattrs,\dattrs,
+          \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace)$}{%
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot: \pcreturn \bot \\
+          \langle \cred, \cdot \rangle \gets
+          \langle \Obtain(\PRVUK[\uid],\uattrs,\dattrs, \\
+          \hspace*{65pt}
+          \ldblbrace (\GK[\sgid],\CRED[\scid],\tuattrs,\tdattrs) \rdblbrace), \\
+          \hspace*{50pt} \adv \rangle \\
+          \CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid, \uattrs, \dattrs) \\
+          \pcreturn \top \\
+        }
+
+        \procedure{$\INSPECT(\gid,\sig,\msg)$}{%
+          \textrm{Let}~\uid~\textrm{be s.t.}~(\sig,\msg,\scid,\uattrs,\dattrs,\sgid)
+          \in \SIG[\uid] \\
+          \pcif \sig \in \CSIG: \pcreturn \bot \\
+          (\y,\oproof) \gets
+          \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,\GK[\sgid]) \\
+          \pcreturn (\y,\oproof)
+        }
+        
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      
+      \begin{minipage}[t]{.5\textwidth}
+
+        \procedure{$\OBTISS(\cid,\uid,\gid,\uattrs,\dattrs,
+          \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace)$}{%
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \gid \notin \HI: \pcreturn \bot \\          
+          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot:
+          \pcreturn \bot \\
+          \langle \cred, \utrans \rangle \gets
+          \langle \Obtain(\PRVUK[\uid],\uattrs,\dattrs,\ldblbrace (\GK[\sgid],
+          \CRED[\scid],\tuattrs,\tdattrs) \rdblbrace), \\
+          \pcind \pcind \pcind \pcind \pcind \pcind
+          \Issue(\PRVIK[\gid],\PUBUK[\uid],\ldblbrace (\GK[\sgid],\tdattrs)
+          \rdblbrace ) \rangle \\
+          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid,\uattrs,\dattrs) \\
+          \pcreturn \top \\
+        }
+
+
+        \procedure{$\SIGN(\msg,\uid,\uattrs,\dattrs,
+          \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace )$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \cred \gets \CRED[\cid] \\
-          \sig \gets \Sign(\gpk,\PRVUK[\uid],\cred,\dattrs,\msg) \\
-          \SIG[\cid] \gets \SIG[\cid] \cup \lbrace (\sig,\dattrs,\msg) \rbrace \\
+          \sig \gets \Sign(\PRVUK[\uid],\msg,\uattrs,\dattrs,
+          \ldblbrace (\GK[\sgid],\CRED[\scid],\tuattrs,\tdattrs) \rdblbrace) \\
+          \SIG[\uid] \gets \SIG[\uid] \cup
+          \lbrace (\sig,\msg,\scid,\uattrs,\dattrs,\sgid) \rbrace \\
           \pcreturn \sig \\
-        }
-
-        \procedure{$\OPEN(\sig)$}{%
-          \textrm{Let}~\cid~\textrm{be s.t.}~(\sig,\dattrs,\msg) \in \SIG[\cid] \\
-          \pcif \textrm{no such \cid exists, or there is more than one}: \\
-          \pcind \pcreturn \bot \\
-          \pcif \sig \in \CSIG: \pcreturn \bot \\
-          (\upk,\cred,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\dattrs,\msg) \\
-%          \OSIG \gets \OSIG \cup \lbrace (\sig,\upk,\cred) \rbrace \\
-%          \CCRED \gets \CCRED \cup \lbrace \cid \rbrace \\
-          \pcreturn (\upk,\cred,\oproof) \\
-        }
+        }                
 
         \procedure{$\CHALb(\msg,
-          \lbrace (\cscid_0,\cscid_1,\uattrs,\dattrs) \rbrace )$}{%
-          \pcif \ATTR[\cscid_0] \cap \ATTR[\cscid_1] \nsubseteq \dattrs:
-          \pcreturn \bot \\
-          \pcif \cuid_0 \neq \bot \lor \cuid_1 \neq \bot: \pcreturn \bot \\
-          \cuid_0 = \OWNR[\ccid_0];~\cuid_1 = \OWNR[\ccid_1] \\
+          (\uid_{0,1},\uattrs_{0,1},\dattrs_{0,1},\ldblbrace (\sgid,\cscid_{0,1},\tuattrs_{0,1},\tdattrs_{0,1}) \rdblbrace))$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
- %         \pcif \ccid_0 \in \CCRED \lor \ccid_1 \in \CCRED: \pcreturn \bot \\
-          \csig \gets \Sign(\gpk,\PRVUK[\cuid_b],\CRED[\ccid_b],
-          \dattrs,\msg) \\
-          \CSIG \gets \CSIG \cup \lbrace \csig \rbrace \\
+          \pccomment{Note: since both \uid's need to be honest, we must have
+            all the}\\
+          \pccomment{undisclosed attributes in the \ATTR lists.} \\
+          \dattrs' \gets \DATTR[\cscid_0] \cap \DATTR[\cscid_1] \\
+          \uattrs' \gets \UATTR[\cscid_0] \cap \UATTR[\cscid_1] \\
+          \pcif (\dattrs_0 \cap \dattrs_1) \nsubseteq \dattrs':
+          \pcreturn \bot \\
+          \pcif (\uattrs_0 \cap \uattrs_1) \nsubseteq \uattrs':          
+          \pcreturn \bot \\
+          \csig \gets \Sign(\PRVUK[\uid_b],\msg,\uattrs_b,\dattrs_b,
+          \ldblbrace (\GK[\sgid],\CRED[\scid_b],\tuattrs_b,\tdattrs_b) \rdblbrace) \\
+          \CSIG \gets \CSIG \cup
+          \lbrace (\csig,\msg,\scid_b,\uattrs_b,\dattrs_b,\sgid) \rbrace \\
           \pcreturn \csig
         }
         
@@ -319,7 +369,8 @@ identify issuers and inspectors by the group identifier.
       
     }
 
-    \caption{Detailed oracles available in our model.}
+    \caption{Detailed oracles available in our model (2/2). Oracles for
+      obtaining credentials, signatures, and processing them.}
     \label{fig:oracles}
   \end{figure*}
 }
