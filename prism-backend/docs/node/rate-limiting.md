@@ -1,4 +1,6 @@
-The critical APIs shloud have proper rate-limiters to prevent a single client from consuming Node resources. `envoy` provides ways to limit requests based on sets of descriptors. 
+# Rate limiting requests
+
+The critical APIs shloud have proper rate-limiters to prevent a single client from consuming Node resources. `envoy` provides ways to limit requests based on sequences of descriptors. 
 To set up the rate-limiting, we have to do the following:
 1. Take the ratelimit service implementation:
 ```
