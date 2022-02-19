@@ -27,22 +27,26 @@ we assume that each has its own issuer and inspector.
 \begin{description}
 \item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
   returns a global system parameter variable \parm.
-\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\LangIss)$.] Given global system
-  parameters \parm, and the language \LangIss defining the NP relation for
-  issuance, an issuer runs this function to generate its issuing key pair.
-  Hereafter, we assume that the public part \ipk is added to the group public
-  key \gpk.
-\item[$(\opk,\osk) \gets \OKeyGen(\parm,\LangIns)$.] Given global system
-  parameters \parm, and the language \LangIns defining the NP relaton for
-  inspection, an inspector runs this function to generate its inspecting key
-  pair. It returns the inspector's key pair. Hereafter, we assume that the
-  public part \opk is added to the group public key \gpk.
+\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.] Given global system
+  parameters \parm, and the function \fissue to be used to check that credential
+  requestors meet the conditions to be issued a credential, an issuer runs
+  \IKeyGen to generate its issuing key pair. Hereafter, we assume that the
+  public part \ipk is added to the group public key \gpk, as well as \fissue.
+\item[$(\opk,\osk) \gets \OKeyGen(\parm,\feval,\finsp)$.] Given global system
+  parameters \parm, and two functions \feval and \finsp, an inspector runs
+  \OKeyGen to generate its inspecting key pair. The function \feval defines
+  requirements that signed message-signature pairs must meet. The function
+  \finsp defines the type of utility that will be extractable from those pairs
+  that do not meet \feval. Hereafter, we assume that the public part \opk is
+  added to the group public key \gpk, along with \feval and \finsp.
 \item[$(\upk,\usk) \gets \UKeyGen(\parm)$.] Given global system parameters
   \parm, returns a user's key pair.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
-  \Obtain(\usk,\uattrs,\dattrs,\ldblbrace (gpk_i,\cred_i,\tuattrs_i,\tdattrs_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\upk,\dattrs,\ldblbrace (\gpk_i,\tdattrs_i)\rdblbrace_{i \in \Issuers})
+  \Obtain(\usk,\uattrs,\dattrs,
+  \ldblbrace (gpk_i,\cred_i,\tuattrs_i,\tdattrs_i)\rdblbrace_{i \in \Issuers}),
+  \Issue(\isk,\upk,\dattrs,
+  \ldblbrace (\gpk_i,\tdattrs_i)\rdblbrace_{i \in \Issuers})
   \rangle$.] %
   This interactive protocol lets a user with key pair (\upk,\usk) running the
   \Obtain process, obtain a credential \cred from an issuer in the system, on
@@ -98,6 +102,32 @@ we assume that each has its own issuer and inspector.
 The correctness and security properties are defined with the help of the
 following sets of oracles, and global variables that help oracles and games
 keep consistent state.
+
+\paragraph{Issuance, evaluation, and inspection private functions.} %
+We emphasize that, both in our syntax definition, as well as on the following
+modelling, we make use of three different and abstract functions: \fissue,
+\feval and \finsp. The three functions are run by users (maybe, on user-private
+data) as part of different algorithms in an \UAS scheme. In all cases, the
+user has to prove correctness of their computation. We introduce them next,
+\todo{and will give concrete examples in \secref{sec:uac-instantiation}.}
+
+\todo{Domains (attributes, messages, etc.) are not correctly defined here. But
+  for now, just leave it as is to at least convey the idea. Also, this needs
+  refinement in general: what properties (if any) do these functions need to
+  meet in order to be meaningful?}
+\begin{description}
+\item[$\fissue: (\uattrs,\dattrs) \rightarrow 0/1$.] Governs what customized
+  conditions an issuer requires in order to issue credentials, when receiving
+  a request from a user with a set of disclosed attributes \dattrs, and
+  undisclosed attributes \uattrs (which need to be kept private from the
+  issuer). \fissue returns 1 to accept a request, 0 to reject it.  
+\item[$\feval: (\msg,\sig) \rightarrow 0/1$.] Governs customized conditions upon
+  which a verifier should accept (1) or reject (0) a given message-signature
+  pair.
+\item[$\finsp: (\upk,\scred) \rightarrow \bin^*$.] Defines what utility value,
+  derived from the user's public key and credentials, should be extractable by
+  the group inspector.
+\end{description}
 
 \paragraph{Global Variables.} %
 All the honestly generated users (i.e., all honestly generated user key pairs,
@@ -255,7 +285,7 @@ identifier.
     }
 
     \caption{Detailed oracles available in our model (1/2). Oracles for
-      generating users, issuers, and inspectors.\\
+      generating key material for users, issuers, and inspectors.\\
       \doubt{Do we need to specify the functions in the GEN Oracles? They do
         not seem necessary in \SIGN/\CHALb/\INSPECT. Should they? Maybe there
         is something wrong here... Maybe they are needed in the games...}}
@@ -324,10 +354,11 @@ identifier.
           \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot:
           \pcreturn \bot \\
           \langle \cred, \utrans \rangle \gets
-          \langle \Obtain(\PRVUK[\uid],\uattrs,\dattrs,\ldblbrace (\GK[\sgid],
+          \langle \Obtain(\PRVUK[\uid],\uattrs,\dattrs,\\
+          \hspace*{75pt} \ldblbrace (\GK[\sgid],
           \CRED[\scid],\tuattrs,\tdattrs) \rdblbrace), \\
-          \pcind \pcind \pcind \pcind \pcind \pcind
-          \Issue(\PRVIK[\gid],\PUBUK[\uid],\ldblbrace (\GK[\sgid],\tdattrs)
+          \hspace*{60pt} \Issue(\PRVIK[\gid],\PUBUK[\uid],
+          \ldblbrace (\GK[\sgid],\tdattrs)
           \rdblbrace ) \rangle \\
           \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
           \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid,\uattrs,\dattrs) \\
@@ -339,7 +370,8 @@ identifier.
           \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace )$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \cred \gets \CRED[\cid] \\
-          \sig \gets \Sign(\PRVUK[\uid],\msg,\uattrs,\dattrs,
+          \sig \gets \Sign(\PRVUK[\uid],\msg,\uattrs,\dattrs, \\
+          \hspace*{42pt}
           \ldblbrace (\GK[\sgid],\CRED[\scid],\tuattrs,\tdattrs) \rdblbrace) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\sig,\msg,\scid,\uattrs,\dattrs,\sgid) \rbrace \\
@@ -358,7 +390,8 @@ identifier.
           \pcreturn \bot \\
           \pcif (\uattrs_0 \cap \uattrs_1) \nsubseteq \uattrs':          
           \pcreturn \bot \\
-          \csig \gets \Sign(\PRVUK[\uid_b],\msg,\uattrs_b,\dattrs_b,
+          \csig \gets \Sign(\PRVUK[\uid_b],\msg,\uattrs_b,\dattrs_b, \\
+          \hspace*{42pt}
           \ldblbrace (\GK[\sgid],\CRED[\scid_b],\tuattrs_b,\tdattrs_b) \rdblbrace) \\
           \CSIG \gets \CSIG \cup
           \lbrace (\csig,\msg,\scid_b,\uattrs_b,\dattrs_b,\sgid) \rbrace \\
@@ -376,8 +409,8 @@ identifier.
 }
 
 \paragraph{Correctness.} %
-Correctness of \GSAC schemes is formalized through the experiment in
-\figref{fig:exp-gsac-corr}. It states that a signature for some message \msg,
+Correctness of \UAS schemes is formalized through the experiment in
+\figref{fig:exp-uas-corr}. It states that a signature for some message \msg,
 revealing attributes \dattrs, which was honestly produced though a credential
 that was obtained by an honest user interacting with an honest issuer, with a
 set of attributes \attrs such that $\dattrs \subseteq \attrs$, must be accepted
@@ -387,21 +420,45 @@ signature, revealing the public key pair of the user, must also be accepted by
 
 \begin{figure}[htp!]
   \procedure{$\ExpCorrect(1^\secpar)$}{%
-     \parm \gets \Setup(1^\secpar) \\
-     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
-     \gpk \gets (\ipk,\opk) \\
-    (\cid,\dattrs,\msg) \gets \adv^{\HUGEN,\OBTISS}(\gpk) \\
-    \pcif \dattrs \nsubseteq \ATTR[\cid] :
-    \pcreturn \bot \\
-    \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\dattrs,\msg) \\
-    (\upk,\oproof) \gets \Open(\gpk,\osk,\trans[\cid],\sig,\dattrs,\msg) \\
-    \pcif \Verify(\gpk, \sig, \dattrs,\msg) = 0 \lor
-    \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 0:
-    \pcreturn 1 \\
-    \pcreturn 0
+    \parm \gets \Setup(1^\secpar) \\
+    (\uid,\msg,\uattrs,\dattrs,
+    \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace)
+    \gets \adv^{\HIGEN,\HOGEN,\HUGEN,\OBTISS}(\parm) \\
+    \pcif \dattrs \nsubseteq \bigcup_{\cid \in \scid} \DATTR[\cid] \lor
+    \bigcup \tdattrs \nsubseteq \dattrs: \pcreturn \bot \\
+    \sig \gets \Sign(\PRVUK[\uid],\msg,\uattrs,\dattrs,
+    \ldblbrace (\GK[\sgid],\CRED[\scid],\tuattrs,\tdattrs) \rdblbrace ) \\
+    \pccomment{Signature fails to verify} \\
+    \pcif \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 0: \pcreturn 0 \\
+    \pccomment{An inspector among those involved in credentials used to produce
+      \sig cannot inspect it} \\
+    \pcif \exists \gid \in \sgid~\st~
+    \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,
+    \ldblbrace \GK[\sgid] \rdblbrace) = \bot: \pcreturn 0 \\
+    \pccomment{Some of the produced $(\y,\iproof)$ pairs is rejected by
+      \Judge \todo{This must be conditioned on \feval = 0!}} \\
+    \pcif \exists \gid \in \sgid~\st~
+    (\y,\iproof) \gets \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,
+    \ldblbrace \GK[\sgid] \rdblbrace) \land \\
+    \pcind
+    \Judge(\y,\iproof,\sig,\msg,\dattrs,\ldblbrace \GK[\sgid] \rdblbrace) = 0):
+    \pcreturn 0 \\
+    \textrm{Let}~(\fissue^\gid,\feval^\gid,\finsp^\gid)~\textrm{denote the
+      issue, evaluation and inspection functions defined} \\
+    \textrm{by each $\gid \in \sgid$} \pccomment{\todo{Come up with some
+        notation for this}} \\
+    \pccomment{\fissue rejects some issued credential} \\
+    \pcif \exists \gid \in \sgid~\st~\fissue^\gid(\tuattrs,\tdattrs) = 0:
+    \pcreturn 0 \\
+    \pccomment{\feval rejects the signature-message pair} \\
+    \pcif \exists \gid \in \sgid~\st~\feval^\gid(\msg,\sig) = 0: \pcreturn 0 \\
+    \pccomment{\y is the wrong value according to \finsp} \\
+    \pcif \exists \gid \in \sgid~\st~
+    \y \neq \finsp^\gid(\PUBUK[\uid],\CRED[\scid])): \pcreturn 0 \\
+    \pcreturn 1
   }
-  \caption{Correctness experiment for \GSAC schemes.}
-  \label{fig:exp-gsac-corr}
+  \caption{Correctness experiment for \UAS schemes. \todo{Reorganize this.}}
+  \label{fig:exp-uas-corr}
 \end{figure}
 
 \subsection{Security Properties}
@@ -411,9 +468,9 @@ signature, revealing the public key pair of the user, must also be accepted by
 In group signatures, anonymity captures that no adversary must be able to learn,
 from any group signature, anything about its signer. In anonymous credentials,
 it requires that no adversary should learn anything about the holder of a
-credential that has been successfully shown, beyond that he owns a credential
-containing the revealed attributes. In both GS and AC, it is also typically
-required that
+successfully shown credential, beyond that he owns a credential attesting for
+the claimed function of attributes it contains. In both GS and AC, it is also
+typically required that
 multiple signatures/presentations by the users are unlinkable. The approach to
 formally state this property is in both cases frequently the same: the adversary
 picks two (honest) users (or credentials in the AC case), the game randomly
@@ -422,34 +479,33 @@ signatures/presentations from it. The adversary wins if it succeeds in guessing
 which was the chosen user/credential better than guessing at random. In group
 signatures, the game must also restrict the adversary from opening challenge
 signatures. In anonymous credentials, the game must further constraint the
-adversary to output credentials that have some common subset of attributes, and
-to use that common subset to request the challenge presentations. Here, we need
-to take into account both. Furthermore, a key difference with group signatures
-is that the game requires the adversary to output credential identifiers, rather
-than user identifiers. Specifically, this means that the adversary may actually
-output two credentials that belong to the same user. Therefore, in some sense,
-the anonymity we get is more general than that of group signatures. The formal
-specification of the anonymity game is given in \figref{fig:exp-gsac-anonb}.
-%
-Similarly, this notion of anonymity is also stronger than the notion of
-anonymity in both group signatures and anonymous credentials, in the sense
-that calls to the \OPEN oracle reveal the public key and credential of the users
-that (via the \SIGN and \CHALb oracles) create the signatures that the adversary
-sees. Therefore, all security relies \emph{only} on the user secret key.
+adversary to output credentials that have some common function of (a subset of)
+its attributes.
+
+In our notion of anonymity for \UAS, we need to merge the previous constraints.
+Furthermore, a key difference with group signatures is that the game requires
+the adversary to output credential identifiers, rather than user identifiers.
+Specifically, this means that the adversary may actually output two credentials
+that belong to the same user. Therefore, in some sense, the anonymity we get is
+more general than that of group signatures. Moreover, in order to prevent
+trivial wins by the adversary, we have to restrict that the challenge signatures
+belong to a group that has been ``programmed'' with the same evaluation and
+inspection functions. The formal specification of the anonymity game is given in
+\figref{fig:exp-uas-anonb}. 
 
 \begin{figure}[htp!]
   \procedure{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
-     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
-     \gpk \gets (\ipk,\opk) \\
-     (\cid_0,\cid_1,\status) \gets
-     \adv^{\HUGEN,\CUGEN,\OBTAIN,\SIGN,\OPEN}(\choose,\gpk,\isk) \\
+     (\cscid_0,\cscid_1,\status) \gets
+     \adv^{\lbrace\HI,\CI,\HO,\CO,\HU,\CU\rbrace\GEN,\OBTAIN,\SIGN,\INSPECT}
+     (\choose,\parm) \\
      b^* \gets
-     \adv^{\HUGEN,\CUGEN,\OBTAIN,\SIGN,\OPEN,\CHALb}(\guess,\gpk,\isk,\status) \\
+     \adv^{\lbrace\HI,\CI,\HO,\CO,\HU,\CU\rbrace,\GEN,\OBTAIN,\SIGN,\INSPECT,\CHALb}
+     (\guess,\status) \\
      \pcreturn b^*
   }
-  \caption{Anonymity experiment for \GSAC schemes.}
-  \label{fig:exp-gsac-anonb}
+  \caption{Anonymity experiment for \UAS schemes.}
+  \label{fig:exp-uas-anonb}
 \end{figure}
 
 \begin{definition}{(Anonymity of \GSAC)}
@@ -461,6 +517,19 @@ sees. Therefore, all security relies \emph{only} on the user secret key.
   \AdvAnon is a negligible function of $1^\secpar$.
 \end{definition}
 
+\paragraph{Discussion on the generic anonymity of \UAS schemes.} %
+This notion of anonymity is also more general in the sense that calls to
+the \INSPECT oracle reveal an arbitrary function of the identity of the user
+-- which can certainly be the identity itself, as in group signatures, ore any
+other function computable from the \textcolor{red}{user public key and all of
+  its credentials}. Of course, this requires to restrict the adversary to
+programming equivalent inspection functions in the challenge signatures it
+gets (or, more precisely, into the groups they belong to). While this could
+appear as having a more restricted type of anonymity -- and indeed it could be
+for some subset of inspection functions -- we point out that it is just a
+generalization, as the concrete inspection function depends on the needs of
+the use case where a \UAS scheme is to be integrated.
+
 \paragraph{Traceability.} %
 Traceability is one of the unforgeability-related properties in group
 signatures. It captures that any signature accepted by \Verify needs to open
@@ -471,15 +540,7 @@ in anonymous credentials typically ensures that no adversary can get a verifier
 to accept a credential presentation requiring a set of attributes that is not
 contained in one of the credentials controlled by the adversary.
 %
-Our notion of traceability for \GSAC combines both requirements. It assumes an
-honest issuer, as otherwise the adversary can create untraceable credentials at
-will. The game then lets the adversary add honest and corrupt users, create
-honest signatures, and open them. The adversary wins if, after this interaction,
-is able to produce a $(\sig,\dattrs,\msg)$ tuple that is accepted by \Verify,
-but either cannot be opened, it can be opened by the proof is rejected by
-\Judge, or even though it is accepted by \Judge, there was no issued credential
-(honest or not) that contained the set of attributes \dattrs. We formally
-define traceability in the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
+Our notion of traceability for \UAS...
 
 \begin{figure}[htp!]
   \procedure{$\ExpTrace(1^\secpar)$}{%
@@ -529,18 +590,7 @@ that signatures by different (possibly corrupt) users are linked, or directly
 by having open proofs output the identity of a user who did not create the
 signature being opened.
 %
-In \GSAC schemes, in order for a user to be framed, the adversary first needs to
-create a $(\sig,\dattrs,\msg,\upk,\cred,\oproof)$ such that the signature,
-attributes, and message are accepted by \Verify, and which, along with the user
-public key, credential, and open correctness proof, are accepted by \Judge.
-Then, the adversary wins the game if the owner of the credential is honest, but
-the signature was not produced via the \SIGN oracle, or if the public key output
-by the adversary does not match the public key associated to the credential
-owner.
-%
-Note that, as in anonymity, this notion of non-frameability is even stronger
-to that of group signatures, since our \Open function returns both the public
-key and the credential that were used to create the signature.
+In \UAS schemes, in order for a user to be framed...
 
 \begin{figure}[htp!]
   \procedure{$\ExpNonframe(1^\secpar)$}{%
