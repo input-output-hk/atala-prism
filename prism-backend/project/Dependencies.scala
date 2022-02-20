@@ -21,7 +21,7 @@ object versions {
   val jaxb = "2.3.1"
   val mockito = "1.17.0"
   val playJson = "2.9.1"
-  val postgresql = "42.3.2"
+  val postgresql = "42.3.3"
   val scalatest = "3.2.11"
   val scalatestplus = s"$scalatest.0"
   val scalapb = "0.11.6"
