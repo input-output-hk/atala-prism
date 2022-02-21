@@ -35,7 +35,6 @@ we assume that each has its own issuer and inspector.
   favour of tryint to remove the attribute sets from the definitions, as much
   as possible (and see if we can still support plain selective disclosure).}
 
-
 \begin{description}
 \item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
   returns a global system parameter variable \parm.
@@ -501,10 +500,10 @@ given in \figref{fig:exp-uas-anonb}.
   \procedure{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
      (\cscid_0,\cscid_1,\status) \gets
-     \adv^{\lbrace\HI,\CI,\HO,\CO,\HU,\CU\rbrace\GEN,\OBTAIN,\SIGN,\INSPECT}
+     \adv^{\lbrace\CI,\CO,\HU,\CU\rbrace\GEN,\OBTAIN,\SIGN,\INSPECT}
      (\choose,\parm) \\
      b^* \gets
-     \adv^{\lbrace\HI,\CI,\HO,\CO,\HU,\CU\rbrace,\GEN,\OBTAIN,\SIGN,\INSPECT,\CHALb}
+     \adv^{\lbrace\CI,\CO,\HU,\CU\rbrace,\GEN,\OBTAIN,\SIGN,\INSPECT,\CHALb}
      (\guess,\status) \\
      \pcreturn b^*
   }
@@ -626,13 +625,17 @@ In \UAS schemes, in order for a user to be framed...
 \begin{figure}[htp!]
   \procedure{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-     (\sig,\dattrs,\msg,\upk,\cred,\oproof) \gets
+     (\sig,\dattrs,\msg,\sgid,\y,\iproof) \gets
      \adv^{\lbrace\CI,\CO,\HU,\CU\rbrace\GEN,\OBTAIN,\SIGN}(\parm) \\
-     \pcreturn 1~\pcif \Verify(\gpk,\sig,\dattrs,\msg) = 1 \land
-     \OWNR[\cred] \in \HU \\%\land \cred \notin \CCRED~\land\\
-     \pcind \Judge(\gpk,\upk,\cred,\oproof,\sig,\dattrs,\msg) = 1~\land \\
-     \pcind \pccomment{\sig was not produced by \SIGN, or \upk and \cred do not match} \\
-     \pcind (\sig \notin \SIG[\OWNR[\cred]] \lor \PUBUK[\OWNR[\cred]] \neq \upk) \\
+     \pcreturn 1~\pcif \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1 \land
+     \Judge(\y,\iproof,\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land \\
+     \pcind \nexists \uid \in \HU~\st~\sig \in \SIG[\uid]~\land
+     \pccomment{No honest user produced \sig} \\
+%     \pcind \forall \uid \in \CU~\Identify(\sgid,\uid,\sig) = 0~\land
+%     \pccomment{No corrupt user secret key was used to produce \sig } \\
+     \
+     \pcind \exists \uid' \in \HU~\st~\y = \finsp(\PUBUK[\uid'],\CRED[\uid'],\sig)
+     \pccomment{\finsp outputs \y for some honest user and \sig} \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \GSAC schemes.}
