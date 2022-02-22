@@ -16,8 +16,9 @@ Pre-submit checklist (Please check options that are relevant) :
 - [ ] Db migration altering existing tables, there is a proper migration test (back-end)
 - [ ] Changes on envoy.yaml, Applied to envoy.yaml in infra repo.
 - [ ] The PR is related to bug fix on release branch please follow https://github.com/input-output-hk/atala-prism/blob/master/CONTRIBUTING.md
-- [ ] The PR introduces new documentation or updates existing documentation that requires CI actions (e.g. to produce a PDF from a LaTeX file and upload it somewhere)
+- [ ] The PR introduces new documentation or updates existing documentation and includes required CI actions. (e.g. to produce a PDF from a LaTeX file and upload it somewhere)
 - [ ] The PR introduces new documentation or updates existing documentation that does not require CI actions
+- [ ] PR introduces or changes a flow and the proper sequence diagram is created/updated.
 Pre-merge checklist:
 - [ ] Commits have useful messages
 - [ ] Review clarifications made it into the code
