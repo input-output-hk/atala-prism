@@ -18,7 +18,7 @@ Pre-submit checklist (Please check options that are relevant) :
 - [ ] The PR is related to bug fix on release branch please follow https://github.com/input-output-hk/atala-prism/blob/master/CONTRIBUTING.md
 - [ ] The PR introduces new documentation or updates existing documentation and includes required CI actions. (e.g. to produce a PDF from a LaTeX file and upload it somewhere)
 - [ ] The PR introduces new documentation or updates existing documentation that does not require CI actions
-- [ ] PR introduces or changes a flow and the proper sequence diagram is created/updated.
+- [ ] PR introduces or changes a flow and the proper sequence diagram is created/updated (e.g. https://github.com/input-output-hk/atala-prism/tree/master/prism-backend/docs/bitcoin).
 Pre-merge checklist:
 - [ ] Commits have useful messages
 - [ ] Review clarifications made it into the code
