@@ -32,7 +32,7 @@ we assume that each has its own issuer and inspector.
   but, what impact would that have in other definitions, etc? Specifically, can
   we support selective disclosure credentials without them? (if so, \fissue,
   \feval and \finsp would be essential in doing so.); Right now, I am more in
-  favour of tryint to remove the attribute sets from the definitions, as much
+  favour of trying to remove the attribute sets from the definitions, as much
   as possible (and see if we can still support plain selective disclosure).}
 
 \begin{description}
@@ -132,13 +132,14 @@ user has to prove correctness of their computation. We introduce them next,
   a request from a user with a set of disclosed attributes \dattrs, and
   undisclosed attributes \uattrs (which need to be kept private from the
   issuer). \fissue returns 1 to accept a request, 0 to reject it.  
-\item[$\feval: (\msg,\scred) \rightarrow 0/1$.] Governs customized conditions
-  to define whether the owner of a set of credentials -- or, more specifically,
-  credentials encoding certain attributes -- should be able to sign certain
-  messages.
-\item[$\finsp: (\upk,\scred,\sig) \rightarrow \bin^*$.] Defines what utility
-  value, derived from the user's public key, credentials, and produced signature
-  (or a subset thereof), should be extractable by the group inspector.
+\item[$\feval: (\upk,\scred,\msg) \rightarrow 0/1$.] Governs customized
+  conditions to define whether the owner of a user key and set of credentials --
+  or, more specifically, credentials encoding certain attributes -- should be
+  able to sign certain messages.
+\item[$\finsp: (\upk,\scred,\msg,\sig) \rightarrow \bin^*$.] Defines what
+  utility value, derived from the user's public key, credentials, signed
+  message, and produced signature (or a subset thereof), should be extractable
+  by the group inspector.
 \end{description}
 
 \paragraph{Global Variables.} %
@@ -192,14 +193,10 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 identifier.
 
 \begin{description}
-\item[\HIGEN.] Adds a new honest issuer to the game, by honestly generating
-  its key pair.
-\item[\CIGEN.] Adds a new corrupt issuer to the game or, if the specified issuer
-  already exists and is honest, corrupts it.
-\item[\HOGEN.] Adds a new honest inspector to the game, by honestly generating
-  its key pair.
-\item[\COGEN.] Adds a new corrupt inspector to the game or, if the specified
-  inspector already exists and is honest, corrupts it. 
+\item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
+  the associated issuance function.
+\item[\OGEN.] Adds a new inspector to the game, generating its key pair and
+  setting the associated evaluation and inspection functions.
 \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
   the user's key pair.
 \item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
@@ -228,25 +225,21 @@ identifier.
 
       \begin{minipage}[t]{0.55\textwidth}
 
-        \procedure{$\HIGEN(\gid,\fissue)$}{%
+        \procedure{$\IGEN(\gid,\fissue)$}{%
           \pcif \gid \in \HI \lor \gid \in \CI: \pcreturn \bot \\
           (\ipk,\isk) \gets \IKeyGen(\parm) \\
           \IK[\gid] \gets (\ipk,\isk,\fissue) \\
           \HI \gets \HI \cup \lbrace \gid \rbrace \\
           \GK[\gid] \gets (\ipk,\fissue,\cdot,\cdot,\cdot) \\
           \pcreturn \ipk \\
-        }        
-        
-        \procedure{$\CIGEN(\gid,\ipk,\fissue)$}{%
-          \pcif \gid \in \CI: \pcreturn \bot \\
-          \CI \gets \CI \cup \lbrace \gid \rbrace \\          
-          \pcif \gid \in \HI: \\
-          \pcind \HI \gets \HI \setminus \lbrace \gid \rbrace; \\
-          \pcind \pcreturn \IK[\gid] \\
-          \pcelse: \IK[\gid] = (\ipk,\bot,\fissue) \\ 
-          \GK[\gid] \gets (\ipk,\fissue,\cdot,\cdot,\cdot) \\         
-          \pcreturn \top \\
         }
+
+        \procedure{$\ICORR(\gid)$}{%
+          \pcif \gid \in \CI \lor \gid \notin \HI: \pcreturn \bot \\
+          \HI \gets \HI \setminus \lbrace \gid \rbrace \\
+          \CI \gets \CI \cup \lbrace \gid \rbrace \\
+          \pcreturn \isk \\
+        }        
 
         \procedure{$\HUGEN(\uid)$}{%
           \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
@@ -262,27 +255,23 @@ identifier.
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\HOGEN(\gid,\feval,\finsp)$}{%
+        \procedure{$\OGEN(\gid,\feval,\finsp)$}{%
           \pcif \gid \in \HO \lor \gid \in \CO: \pcreturn \bot \\
           (\opk,\osk) \gets \OKeyGen(\parm) \\
           \OK[\gid] \gets (\opk,\osk,\feval,\finsp) \\
-          \HO \gets \HO \cup \lbrace  \gid \rbrace \\
-          \GK[\gid] \gets (\cdot,\cdot,\opk,\feval,\finsp) \\          
-          \pcreturn \opk \\
-        }        
-        
-        \procedure{$\COGEN(\gid,\opk,\feval,\finsp)$}{%
-          \pcif \gid \in \CO: \pcreturn \bot \\
-          \CO \gets \CO \cup \lbrace \gid \rbrace \\          
-          \pcif \gid \in \HO: \\
-          \pcind \HO \gets \HO \setminus \lbrace \gid \rbrace; \\
-          \pcind \pcreturn \OK[\gid]) \\
-          \pcelse: \OK[\gid] = (\opk,\bot,\feval,\finsp) \\
+          \HO \gets \HO \cup \lbrace \gid \rbrace \\
           \GK[\gid] \gets (\cdot,\cdot,\opk,\feval,\finsp) \\
-          \pcreturn \top \\
+          \pcreturn \opk \\
         }
 
-        \procedure{$\CUGEN(\uid,\upk)$}{%
+        \procedure{$\OCORR(\gid)$}{%
+          \pcif \gid \in \CO \lor \gid \notin \HO: \pcreturn \bot \\
+          \HO \gets \HO \setminus \lbrace \gid \rbrace \\
+          \CO \gets \CO \cup \lbrace \gid \rbrace \\
+          \pcreturn \osk \\
+        }        
+        
+        \procedure{$\CUGEN(\uid,\upk)$}{%          
           \pcif \uid \in \CU: \pcreturn \bot \\
           \CU \gets \CU \cup \lbrace \uid \rbrace \\          
           \pcif \uid \in \HU: \\
@@ -313,7 +302,6 @@ identifier.
           \ldblbrace (\sgid,\scid,\tdattrs) \rdblbrace)$}{%
           \pcif \uid \notin \CU: \pcreturn \bot \\
           \pcif \gid \notin \HI: \pcreturn \bot \\
-%          \pcif \exists \cid
           \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
           \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot: \pcreturn \bot \\
           \langle \cdot, \utrans \rangle \gets
@@ -358,7 +346,7 @@ identifier.
         \procedure{$\OBTISS(\cid,\uid,\gid,\uattrs,\dattrs,
           \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \gid \notin \HI: \pcreturn \bot \\          
+          \pcif \gid \notin \HI: \pcreturn \bot \\
           \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
           \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot:
           \pcreturn \bot \\
@@ -388,8 +376,10 @@ identifier.
         }                
 
         \procedure{$\CHALb(\msg,
-          (\uid_{0,1},\uattrs_{0,1},\dattrs_{0,1},\ldblbrace (\sgid,\cscid_{0,1},\tuattrs_{0,1},\tdattrs_{0,1}) \rdblbrace))$}{%
+          (\uid_{0,1},\uattrs_{0,1},\dattrs_{0,1},\ldblbrace (\sgid,\cscid_{0,1},
+          \tuattrs_{0,1},\tdattrs_{0,1}) \rdblbrace))$}{%          
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
+          \pcif \exists \gid \in \sgid~\st~\gid \in \CO: \pcreturn \bot \\
           \pcif \feval(\msg,\CRED[\scid_0]) \neq \feval(\msg,\CRED[\scid_1]):
           \pcreturn \bot \\
           \csig \gets \Sign(\PRVUK[\uid_b],\msg,\uattrs_b,\dattrs_b, \\
@@ -425,7 +415,7 @@ signature, revealing the public key pair of the user, must also be accepted by
     \parm \gets \Setup(1^\secpar) \\
     (\uid,\msg,\uattrs,\dattrs,
     \ldblbrace (\sgid,\scid,\tuattrs,\tdattrs) \rdblbrace)
-    \gets \adv^{\HIGEN,\HOGEN,\HUGEN,\OBTISS}(\parm) \\
+    \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS}(\parm) \\
     \pcif \dattrs \nsubseteq \bigcup_{\cid \in \scid} \DATTR[\cid] \lor
     \bigcup \tdattrs \nsubseteq \dattrs: \pcreturn \bot \\
     \sig \gets \Sign(\PRVUK[\uid],\msg,\uattrs,\dattrs,
@@ -494,17 +484,16 @@ trivial wins by the adversary, we have to restrict that the challenge signatures
 belong to a group that has been ``programmed'' with the same evaluation and
 inspection functions, which is again a generalization over group signatures,
 as discussed in the sequel. The formal specification of the anonymity game is
-given in \figref{fig:exp-uas-anonb}. 
+given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,\CU\rbrace
+\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN,
+\INSPECT)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace
+\GEN,\lbrace\II,\OO\rbrace,\CORR,\OBTAIN,\SIGN,\INSPECT,\CHALb)$
 
 \begin{figure}[htp!]
   \procedure{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
-     (\cscid_0,\cscid_1,\status) \gets
-     \adv^{\lbrace\CI,\CO,\HU,\CU\rbrace\GEN,\OBTAIN,\SIGN,\INSPECT}
-     (\choose,\parm) \\
-     b^* \gets
-     \adv^{\lbrace\CI,\CO,\HU,\CU\rbrace,\GEN,\OBTAIN,\SIGN,\INSPECT,\CHALb}
-     (\guess,\status) \\
+     (\cscid_0,\cscid_1,\status) \gets \adv^{\Oanonc}(\choose,\parm) \\
+     b^* \gets \adv^{\Oanong} (\guess,\status) \\
      \pcreturn b^*
   }
   \caption{Anonymity experiment for \UAS schemes.}
@@ -543,16 +532,16 @@ signatures that are accepted by \Verify. For any such signature, \Inspect has to
 create a valid output (i.e., must not abort). The output of \Inspect has to be
 accepted by \Judge too. Moreover, there must exist one user (either honest or
 corrupt) who used his public key to obtain one or more credentials that allowed
-him to produce a signature which, once inspected, returns \y.
+him to produce a signature which, once inspected, returns \y. The formal
+definition of the traceability experiment is given in \figref{fig:exp-uas-trace},
+where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
+\ISSUE,\SIGN,\INSPECT$.
 
 \begin{figure}[htp!]
   \procedure{$\ExpTrace(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-    \pccomment{\todo{Right now, in \COGEN we may not know \osk! Then, the checks
-        in the last part of the game may not be executable!}} \\
      (\sig,\dattrs,\msg) \gets
-     \adv^{\lbrace \HI,\CO,\HU,\CU \rbrace \GEN,\OBTISS,\ISSUE,\SIGN,\INSPECT}
-     (\parm) \\
+     \adv^{\Otrace}(\parm) \\
      \pcreturn 1~\pcif \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land~( \\
      \pcind \pccomment{All \Obtain transcripts fail to open \sig} \\
      \pcind \nexists \gid \in \sgid:
@@ -606,6 +595,17 @@ something. Moreover, any specific instantiation that restricts signatures
 to be associated to just one credential directly leads to the previously
 mentioned ``one credential per presentation'' rule.
 
+Finally, note that we can only ensure consistency of the value returned by
+\finsp, for all users, as long as the issuer is honest. This follows from the
+fact that \finsp depends on the user key pair and the credentials that are
+issued to each user. Therefore, a dishonest issuer could create untraceable
+credentials (i.e., issue credentials without updating the \trans table), so that
+the \finsp function outputs whatever desired value, yet it cannot be traced to
+any registered user. That is, this minimality argument is just a generalization
+of the one described in \cite[Section 4.3]{bsz05}. This is also consistent with
+the unforgeability requirement of anonymous credentials systems, as a corrupt
+issuer can grant arbitrary credentials to any user, and therefore honest
+issuers are required.
 
 \paragraph{Non-frameability.} %
 Non-frameability variants are a core unforgeability-type property in group
@@ -620,26 +620,24 @@ that signatures by different (possibly corrupt) users are linked, or directly
 by having open proofs output the identity of a user who did not create the
 signature being opened.
 %
-In \UAS schemes, in order for a user to be framed...
+In \UAS schemes, in order for a user to be framed \todo{...}. The
+non-frameability property for \UAS schemes is formally defined in
+\figref{fig:exp-uas-frame}, where $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
+\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN$
 
 \begin{figure}[htp!]
   \procedure{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
      (\sig,\dattrs,\msg,\sgid,\y,\iproof) \gets
-     \adv^{\lbrace\CI,\CO,\HU,\CU\rbrace\GEN,\OBTAIN,\SIGN}(\parm) \\
+     \adv^{\Oframe}(\parm) \\
      \pcreturn 1~\pcif \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1 \land
      \Judge(\y,\iproof,\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land \\
-     \pcind \nexists \uid \in \HU~\st~\sig \in \SIG[\uid]~\land
-     \pccomment{No honest user produced \sig} \\
-%     \pcind \forall \uid \in \CU~\Identify(\sgid,\uid,\sig) = 0~\land
-%     \pccomment{No corrupt user secret key was used to produce \sig } \\
-     \
-     \pcind \exists \uid' \in \HU~\st~\y = \finsp(\PUBUK[\uid'],\CRED[\uid'],\sig)
-     \pccomment{\finsp outputs \y for some honest user and \sig} \\
+     \pcind \exists \uid \in \HU~\st~\Identify(\PRVUK[\uid],\sig) = 1 \land
+     \sig \notin \SIG[\uid] \\
      \pcreturn 0
   }
-  \caption{Non-frameability experiment for \GSAC schemes.}
-  \label{fig:exp-gsac-frame}
+  \caption{Non-frameability experiment for \UAS schemes.}
+  \label{fig:exp-uas-frame}
 \end{figure}
 
 \begin{definition}{(Non-frameability of \GSAC)}
