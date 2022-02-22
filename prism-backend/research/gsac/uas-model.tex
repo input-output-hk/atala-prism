@@ -122,10 +122,6 @@ data) as part of different algorithms in an \UAS scheme. In all cases, the
 user has to prove correctness of their computation. We introduce them next,
 \todo{and will give concrete examples in \secref{sec:uac-instantiation}.}
 
-\todo{Domains (attributes, messages, etc.) are not correctly defined here. But
-  for now, just leave it as is to at least convey the idea. Also, this needs
-  refinement in general: what properties (if any) do these functions need to
-  meet in order to be meaningful?}
 \begin{description}
 \item[$\fissue: (\uattrs,\dattrs) \rightarrow 0/1$.] Governs what customized
   conditions an issuer requires in order to issue credentials, when receiving
@@ -141,6 +137,20 @@ user has to prove correctness of their computation. We introduce them next,
   message, and produced signature (or a subset thereof), should be extractable
   by the group inspector.
 \end{description}
+
+\todo{\fissue and \feval are not covered in the security definitions! Probably,
+  they should go into traceability -- which may need to be generalized into
+  unforgeability or something like that.}
+
+\paragraph{Helper Function \Identify.} In addition, we make use of a helper
+function \Identify for our non-frameability definition. This function receives
+a signature and a user secret key, and determines whether the latter was used
+to produce the former. This is in line with previous works on DAA
+\cite{bfg+11,cdl16} and group signatures without traditional open functions
+\cite{dl21,fgl21,gl19}. More concreltely \Identify function, defined as $1/0
+\gets \Identify(\usk,\sig)$, conveys meaning to our non-frameability definition
+conditioned on the fact that, given a signature \sig accepted by \Verify,
+\Identify returns $1$ for exactly one \usk.
 
 \paragraph{Global Variables.} %
 All the honestly generated users (i.e., all honestly generated user key pairs,
@@ -197,6 +207,10 @@ identifier.
   the associated issuance function.
 \item[\OGEN.] Adds a new inspector to the game, generating its key pair and
   setting the associated evaluation and inspection functions.
+\item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
+  key to the adversary.
+\item[\OCORR.] Corrupts an existing (and honest) inspector, by giving its secret
+  key to the adversary.  
 \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
   the user's key pair.
 \item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
@@ -380,7 +394,8 @@ identifier.
           \tuattrs_{0,1},\tdattrs_{0,1}) \rdblbrace))$}{%          
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \exists \gid \in \sgid~\st~\gid \in \CO: \pcreturn \bot \\
-          \pcif \feval(\msg,\CRED[\scid_0]) \neq \feval(\msg,\CRED[\scid_1]):
+          \pcif \feval(\PUBUK[\uid_0],\CRED[\scid_0],\msg) \neq \\
+          \pcind \feval(\PUBUK[\uid_1],\CRED[\scid_1],\msg):
           \pcreturn \bot \\
           \csig \gets \Sign(\PRVUK[\uid_b],\msg,\uattrs_b,\dattrs_b, \\
           \hspace*{42pt}
@@ -538,28 +553,49 @@ where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
 \ISSUE,\SIGN,\INSPECT$.
 
 \begin{figure}[htp!]
-  \procedure{$\ExpTrace(1^\secpar)$}{%
-    \parm \gets \Setup(1^\secpar) \\
-     (\sig,\dattrs,\msg) \gets
-     \adv^{\Otrace}(\parm) \\
-     \pcreturn 1~\pcif \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land~( \\
-     \pcind \pccomment{All \Obtain transcripts fail to open \sig} \\
-     \pcind \nexists \gid \in \sgid:
-     \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,\sgid) = \bot~\lor \\
-     \pcind \pccomment{Such transcript exists, but ...} \\
-     \pcind \exists\gid \in \sgid~\st~
-     \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs) =
-     (\y,\iproof)~\land (\\
-     \pcind \pcind \pccomment{... the proof is rejected by \Judge ...} \\
-     \pcind \pcind \Judge(\y,\iproof,\sig,\msg,\dattrs,\GK[\sgid]) = 0~\lor \\
-     \pcind \pcind \pccomment{... or \Judge accepts the proof, but inspect
-       returns an invalid value} \\
-     \pcind \pcind \nexists \uid \in \CU \cup \HU~\st~
-     \y = \finsp(\PUBUK[\uid],\CRED[\uid],\sig) \\
-     \pcind ) \\
-     ) \\
-     \pcreturn 0
-  }
+%  \begin{minipage}[t]{\textwidth}
+    \procedure{$\ExpTrace(1^\secpar)$}{%
+      \parm \gets \Setup(1^\secpar) \\
+      (\sig,\dattrs,\msg,\sgid) \gets
+      \adv^{\Otrace}(\parm) \\
+      \pcreturn 1~\pcif: \\
+      \pcind \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land~(
+      \IssueForge(\sig,\msg,\dattrs,\sgid) = 1~\lor \\
+      \pcind \pcind \EvalForge(\sig,\msg,\dattrs,\sgid) = 1~\lor~
+      \InspectForge(\sig,\msg,\dattrs,\sgid) = 1) \\
+      \pcreturn 0 \\
+    }
+    
+  % \end{minipage}
+  % \begin{minipage}[t]{0.5\textwidth}
+    \procedure{$\IssueForge(\sig,\msg,\dattrs,\sgid)$}{%
+      \pcreturn 0 \\
+    }
+    
+    \procedure{$\EvalForge(\sig,\msg,\dattrs,\sgid)$}{%
+      \feval(\PUBUK[\uid],\CRED[\uid],\msg) = 0 \\
+      \pcreturn 0 \\
+    }
+    
+    \procedure{$\InspectForge(\sig,\msg,\dattrs,\sgid)$}{%
+      \pcreturn 1~\pcif: \\
+      \pcind \pccomment{All \Obtain transcripts fail to inspect \sig} \\
+      \pcind \nexists \gid \in \sgid:
+      \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,\sgid) = \bot~\lor \\
+      \pcind \pccomment{A valid transcript exists, but ...} \\
+      \pcind \exists\gid \in \sgid~\st~
+      \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs) =
+      (\y,\iproof)~\land (\\
+      \pcind \pcind \pccomment{... the proof is rejected by \Judge ...} \\
+      \pcind \pcind \Judge(\y,\iproof,\sig,\msg,\dattrs,\GK[\sgid]) = 0~\lor \\
+      \pcind \pcind \pccomment{... or \Judge accepts the proof, but \Inspect
+      returns an invalid value \y} \\
+      \pcind \pcind \nexists \uid \in \CU \cup \HU~\st~
+      \y = \finsp(\PUBUK[\uid],\CRED[\uid],\sig) \\
+      \pcind ) \\      
+      \pcreturn 0
+    }
+%  \end{minipage}      
   \caption{Traceability experiment for \UAS schemes.}
   \label{fig:exp-uas-trace}
 \end{figure}
