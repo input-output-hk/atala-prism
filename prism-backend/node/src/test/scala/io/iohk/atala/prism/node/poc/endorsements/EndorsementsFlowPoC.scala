@@ -18,6 +18,7 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -93,7 +94,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
     )
 
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, endorsementsFlowPoCLogs)
-    blockProcessingService = new BlockProcessingServiceImpl
+    blockProcessingService = new BlockProcessingServiceImpl(ApplyOperationConfig(DidSuffix("0a1e3")))
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs

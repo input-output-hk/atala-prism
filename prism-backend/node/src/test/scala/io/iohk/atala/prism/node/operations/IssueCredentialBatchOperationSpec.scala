@@ -6,7 +6,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
+import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
@@ -236,7 +236,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -266,7 +266,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -295,7 +295,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
 
       // first insertion
       val resultAttempt1 = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -304,7 +304,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
       resultAttempt1 mustBe a[Right[_, _]]
 
       val resultAttempt2 = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()

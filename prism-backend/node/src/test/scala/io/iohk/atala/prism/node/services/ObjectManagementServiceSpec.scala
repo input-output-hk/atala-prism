@@ -18,7 +18,7 @@ import io.iohk.atala.prism.node.errors.NodeError.{TooManyDidPublicKeysAccessAtte
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
+import io.iohk.atala.prism.node.operations.{ApplyOperationConfig, CreateDIDOperationSpec}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterKeys}
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
@@ -544,10 +544,9 @@ class ObjectManagementServiceSpec
         ),
         dummyLedgerData
       )
-    DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
     val protUpd1 = parsedProtocolUpdateOperation1
-      .applyState()
+      .applyState(ApplyOperationConfig(proposerDIDSuffix))
       .transact(database)
       .value
       .unsafeToFuture()

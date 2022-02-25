@@ -15,6 +15,8 @@ import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
 import io.iohk.atala.prism.node.repositories._
@@ -67,7 +69,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     protocolVersionsRepository = ProtocolVersionRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
 
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, flowPocTestLogs)
-    blockProcessingService = new BlockProcessingServiceImpl
+    blockProcessingService = new BlockProcessingServiceImpl(ApplyOperationConfig(DidSuffix("0a1e3")))
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
       .unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
