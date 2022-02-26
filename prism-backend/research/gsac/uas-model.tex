@@ -1,6 +1,13 @@
 \section{Model for \UAS Schemes}
 \label{sec:model-uas}
 
+\textcolor{red}{\textbf{WARNING:} The syntax and oracles below should be close
+  to what we want. The game definitions should may be farther (especially
+  traceability and non-frameability), but I'm having trouble with this level
+  of abstraction without having some concrete scheme to consult on. Therefore,
+  I'll start with a generic construction and then iterate the model again.
+  Thus, note that the current modelling is, essentially, wrong.}
+
 Universal Anonymous Signatures.
 
 \subsection{Syntax}
@@ -14,17 +21,6 @@ we assume that each has its own issuer and inspector.
 
 \todo{The notation for multisets is not strictly correct. Still, leaving it as
   is for now.} 
-
-\commentwho{Jesus}{I'm trying to define \Sign, \Verify, \Inspect and \Judge such
-  that multiple credentials can be used to produce a single signature, proving
-  claims over arbitrary subsets of all the credentials owned by a user. \Verify
-  and, consequently, \Inspect and \Judge need to receive all the \gpk's.
-  \Inspect only requires one inspector's secret key, though, and will thus only
-  produce that inspector's function of the signature and message (this is to
-  avoid complex interactive protocols between many inspectors). This, however,
-  creates a quite annoying syntax. If this becomes unmanageable, it may just be
-  easier to restrict signatures to claims over the attributes contained in
-  \emph{one} credential.}
 
 \commentwho{Jesus}{I'm moving to a syntax that applies arbitrary functions over
   the credentials, at different points (issuance, evaluation, and inspection).
@@ -52,7 +48,7 @@ we assume that each has its own issuer and inspector.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
   \Obtain(\usk,\attrs,\ldblbrace (gpk_i,\cred_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\upk,\attrs,\ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})
+  \Issue(\isk,\upk,\attrs,\ldblbrace (\gpk_i,\cred_i) \rdblbrace_{i \in \Issuers})
   \rangle$.] %
   This interactive protocol lets a user with key pair (\upk,\usk) running the
   \Obtain process, obtain a credential \cred from an issuer in the system, on
@@ -64,28 +60,21 @@ we assume that each has its own issuer and inspector.
   credential. To ease notation, we assume that the group to which each
   credential belongs is available from the credential itself, and therefore
   omit the $\gpk_i$ values from the syntax, unless necessary to avoid ambiguity.
-\item[$\sig \gets \Sign(\usk,\msg,\feval,
-  \ldblbrace (\gpk_i,\cred_i)\rdblbrace_{i \in \Issuers})$.]
-  The user with with secret key \usk, who obtained credentials $\cred_i$ from a
-  multiset of issuers in the system, produces a signature \sig over message
-  \msg, meeting the conditions defined by \feval. As in \Obtain and \Issue, we
-  omit the credentials' group public keys when possible.
-\item[$1/0 \gets
-  \Verify(\sig,\msg,\ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})$.]
-  Checks whether \sig is a valid signature, over message \msg.
-\item[$(\y,\iproof)/\bot \gets \Inspect(\osk,\trans,\sig,\msg,
-  \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})$.] %
+\item[$\sig \gets \Sign(\gpk,\usk,\cred,\msg,\feval)$.]
+  The user with with secret key \usk and credential \cred, produces a signature
+  \sig over message \msg, meeting the conditions defined by \feval.
+\item[$1/0 \gets \Verify(\gpk,\sig,\msg)$.] Checks whether \sig is a valid
+  signature, over message \msg, from a user in the group with public key \gpk.
+\item[$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg)$.] %
   Executed by the inspector with private key \osk. Receives a signature \sig
-  over message \msg, produced by a set of credentials endorsed by a multiset of
-  issuers with public keys $\gpk_i$. If \trans contains a set of valid
-  transcripts corresponding to the $\langle\Obtain,\Issue\rangle$ interactive
-  protocol executions that issued one or more credentials used to produced \sig,
-  the function outputs a value $\y$ derived from the signer's public key,
-  credentials, message, and signature, as well as a proof of correct inspection.
-  We sometimes abuse notation, and write $\trans[\uid]$ to mean that the \Inspect
-  function is operating only for the obtain transcripts related to user \uid. 
-\item[$1/0 \gets \Judge(\y,\iproof,\sig,\msg,
-  \ldblbrace \gpk_i\rdblbrace_{i \in \Issuers})$.] %
+  over message \msg. If \trans contains a set of valid transcripts corresponding
+  to the $\langle\Obtain,\Issue\rangle$ interactive protocol execution that
+  issued the used to produce \sig, the function outputs a value $\y$ derived
+  from the signer's public key, credential, message, and signature, as well as
+  a proof of correct inspection. We sometimes abuse notation, and write
+  $\trans[\uid]$ to mean that the \Inspect function is operating only for the
+  obtain transcripts related to user \uid.
+\item[$1/0 \gets \Judge(\gpk,\y,\iproof,\sig,\msg)$.] %
   Checks if \iproof is a valid inspection correctness proof for the value \y,
   obtained by applying \Inspect to the the signature \sig over message \msg. 
 \end{description}
@@ -112,16 +101,15 @@ their computation. We introduce them next, \todo{and will give concrete examples
   additional credentials \scred, which may further be used for blind issuance
   \commentwho{Jesus}{can it?}. \fissue returns $1$ to accept a request, $0$ to
   reject it.  
-\item[$\feval: (\upk,\scred,\msg) \rightarrow 0/1$.] Can be defined by any party,
+\item[$\feval: (\upk,\cred,\msg) \rightarrow 0/1$.] Can be defined by any party,
   although we anticipate that this will typically be done by either singers,
   verifiers, or some governance organization. It defines customized conditions
-  to be met by the owner of a user key \upk and set of credentials \scred, in
+  to be met by the owner of a user key \upk and credential \cred, in
   order to sign a concrete message \msg. Returns $1$ to allow the signing,
   or $0$ to disallow it.
-\item[$\finsp: (\upk,\scred,\msg,\sig) \rightarrow \bin^*$.] Defines what
-  utility value, derived from the user's public key, credentials, signed
-  message, and produced signature (or a subset thereof), should be extractable
-  by the group inspector.
+\item[$\finsp: (\upk,\cred,\msg) \rightarrow \bin^*$.] Defines what
+  utility value, derived from the user's public key, credential, and message
+  should be extractable by the group inspector.
 \end{description}
 
 \paragraph{Helper Function \Identify.} In addition, we make use of a helper
@@ -170,23 +158,21 @@ with $\emptyset$.
   \end{description}
 \item[Tables for credentials-related data]:
   \begin{description}
-  \item[\CRED.] Stores credentials obtained by honest users. Thus, it is
-    indexable by \cid. However, we slightly abuse notation and also use
-    $\CRED[\uid]$ as a shorthand for all credentials obtained by honest user
-    \uid, or $\CRED[\scid]$ to refer to a set of credentials with the
-    identifiers in set \scid.
-  \item[\OWNR.] Keeps track of which \uid is the owner of credentials obtained
-    by honest users; i.e., $\OWNR[\cid]$ returns the \uid that obtained
-    credential with identifier \cid.
-  \item[\ATTR.] Keeps track of the attributes assigned to a credential, as well
-    as the credential identifiers used to attest for any arbitrary claims
-    required for issuance. This table can be indexed by credential identifier
-    \cid.
-  \item[\GRP.] Keeps track of the group to which a credential belongs to; i.e.,
-    the group of the issuer who issued the credential. This table can be indexed
-    by credential identifier \cid.
+  \item[\CRED.] Stores information related to credentials obtained by honest
+    users. Thus, it is indexable by \cid. More specifically, it stores tuples of
+    the form $(\uid,\cred,\gid,\attrs,\scid)$, where \uid is the identity of the
+    owner of the credential, \cred (when available) is the credential itself,
+    \gid is the identifier of the group to which the credential belongs, \attrs
+    are the attributes included in \cred, and \scid are the identifiers of any
+    additional credential that \uid used to request \cred.
+  \item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
+    ``\uid such that $\CRED[\cid] = (\uid, \cdot, \cdot, \cdot, \cdot)$''.
+  \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
+    ``\attrs such that $\CRED[\cid] = (\cdot, \cdot, \cdot, \attrs, \cdot)$''.
+  \item[\GRP.] For notational convenience, when we write $\GRP[\cid]$ we mean
+    ``\gid such that $\CRED[\cid] = (\cdot, \gid, \cdot, \cdot, \cdot)$''.
   \end{description}
-\item[STables for signatures]:
+\item[Tables for signatures]:
   \begin{description}
   \item[\SIG.] Maintains signatures generated via the \SIGN oracle, on behalf
     of honest users.
@@ -316,17 +302,17 @@ oracles, which are formally defined in \figref{fig:oracles1} and
       \begin{minipage}[t]{0.55\textwidth}
 
         \procedure{$\ISSUE(\cid,\uid,\gid,\attrs,\ldblbrace\scid\rdblbrace)$}{%
-          \pcif \uid \notin \CU: \pcreturn \bot \\
+          \pcif \uid \notin \CU: \pcreturn \bot \\          
           \pcif \gid \notin \HI: \pcreturn \bot \\
           \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cdot, \utrans \rangle \gets
           \langle \adv, \\
           \hspace*{45pt}
           \Issue(\PRVIK[\gid],\PUBUK[\uid], \attrs,
-          \ldblbrace \GK[\sgid] \rdblbrace) \rangle \\
-          \trans[\cid] \gets \utrans;~\GRP[\cid] \gets \gid \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid, \attrs) \\
+          \ldblbrace \CRED[\scid] \rdblbrace) \rangle \\
+          \trans[\cid] \gets \utrans \\
+          \CRED[\cid] \gets (\uid, \cdot, \gid, \attrs, \scid) \\
           \pcreturn \top \\          
         }                
 
@@ -337,18 +323,22 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \langle \Obtain(\PRVUK[\uid],\attrs, 
           \ldblbrace \CRED[\scid] \rdblbrace), \\
           \hspace*{50pt} \adv \rangle \\
-          \CRED[\cid] \gets \cred;~\GRP[\cid] \gets \gid \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid, \attrs) \\
+          \CRED[\cid] \gets (\uid, \cdot, \gid, \attrs, \scid) \\          
           \pcreturn \top \\
         }
 
         \procedure{$\INSPECT(\gid,\sig,\msg)$}{%
-          \textrm{Let}~\uid~\textrm{be s.t.}~(\sig,\msg,\scid,\uattrs,\dattrs,\sgid)
+          \textrm{Let}~\uid~\textrm{be s.t.}~(\cid,\sig,\msg,\feval)
           \in \SIG[\uid] \\
-          \pcif \sig \in \CSIG: \pcreturn \bot \\
-          (\y,\oproof) \gets
-          \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,\GK[\sgid]) \\
-          \pcreturn (\y,\oproof)
+          (\y,\iproof) \gets
+          \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg) \\
+          \pcif \CSIG[\sig] \neq \bot: \\
+          \pcind \textrm{Parse $\CSIG[\sig]$ as $(\sig_{1-b},\msg,\feval)$} \\
+          \pcind (\y_{1-b},\iproof_{1-b}) \gets
+          \Inspect(\GK[\gid],\PRVOK[\gid],\\
+          \hspace*{107pt} \trans,\sig_{1-b},\msg) \\
+          \pcind \pcif \y_{1-b} \neq \y: \pcreturn \bot \\
+          \pcreturn (\y,\iproof)
         }
         
       \end{minipage}
@@ -367,36 +357,34 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \langle \Obtain(\PRVUK[\uid],\attrs,
           \ldblbrace \CRED[\scid] \rdblbrace), \\
           \hspace*{60pt} \Issue(\PRVIK[\gid],\PUBUK[\uid],\attrs,
-          \ldblbrace \GK[\sgid] \rdblbrace ) \rangle \\
-          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets (\scid,\attrs) \\
-          \GRP[\cid] \gets \gid \\
+          \ldblbrace \CRED[\scid] \rdblbrace ) \rangle \\
+          \trans[\cid] \gets \utrans \\
+          \CRED[\cid] \gets (\uid, \cred, \gid, \attrs, \scid) \\
           \pcreturn \top \\
         }
 
-
-        \procedure{$\SIGN(\uid,\msg,\feval,\ldblbrace\scid\rdblbrace )$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
-          \cred \gets \CRED[\cid] \\
-          \sig \gets \Sign(\PRVUK[\uid],\msg,\ldblbrace\CRED[\scid]\rdblbrace) \\
+        \procedure{$\SIGN(\uid,\cid,\msg,\feval)$}{%
+          \pcif \uid \notin \HU \lor \CRED[\cid] = \bot: \pcreturn \bot \\
+          \sig \gets \Sign(\GK[\GRP[\cid]],\PRVUK[\uid],\msg,\CRED[\cid]) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
-          \lbrace (\sig,\msg,\feval,\scid) \rbrace \\
+          \lbrace (\cid,\sig,\msg,\feval) \rbrace \\
           \pcreturn \sig \\
         }                
 
-        \procedure{$\CHALb(\uid_{0,1},\msg,\feval,
-          \ldblbrace (\cscid_{0,1},\sgid) \rdblbrace))$}{%          
+        \procedure{$\CHALb(\cuid_{0,1},\ccid_{0,1},\msg,\feval)$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
-          \pcif \exists \gid \in \sgid~\st~\gid \in \CO: \pcreturn \bot \\
+          \pcif \gid = \GRP[\ccid_0] \neq \GRP[\ccid_1]: \pcreturn \bot \\
+          \pcif \gid \in \CO: \pcreturn \bot \\
           \pcif \feval(\PUBUK[\uid_0],\CRED[\scid_0],\msg) \neq \\
           \pcind \feval(\PUBUK[\uid_1],\CRED[\scid_1],\msg):
           \pcreturn \bot \\
-          \csig \gets \Sign(\PRVUK[\uid_b],\msg,\feval, \\
-          \hspace*{42pt}
-          \ldblbrace (\GK[\sgid],\CRED[\scid_b]) \rdblbrace) \\
-          \CSIG \gets \CSIG \cup
-          \lbrace (\csig,\msg,\feval,\cscid_b,\sgid) \rbrace \\
-          \pcreturn \csig
+          \csig_b \gets \Sign(\GK[\gid],\PRVUK[\cuid_b],\CRED[\ccid_b],
+          \msg,\feval) \\
+          \csig_{1-b} \gets \Sign(\GK[\gid],\PRVUK[\cuid_{1-b}],\CRED[\ccid_{1-b}],
+          \msg,\feval) \\          
+          \CSIG[\csig_b] \gets 
+          \lbrace (\csig_{1-b},\msg,\feval) \rbrace \\
+          \pcreturn \csig_b
         }
         
       \end{minipage}
@@ -422,58 +410,52 @@ signature, revealing the public key pair of the user, must also be accepted by
 \begin{figure}[htp!]
   \procedure{$\ExpCorrect(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-    (\uid,\msg,\feval,\ldblbrace \scid \rdblbrace)
+    (\uid,\cid,\msg,\feval)
     \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS}(\parm) \\
-    \sig \gets \Sign(\PRVUK[\uid],\msg,\feval,
-    \ldblbrace \CRED[\scid] \rdblbrace ) \\
-    \pcif \Verify(\sig,\msg,\GK[\sgid]) = 0: \pcreturn 1~
+    \sig \gets \Sign(\GK[\cid],\PRVUK[\uid],\cid,\msg,\feval) \\
+    \pcif \Verify(\GK[\cid],\sig,\msg) = 0: \pcreturn 1~
     \pccomment{\sig fails to verify} \\
-    \pcif \CorrectIssue(\uid,\ldblbrace \scid \rdblbrace)
-    = 0: \pcreturn 1~
-    \pccomment{Some \cid should not have been issued} \\
-    \pcif \CorrectEval(\uid,\msg,\feval,\ldblbrace \scid \rdblbrace)
+    \pcif \CorrectIssue(\uid,\cid) = 0: \pcreturn 1~
+    \pccomment{\cid should not have been issued} \\
+    \pcif \CorrectEval(\uid,\cid,\msg,\feval)
     = 0: \pcreturn 1~
     \pccomment{\msg should not have been signed}\\
-    \pcif \CorrectInspect(\uid,\msg,\ldblbrace \scid \rdblbrace,
-    \sig) = 0: \pcreturn 1~
+    \pcif \CorrectInspect(\uid,\cid,\msg,\sig) = 0: \pcreturn 1~
     \pccomment{Some inspection of \sig is invalid}\\
     \pcreturn 0 \\
   }
 
-  \procedure{$\CorrectIssue(\uid,\ldblbrace \scid \rdblbrace)$}{
-    \forall \cid \in \scid~\textrm{parse}~\ATTR[\cid]~\textrm{as}~
-    (\scid^\cid,\attrs^\cid) \\
-    \forall \gid \in \GRP[\scid]~\textrm{parse}~\GK[\gid]~\textrm{as}~
+  \procedure{$\CorrectIssue(\uid,\cid)$}{
+    \gid \gets \GRP[\cid] \\
+    \textrm{Parse}~\ATTR[\cid]~\textrm{as}~(\attrs^\cid,\scid^\cid);~
+    \textrm{Parse}~\GK[\gid]~\textrm{as}~
     ((\cdot,\fissue^\gid),\cdot) \\        
-    \pcif \exists \cid \in \scid, \gid \in \GRP[\scid]~\st~
-    \fissue^\gid(\PUBUK[\uid],\attrs^\cid,\CRED[\scid]^\cid) = 0: 
+    \pcif \fissue^\gid(\PUBUK[\uid],\attrs^\cid,\CRED[\scid]^\cid) = 0: 
     \pcreturn 0 \\
     \pcreturn 1 \\   
   }
 
-  \procedure{$\CorrectEval(\uid,\msg,\feval,\ldblbrace \scid \rdblbrace)$}{
-    \pcif \feval(\PUBUK[\uid],\CRED[\scid],\msg) = 0: \pcreturn 0 \\
+  \procedure{$\CorrectEval(\uid,\cid,\msg,\feval)$}{
+    \pcif \feval(\PUBUK[\uid],\CRED[\cid],\msg) = 0: \pcreturn 0 \\
     \pcreturn 1 \\
   }
 
-  \procedure{$\CorrectInspect(\uid,\msg,\ldblbrace \scid \rdblbrace, \sig)$}{
-    \textrm{Let}~\sgid \gets \GRP[\scid];~
-    \forall \gid \in \sgid~\textrm{parse}~\GK[\sgid]~\textrm{as}~
-    (\cdot,(\cdot,\finsp^\gid)) \\
-    \pccomment{\sig cannot be inspected by a suitable inspector} \\
-    \pcif \exists \gid \in \sgid~\st~
-    \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\GK[\sgid]) = \bot: \pcreturn 0 \\
-    \pccomment{An $(\y,\iproof)$ pair is rejected by \Judge
+  \procedure{$\CorrectInspect(\uid,\cid,\msg,\sig)$}{
+    \textrm{Let}~\gid \gets \GRP[\cid];~
+    \textrm{Parse}~\GK[\gid]~\textrm{as}~(\cdot,(\cdot,\finsp^\gid)) \\
+    \pccomment{\sig cannot be inspected} \\
+    \pcif \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg) = \bot: \pcreturn 0 \\
+    \pccomment{The produced $(\y,\iproof)$ pair is rejected by \Judge
       % \todo{This must be conditioned on \feval = 0!}
     } \\
-    \pcif \exists \gid \in \sgid~\st~
-    (\y,\iproof) \gets \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\GK[\sgid]) \land \\
-    \pcind
-    \Judge(\y,\iproof,\sig,\msg,\GK[\sgid]) = 0):
+    \pcif (\y,\iproof) \gets \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg)
+    \land
+    \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 0): \\
+    \pcind \pcreturn 0 \\
+    \pccomment{\y is the wrong value} \\
+    \pcif \y \neq \finsp^\gid(\PUBUK[\uid],\CRED[\cid],\msg)):
     \pcreturn 0 \\
-    \pccomment{\y is the wrong value for some $\finsp^\gid$} \\
-    \pcif \exists \gid \in \sgid~\st~
-    \y \neq \finsp^\gid(\PUBUK[\uid],\CRED[\scid],\msg,\sig)): \pcreturn 0 \\
+    \pcreturn 1
   }
   
   \caption{Correctness experiment for \UAS schemes.}
@@ -488,8 +470,8 @@ In group signatures, anonymity captures that no adversary must be able to learn,
 from any group signature, the identity (e.g., member index) of its signer. In 
 anonymous credentials, it requires that no adversary should learn anything about
 the holder of a successfully shown credential, beyond that he owns a credential
-attesting for the claimed function of the attributes it contains. In both GS and
-AC, it is also typically required that
+attesting for the claimed predicate of the attributes it contains. In both GS
+and AC, it is also typically required that
 multiple signatures/presentations by the users are unlinkable. The approach to
 formally state this property is in both cases frequently the same: the adversary
 picks two (honest) users (or credentials in the AC case), the game randomly
@@ -498,8 +480,8 @@ signatures/presentations from it. The adversary wins if it succeeds in guessing
 which was the chosen user/credential better than guessing at random. In group
 signatures, the game must also restrict the adversary from opening challenge
 signatures. In anonymous credentials, the game must further constraint the
-adversary to output credentials that have some common function of (a subset of)
-its attributes.
+adversary to output credentials that both meet the same (challenge) predicate
+of their attributes.
 
 In our notion of anonymity for \UAS, we need to merge the previous constraints.
 Furthermore, a key difference with group signatures is that the game requires
@@ -510,7 +492,10 @@ more general than that of group signatures. Moreover, in order to prevent
 trivial wins by the adversary, we have to restrict that the challenge signatures
 belong to a group that has been ``programmed'' with the same evaluation and
 inspection functions, which is again a generalization over group signatures,
-as discussed in the sequel. The formal specification of the anonymity game is
+as discussed in the sequel. Other than this, the overall approach is the same:
+the adversary picks two honestly obtained credentials, and one of them (set
+by the $b$ value defining the $anon-b$ game) is used to program the \CHALb
+oracle. The formal specification of the anonymity game is
 given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,\CU\rbrace
 \GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN,
 \INSPECT)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace
@@ -519,7 +504,7 @@ given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,\CU\rbrace
 \begin{figure}[htp!]
   \procedure{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
-     (\cscid_0,\cscid_1,\status) \gets \adv^{\Oanonc}(\choose,\parm) \\
+     (\ccid_0,\ccid_1,\status) \gets \adv^{\Oanonc}(\choose,\parm) \\
      b^* \gets \adv^{\Oanong} (\guess,\status) \\
      \pcreturn b^*
   }
@@ -541,80 +526,109 @@ This notion of anonymity is more general than that of group signatures in the
 sense that calls to the \INSPECT oracle reveal an arbitrary function of the
 identity of the user -- which can certainly be the member index itself, as it
 is frequent in group signatures, ore any other function computable from the
-user public key, its credentials, and produced signature. \todo{Delve more in
-  this.}
+user public key, its credentials, and produced signature. Moreover, note that
+our notion is even stronger than the conventional ``CCA-like'' anonymity notion
+that gives the adversary access to the open oracle, only restricting it when
+trying to open challenge signature. Precisely the introduction of generic
+inspection functions allows us to \underline{\emph{let the adversary open
+    challenge signatures $\csig_b$}} as long as the counterpart $\csig_{1-b}$
+makes \Inspect produce the same \y value as output. This is certainly not
+possible when using conventional opening, since it directly outputs the identity
+of the signer -- which cannot be the same for different challenge users.
 
 \paragraph{Traceability.} %
-Traceability is one of the unforgeability-related properties in group
-signatures. It captures that any signature accepted by \Verify needs to open
-to one of the users that joined the group. While there is no traceability notion
-in anonymous credentials, it is natural to map it to their unforgeability
-property; if only because both require the issuer to be honest. Unforgeability
-in anonymous credentials typically ensures that no adversary can get a verifier
-to accept a credential presentation requiring a set of attributes that is not
-contained in one of the credentials controlled by the adversary.
+% Traceability is one of the unforgeability-related properties in group
+% signatures. It captures that any signature accepted by \Verify needs to open
+% to one of the users that joined the group. While there is no traceability notion
+% in anonymous credentials, it is natural to map it to their unforgeability
+% property; if only because both require the issuer to be honest. Unforgeability
+% in anonymous credentials typically ensures that no adversary can get a verifier
+% to accept a credential presentation requiring a set of attributes that is not
+% contained in one of the credentials controlled by the adversary.
 
-Our notion of traceability for \UAS is inspired by both. First, we restrict to
-signatures that are accepted by \Verify. For any such signature, \Inspect has to
-create a valid output (i.e., must not abort). The output of \Inspect has to be
-accepted by \Judge too. Moreover, there must exist one user (either honest or
-corrupt) who used his public key to obtain one or more credentials that allowed
-him to produce a signature which, once inspected, returns \y. The formal
+% Our notion of traceability for \UAS is inspired by both. First, we restrict to
+% signatures that are accepted by \Verify. For any such signature, \Inspect has to
+% create a valid output (i.e., must not abort). The output of \Inspect has to be
+% accepted by \Judge too. Moreover, there must exist one user (either honest or
+% corrupt) who used his public key to obtain one or more credentials that allowed
+% him to produce a signature which, once inspected, returns \y.
+In group signatures, traceability ensures that, in the presence of an honest
+issuer, every signature accepted by the verify algorithm must have been created
+by a user that joined the group.  With conventional opening, this is essentially
+checked by requesting the adversary to produce a signature, opening it, and
+checking whether or not it comes from a group member; i.e., this ensures that
+inspection cannot be forged in the presence of an honest issuer.
+%
+The somehow equivalent property in anonymous credentials is unforgeability. It
+requires that, again in the presence of an honest issuer, no adversary can
+succeed in a credential presentation for attributes (or predicates of them) that
+are not contained in a legitimately issued credential it controls. In other
+words, that the evaluation of the credential attributes was not forged.
+%
+Both notions have an equivalent in \UAS. That is, we need to ensure that, in the
+presence of an honest issuer, no signature accepted by \Verify can result in a
+wrong inspection, nor it can have been obtained by a wrong evaluation of some
+credential. Note, however, that \UAS offer the adversary yet another way to
+break traceability/unforgeability. Namely, an adversary can attempt to
+illegitimately obtain a credential that later enables it to produce untraceable
+signatures; i.e., signatures that evaluate correctly, or for which \Inspect
+returns the appropiate value, yet the adversary should not have been able to
+obtain a credential that allowed it to produce such signatures. Our notion of
+traceability/unforgeability thus challenges the adversary to produce a signature
+that breaks any of those conditions. The formal
 definition of the traceability experiment is given in \figref{fig:exp-uas-trace},
 where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
 \ISSUE,\SIGN,\INSPECT$.
 
 \begin{figure}[htp!]
-%  \begin{minipage}[t]{\textwidth}
     \procedure{$\ExpTrace(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
-      (\sig,\dattrs,\msg,\sgid) \gets
-      \adv^{\Otrace}(\parm) \\
-      \pcreturn 1~\pcif: \\
-      \pcind \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land~(
-      \IssueForge(\sig,\msg,\dattrs,\sgid) = 1~\lor \\
-      \pcind \pcind \EvalForge(\sig,\msg,\dattrs,\sgid) = 1~\lor~
-      \InspectForge(\sig,\msg,\dattrs,\sgid) = 1) \\
+      (\gid,\sig,\msg) \gets \adv^{\Otrace}(\parm) \\
+      \pcif \Verify(\GK[\gid],\sig,\msg) = 0: \pcreturn 0 \\
+      \pcif \EvalForge(\gid,\sig,\msg) = 1 \land
+      \InspectForge(\gid,\sig,\msg) = 1: \\
+      \pcind \pcreturn 1 \\
       \pcreturn 0 \\
     }
-    
-  % \end{minipage}
-  % \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\IssueForge(\sig,\msg,\dattrs,\sgid)$}{%
-      \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1 \land
-      \fissue(\PUBUK[\uid],\attrs,\CRED[\uid]) = 0 \\
+        
+    \procedure{$\EvalForge(\gid,\sig,\msg)$}{%
+      \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1~\land \\
+      \pcind \pccomment{\uid does not own a \cred that satisfies \feval...} \\
+      \pcind (\nexists \cred \in \CRED[\uid]~\st~
+      \feval(\PUBUK[\uid],\cred,\msg) = 1 ~\lor \\
+      \hspace*{13pt} \pccomment{... or \uid does, but \cred was itself obtained
+        fraudulently} \\
+      \hspace*{13pt} (\exists \cred \in \CRED[\uid]~\st~
+      \feval(\PUBUK[\uid],\cred,\msg) = 1~\land \\
+      \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
+      \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
+        $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\
       \pcind \pcreturn 1 \\
       \pcelse \pcreturn 0 \\
     }
     
-    \procedure{$\EvalForge(\sig,\msg,\dattrs,\sgid)$}{%
-      \pccomment{\todo{This assumes that there is no $\cred \in \CRED[\uid]$ \st~
-          $\feval(\PUBUK[\uid],\CRED[\uid],\msg) = 0$, but}} \\
-      \pccomment{\todo{$\feval(\PUBUK[\uid],\CRED[\uid]\setminus \cred,\msg) = 1$}} \\
-      \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1 \land
-      \feval(\PUBUK[\uid],\CRED[\uid],\msg) = 0 \\
-      \pcind \pcreturn 1 \\
-      \pcelse \pcreturn 0 \\
-    }
-    
-    \procedure{$\InspectForge(\sig,\msg,\dattrs,\sgid)$}{%
-      \pcreturn 1~\pcif: \\
-      \pcind \pccomment{All \Obtain transcripts fail to inspect \sig} \\
-      \pcind \nexists \gid \in \sgid:
-      \Inspect(\PRVOK[\gid],\trans,\sig,\msg,\dattrs,\sgid) \neq \bot~\lor \\
+    \procedure{$\InspectForge(\gid,\sig,\msg)$}{%
+      \pccomment{All \Obtain transcripts fail to inspect \sig} \\
+      \pcif \Inspect(\PRVOK[\gid],\trans,\sig,\msg) \neq \bot~\lor \\
       \pcind \pccomment{A valid transcript exists, but ...} \\
-      \pcind \exists\gid \in \sgid, \exists \uid~\st~
-      \Inspect(\PRVOK[\gid],\trans[\uid],\sig,\msg,\dattrs) =
+      \pcind \exists \uid~\st~\Inspect(\PRVOK[\gid],\trans[\uid],\sig,\msg) =
       (\y,\iproof)~\land (\\
       \pcind \pcind \pccomment{... the proof is rejected by \Judge ...} \\
-      \pcind \pcind \Judge(\y,\iproof,\sig,\msg,\dattrs,\GK[\sgid]) = 0~\lor \\
-      \pcind \pcind \pccomment{... or \Judge accepts the proof, but \Inspect
-      returns an invalid value \y} \\
-      \pcind \pcind \y = \finsp(\PUBUK[\uid],\CRED[\uid],\msg,\sig) \\
-      \pcind ) \\      
+      \pcind \pcind \Judge(\y,\iproof,\sig,\msg,\GK[\sgid]) = 0~\lor \\
+      \pcind \pcind \pccomment{... or \uid does not own a \cred for which
+        \finsp outputs \y} \\
+      \pcind \pcind \nexists \cred \in \CRED[\uid]~\st~
+      \y = \finsp(\PUBUK[\uid],\cred,\msg)~\lor \\
+      \pcind \pcind \pccomment{... or \uid does, but \cred was itself obtained
+        fraudulently} \\
+      \pcind \pcind (\exists \cred \in \CRED[\uid]~\st~
+      \feval(\PUBUK[\uid],\cred,\msg) = 1~\land \\
+      \pcind \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
+      \pcind \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
+        $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\      
+      \pcind \pcreturn 1 \\      
       \pcreturn 0
     }
-%  \end{minipage}      
   \caption{Traceability experiment for \UAS schemes.}
   \label{fig:exp-uas-trace}
 \end{figure}
@@ -628,39 +642,46 @@ where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
 \end{definition}
 
 \paragraph{Discussion on the generality of traceability in \UAS schemes.} %
-Note that this notion of traceability is, again, strictly more general than
-both group signatures and anonymous credentials. On the group signatures side,
-it all depends on the \Inspect function. If we set it to the traditional
-inspection function, where it returns the identity (index) of the signer, then
-our notion of traceability becomes exactly that of conventional group
-signatures. On the other hand, \Inspect may be set to a non-injective function,
-meaning that it can be possible that different user public keys, credentials and
-signature tuples, may produce the same output. In that case, though, our notion
-of traceability ensures that there must exist \emph{at least one} user capable
-of issuing that signature.
-%
-On the anonymous credentials side, note that our definition allows that users
-combine multiple credentials in a ``presentation''. However, in anonymous
-credentials, it is frequent to require that all the attributes proven in a
-presentation must be contained in a single credential. Note though that our
-definition requires all credentials to be tied to the same user identity.
-Therefore, it is a natural extension as (in the real life), it is very frequent
-to combine multiple identifying documents to prove that you are entitled to
-something. Moreover, any specific instantiation that restricts signatures
-to be associated to just one credential directly leads to the previously
-mentioned ``one credential per presentation'' rule.
+\todo{Comment why is this more general than AC and GS independently.}
 
-Finally, note that we can only ensure consistency of the value returned by
-\finsp, for all users, as long as the issuer is honest. This follows from the
-fact that \finsp depends on the user key pair and the credentials that are
-issued to each user. Therefore, a dishonest issuer could create untraceable
-credentials (i.e., issue credentials without updating the \trans table), so that
-the \finsp function outputs whatever desired value, yet it cannot be traced to
-any registered user. That is, this minimality argument is just a generalization
-of the one described in \cite[Section 4.3]{bsz05}. This is also consistent with
-the unforgeability requirement of anonymous credentials systems, as a corrupt
-issuer can grant arbitrary credentials to any user, and therefore honest
-issuers are required.
+Note also that we have implicitly assumed an unforgeability relaxation in the
+sense that we do not consider a forgery the fact that an adversary can obtain
+credentials that do not meet the \fissue predicate \emph{as long as they are
+  not used to produced untraceable signatures}. Indeed, this is in line with
+previous work \cite[Section 3.3.3]{ckl+15}, and it does make sense as, in the
+real world, being able to fraudulently obtain credentials that cannot be used
+later to authenticate, does not pose a risk.
+
+% Note that this notion of traceability is, again, strictly more general than
+% both group signatures and anonymous credentials.
+% %
+% On the group signatures side,
+% it all depends on the \Inspect function. If we set it to the traditional
+% inspection function, where it returns the identity (index) of the signer, then
+% our notion of traceability becomes roughly that of conventional group
+% signatures\footnote{With the exception that, in \UAS, the same user can own
+%   multiple credentials -- all of which must return the same identity}.
+% On the other hand, \Inspect may be set to a non-injective function,
+% meaning that it can be possible that different user public keys, credentials and
+% signature tuples, may produce the same output. In that case, though, our notion
+% of traceability ensures that there must exist \emph{at least one} user capable
+% of issuing that signature. Indeed, this is complemented with the non-frameability
+% property, that ensures that the adversary cannot produce a signature that
+% inspects to a value that no corrupt user can produce.
+% %
+
+
+% Finally, note that we can only ensure consistency of the value returned by
+% \finsp, for all users, as long as the issuer is honest. This follows from the
+% fact that \finsp depends on the user key pair and the credentials that are
+% issued to each user. Therefore, a dishonest issuer could create untraceable
+% credentials (i.e., issue credentials without updating the \trans table), so that
+% the \finsp function outputs whatever desired value, yet it cannot be traced to
+% any registered user. That is, this minimality argument is just a generalization
+% of the one described in \cite[Section 4.3]{bsz05}. This is also consistent with
+% the unforgeability requirement of anonymous credentials systems, as a corrupt
+% issuer can grant arbitrary credentials to any user, and therefore honest
+% issuers are required.
 
 \paragraph{Non-frameability.} %
 Non-frameability variants are a core unforgeability-type property in group
@@ -675,6 +696,21 @@ that signatures by different (possibly corrupt) users are linked, or directly
 by having open proofs output the identity of a user who did not create the
 signature being opened.
 %
+
+The notion of non-frameability in \UAS schemes is unavoidably more subtle than
+in group signatures, though. To see this, we note that, by allowing any
+arbitrary inspection function \finsp to be used, it can be perfectly valid to
+have a signature produced by a corrupted user, output the same \y value upon
+inspection than the one that \finsp outputs when inspecting a signature by an
+honest user. As a concrete example, imagine an inspection function that returns
+the banking account number (or cryptocurrency address) to be used to request
+payment of a fine. In this example, a corrupted user and an honest user could
+both have delegated this to some agency\footnote{\todo{Maybe, come up with a
+    better example.}}, so it makes perfect sense that the inspection function
+returns the same value for both users.
+%
+Thus, in \UAS schemes, we must be more subtle, by necessity.
+
 In \UAS schemes, in order for a user to be framed \todo{...}. The
 non-frameability property for \UAS schemes is formally defined in
 \figref{fig:exp-uas-frame}, where $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
@@ -683,12 +719,16 @@ non-frameability property for \UAS schemes is formally defined in
 \begin{figure}[htp!]
   \procedure{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-     (\sig,\dattrs,\msg,\sgid,\y,\iproof) \gets
-     \adv^{\Oframe}(\parm) \\
-     \pcreturn 1~\pcif \Verify(\sig,\msg,\dattrs,\GK[\sgid]) = 1 \land
-     \Judge(\y,\iproof,\sig,\msg,\dattrs,\GK[\sgid]) = 1~\land \\
+     (\gid,\sig,\msg,\y,\iproof) \gets \adv^{\Oframe}(\parm) \\
+     \pcreturn 1~\pcif \Verify(\GK[\gid],\sig,\msg) = 1 \land
+     \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 1~\land \\
+     \pcind \pccomment{\adv~did not query \SIGN to get \sig, yet \sig originates
+       from an honest \uid, owning a credential that makes \finsp
+       evaluate to \y} \\
      \pcind \exists \uid \in \HU~\st~\Identify(\PRVUK[\uid],\sig) = 1 \land
-     \sig \notin \SIG[\uid] \\
+     (\cdot,\sig,\msg,\cdot) \notin \SIG[\uid]~\land\\
+     \pcind \exists \cred \in \CRED[\uid]~\st~
+     \finsp(\PUBUK[\uid],\cred,\msg) = \y \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \UAS schemes.}
@@ -713,6 +753,22 @@ non-frameability property for \UAS schemes is formally defined in
   \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
   where all credentials have no attributes, and where we restrict to only
   one credential per user, becomes a conventional GS scheme.}
+
+As an exercise, recall the Sign-Encrypt-Prove approach of group signatures in
+\cite{bsz05}. Roughly, there, a users' membership credential is a signature by
+the issuer of the user's public key. Then, a group signature is a signature
+over the message to be group-signed, signed with the user's private key, an
+encryption of the user's membership credential, and a NIZK proving that the
+private key used to sign the message corresponds to the public key in the
+encrypted membership credential. The opener just keeps a list of the public
+keys and the ``identity'' (index within the member list) of the user. Then,
+inspection (opening) simply consists of having the inspector decrypt the
+encrypted membership credential in the group signature, and find the matching
+public key in the members' list. Take the trivial inspection function
+$\finsp(\upk,\cred,\msg,\sig) = \cred$. Inspection in an \UAS scheme that uses
+this trivial \finsp function is equivalent to conventional opening. Then,
+following this exercise, our non-frameability definition for this inspection
+function would read as \todo{...}
 
 \subsection{Transformation to Interactive Presentations}
 \label{ssec:interactivetransform}
