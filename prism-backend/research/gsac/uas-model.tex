@@ -554,16 +554,17 @@ of the signer -- which cannot be the same for different challenge users.
 % him to produce a signature which, once inspected, returns \y.
 In group signatures, traceability ensures that, in the presence of an honest
 issuer, every signature accepted by the verify algorithm must have been created
-by a user that joined the group.  With conventional opening, this is essentially
+by a user who joined the group.  With conventional opening, this is essentially
 checked by requesting the adversary to produce a signature, opening it, and
-checking whether or not it comes from a group member; i.e., this ensures that
-inspection cannot be forged in the presence of an honest issuer.
+checking whether or not it comes from a group member; i.e., this ensures that,
+as long as there are verifiable inspections, inspection cannot be forged in the
+presence of an honest issuer.
 %
 The somehow equivalent property in anonymous credentials is unforgeability. It
 requires that, again in the presence of an honest issuer, no adversary can
 succeed in a credential presentation for attributes (or predicates of them) that
 are not contained in a legitimately issued credential it controls. In other
-words, that the evaluation of the credential attributes was not forged.
+words, that the evaluation of the credential attributes cannot be forged.
 %
 Both notions have an equivalent in \UAS. That is, we need to ensure that, in the
 presence of an honest issuer, no signature accepted by \Verify can result in a
@@ -642,46 +643,40 @@ where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
 \end{definition}
 
 \paragraph{Discussion on the generality of traceability in \UAS schemes.} %
-\todo{Comment why is this more general than AC and GS independently.}
+The notion of traceability we present for \UAS is strictly more general than
+the corresponding one for group signatures. This is again the case as a direct
+consequence of the fact that \Inspect, which can return an arbitrary function
+of the signer's credential (and signed message), is a generalization of the
+conventional \Open -- if we make \Inspect return just the identity of the
+signer, then we get something similar to the usual notion of traceability.
+Although, even in that case, we need to take into account attributes, and the
+fact that the same user may obtain multiple credentials (that is why, even when
+having \Inspect return the identity of the signer, our notion is not exactly
+the same). And, in this sense, the unforgeability notion that \UAS have is
+equivalent to that of anonymous credentials. It would seem, though, that we do
+not need the traceability part of group signature; after all, it is the
+protection against wrong claims on attributes what enables meaningful and
+flexible authentication. However, the type of protection against misuses of
+the inspection functionality that we can get with an honest issuer (as in
+traceability) is much higher than without an honest user (as in
+non-frameability). Specifically, with an honest issuer we can ensure that
+the adversary cannot even alter the value returned by \Inspect on signatures
+by corrupt users. Whereas, with a corrupt issuer, all we can ensure is that
+the adversary cannot forge a signature from an honest user for which \Inspect
+returns the same value as a signature by that honest user would produce.
+Traceability is, therefore, a core property to ensure accountability
+\todo{Discuss this in more detail somewhere else.}
 
 Note also that we have implicitly assumed an unforgeability relaxation in the
 sense that we do not consider a forgery the fact that an adversary can obtain
 credentials that do not meet the \fissue predicate \emph{as long as they are
   not used to produced untraceable signatures}. Indeed, this is in line with
 previous work \cite[Section 3.3.3]{ckl+15}, and it does make sense as, in the
-real world, being able to fraudulently obtain credentials that cannot be used
-later to authenticate, does not pose a risk.
-
-% Note that this notion of traceability is, again, strictly more general than
-% both group signatures and anonymous credentials.
-% %
-% On the group signatures side,
-% it all depends on the \Inspect function. If we set it to the traditional
-% inspection function, where it returns the identity (index) of the signer, then
-% our notion of traceability becomes roughly that of conventional group
-% signatures\footnote{With the exception that, in \UAS, the same user can own
-%   multiple credentials -- all of which must return the same identity}.
-% On the other hand, \Inspect may be set to a non-injective function,
-% meaning that it can be possible that different user public keys, credentials and
-% signature tuples, may produce the same output. In that case, though, our notion
-% of traceability ensures that there must exist \emph{at least one} user capable
-% of issuing that signature. Indeed, this is complemented with the non-frameability
-% property, that ensures that the adversary cannot produce a signature that
-% inspects to a value that no corrupt user can produce.
-% %
-
-
-% Finally, note that we can only ensure consistency of the value returned by
-% \finsp, for all users, as long as the issuer is honest. This follows from the
-% fact that \finsp depends on the user key pair and the credentials that are
-% issued to each user. Therefore, a dishonest issuer could create untraceable
-% credentials (i.e., issue credentials without updating the \trans table), so that
-% the \finsp function outputs whatever desired value, yet it cannot be traced to
-% any registered user. That is, this minimality argument is just a generalization
-% of the one described in \cite[Section 4.3]{bsz05}. This is also consistent with
-% the unforgeability requirement of anonymous credentials systems, as a corrupt
-% issuer can grant arbitrary credentials to any user, and therefore honest
-% issuers are required.
+real world, being able to fraudulently obtain credentials that cannot be later
+used to authenticate, does not pose a risk. However, an adversary breaking
+the issue policy defined by \fissue to get a credential and later using it to
+create a valid signature (i.e., meeting \feval or \finsp) is considered a
+forgery by our definition.
 
 \paragraph{Non-frameability.} %
 Non-frameability variants are a core unforgeability-type property in group
@@ -693,9 +688,8 @@ opener. Intuitively, it prevents the adversary from creating a signature that
 frames an honest user. Depending on the inspection capabilities of the scheme,
 this framing could be done in different ways; i.e., by convincing third parties
 that signatures by different (possibly corrupt) users are linked, or directly
-by having open proofs output the identity of a user who did not create the
-signature being opened.
-%
+by having inspection proofs output the identity of a user who did not create the
+signature being inspected.
 
 The notion of non-frameability in \UAS schemes is unavoidably more subtle than
 in group signatures, though. To see this, we note that, by allowing any
@@ -706,14 +700,24 @@ honest user. As a concrete example, imagine an inspection function that returns
 the banking account number (or cryptocurrency address) to be used to request
 payment of a fine. In this example, a corrupted user and an honest user could
 both have delegated this to some agency\footnote{\todo{Maybe, come up with a
-    better example.}}, so it makes perfect sense that the inspection function
-returns the same value for both users.
+    better example. How about spam filters that apply some sort of classification
+    engine? \finsp could be this engine, and emails by many different users could
+    be classified just as ``Spam'' or ``Not spam''}}, so it makes perfect sense
+that the inspection function returns the same value for both users.
 %
-Thus, in \UAS schemes, we must be more subtle, by necessity.
-
-In \UAS schemes, in order for a user to be framed \todo{...}. The
-non-frameability property for \UAS schemes is formally defined in
-\figref{fig:exp-uas-frame}, where $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
+Thus, in \UAS schemes, we must be more subtle, by necessity. Note that we cannot
+just require that no adversary can produce a signature for which inspection
+returns the same value as it would for a signature honestly generated by an
+uncorrupted user. This is again the case since inspection may be non-injective,
+which means that inspection of a signature by some corrupted user may
+legitimately produce the same value as that of an honest user. Thus, we need
+to further refine the definition by requiring that (i) no adversary can produce
+a signature that is recognized (via \Identify) as originating from an honest
+user \uid, (ii) who owns a credential that makes \finsp return a valid \y value
+(i.e., generated by \Inspect along with a proof, and accepted by \Judge), (iii)
+without having queried the \SIGN oracle before. This non-frameability property
+for \UAS schemes is formally defined in \figref{fig:exp-uas-frame}, where
+$\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN$
 
 \begin{figure}[htp!]
@@ -743,37 +747,46 @@ non-frameability property for \UAS schemes is formally defined in
   \AdvNonframe is a negligible function of $1^\secpar$.
 \end{definition}
 
-\paragraph{Discussion.} %
-\todo{Argue that our properties cover (and augment) a direct combination
-  (even if possible) of their GS and AC counterparts. Specifically, anonymity
-  of \GSAC is stronger than anonymity in GS and AC, and the same for trace and
-  non-frame.}
+\paragraph{Discussion on the generality of non-frameability in \UAS schemes.} %
+Anonymous credentials do not have non-frameability property and, thus, it is
+hard to make a comparison. However, we can draw some connections with AC schemes
+that support revocation, as revocation is somehow equivalent to linking, which
+is a type of inspection available in group signatures. In this sense, note that
+basic revocation (without straight deanonymization) can be trivially achieved
+through our generic \Inspect function. For instance, one could set \finsp to
+be a pseudorandom number seeded with the user's public key (or credential). In
+this sense, \Inspect could be essentially seen as a Verifiable Random Function.
+If we compare with group signatures, our notion is again more general than the
+conventional one. Indeed, in typical group signatures, \Open returns the
+identity of the signer, and thus does non-frameability not allow the same value
+to be returned when opening signatures by different users. Otherwise, a
+corrupted user controlled by the adversary could be able to create a signature
+opening to some honest user (hence, framing him). But this is again possible
+with our definition which, in case of making \Inspect equal \Open, becomes
+equivalent to conventional non-frameability. However, it also allows more
+generic situations in which signatures by different users may return the same
+value. 
+
+\subsection{Functionality ``Transformations''}
+\label{ssec:transformations}
 
 \todo{It would be nice to prove that a \GSAC scheme to which we remove the
   \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
   where all credentials have no attributes, and where we restrict to only
   one credential per user, becomes a conventional GS scheme.}
 
-As an exercise, recall the Sign-Encrypt-Prove approach of group signatures in
-\cite{bsz05}. Roughly, there, a users' membership credential is a signature by
-the issuer of the user's public key. Then, a group signature is a signature
-over the message to be group-signed, signed with the user's private key, an
-encryption of the user's membership credential, and a NIZK proving that the
-private key used to sign the message corresponds to the public key in the
-encrypted membership credential. The opener just keeps a list of the public
-keys and the ``identity'' (index within the member list) of the user. Then,
-inspection (opening) simply consists of having the inspector decrypt the
-encrypted membership credential in the group signature, and find the matching
-public key in the members' list. Take the trivial inspection function
-$\finsp(\upk,\cred,\msg,\sig) = \cred$. Inspection in an \UAS scheme that uses
-this trivial \finsp function is equivalent to conventional opening. Then,
-following this exercise, our non-frameability definition for this inspection
-function would read as \todo{...}
-
-\subsection{Transformation to Interactive Presentations}
-\label{ssec:interactivetransform}
+\subsubsection{Transformation to Interactive Presentations}
+\label{sssec:interactivetransform}
 
 \todo{Is it possible to give it in some generic sense?}
+
+\subsubsection{Combining Multiple Credentials in One Presentation}
+
+\todo{I think this might be possible if we can use \fissue so that any user can
+  create arbitrary groups, where he is the issuer, an can thus run
+  \Obtain,\Issue protocols to combine credentials from other groups. This is
+  probably inefficient (or, at least, more than doing so wihtout having to
+  creat ad hoc groups), but at least allows the enhanced functionality...}
 
 %%% Local Variables:
 %%% mode: latex
