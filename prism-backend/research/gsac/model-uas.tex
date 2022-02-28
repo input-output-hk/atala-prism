@@ -1,15 +1,6 @@
 \section{Model for \UAS Schemes}
 \label{sec:model-uas}
 
-\textcolor{red}{\textbf{WARNING:} The syntax and oracles below should be close
-  to what we want. The game definitions should may be farther (especially
-  traceability and non-frameability), but I'm having trouble with this level
-  of abstraction without having some concrete scheme to consult on. Therefore,
-  I'll start with a generic construction and then iterate the model again.
-  Thus, note that the current modelling is, essentially, wrong.}
-
-Universal Anonymous Signatures.
-
 \subsection{Syntax}
 \label{ssec:syntax}
 
@@ -767,13 +758,8 @@ equivalent to conventional non-frameability. However, it also allows more
 generic situations in which signatures by different users may return the same
 value. 
 
-\subsection{Functionality ``Transformations''}
+\subsection{Functionality ``Transformations'' and Special Cases}
 \label{ssec:transformations}
-
-\todo{It would be nice to prove that a \GSAC scheme to which we remove the
-  \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
-  where all credentials have no attributes, and where we restrict to only
-  one credential per user, becomes a conventional GS scheme.}
 
 \subsubsection{Transformation to Interactive Presentations}
 \label{sssec:interactivetransform}
@@ -786,9 +772,29 @@ value.
   create arbitrary groups, where he is the issuer, an can thus run
   \Obtain,\Issue protocols to combine credentials from other groups. This is
   probably inefficient (or, at least, more than doing so wihtout having to
-  creat ad hoc groups), but at least allows the enhanced functionality...}
+  create ad hoc groups), but at least allows the enhanced functionality...}
 
+\subsubsection{Restricting to Conventional GS and AC Schemes}
+
+\todo{It would be nice to prove that a \GSAC scheme to which we remove the
+  \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
+  where all credentials have no attributes, and where we restrict to only
+  one credential per user, becomes a conventional GS scheme.}
+
+
+\subsubsection{Group Signatures with Message Dependent Opening}
+
+\todo{Describe what type of \finsp would be needed to achieve a functionality
+  similar to that of GS-MDO. Does this fit our model straight away? Maybe also
+  show how other types of GS could be ``mimicked'' (e.g., GS only with linking).
+  This would also be good to test if the model is as generic as I think it is}
+
+\subsubsection{Ring Signatures}
+
+\todo{Can we leverage the \fissue and/or \feval predicates to make our model
+  suitable for some sort of Ring Signature scheme?}
+  
 %%% Local Variables:
 %%% mode: latex
-%%% TeX-master: "gsac"
+%%% TeX-master: "uas"
 %%% End:

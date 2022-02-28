@@ -1,0 +1,103 @@
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+\subsection{Related Work}
+\label{ssec:related}
+
+\paragraph{Group Signatures and Anonymous Credentials.} %
+\todo{Brief summary of GS and AC here. Maybe split them in different
+  paragraphs.}
+
+\paragraph{Attribute-Based Group Signatures.} %
+The closest related works to our \GSAC are the series of Attribute-Based Group
+Signature schemes (ABGS) published between 2007 and 2014. The initial proposals
+\cite{khad07a,khad07b} defined a variant of group signatures in which membership
+credentials contained attributes. Yet, there are some
+crucial differences that make ABGS too rigid for practice. Ignoring that the
+first works \cite{khad07a,khad07b} are modelled as static group signatures
+(i.e., they do not allow dynamic joins of new members), each group has a static
+``attribute access tree'' associated to it. This tree defines what combinations
+of attributes make a signature valid. For instance, an example given in
+\cite{khad07b} requires group signatures to originate from an employee who is
+``a member of the IT department, and either at least a junior manager from the
+cryptography group, or a senior manager from the biometrics team''. If,
+eventually, a different attribute access tree is needed, a new group needs to
+be created. Additionally, only revocation is considered in \cite{khad07b},
+which is a subset of the accountability flavours that can be reached through
+the open function of conventional GS schemes. These schemes also lack formalism
+in their definitions. For instance, correctness does not cover correctness of
+revocation, and the anonymity definition does not seem to consider trivial wins
+by the adversary in which the adversary can revoke one of the two challenge
+users.
+%
+\cite{emo09} follows the attribute access tree aproach, but generalizes it so
+that attributes can be removed from the access tree, or the required conditions
+can be modified -- e.g., in \cite{emo09}, we could remove the ``or a senior
+manager from the biometrics team'' condition in the previous example. It also
+allows dynamic joins, and models open rather than just revocation. However,
+it does not
+allow adding new attributes; in that case, a new group has to be created. It
+also deviates from the conventional group signatures model, by introducing a
+\emph{collision-resistance} property that prevents different users from
+combining their membership credentials. While this is just a modelling choice
+with no impact in the actual functionality, it seems that this could be
+integrated within the existing traceability property, leading to a cleaner
+model. \todo{How does removing attributes or changing the access rules affect
+  anonymity? Is this considered?}
+%
+Finally, and as far as we know, \cite{aa14} is the last work in this ABGS line.
+They support dynamic joins, open and verifier-local revocation (hence, their
+variant is named VLR-ABGS). Furthermore, they include backwards unlinkability,
+meaning that a compromise of a user key at epoch $t$ does not affect anonymity
+of signatures on previous epochs by that same user. This scheme is still based
+on attribute access trees -- concretely, those in \cite{emo09}, and thus
+inherits its constraints. It also resorts to many properties, deviating from the
+cleaner approaches of GS schemes. Specifically, it defines security of VLR-ABGS
+by means of attribute anonymity (which is not formally defined),
+backwards-unlinkability user anonymity, traceability, non-frameability,
+attribute unforgeability, and collision resistance of attributes. Again, this
+are just modelling choices, but it would seem that several of these properties
+could be collapsed, hence leading to a cleaner model, much easier to evaluate
+(e.g., traceability, attribute unforgeability and collision resistance of
+attributes all seem similar).
+
+In summary, the previous line of ABGS seems to lack the flexibility of AC
+schemes in regards to what can be proven with attribute-based credentials.
+Restricting to AC with selective disclosure, one can get essentially the same
+functionality as with ABGS, but with flexible policies. That is, just let
+the verifier specify the policy that users need to meet depending on the
+situation, and only users revealing a matching subset of attributes will be
+accepted. In this respect, anonymity and unforgeability of ACs are equivalent to
+anonymity and traceability/unforgeability properties of ABGS. Still, an ABGS
+group is tied up to one concrete policy, while a single AC scheme spans
+arbitrarily many.
+%
+On the other hand, what ABGS (or, rather, some of its variants) adds with
+respect to AC schemes is the non-frameability property of group signatures,
+which opens the possibility to easily incorporate accountability notions.
+%
+In addition to what we have already mentioned, none of the ABGS works allows
+a group member to obtain multiple credentials -- not even from the same issuer.
+While obtaining multiple credentials in the setting of GS is not useful, it is
+if we include attributes and realize that the same user may have multiple
+attributes. This is certainly the case in multiple real life scenarios. For
+instance, the same person may obtain two different degrees within the same
+university; or an employee of a bank can also be a client. Both situations
+require attribute credentials issued by the same entity (the university, or
+the bank), none of them being a proper subset of the other, but still being
+associated to the same person.
+
+% One difference between our current approach to GSAC, and the existing ABGS
+% works, is that in ABGS each group member can only get one credential. On the
+% other hand, we are trying to let any group member obtain as many credentials
+% as he wishes, possibly with different attributes, albeit all of them related to
+% the same user key pair (if a different user key pair is employed, then this is
+% considered as a different user). 
+
+\subsection{Building Blocks}
+\label{ssec:bblocks}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:

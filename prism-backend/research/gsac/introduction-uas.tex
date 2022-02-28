@@ -1,0 +1,116 @@
+\section{Introduction}
+\label{sec:introduction}
+
+\commentwho{Jesus}{The following will most probably change completely if we
+  are to submit this for publication (it least, it probably needs some deep
+  reorganisation). However, this should capture tha main ideas.}
+
+In this work, we focus on the generalization of privacy-preserving cryptographic
+systems for authentication and identification. Two major research lines within
+cryptography that work in this space are group signatures (GS) and anonymous
+credentials (AC). In fact, despite having followed separate paths, the overall
+approaches to build them are quite similar in a general sense. Consequently,
+both have fed from each other.
+%
+\todo{Introduce GSs and ACs in two/three sentences each.}
+%
+On the one hand, their security models hold important similarities. Security in
+group signatures is typically captured with game-based definitions, where the
+main properties are anonymity, traceability and non-frameability. Anonymity
+ensures privacy, essentially requiring that group signatures do not leak
+information about their signer. Traceability and non-frameability are
+unforgeability-related properties. Traceability requires that any valid group
+signature must have been created by a user who joined the group;
+non-frameability requires that no adversary can create a signature that somehow
+``blames'' an honest user. Of course, variations in the functionality of group
+signatures frequently require specialized properties, but these three are always
+the main ones. In anonymous credentials, security is also usually captured with
+game-based definitions (although UC models also exist). But, for anonymous
+credentials, the main properties (again, up to variations) are simply anonymity
+and unforgeability. Anonymity captures a similar privacy notion than group
+signatures. Unforgeability of anonymous credentials also maps more clearly to
+traceability in group signatures (non-frameability assumes a corrupt issuer,
+which must be honest in traceability and unforgeability), and requires that
+no adversary can succeed in proving ownership of a credential it does not own.
+In both cases -- anonymity and unforgeability in anonymous credentials -- the
+focus is on preventing leakage (anonymity) or forging (unforgeability) of the
+attributes in a credential. Since group signatures do not (usually) have
+attributes, this is a core difference in the modelling.
+
+The first thing that raises attention here is the fact that, despite following
+very similar approaches to build them, there is no equivalent property for
+non-frameability in anonymous credentials. The most probable reason is that
+anonymous credentials do not include the concept of ``opening'' which, in
+group signatures, allows to extract the identity of the signer and is essential
+to the non-frameability definition\footnote{Exceptions exist \cite{dl21}, but
+  the definition is much easier with opening.}. Something similar (more limited
+than opening, though) is sometimes considered by means of revocation of
+anonymous credentials -- revoking credentials is essentially equivalent to
+being able to link signatures by the same signer, which is considered in some
+variants of group signatures \needcite. However, while revocation may be enough
+if we aim to use credentials ``just'' for authentication, if we target more
+advanced use cases, we may need to learn something else from the credential (or
+its owner), beyond whether or not it has been revoked. Then, without an
+equivalent to non-frameability, we would not be able to make any security claim
+in the presence of dishonest issuers. On the other hand, it is
+also noteworthy that the literature of group signatures has barely explored
+the inclusion of attributes. With the exception of a few works on Attribute-Based
+Group Signatures (ABGS) \needcite, members of a group in group signatures just
+get a credential attesting for their membership to the group. Moreover, the
+existence of attributes in anonymous credentials would seem to have been
+instrumental in the surge of real-world use cases in the past few years. Indeed,
+initiatives such as W3C's Verifiable Credentials (VCs) \needcite, or large
+projects such as Idemix \needcite, which has in turn influenced VCs, are heavily
+based on concepts from the anonymous credential literature, even to the point
+that Idemix and its ``blockchain-based successor'', Indy \needcite, are now a
+type of verifiable credentials \needcite.
+
+Following the previous reasoning, we identify two aspects in which we can
+improve group signatures and anonymous credentials. The first is by coming up
+with some sort of primitive that combines both lines. That is, a scheme which
+supports both (a variant of) opening and non-frameability as well as
+attribute-based credentials. This seemingly natural evolution would thus
+enable rich use cases in which accountable (by means of opening) and expressive
+(by means of the attributes) authentication is necessary. While this is in
+line with the previously mentioned ABGS works, we argue that our approach
+is more general and flexible. Still, we anticipate that this may not be enough
+to reach a scheme that can adapt to the majority of situations that may arise in
+the real world. The reason is that the issuance and opening capabilities in the
+previous schemes are generally either too rigid or have lacked a formal analysis
+so far. For instance, in group signatures, the issuance protocol has barely been
+the focus of study. Essentially, this interactive protocol requires the
+prospective member to prove, in zero-knowledge, knowledge of a secret key
+that will be attested in the membership credential. On the other hand, multiple
+variants of the issuance protocol exist in anonymous credentials: protocols that
+assume that the issuer knows all the attributes to be included in the credential,
+protocols that allow blind issuance of attributes, protocols that let the user
+leverage attributes in previous credentials, protocols that include ad hoc
+rules at issuance time to enable extra functionality, such as delegation
+\todo{cross-check that all this, especially the latter, is correct; and add
+  cites}, etc. The problem is that a single change in this aspect, requires to
+completely rethink the model. Something similar happens with the inspection
+capabilities in group signatures. This frequently takes the shape of opening,
+but many variants also exist, message-depdendent opening, linking, or variants
+of linking, such as restricted linking only by other members of the group,
+user controlled linking, or sequential linking \needcite. Again, any small
+change in the inspection capabilities requires a full redesign of the model.
+This rigidness in inspection is specially crucial, as inspection is the key
+to the very nature of the privacy notion in group signatures. Taking this into
+account, it is understandable that many have tried to find some sort of
+equilibrium between full anonymity (no inspection at all), and full
+accountability (by means of conventional open). Thus, we aim at finding a
+generic way to support multiple variants of inspection, from the common model.
+Finally, actual evaluation of group signatures is the last component that is
+too rigid. Namely, in group signatures, when verifying a signature, either it
+has been rightly produced by a group member using his secret key and membership
+credential, or not. Luckily for us, anonymous credentials have done a great job
+in supporting high expressiveness into what a presentation can tell beyond just
+proving knowledge of a (group) key. Thus, by integreating anonymous credentials
+and group signatures in a sort of combined primitive, we get \emph{for free}
+the benefits of this high expressiveness that previous work on anonymous
+credentials have reached in regards to what one can prove given a credential.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:
