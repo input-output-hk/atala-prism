@@ -1,6 +1,55 @@
 \section{Model for \UAS Schemes}
 \label{sec:model-uas}
 
+We now define our model for Universal Anonymous Signatures. At a very high
+level, it is a combination of the main models for group signatures and
+anonymous credentials -- we try to extract the most useful features from both.
+Instead of considering just one group, as in group signatures, we directly and
+explicitly include support for multiple issuers as in anonymous credentials.
+Moreover, instead of letting each user own a single credential, we allow
+multiple credentials per user, even within the same group. This of course
+makes us put forward refined notions of anonymity, traceability and
+non-frameability. Note that, property-wise, we keep the three main properties
+from group signatures, rather than sticking to the two usual properties of
+anonymous credentials (anonymity and unforgeability). This is a consequence
+of keeping the inspection capability from group signatures, which we consider
+crucial in order to ensure some sort of accountability even in very adversarial
+contexts where the issuer may be corrupt.
+%
+But, as stated in the introduction, we go beyond just combining anonymous
+credentials and group signatures, and include support for arbitrary policies
+during issuance, signing, and inspection. Consequently, our model needs to
+capture the flexibility that these policies provide. In short, manipulations of
+the issuance policy are only considered forgeries if the adversary manages to
+create a valid signature using a credential that was obtained by dishonestly
+manipulating the issuance policy (we discuss this further in the traceability
+definition). Signing policies are taken into account both in the anonymity
+property, where we need to restrict that both credentials used to produce the
+challenge signatures always satisfy the policy, and in traceability.
+\commentwho{Jesus}{Think a bit more about the following claim, and update if
+  needed.}
+We cannot give any assurance on the signing policies when the issuers are
+corrupt, and thus they are not considered in the non-frameability property.
+Inspection policies are considered both in traceability and non-frameability,
+where the adversary wins if it manages to somehow alter the correct output of
+\Inspect. What is even suprising, is that given the possible non-injectivity of
+the inspection function lets us reach an even stronger notion of anonymity.
+Namely, \uline{we can allow the adversary to open challenge signatures, as
+  long as the inspection function outputs the same value for both}. We give more
+details on these aspects in the actual definitions of the security properties.
+%
+Finally, from a functional perspective, we require that both issuer and
+inspector fix the issuance predicate \fiss and inspection function \finsp when
+generating their public keys. Indeed, both will be part of the common group key.
+This also makes our definitions easier, as supporting multiple issuance
+predicate and inspection functions per group would require to consider many
+special cases -- and, anyway, that would probably end up being equivalent to
+just requiring that a new group needs to be created per each $(\fissue,\$finsp)$
+pair. On the other hand, signing policies can be defined at signing time (in
+practice, most probably by the verifiers). This is in line with the usual
+practice in anonymous credentials, that let users prove arbitrary claims on
+their credentials, as long as they are met by the contained attributes.
+
 \subsection{Syntax}
 \label{ssec:syntax}
 
@@ -12,13 +61,6 @@ we assume that each has its own issuer and inspector.
 
 \todo{The notation for multisets is not strictly correct. Still, leaving it as
   is for now.} 
-
-\commentwho{Jesus}{I'm moving to a syntax that applies arbitrary functions over
-  the credentials, at different points (issuance, evaluation, and inspection).
-  Concretely, I'm moving away from the selective disclosure type of syntax.
-  However, it is my intention that selective disclosure becomes an especial case
-  of this. That is, the syntax should support both credentials with plain
-  selective attribute disclosure, and ``functional'' credentials.}
 
 \begin{description}
 \item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
@@ -109,15 +151,15 @@ a signature and a user secret key, and determines whether the latter was used
 to produce the former. This is in line with previous works on DAA
 \cite{bfg+11,cdl16} and group signatures without traditional open functions
 \cite{dl21,fgl21,gl19}. More concretely, the \Identify function, defined as $1/0
-\gets \Identify(\usk,\sig)$, conveys meaning to our non-frameability definition
-conditioned on the fact that, given a signature \sig accepted by \Verify,
-\Identify returns $1$ for exactly one \usk.
+\gets \Identify(\usk,\sig)$, conveys meaning to our definitions conditioned on
+the fact that, given a signature \sig accepted by \Verify, \Identify returns $1$
+for exactly one \usk.
 
 \paragraph{Global Variables.} %
 The environment manages several global variables in the games posed to the
 adversary. Users are referred to with user identifiers, \uid; for credentials,
 we use \cid; for groups, \gid. For credentials and groups, we use bold font to
-denote sets: i.e., \scid and \sgid denot sets of credential and group
+denote sets: i.e., \scid and \sgid denote sets of credential and group
 identifiers. All tables/sets are initialized as empty tables/sets, denoted
 with $\emptyset$.
 
@@ -516,12 +558,12 @@ given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,\CU\rbrace
 This notion of anonymity is more general than that of group signatures in the
 sense that calls to the \INSPECT oracle reveal an arbitrary function of the
 identity of the user -- which can certainly be the member index itself, as it
-is frequent in group signatures, ore any other function computable from the
+is frequent in group signatures, or any other function computable from the
 user public key, its credentials, and produced signature. Moreover, note that
 our notion is even stronger than the conventional ``CCA-like'' anonymity notion
 that gives the adversary access to the open oracle, only restricting it when
 trying to open challenge signature. Precisely the introduction of generic
-inspection functions allows us to \underline{\emph{let the adversary open
+inspection functions allows us to \uline{\emph{let the adversary open
     challenge signatures $\csig_b$}} as long as the counterpart $\csig_{1-b}$
 makes \Inspect produce the same \y value as output. This is certainly not
 possible when using conventional opening, since it directly outputs the identity
@@ -635,7 +677,7 @@ where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
 
 \paragraph{Discussion on the generality of traceability in \UAS schemes.} %
 The notion of traceability we present for \UAS is strictly more general than
-the corresponding one for group signatures. This is again the case as a direct
+the corresponding one for group signatures. This is again a direct
 consequence of the fact that \Inspect, which can return an arbitrary function
 of the signer's credential (and signed message), is a generalization of the
 conventional \Open -- if we make \Inspect return just the identity of the
@@ -645,18 +687,20 @@ fact that the same user may obtain multiple credentials (that is why, even when
 having \Inspect return the identity of the signer, our notion is not exactly
 the same). And, in this sense, the unforgeability notion that \UAS have is
 equivalent to that of anonymous credentials. It would seem, though, that we do
-not need the traceability part of group signature; after all, it is the
+not need the traceability part of group signatures; after all, it is the
 protection against wrong claims on attributes what enables meaningful and
 flexible authentication. However, the type of protection against misuses of
 the inspection functionality that we can get with an honest issuer (as in
 traceability) is much higher than without an honest user (as in
 non-frameability). Specifically, with an honest issuer we can ensure that
 the adversary cannot even alter the value returned by \Inspect on signatures
-by corrupt users. Whereas, with a corrupt issuer, all we can ensure is that
+by corrupt users, nor the output of the signing predicate \feval. Whereas, with
+a corrupt issuer, all we can ensure is that
 the adversary cannot forge a signature from an honest user for which \Inspect
-returns the same value as a signature by that honest user would produce.
-Traceability is, therefore, a core property to ensure accountability
-\todo{Discuss this in more detail somewhere else.}
+returns the same value as a signature by that honest user would produce; and,
+certainly, a corrupt issuer can arbitrarily issue credentials meeting any
+desired predicate \feval .Traceability is, therefore, a core property to ensure
+accountability.
 
 Note also that we have implicitly assumed an unforgeability relaxation in the
 sense that we do not consider a forgery the fact that an adversary can obtain
@@ -685,7 +729,7 @@ signature being inspected.
 The notion of non-frameability in \UAS schemes is unavoidably more subtle than
 in group signatures, though. To see this, we note that, by allowing any
 arbitrary inspection function \finsp to be used, it can be perfectly valid to
-have a signature produced by a corrupted user, output the same \y value upon
+have a signature produced by a corrupted user output the same \y value upon
 inspection than the one that \finsp outputs when inspecting a signature by an
 honest user. As a concrete example, imagine an inspection function that returns
 the banking account number (or cryptocurrency address) to be used to request
@@ -724,6 +768,8 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
      (\cdot,\sig,\msg,\cdot) \notin \SIG[\uid]~\land\\
      \pcind \exists \cred \in \CRED[\uid]~\st~
      \finsp(\PUBUK[\uid],\cred,\msg) = \y \\
+     \pccomment{\todo{I don't think we can give any assurance about \feval here,
+         given that issuers are corrupt. But still, think about it.}} \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \UAS schemes.}
@@ -749,7 +795,7 @@ be a pseudorandom number seeded with the user's public key (or credential). In
 this sense, \Inspect could be essentially seen as a Verifiable Random Function.
 If we compare with group signatures, our notion is again more general than the
 conventional one. Indeed, in typical group signatures, \Open returns the
-identity of the signer, and thus does non-frameability not allow the same value
+identity of the signer, and thus non-frameability does not allow the same value
 to be returned when opening signatures by different users. Otherwise, a
 corrupted user controlled by the adversary could be able to create a signature
 opening to some honest user (hence, framing him). But this is again possible
@@ -760,6 +806,11 @@ value.
 
 \subsection{Functionality ``Transformations'' and Special Cases}
 \label{ssec:transformations}
+
+\commentwho{Jesus}{This section is aimed at showing the ``universality'' of
+  our model. If I'm not mistaken, ideally, it should support the following
+  variations (except the transformation to interactive presentations,
+  probably).}
 
 \subsubsection{Transformation to Interactive Presentations}
 \label{sssec:interactivetransform}
@@ -791,8 +842,9 @@ value.
 
 \subsubsection{Ring Signatures}
 
-\todo{Can we leverage the \fissue and/or \feval predicates to make our model
-  suitable for some sort of Ring Signature scheme?}
+\todo{Can we come up with a (\fissue,\feval,\finsp) tuple that allows us to
+  somehow mimic ring signatures (i.e., ``a group signature without issuer nor
+  opening''? Does the model support this?}
   
 %%% Local Variables:
 %%% mode: latex

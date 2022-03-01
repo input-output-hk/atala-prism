@@ -12,13 +12,19 @@ credentials (AC). In fact, despite having followed separate paths, the overall
 approaches to build them are quite similar in a general sense. Consequently,
 both have fed from each other.
 %
-\todo{Introduce GSs and ACs in two/three sentences each.}
-%
-On the one hand, their security models hold important similarities. Security in
-group signatures is typically captured with game-based definitions, where the
-main properties are anonymity, traceability and non-frameability. Anonymity
-ensures privacy, essentially requiring that group signatures do not leak
-information about their signer. Traceability and non-frameability are
+In short, GSs allow a group of users, accepted into the group by an issuer, to
+create signatures on behalf of the group, without revealing their identity. Only
+an opener/inspector can (sometimes partially) deanonymize these signatures. In
+ACs, users obtain credentials, typically containing multiple attributes, from
+trusted issuers. Subsequently, users can prove ownership of these credentials,
+usually revealing only subsets (or arbitrary claims) of these attritubes, while
+keeping the rest hidden.
+
+On the one hand, the security models of GS and AC hold important similarities.
+Security in group signatures is typically captured with game-based definitions,
+where the main properties are anonymity, traceability and non-frameability.
+Anonymity ensures privacy, essentially requiring that group signatures do not
+leak information about their signer. Traceability and non-frameability are
 unforgeability-related properties. Traceability requires that any valid group
 signature must have been created by a user who joined the group;
 non-frameability requires that no adversary can create a signature that somehow
