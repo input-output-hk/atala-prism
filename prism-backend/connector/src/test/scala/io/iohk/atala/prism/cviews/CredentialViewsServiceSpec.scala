@@ -91,7 +91,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
           "Ethiopia Educational Degree Transcript"
         )
         val expectedTemplateLogos = Array(
-          "icon.svg",
+          "jo-wong.png",
           "university.svg",
           "employment.svg",
           "health.svg",
@@ -103,7 +103,7 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
           "ethiopiaEduTrans.png"
         )
         val expectedTemplateLogoMimeTypes = Array(
-          SVG_MIME_TYPE,
+          PNG_MIME_TYPE,
           SVG_MIME_TYPE,
           SVG_MIME_TYPE,
           SVG_MIME_TYPE,

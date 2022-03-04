@@ -83,7 +83,7 @@ private object PredefinedHtmlTemplates {
   )
 
   private def id(): cviews_models.CredentialViewTemplate = {
-    val logoImage = "icon.svg"
+    val logoImage = "jo-wong.png"
     cviews_models.CredentialViewTemplate(
       id = 1,
       name = "Government ID",
