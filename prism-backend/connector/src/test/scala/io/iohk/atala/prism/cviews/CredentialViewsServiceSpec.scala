@@ -137,9 +137,6 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
           val expectedHtmlTemplateName = expectedTemplateViews(i)
           val expectedHtmlTemplate =
             readResource(s"templates/${expectedTemplateViews(i)}")
-          println(s"\n*$expectedHtmlTemplate*\n")
-          println(s"****************${template.htmlTemplate == expectedHtmlTemplate}")
-          println(s"\n*${template.htmlTemplate}*\n")
 
           if (template.htmlTemplate != expectedHtmlTemplate) {
             val actualTemplateFile =
