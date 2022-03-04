@@ -130,14 +130,12 @@ class CredentialViewsServiceSpec extends RpcSpecBase with DIDUtil {
           val template = templates(i)
           template.id mustBe i + 1
           template.name mustBe expectedTemplateNames(i)
-          println(s"\n*${imageBase64(expectedTemplateLogos(i))}*\n")
           template.encodedLogoImage mustBe imageBase64(expectedTemplateLogos(i))
           template.logoImageMimeType mustBe expectedTemplateLogoMimeTypes(i)
 
           val expectedHtmlTemplateName = expectedTemplateViews(i)
           val expectedHtmlTemplate =
             readResource(s"templates/${expectedTemplateViews(i)}")
-
           if (template.htmlTemplate != expectedHtmlTemplate) {
             val actualTemplateFile =
               saveTemplate(expectedHtmlTemplateName, template.htmlTemplate)
