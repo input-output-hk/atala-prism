@@ -25,14 +25,7 @@ jobs:
         run: |
           mkdir website_folder
           echo "theme: jekyll-theme-cayman" > website_folder/_config.yml
-          cat <<EOF > website_folder/README.md
-            # Documentation website
-
-            [Article](./article.pdf) about ...
-            
-            You can find the [Protocol here](./protocol.pdf).
-
-          EOF
+          cp prism-backend/docs/** website_folder/
 
       - name: Generate Protocol's PDF
         run: |
@@ -48,5 +41,5 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.2.3
         with:
-          branch: gh-pages # The branch the action should deploy to.
+          branch: gh-pages-test # The branch the action should deploy to.
           folder: website_folder # The folder the action should deploy.
