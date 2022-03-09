@@ -2,15 +2,11 @@
 
 Here you can find the project documentation.
 
-./cardano/
-./bitcoin/
-./connector/
-./data-vault/
-
 - [PRISM protocol (short version)](./article.pdf)
   <br/>Compact description of the protocol behind PRISM.
   <br/>Note **this document is public.**
-- [PRISM protocol](./protocol.pdf)
+- [PRISM protocol](./protocol.pdf) `.PDF` version
+  <br/>[PRISM protocol](./protocol.docx) `.DOCX` version - Microsoft Word documents)
   <br/>Description of the PRISM's protocol
 - [SDK](./sdk/README.md)
   <br/>This small doc aims to specify the approach we plan to take to build a decent one.
