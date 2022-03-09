@@ -27,13 +27,13 @@ jobs:
           echo "theme: jekyll-theme-cayman" > website_folder/_config.yml
           cp -r prism-backend/docs/** website_folder/
 
-      - name: Generate Protocol's PDF
+      - name: Generate PRISM Protocol's PDF
         run: |
           ./prism-backend/docs/protocol/make.sh 
           cp ./prism-backend/docs/protocol/protocol.docx website_folder
           cp ./prism-backend/docs/protocol/protocol.pdf website_folder
 
-      - name: Generate Article's PDF
+      - name: Generate PRISM's protocol (short version)
         run: |
           make -C ./prism-backend/public-docs/
           cp ./prism-backend/public-docs/article.pdf website_folder
