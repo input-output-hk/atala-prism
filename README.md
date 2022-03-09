@@ -2,17 +2,52 @@
 
 Here you can find the project documentation.
 
-## Docs
+./cardano/
+./bitcoin/
+./connector/
+./data-vault/
 
 - [PRISM protocol (short version)](./article.pdf)
-<br/>Compact description of the protocol behind PRISM.
-<br/>Note **this document is public.**
-
+  <br/>Compact description of the protocol behind PRISM.
+  <br/>Note **this document is public.**
 - [PRISM protocol](./protocol.pdf)
-<br/>Description of the PRISM's protocol
+  <br/>Description of the PRISM's protocol
+- [SDK](./sdk/README.md)
+  <br/>This small doc aims to specify the approach we plan to take to build a decent one.
 
-- [SDK](./docs/sdk/README.md)
-This small doc aims to specify the approach we plan to take to build a decent one.
+- Diagrams
+  - [List of Diagrams](./new-diagrams/README.md)
+  - [Miscallaneous diagrams](./misc/README.md)
+  - [Payment flow](./payments/README.md)
+
+- PRISM Node:
+  - [Operations Lifecycle](./node/operaions-lifecycle-in-node-service.md)
+  - [The life cycle of an AtalaOperation](./node/operations-ordering-submission.md)
+  - [Rate limiting requests](./node/rate-limiting.md)
+  - [Subscriptions and their use cases](./node/SubscriptionMechanism.md)
+- PRISM components:
+  - [Cardano - Integration](./cardano/README.md)
+  - [Connector - End to End Encryption](./connector/e2e-encryption.md)
+  - [PRISM gRPC Streaming](./grpc/streaming.md)
+  - [Encrypted Data Vault](./data-vault/README.md)
+  - [Wallet Backend Motivation](./wallet-backend/motivation.md)
+- Monitoring:
+  - [Logging](./monitoring/logging/README.md)
+  - [Metrics](./monitoring/metrics/README.md)
+- Offline Mode:
+  - [PRISM while Cardano is offline](./moe/full-offline-mode.md)
+  - [PRISM Offline Mode](./moe/offline-mode.md)
+- [Atala PRISM on-premise deployments](./on-premise-deployments/README.md)
+- [Tasks and Leases](./mirror/tasks-and-leases.md)
+- [Bitcoin - Atala Prism](./bitcoin/README.md)
+
+- Endorsements & Proposals:
+  - [Endorsements](./endorsements/endorsements.md)
+  - [GEUD Proposal - Connector](./connector/README.md)
+  - [Proposal: MoE controls all master keys](./endorsements/MoE-controls-master-keys-proposal.md)
+  - [GEUD Proposal - Indy](./indy/README.md)
+
+- [Problems with signing structured data](./signing.md)
 
 ## Compiling diagrams
 
