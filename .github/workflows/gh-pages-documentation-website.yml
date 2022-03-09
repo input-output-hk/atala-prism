@@ -25,7 +25,7 @@ jobs:
         run: |
           mkdir website_folder
           echo "theme: jekyll-theme-cayman" > website_folder/_config.yml
-          cp prism-backend/docs/** website_folder/
+          cp -r prism-backend/docs/** website_folder/
 
       - name: Generate Protocol's PDF
         run: |
