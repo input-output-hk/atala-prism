@@ -1,0 +1,16 @@
+@startuml
+hide empty description
+
+state Unconfirmed {
+  state RECEIVED
+  state TEMPORARILY_APPLIED
+}
+
+[*]                 -d-> RECEIVED
+RECEIVED            -d-> REJECTED             : Failed Validation\nAgainst\nTotal State
+RECEIVED            -d-> TEMPORARILY_APPLIED  : Succeeded\nValidation\nAgainst\nTotal State
+TEMPORARILY_APPLIED -d-> APPLIED              : Confirmed\nBy\nBlockchain
+TEMPORARILY_APPLIED -d-> REJECTED             : Failed Validation\nAgainst\nNew Confirmed State
+APPLIED             -d-> [*]
+REJECTED            -d-> [*]
+@enduml

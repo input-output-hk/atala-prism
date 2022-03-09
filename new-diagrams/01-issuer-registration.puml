@@ -1,0 +1,20 @@
+@startuml
+title Issuer Registration
+
+actor Issuer
+participant "Management Console" as ManagementConsole
+participant "Prism Browser Wallet" as BrowserWallet
+participant "IOHK Server API" as ServerAPI
+
+group Register
+    Issuer -> Issuer : Install Prism Wallet\n from Chrome/Firefox webstore
+    Issuer -> BrowserWallet : Register
+    BrowserWallet -> BrowserWallet : Generate DID
+    BrowserWallet -> ServerAPI : Register DID
+    ServerAPI -> ServerAPI : Publish DID on Cardano
+    ServerAPI -> ServerAPI : Register in the server database
+    ServerAPI -> BrowserWallet : DID registered
+    BrowserWallet -> BrowserWallet : Encrypt wallet data
+    BrowserWallet -> Issuer : Registration successful
+end
+@enduml
