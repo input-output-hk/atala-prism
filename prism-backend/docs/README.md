@@ -60,11 +60,11 @@ It is useful to see the diagram changes as you edit the sources, there is a [pla
 
 ## Add new Documents
 
-When Creating a new document, choose the best tool for the job.
+When creating a new document, choose the best tool for the job.
 We recommend using:
 
-- Markdown format for quick documentation.
-- Latex format to create a more structure document.
+- Markdown format for quick documentation;
+- Latex format for a more formal document;
 - [Mermaid format](https://mermaid-js.github.io/mermaid/#/) (inside a Markdown file) for flowcharts or Sequence diagrams. (Since is already supported by github)
 
 After creating the document upload this index file.
