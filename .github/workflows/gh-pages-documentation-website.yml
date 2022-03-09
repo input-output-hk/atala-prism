@@ -42,8 +42,8 @@ jobs:
 
       - name: Generate Article's PDF
         run: |
-          make -C ./prism-backend/docs/article/
-          cp ./prism-backend/docs/article/article.pdf website_folder
+          make -C ./prism-backend/public-docs/
+          cp ./prism-backend/public-docs/article.pdf website_folder
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.2.3
