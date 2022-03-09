@@ -1,0 +1,70 @@
+@startuml
+
+title GEUD - Architecture
+
+left to right direction
+
+skinparam {
+    ArrowColor Red
+    linetype ortho
+}
+
+skinparam cloud {
+  BorderColor Black
+}
+
+cloud "IOHK Cloud" as IOHKCloud {
+    rectangle Connector {
+        node "Connector Server" as ConnectorServer
+        database "Connector Database" as ConnectorDatabase
+        ConnectorServer --> ConnectorDatabase
+    }
+
+    rectangle "Credentials Manager" as CredentialsManager {
+        node "Credentials Manager Server" as CredentialsManagerServer
+        database "Credentials Manager Database" as CredentialsManagerDatabase
+        CredentialsManagerServer --> CredentialsManagerDatabase
+    }
+
+    rectangle Node {
+        node Bitcoin
+        node "ATALA Node" as AtalaNode
+        database "ATALA Database" as AtalaDatabase
+        AtalaNode --> AtalaDatabase
+        AtalaNode ---> Bitcoin
+    }
+
+    rectangle Frontend {
+        node "Reverse Proxy" as ReverseProxy
+        node "Web Application" as WebApp
+    }
+
+    ReverseProxy ---> ConnectorServer
+    ReverseProxy ---> CredentialsManagerServer
+    ReverseProxy ---> AtalaNode
+    CredentialsManagerServer -left-> ConnectorServer
+    CredentialsManagerServer --left--> AtalaNode
+}
+
+rectangle "Issuer Computer" as IssuerComputer {
+    [Issuer Wallet] as IssuerWallet
+    [Issuer Web Application] as IssuerWebApp
+    IssuerWebApp -> IssuerWallet
+    IssuerWebApp -left-> ReverseProxy
+}
+
+rectangle "Verifier Computer" as VerifierComputer {
+    [Verifier Wallet.] as VerifierWallet
+    [Verifier Web Application] as VerifierWebApp
+    VerifierWebApp -> VerifierWallet
+    VerifierWebApp --> ReverseProxy
+}
+
+HolderPhone -[hidden]- IOHKCloud
+
+rectangle "Holder Phone" as HolderPhone {
+    [Holder Wallet] as HolderWallet
+    HolderWallet -> ReverseProxy
+}
+
+@enduml

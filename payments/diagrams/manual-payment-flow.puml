@@ -1,0 +1,27 @@
+@startuml
+title Payments - manual flow
+
+participant IOHK
+participant Processor
+actor Student
+
+IOHK -> Student : Request a payment, showing a reference code
+
+Student -> Processor : Send a payment using Processor interface,\nproviding the reference code to be included
+Processor -> Student: Confirm payment
+
+...Two possible finalization scenarios...
+alt Push API
+  Processor -> IOHK: New payment received
+
+else Batch pull API
+  IOHK -> Processor : Get payments
+  Processor -> IOHK : Batch of payment status updates,\nincluding the one from the student
+
+end
+
+...
+
+IOHK -> Student : Payment received
+
+@enduml

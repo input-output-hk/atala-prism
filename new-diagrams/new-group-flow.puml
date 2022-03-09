@@ -1,0 +1,42 @@
+@startuml
+title Potential friendly flow for importing data from issuers, and issuing credentials
+
+participant Wallet as "Wallet"
+participant Issuer as "Issuer"
+participant Console as "Management Console"
+participant Backend as "Backend"
+
+group Import persons
+    note right of Issuer : The backend would allow the field uniqueId\n which every issuer must provide\n no person could share this id on the same issuer
+    Issuer -> Console : Upload CSV file with the person list\n which needs a name, and the uniqueId
+
+    Console -> Backend : Push the persons on the CSV file
+    note over Console : The backend would update person name\n when detecting a duplicated person\n given the uniqueId, ideally, the issuer\n could choose what to do\n these persons aren't assigned to any group
+
+    Backend -> Console : Ack
+    Console -> Issuer : Ack
+    note right of Issuer : Now it's time to connect to every student
+end
+
+group Import credentials data
+    note right of Issuer : Includes the credential data for each subject\n the subject is referrenced by its uniqueId \nfor example, each subject would\n have it's award/GPA/etc\n Also, the issuer needs to fill the credential\n details applying to all persons\n like the institution name, issuing date/etc
+    Issuer -> Console : Upload the credentials CSV file
+    note right of Issuer : The issuer needs to choose on which group will\n be those credentials assigned to, or create a new group
+    Console -> Backend : Push the credentials on the CSV file
+    note over Backend : The backend needs to combine the data\n on existing groups when necessary
+    Backend -> Console : Ack
+    Console -> Issuer : Ack
+end
+
+group Issue verifiable credentials
+    Issuer -> Console : Issue the selected credentials in bulk
+    Console -> Wallet : Issue credentials
+    Wallet -> Issuer : Asks to confirm the credentials to issue
+    Issuer -> Wallet : Confirms
+    Wallet -> Backend : Issue credentials
+    Backend -> Wallet : Ack
+    Wallet -> Console : Ack
+    Console -> Issuer : Ack
+end
+
+@enduml

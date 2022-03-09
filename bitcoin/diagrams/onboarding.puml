@@ -1,0 +1,26 @@
+@startuml
+title Bitcoin - Onboarding Holder
+
+actor Issuer
+actor IOHK
+actor Holder
+
+Issuer -> IOHK : Ask for a connection code
+IOHK -> IOHK : Verify Issuer identity
+IOHK -> IOHK : Verify Issuer billing plan\n the Issuer may need to pay\n or the Holder may pay instead \n or it may be free
+IOHK -> IOHK : Generate unique connection code
+IOHK -> Issuer : Connection code generated
+
+Issuer -> Holder : Share the connection code as a QR code
+Holder -> Holder : Scan Issuer QR code
+Holder -> IOHK : Get Issuer from connection code
+IOHK -> Holder : Issuer details retrieved
+Holder -> Holder : Validate whether a payment is required
+Holder -> Holder : Add Issuer connection\n attaching an optional proof of payment\n which depends on the previous details
+
+Holder -> Holder : Generate private DID
+note over Holder : A private DID doesn't get published anywhere.\n It is known only by the owner and the entities chosen by then owner.\n Usually, a private DID is known by a single entity.
+Holder -> IOHK : Accept connection (Issuer, DID)
+IOHK -> Holder : Connection registered
+IOHK -> Issuer : Holder connected
+@enduml
