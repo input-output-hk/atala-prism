@@ -8,6 +8,7 @@ on:
       - "master"
     paths:
       - "prism-backend/docs/**"
+      - "prism-backend/public-docs/**"
   workflow_dispatch:
 
 jobs:
@@ -21,32 +22,25 @@ jobs:
       - uses: actions/checkout@v2
       - run: sudo apt-get install -y texlive-xetex pandoc pandoc-citeproc
 
-      - name: Make Site
+      - name: Copy markdown documents
         run: |
           mkdir website_folder
           echo "theme: jekyll-theme-cayman" > website_folder/_config.yml
-          cat <<EOF > website_folder/README.md
-            # Documentation website
+          cp -r prism-backend/docs/** website_folder/
 
-            [Article](./article.pdf) about ...
-            
-            You can find the [Protocol here](./protocol.pdf).
-
-          EOF
-
-      - name: Generate Protocol's PDF
+      - name: Generate PRISM Protocol's PDF
         run: |
           ./prism-backend/docs/protocol/make.sh 
           cp ./prism-backend/docs/protocol/protocol.docx website_folder
           cp ./prism-backend/docs/protocol/protocol.pdf website_folder
 
-      - name: Generate Article's PDF
+      - name: Generate PRISM's protocol (short version)
         run: |
-          make -C ./prism-backend/docs/article/
-          cp ./prism-backend/docs/article/article.pdf website_folder
+          make -C ./prism-backend/public-docs/
+          cp ./prism-backend/public-docs/article.pdf website_folder
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.2.3
         with:
-          branch: gh-pages # The branch the action should deploy to.
+          branch: docs # The branch the action should deploy to.
           folder: website_folder # The folder the action should deploy.
