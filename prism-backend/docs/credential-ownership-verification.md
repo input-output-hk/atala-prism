@@ -40,9 +40,9 @@ ownership of credential `cred` to verifier `V`, is as follows:
 1. O -> V: cred
 2.      V: r = randomNonce(l)
 3. V -> O: r
-4. 	    O: s = sign(hsk,r)
+4.      O: s = sign(hsk,r)
 5. O -> V: s
-6. 	    V: b = verify(hvk,s,r)
+6.      V: b = verify(hvk,s,r)
 ```
 
 Where `r` is a value produced uniformly at random of `l` bits.
@@ -63,9 +63,9 @@ the previous protocol becomes:
 1. O -> V: cred
 2.      V: r = randomNonce(l)
 3. V -> O: r
-4. 	    O: s = sign(hsk,(r,cred))
+4.      O: s = sign(hsk,(r,cred))
 5. O -> V: s
-6. 	    V: b = verify(hvk,s,(r,cred))
+6.      V: b = verify(hvk,s,(r,cred))
 ```
 
 This is actually the basic idea behind the *Verifiable Presentations*, where a
@@ -129,7 +129,6 @@ data mining processes to extract utility from actions by users. Or it becomes
 harder to revoke credentials. 
 - Potential unavailability of cryptographic libraries.
 
-
 ## Additional Topics
 
 ### Preventing Man-In-The-Middle Attacks
@@ -162,3 +161,45 @@ hardware wallets) would be to ensure that no device lock-in takes place.
 That is, if we aim at allowing a credential owner to use his credentials
 from any device he owns, hardware components that do not allow exporting
 private keys may hinder precisely those use cases.
+
+### Alternative Ways to Minimize the Amount of Needed Interaction
+
+In both basic and advanced options, the first step is to have the verifier send
+a random challenge to the credential owner. Then, the owner has to respond to 
+the challenge depending on the chosen option (i.e., just with a signature in the
+basic option, or using some sort of anonymous credential in the advanced one). 
+As stated, the reason to insert this random challenge is to prevent replay 
+attacks. However, it unavoidably turns what could be a non-interactive process
+into an interactive one.
+
+A way to turn this back into a (sort of) non-interactive process would be to 
+make use of [Time-based OTPs](https://en.wikipedia.org/wiki/Time-based_one-time_password),
+although that would require that verifier and credential owner have established
+a long-term shared secret during their first interaction, and that each of them
+securely stores and manages that shared secret.
+
+Alternatively, services of publicly verifiable randomness like 
+[drand](https://drand.love) could be used to fetch the random challenge. In this
+case, the protocol would be something as the following:
+
+```
+1.      O: r = FetchRandomness(l,drand.love) # Fetch l bits of randomness from drand
+2.      O: s = sign(hsk,r)
+3. O -> V: s
+4.      V: r' = FetchRandomness(l,drand.love)
+5.      V: b = verify(hvk,s,(r',cred))
+```
+
+Note however that the calls to `FetchRandomness` require further communication
+on their own, as drand is an online service. Still, the interaction between
+owner and verifier is restricted to just one message. Also, take into account
+that the verifier needs to fetch the randomness within the same interval as the
+owner did -- otherwise, the verification will fail.
+
+In any case, any of this alternatives have an inherent security loss, in the 
+sense that a replay attack would be possible during the time interval in which
+the TOTP or the drand service maintain the same random number. A typical value
+for this time interval is 30 seconds. This thus means that an active adversary 
+who can eavesdrop communications would be able to impersonate a credential owner
+that has successfully authenticated against some verifier in the past ~30
+seconds.
