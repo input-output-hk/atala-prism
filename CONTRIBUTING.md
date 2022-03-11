@@ -99,9 +99,17 @@ When we are ready to release a new LTS version, we need to follow this process, 
 
 The process applies to all repositories involved in a release:
 
-1. Create a new release candidate (rc) branch based on `master` called `release/<release version number>` for example, if we are planning to release 1.4.0, branch will be `release/1.4.0`
-2. Tag the latest commit from that branch as `v<release version number>-rc1`. Increase the `rc` suffix if `rc1` already exists. For example if `v1.4.0-rc1` tag already exists, create a tag `v1.4.0-rc2`
-3. Coordinate with our internal DevOps team to make sure code from the latest rc tag is deployed to environment for QA to test it (for SDK, deploy manually. Check [below](#SDK))
+1. Create a new release candidate (rc) branch based on `master` called `release/<release version number>` for both **Atala PRISM** and **Atala PRISM SDK**.
+   > **Example:** If we are planning to release 1.4.0, branch will be `release/1.4.0`.
+2. Tag latest commits for both **Atala PRISM** and **Atala PRISM SDK**.
+   1. Tag **Atala PRISM SDK** latest commit from that branch as `v<release version number>-rc1`. Increase the `rc` suffix if `rc1` already exists.
+      > **Example:** If `v1.4.0-rc1` tag already exists, create a tag `v1.4.0-rc2`.
+   2. Publish latest **Atala PRISM SDK** version to Github (Check [Publishing PRISM SDK to Github](#SDK) section below).
+   3. Make sure latest **Atala PRISM SDK** version is successfully published to Github.
+   4. Modify **Atala PRISM**'s SDK dependency version to point the **Atala PRISM SDK** version created above.
+   5. Tag **Atala PRISM** latest commit created above as `v<release version number>-rc1`. Increase the `rc` suffix if `rc1` already exists.
+      > **Example:** If `v1.4.0-rc1` tag already exists, create a tag `v1.4.0-rc2`
+3. Coordinate with our internal DevOps team to make sure code from the latest rc tag is deployed to environment for QA to test it (for SDK, deploy manually.)
 4. Check the commit diff between upcoming release and latest release, and make sure that upcoming release commits only include tickets (alongside with maintenance PRs such as library updates, etc...) intended for this release
    1. If that is not the case, and upcoming release has tickets that have been intended for future releases, move this tickets from future release in jira to the current one.
    2. **Note:** this usually does not happen, but exceptions exist and we need to make sure that all tickets that are included in the release candidate are listed as tickets in jira, QA depends on it.
@@ -114,18 +122,17 @@ The process applies to all repositories involved in a release:
 11. Update the [atala-releases](https://github.com/input-output-hk/atala-releases), repository include the new released version details (`Core DID` for example), be sure to link to artifacts related to `v1.4.0` instead of the release candidates.
 12. 🎉
 
-#### SDK
+### Publishing SDK to Github
 
-sdk with a custom name needs to be published manually from the shell, run this inside sdk repo root:
-```bash
-PRISM_VERSION=<verson mame to publish> ./gradlew publishAllPublicationsToGitHubPackagesRepository
+Sdk with a custom name needs to be published manually from the shell, run this inside sdk repo root:
+```bash 
+PRISM_SDK_VERSION="verson mame to publish" ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
-if you are publishing v1.4.0-rc1 version of sdk for example, use `PRISM_VERSION=v1.4.0-rc1`
+If you are publishing v1.4.0-rc1 version of sdk for example, use `PRISM_VERSION=v1.4.0-rc1`
 this assumes you have environment variables `GITHUB_TOKEN` and `GITHUB_ACTOR` defined in your shell profile, if not run
 
-```bash
-PRISM_VERSION=<verson mame to publish> GITHUB_TOKEN=<token> GITHUB_ACTOR=<your github username>  ./gradlew publishAllPublicationsToGitHubPackagesRepository
-
+```bash 
+PRISM_SDK_VERSION="verson mame to publish" GITHUB_TOKEN=<token> GITHUB_ACTOR=<your github username>  ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
 **NOTE:**
 * token must have `write:packages` access in order to be able to publish a package
