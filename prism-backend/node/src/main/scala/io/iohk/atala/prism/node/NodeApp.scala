@@ -64,6 +64,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         logs
       )
       trustedProposer = DidSuffix(globalConfig.getString("trustedProposerSuffix"))
+      _ <- Resource.pure { logger.info(s"Trusted DID suffix $trustedProposer") }
       blockProcessingService = new BlockProcessingServiceImpl(ApplyOperationConfig(trustedProposer))
       atalaOperationsRepository <- AtalaOperationsRepository.resource(
         liftedTransactor,

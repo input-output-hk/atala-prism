@@ -36,7 +36,7 @@ trait BlockProcessingService {
   ): ConnectionIO[Boolean]
 }
 
-class BlockProcessingServiceImpl(val applyOperationConfig: ApplyOperationConfig) extends BlockProcessingService {
+class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) extends BlockProcessingService {
   private val logger = LoggerFactory.getLogger(getClass)
 
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
