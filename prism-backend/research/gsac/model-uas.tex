@@ -44,7 +44,7 @@ generating their public keys. Indeed, both will be part of the common group key.
 This also makes our definitions easier, as supporting multiple issuance
 predicate and inspection functions per group would require to consider many
 special cases -- and, anyway, that would probably end up being equivalent to
-just requiring that a new group needs to be created per each $(\fissue,\$finsp)$
+just requiring that a new group needs to be created per each $(\fissue,\finsp)$
 pair. On the other hand, signing policies can be defined at signing time (in
 practice, most probably by the verifiers). This is in line with the usual
 practice in anonymous credentials, that let users prove arbitrary claims on
@@ -81,7 +81,7 @@ we assume that each has its own issuer and inspector.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
   \Obtain(\usk,\attrs,\ldblbrace (gpk_i,\cred_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\upk,\attrs,\ldblbrace (\gpk_i,\cred_i) \rdblbrace_{i \in \Issuers})
+  \Issue(\isk,\upk,\attrs,\ldblbrace \gpk_i) \rdblbrace_{i \in \Issuers})
   \rangle$.] %
   This interactive protocol lets a user with key pair (\upk,\usk) running the
   \Obtain process, obtain a credential \cred from an issuer in the system, on
@@ -96,18 +96,20 @@ we assume that each has its own issuer and inspector.
 \item[$\sig \gets \Sign(\gpk,\usk,\cred,\msg,\feval)$.]
   The user with with secret key \usk and credential \cred, produces a signature
   \sig over message \msg, meeting the conditions defined by \feval.
-\item[$1/0 \gets \Verify(\gpk,\sig,\msg)$.] Checks whether \sig is a valid
-  signature, over message \msg, from a user in the group with public key \gpk.
-\item[$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg)$.] %
+\item[$1/0 \gets \Verify(\gpk,\sig,\msg,\feval)$.] Checks whether \sig is a
+  valid signature, over message \msg, from a user in the group with public key
+  \gpk, for signing function \feval.
+\item[$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg,\feval)$.] %
   Executed by the inspector with private key \osk. Receives a signature \sig
-  over message \msg. If \trans contains a set of valid transcripts corresponding
+  over message \msg and evaluation function \feval. If \trans contains a set of
+  valid transcripts corresponding
   to the $\langle\Obtain,\Issue\rangle$ interactive protocol execution that
-  issued the used to produce \sig, the function outputs a value $\y$ derived
-  from the signer's public key, credential, message, and signature, as well as
-  a proof of correct inspection. We sometimes abuse notation, and write
+  issued the credential used to produce \sig, the function outputs a value $\y$
+  derived from the signer's public key, credential, message, and signature, as
+  well as a proof of correct inspection. We sometimes abuse notation, and write
   $\trans[\uid]$ to mean that the \Inspect function is operating only for the
   obtain transcripts related to user \uid.
-\item[$1/0 \gets \Judge(\gpk,\y,\iproof,\sig,\msg)$.] %
+\item[$1/0 \gets \Judge(\gpk,\y,\iproof,\sig,\msg,\feval)$.] %
   Checks if \iproof is a valid inspection correctness proof for the value \y,
   obtained by applying \Inspect to the the signature \sig over message \msg. 
 \end{description}
@@ -134,15 +136,20 @@ their computation. We introduce them next, \todo{and will give concrete examples
   additional credentials \scred, which may further be used for blind issuance
   \commentwho{Jesus}{can it?}. \fissue returns $1$ to accept a request, $0$ to
   reject it.  
-\item[$\feval: (\upk,\cred,\msg) \rightarrow 0/1$.] Can be defined by any party,
-  although we anticipate that this will typically be done by either singers,
-  verifiers, or some governance organization. It defines customized conditions
-  to be met by the owner of a user key \upk and credential \cred, in
-  order to sign a concrete message \msg. Returns $1$ to allow the signing,
-  or $0$ to disallow it.
-\item[$\finsp: (\upk,\cred,\msg) \rightarrow \bin^*$.] Defines what
-  utility value, derived from the user's public key, credential, and message
-  should be extractable by the group inspector.
+\item[$\feval: (\upk,\cred,\msg) \rightarrow \varrngfeval$.] Can be defined by any
+  party, although we anticipate that this will typically be done by either
+  signers, verifiers, or some governance organization. It defines customized
+  conditions to be met by the owner of a user key \upk and credential \cred,
+  in order to sign a concrete message \msg. Its outputs  $\varrngfeval$ must
+  belong in a well defined set \rngfeval, with the restriction that it must
+  return $0$ when the conditions for signing are not met.
+\item[$\finsp: (\varrngfeval,\upk,\cred,\msg) \rightarrow \varrngfinsp$.]
+  Defines what utility value, derived from the user's public key, credential,
+  and message should be extractable by the group inspector. Note that \finsp
+  also receives as input a value in the range of the \feval function, \rngfeval.
+  This will allow inspection logic to depend on the value produced by the
+  evaluation function. The output of \finsp is a value \varrngfinsp, which must
+  belong in a well defined set \rngfinsp.
 \end{description}
 
 \paragraph{Helper Function \Identify.} In addition, we make use of a helper
@@ -364,12 +371,12 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \textrm{Let}~\uid~\textrm{be s.t.}~(\cid,\sig,\msg,\feval)
           \in \SIG[\uid] \\
           (\y,\iproof) \gets
-          \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg) \\
+          \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg,\feval) \\
           \pcif \CSIG[\sig] \neq \bot: \\
           \pcind \textrm{Parse $\CSIG[\sig]$ as $(\sig_{1-b},\msg,\feval)$} \\
           \pcind (\y_{1-b},\iproof_{1-b}) \gets
           \Inspect(\GK[\gid],\PRVOK[\gid],\\
-          \hspace*{107pt} \trans,\sig_{1-b},\msg) \\
+          \hspace*{107pt} \trans,\sig_{1-b},\msg,\feval) \\
           \pcind \pcif \y_{1-b} \neq \y: \pcreturn \bot \\
           \pcreturn (\y,\iproof)
         }
@@ -398,7 +405,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\SIGN(\uid,\cid,\msg,\feval)$}{%
           \pcif \uid \notin \HU \lor \CRED[\cid] = \bot: \pcreturn \bot \\
-          \sig \gets \Sign(\GK[\GRP[\cid]],\PRVUK[\uid],\msg,\CRED[\cid]) \\
+          \sig \gets \Sign(\GK[\GRP[\cid]],\PRVUK[\uid],\msg,\CRED[\cid],\feval) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\cid,\sig,\msg,\feval) \rbrace \\
           \pcreturn \sig \\
@@ -432,13 +439,14 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
 \paragraph{Correctness.} %
 Correctness of \UAS schemes is formalized through the experiment in
-\figref{fig:exp-uas-corr}. It states that a signature for some message \msg,
-revealing attributes \dattrs, which was honestly produced through a (set of)
-credentials obtained by an honest user interacting with honest issuer(s), with a
-set of attributes \attrs such that $\dattrs \subseteq \attrs$, must be accepted
-by \Verify. Moreover, an honestly produced correctness proof of opening for such
-signature, revealing the public key pair of the user, must also be accepted by
-\Judge.
+\figref{fig:exp-uas-corr}. It states that a signature over any arbitrary message
+and valid function \feval \todo{Should we explicitly check \feval in the game?
+  If so, how?},
+produced honestly by an honest user \uid with credential \cid, is accepted by
+\Verify. Moreover, upon issuance of the credential \cid, it must have met the
+conditions set by \fissue. Similarly, the value returnd by \Inspect must be
+accepted by \Judge, and must match the output of applying \finsp on \feval, the
+credential, user key, and message.
 
 \begin{figure}[htp!]
   \procedure{$\ExpCorrect(1^\secpar)$}{%
@@ -446,15 +454,15 @@ signature, revealing the public key pair of the user, must also be accepted by
     (\uid,\cid,\msg,\feval)
     \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS}(\parm) \\
     \sig \gets \Sign(\GK[\cid],\PRVUK[\uid],\cid,\msg,\feval) \\
-    \pcif \Verify(\GK[\cid],\sig,\msg) = 0: \pcreturn 1~
+    \pcif \Verify(\GK[\cid],\sig,\msg,\feval) = 0: \pcreturn 1~
     \pccomment{\sig fails to verify} \\
     \pcif \CorrectIssue(\uid,\cid) = 0: \pcreturn 1~
     \pccomment{\cid should not have been issued} \\
-    \pcif \CorrectEval(\uid,\cid,\msg,\feval)
-    = 0: \pcreturn 1~
-    \pccomment{\msg should not have been signed}\\
-    \pcif \CorrectInspect(\uid,\cid,\msg,\sig) = 0: \pcreturn 1~
-    \pccomment{Some inspection of \sig is invalid}\\
+    % \pcif \CorrectEval(\uid,\cid,\msg,\feval)
+    % = 0: \pcreturn 1~
+    % \pccomment{\msg should not have been signed} \\
+    \pcif \CorrectEvalInspect(\uid,\cid,\msg,\sig,\feval) = 0: \pcreturn 1~
+    \pccomment{The combination of evaluation and inspection is wrong} \\
     \pcreturn 0 \\
   }
 
@@ -468,25 +476,26 @@ signature, revealing the public key pair of the user, must also be accepted by
     \pcreturn 1 \\   
   }
 
-  \procedure{$\CorrectEval(\uid,\cid,\msg,\feval)$}{
-    \pcif \feval(\PUBUK[\uid],\CRED[\cid],\msg) = 0: \pcreturn 0 \\
-    \pcreturn 1 \\
-  }
+  % \procedure{$\CorrectEval(\uid,\cid,\msg,\feval)$}{
+  %   \pcif \feval(\PUBUK[\uid],\CRED[\cid],\msg) = 0: \pcreturn 0 \\
+  %   \pcreturn 1 \\
+  % }
 
-  \procedure{$\CorrectInspect(\uid,\cid,\msg,\sig)$}{
+  \procedure{$\CorrectEvalInspect(\uid,\cid,\msg,\sig,\feval)$}{
     \textrm{Let}~\gid \gets \GRP[\cid];~
     \textrm{Parse}~\GK[\gid]~\textrm{as}~(\cdot,(\cdot,\finsp^\gid)) \\
     \pccomment{\sig cannot be inspected} \\
-    \pcif \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg) = \bot: \pcreturn 0 \\
+    \pcif \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg,\feval) = \bot: \pcreturn 0 \\
     \pccomment{The produced $(\y,\iproof)$ pair is rejected by \Judge
       % \todo{This must be conditioned on \feval = 0!}
     } \\
-    \pcif (\y,\iproof) \gets \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg)
+    \pcif (\y,\iproof) \gets \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg,\feval)
     \land
-    \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 0): \\
+    \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 0: \\
     \pcind \pcreturn 0 \\
     \pccomment{\y is the wrong value} \\
-    \pcif \y \neq \finsp^\gid(\PUBUK[\uid],\CRED[\cid],\msg)):
+    \pcif \y \neq \finsp^\gid(\feval(\PUBUK[\uid],\CRED[\cid],\msg),
+    \PUBUK[\uid],\CRED[\cid],\msg)):
     \pcreturn 0 \\
     \pcreturn 1
   }
@@ -532,7 +541,7 @@ oracle. The formal specification of the anonymity game is
 given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,\CU\rbrace
 \GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN,
 \INSPECT)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace
-\GEN,\lbrace\II,\OO\rbrace,\CORR,\OBTAIN,\SIGN,\INSPECT,\CHALb)$
+\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN,\INSPECT,\CHALb)$
 
 \begin{figure}[htp!]
   \procedure{$\ExpAnonb(1^\secpar)$}{%
@@ -617,31 +626,31 @@ where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
 \begin{figure}[htp!]
     \procedure{$\ExpTrace(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
-      (\gid,\sig,\msg) \gets \adv^{\Otrace}(\parm) \\
-      \pcif \Verify(\GK[\gid],\sig,\msg) = 0: \pcreturn 0 \\
-      \pcif \EvalForge(\gid,\sig,\msg) = 1 \land
-      \InspectForge(\gid,\sig,\msg) = 1: \\
+      (\gid,\sig,\msg,\feval) \gets \adv^{\Otrace}(\parm) \\
+      \pcif \Verify(\GK[\gid],\sig,\msg,\feval) = 0: \pcreturn 0 \\
+      \pcif \EvalInspectForge(\gid,\sig,\msg,\feval) = 1 \\%\land
+%      \InspectForge(\gid,\sig,\msg,\feval) = 1: \\
       \pcind \pcreturn 1 \\
       \pcreturn 0 \\
     }
         
-    \procedure{$\EvalForge(\gid,\sig,\msg)$}{%
-      \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1~\land \\
-      \pcind \pccomment{\uid does not own a \cred that satisfies \feval...} \\
-      \pcind (\nexists \cred \in \CRED[\uid]~\st~
-      \feval(\PUBUK[\uid],\cred,\msg) = 1 ~\lor \\
-      \hspace*{13pt} \pccomment{... or \uid does, but \cred was itself obtained
-        fraudulently} \\
-      \hspace*{13pt} (\exists \cred \in \CRED[\uid]~\st~
-      \feval(\PUBUK[\uid],\cred,\msg) = 1~\land \\
-      \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
-      \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
-        $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\
-      \pcind \pcreturn 1 \\
-      \pcelse \pcreturn 0 \\
-    }
+    % \procedure{$\EvalForge(\gid,\sig,\msg,\feval)$}{%
+    %   \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1~\land \\
+    %   \pcind \pccomment{\uid does not own a \cred that satisfies \feval...} \\
+    %   \pcind (\nexists \cred \in \CRED[\uid]~\st~
+    %   \feval(\PUBUK[\uid],\cred,\msg) \neq 0 ~\lor \\
+    %   \hspace*{13pt} \pccomment{... or \uid does, but \cred was itself obtained
+    %     fraudulently} \\
+    %   \hspace*{13pt} (\exists \cred \in \CRED[\uid]~\st~
+    %   \feval(\PUBUK[\uid],\cred,\msg) \neq 0~\land \\
+    %   \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
+    %   \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
+    %     $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\
+    %   \pcind \pcreturn 1 \\
+    %   \pcelse \pcreturn 0 \\
+    % }
     
-    \procedure{$\InspectForge(\gid,\sig,\msg)$}{%
+    \procedure{$\EvalInspectForge(\gid,\sig,\msg,\feval)$}{%
       \pccomment{All \Obtain transcripts fail to inspect \sig} \\
       \pcif \Inspect(\PRVOK[\gid],\trans,\sig,\msg) \neq \bot~\lor \\
       \pcind \pccomment{A valid transcript exists, but ...} \\
@@ -652,11 +661,13 @@ where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
       \pcind \pcind \pccomment{... or \uid does not own a \cred for which
         \finsp outputs \y} \\
       \pcind \pcind \nexists \cred \in \CRED[\uid]~\st~
-      \y = \finsp(\PUBUK[\uid],\cred,\msg)~\lor \\
+      \y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
+      \PUBUK[\uid],\cred,\msg)~\lor \\
       \pcind \pcind \pccomment{... or \uid does, but \cred was itself obtained
         fraudulently} \\
       \pcind \pcind (\exists \cred \in \CRED[\uid]~\st~
-      \feval(\PUBUK[\uid],\cred,\msg) = 1~\land \\
+      y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
+      \PUBUK[\uid],\cred,\msg)~\land \\
       \pcind \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
       \pcind \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
         $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\      
@@ -758,8 +769,8 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \begin{figure}[htp!]
   \procedure{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-     (\gid,\sig,\msg,\y,\iproof) \gets \adv^{\Oframe}(\parm) \\
-     \pcreturn 1~\pcif \Verify(\GK[\gid],\sig,\msg) = 1 \land
+     (\gid,\sig,\msg,\feval,\y,\iproof) \gets \adv^{\Oframe}(\parm) \\
+     \pcreturn 1~\pcif \Verify(\GK[\gid],\sig,\msg,\feval) = 1 \land
      \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 1~\land \\
      \pcind \pccomment{\adv~did not query \SIGN to get \sig, yet \sig originates
        from an honest \uid, owning a credential that makes \finsp
@@ -767,9 +778,9 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
      \pcind \exists \uid \in \HU~\st~\Identify(\PRVUK[\uid],\sig) = 1 \land
      (\cdot,\sig,\msg,\cdot) \notin \SIG[\uid]~\land\\
      \pcind \exists \cred \in \CRED[\uid]~\st~
-     \finsp(\PUBUK[\uid],\cred,\msg) = \y \\
-     \pccomment{\todo{I don't think we can give any assurance about \feval here,
-         given that issuers are corrupt. But still, think about it.}} \\
+     \finsp(\feval(\PUBUK[\uid],\cred,\msg),\PUBUK[\uid],\cred,\msg) = \y \\
+%     \pccomment{\todo{I don't think we can give any assurance about \feval here,
+%         given that issuers are corrupt. But still, think about it.}} \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \UAS schemes.}
