@@ -5,45 +5,19 @@ on:
       - "**"
     branches:
       - master
-      - develop*
-      - test*
-      - demo*
-      - qa*
-      - sandbox*
-      - package*
-      - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     paths:
       - 'prism-backend/**'
       - '!prism-backend/docs/**'
 
 env:
-  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
   JAVA_VERSION: openjdk@1.11
   SCALA_VERSION: "2.13"
 
 jobs:
-  set-flag:
-    name: "Set flag"
-    runs-on: ubuntu-20.04
-    outputs:
-      package: ${{ steps.set-flag.outputs.package }}
-      deploy: ${{ steps.set-flag.outputs.deploy }}
-    steps:
-      - name: "Set flag"
-        id: set-flag
-        run: |
-          if [[ ${{ github.ref_name }} =~ (package*|master|^[0-9]+\.[0-9]+\.[0-9]+$) ]] ; then
-            echo ::set-output name=package::true
-          fi
-          if [[ ${{ github.ref_name }} =~ (master|develop*|test*|demo*|qa*|sandbox*|^[0-9]+\.[0-9]+\.[0-9]+$) ]] ; then
-            echo ::set-output name=deploy::true
-          fi
-
   build-prism-backend:
     name: "Build Prism Backend"
     runs-on: ubuntu-20.04
-    needs: set-flag
     defaults:
       run:
         working-directory: prism-backend
@@ -146,7 +120,9 @@ jobs:
     name: Publish Github Packages
     needs: build-prism-backend
     runs-on: ubuntu-20.04
-    if: needs.set-flag.outputs.package == 'true'
+    if: |
+      github.ref == 'refs/heads/master' ||
+      github.ref_type == 'tag'
     defaults:
       run:
         working-directory: prism-backend
@@ -172,7 +148,7 @@ jobs:
         run: sbt pullRemoteCache
 
       - name: Setup Github Container registry credentials
-        run: docker login ghcr.io -u atala-dev -p $GITHUB_TOKEN
+        run: docker login ghcr.io -u atala-dev -p ${{ secrets.ATALA_GITHUB_TOKEN }}
 
       - name: Build and publish Docker images
         run: |
@@ -185,7 +161,9 @@ jobs:
     name: Deploy ECR Images
     runs-on: ubuntu-20.04
     needs: build-prism-backend
-    if: needs.set-flag.outputs.deploy == 'true' || github.ref_type == 'tag'
+    if: |
+      github.ref == 'refs/heads/master' ||
+      github.ref_type == 'tag'
     permissions:
       packages: write
       contents: read
@@ -226,24 +204,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
 
-      - name: Set ENV & TAG convention
+      - name: Set Docker image tag
         id: set-tag
         run: |
-          branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
           if [[ ${GITHUB_REF_TYPE} == "tag" ]]
           then
-              tag=$(echo $GITHUB_REF_NAME)
-              echo "TAG=$tag" >> $GITHUB_ENV
-              echo "::set-output name=tag::$tag"
+            tag=$(echo $GITHUB_REF_NAME)
           else
-              revCount=$(git rev-list HEAD --count)
-              shaShort=$(git rev-parse --short HEAD)
-              tag="${branchPrefix}-${revCount}-${shaShort}"
-              echo "TAG=$tag" >> $GITHUB_ENV
-              echo "::set-output name=tag::$tag"
+            branchPrefix=$(git branch --show-current)
+            shaShort=$(git rev-parse --short HEAD)
+            tag="${branchPrefix}-${shaShort}"
           fi
-          echo "ENV=$branchPrefix" >> $GITHUB_ENV
-          . $GITHUB_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
+          echo "Image tag set to $TAG"
+          echo "::set-output name=tag::$tag"
 
       - name: Build and publish Docker image
         if: |
@@ -253,6 +226,7 @@ jobs:
           matrix.image == 'vault'
         run: |
           cd prism-backend
+          export TAG="${{ steps.set-tag.outputs.tag }}"
           sbt "${{ matrix.image }}/dockerBuildAndPush"
       - name: Build and push prism-lb-envoy
         if: matrix.image == 'prism-lb-envoy'
@@ -264,6 +238,7 @@ jobs:
   workflow-dispach:
     name: "Workflow Dispach"
     runs-on: ubuntu-20.04
+    # ??? why this condition here ???
     if: github.ref_type != 'tag'
     needs: deploy-ecr-images
     steps:
@@ -275,27 +250,3 @@ jobs:
           token: ${{ secrets.ATALA_GITHUB_TOKEN }}
           inputs: '{"environment": "${{ github.ref_name }}", "tag": "${{ needs.deploy-ecr-images.outputs.tag }}"}'
           ref: "refs/heads/master"
-
-  # TODO: It's probably good idea to move this job to other repo since we are using infra repo for deployment and this job is depending on deployment job in atala-prism-infra repo
-  trigger-integration-tests:
-    name: "Trigger Integration Tests"
-    runs-on: ubuntu-20.04
-    needs: workflow-dispach
-    if: github.ref_name == 'qa'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # TODO: remove this part when https://jira.iohk.io/browse/ATA-3535 is implemented, maybe not needed in GHA?
-      - name: wait till environment is fully operable
-        run: sleep 9m
-
-      - name: Trigger a job in atala-qa-automation project
-        run: python trigger_tests.py
-
-      - name: Slack notification
-        uses: bryannice/gitactions-slack-notification@2.0.0
-        env:
-          SLACK_INCOMING_WEBHOOK: ${{ secrets.SLACK_INCOMING_WEBHOOK }}
-          SLACK_MESSAGE: "UFHNXC9RC,UGFJQ5ZBN"
-          SLACK_TITLE: "Slack Notification Demo"
