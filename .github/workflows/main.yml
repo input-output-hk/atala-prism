@@ -6,8 +6,6 @@ on:
     branches:
       - master
   pull_request:
-    paths:
-      - '!prism-backend/docs/**'
 
 env:
   JAVA_VERSION: openjdk@1.11
