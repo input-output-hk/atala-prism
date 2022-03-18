@@ -34,7 +34,7 @@ object PrismBuild {
         ),
         scalacOptions += "-Ymacro-annotations",
         javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-        githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
+        githubTokenSource := TokenSource.Environment("ATALA_GITHUB_TOKEN"),
         resolvers += Resolver
           .githubPackages("input-output-hk", "atala-prism-sdk"),
         // Needed for Kotlin coroutines that support new memory management mode

@@ -10,6 +10,8 @@ on:
 env:
   JAVA_VERSION: openjdk@1.11
   SCALA_VERSION: "2.13"
+  ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
+  ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
 jobs:
   build-prism-backend:

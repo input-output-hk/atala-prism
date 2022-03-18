@@ -3,7 +3,7 @@ A simple command-line application to interact with the PRISM Node,
 the goal is to be able to easily verify that a PRISM Node is running correctly.
 
 ## Github Packages and Personal Access Token (PAT)
-Gradle project will look for `GITHUB_TOKEN` and `GITHUB_ACTOR` environment
+Gradle project will look for `ATALA_GITHUB_TOKEN` and `ATALA_GITHUB_ACTOR` environment
 variables to use to authenticate on Github Packages and download all
 private dependencies from the IOHK packages archive.
 
