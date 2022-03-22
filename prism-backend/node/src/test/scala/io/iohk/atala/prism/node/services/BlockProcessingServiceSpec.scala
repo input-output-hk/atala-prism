@@ -12,7 +12,12 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
-import io.iohk.atala.prism.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, UpdateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.{
+  ApplyOperationConfig,
+  CreateDIDOperation,
+  CreateDIDOperationSpec,
+  UpdateDIDOperationSpec
+}
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -59,7 +64,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
   private val dummyTimestampInfo =
     new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
 
-  val service = new BlockProcessingServiceImpl()
+  val service = new BlockProcessingServiceImpl(ApplyOperationConfig(DidSuffix("012ae")))
   val dummyTimestamp =
     Instant.ofEpochMilli(dummyTimestampInfo.getAtalaBlockTimestamp)
   val dummyTransactionId = TransactionId

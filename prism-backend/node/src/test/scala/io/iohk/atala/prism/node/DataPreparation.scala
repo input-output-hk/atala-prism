@@ -27,6 +27,7 @@ import io.iohk.atala.prism.node.models.{
   DIDPublicKey
 }
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
@@ -37,7 +38,6 @@ import io.iohk.atala.prism.node.repositories.daos.{
   CredentialBatchesDAO,
   DIDDataDAO,
   KeyValuesDAO,
-  ProtocolVersionsDAO,
   PublicKeysDAO
 }
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
@@ -397,12 +397,5 @@ object DataPreparation {
     }
   }
 
-  def insertTrustedProposer(
-      proposerDIDSuffix: DidSuffix
-  )(implicit xa: Transactor[IO]) = {
-    ProtocolVersionsDAO
-      .insertTrustedProposer(proposerDIDSuffix)
-      .transact(xa)
-      .unsafeRunSync()
-  }
+  val dummyApplyOperationConfig: ApplyOperationConfig = ApplyOperationConfig(DidSuffix(""))
 }

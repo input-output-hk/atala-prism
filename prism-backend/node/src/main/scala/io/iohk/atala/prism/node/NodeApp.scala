@@ -10,8 +10,10 @@ import io.iohk.atala.prism.auth.grpc.{TraceExposeInterceptor, TraceReadIntercept
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.metrics.NodeReporter
+import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.repositories._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoBlockHandler
 import io.iohk.atala.prism.node.services._
@@ -61,7 +63,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         liftedTransactor,
         logs
       )
-      blockProcessingService = new BlockProcessingServiceImpl
+      trustedProposer = DidSuffix(globalConfig.getString("trustedProposerSuffix"))
+      _ <- Resource.pure { logger.info(s"Trusted DID suffix $trustedProposer") }
+      blockProcessingService = new BlockProcessingServiceImpl(ApplyOperationConfig(trustedProposer))
       atalaOperationsRepository <- AtalaOperationsRepository.resource(
         liftedTransactor,
         logs

@@ -7,7 +7,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.node.DataPreparation.{dummyLedgerData, dummyTimestampInfo}
+import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
@@ -365,7 +365,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -407,7 +407,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         )
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -428,7 +428,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val result = parsedOperation
-        .applyState()(fakeSupportedOperations)
+        .applyState(dummyApplyOperationConfig)(fakeSupportedOperations)
         .transact(database)
         .value
         .unsafeToFuture()

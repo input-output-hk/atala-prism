@@ -150,6 +150,8 @@ package object operations {
       previousOperation: Option[Sha256Digest]
   )
 
+  case class ApplyOperationConfig(trustedProposer: DidSuffix)
+
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
 
@@ -172,18 +174,18 @@ package object operations {
           )
       }
 
-    protected def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit]
+    protected def applyStateImpl(c: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit]
 
     /** Applies operation to the state checking that the operation is supported
       *
       * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
       */
-    final def applyState()(implicit
+    final def applyState(applyConfig: ApplyOperationConfig)(implicit
         updateOracle: SupportedOperations
     ): EitherT[ConnectionIO, StateError, Unit] =
       for {
         _ <- isSupported()
-        _ <- applyStateImpl()
+        _ <- applyStateImpl(applyConfig)
       } yield ()
 
     def digest: Sha256Digest
