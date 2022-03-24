@@ -173,6 +173,9 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       didData =>
         node_api
           .GetDidDocumentResponse(document = didData.maybeData)
+          .withLastUpdateOperation(
+            didData.maybeOperation.map(a => ByteString.copyFrom(a.getValue)).getOrElse(ByteString.EMPTY)
+          )
           .withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp)
     )
     query.run(traceId).unsafeToFuture()

@@ -160,6 +160,10 @@ class NodeServiceSpec
       response.lastSyncedBlockTimestamp must be(
         Some(dummySyncTimestamp.toProtoTimestamp)
       )
+
+      response.lastUpdateOperation must be(
+        ByteString.copyFrom(didDigest.getValue)
+      )
     }
 
     "return error when too many public keys in response" in {

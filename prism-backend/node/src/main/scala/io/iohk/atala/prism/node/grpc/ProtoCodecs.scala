@@ -58,7 +58,6 @@ object ProtoCodecs {
     node_models
       .DIDData()
       .withId(did)
-      .withLastUpdateHash(ByteString.copyFrom(didDataState.lastOperation.getValue))
       .withPublicKeys(
         didDataState.keys.map(key =>
           toProtoPublicKey(
