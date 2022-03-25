@@ -60,7 +60,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
     )
 
   private def getDidDocumentByDid(canon: CanonicalPrismDid): F[Either[GettingDidError, DidDocument]] = {
-    val getDidResultF: F[Either[GettingDidError, Option[DIDData]]] =
+    val getDidResultF: F[Either[GettingDidError, Option[(DIDData, Sha256Digest)]]] =
       didDataRepository
         .findByDid(canon, Some(didPublicKeysLimit))
         .map(_.bimap(GettingCanonicalPrismDidError, toDidDataProto(_, canon)))
@@ -68,12 +68,12 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
     for {
       lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
       getDidResult <- getDidResultF
-      res = getDidResult.map(DidDocument(_, lastSyncedTimestamp))
+      res = getDidResult.map(disResult => DidDocument(disResult.map(_._1), disResult.map(_._2), lastSyncedTimestamp))
     } yield res
   }
 
-  private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[DIDData] =
-    in.map(didDataState => ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState))
+  private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[(DIDData, Sha256Digest)] =
+    in.map(didDataState => (ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState), didDataState.lastOperation))
 
   override def getBatchState(batchIdStr: String): F[Either[NodeError, BatchData]] = {
     // NOTE: CredentialBatchId.fromString returns null and doesn't throw an error when string wasn't successfully parsed
@@ -213,7 +213,11 @@ final case class BatchData(maybeBatchState: Option[CredentialBatchState], lastSy
 
 final case class CredentialRevocationTime(maybeLedgerData: Option[LedgerData], lastSyncedTimestamp: Instant)
 
-final case class DidDocument(maybeData: Option[DIDData], lastSyncedTimeStamp: Instant)
+final case class DidDocument(
+    maybeData: Option[DIDData],
+    maybeOperation: Option[Sha256Digest],
+    lastSyncedTimeStamp: Instant
+)
 
 @derive(loggable)
 final case class OperationInfo(maybeOperationInfo: Option[AtalaOperationInfo], lastSyncedTimestamp: Instant)

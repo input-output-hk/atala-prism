@@ -722,6 +722,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
     ): Unit = {
       val aMerkleRoot =
         ByteString.copyFrom(Sha256.compute("root".getBytes()).getValue)
+      val issuanceHash =
+        ByteString.copyFrom(Sha256.compute("issuanceHash".getBytes()).getValue)
       nodeMock
         .getBatchState(node_api.GetBatchStateRequest(aBatchId))
         .returns(
@@ -731,7 +733,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
                 "did:prism:aDID",
                 aMerkleRoot,
                 batchIssuanceLedgerData,
-                batchRevocationLedgerData
+                batchRevocationLedgerData,
+                issuanceHash = issuanceHash
               )
           )
         )
