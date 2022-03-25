@@ -70,3 +70,22 @@ export GPG_TTY=$(tty)
 echo "test" | gpg --clearsign
 ```
 if this problem keeps happening, try adding `export GPG_TTY=$(tty)` into your `~/.bashrc` or `~/.zshrc` file.
+if it's still happening and you are going mad, enable trace for git command and try to commit again
+trace will give you a hint (in some cases it's a binding to pinentry command)
+```bash
+export GIT_TRACE=1
+````
+
+This option fixes 'no-tty' and fixes pinentry bindingfor Mac (from [StackOverflow](https://stackoverflow.com/questions/39494631/gpg-failed-to-sign-the-data-fatal-failed-to-write-commit-object-git-2-10-0))
+
+1. ensure that everything is installed and set explicitly gpg.program in git config
+```bash
+brew install gnupg gnupg2 pinentry-mac
+git config gpg.program gpg
+```   
+2. change configuration of gpg and gpg-agent and restart gpg-agent 
+```bash
+echo "no-tty" > ~/.gnupg/gpg.conf 
+echo "pinentry-program /usr/local/bin/pinentry-mac" > ~/.gnupg/gpg-agent.conf
+killall gpg-agent
+```
