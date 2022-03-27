@@ -8,15 +8,9 @@ import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
-import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
 import io.iohk.atala.prism.node.models.nodeState._
-import io.iohk.atala.prism.node.operations.StateError.{
-  EffectiveSinceNotGreaterThanCurrentCardanoBlockNo,
-  EntityExists,
-  NonAscendingEffectiveSince,
-  NonSequentialProtocolVersion,
-  UntrustedProposer
-}
+import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
+import io.iohk.atala.prism.node.operations.StateError._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{KeyValuesDAO, ProtocolVersionsDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
@@ -34,12 +28,6 @@ case class ProtocolVersionUpdateOperation(
       keyId: String
   ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      _ <- EitherT {
-        ProtocolVersionsDAO.isProposerTrusted(proposerDID).map {
-          Either.cond(_, (), UntrustedProposer(proposerDID): StateError)
-        }
-      }
-
       keyState <- EitherT {
         PublicKeysDAO
           .find(proposerDID, keyId)
@@ -66,8 +54,14 @@ case class ProtocolVersionUpdateOperation(
     } yield data
   }
 
-  override protected def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] =
+  override protected def applyStateImpl(config: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit] =
     for {
+      _ <- EitherT.cond[ConnectionIO](
+        proposerDID == config.trustedProposer,
+        (),
+        UntrustedProposer(proposerDID): StateError
+      )
+
       lastKnown <- EitherT.liftF(ProtocolVersionsDAO.getLastKnownProtocolUpdate)
       _ <-
         EitherT

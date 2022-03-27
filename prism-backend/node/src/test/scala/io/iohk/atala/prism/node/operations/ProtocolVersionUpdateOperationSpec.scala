@@ -5,6 +5,7 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
@@ -61,7 +62,11 @@ object ProtocolVersionUpdateOperationSpec {
       .toOption
       .value
 
-  lazy val proposerDIDSuffix = proposerCreateDIDOperation.id
+  lazy val proposerDIDSuffix: DidSuffix = proposerCreateDIDOperation.id
+
+  lazy val applyConfig: ApplyOperationConfig = ApplyOperationConfig(proposerDIDSuffix)
+
+  lazy val untrustedProposerApplyConfig: ApplyOperationConfig = ApplyOperationConfig(DidSuffix("aaaaa"))
 
   val protocolVersionInfo1: ProtocolVersionInfo =
     ProtocolVersionInfo(ProtocolVersion(2, 0), Some("Second version"), 10)
@@ -165,7 +170,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
   }
 
   "ProtocolVersionUpdateOperation.getCorrectnessData" should {
-    "provide the key reference be used for signing" in {
+    "provide the key reference used for signing" in {
       DataPreparation
         .createDID(
           DIDData(
@@ -175,7 +180,6 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           ),
           dummyLedgerData
         )
-      DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       val CorrectnessData(key, previousOperation) =
         parsedProtocolUpdateOperation1
@@ -200,7 +204,6 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           ),
           dummyLedgerData
         )
-      DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       val result = parsedProtocolUpdateOperation1
         .getCorrectnessData("issuing")
@@ -221,7 +224,6 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           ),
           dummyLedgerData
         )
-      DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       PublicKeysDAO
         .revoke(proposerDIDSuffix, "master", dummyLedgerData)
@@ -235,26 +237,6 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         .unsafeRunSync()
 
       result mustBe Left(StateError.KeyAlreadyRevoked())
-    }
-
-    "return state error when a proposer is untrusted" in {
-      DataPreparation
-        .createDID(
-          DIDData(
-            proposerDIDSuffix,
-            proposerDidKeys,
-            proposerCreateDIDOperation.digest
-          ),
-          dummyLedgerData
-        )
-
-      val result = parsedProtocolUpdateOperation1
-        .getCorrectnessData("master")
-        .transact(database)
-        .value
-        .unsafeRunSync()
-
-      result mustBe Left(StateError.UntrustedProposer(proposerDIDSuffix))
     }
   }
 
@@ -270,7 +252,6 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           dummyLedgerData
         )
 
-      DataPreparation.insertTrustedProposer(proposerDIDSuffix)
       insertProtocolVersions()
 
       ProtocolVersionsDAO.getCurrentProtocolVersion
@@ -293,7 +274,6 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           dummyLedgerData
         )
 
-      DataPreparation.insertTrustedProposer(proposerDIDSuffix)
       insertProtocolVersions()
 
       ProtocolVersionsDAO
@@ -328,7 +308,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         )
 
       val result2 = parsedProtocolUpdateOperation1
-        .applyState()
+        .applyState(untrustedProposerApplyConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -350,7 +330,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         )
 
       val result2 = parsedProtocolUpdateOperation2
-        .applyState()
+        .applyState(applyConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -370,11 +350,10 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           ),
           dummyLedgerData
         )
-      DataPreparation.insertTrustedProposer(proposerDIDSuffix)
 
       val result = parsedProtocolUpdateOperation1
         .copy(effectiveSinceBlockIndex = 20)
-        .applyState()
+        .applyState(applyConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -383,7 +362,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
       val result2 = parsedProtocolUpdateOperation2
         .copy(effectiveSinceBlockIndex = 10)
-        .applyState()
+        .applyState(applyConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -414,7 +393,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         )
 
       val result1 = parsedProtocolUpdateOperation1
-        .applyState()
+        .applyState(applyConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -428,7 +407,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
 
   def insertProtocolVersions() = {
     val result = parsedProtocolUpdateOperation1
-      .applyState()
+      .applyState(applyConfig)
       .transact(database)
       .value
       .unsafeToFuture()
@@ -436,7 +415,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
     result mustBe a[Right[_, _]]
 
     val result2 = parsedProtocolUpdateOperation2
-      .applyState()
+      .applyState(applyConfig)
       .transact(database)
       .value
       .unsafeToFuture()

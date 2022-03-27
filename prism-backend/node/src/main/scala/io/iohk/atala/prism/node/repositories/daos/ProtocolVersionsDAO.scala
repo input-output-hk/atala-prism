@@ -63,19 +63,4 @@ object ProtocolVersionsDAO {
       _.sortBy(_.effectiveSinceBlockIndex)(Ordering.Int.reverse).headOption
     }
   }
-
-  def isProposerTrusted(didSuffix: DidSuffix): ConnectionIO[Boolean] = {
-    sql"""
-         |SELECT COUNT(*)
-         |FROM trusted_proposers
-         |WHERE did_suffix = $didSuffix
-       """.stripMargin.query[Int].unique.fmap(_ > 0)
-  }
-
-  def insertTrustedProposer(didSuffix: DidSuffix): ConnectionIO[Unit] = {
-    sql"""
-      |INSERT INTO trusted_proposers (did_suffix)
-      | VALUES ($didSuffix)
-    """.stripMargin.update.run.void
-  }
 }

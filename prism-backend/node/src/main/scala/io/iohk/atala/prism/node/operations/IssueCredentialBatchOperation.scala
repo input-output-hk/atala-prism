@@ -53,7 +53,7 @@ case class IssueCredentialBatchOperation(
     } yield data
   }
 
-  override def applyStateImpl(): EitherT[ConnectionIO, StateError, Unit] =
+  override def applyStateImpl(_config: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit] =
     EitherT {
       CredentialBatchesDAO
         .insert(

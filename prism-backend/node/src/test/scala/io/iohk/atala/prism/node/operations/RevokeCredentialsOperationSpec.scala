@@ -8,7 +8,7 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
+import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
 import io.iohk.atala.prism.protos.node_models
@@ -161,12 +161,12 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
   "RevokeCredentialsOperation.getCorrectnessData" should {
     "provide the data required for correctness verification" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -189,12 +189,12 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
     }
     "return state error when there are used different key than revocation key" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -221,12 +221,12 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
   "RevokeCredentialsOperation.applyState" should {
     "mark credential batch as revoked in the database" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -238,7 +238,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
           .value
 
       parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -257,12 +257,12 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
     "fail when attempting to revoke an already revoked credential batch" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -274,7 +274,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
           .value
 
       parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -291,19 +291,19 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
       credentialBatch.revokedOn mustBe Some(revocationLedgerData)
 
       val error =
-        parsedOperation.applyState().transact(database).value.unsafeRunSync()
+        parsedOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
 
       error.left.value mustBe a[StateError.BatchAlreadyRevoked]
     }
 
     "mark specific credentials as revoked in the database" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -315,7 +315,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
           .value
 
       parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -346,12 +346,12 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
     "fail to revoke specific credentials when the batch was already revoked" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -363,7 +363,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
           .value
 
       parsedRevokeBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .value
         .transact(database)
         .unsafeRunSync()
@@ -389,7 +389,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
       parsedOperation.credentialBatchId mustBe parsedRevokeBatchOperation.credentialBatchId
 
       val error = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -419,12 +419,12 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
     "do not update revocation time for specific credentials that were already revoked" in {
       issuerCreateDIDOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
       credentialIssueBatchOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -436,7 +436,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
           .value
 
       parsedFirstOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .value
         .transact(database)
         .unsafeRunSync()
@@ -464,7 +464,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
       parsedOSecondperation.credentialBatchId mustBe parsedFirstOperation.credentialBatchId
 
       parsedOSecondperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()

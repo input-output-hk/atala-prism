@@ -7,7 +7,7 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
+import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
@@ -216,7 +216,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
   "UpdateDIDOperation.getCorrectnessData" should {
 
     "provide the data required for correctness verification" in {
-      createDidOperation.applyState().transact(database).value.unsafeRunSync()
+      createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
 
       val parsedOperation = UpdateDIDOperation
         .parse(signedExampleOperation, dummyLedgerData)
@@ -238,7 +238,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
   "UpdateDIDOperation.applyState" should {
     "update DID keys in the database" in {
-      createDidOperation.applyState().transact(database).value.unsafeRunSync()
+      createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
 
       val parsedOperation = UpdateDIDOperation
         .parse(signedExampleOperation, dummyLedgerData)
@@ -246,7 +246,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
 
       parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -290,7 +290,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -304,7 +304,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
     "return error when removed key does not exist" in {
       createDidOperation
         .copy(keys = createDidOperation.keys.take(1))
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -315,7 +315,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
@@ -331,7 +331,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         createDidOperation.keys.head.copy(keyId = "new_master")
       createDidOperation
         .copy(keys = createDidOperation.keys :+ additionalKey)
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeRunSync()
@@ -342,7 +342,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
 
       val result = parsedOperation
-        .applyState()
+        .applyState(dummyApplyOperationConfig)
         .transact(database)
         .value
         .unsafeToFuture()
