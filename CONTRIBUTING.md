@@ -121,10 +121,10 @@ sdk with a custom name needs to be published manually from the shell, run this i
 PRISM_VERSION=<verson mame to publish> ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
 if you are publishing v1.4.0-rc1 version of sdk for example, use `PRISM_VERSION=v1.4.0-rc1`
-this assumes you have environment variables `GITHUB_TOKEN` and `GITHUB_ACTOR` defined in your shell profile, if not run
+this assumes you have environment variables `ATALA_GITHUB_TOKEN` and `ATALA_GITHUB_ACTOR` defined in your shell profile, if not run
 
 ```bash
-PRISM_VERSION=<verson mame to publish> GITHUB_TOKEN=<token> GITHUB_ACTOR=<your github username>  ./gradlew publishAllPublicationsToGitHubPackagesRepository
+PRISM_VERSION=<verson mame to publish> ATALA_GITHUB_TOKEN=<token> ATALA_GITHUB_ACTOR=<your github username>  ./gradlew publishAllPublicationsToGitHubPackagesRepository
 
 ```
 **NOTE:**

@@ -24,8 +24,8 @@ repositories {
     maven {
         url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-sdk")
         credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("ATALA_GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("ATALA_GITHUB_TOKEN")
         }
     }
     // Needed for Kotlin coroutines that support new memory management mode

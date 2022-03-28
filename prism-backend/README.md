@@ -28,7 +28,7 @@ cs install sbt
 ```
 
 ## Github Packages and Personal Access Token (PAT)
-Your `sbt` will look for a `GITHUB_TOKEN` environment variable to use to authenticate on Github Packages and download all
+Your `sbt` will look for a `ATALA_GITHUB_TOKEN` environment variable to use to authenticate on Github Packages and download all
 private dependencies from the IOHK packages archive. It may also look for a `github.token` git property. It's recommended to set
 both to make sure it works in all cases you may need.
 
@@ -85,10 +85,10 @@ To build and push a Docker image for a backend module run the following command 
 sbt <module>/dockerBuildAndPush
 ```
 
-By default, `sbt` pushes to AWS Elastic Container Registry. Alternatively, you can push to GitHub Packages Container registry. First, you need to set up your login details for GitHub. Assuming that your GitHub personal access token with write rights for packages is stored in `GITHUB_TOKEN`, run this:
+By default, `sbt` pushes to AWS Elastic Container Registry. Alternatively, you can push to GitHub Packages Container registry. First, you need to set up your login details for GitHub. Assuming that your GitHub personal access token with write rights for packages is stored in `ATALA_GITHUB_TOKEN`, run this:
 
 ```bash
- echo $GITHUB_TOKEN | docker login ghcr.io -u <USERNAME> --password-stdin
+ echo $ATALA_GITHUB_TOKEN | docker login ghcr.io -u <USERNAME> --password-stdin
 ```
 
 Next, by setting `GITHUB` environment variable to `1`, you can tell `sbt` that you want the images to be pushed to GitHub. For example, to push connector in such fashion run this:
