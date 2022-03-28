@@ -237,7 +237,6 @@ jobs:
   workflow-dispach:
     name: "Workflow Dispach"
     runs-on: ubuntu-20.04
-    # ??? why this condition here ???
     if: github.ref_type != 'tag'
     needs: deploy-ecr-images
     steps:
