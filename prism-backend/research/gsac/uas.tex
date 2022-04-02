@@ -13,6 +13,7 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 
 % Custom shorthands for this paper
 \input{symbols.tex}
+\input{symbols-gsac.tex}
 \input{symbols-uas.tex}
 
 \begin{document}
@@ -25,17 +26,20 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
     it deals with. Do not take anything written here as ground truth.}  
 \end{abstract}
 
-\input{introduction-uas.tex}
-\input{preliminaries-uas.tex}
-\input{model-uas.tex}
-\input{construction-uas.tex}
-%\input{benchmarks.tex}
-\input{conclusion-uas.tex}
+\input{introduction.tex}
+\input{preliminaries.tex}
+\input{sec-gsac.tex}
+\input{sec-uas.tex}
+\input{transformations.tex}
+\input{benchmarks.tex}
+\input{conclusion.tex}
 
 \bibliographystyle{splncs04}
 \bibliography{uas}
 
-%\appendix
+\appendix
+
+\input{app-gsac.tex}
 
 \end{document}
 

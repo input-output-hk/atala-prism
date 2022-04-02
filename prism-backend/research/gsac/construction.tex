@@ -1,4 +1,4 @@
-\section{A Framework for \UAS}
+\section{A Framework for \GSAC}
 \label{sec:construction}
 
 \subsection{Generic Construction}
@@ -10,6 +10,20 @@
 \subsection{Concrete Instantiation}
 \label{ssec:instantiation}
 
+\begin{description}
+\item[$\parm \gets \Setup(\secpar)$.]  
+\item[$(\ipk,\isk) \gets \IKeyGen(\parm)$.]
+\item[$(\opk,\osk) \gets \OKeyGen(\parm)$.]
+\item[$(\upk,\usk) \gets \UKeyGen(\parm)$.]
+\item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
+  \langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle$.]
+\item[$\sig \gets \Sign(\gpk,\usk,\cred,\DAttrs,\msg)$.] 
+\item[$1/0 \gets \Verify(\gpk,\sig,\DAttrs,\msg)$.]
+\item[$(\upk,\cred,\oproof)/\bot \gets
+  \Open(\gpk,\osk,\utrans,\sig,\DAttrs,\msg)$.]
+\item[$1/0 \gets \Judge(\gpk,\upk,\cred,\oproof,\sig,\DAttrs,\msg)$.]
+\end{description}
+  
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "uas"

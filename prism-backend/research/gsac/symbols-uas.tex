@@ -1,17 +1,3 @@
-\mathchardef\mhyphen="2D
-\newcommand*{\ldblbrace}{\{\mskip-5mu\{}
-\newcommand*{\rdblbrace}{\}\mskip-5mu\}}
-
-% General
-\def\ch{\ensuremath{ch}\xspace}
-\def\Lang{\ensuremath{L}\xspace}
-\def\parm{\ensuremath{param}\xspace}
-\def\Exp{\ensuremath{\mathsf{Exp}}\xspace}
-\def\Adv{\ensuremath{\mathsf{Adv}}\xspace}
-\def\status{\ensuremath{\mathsf{st}}\xspace}
-\def\msg{\ensuremath{m}\xspace}
-\def\msgset{\ensuremath{\boldsymbol{msg}}\xspace}
-
 % Symbols for UAS
 \def\UAS{\ensuremath{\mathsf{UAS}}\xspace}
 \def\IGEN{\ensuremath{\mathsf{IGEN}}\xspace}
@@ -128,6 +114,7 @@
 \def\csig{\ensuremath{\mathsf{\sigma}^*}\xspace}
 \def\LangIss{\ensuremath{\Lang_{is}}\xspace}
 \def\LangIns{\ensuremath{\Lang_{in}}\xspace}
+\def\LangVerIns{\ensuremath{\Lang_{verin}}\xspace}
 \def\LangSig{\ensuremath{\Lang_{sig}}\xspace}
 \def\fissue{\ensuremath{f_{is}}\xspace}
 \def\feval{\ensuremath{f_{ev}}\xspace}
@@ -138,79 +125,6 @@
 \def\varrngfinsp{\ensuremath{r_{in}}\xspace}
 \def\Issuers{\ensuremath{\mathbb{I}}\xspace}
 \def\CUASGen{\ensuremath{\Pi_{\UAS}}\xspace}
-
-
-% RSig
-\def\RS{\ensuremath{RS}\xspace}
-\def\RSKeyGen{\ensuremath{\RS.KG}\xspace}
-\def\RSSign{\ensuremath{\RS.Sign}\xspace}
-\def\RSVerify{\ensuremath{\RS.Verify}\xspace}
-\def\RSProve{\ensuremath{\RS.Prove}\xspace}
-\def\RSProveVer{\ensuremath{\RS.ProveVer}\xspace}
-\def\RSsecpar{\ensuremath{\kappa_{\RS}}\xspace}
-\def\RSlen{\ensuremath{l}\xspace}
-\def\RSsk{\ensuremath{sk_{\RS}}\xspace}
-\def\RSvk{\ensuremath{vk_{\RS}}\xspace}
-\def\RSsig{\ensuremath{\sigma_{\RS}}\xspace}
-\def\RSproof{\ensuremath{\pi_{\RS}}\xspace}
-\def\D{\ensuremath{D}\xspace}
-\def\amsgset{\ensuremath{\boldsymbol{amsg}}\xspace}
-\def\cmsgset{\ensuremath{\boldsymbol{cmsg}}\xspace}
-
-% Sig
-\def\S{\ensuremath{S}\xspace}
-\def\SKeyGen{\ensuremath{\S.KG}\xspace}
-\def\SSign{\ensuremath{\S.Sign}\xspace}
-\def\SVerify{\ensuremath{\S.Verify}\xspace}
-\def\Ssecpar{\ensuremath{\kappa_{\S}}\xspace}
-\def\Ssk{\ensuremath{sk_{\S}}\xspace}
-\def\Svk{\ensuremath{vk_{\S}}\xspace}
-\def\Ssig{\ensuremath{\sigma_{\S}}\xspace}
-
-% Commitments
-\def\C{\ensuremath{C}\xspace}
-\def\CSetup{\ensuremath{\C.Setup}\xspace}
-\def\CCommit{\ensuremath{\C.Commit}\xspace}
-\def\CProve{\ensuremath{\C.Prove}\xspace}
-\def\CVerify{\ensuremath{\C.Verify}\xspace}
-\def\Csecpar{\ensuremath{\kappa_{\C}}\xspace}
-\def\Cparm{\ensuremath{\parm_\C}\xspace}
-\def\Csk{\ensuremath{sk_{\C}}\xspace}
-\def\Cvk{\ensuremath{vk_{\C}}\xspace}
-\def\Ccom{\ensuremath{com}\xspace}
-\def\Copn{\ensuremath{opn}\xspace}
-\def\Cproof{\ensuremath{\pi_{\RS}}\xspace}
-
-% Enc
-\def\E{\ensuremath{E}\xspace}
-\def\EKeyGen{\ensuremath{\E.KG}\xspace}
-\def\EEnc{\ensuremath{\E.Enc}\xspace}
-\def\EDec{\ensuremath{\E.Dec}\xspace}
-\def\Esecpar{\ensuremath{\kappa_{\E}}\xspace}
-\def\Edk{\ensuremath{dk_{\E}}\xspace}
-\def\Eek{\ensuremath{ek_{\E}}\xspace}
-\def\Ec{\ensuremath{\c}\xspace}
-
-% NIZK
-\def\NIZK{\ensuremath{NIZK}\xspace}
-\def\NIZKSetup{\ensuremath{\NIZK.Setup}\xspace}
-\def\NIZKProve{\ensuremath{\NIZK.Prove}\xspace}
-\def\NIZKVerify{\ensuremath{\NIZK.Verify}\xspace}
-\def\NIZKsecpar{\ensuremath{\kappa_{\NIZK}}\xspace}
-\def\NIZKparm{\ensuremath{\parm_{\NIZK}}\xspace}
-\def\NIZKcrs{\ensuremath{crs}\xspace}
-\def\NIZKproof{\ensuremath{\pi_{\NIZK}}\xspace}
-\def\NIZKx{\ensuremath{x}\xspace}
-\def\NIZKw{\ensuremath{w}\xspace}
-
-% SPK
-\def\SPK{\ensuremath{SPK}\xspace}
-\def\SPKProve{\ensuremath{\SPK.Prove}\xspace}
-\def\SPKVerify{\ensuremath{\SPK.Verify}\xspace}
-\def\SPKproof{\ensuremath{\pi_{\SPK}}\xspace}
-\def\SPKx{\ensuremath{x}\xspace}
-\def\SPKw{\ensuremath{w}\xspace}
-\def\SPKmsg{\ensuremath{msg}\xspace}
 
 %%% Local Variables: 
 %%% mode: pdflatex

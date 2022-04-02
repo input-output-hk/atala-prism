@@ -1,5 +1,5 @@
-\section{Model for \UAS Schemes}
-\label{sec:model-uas}
+\subsection{Model for \UAS Schemes}
+\label{ssec:model-uas}
 
 We now define our model for Universal Anonymous Signatures. At a very high
 level, it is a combination of the main models for group signatures and
@@ -50,8 +50,8 @@ practice, most probably by the verifiers). This is in line with the usual
 practice in anonymous credentials, that let users prove arbitrary claims on
 their credentials, as long as they are met by the contained attributes.
 
-\subsection{Syntax}
-\label{ssec:syntax}
+\subsubsection{Syntax}
+\label{sssec:syntax}
 
 In the following, we assume a setting with multiple groups. For simplicity,
 we assume that each has its own issuer and inspector.
@@ -100,9 +100,13 @@ we assume that each has its own issuer and inspector.
   valid signature, over message \msg, from a user in the group with public key
   \gpk, for signing function \feval.
 \item[$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg,\feval)$.] %
+  \todo{I think we do not need \trans here, see the generic construction. (This
+    was somehow inherited from \cite{bsz05}.) However, if we do remove it, we'd
+    need to redefine the traceability game -- it'd need to depend on \Identify,
+    which kind of makes sense too.}
   Executed by the inspector with private key \osk. Receives a signature \sig
   over message \msg and evaluation function \feval. If \trans contains a set of
-  valid transcripts corresponding
+  valid transcripts corresponding 
   to the $\langle\Obtain,\Issue\rangle$ interactive protocol execution that
   issued the credential used to produce \sig, the function outputs a value $\y$
   derived from the signer's public key, credential, message, and signature, as
@@ -133,16 +137,17 @@ their computation. We introduce them next, \todo{and will give concrete examples
   governs what customized conditions an issuer requires in order to issue
   credentials, when receiving a request from user with public key \upk, for
   attributes \attrs. \fissue may run checks on a (possibly empty) set of
-  additional credentials \scred, which may further be used for blind issuance
-  \commentwho{Jesus}{can it?}. \fissue returns $1$ to accept a request, $0$ to
-  reject it.  
-\item[$\feval: (\upk,\cred,\msg) \rightarrow \varrngfeval$.] Can be defined by any
-  party, although we anticipate that this will typically be done by either
+  additional credentials \scred, all bound to \upk, which may further be used
+  for blind issuance \commentwho{Jesus}{can it?}. \fissue returns $1$ to accept
+  a request, $0$ to reject it.  
+\item[$\feval: (\upk,\cred,\msg) \rightarrow \varrngfeval$.] Can be defined by
+  any party, although we anticipate that this will typically be done by either
   signers, verifiers, or some governance organization. It defines customized
   conditions to be met by the owner of a user key \upk and credential \cred,
-  in order to sign a concrete message \msg. Its outputs  $\varrngfeval$ must
-  belong in a well defined set \rngfeval, with the restriction that it must
-  return $0$ when the conditions for signing are not met.
+  bound to \upk, in order to sign a concrete message \msg. Its outputs
+  $\varrngfeval$ must belong in a well defined set \rngfeval, with the
+  restriction that it must return $0$ when the conditions for signing are not
+  met.
 \item[$\finsp: (\varrngfeval,\upk,\cred,\msg) \rightarrow \varrngfinsp$.]
   Defines what utility value, derived from the user's public key, credential,
   and message should be extractable by the group inspector. Note that \finsp
@@ -504,8 +509,8 @@ credential, user key, and message.
   \label{fig:exp-uas-corr}
 \end{figure}
 
-\subsection{Security Properties}
-\label{ssec:security}
+\subsubsection{Security Properties}
+\label{sssec:security}
 
 \paragraph{Anonymity.} %
 In group signatures, anonymity captures that no adversary must be able to learn,
@@ -814,48 +819,6 @@ with our definition which, in case of making \Inspect equal \Open, becomes
 equivalent to conventional non-frameability. However, it also allows more
 generic situations in which signatures by different users may return the same
 value. 
-
-\subsection{Functionality ``Transformations'' and Special Cases}
-\label{ssec:transformations}
-
-\commentwho{Jesus}{This section is aimed at showing the ``universality'' of
-  our model. If I'm not mistaken, ideally, it should support the following
-  variations (except the transformation to interactive presentations,
-  probably).}
-
-\subsubsection{Transformation to Interactive Presentations}
-\label{sssec:interactivetransform}
-
-\todo{Is it possible to give it in some generic sense?}
-
-\subsubsection{Combining Multiple Credentials in One Presentation}
-
-\todo{I think this might be possible if we can use \fissue so that any user can
-  create arbitrary groups, where he is the issuer, an can thus run
-  \Obtain,\Issue protocols to combine credentials from other groups. This is
-  probably inefficient (or, at least, more than doing so wihtout having to
-  create ad hoc groups), but at least allows the enhanced functionality...}
-
-\subsubsection{Restricting to Conventional GS and AC Schemes}
-
-\todo{It would be nice to prove that a \GSAC scheme to which we remove the
-  \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
-  where all credentials have no attributes, and where we restrict to only
-  one credential per user, becomes a conventional GS scheme.}
-
-
-\subsubsection{Group Signatures with Message Dependent Opening}
-
-\todo{Describe what type of \finsp would be needed to achieve a functionality
-  similar to that of GS-MDO. Does this fit our model straight away? Maybe also
-  show how other types of GS could be ``mimicked'' (e.g., GS only with linking).
-  This would also be good to test if the model is as generic as I think it is}
-
-\subsubsection{Ring Signatures}
-
-\todo{Can we come up with a (\fissue,\feval,\finsp) tuple that allows us to
-  somehow mimic ring signatures (i.e., ``a group signature without issuer nor
-  opening''? Does the model support this?}
   
 %%% Local Variables:
 %%% mode: latex
