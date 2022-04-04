@@ -5,20 +5,63 @@
   are to submit this for publication (it least, it probably needs some deep
   reorganisation). However, this should capture tha main ideas.}
 
-In this work, we focus on the generalization of privacy-preserving cryptographic
-systems for authentication and identification. Two major research lines within
-cryptography that work in this space are group signatures (GS) and anonymous
-credentials (AC). In fact, despite having followed separate paths, the overall
-approaches to build them are quite similar in a general sense. Consequently,
-both have fed from each other.
+Two major research lines within cryptography that work in the space of
+privacy-preserving authentication and identfication are group
+signatures (GS) and anonymous credentials (AC). In fact, despite having followed
+separate paths, the overall approaches to build them are quite similar in a
+general sense.
 %
 In short, GSs allow a group of users, accepted into the group by an issuer, to
 create signatures on behalf of the group, without revealing their identity. Only
-an opener/inspector can (sometimes partially) deanonymize these signatures. In
-ACs, users obtain credentials, typically containing multiple attributes, from
-trusted issuers. Subsequently, users can prove ownership of these credentials,
-usually revealing only subsets (or arbitrary claims) of these attritubes, while
-keeping the rest hidden.
+an opener can (sometimes partially) deanonymize these signatures. In ACs, users
+obtain credentials, typically containing multiple attributes, from trusted
+issuers. Subsequently, users can prove ownership of these credentials, usually
+revealing only subsets (or arbitrary claims) of these attritubes, while keeping
+the rest hidden. Both GSs and ACs are used for authentication. 
+
+\paragraph{Accountability in GSs and identification in ACs.} %
+\todo{Take inspiration from the SoK paper on accountability to argue that
+  accountability is needed to prevent misbehaviour and support utility in
+  a privacy-preserving manner.}
+Typically, GSs make special focus in accountability (via opening), while ACs
+place more attention in dealing with identifying information of the credential
+owners.
+%
+Indeed, the opening functionality has been a core component of GSs. Even for
+GS variants that do not have opening, there is always some mechanism that
+allows to somehow ``correlate'' a signature with its signer -- even when this is
+controlled by the signers themselves, as in \cite{dl21} \needcite. Still, even
+when group signatures can be opened in the conventional sense, the notion of
+\emph{identity} that is obtained from this deanonymization is too lax. Most
+frequently, opening just returns an integer (e.g., $i$), which can
+be associated to a user who joined the system (the $i$-th). Who this ($i$-th)
+user is, or what identifies him/her, is left as out of scope.
+%
+On the other hand, the capability to encode authenticated identifying
+information via attributes within a credential, and then prove claims about
+those attributes without revealing more than strictly needed, is probably the
+most attractive feature of ACs. Through these attributes (and claims over
+them), ACs actually allow building systems where the participating entities
+know \emph{who} they are interacting with. However, if a credential owner
+misbehaves, typically not much can be done beyond (in some schemes) blacklisting
+the credential. Even when we do not want to somehow penalize a credential owner,
+but rather be able to apply some utility (alas, partially deanonymizing)
+function \emph{after the authentication has taken place}, not having some sort
+of ``accountability'' mechanism (like GSs' open) in ACs makes it impossible.
+
+It is reasonable that accountability and identification have followed separate
+paths. After all, they are challenging features on their own. Even more, when
+combined with privacy, as is the case for GSs and ACs. However, real world use
+cases claim for both \emph{at the same time} and \emph{in a flexible manner}.
+
+
+\subsection{Our Contributions}
+\label{ssec:contributions}
+
+In this work, we focus on the generalization of privacy-preserving cryptographic
+systems for authentication and identification. Our approach towards this
+generalization comes in two steps: first, 
+
 
 On the one hand, the security models of GS and AC hold important similarities.
 Security in group signatures is typically captured with game-based definitions,

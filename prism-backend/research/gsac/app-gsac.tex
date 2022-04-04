@@ -1,0 +1,127 @@
+\section{GSAC Detailed Formalisation}
+\label{app:gsac-formal}
+
+\subsection{Detailed Oracles}
+\label{sapp:gsac-oracles}
+
+{%\setlength\intextsep{\sep}
+  \begin{figure*}[ht!]
+    \centering
+    \scalebox{0.9}{
+
+      \begin{minipage}[t]{0.55\textwidth}
+
+        \procedure{$\RREG(i)$}{%
+          \pcreturn \trans[i] \\
+        }
+
+        \procedure{$\HUGEN(\uid)$}{%
+          \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
+          (\upk,\usk) \gets \UKeyGen(\parm) \\
+          \UK[\uid] \gets (\upk,\usk);
+          \HU \gets \HU \cup \lbrace  \uid \rbrace \\
+          \pcreturn \top \\
+        }        
+        
+        \procedure{$\CUGEN(\uid,\upk)$}{%
+          \pcif \uid \in \CU: \pcreturn \bot \\
+          \CU \gets \CU \cup \lbrace \uid \rbrace \\          
+          \pcif \uid \in \HU: \\
+          \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
+          \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
+          \pcelse: \UK[\uid] = (\upk,\bot) \\          
+          \pcreturn \top \\
+        }
+
+        \procedure{$\OBTISS(\uid,\cid,\Attrs)$}{%
+          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cred, \utrans \rangle \gets
+          \langle \Obtain(\gpk,\PRVUK[\uid],\Attrs), \\
+          \pcind \pcind \pcind \pcind \pcind \pcind
+          \Issue(\gpk,\isk,\Attrs) \rangle \\
+          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \pcreturn \top \\
+        }        
+
+        \procedure{$\OBTAIN(\uid,\cid,\Attrs)$}{%
+          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cred, \cdot \rangle \gets
+          \langle \Obtain(\gpk,\PRVUK[\uid],\Attrs),\adv \rangle \\
+          \CRED[\cid] \gets \cred \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \pcreturn \top \\
+        }
+        
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      
+      \begin{minipage}[t]{.5\textwidth}
+
+        \procedure{$\WREG(i,\rho)$}{%
+          \trans[i] \gets \rho \\
+        }        
+
+        \procedure{$\ISSUE(\uid,\cid,\Attrs)$}{%
+          \pcif \uid \notin \CU: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \langle \cdot, \utrans \rangle \gets
+          \langle \adv, \Issue(\gpk,\isk,\Attrs) \rangle \\
+          \trans[\cid] \gets \utrans \\
+          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \pcreturn \top \\          
+        }        
+
+        \procedure{$\SIGN(\cid,\DAttrs,\msg)$}{%
+          \uid \gets \OWNR[\cid] \\
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \cred \gets \CRED[\cid] \\
+          \sig \gets \Sign(\gpk,\PRVUK[\uid],\cred,\DAttrs,\msg) \\
+          \SIG[\cid] \gets \SIG[\cid] \cup \lbrace (\sig,\DAttrs,\msg) \rbrace \\
+          \pcreturn \sig \\
+        }
+
+        \procedure{$\OPEN(\sig)$}{%
+          \textrm{Let}~\cid~\textrm{be s.t.}~(\sig,\DAttrs,\msg) \in \SIG[\cid] \\
+          \pcif \textrm{no such \cid exists, or there is more than one}: \\
+          \pcind \pcreturn \bot \\
+          \pcif \sig \in \CSIG: \pcreturn \bot \\
+          (\upk,\Attrs,\oproof) \gets
+          \Open(\gpk,\osk,\trans[\cid],\sig,\DAttrs,\msg) \\
+%          \OSIG \gets \OSIG \cup \lbrace (\sig,\upk,\cred) \rbrace \\
+%          \CCRED \gets \CCRED \cup \lbrace \cid \rbrace \\
+          \pcreturn (\upk,\Attrs,\oproof) \\
+        }
+
+        \procedure{$\CHALb(\ccid_0,\ccid_1,\DAttrs,\msg)$}{%
+          \pcif \ATTR[\ccid_0] \cap \ATTR[\ccid_1] \nsubseteq \DAttrs:
+          \pcreturn \bot \\
+          \pcif \cuid_0 \neq \bot \lor \cuid_1 \neq \bot: \pcreturn \bot \\
+          \cuid_0 = \OWNR[\ccid_0];~\cuid_1 = \OWNR[\ccid_1] \\
+          \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
+ %         \pcif \ccid_0 \in \CCRED \lor \ccid_1 \in \CCRED: \pcreturn \bot \\
+          \csig \gets \Sign(\gpk,\PRVUK[\cuid_b],\CRED[\ccid_b],
+          \DAttrs,\msg) \\
+          \CSIG \gets \CSIG \cup \lbrace \csig \rbrace \\
+          \pcreturn \csig
+        }
+        
+      \end{minipage}
+      
+    }
+
+    \caption{Detailed oracles available in our model for \GSAC schemes.}
+    \label{fig:oracles}
+  \end{figure*}
+}
+
+\subsection{Detailed Proofs}
+\label{sapp:gsac-proofs}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:

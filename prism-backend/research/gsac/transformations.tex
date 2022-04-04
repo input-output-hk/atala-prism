@@ -1,0 +1,46 @@
+\section{Relationships of UAS With Other Schemes}
+\label{ssec:transformations}
+
+\commentwho{Jesus}{This section is aimed at showing the ``universality'' of
+  our model. If I'm not mistaken, ideally, it should support the following
+  variations (except the transformation to interactive presentations,
+  probably).}
+
+\subsection{Transformation to Interactive Presentations}
+\label{ssec:interactivetransform}
+
+\todo{Is it possible to give it in some generic sense?}
+
+\subsection{Combining Multiple Credentials in One Presentation}
+
+\todo{I think this might be possible if we can use \fissue so that any user can
+  create arbitrary groups, where he is the issuer, an can thus run
+  \Obtain,\Issue protocols to combine credentials from other groups. This is
+  probably inefficient (or, at least, more than doing so wihtout having to
+  create ad hoc groups), but at least allows the enhanced functionality...}
+
+\subsection{Restricting to Conventional GS and AC Schemes}
+
+\todo{It would be nice to prove that a \GSAC scheme to which we remove the
+  \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
+  where all credentials have no attributes, and where we restrict to only
+  one credential per user, becomes a conventional GS scheme.}
+
+
+\subsection{Group Signatures with Message Dependent Opening}
+
+\todo{Describe what type of \finsp would be needed to achieve a functionality
+  similar to that of GS-MDO. Does this fit our model straight away? Maybe also
+  show how other types of GS could be ``mimicked'' (e.g., GS only with linking).
+  This would also be good to test if the model is as generic as I think it is}
+
+\subsection{Ring Signatures}
+
+\todo{Can we come up with a (\fissue,\feval,\finsp) tuple that allows us to
+  somehow mimic ring signatures (i.e., ``a group signature without issuer nor
+  opening''? Does the model support this?}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:

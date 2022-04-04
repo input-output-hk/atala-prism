@@ -1,0 +1,239 @@
+\section{A Generic \UAS Construction}
+\label{sec:gen-construction}
+
+In this section, we give a generic construction of an \UAS scheme, based on
+generic building blocks. In \secref{sec:instantiation}, we give a concrete
+instantiation.
+
+\subsection{Building Blocks}
+\label{ssec:bblocks}
+
+\subsubsection{Commitments}
+
+\todo{Introduce, and summarise correctness and security.}
+
+\begin{description}
+  \item[$\Cparm \gets \CSetup(\Csecpar).$]
+  \item[$(\Ccom,\Copn) \gets \CCommit(\Cparm,\msg).$] 
+  \item[$\Cproof \gets \CProve(\Ccom,\Copn,\msg).$]    
+  \item[$1/0 \gets \CVerify(\Cproof,\Ccom).$] 
+\end{description}
+
+\subsubsection{Signatures with Proofs of Knowledge}
+
+As put forward in \cite{cl02}, a generic way to build anonymous credentials
+requires a digital signature scheme with efficient protocols for proving
+knowledge of a digital signature, and signing committed values. This approach
+also has much in common with the Sign-Randomize-Prove (SRP) approach to build
+group signatures \needcite. Thus, even a priori, it seems a good core component
+to build something that is actually in betwween GS and AC. In the sequel, we use
+\RS to refer to schemes of this type, which must provide the functionality
+specified by the following syntax:
+
+\begin{description}
+\item[$(\RSvk,\RSsk) \gets \RSKeyGen(\RSsecpar,\RSlen)$.] Generates a key pair,
+  consisting on the signig key \RSsk and the verification key \RSvk, which
+  support sigining blocks of up to \RSlen messages.
+\item[$\RSsig \gets \RSSign(\RSsk,\msgset,\cmsgset)$.] Given signing key \RSsk,
+  a set of messages \msgset, and a set of commitments to messages, where
+  $|\msgset + \cmsgset| \le \RSlen$, returns a signature \RSsig.
+\item[$1/0 \gets \RSVerify(\RSvk,\RSsig,\amsgset)$.] Given a verification key
+  \RSvk, a signature \RSsig, supposedly over set of messages \amsgset which may
+  contain commitments to messages, returns $1$ or $0$. \todo{Assume that, within
+    \amsgset, it is possible to know which are commitments and wich plain
+    messages?}
+\item[$\RSproof/\bot \gets \RSProve(\RSsig,\amsgset,\D)$.] Given signature
+  \RSsig, over set of messages (and commitments to messages) \amsgset, out of
+  which those indexed by set \D are to be revealed, creates a proof of knowledge
+  \RSproof of \RSsig.
+\item[$1/0 \gets \RSProveVer(\RSproof,\msgset)$.] Given a proof of knowledge of
+  a signature over a set of messages, which includes \msgset, returns $1$ or
+  $0$.
+\end{description}
+
+\todo{Summarise correctness and security.}
+
+\subsubsection{Digital Signatures}
+
+\todo{Introduce, and summarise correctness and security.}
+
+\begin{description}
+\item[$(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$.]
+\item[$\Ssig \gets \SSign(\Ssk,\msg)$.]
+\item[$1/0 \gets \SVerify(\Svk,\Ssig,\msg)$.]  
+\end{description}
+
+\subsubsection{Encryption}
+
+\todo{Introduce, and summarise correctness and security.}
+
+\begin{description}
+\item[$(\Eek,\Edk) \gets \EKeyGen(\Esecpar)$.]
+\item[$\Ec \gets \EEnc(\Eek,\msg)$.]
+\item[$\msg \gets \EDec(\Edk,\Ec)$.]
+\end{description}
+
+\subsubsection{Non-Interactive ZK Proofs of Knowledge}
+
+\todo{Introduce, and summarise correctness and security.}
+
+\begin{description}
+\item[$\NIZKcrs\gets \NIZKSetup(\NIZKsecpar)$.]
+\item[$\NIZKproof \gets \NIZKProve(\NIZKcrs,\NIZKx,\NIZKw)$.]
+\item[$1/0 \gets \NIZKVerify(\NIZKcrs,\NIZKproof,\NIZKx)$.]
+\end{description}
+
+We use $\NIZK^\Lang$ to denote a \NIZK which is used to prove statements on a
+given NP language \Lang.
+
+\subsubsection{Signature Proofs of Knowledge}
+
+\todo{Introduce, and summarise correctness and security.}
+
+\begin{description}
+\item[$\SPKproof \gets \SPKProve(\SPKmsg,\SPKx,\SPKw)$.]
+\item[$1/0 \gets \SPKVerify(\SPKproof,\SPKmsg,\NIZKx)$.]
+\end{description}
+
+We use $\SPK^\Lang$ to denote an \SPK which is used to prove statements on a
+given NP language \Lang.
+
+\subsection{Generic Construction \CUASGen}
+
+\todo{Many variables need renaming here.}
+
+\paragraph{$\parm \gets \Setup(\secpar)$.} %
+\begin{itemize}
+  \item Parse \secpar as $(\Csecpar,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
+  \item $\Cparm \gets \CSetup(\Csecpar)$
+  \item $\NIZKparm \gets \NIZKSetup(\NIZKsecpar)$
+  \item Return $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
+\end{itemize}
+
+\paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
+\begin{itemize}
+\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
+\item $(\RSvk,\RSsk) \gets \RSKeyGen(\RSsecpar)$  
+\item $\sig_{\fissue} \gets \RSSign(\RSsk,\fissue,\bot)$
+\item $\ipk \gets (\RSvk,\fissue,\sig_{\fissue})$
+\item $\isk \gets \RSsk$
+\item Return $(\ipk,\isk)$
+\end{itemize}
+
+\paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
+\begin{itemize}
+\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
+\item $(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$
+\item $(\Eek,\Edk) \gets \EKeyGen(\Esecpar)$
+\item $\sig_{\finsp} \gets \SSign(\Ssk,\finsp)$
+\item $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$
+\item $\osk \gets (\Ssk,\Edk)$
+\item Return $(\opk,\osk)$
+\end{itemize}
+
+\paragraph{$(\upk,\usk) \gets \UKeyGen(\parm)$.} %
+\begin{itemize}
+\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
+\item $(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$
+\item Return $(\Svk,\Ssk)$
+\end{itemize}
+
+\paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
+  \langle
+  \Obtain(\usk,\attrs,\ldblbrace (gpk_i,\cred_i)\rdblbrace_{i \in \Issuers}),
+  \Issue(\isk,\upk,\attrs,\ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})
+  \rangle$.} %
+We define the NP language $\LangIss = \lbrace (\usk,
+\ldblbrace \cred_i \rdblbrace_{i \in \Issuers}): \fissue(\usk,\attrs,\ldblbrace
+(\gpk_i,\cred_i) \rdblbrace_{i \in \Issuers}) = 1 \land \Ccom = \CCommit(\usk)
+\rbrace$ \todo{\fissue needs to ensure that all {\cred}s are linked to \usk. How
+  to capture this?} The interactive protocol from a user to obtain a credential
+from an issuer of the system is as follows:
+
+\begin{itemize}
+\item Issuer: $\ch \gets \bin^*$; Send \ch to User.
+\item User:
+  \begin{itemize}    
+  \item $\Ccom_{\usk} \gets \CCommit(\usk)$
+  % \item $\SPKproof^{\Lang} \gets
+  %   \SPK \lbrace (\usk): \Ccom_{\usk} = \CCommit(\Cparm,\usk) \rbrace (\ch)$
+  \item $\SPKproof^{\LangIss} \gets \SPKProve^{\LangIss}
+    (\ch,(\attrs,\Ccom_{\usk}, \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers}),
+    (\usk,\ldblbrace \cred_i \rdblbrace_{i \in \Issuers}))$
+  \item Send $(\attrs,\Ccom_{\usk},\SPKproof^{\LangIss})$ to Issuer
+  \end{itemize}
+\item Issuer:
+  \begin{itemize}
+%  \item $1 \stackrel{?}{=} \SPKVerify(\SPKproof^{\Lang},\Ccom_{\upk})$
+  \item $1 \stackrel{?}{=} \SPKVerify(\SPKproof^{\LangIss},\ch,
+    (\attrs,\Ccom_{\usk}, \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers}))$
+  \item $\cred \gets \RSSign(\isk,\attrs,\Ccom_{\usk})$
+  \item $\utrans \gets (\Ccom_{\usk},\cred,\attrs)$
+  \item Send \cred to User and output \utrans.
+  \end{itemize}
+\item User:
+  \begin{itemize}
+  \item $1 \stackrel{?}{=} \RSVerify(\RSvk,\cred,(\attrs,\Ccom_{\usk}))$
+  \item Output \cred
+  \end{itemize}   
+\end{itemize}
+
+\paragraph{$\sig \gets \Sign(\gpk,\usk,\cred,\msg,\feval)$.} %
+We define the NP language $\LangSig = \lbrace (\upk,\cred,\y):
+\SVerify(\sig,\upk) = 1~\land~\Ec = \EEnc(\Eek,\y)~\land~
+\y = \finsp(\feval(\upk,\cred,\msg),\upk,\cred,\msg)\rbrace$. The
+signing algorithm is defined as follows:
+\todo{Argue that the composition of \finsp and \feval is not redundant even
+  though both depend on the same arguments. Namely, because \feval is defined
+  on a per-signature basis (akin to the policies of ACs), and \finsp is defined
+  once per group (akin to the open function in GSs). Hence, \finsp cannot just
+  be defined to ``contain'' \feval at setup time.}
+
+\begin{itemize}
+\item Parse \gpk as $(\ipk,\opk)$
+\item Parse \ipk as $(\RSvk,\fissue,\sig_{\fissue})$; Verify $\sig_{\fissue}$
+\item Parse \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$; Verify $\sig_{\finsp}$
+\item $\sig' \gets \SSign(\usk,\msg)$
+%\item $b \gets \feval(\upk,\cred,\msg)$
+\item % If $b=0$: 
+  $\y \gets \finsp(\feval(\upk,\cred,\msg),
+  \upk,\cred,\msg)$%; else $\y = \bot$.
+\item $\Ec \gets \EEnc(\Eek,\y)$
+\item $\SPKproof^{\LangSig} \gets \SPKProve^{\LangSig}(\msg,(\Ec,\sig'),
+  (\upk,\cred,\y))$
+\item Return $(\Ec,\sig',\SPKproof^{\LangSig})$
+\end{itemize}
+
+\paragraph{$1/0 \gets \Verify(\gpk,\sig,\msg,\feval)$.} %
+\begin{itemize}
+\item Parse \sig as $(\Ec,\sig',\SPKproof^{\LangSig})$
+\item Return $\SPKVerify^{\LangSig}(\SPKproof^{\LangSig},\msg,(\Ec,\sig'))$ 
+\end{itemize}
+
+\paragraph{$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg,\feval)$.} %
+
+We follow the approach of \cite{bsz05} for verifiable openings. Namely, we
+define an NP language $\LangVerIns = \lbrace (\Eek,\Edk,r):
+(\Eek,\Edk) = \EKeyGen(\Esecpar;r) \land \y = \EDec(\Edk,\c) \rbrace$.
+
+\begin{itemize}
+\item Parse \osk as $(\Ssk,\Edk)$; \gpk as
+  $(\cdot,(\Svk,\Eek,\finsp,\sig_{\finsp}))$
+\item  $1 \stackrel{?}{=} \Verify(\gpk,\sig,\msg,\feval)$  
+\item $\y \gets \EDec(\Edk,\c)$
+\item $\NIZKproof^{\LangVerIns} \gets \NIZKProve(\NIZKcrs,(\c,\y),(\Eek,\Edk,r))$
+\item Return $\NIZKproof^{\LangVerIns}$
+\end{itemize}
+
+\paragraph{$1/0 \gets \Judge(\gpk,\y,\iproof,\sig,\msg)$.} %
+
+\begin{itemize}
+\item  $1 \stackrel{?}{=} \Verify(\gpk,\sig,\msg,\feval)$
+\item Parse \sig as $(\c,\cdot,\cdot)$  
+\item Return $\NIZKVerify(\NIZKcrs,\iproof,(\c,\y))$
+\end{itemize}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:

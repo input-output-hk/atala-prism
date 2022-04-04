@@ -1,0 +1,388 @@
+\subsection{Model for \GSAC}
+\label{ssec:model-gsac}
+
+While group signatures and anonymous credentials share quite common syntax and
+security properties, which are even frequently formalised in a similar way,
+there are aspects that need to be considered with care.
+
+The first choice that has to be made is whether to make sign/show and
+verification a non-interactive or an interactive process -- in group signatures,
+we are in the former case, whereas in anonymous credentials, we are in the
+latter. While both options are of course valid, this has direct impact in the
+modelling. We choose the non-interactive approach, and then prove how to
+generically translate it into an interactive process \todo{do we?}. The reason
+is that this results in a more flexible building block, suitable for a wider set
+of scenarios. And, syntactically, it seems more natural to combine two
+non-interactive processes into an interactive one, than the other way around.
+
+We also need to take into account that, in group signature schemes, users only
+get one membership credential -- typically bound to their personal secret
+key --, which they then use to create as many group signatures as they want. On
+the other hand, in anonymous credentials, users can get as many credentials as
+they desire, which can (typically) then be showed also arbitrarily many times.
+In this regard, we follow a somehow intermediate approach: users own a single
+personal secret key, which they can use to get as many credentials as they wish.
+Subsequently, they can use any of those credentials to create \GSAC signatures.
+This has, as expected, some nuanced impact in the modelling. For instance, in
+group signatures, tracing and non-frameability are frequently dependent on the
+open function, which (among other things) returns an index pointing to the join
+transcript associated with the user who produced the signature given by the
+adversary as a response to the game's challenge. In our approach, though, each
+user may have many such transcripts -- one per credential that the user
+obtains. However, note that what actually provides meaning to these notions
+is not the index; but the associated user key pair, which is moreover necessary
+to prove that the opening has been performed honestly. Thus, with some
+restructuring of the corresponding games, we can still capture the main
+meaning of these traceability and non-frameability notions from group
+signatures. This also impacts anonymity, since in group signatures, this is
+modelled by challenging the adversary to guess which user (which implicitly
+translates to ``which user credential'') out of two challenge users was
+leveraged to produce the challenge signature. But again, in our case, users may
+have multiple credentials. However, it seems sufficient to adopt a similar
+anonymity flavour to that of anonymous credentials, where the adversary has to
+distinguish between presentations (signatures) produced from two arbitrary
+credentials, independently on whether these credentials were obtained by the
+same user, or not.
+
+Getting closer to the anonymity definition of anonymous credentials also has the
+side effect to introduce the notions of attributes for free into the domain of
+group signatures -- which, up to now, had considered membership credentials
+\emph{without} attributes. Yet another side effect of introducing multiple
+attributes (if we think from a group signature perspective) is that, in order
+to avoid trivial wins, the anonymity game has to enforce that both challenge
+credentials reveal the same predicate on their attributes.
+\commentwho{Jesus}{Again, taking into account ABGS, this is no longer true.
+  Cross-check and re-write.}
+
+In the model described below, we follow closely the definitions from
+\cite{bsz05} for group signatures, and \cite{fhs19} for anonymous credentials
+(which are in turn influenced by \cite{bsz05}).
+
+\subsection{Syntax}
+\label{ssec:syntax}
+
+\begin{description}
+\item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
+  returns a global system parameter variable \parm.
+\item[$(\ipk,\isk) \gets \IKeyGen(\parm)$.] Given global system parameters
+  \parm, returns the issuer's key pair. Hereafter, we assume that the public
+  part \ipk is added to the group public key \gpk.
+\item[$(\opk,\osk) \gets \OKeyGen(\parm)$.] Given global system parameters
+  \parm, returns an opener's key pair. Hereafter, we assume that the public part
+  \opk is added to the group public key \gpk.
+\item[$(\upk,\usk) \gets \UKeyGen(\parm)$.] Given global system parameters
+  \parm, returns a user's key pair.
+\item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
+  \langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle$.]
+  This interactive protocol lets a user with key pair (\upk,\usk) running the
+  \Obtain process, obtain a credential \cred with attributes \Attrs, by
+  communicating with an issuer, with private key \isk, running the \Issue
+  counterpart. The user outputs the produced credential \cred, while the issuer
+  outputs the protocol transcript \utrans for the produced credential.
+\item[$\sig \gets \Sign(\gpk,\usk,\cred,\DAttrs,\msg)$.] The user with
+  with secret key \usk, who obtained a credential \cred, produces a signature
+  \sig over message \msg, revealing subset of attributes \DAttrs in \cred.
+\item[$1/0 \gets \Verify(\gpk,\sig,\DAttrs,\msg)$.] Checks whether \sig is a
+  valid signature revealing the attribute set \DAttrs of its signing credential,
+  over message \msg.
+\item[$(\upk,\Attrs,\oproof)/\bot \gets
+  \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg)$.]
+  Given a signature \sig over message \msg, produced by a credential with
+  attributes containing the set \DAttrs owned by a user with key \upk, returns
+  the attribute set \Attrs encoded in the credential used to create the
+  signature, and a proof of opening correctness \oproof; or $\bot$ if the
+  opening process fails.
+\item[$1/0 \gets \Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,
+  \msg)$.] Checks if \oproof is a valid opening correctness proof stating that
+  the user with key \upk and attributes \Attrs generated signature \sig over
+  message \msg, revealing attributes $\DAttrs \subseteq \Attrs$. 
+\end{description}
+
+The correctness and security properties are defined with the help of the
+following sets of oracles, and global variables that help oracles and games
+keep consistent state.
+
+\paragraph{Global variables.} %
+All the honestly generated users (i.e., all honestly generated user key pairs,
+since we assume a one-to-one relationship between user and user key pair), as
+well as all honestly generated credentials, are assigned identifiers. Wex
+typically write as \uid for users' identifiers, and \cid for credentials'. The
+adversary can
+refer to any individual user or credential using the corresponding identifier --
+even though he may not know the actual contents of the key pairs or credentials.
+In games that involve challenge user or credential identifiers, we use \cuid and
+\ccid to refer to these challenge user/credential.
+%
+The games, usually through the oracles, keep track of the users (through
+set \UK) and credentials (through table \CRED) that are created as a result of
+oracle calls by the adversary, as well as the attributes that each credential
+is associated (through table \ATTR), and the user to which each credential has
+been issued to (through table \OWNR). We use the user and credential identifiers
+to reference specific user key pairs, credentials, and credential attributes.
+For instance, $\UK[\uid]$ refers to the user key pair corresponding to user
+with identifier \uid, $\PUBUK[\uid]$ refers to the public key of that key pair,
+and $\PRVUK[\uid]$ to the private key; credential $\CRED[\cid]$ refers to the
+credential data associated to the credential with identifier \cid; $\ATTR[\cid]$
+is the set of attributes that was assigned to the credential with identifier
+\cid; and $\OWNR[\cid]$ is set to the \uid corresponding to the user that
+credential \cid was issued to.
+%
+Additionally, the games keep track of all honest and corrupt users that have
+been generated, through sets \HU and \CU, respectively. They also keep track of
+the signatures that have been honestly produced, through the \SIG table. Since
+signatures are produced through credentials, the \SIG table is indexed with
+{\cid}s. For the anonymity game, we also need to keep track of the challenge
+signatures that the adversary has obtained, in order to prevent trivial wins
+by allowing any of them to be opened. 
+%
+All global variables are initially set by the games to empty values (denoted
+with $\bot$), and all tables/sets are initialized as empty tables/sets, denoted
+with $\emptyset$. Also, for readability, we abuse the syntax as follows: we
+write $\CRED[\uid]$ to mean $\CRED[\cid]$ for all $\cid$ such that
+$\OWNR[\cid] = \uid$; we also sometimes use \upk as a ``synonym'' of \uid, as it
+is possible to do a reverse lookup from the \UK table (i.e., $\CRED[\upk]$ can
+be replaced by $\CRED[\uid]~\st~\UK[\uid]=(\upk,\cdot)$); \todo{Something else?}
+
+\paragraph{Oracles.} %
+Oracles are the interface of the adversary with the corresponding games. In
+other words: through these oracles, the game enviroment exposes to the adversary
+functionality that could otherwise be executed only by honest parties with
+private knowledge -- knowledge that would make the adversary capable of
+trivially breaking the security properties formalized in the experiments.
+In the game-based definitions of our \GSAC model, we leverage the following
+oracles, which are formally defined in \appref{app:gsac-formal}.
+
+\begin{description}
+\item[\RREG.] Reads the given transcript table entry.
+\item[\WREG.] Sets a transcript table entry to the given value.
+\item[\HUGEN.] Adds a new honest user to the game, by honestly generating
+  the user's key pair.
+\item[\CUGEN.] If the specified user identifier is not already in the game,
+  sets the user public key to a value given by the adversary. If it already
+  exists, and is associated to an honest user, then it reveals to the adversary
+  the user's secret key.
+\item[\OBTISS.] Lets the adversary add a new honestly generated credential to
+  the game, on behalf of an honest user.
+\item[\OBTAIN.] Enables the adversary to play the role of a dishonest issuer
+  in games that support it, by letting it interact with honest users who want to
+  receive credentials.
+\item[\ISSUE.] Allows the adversary to play the role of dishonest users,
+  requesting an honest issuer to produce credentials fo them.
+\item[\SIGN.] Lets the adversary get signatures from credentials belonging
+  to honest users.
+\item[\OPEN.] Given an honestly produced signature, lets the adversary learn
+  which credential was used to produce it.
+\item[\CHALb.] Upon receiving two challenge credentials, a common intersecting
+  set of attributes, and a message, returns a signature produced by one of these
+  two credentials, defined by the bit $b$, which is established in the anonymity
+  game.
+\end{description}
+
+\paragraph{Correctness.} %
+Correctness of \GSAC schemes is formalized through the experiment in
+\figref{fig:exp-gsac-corr}. It states that a signature for some message \msg,
+revealing attributes \DAttrs, which was honestly produced though a credential
+that was obtained by an honest user interacting with an honest issuer, with a
+set of attributes \Attrs such that $\DAttrs \subseteq \Attrs$, must be accepted
+by \Verify. Moreover, an honestly produced correctness proof of opening for such
+signature, revealing the public key pair of the user, must also be accepted by
+\Judge.
+
+\begin{figure}[htp!]
+  \procedure{$\ExpGSACCorrect(1^\secpar)$}{%
+     \parm \gets \Setup(1^\secpar) \\
+     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+     \gpk \gets (\ipk,\opk) \\
+    (\cid,\DAttrs,\msg) \gets \adv^{\HUGEN,\OBTISS,\RREG}(\gpk) \\
+    \pcif \DAttrs \nsubseteq \ATTR[\cid] :
+    \pcreturn \bot \\
+    \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\DAttrs,\msg) \\
+    (\upk,\Attrs,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) \\
+    \pcif \Verify(\gpk, \sig, \DAttrs,\msg) = 0 \lor
+    \Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg) = 0~\lor\\
+     \pcind \DAttrs \nsubseteq \Attrs \lor \Attrs \neq \ATTR[\cid]: \\
+     \pcind \pcreturn 1 \\
+    \pcreturn 0
+  }
+  \caption{Correctness experiment for \GSAC schemes.}
+  \label{fig:exp-gsac-corr}
+\end{figure}
+
+\subsection{Security Properties}
+\label{ssec:security}
+
+\paragraph{Anonymity.} %
+In group signatures, anonymity captures that no adversary must be able to learn,
+from any group signature, anything about its signer. In anonymous credentials,
+it requires that no adversary should learn anything about the holder of a
+credential that has been successfully shown, beyond that he owns a credential
+containing the revealed attributes. In both GS and AC, it is also typically
+required that
+multiple signatures/presentations by the users are unlinkable. The approach to
+formally state this property is in both cases frequently the same: the adversary
+picks two (honest) users (or credentials in the AC case), the game randomly
+chooses one of them, and lets the adversary request challenge
+signatures/presentations from it. The adversary wins if it succeeds in guessing
+which was the chosen user/credential better than guessing at random. In group
+signatures, the game must also restrict the adversary from opening challenge
+signatures. In anonymous credentials, the game must further constraint the
+adversary to pick credentials that have some common subset of attributes, and
+to use that common subset to request the challenge presentations. Here, we need
+to take into account both. Furthermore, a key difference with group signatures
+is that the game requires the adversary to output credential identifiers, rather
+than user identifiers. Specifically, this means that the adversary may actually
+output two credentials that belong to the same user. Therefore, in some sense,
+the anonymity we get is more general than that of group signatures. The formal
+specification of the anonymity game is given in \figref{fig:exp-gsac-anonb}.
+%
+Similarly, this notion of anonymity is also stronger than the notion of
+anonymity in both group signatures and anonymous credentials, in the sense
+that calls to the \OPEN oracle reveal the public key and credential of the users
+that (via the \SIGN and \CHALb oracles) create the signatures that the adversary
+sees. Therefore, all security relies \emph{only} on the user secret key.
+
+\begin{figure}[htp!]
+  \procedure{$\ExpGSACAnonb(1^\secpar)$}{%
+     \parm \gets \Setup(1^\secpar) \\
+     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+     \gpk \gets (\ipk,\opk) \\
+     (\cid_0,\cid_1,\status) \gets
+     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN}(\choose,\gpk,\isk) \\
+     b^* \gets
+     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN,\CHALb}(\guess,\gpk,\isk,\status) \\
+     \pcreturn b^*
+  }
+  \caption{Anonymity experiment for \GSAC schemes.}
+  \label{fig:exp-gsac-anonb}
+\end{figure}
+
+\begin{definition}{(Anonymity of \GSAC)}
+  We define the advantage \AdvGSACAnon of $\adv$ against \ExpGSACAnonb as
+  $\AdvGSACAnon=|\Pr\lbrack\ExpGSACAnono(1^\secpar)=1\rbrack-
+  \Pr\lbrack\ExpGSACAnonz(1^\secpar)=1\rbrack|$.
+  %
+  A \GSAC scheme satisfies anonymity if, for any p.p.t. adversary $\adv$,
+  \AdvAnon is a negligible function of $1^\secpar$.
+\end{definition}
+
+\paragraph{Traceability.} %
+Traceability is one of the unforgeability-related properties in group
+signatures. It captures that any signature accepted by \Verify needs to open
+to one of the users that joined the group. While there is no traceability notion
+in anonymous credentials, it is natural to map it to their unforgeability
+property; if only because both require the issuer to be honest. Unforgeability
+in anonymous credentials typically ensures that no adversary can get a verifier
+to accept a credential presentation requiring a set of attributes that is not
+contained in one of the credentials controlled by the adversary.
+%
+Our notion of traceability for \GSAC combines both requirements. It assumes an
+honest issuer, as otherwise the adversary can create untraceable credentials at
+will. The game then lets the adversary add honest and corrupt users, create
+honest signatures, and open them. The adversary wins if, after this interaction,
+is able to produce a $(\sig,\DAttrs,\msg)$ tuple that is accepted by \Verify,
+but either cannot be opened, it can be opened but the proof is rejected by
+\Judge, or even though it is accepted by \Judge, there is no credential issued
+to the user pointed to by \Open that contains the set of attributes \DAttrs. We
+formally define traceability in the \ExpTrace experiment in
+\figref{fig:exp-gsac-trace}.
+
+\begin{figure}[htp!]
+  \procedure{$\ExpGSACTrace(1^\secpar)$}{%
+    \parm \gets \Setup(1^\secpar) \\
+    (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+    \gpk \gets (\ipk,\opk) \\
+    (\sig,\DAttrs,\msg) \gets
+    \adv^{\HUGEN,\CUGEN,\RREG,\OBTISS,\ISSUE,\SIGN,\OPEN}(\gpk,\osk) \\
+    \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1~\land~( \\
+    \pcind \pccomment{\Open fails} \\
+    \pcind \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) = \bot~\lor \\
+    \pcind \pccomment{\Open succeeds, but ...} \\
+    \pcind \Open(\gpk,\osk,\utrans,\sig,\DAttrs,\msg) =
+    (\upk,\Attrs,\oproof)~\land\\
+    \pcind \pcind \pccomment{... the proof is rejected by \Judge, or
+      it is accepted but \DAttrs is not contained in \Attrs} \\
+    \pcind \pcind (\Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg) = 0
+    \lor \DAttrs \nsubseteq \Attrs) \\
+    ) \\
+    \pcreturn 0
+  }
+  \caption{Traceability experiment for \GSAC schemes.}
+  \label{fig:exp-gsac-trace}
+\end{figure}
+
+\begin{definition}{(Traceability of \GSAC)}
+  We define the advantage \AdvGSACTrace of $\adv$ against \ExpGSACTrace as
+  $\AdvGSACTrace=\Pr\lbrack\ExpGSACTrace(1^\secpar)=1\rbrack$.
+  %
+  A \GSAC scheme satisfies traceability if, for any p.p.t. adversary $\adv$,
+  \AdvGSACTrace is a negligible function of $1^\secpar$.
+\end{definition}
+
+\paragraph{Non-frameability.} %
+Non-frameability variants are a core unforgeability-type property in group
+signatures. However, no
+similar property is modelled for anonymous credentials (\todo{see the discussion
+  in \secref{sec:introduction} for further detail}). It is a quite strong
+property, as it must be ensured even in the presence of dishonest issuer and
+opener. Intuitively, it prevents the adversary from creating a signature that
+frames an honest user. Depending on the inspection capabilities of the scheme,
+this framing could be done in different ways; i.e., by convincing third parties
+that signatures by different (possibly corrupt) users are linked, or directly
+by having open proofs output the identity of a user who did not create the
+signature being opened.
+%
+In \GSAC schemes, in order for a user to be framed, the adversary first needs to
+create a $(\sig,\DAttrs,\msg,\upk,\Attrs,\oproof)$ such that the signature,
+attributes, and message are accepted by \Verify, and which, along with the user
+public key, and open correctness proof, are accepted by \Judge.
+Then, the adversary wins the game if the owner of the credential is honest, but
+the signature was not produced via the \SIGN oracle, or if the set of attribute
+disclosed in the signature are not contained in the set of attributes revealed
+during \Open.
+
+\begin{figure}[htp!]
+  \procedure{$\ExpGSACNonframe(1^\secpar)$}{%
+    \parm \gets \Setup(1^\secpar) \\
+     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+     \gpk \gets (\ipk,\opk) \\
+     (\sig,\DAttrs,\msg,\upk,\Attrs,\oproof) \gets
+     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN}(\gpk,\isk,\osk) \\
+     \textrm{Let}~\uid~\textrm{be st}~\PUBUK[\uid] = (\upk,\cdot) \\
+     \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1 \land 
+     \Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg) = 1~\land \\
+     \pcind \uid \in \HU \land (\sig \notin \SIG[\uid] \lor
+     \DAttrs \nsubseteq \Attrs) \\
+     \pcreturn 0
+  }
+  \caption{Non-frameability experiment for \GSAC schemes.}
+  \label{fig:exp-gsac-frame}
+\end{figure}
+
+\begin{definition}{(Non-frameability of \GSAC)}
+  We define the advantage \AdvGSACNonframe of $\adv$ against \ExpGSACNonframe as
+  $\AdvGSACNonframe=\Pr\lbrack\ExpGSACNonframe(1^\secpar)=1\rbrack$.
+  %
+  A \GSAC scheme satisfies non-frameability if, for any p.p.t. adversary $\adv$,
+  \AdvNonframe is a negligible function of $1^\secpar$.
+\end{definition}
+
+\paragraph{Discussion.} %
+\todo{Modelling choices: HU and CU lists are typically updated in join protocols
+  in the GS literature. Here, it is best to follow the AC literature, as a same
+  user (key) may be associated to multiple join protocols. So there are HUGEN
+  and CUGEN oracles.}
+
+\todo{Argue that our properties cover (and augment) a direct combination
+  (even if possible) of their GS and AC counterparts. Specifically, anonymity
+  of \GSAC is stronger than anonymity in GS and AC, and the same for trace and
+  non-frame.}
+
+\todo{It would be nice to prove that a \GSAC scheme to which we remove the
+  \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
+  where all credentials have no attributes, and where we restrict to only
+  one credential per user, becomes a conventional GS scheme.}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:
