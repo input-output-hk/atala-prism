@@ -38,23 +38,20 @@
 \def\PGen{\ensuremath{\mathcal{G}}\xspace}
 \def\BB{\ensuremath{\mathbb{B}}\xspace}
 \def\getr{\ensuremath{\stackrel{\$}{\gets}}\xspace}
+\def\AttrSpace{\ensuremath{\mathcal{AS}}\xspace}
 
-% RSig
-\def\RS{\ensuremath{RS}\xspace}
-\def\RSKeyGen{\ensuremath{\RS.KG}\xspace}
-\def\RSSign{\ensuremath{\RS.Sign}\xspace}
-\def\RSVerify{\ensuremath{\RS.Verify}\xspace}
-\def\RSProve{\ensuremath{\RS.Prove}\xspace}
-\def\RSProveVer{\ensuremath{\RS.ProveVer}\xspace}
-\def\RSsecpar{\ensuremath{\kappa_{\RS}}\xspace}
-\def\RSlen{\ensuremath{l}\xspace}
-\def\RSsk{\ensuremath{sk_{\RS}}\xspace}
-\def\RSvk{\ensuremath{vk_{\RS}}\xspace}
-\def\RSsig{\ensuremath{\sigma_{\RS}}\xspace}
-\def\RSproof{\ensuremath{\pi_{\RS}}\xspace}
-\def\D{\ensuremath{D}\xspace}
-\def\amsgset{\ensuremath{\boldsymbol{amsg}}\xspace}
-\def\cmsgset{\ensuremath{\boldsymbol{cmsg}}\xspace}
+% SBCM
+\def\SBCM{\ensuremath{SBCM}\xspace}
+\def\SBCMSetup{\ensuremath{\SBCM.Setup}\xspace}
+\def\SBCMKeyGen{\ensuremath{\SBCM.KG}\xspace}
+\def\SBCMSign{\ensuremath{\SBCM.Sign}\xspace}
+\def\SBCMVerify{\ensuremath{\SBCM.Verify}\xspace}
+\def\SBCMsecpar{\ensuremath{\kappa_{\SBCM}}\xspace}
+\def\SBCMparm{\ensuremath{\parm_{\SBCM}}\xspace}
+\def\SBCMlen{\ensuremath{l}\xspace}
+\def\SBCMsk{\ensuremath{sk_{\SBCM}}\xspace}
+\def\SBCMvk{\ensuremath{vk_{\SBCM}}\xspace}
+\def\SBCMsig{\ensuremath{\sigma_{\SBCM}}\xspace}
 
 % Sig
 \def\S{\ensuremath{S}\xspace}
@@ -77,15 +74,18 @@
 \def\Csk{\ensuremath{sk_{\C}}\xspace}
 \def\Cvk{\ensuremath{vk_{\C}}\xspace}
 \def\Ccom{\ensuremath{\C}\xspace}
+\def\Ccomset{\ensuremath{\mathbf{\C}}\xspace}
 \def\Copn{\ensuremath{opn}\xspace}
 \def\Cproof{\ensuremath{\pi_{\RS}}\xspace}
 
 % Enc
 \def\E{\ensuremath{E}\xspace}
+\def\ESetup{\ensuremath{\E.Setup}\xspace}
 \def\EKeyGen{\ensuremath{\E.KG}\xspace}
 \def\EEnc{\ensuremath{\E.Enc}\xspace}
 \def\EDec{\ensuremath{\E.Dec}\xspace}
 \def\Esecpar{\ensuremath{\kappa_{\E}}\xspace}
+\def\Eparm{\ensuremath{\parm_{\E}}\xspace}
 \def\Edk{\ensuremath{dk_{\E}}\xspace}
 \def\Eek{\ensuremath{ek_{\E}}\xspace}
 \def\Ec{\ensuremath{\c}\xspace}
@@ -111,6 +111,26 @@
 \def\SPKx{\ensuremath{x}\xspace}
 \def\SPKw{\ensuremath{w}\xspace}
 \def\SPKmsg{\ensuremath{msg}\xspace}
+
+
+%%% Legacy (keeping here until I update uas).
+
+% RSig
+\def\RS{\ensuremath{RS}\xspace}
+\def\RSKeyGen{\ensuremath{\RS.KG}\xspace}
+\def\RSSign{\ensuremath{\RS.Sign}\xspace}
+\def\RSVerify{\ensuremath{\RS.Verify}\xspace}
+\def\RSProve{\ensuremath{\RS.Prove}\xspace}
+\def\RSProveVer{\ensuremath{\RS.ProveVer}\xspace}
+\def\RSsecpar{\ensuremath{\kappa_{\RS}}\xspace}
+\def\RSlen{\ensuremath{l}\xspace}
+\def\RSsk{\ensuremath{sk_{\RS}}\xspace}
+\def\RSvk{\ensuremath{vk_{\RS}}\xspace}
+\def\RSsig{\ensuremath{\sigma_{\RS}}\xspace}
+\def\RSproof{\ensuremath{\pi_{\RS}}\xspace}
+\def\D{\ensuremath{D}\xspace}
+\def\amsgset{\ensuremath{\boldsymbol{amsg}}\xspace}
+\def\cmsgset{\ensuremath{\boldsymbol{cmsg}}\xspace}
 
 %%% Local Variables: 
 %%% mode: pdflatex
