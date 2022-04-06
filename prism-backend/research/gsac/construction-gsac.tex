@@ -1,143 +1,160 @@
-\subsection{Generic Construction of \GSAC}
-\label{ssec:generic-gsac}
+% \subsection{Generic Construction of \GSAC}
+% \label{ssec:generic-gsac}
 
-\subsubsection{Building Blocks}
-\label{sssec:generic-gsac-bblocks}
+% \todo{Do we mention earlier that GSAC only supports selective disclosure?}
 
-\todo{This needs refinement, but ok for now.}
+% \subsubsection{Building Blocks}
+% \label{sssec:generic-gsac-bblocks}
 
-\paragraph{Commitment schemes.} %
-Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
-\CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
-\gets \CCommit(\Cparm, \msg; r)$ produces a commitment \Ccom over message \msg,
-from which we may omit randomness $r$. \todo{Informally define hiding and binding,
-  leaving formal definitions to the appendix. Mention that we may only need binding
-  on occasions.}
+% \todo{This needs refinement, but ok for now.}
 
-\paragraph{Encryption.} %
-Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
-\ESetup(\Esecpar)$ produces public parameters for the other algorithms.
-$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
-pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
-encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
-\Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
-  security properties we'll need.}
+% \paragraph{Vector Commitment schemes.} %
+% Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
+% \CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
+% \gets \CCommit(\Cparm, \msgset; r)$ produces a commitment \Ccom over a set of
+% messages \msgset, from which we may omit randomness $r$. \todo{Informally define
+%   hiding and binding, leaving formal definitions to the appendix.}
 
-\paragraph{Non-Interactive Zero-Knowledge.} %
-We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
-model \needcite. Informally, a NIZK scheme over an NP relation \NIZKRel is
-defined as a tuple $(\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel,
-\NIZKVerify^\NIZKRel)$. Algorithm $\NIZKcrs \gets \NIZKSetup^\NIZKRel
-(\NIZKsecpar)$ produces the common reference string \NIZKcrs. $\NIZKproof/\bot
-\gets \NIZKProve^\NIZKRel(\NIZKcrs,\NIZKw,\NIZKx)$ creates a NIZK proof of
-knowledge of witness \NIZKw for \NIZKx such that $(\NIZKw,\NIZKx) \in \NIZKRel$.
-$1/0 \gets \NIZKVerify^\NIZKRel(\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof.
-\todo{Informally define security properties we'll need.}
+% \paragraph{Encryption.} %
+% Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
+% \ESetup(\Esecpar)$ produces public parameters for the other algorithms.
+% $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
+% pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
+% encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
+% \Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
+%   security properties we'll need.}
 
-\paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
-We use signature schemes that allow signing messages, or commitment to messages,
-in blocks, and are compatible with (efficient) proof systems over the produced
-signature and signed (commitments to) messages. For this purpose, we define such
-schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,\SBCMSign,\SBCMVerify)$. Algorithm
-$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$ produces the public parameters for the
-scheme. $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a
-verification-signing key
-pair. Algorithm $\SBCMsig \gets \SBCMSign(\SBCMsk,\Ccomset,\msgset)$ produces a
-signature over a set of committed messages \Ccomset and a set of messages
-\msgset, where either \Ccomset or \msgset may be empty. $1/0 \gets
-\SBCMVerify(\SBCMvk,\SBCMsig,\overline{\msgset})$ verifies a signature \SBCMsig
-over message set $\overline{\msgset}$, which must contain both the messages that
-were signed as commitments as well as those signed in ``the clear''. In
-addition, the produced signatures must be compatible with (efficient) NIZK
-proofs of knowledge of a signature, and of (arbitrary) claims over the signed
-(committed) messages.
-\todo{Informally define security properties we'll need.}
+% \paragraph{Non-Interactive Zero-Knowledge.} %
+% We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
+% model \needcite. Informally, a NIZK scheme over an NP relation \NIZKRel is
+% defined as a tuple $(\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel,
+% \NIZKVerify^\NIZKRel)$. Algorithm $\NIZKcrs \gets \NIZKSetup^\NIZKRel
+% (\NIZKsecpar)$ produces the common reference string \NIZKcrs. $\NIZKproof/\bot
+% \gets \NIZKProve^\NIZKRel(\NIZKcrs,\NIZKw,\NIZKx)$ creates a NIZK proof of
+% knowledge of witness \NIZKw for \NIZKx such that $(\NIZKw,\NIZKx) \in \NIZKRel$.
+% $1/0 \gets \NIZKVerify^\NIZKRel(\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof.
+% \todo{Informally define security properties we'll need.}
 
-\subsubsection{Definition}
-\label{sssec:generic-gsac-definition}
+% \paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
+% We use signature schemes that allow signing messages, or commitment to messages,
+% in blocks, and are compatible with (efficient) proof systems over the produced
+% signature and signed (commitments to) messages. For this purpose, we define such
+% schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,\SBCMSign,\SBCMVerify)$. Algorithm
+% $\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$ produces the public parameters for the
+% scheme. $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a
+% verification-signing key
+% pair. Algorithm $\SBCMsig \gets \SBCMSign(\SBCMsk,\Ccom,\msgset)$ produces a
+% signature over a set of committed messages \Ccom and a set of messages
+% \msgset, where either \Ccom or \msgset may be empty. $1/0 \gets
+% \SBCMVerify(\SBCMvk,\SBCMsig,\overline{\msgset})$ verifies a signature \SBCMsig
+% over message set $\overline{\msgset}$, which must contain both the messages that
+% were signed as commitments as well as those signed in ``the clear''. In
+% addition, the produced signatures must be compatible with (efficient) NIZK
+% proofs of knowledge of a signature, and of (arbitrary) claims over the signed
+% (committed) messages.
+% \todo{Informally define security properties we'll need.}
 
-In the following algorithms, we make use of three different NP relations for
-\NIZK proof systems:
+% \subsubsection{Definition}
+% \label{sssec:generic-gsac-definition}
 
-\begin{description}
-\item[$\NIZKRel_{\Issue}$:] Produced by users requesting a credential. It is
-  defined as $\NIZKRel_{\Issue} = \lbrace (\usk,\credid), (\Cusk,\Ccredid) :
-  \Cusk = \CCommit(\usk) \land \Ccredid = \CCommit(\credid) \rbrace$.
-\item[$\NIZKRel_{\Sign}$:] Produced by users when signing a message. It is
-  defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\credid,\Attrs,\msg,\SBCMsig),
-  (\Ec,\Ec',\DAttrs,M) : M = \CCommit(\msg) \land \Ec = \EEnc(\opk,\usk) \land
-  \Ec' = \EEnc(\opk,\credid) \land \SBCMVerify(\ipk,\SBCMsig,\Attrs) = 1 \land
-  \usk \in \Attrs \land \credid \in \Attrs \land \DAttrs \subseteq \Attrs \rbrace$.
-\item[$\NIZKRel_{\Open}$:] Produced by the opener when opening a signature. It
-  is defined as $\NIZKRel_{\Open} = \lbrace (\usk,\credid), (\Ec,\Ec') :
-  \usk = \EDec(\osk,\Ec) \land \credid = \EDec(\osk,\Ec') \rbrace$.
-\end{description}
+% In the following algorithms, we make use of three different NP relations for
+% \NIZK proof systems:
 
-In a nutshell \todo{describe high-level approach}.
+% \begin{description}
+% \item[$\NIZKRel_{\Issue}$:] Produced by users requesting a credential. It is
+%   defined as $\NIZKRel_{\Issue} = \lbrace (\usk,\credid,r), (\Ccom) :
+%   \Ccom = \CCommit(\lbrace \usk,\credid \rbrace; r) \rbrace$.
+% \item[$\NIZKRel_{\Sign}$:] Produced by users when signing a message. It is
+%   defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\credid,r',\Attrs,\msg,\SBCMsig),
+%   (\Cmsg,\C,\Ec,\DAttrs) : \Cmsg = \CCommit(\msg) \land \C \gets
+%   \CCommit(\lbrace \usk, \credid \rbrace; r') \land \Ec = \EEnc(\opk,\C)
+%   \land \SBCMVerify(\ipk,\SBCMsig,\Attrs) = 1
+%   \land \usk \in \Attrs \land \credid \in \Attrs \land \DAttrs \subseteq \Attrs
+%   \rbrace$.
+% \item[$\NIZKRel_{\Open}$:] Used by the opener when opening a signature. It
+%   is defined as $\NIZKRel_{\Open} = \lbrace (\osk), (\Ec,\msg) :
+%   \msg = \EDec(\osk,\Ec) \rbrace$.
+% \end{description}
 
-\paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
-Sets up the public parameters \todo{can be distributed across responsible
-  parties?}. Namely: $\Cparm \gets \CSetup(\secpar)$, $\Eparm \gets
-\ESetup(\secpar)$, $\SBCMparm \gets \SBCMSetup(\secpar)$, $\NIZKcrs \gets
-\NIZKSetup(\secpar)$. Outputs $\parm \gets (\Cparm,\SBCMparm,\Eparm,\NIZKcrs)$.
+% In a nutshell \todo{describe high-level approach}.
 
-\paragraph{$\IKeyGen(\parm) \rightarrow (\ipk,\isk)$.} %
-Generates the signing key pair for the issuer, by parsing \parm as
-$(\cdot,\SBCMparm,\cdot,\cdot)$ and running $(\ipk,\isk) \gets
-\SBCMKeyGen(\SBCMparm)$.
+% \paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
+% Sets up the public parameters \todo{can be distributed across responsible
+%   parties?}. Namely: $\Cparm \gets \CSetup(\secpar)$, $\Eparm \gets
+% \ESetup(\secpar)$, $\SBCMparm \gets \SBCMSetup(\secpar)$, $\NIZKcrs \gets
+% \NIZKSetup(\secpar)$. Outputs $\parm \gets (\Cparm,\SBCMparm,\Eparm,\NIZKcrs)$.
 
-\paragraph{$\OKeyGen(\parm) \rightarrow (\opk,\osk)$.} %
-Generates the encryption key pair for the opener, by parsing \parm as
-$(\cdot,\SBCMparm,\Eparm,\cdot)$ and running $(\opk,\osk) \gets
-\EKeyGen(\Eparm)$.
+% \paragraph{$\IKeyGen(\parm) \rightarrow (\ipk,\isk)$.} %
+% Generates the signing key pair for the issuer, by parsing \parm as
+% $(\cdot,\SBCMparm,\cdot,\cdot)$ and running $(\ipk,\isk) \gets
+% \SBCMKeyGen(\SBCMparm)$.
 
-\paragraph{$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.} %
-Generates users' key pairs by choosing a random value within the attribute space
-\AttrSpace, and committing to it. Concretely: $\usk \getr \AttrSpace$, $\upk
-\gets \CCommit(\usk; r)$.
+% \paragraph{$\OKeyGen(\parm) \rightarrow (\opk,\osk)$.} %
+% Generates the encryption key pair for the opener, by parsing \parm as
+% $(\cdot,\SBCMparm,\Eparm,\cdot)$ and running $(\opk,\osk) \gets
+% \EKeyGen(\Eparm)$.
 
-\paragraph{$\langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle
-  \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.} %
-In a nutshell, the user commits to a random credential identifier, and requests
-a signature over commitments of its user secret key and credential identifier,
-as well as the attributes in \Attrs. The user proves knowledge of the committed
-values, and the issuer sends the signature (credential) in return. More
-concretely:
+% \paragraph{$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.} %
+% Generates users' key pairs by choosing a random value within the attribute space
+% \AttrSpace, and committing to it. Concretely: $\usk \getr \AttrSpace$, $\upk
+% \gets \CCommit(\usk; r)$.
 
-\begin{itemize}
-\item \underline{User}: Compute fresh random credential identifier
-  $\credid \getr \AttrSpace$, and commit to it and user secret key by
-  running $\Cusk \gets \CCommit(\usk; r)$ and $\Ccredid \gets
-  \CCommit(\credid)$. Generate proof $\NIZKproof \gets
-  \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs,(\usk,\credid),(\Cusk,\Ccredid))$.
-  Send $(\Cusk,\Ccredid,\NIZKproof)$ to the issuer.
-\item \underline{Issuer}: Run $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,
-  (\Cusk,\Ccredid),\NIZKproof)$, and return $\bot$ if it fails. Else,
-  create the credential by computing $\SBCMsig \gets \SBCMSign(\isk,(
-  \Cusk,\Ccredid),\Attrs)$. Send \SBCMsig to the user, and output
-  $\utrans \gets (\Cusk,\Ccredid,\Attrs,\SBCMsig,\NIZKproof)$.
-\item \underline{User}: Check the signature by running $\SBCMVerify(\ipk,
-  \SBCMsig,\Attrs \cup \lbrace \usk,\credid \rbrace)$, and return $\bot$ if
-  verification fails. Otherwise, return $\cred \gets (\credid,\SBCMsig)$.
-\end{itemize}
+% \paragraph{$\langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle
+%   \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.} %
+% In a nutshell, the user commits to a random credential identifier, and requests
+% a signature over commitments of its user secret key and credential identifier,
+% as well as the attributes in \Attrs. The user proves knowledge of the committed
+% values, and the issuer sends the signature (credential) in return. More
+% concretely:
 
-\paragraph{$\Sign(\gpk,\usk,\cred,\DAttrs,\msg) \rightarrow \sig$.} %
+% \begin{itemize}
+% \item \underline{User}: Compute fresh random credential identifier
+%   $\credid \getr \AttrSpace$, and commit to it and user secret key by
+%   running $\Ccom \gets \CCommit(\lbrace \usk,\credid \rbrace)$. Generate proof
+%   $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs,(\usk,\credid),
+%   (\Ccom))$. Send $(\Ccom,\NIZKproof)$ to the issuer.
+% \item \underline{Issuer}: Run $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,
+%   (\C),\NIZKproof)$, and return $\bot$ if it fails. Else, create the credential
+%   by computing $\SBCMsig \gets \SBCMSign(\isk,\C,\Attrs)$. Send \SBCMsig to the
+%   user, and output $\utrans \gets (\C,\Attrs,\SBCMsig,\NIZKproof)$.
+% \item \underline{User}: Check the signature by running $\SBCMVerify(\ipk,
+%   \SBCMsig,\Attrs \cup \lbrace \usk,\credid \rbrace)$, and return $\bot$ if
+%   verification fails. Otherwise, return $\cred \gets (\credid,\SBCMsig)$.
+% \end{itemize}
 
-\paragraph{$\Verify(\gpk,\sig,\DAttrs,\msg) \rightarrow 1/0$.} %
+% \paragraph{$\Sign(\gpk,\usk,\cred,\DAttrs,\msg) \rightarrow \sig$.} %
+% Commit to the message, user public key, and credential identifier by running
+% $\Cmsg \gets \CCommit(\msg), \C \gets \CCommit(\lbrace \usk,\credid \rbrace)$.
+% Encrypt \C as $\Ec \gets \EEnc(\opk,\C)$ and create a NIZK proof using
+% $\NIZKRel_{\Sign}$ as $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}
+% (\NIZKcrs,(\usk,\credid,\Attrs,\msg,\cred),
+% (\Ec,\DAttrs,\Cmsg))$. Output $\sig \gets (\Ec,\NIZKproof)$.
 
-\paragraph{$\Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg)
-  \rightarrow (\upk,\Attrs,\oproof)/\bot$.} %
+% \paragraph{$\Verify(\gpk,\sig,\DAttrs,\msg) \rightarrow 1/0$.} %
+% Parse \sig as $(\Ec,\NIZKproof)$, compute $\Cmsg \gets \CCommit(\msg)$ and
+% return $\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\Ec,\DAttrs,\Cmsg),
+% NIZKproof)$.
 
-\paragraph{$\Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg)
-  \rightarrow 1/0$.} %
+% \paragraph{$\Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg)
+%   \rightarrow (\upk,\Attrs,\oproof)/\bot$.} %
+% First, verify the signature with $\Verify(\gpk,\sig,\DAttrs,\msg)$ and
+% return $\bot$ if verification fails. Else, parse \sig as $(c,c',\NIZKproof)$
+% and run $\upk \gets \EDec(\osk,c), \Ccredid \gets \EDec(\osk,c')$. Find
+% entry $(\Cusk,\Ccredid,\Attrs,\SBCMsig,\NIZKproof_{\Issue})$ in \trans, or
+% return $\bot$ if it does not exist. Else, compute proofs of correct decryption
+% as $\NIZKproof_1 \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(c,\upk)),
+% \NIZKproof_2 \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(c,\Ccredid))$.
 
-\subsection{Security of the generic \GSAC construction}
-\label{ssec:gsac-const-sec}
+% \paragraph{$\Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg)
+%   \rightarrow 1/0$.} %
 
-\todo{XX}
+% \subsection{Security of the generic \GSAC construction}
+% \label{ssec:gsac-const-sec}
 
-\subsection{A Concrete Instantiation for \GSAC}
-\label{ssec:instantiation-gsac}
+% \todo{XX}
+
+\subsection{A \GSAC construction}
+\label{ssec:construction-gsac}
 
 Intuitively, the credentials that we generate for our \GSAC construction are
 Pedersen commitments to $(\usk,\credid,\Attrs)$ tuples; i.e., they have
@@ -191,7 +208,7 @@ relation $\NIZKRel_{\Issue} = \lbrace (r, \usk, \credid),
 \gen{h}_2^{\credid}\rbrace$.
 
 \begin{itemize}
-\item \underline{User}: Compute fress randomness $r,\credid \getr \ZZ^*_p,
+\item \underline{User}: Compute fresh randomness $r,\credid \getr \ZZ^*_p,
   \Cusk \gets \gen{h}_0^r\gen{h}_1^{\usk}$, $\Ccredid \gets \gen{h}_2^{\credid}$
   and $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs,(r,\usk,\credid),
   (\Cusk,\Ccredid))$. Send $(\Cusk,\Ccredid,\NIZKproof)$ to Issuer.
@@ -219,8 +236,8 @@ credential), also prove that the attributes encoding \credid and \usk within
 the credential match the encrypted values. Finally, the user commits to \msg,
 and includes the commitment within the proof. For this, we define relation
 $\NIZKRel_{\Sign}= \lbrace (r,r',\usk,\credid,\Attrs,r_2,r_3,s',\msg),(\DAttrs,
-c_1,c_2,c'_1,c'_2,M):
-M = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk} \land
+c_1,c_2,c'_1,c'_2,\Cmsg):
+\Cmsg = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk} \land
 c'_1 = g^{r'} \land c'_2 = \opk^{r'}\gen{h_2}^{\credid} \land
 \hat{A}/d = (A')^{-x}\gen{h}_0^{r_2} \land
 \gen{g}_1 \prod_{i \in \DAttrs} \gen{h}_i^{\Attrs_i} =
@@ -239,17 +256,17 @@ d^{r_3}\gen{h}_0^{-s'}\gen{h}_1^{-\usk}\gen{h}_2^{-\credid}
   with ElGamal as $r,r' \getr \ZZ^*_Paleolithic's,
   c \gets (c_1 = \gen{g}^r,c_2 = \opk^r\gen{h}_1^{\usk})$,
   $c' \gets (c'_1 = \gen{g}^{r'},c'_2 = \opk^{r'}\gen{h}_2^{\credid})$
-\item Compute $M \gets \gen{h}^\msg$ and
+\item Compute $\Cmsg \gets \gen{h}^\msg$ and
   $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs,
-  (r,r',\usk,\credid,\Attrs,r_2,r_3,s',\msg), (\DAttrs,c_1,c_2,c'_1,c'_2,M))$.
+  (r,r',\usk,\credid,\Attrs,r_2,r_3,s',\msg), (\DAttrs,c_1,c_2,c'_1,c'_2,\Cmsg))$.
 \item Return $\sig \gets (c=(c_1,c_2),c'=(c'_1,c'_2),(A',\hat{A},d),\NIZKproof)$.
 \end{itemize}
 
 \paragraph{$\Verify(\gpk,\sig,\DAttrs,\msg) \rightarrow 1/0$.} %
 Parse \gpk as $(\ipk,\opk)$ and $\sig$ as $(c=(c_1,c_2),c'=(c'_1,c'_2),
 (A',\hat{A},d), \NIZKproof)$. Check that $A' \neq 1_{\GG_1}$ and $e(A',\ipk) =
-e(\hat{A},\gen{g}_2)$. Compute $M \gets \gen{h}^\msg,$ and return
-$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\DAttrs,c_1,c_2,c'_1,c'_2,M),
+e(\hat{A},\gen{g}_2)$. Compute $\Cmsg \gets \gen{h}^\msg,$ and return
+$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\DAttrs,c_1,c_2,c'_1,c'_2,\Cmsg),
 \NIZKproof)$.
 
 \paragraph{$\Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg)
@@ -285,6 +302,10 @@ e(A,\ipk) \stackrel{?}{=} e(\gen{g}_1\Cusk\gen{h}_0^{\tilde{s}}\Ccredid
 $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,(\Cusk,\Ccredid),\NIZKproof_{\Issue})$
 proving that only the credential request was made by the owner of \usk. If
 either check fails, the proof is rejected.
+
+\subsection{Security of the \GSAC construction}
+
+\todo{XXX}
 
 %%% Local Variables:
 %%% mode: latex
