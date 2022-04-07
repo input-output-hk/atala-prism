@@ -84,6 +84,19 @@ object AtalaObjectsDAO {
       .to[List]
   }
 
+  def getNotProcessedAtalaObjects: ConnectionIO[List[AtalaObjectInfo]] = {
+    sql"""
+         |SELECT obj.atala_object_id, obj.object_content, obj.atala_object_status,
+         |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+         |FROM atala_objects AS obj
+         |LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
+         |WHERE obj.atala_object_status = 'SCHEDULED' or obj.atala_object_status = 'PENDING'
+         |ORDER BY obj.received_at ASC;
+       """.stripMargin
+      .query[AtalaObjectInfo]
+      .to[List]
+  }
+
   def updateObjectStatus(
       objectId: AtalaObjectId,
       newStatus: AtalaObjectStatus

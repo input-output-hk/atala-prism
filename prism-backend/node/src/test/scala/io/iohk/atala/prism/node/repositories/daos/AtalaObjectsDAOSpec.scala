@@ -6,11 +6,13 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Scheduled, Pending, Merged, Processed}
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
 
 import java.time.Instant
+import scala.util.Random
 
 class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
   private val objectId = AtalaObjectId.of(node_internal.AtalaObject())
@@ -161,12 +163,42 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     }
   }
 
+  "AtalaObjectsDAO.getNotProcessedAtalaObjects" should {
+    "return only scheduled objects" in {
+      val N = 10
+      val random = Random
+      val statuses = List(Scheduled, Pending, Merged, Processed)
+      val generatedStatuses = (0 until N).map(_ => statuses(random.nextInt(4)))
+      var scheduledObjects = List[node_internal.AtalaObject]()
+
+      (0 until N).foreach { count =>
+        val obj = node_internal.AtalaObject(blockOperationCount = count)
+        val objId = AtalaObjectId.of(obj)
+        val status = generatedStatuses(count)
+        insert(objId, byteContent, generatedStatuses(count))
+        if (status == Pending || status == Scheduled)
+          scheduledObjects = obj :: scheduledObjects
+      }
+      val retrieved = AtalaObjectsDAO.getNotProcessedAtalaObjects
+        .transact(database)
+        .unsafeRunSync()
+
+      retrieved.size mustBe scheduledObjects.length
+      retrieved.zip(scheduledObjects.reverse).foreach { case (objInfo, obj) =>
+        withClue(s"Index ${obj.blockOperationCount}:") {
+          objInfo.objectId mustBe AtalaObjectId.of(obj)
+        }
+      }
+    }
+  }
+
   private def insert(
       objectId: AtalaObjectId,
-      byteContent: Array[Byte]
+      byteContent: Array[Byte],
+      status: AtalaObjectStatus = AtalaObjectStatus.Scheduled
   ): Unit = {
     AtalaObjectsDAO
-      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent, AtalaObjectStatus.Scheduled))
+      .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, byteContent, status))
       .transact(database)
       .unsafeToFuture()
       .void

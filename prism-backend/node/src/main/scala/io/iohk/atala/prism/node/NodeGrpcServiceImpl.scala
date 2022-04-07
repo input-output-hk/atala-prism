@@ -4,23 +4,25 @@ import cats.effect.unsafe.IORuntime
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
   AtalaOperationStatus
 }
-import io.iohk.atala.prism.node.services.{
-  BatchData,
-  GettingCanonicalPrismDidError,
-  GettingDidError,
-  NodeService,
-  UnsupportedDidFormat
-}
+import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
+import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationKind.{
+  AnyOperation,
+  CredentialIssuanceOperation,
+  DidCreationOperation
+}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api}
 import io.iohk.atala.prism.tracing.Tracing._
@@ -28,9 +30,6 @@ import io.iohk.atala.prism.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 
 class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implicit
     ec: ExecutionContext,
@@ -237,7 +236,39 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
               .withScalaVersion(BuildInfo.scalaVersion)
               .withSbtVersion(BuildInfo.sbtVersion)
           )
+      }
+    )
+  }
 
+  /** * PUBLIC
+    *
+    * Return a list of scheduled but unconfirmed operations.
+    */
+  override def getScheduledOperations(
+      request: GetScheduledOperationsRequest
+  ): Future[GetScheduledOperationsResponse] = {
+    val methodName = "getScheduledOperations"
+
+    measureRequestFuture(serviceName, methodName)(
+      trace { traceId =>
+        val query =
+          for {
+            operationsE <- nodeService.getScheduledAtalaOperations()
+            operations = operationsE.fold(err => countAndThrowNodeError(methodName, err), info => info)
+          } yield node_api
+            .GetScheduledOperationsResponse()
+            .withScheduledOperations(
+              operations.filter(o =>
+                request.operationsKind match {
+                  case AnyOperation => true
+                  case DidCreationOperation => o.operation.isDefined && o.operation.get.operation.isCreateDid
+                  case CredentialIssuanceOperation =>
+                    o.operation.isDefined && o.operation.get.operation.isIssueCredentialBatch
+                  case _ => false
+                }
+              )
+            )
+        query.run(traceId).unsafeToFuture()
       }
     )
   }

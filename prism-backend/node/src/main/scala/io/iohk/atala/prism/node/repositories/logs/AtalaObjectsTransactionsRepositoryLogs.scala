@@ -179,4 +179,21 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
       )
     )
   }
+
+  override def getNotProcessedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] = {
+    val description = s"getting not processed Atala objects"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            ret => info"$description - successfully got ${ret.size} objects"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
 }

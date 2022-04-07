@@ -58,6 +58,8 @@ trait ObjectManagementService[F[_]] {
       ops: node_models.SignedAtalaOperation*
   ): F[List[Either[NodeError, AtalaOperationId]]]
 
+  def getScheduledAtalaObjects(): F[Either[NodeError, List[AtalaObjectInfo]]]
+
   def getLastSyncedTimestamp: F[Instant]
 
   def getOperationInfo(
@@ -189,6 +191,9 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       case Right(r) => Applicative[F].pure(r)
     }
   }
+
+  override def getScheduledAtalaObjects(): F[Either[NodeError, List[AtalaObjectInfo]]] =
+    atalaObjectsTransactionsRepository.getNotProcessedObjects
 
   def getLastSyncedTimestamp: F[Instant] =
     for {

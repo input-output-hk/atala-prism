@@ -33,6 +33,9 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
   private lazy val getNotPublishedObjectsTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getNotPublishedObjects")
 
+  private lazy val getNotProcessedObjectsTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getNotProcessedObjects")
+
   private lazy val updateSubmissionStatusTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "updateSubmissionStatus")
 
@@ -95,4 +98,6 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
   ): Mid[F, Either[NodeError, Int]] =
     _.measureOperationTime(updateObjectStatusTimer)
 
+  override def getNotProcessedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] =
+    _.measureOperationTime(getNotProcessedObjectsTimer)
 }

@@ -18,6 +18,7 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Pending, Scheduled}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.operations._
@@ -26,9 +27,14 @@ import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationKind.{
+  AnyOperation,
+  CredentialIssuanceOperation,
+  DidCreationOperation
+}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.OperationOutput
-import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.{common_models, node_api, node_internal, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
@@ -995,6 +1001,73 @@ class NodeServiceSpec
 
       verify(objectManagementService).scheduleAtalaOperations(revokeOperation)
       verifyNoMoreInteractions(objectManagementService)
+    }
+  }
+
+  "NodeService.getScheduledAtalaOperations" should {
+    "return scheduled operations in correct order" in {
+
+      def sign(op: node_models.AtalaOperation): SignedAtalaOperation =
+        BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
+
+      def toAtalaObject(ops: List[node_models.AtalaOperation]): node_internal.AtalaObject = {
+        val block = node_internal.AtalaBlock(ops.map(sign))
+        node_internal.AtalaObject(
+          blockOperationCount = ops.size,
+          blockByteLength = block.toByteArray.length,
+          blockContent = Some(block)
+        )
+      }
+
+      def toOperation(op: node_models.AtalaOperation) =
+        operations
+          .parseOperationWithMockedLedger(sign(op))
+          .toOption
+          .value
+
+      val ops1 = List[node_models.AtalaOperation](
+        CreateDIDOperationSpec.exampleOperation,
+        UpdateDIDOperationSpec.exampleAddAndRemoveOperation
+      )
+
+      val ops2 = List[node_models.AtalaOperation](
+        UpdateDIDOperationSpec.exampleRemoveOperation,
+        IssueCredentialBatchOperationSpec.exampleOperation,
+        CreateDIDOperationSpec.exampleOperationWithCompressedKeys
+      )
+
+      val allOps: List[node_models.AtalaOperation] =
+        List(
+          CreateDIDOperationSpec.exampleOperation,
+          UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
+          UpdateDIDOperationSpec.exampleRemoveOperation,
+          IssueCredentialBatchOperationSpec.exampleOperation,
+          CreateDIDOperationSpec.exampleOperationWithCompressedKeys
+        )
+      val opsCreation: List[node_models.AtalaOperation] =
+        List(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.exampleOperationWithCompressedKeys)
+
+      val opsIssuance: List[node_models.AtalaOperation] = List(IssueCredentialBatchOperationSpec.exampleOperation)
+
+      val obj1 = toAtalaObject(ops1)
+      val obj2 = toAtalaObject(ops2)
+
+      val dummyObjects = List(
+        AtalaObjectInfo(AtalaObjectId.of(obj1), obj1.toByteArray, ops1.map(toOperation), Pending, None),
+        AtalaObjectInfo(AtalaObjectId.of(obj2), obj2.toByteArray, ops2.map(toOperation), Scheduled, None)
+      )
+
+      doReturn(fake[Either[NodeError, List[AtalaObjectInfo]]](Right(dummyObjects)))
+        .when(objectManagementService)
+        .getScheduledAtalaObjects()
+
+      val responseAny = service.getScheduledOperations(GetScheduledOperationsRequest(AnyOperation))
+      val responseCreation = service.getScheduledOperations(GetScheduledOperationsRequest(DidCreationOperation))
+      val responseIssuance = service.getScheduledOperations(GetScheduledOperationsRequest(CredentialIssuanceOperation))
+
+      responseAny.scheduledOperations.map(_.operation.get) must be(allOps)
+      responseCreation.scheduledOperations.map(_.operation.get) must be(opsCreation)
+      responseIssuance.scheduledOperations.map(_.operation.get) must be(opsIssuance)
     }
   }
 }

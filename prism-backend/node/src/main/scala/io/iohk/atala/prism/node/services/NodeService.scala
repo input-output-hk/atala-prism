@@ -40,6 +40,8 @@ trait NodeService[F[_]] {
 
   def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
 
+  def getScheduledAtalaOperations(): F[Either[NodeError, List[node_models.SignedAtalaOperation]]]
+
   def parseOperations(ops: Seq[node_models.SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]]
 
   def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]]
@@ -142,6 +144,11 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
 
   override def scheduleAtalaOperations(ops: SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]] =
     objectManagement.scheduleAtalaOperations(ops: _*)
+
+  override def getScheduledAtalaOperations(): F[Either[NodeError, List[SignedAtalaOperation]]] =
+    objectManagement
+      .getScheduledAtalaObjects()
+      .map(_.map(_.flatMap(obj => obj.getAtalaBlock.map(_.operations).getOrElse(Seq()))))
 
   override def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]] =
     for {
