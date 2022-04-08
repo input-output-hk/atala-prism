@@ -1,6 +1,10 @@
 \subsection{Model for \UAS Schemes}
 \label{ssec:model-uas}
 
+\comment{\textbf{DISCLAIMER}: I've done a major rewriting of most
+  properties. For now, please ignore the text until I have been able to sync
+  it.}
+
 We now define our model for Universal Anonymous Signatures. At a very high
 level, it is a combination of the main models for group signatures and
 anonymous credentials -- we try to extract the most useful features from both.
@@ -80,42 +84,43 @@ we assume that each has its own issuer and inspector.
   \parm, returns a user's key pair.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
-  \Obtain(\usk,\attrs,\ldblbrace (gpk_i,\cred_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\upk,\attrs,\ldblbrace \gpk_i) \rdblbrace_{i \in \Issuers})
+  \Obtain(\usk,\lbrace (\cred_i,\ipk_i)\rbrace_{i \in \Issuers},\attrs),
+  \Issue(\isk,\lbrace \ipk_i \rbrace_{i \in \Issuers},\attrs))
   \rangle$.] %
   This interactive protocol lets a user with key pair (\upk,\usk) running the
-  \Obtain process, obtain a credential \cred from an issuer in the system, on
-  attribute set $\attrs$ plus, possibly, blinded attributes attested by
-  previously obtained credentials $\cred_i$, from a multiset of other issuers
-  (which may include the one to whom a new credential is being requested) with
-  public keys $\gpk_i$. The user outputs the produced credential \cred, while
+  \Obtain process, receive a credential \cred from an issuer in the system, on
+  attribute set $\attrs$. The user leverages a set of $(\cred_i,\ipk_i)$ pairs,
+  where $\cred_i$ is a credential obtained from the issuer with public
+  key $\ipk_i$. The user outputs the produced credential \cred, while
   the issuer outputs the protocol transcript \utrans for the produced
   credential. To ease notation, we assume that the group to which each
   credential belongs is available from the credential itself, and therefore
-  omit the $\gpk_i$ values from the syntax, unless necessary to avoid ambiguity.
-\item[$\sig \gets \Sign(\gpk,\usk,\cred,\msg,\feval)$.]
-  The user with with secret key \usk and credential \cred, produces a signature
-  \sig over message \msg, meeting the conditions defined by \feval.
-\item[$1/0 \gets \Verify(\gpk,\sig,\msg,\feval)$.] Checks whether \sig is a
-  valid signature, over message \msg, from a user in the group with public key
-  \gpk, for signing function \feval.
-\item[$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg,\feval)$.] %
+  omit the $\ipk_i$ values from the syntax, unless necessary to avoid ambiguity.
+\item[$\sig \gets \Sign(\usk,\opk,\lbrace (\cred_i,\ipk_i)
+  \rbrace_{i \in \Issuers},\msg,\feval)$.] %
+  The user with with secret key \usk, owner of credentials $\cred_i$, signs
+  \msg, so that the inspector with public key \opk may open it if needed.
+  Evaluation function \feval is used to produce the signature.
+\item[$1/0 \gets \Verify(\opk, \lbrace \ipk_i \rbrace_{i \in \Issuers},\sig,
+  \msg,\feval)$.] Checks whether \sig is a valid signature over message \msg,
+  from a user in the group with credentials issued by issuers with public keys
+  $\ipk_i$, for evaluation function \feval and inspector key \opk.
+\item[$(\y,\iproof)/\bot \gets \Inspect(\osk,\lbrace \ipk_i
+  \rbrace_{i \in \Issuers},\sig,\msg,\feval)$.] %
   \todo{I think we do not need \trans here, see the generic construction. (This
-    was somehow inherited from \cite{bsz05}.) However, if we do remove it, we'd
-    need to redefine the traceability game -- it'd need to depend on \Identify,
-    which kind of makes sense too.}
+    was somehow inherited from \cite{bsz05}.) However, if it is indeed not
+    needed, it is noteworthy that we include/need it in \GSAC, but not here.
+    Justify/understand better why!}
   Executed by the inspector with private key \osk. Receives a signature \sig
-  over message \msg and evaluation function \feval. If \trans contains a set of
-  valid transcripts corresponding 
-  to the $\langle\Obtain,\Issue\rangle$ interactive protocol execution that
-  issued the credential used to produce \sig, the function outputs a value $\y$
-  derived from the signer's public key, credential, message, and signature, as
-  well as a proof of correct inspection. We sometimes abuse notation, and write
-  $\trans[\uid]$ to mean that the \Inspect function is operating only for the
-  obtain transcripts related to user \uid.
-\item[$1/0 \gets \Judge(\gpk,\y,\iproof,\sig,\msg,\feval)$.] %
+  over message \msg and evaluation function \feval. If \sig is valid, the
+  function outputs a value $\y$ derived from the signer's public key,
+  credentials, message, and signature, as well as a proof of correct
+  inspection.
+\item[$1/0 \gets \Judge(\opk,\lbrace ipk_i \rbrace_{i \in \Issuers},\y,\iproof,
+  \sig,\msg,\feval)$.] %
   Checks if \iproof is a valid inspection correctness proof for the value \y,
-  obtained by applying \Inspect to the the signature \sig over message \msg. 
+  obtained by applying \Inspect to the the signature \sig over message \msg,
+  and for evaluation function \feval. 
 \end{description}
 
 The correctness and security properties are defined with the help of the
@@ -133,29 +138,41 @@ their computation. We introduce them next, \todo{and will give concrete examples
   in \secref{sec:uac-instantiation}.}
 
 \begin{description}
-\item[$\fissue: (\upk, \attrs,\scred) \rightarrow 0/1$.] Defined by issuers,
+\item[$\fissue: (\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\attrs)
+  \rightarrow 0/1$.] Defined by issuers for the credentials they grant,
   governs what customized conditions an issuer requires in order to issue
   credentials, when receiving a request from user with public key \upk, for
   attributes \attrs. \fissue may run checks on a (possibly empty) set of
-  additional credentials \scred, all bound to \upk, which may further be used
-  for blind issuance \commentwho{Jesus}{can it?}. \fissue returns $1$ to accept
-  a request, $0$ to reject it.  
-\item[$\feval: (\upk,\cred,\msg) \rightarrow \varrngfeval$.] Can be defined by
+  additional credentials $\cred_i$, all bound to \upk, and possibly issued
+  by other issuers. \fissue returns $1$ to accept a request, $0$ to reject it.  
+\item[$\feval: (\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\msg)
+  \rightarrow \varrngfeval$.] Can be defined by
   any party, although we anticipate that this will typically be done by either
   signers, verifiers, or some governance organization. It defines customized
-  conditions to be met by the owner of a user key \upk and credential \cred,
+  conditions to be met by the owner of a user key \upk and credentials $\cred_i$,
   bound to \upk, in order to sign a concrete message \msg. Its outputs
   $\varrngfeval$ must belong in a well defined set \rngfeval, with the
   restriction that it must return $0$ when the conditions for signing are not
   met.
-\item[$\finsp: (\varrngfeval,\upk,\cred,\msg) \rightarrow \varrngfinsp$.]
-  Defines what utility value, derived from the user's public key, credential,
-  and message should be extractable by the group inspector. Note that \finsp
-  also receives as input a value in the range of the \feval function, \rngfeval.
-  This will allow inspection logic to depend on the value produced by the
-  evaluation function. The output of \finsp is a value \varrngfinsp, which must
-  belong in a well defined set \rngfinsp.
+\item[$\finsp: (\varrngfeval,\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},
+  \msg) \rightarrow \varrngfinsp$.]
+  Chosen by inspectors. It defines what utility value, derived from the user's
+  public key, credentials, and message, should be extractable by an inspector.
+  Note that \finsp also receives as input a value in the range of the \feval
+  function, \rngfeval. This will allow inspection logic to depend on the value
+  produced by the evaluation function. The output of \finsp is a value
+  \varrngfinsp, which must belong in a well defined set \rngfinsp.
 \end{description}
+
+We emphasize that, even though \finsp and \feval seem redundant, they are not.
+To see this, observe that \finsp is defined by inspectors, and will be fixed in
+all signatures ``inspectable'' by the inspector that defined it. On the other
+hand, \feval can be defined by (e.g.) verifiers and, as such, it can be changed
+on a per-signature basis, even if the signatures use the same \finsp. Thus,
+\feval can (and is intended to) be programmed to contain the conditions set by
+(e.g.) verifiers for signatures they receive; whereas \finsp can (and is intended
+to) be programmed to extract specific utility values when needed, which may
+depend on the checks required by the verifier a signature was intended to.
 
 \paragraph{Helper Function \Identify.} In addition, we make use of a helper
 function \Identify for some of our definitions. This function receives
@@ -197,9 +214,6 @@ with $\emptyset$.
   \item[\OK, \PUBOK, \PRVOK.] Same as \UK, but for inspector key pairs. In
     addition, \OK also includes the \finsp function, which is part of the
     public key.
-  \item[\GK.] We bundle public keys for issuers and inspectors into a common
-    public key for each group. We use the table \GK for that purpose which,
-    consequently, can also be indexed by \gid.
   \end{description}
 \item[Tables for credentials-related data]:
   \begin{description}
@@ -214,8 +228,8 @@ with $\emptyset$.
     ``\uid such that $\CRED[\cid] = (\uid, \cdot, \cdot, \cdot, \cdot)$''.
   \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
     ``\attrs such that $\CRED[\cid] = (\cdot, \cdot, \cdot, \attrs, \cdot)$''.
-  \item[\GRP.] For notational convenience, when we write $\GRP[\cid]$ we mean
-    ``\gid such that $\CRED[\cid] = (\cdot, \gid, \cdot, \cdot, \cdot)$''.
+  \item[\ISR.] For notational convenience, when we write $\ISR[\cid]$ we mean
+    ``\iid such that $\CRED[\cid] = (\cdot, \iid, \cdot, \cdot, \cdot)$''.
   \end{description}
 \item[Tables for signatures]:
   \begin{description}
@@ -249,6 +263,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
   the user's key pair.
 \item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
   user already exists and is honest, corrupts it.
+\item[\RREG.] Reads the given transcript table entry.
+\item[\WREG.] Sets a transcript table entry to the given value.
 \item[\OBTISS.] Lets the adversary add a new honestly generated credential to
   the game, on behalf of an honest user.
 \item[\OBTAIN.] Enables the adversary to play the role of a dishonest issuer
@@ -271,20 +287,19 @@ oracles, which are formally defined in \figref{fig:oracles1} and
     \centering
     \scalebox{0.9}{
 
-      \begin{minipage}[t]{0.55\textwidth}
+      \begin{minipage}[t]{0.55\textwidth}       
 
-        \procedure{$\IGEN(\gid,\fissue)$}{%
-          \pcif \gid \in \HI \lor \gid \in \CI: \pcreturn \bot \\
+        \procedure{$\IGEN(\iid,\fissue)$}{%
+          \pcif \iid \in \HI \lor \iid \in \CI: \pcreturn \bot \\
           (\ipk,\isk) \gets \IKeyGen(\parm) \\
-          \IK[\gid] \gets ((\ipk,\fissue),\isk) \\
-          \HI \gets \HI \cup \lbrace \gid \rbrace \\
-          \GK[\gid] \gets ((\ipk,\fissue),\cdot) \\
+          \IK[\iid] \gets ((\ipk,\fissue),\isk) \\
+          \HI \gets \HI \cup \lbrace \iid \rbrace \\
           \pcreturn \ipk \\
         }
 
-        \procedure{$\ICORR(\gid)$}{%
-          \pcif \gid \in \CI \lor \gid \notin \HI: \pcreturn \bot \\
-          \HI \gets \HI \setminus \lbrace \gid \rbrace \\
+        \procedure{$\ICORR(\iid)$}{%
+          \pcif \iid \in \CI \lor \iid \notin \HI: \pcreturn \bot \\
+          \HI \gets \HI \setminus \lbrace \iid \rbrace \\
           \CI \gets \CI \cup \lbrace \gid \rbrace \\
           \pcreturn \isk \\
         }        
@@ -294,7 +309,11 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           (\upk,\usk) \gets \UKeyGen(\parm) \\
           \UK[\uid] \gets (\upk,\usk);
           \HU \gets \HU \cup \lbrace  \uid \rbrace \\
-          \pcreturn \top
+          \pcreturn \top \\
+        }
+
+        \procedure{$\RREG(i)$}{%
+          \pcreturn \trans[i]
         }        
         
       \end{minipage}
@@ -303,19 +322,18 @@ oracles, which are formally defined in \figref{fig:oracles1} and
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\OGEN(\gid,\feval,\finsp)$}{%
-          \pcif \gid \in \HO \lor \gid \in \CO: \pcreturn \bot \\
+        \procedure{$\OGEN(\oid,\finsp)$}{%
+          \pcif \oid \in \HO \lor \oid \in \CO: \pcreturn \bot \\
           (\opk,\osk) \gets \OKeyGen(\parm) \\
-          \OK[\gid] \gets ((\opk,\finsp),\osk) \\
-          \HO \gets \HO \cup \lbrace \gid \rbrace \\
-          \GK[\gid] \gets (\cdot,(\opk,\finsp)) \\
+          \OK[\oid] \gets ((\opk,\finsp),\osk) \\
+          \HO \gets \HO \cup \lbrace \oid \rbrace \\
           \pcreturn \opk \\
         }
 
-        \procedure{$\OCORR(\gid)$}{%
-          \pcif \gid \in \CO \lor \gid \notin \HO: \pcreturn \bot \\
-          \HO \gets \HO \setminus \lbrace \gid \rbrace \\
-          \CO \gets \CO \cup \lbrace \gid \rbrace \\
+        \procedure{$\OCORR(\oid)$}{%
+          \pcif \oid \in \CO \lor \oid \notin \HO: \pcreturn \bot \\
+          \HO \gets \HO \setminus \lbrace \oid \rbrace \\
+          \CO \gets \CO \cup \lbrace \oid \rbrace \\
           \pcreturn \osk \\
         }        
         
@@ -326,8 +344,12 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
           \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
           \pcelse: \UK[\uid] = (\upk,\bot) \\          
-          \pcreturn \top
+          \pcreturn \top \\
         }
+
+        \procedure{$\WREG(i,\rho)$}{%
+          \trans[i] \gets \rho
+        }        
         
       \end{minipage}
       
@@ -346,45 +368,48 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
       \begin{minipage}[t]{0.55\textwidth}
 
-        \procedure{$\ISSUE(\cid,\uid,\gid,\attrs,\ldblbrace\scid\rdblbrace)$}{%
+        \procedure{$\ISSUE(\cid,\uid,\iid,\attrs,\siid)$}{%
           \pcif \uid \notin \CU: \pcreturn \bot \\          
-          \pcif \gid \notin \HI: \pcreturn \bot \\
-          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
+          \pcif \iid \notin \HI: \pcreturn \bot \\
+          \pcif \exists \iid' \in \ISR[\scid] \notin \HI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cdot, \utrans \rangle \gets
-          \langle \adv, \\
-          \hspace*{45pt}
-          \Issue(\PRVIK[\gid],\PUBUK[\uid], \attrs,
-          \ldblbrace \CRED[\scid] \rdblbrace) \rangle \\
+          \langle \adv, 
+          \Issue(\PRVIK[\iid],\siid,\attrs) \rangle \\
           \trans[\cid] \gets \utrans \\
-          \CRED[\cid] \gets (\uid, \cdot, \gid, \attrs, \scid) \\
+          \CRED[\cid] \gets (\uid, \cdot, \iid, \attrs, \cdot, \siid) \\
           \pcreturn \top \\          
         }                
 
-        \procedure{$\OBTAIN(\cid,\uid,\gid,\attrs,\ldblbrace\scid\rdblbrace)$}{%
+        \procedure{$\OBTAIN(\cid,\uid,\iid,\attrs,\scid)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot: \pcreturn \bot \\
+          \pcif \iid \notin \CI: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\PRVUK[\uid],\attrs, 
-          \ldblbrace \CRED[\scid] \rdblbrace), \\
-          \hspace*{50pt} \adv \rangle \\
-          \CRED[\cid] \gets (\uid, \cdot, \gid, \attrs, \scid) \\          
+          \langle \Obtain(\PRVUK[\uid],\CRED[\scid],\attrs),\adv \rangle \\
+          \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
           \pcreturn \top \\
         }
 
-        \procedure{$\INSPECT(\gid,\sig,\msg)$}{%
-          \textrm{Let}~\uid~\textrm{be s.t.}~(\cid,\sig,\msg,\feval)
-          \in \SIG[\uid] \\
-          (\y,\iproof) \gets
-          \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg,\feval) \\
-          \pcif \CSIG[\sig] \neq \bot: \\
-          \pcind \textrm{Parse $\CSIG[\sig]$ as $(\sig_{1-b},\msg,\feval)$} \\
-          \pcind (\y_{1-b},\iproof_{1-b}) \gets
-          \Inspect(\GK[\gid],\PRVOK[\gid],\\
-          \hspace*{107pt} \trans,\sig_{1-b},\msg,\feval) \\
-          \pcind \pcif \y_{1-b} \neq \y: \pcreturn \bot \\
-          \pcreturn (\y,\iproof)
-        }
+        \procedure{$\CHALb(\oid,\cscid_{0,1},\msg,\feval)$}{%
+          \pcif \pcfor d \in \bin~\exists \ccid_d,{\ccid}'_d \in \cscid_d~\st \\
+          \pcind \OWNR[\ccid_d] \neq \OWNR[{\ccid}'_d]: \\
+          \pcind \pcreturn \bot \\
+          \cuid_0 \gets \OWNR[\cscid_0]; \cuid_1 \gets \OWNR[\cscid_1] \\
+          \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
+          \pcif \oid \in \CO: \pcreturn \bot \\
+          % \pcif \feval(\PUBUK[\cuid_0],\CRED[\cscid_0],\msg) \neq \\
+          % \pcind \feval(\PUBUK[\cuid_1],\CRED[\cscid_1],\msg):
+          % \pcreturn \bot \\
+          \csig_b \gets \Sign(\PRVUK[\cuid_b],\PUBOK[\oid],\CRED[\cscid_b],
+          \msg,\feval) \\
+          \csig_{1-b} \gets \Sign(\PRVUK[\cuid_{1-b}],\PUBOK[\oid],
+          \CRED[\cscid_{1-b}],\msg,\feval) \\          
+          \CSIG[\csig_b] \gets 
+          \lbrace (\csig_{1-b},\msg,\feval) \rbrace \\
+          \pcreturn \csig_b
+        }        
         
       \end{minipage}
     }
@@ -392,44 +417,46 @@ oracles, which are formally defined in \figref{fig:oracles1} and
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\OBTISS(\cid,\uid,\gid,\attrs,\ldblbrace\scid\rdblbrace)$}{%
+        \procedure{$\OBTISS(\cid,\uid,\iid,\attrs,\scid)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \gid \notin \HI: \pcreturn \bot \\
-          \pcif \exists \gid' \in \sgid~\st~\gid' \notin \HI: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] \neq \bot:
+          \pcif \iid \notin \HI: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \pcif \exists \iid' \in \ISR[\scid]~\st~\iid' \notin \HI: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot:
           \pcreturn \bot \\
           \langle \cred, \utrans \rangle \gets
-          \langle \Obtain(\PRVUK[\uid],\attrs,
-          \ldblbrace \CRED[\scid] \rdblbrace), \\
-          \hspace*{60pt} \Issue(\PRVIK[\gid],\PUBUK[\uid],\attrs,
-          \ldblbrace \CRED[\scid] \rdblbrace ) \rangle \\
+          \langle \Obtain(\PRVUK[\uid],\CRED[\scid],\attrs), \\
+          \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\scid],\attrs)
+          \rangle \\
           \trans[\cid] \gets \utrans \\
-          \CRED[\cid] \gets (\uid, \cred, \gid, \attrs, \scid) \\
+          \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
           \pcreturn \top \\
         }
 
-        \procedure{$\SIGN(\uid,\cid,\msg,\feval)$}{%
-          \pcif \uid \notin \HU \lor \CRED[\cid] = \bot: \pcreturn \bot \\
-          \sig \gets \Sign(\GK[\GRP[\cid]],\PRVUK[\uid],\msg,\CRED[\cid],\feval) \\
+        \procedure{$\SIGN(\oid,\scid,\msg,\feval)$}{%
+          \pcif \exists \cid,\cid' \in \scid~\st~\OWNR[\cid] \neq \OWNR[\cid']:
+          \pcreturn \bot \\
+          \uid \gets \OWNR[\scid] \\
+          \pcif \uid \notin \HU \lor
+          \exists \cid \in \scid~\st~\CRED[\cid] = \bot: \pcreturn \bot \\
+          \sig \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,\feval) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
-          \lbrace (\cid,\sig,\msg,\feval) \rbrace \\
+          \lbrace (\oid,\scid,\sig,\msg,\feval) \rbrace \\
           \pcreturn \sig \\
         }                
 
-        \procedure{$\CHALb(\cuid_{0,1},\ccid_{0,1},\msg,\feval)$}{%
-          \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
-          \pcif \gid = \GRP[\ccid_0] \neq \GRP[\ccid_1]: \pcreturn \bot \\
-          \pcif \gid \in \CO: \pcreturn \bot \\
-          \pcif \feval(\PUBUK[\uid_0],\CRED[\scid_0],\msg) \neq \\
-          \pcind \feval(\PUBUK[\uid_1],\CRED[\scid_1],\msg):
-          \pcreturn \bot \\
-          \csig_b \gets \Sign(\GK[\gid],\PRVUK[\cuid_b],\CRED[\ccid_b],
-          \msg,\feval) \\
-          \csig_{1-b} \gets \Sign(\GK[\gid],\PRVUK[\cuid_{1-b}],\CRED[\ccid_{1-b}],
-          \msg,\feval) \\          
-          \CSIG[\csig_b] \gets 
-          \lbrace (\csig_{1-b},\msg,\feval) \rbrace \\
-          \pcreturn \csig_b
+        \procedure{$\INSPECT(\oid,\sig,\msg)$}{%
+          \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\sig,\msg,\feval)
+          \in \SIG[\uid] \\
+          (\y,\iproof) \gets
+          \Inspect(\PRVOK[\oid],\GK[\scid],\sig,\msg,\feval) \\
+          \pcif \CSIG[\sig] \neq \bot: \\
+          \pcind \textrm{Parse $\CSIG[\sig]$ as $(\sig_{1-b},\msg,\feval)$} \\
+          \pcind (\y_{1-b},\iproof_{1-b}) \gets
+          \Inspect(\PRVOK[\oid],\IK[\siid],\\
+          \hspace*{107pt} \sig_{1-b},\msg,\feval) \\
+          \pcind \pcif \y_{1-b} \neq \y: \pcreturn \bot \\
+          \pcreturn (\y,\iproof)
         }
         
       \end{minipage}
@@ -456,27 +483,28 @@ credential, user key, and message.
 \begin{figure}[htp!]
   \procedure{$\ExpCorrect(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-    (\uid,\cid,\msg,\feval)
-    \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS}(\parm) \\
-    \sig \gets \Sign(\GK[\cid],\PRVUK[\uid],\cid,\msg,\feval) \\
-    \pcif \Verify(\GK[\cid],\sig,\msg,\feval) = 0: \pcreturn 1~
+    (\uid,\oid,\scid,\msg,\feval)
+    \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
+    \sig \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
+    \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\sig,\msg,\feval) = 0: \pcreturn 1~
     \pccomment{\sig fails to verify} \\
-    \pcif \CorrectIssue(\uid,\cid) = 0: \pcreturn 1~
-    \pccomment{\cid should not have been issued} \\
+    \pcif \CorrectIssue(\uid,\scid) = 0: \pcreturn 1~
+    \pccomment{Some \cid should not have been issued} \\
     % \pcif \CorrectEval(\uid,\cid,\msg,\feval)
     % = 0: \pcreturn 1~
     % \pccomment{\msg should not have been signed} \\
-    \pcif \CorrectEvalInspect(\uid,\cid,\msg,\sig,\feval) = 0: \pcreturn 1~
+    \pcif \CorrectEvalInspect(\oid,\uid,\scid,\msg,\sig,\feval) = 0: \pcreturn 1~
     \pccomment{The combination of evaluation and inspection is wrong} \\
     \pcreturn 0 \\
   }
 
-  \procedure{$\CorrectIssue(\uid,\cid)$}{
-    \gid \gets \GRP[\cid] \\
-    \textrm{Parse}~\ATTR[\cid]~\textrm{as}~(\attrs^\cid,\scid^\cid);~
-    \textrm{Parse}~\GK[\gid]~\textrm{as}~
+  \procedure{$\CorrectIssue(\uid,\scid)$}{
+    \pcfor \cid \in \scid \pcdo: \\
+    \pcind \iid \gets \ISR[\cid] \\
+    \pcind \textrm{Parse}~\ATTR[\cid]~\textrm{as}~(\attrs^\cid,\scid^\cid);~
+    \textrm{Parse}~\IK[\iid]~\textrm{as}~
     ((\cdot,\fissue^\gid),\cdot) \\        
-    \pcif \fissue^\gid(\PUBUK[\uid],\attrs^\cid,\CRED[\scid]^\cid) = 0: 
+    \pcind \pcif \fissue^\gid(\PUBUK[\uid],\CRED[\scid]^\cid,\attrs^\cid) = 0: 
     \pcreturn 0 \\
     \pcreturn 1 \\   
   }
@@ -486,21 +514,21 @@ credential, user key, and message.
   %   \pcreturn 1 \\
   % }
 
-  \procedure{$\CorrectEvalInspect(\uid,\cid,\msg,\sig,\feval)$}{
-    \textrm{Let}~\gid \gets \GRP[\cid];~
-    \textrm{Parse}~\GK[\gid]~\textrm{as}~(\cdot,(\cdot,\finsp^\gid)) \\
+  \procedure{$\CorrectEvalInspect(\oid,\uid,\scid,\msg,\sig,\feval)$}{
+    \textrm{Parse}~\OK[\oid]~\textrm{as}~((\cdot,\finsp^\gid),\cdot) \\
     \pccomment{\sig cannot be inspected} \\
-    \pcif \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg,\feval) = \bot: \pcreturn 0 \\
+    \pcif \Inspect(\PRVOK[\oid],\PUBIK[\scid],\sig,\msg,\feval) = \bot:
+    \pcreturn 0 \\
     \pccomment{The produced $(\y,\iproof)$ pair is rejected by \Judge
       % \todo{This must be conditioned on \feval = 0!}
     } \\
-    \pcif (\y,\iproof) \gets \Inspect(\GK[\gid],\PRVOK[\gid],\trans,\sig,\msg,\feval)
-    \land
-    \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 0: \\
+    \pcif (\y,\iproof) \gets \Inspect(\PRVOK[\gid],\PUBIK[\scid],\sig,
+    \msg,\feval) \land
+    \Judge(\PUBOK[\oid],\PUBIK[\scid],\y,\iproof,\sig,\msg,\feval) = 0: \\
     \pcind \pcreturn 0 \\
     \pccomment{\y is the wrong value} \\
-    \pcif \y \neq \finsp^\gid(\feval(\PUBUK[\uid],\CRED[\cid],\msg),
-    \PUBUK[\uid],\CRED[\cid],\msg)):
+    \pcif \y \neq \finsp^\gid(\feval(\PUBUK[\uid],\CRED[\scid],\msg),
+    \PUBUK[\uid],\CRED[\scid],\msg)):
     \pcreturn 0 \\
     \pcreturn 1
   }
@@ -544,14 +572,14 @@ the adversary picks two honestly obtained credentials, and one of them (set
 by the $b$ value defining the $anon-b$ game) is used to program the \CHALb
 oracle. The formal specification of the anonymity game is
 given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,\CU\rbrace
-\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN,
+\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,
 \INSPECT)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace
-\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN,\INSPECT,\CHALb)$
+\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\INSPECT,\CHALb)$
 
 \begin{figure}[htp!]
   \procedure{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
-     (\ccid_0,\ccid_1,\status) \gets \adv^{\Oanonc}(\choose,\parm) \\
+     (\cscid_0,\cscid_1,\status) \gets \adv^{\Oanonc}(\choose,\parm) \\
      b^* \gets \adv^{\Oanong} (\guess,\status) \\
      \pcreturn b^*
   }
@@ -582,6 +610,47 @@ inspection functions allows us to \uline{\emph{let the adversary open
 makes \Inspect produce the same \y value as output. This is certainly not
 possible when using conventional opening, since it directly outputs the identity
 of the signer -- which cannot be the same for different challenge users.
+
+\paragraph{Unforgeability.}
+
+\begin{figure}[htp!]
+    \procedure{$\ExpForgeIssue(1^\secpar)$}{%
+      \parm \gets \Setup(1^\secpar) \\
+      \cid \gets \adv^{\Oforgeissue}(\parm) \\
+      \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \pcreturn 0 \\
+      \textrm{Parse}~\CRED[\cid]~\textrm{as}~(\cdot,\cdot,\iid,\cdot,\cdot);~
+      \IK[\iid]~\textrm{as}~((\ipk,\fissue),\cdot) \\
+      w \gets \ExtractIssue(\trans[\cid]) \\
+      \pcif w = \bot: \pcreturn 1 \\
+      \textrm{Parse}~w~\textrm{as}~(\usk,\lbrace (\cred_i,\ipk_i)
+      \rbrace_{i \in \Issuers})  \\      
+      \pcif \fissue(\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},
+      \ATTR[\cid]) = 0: \pcreturn 1 \\
+      \pcreturn 0
+    }
+  \caption{Experiment for unforgeability of credential issuance in \UAS schemes.}
+  \label{fig:exp-uas-unfor-issue}
+\end{figure}    
+
+\begin{figure}[htp!]
+    \procedure{$\ExpForgeSign(1^\secpar)$}{%
+      \parm \gets \Setup(1^\secpar) \\
+      (\oid,\siid,\sig,\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
+      \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\msg,\feval) \in \SIG[\uid]: \pcreturn 0 \\
+      \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\msg,\feval) = 0: \pcreturn 0 \\
+      (\y,\iproof) \gets \Inspect(\PRVOK[\oid],\siid,\trans,\sig,\msg) \\
+      \pcif \y = \bot \lor \iproof = \bot \lor       
+      \Judge(\PUBOK[\oid],\PUBIK[\siid],\y,\iproof,\sig,\msg,\feval) = 0: \pcreturn 0 \\
+      (\usk,\scred) \gets \ExtractSign(\oid,\siid,\sig,\msg,\feval) \\
+      %\pcif \usk = \bot \lor \scred = \bot: \pcreturn 1 \\
+      \pcif \finsp(\feval(\usk,\scred,\msg),\usk,\scred,\msg)
+      \neq \y: \pcreturn 1 \\
+      %\text{\todo{Need to check \feval independently here?}} \\
+      \pcreturn 0
+    }
+  \caption{Experiment for unforgeability of signatures in \UAS schemes.}
+  \label{fig:exp-uas-unfor-sign}
+\end{figure}    
 
 \paragraph{Traceability.} %
 % Traceability is one of the unforgeability-related properties in group
@@ -626,62 +695,100 @@ traceability/unforgeability thus challenges the adversary to produce a signature
 that breaks any of those conditions. The formal
 definition of the traceability experiment is given in \figref{fig:exp-uas-trace},
 where $\Otrace \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,
-\ISSUE,\SIGN,\INSPECT$.
+\ISSUE,\RREG,\SIGN,\INSPECT$.
 
-\begin{figure}[htp!]
-    \procedure{$\ExpTrace(1^\secpar)$}{%
-      \parm \gets \Setup(1^\secpar) \\
-      (\gid,\sig,\msg,\feval) \gets \adv^{\Otrace}(\parm) \\
-      \pcif \Verify(\GK[\gid],\sig,\msg,\feval) = 0: \pcreturn 0 \\
-      \pcif \EvalInspectForge(\gid,\sig,\msg,\feval) = 1 \\%\land
-%      \InspectForge(\gid,\sig,\msg,\feval) = 1: \\
-      \pcind \pcreturn 1 \\
-      \pcreturn 0 \\
-    }
+% \begin{figure}[htp!]
+%     \procedure{$\ExpTrace(1^\secpar)$}{%
+%       \parm \gets \Setup(1^\secpar) \\
+%       (\sgid,\sig,\msg,\feval) \gets \adv^{\Otrace}(\parm) \\
+%       \pcif \Verify(\GK[\sgid],\sig,\msg,\feval) = 0: \pcreturn 0 \\
+%       (\y,\iproof) \gets \Inspect(\PRVOK[\gid],\sgid,\trans,\sig,\msg) \\
+%       \pcif \y = \bot \lor \iproof = \bot \lor       
+%       \Judge(\GK[\sgid],\y,\iproof,\sig,\msg,\feval) = 0: \pcreturn 0 \\
+%       \pcif \EvalForge(\sgid,\sig,\msg,\feval) = 1 \lor
+%       \IssueForge() = 1: \pcreturn 1 \\
+%       \pcreturn 0 \\
+%       % \pcind \pcind \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
+%       % \pcind \pcind \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
+%       %   $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\      
+%       % \pcind \pcind \pcreturn 1 \\      
+%     }
+
+%     \procedure{$\EvalForge(\sgid,\sig,\msg,\feval)$}{%
+%       (\uid,\usk,\scred) \gets \ExtractSign(\sgid,\sig,\msg,\feval) \\
+%       \pcif \uid = \bot \lor \usk = \bot \lor \scred = \bot: \pcreturn 1 \\
+%       \pcif \finsp(\feval(\PUBUK[\uid],\scred,\msg),\PUBUK[\uid],\scred,\msg)
+%       \neq \y: \pcreturn 1 \\      
+%     }
+
+%     \procedure{$\IssueForge()$}{%
+%       \pcfor \cred \in \scred: \\
+%       \pcind \scred' \gets \ExtractIssue()
+%       \pcif \exists \cred \in \scred~\st~
+%       \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0 \\
+%       \pcind \textrm{where $\CRED[\cid]=\cred$ and
+%         $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\      
+%       \pcind \pcreturn 1 \\      
+%     }    
+
+%     \procedure{$\ExtractSign(\sig,\msg,\feval,\sgid)$}{%
+%       \pcif \exists \cred,\cred' \in \scred~\st~\OWNR[\cred] \neq \OWNR[\cred']:
+%       \pcreturn (\bot,\bot,\bot) \\
+%       \pcif \nexists \uid~\st~\SUK[\uid] = \usk: \pcreturn (\bot,\bot,\bot) \\
+%       \pcif \uid \neq \OWNR[\scred]: \pcreturn (\bot,\bot,\bot) \\
+%       \todo{Return the \uid, \usk and \scred used to produce \sig} \\      
+%     }
+
+%     \procedure{$\ExtractIssue()$}{%
+%       \todo{Return the \scred used to fetch \cred} 
+%     }
         
-    % \procedure{$\EvalForge(\gid,\sig,\msg,\feval)$}{%
-    %   \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1~\land \\
-    %   \pcind \pccomment{\uid does not own a \cred that satisfies \feval...} \\
-    %   \pcind (\nexists \cred \in \CRED[\uid]~\st~
-    %   \feval(\PUBUK[\uid],\cred,\msg) \neq 0 ~\lor \\
-    %   \hspace*{13pt} \pccomment{... or \uid does, but \cred was itself obtained
-    %     fraudulently} \\
-    %   \hspace*{13pt} (\exists \cred \in \CRED[\uid]~\st~
-    %   \feval(\PUBUK[\uid],\cred,\msg) \neq 0~\land \\
-    %   \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
-    %   \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
-    %     $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\
-    %   \pcind \pcreturn 1 \\
-    %   \pcelse \pcreturn 0 \\
-    % }
+%     % \procedure{$\EvalForge(\gid,\sig,\msg,\feval)$}{%
+%     %   \pcif \exists \uid~\st~\Identify(\uid,\sig) = 1~\land \\
+%     %   \pcind \pccomment{\uid does not own a \cred that satisfies \feval...} \\
+%     %   \pcind (\nexists \cred \in \CRED[\uid]~\st~
+%     %   \feval(\PUBUK[\uid],\cred,\msg) \neq 0 ~\lor \\
+%     %   \hspace*{13pt} \pccomment{... or \uid does, but \cred was itself obtained
+%     %     fraudulently} \\
+%     %   \hspace*{13pt} (\exists \cred \in \CRED[\uid]~\st~
+%     %   \feval(\PUBUK[\uid],\cred,\msg) \neq 0~\land \\
+%     %   \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
+%     %   \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
+%     %     $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\
+%     %   \pcind \pcreturn 1 \\
+%     %   \pcelse \pcreturn 0 \\
+%     % }
     
-    \procedure{$\EvalInspectForge(\gid,\sig,\msg,\feval)$}{%
-      \pccomment{All \Obtain transcripts fail to inspect \sig} \\
-      \pcif \Inspect(\PRVOK[\gid],\trans,\sig,\msg) \neq \bot~\lor \\
-      \pcind \pccomment{A valid transcript exists, but ...} \\
-      \pcind \exists \uid~\st~\Inspect(\PRVOK[\gid],\trans[\uid],\sig,\msg) =
-      (\y,\iproof)~\land (\\
-      \pcind \pcind \pccomment{... the proof is rejected by \Judge ...} \\
-      \pcind \pcind \Judge(\y,\iproof,\sig,\msg,\GK[\sgid]) = 0~\lor \\
-      \pcind \pcind \pccomment{... or \uid does not own a \cred for which
-        \finsp outputs \y} \\
-      \pcind \pcind \nexists \cred \in \CRED[\uid]~\st~
-      \y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
-      \PUBUK[\uid],\cred,\msg)~\lor \\
-      \pcind \pcind \pccomment{... or \uid does, but \cred was itself obtained
-        fraudulently} \\
-      \pcind \pcind (\exists \cred \in \CRED[\uid]~\st~
-      y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
-      \PUBUK[\uid],\cred,\msg)~\land \\
-      \pcind \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
-      \pcind \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
-        $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\      
-      \pcind \pcreturn 1 \\      
-      \pcreturn 0
-    }
-  \caption{Traceability experiment for \UAS schemes.}
-  \label{fig:exp-uas-trace}
-\end{figure}
+%     \procedure{$\EvalInspectForge(\gid,\sig,\msg,\feval)$}{%
+%       \pcfor \gid \in \sgid: \\
+%       \pcind \pccomment{\sig cannot be inspected} \\
+%       \pcind \pcif \Inspect(\PRVOK[\gid],\sgid,\trans,\sig,\msg) \neq \bot~\lor \\
+%       \pcind \pcind \pccomment{A valid transcript exists, but ...} \\
+%       \pcind \pcind \Inspect(\PRVOK[\gid],\sgid,\trans,\sig,\msg) =
+%       (\y,\iproof)~\land (\\
+%       \pcind \pcind \pcind \pccomment{... the proof is rejected by \Judge ...} \\
+%       \pcind  \pcind \pcind \Judge(\GK[\sgid],\y,\iproof,\sig,\msg,\feval) = 0~\lor \\
+%       \pcind  \pcind \pcind \Judge(\GK[\sgid],\y,\iproof,\sig,\msg,\feval) = 1
+%       \land \exists \uid~\st~\Identify(\uid,\sig) = 1 \land \\
+%       % \pcind \pcind \pcind \pccomment{... or \uid does not own a \cred for which
+%       %   \finsp outputs \y} \\
+%       % \pcind \pcind \pcind \nexists \cred \in \CRED[\uid]~\st~
+%       % \y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
+%       % \PUBUK[\uid],\cred,\msg)~\lor \\
+%       \pcind \pcind \pcind \pccomment{... or \uid does, but \cred was itself obtained
+%         fraudulently} \\
+%       \pcind \pcind \pcind (\exists \cred \in \CRED[\uid]~\st~
+%       y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
+%       \PUBUK[\uid],\cred,\msg)~\land \\
+%       \pcind \pcind \pcind \pcind \fissue(\PUBUK[\uid],\attrs^\cid,\scred^\cid) = 0, \\
+%       \pcind \pcind \pcind \pcind \textrm{where $\CRED[\cid]=\cred$ and
+%         $(\attrs^\cid,\scred^\cid) \gets \ATTR[\cid]$})): \\      
+%       \pcind \pcind \pcreturn 1 \\      
+%       \pcreturn 0
+%     }
+%   \caption{Traceability experiment for \UAS schemes.}
+%   \label{fig:exp-uas-trace}
+% \end{figure}
 
 \begin{definition}{(Traceability of \UAS)}
   We define the advantage \AdvTrace of $\adv$ against \ExpTrace as
@@ -769,30 +876,56 @@ user \uid, (ii) who owns a credential that makes \finsp return a valid \y value
 without having queried the \SIGN oracle before. This non-frameability property
 for \UAS schemes is formally defined in \figref{fig:exp-uas-frame}, where
 $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
-\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\SIGN$
+\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$
 
 \begin{figure}[htp!]
   \procedure{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-     (\gid,\sig,\msg,\feval,\y,\iproof) \gets \adv^{\Oframe}(\parm) \\
-     \pcreturn 1~\pcif \Verify(\GK[\gid],\sig,\msg,\feval) = 1 \land
-     \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 1~\land \\
-     \pcind \pccomment{\adv~did not query \SIGN to get \sig, yet \sig originates
-       from an honest \uid, owning a credential that makes \finsp
-       evaluate to \y} \\
-     \pcind \exists \uid \in \HU~\st~\Identify(\PRVUK[\uid],\sig) = 1 \land
-     (\cdot,\sig,\msg,\cdot) \notin \SIG[\uid]~\land\\
-     \pcind \exists \cred \in \CRED[\uid]~\st~
-     \finsp(\feval(\PUBUK[\uid],\cred,\msg),\PUBUK[\uid],\cred,\msg) = \y \\
-%     \pccomment{\todo{I don't think we can give any assurance about \feval here,
-%         given that issuers are corrupt. But still, think about it.}} \\
-     \pcreturn 0
+    (\oid,\siid,\sig,\msg,\feval,\y,\iproof) \gets \adv^{\Oframe}(\parm) \\
+    \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\msg,\feval) \in \SIG[\uid]: \pcreturn 0 \\
+    \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\msg,\feval) = 0: \pcreturn 0 \\
+    \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\y,\iproof,\sig,\msg) = 0: \pcreturn 0 \\
+    (\usk,\scred) \gets \ExtractSign(\oid,\siid,\sig,\msg,\feval) \\
+    %\pcif \usk = \bot \lor \scred = \bot: \pcreturn 1 \\
+    \pcif \exists \uid \in \HU~\st~\PRVUK[\uid] = \usk: \pcreturn 1 \\
+    \pcreturn 0
   }
-  \caption{Non-frameability experiment for \UAS schemes.}
+  \caption{Experiment for non-frameability on \UAS schemes.}
   \label{fig:exp-uas-frame}
 \end{figure}
 
-\begin{definition}{(Non-frameability of \GSAC)}
+\commentwho{Jesus}{Current intuition of non-frame: Since issuer is corrupt,
+  basically \adv~ can create signatures that open to any value. All we can
+  hope for is that no forgery can exist that ``extracts'' to an honest user.}
+
+% \begin{figure}[htp!]
+%   \procedure{$\ExpNonframe(1^\secpar)$}{%
+%     \parm \gets \Setup(1^\secpar) \\
+%      (\gid,\sig,\msg,\feval,\y,\iproof) \gets \adv^{\Oframe}(\parm) \\
+%      \pcreturn 1~\pcif \Verify(\GK[\gid],\sig,\msg,\feval) = 1 \land
+%      \Judge(\GK[\gid],\y,\iproof,\sig,\msg) = 1~\land \\
+%      \pcind \pccomment{\adv~did not query \SIGN to get \sig, yet \sig originates
+%        from an honest \uid, owning a credential that makes \finsp
+%        evaluate to \y} \\
+%      \pcind \exists \uid \in \HU~\st~\Identify(\PRVUK[\uid],\sig) = 1 \land
+%      (\cdot,\sig,\msg,\cdot) \notin \SIG[\uid]~\land\\
+%      \pcind \exists \cred \in \CRED[\uid]~\st~
+%      \finsp(\feval(\PUBUK[\uid],\cred,\msg),\PUBUK[\uid],\cred,\msg) = \y \\
+% %     \pccomment{\todo{I don't think we can give any assurance about \feval here,
+% %         given that issuers are corrupt. But still, think about it.}} \\
+%      \pcreturn 0 \\
+%      kk from former trace \\
+%      \pcind \pcind \pcind \pccomment{... or \uid does not own a \cred for which
+%        \finsp outputs \y} \\
+%      \pcind \pcind \pcind \nexists \cred \in \CRED[\uid]~\st~
+%      \y = \finsp(\feval(\PUBUK[\uid],\cred,\msg),
+%      \PUBUK[\uid],\cred,\msg)~\lor \\     
+%   }
+%   \caption{Non-frameability experiment for \UAS schemes.}
+%   \label{fig:exp-uas-frame}
+% \end{figure}
+
+\begin{definition}{(Non-frameability of \UAS)}
   We define the advantage \AdvNonframe of $\adv$ against \ExpNonframe as
   $\AdvNonframe=\Pr\lbrack\ExpNonframe(1^\secpar)=1\rbrack$.
   %
