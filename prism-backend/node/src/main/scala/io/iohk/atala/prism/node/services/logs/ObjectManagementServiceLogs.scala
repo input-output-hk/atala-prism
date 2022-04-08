@@ -77,4 +77,21 @@ private[services] class ObjectManagementServiceLogs[
       err => error"scheduling single Atala operation - failed cause: $err",
       id => info"scheduling single Atala operation - successfully done, result: $id"
     )
+
+  override def getScheduledAtalaObjects(): Mid[F, Either[errors.NodeError, List[AtalaObjectInfo]]] = {
+    val description = s"getting not processed Atala objects"
+    in =>
+      info"$description" *> in
+        .flatTap {
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            ret => info"$description - successfully got ${ret.size} objects"
+          )
+        }
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
 }

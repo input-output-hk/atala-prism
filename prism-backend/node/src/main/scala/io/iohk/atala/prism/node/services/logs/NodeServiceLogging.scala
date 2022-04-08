@@ -93,4 +93,16 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
     info"getting last synced timestamp" *> in
       .flatTap(res => info"getting last synced timestamp - done: $res")
       .onError(errorCause"encountered an error while getting last synced timestamp" (_))
+
+  override def getScheduledAtalaOperations(): Mid[F, Either[NodeError, List[SignedAtalaOperation]]] = { in =>
+    val description = s"getting scheduled Atala operations"
+    info"$description" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while $description: $err",
+          ops => info"$description - successfully done, number of operations ${ops.size}"
+        )
+      )
+      .onError(errorCause"encountered an error while $description" (_))
+  }
 }
