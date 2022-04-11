@@ -12,7 +12,7 @@ import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.AtalaOperationInfo
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
@@ -47,6 +47,8 @@ trait NodeService[F[_]] {
   def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]]
 
   def getLastSyncedTimestamp: F[Instant]
+
+  def getCurrentProtocolVersion: F[ProtocolVersion]
 }
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
@@ -169,6 +171,8 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   } yield result
 
   override def getLastSyncedTimestamp: F[Instant] = objectManagement.getLastSyncedTimestamp
+
+  override def getCurrentProtocolVersion: F[ProtocolVersion] = objectManagement.getCurrentProtocolVersion
 }
 
 object NodeService {

@@ -21,6 +21,8 @@ import cats.effect.MonadCancelThrow
 
 @derive(applyK)
 trait ProtocolVersionRepository[F[_]] {
+  def getCurrentProtocolVersion(): F[ProtocolVersion]
+
   def ifNodeSupportsCurrentProtocol(): F[Either[ProtocolVersion, Unit]]
 
   def markEffective(blockLevel: Int): F[Option[ProtocolVersionInfo]]
@@ -59,6 +61,11 @@ object ProtocolVersionRepository {
 private class ProtocolVersionRepositoryImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ProtocolVersionRepository[F] {
+
+  override def getCurrentProtocolVersion(): F[ProtocolVersion] =
+    ProtocolVersionsDAO.getCurrentProtocolVersion
+      .logSQLErrorsV2("currentProtocolVersion")
+      .transact(xa)
 
   // Return a unit if node supports the current protocol version
   // Return current protocol version otherwise

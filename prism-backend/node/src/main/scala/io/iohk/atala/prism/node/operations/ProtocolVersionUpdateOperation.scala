@@ -143,12 +143,15 @@ object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolV
         if (name.isEmpty) None.asRight
         else Some(name).asRight
       }
-      major <-
+      protocolVersion <-
         versionInfo
+          .childGet(_.protocolVersion, "protocolVersion")
+      major <-
+        protocolVersion
           .child(_.majorVersion, "majorVersion")
           .parse(v => Either.cond(v >= 0, v, "Negative major version"))
       minor <-
-        versionInfo
+        protocolVersion
           .child(_.minorVersion, "minorVersion")
           .parse(v => Either.cond(v >= 0, v, "Negative minor version"))
       effectiveSince <-

@@ -11,6 +11,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
+import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -227,15 +228,19 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getNodeBuildInfo"
 
     measureRequestFuture(serviceName, methodName)(
-      trace { _ =>
-        Future
-          .successful(
-            node_api
-              .GetNodeBuildInfoResponse()
-              .withVersion(BuildInfo.version)
-              .withScalaVersion(BuildInfo.scalaVersion)
-              .withSbtVersion(BuildInfo.sbtVersion)
-          )
+      trace { traceId =>
+        val query =
+          for {
+            currentProtocolVersion <- nodeService.getCurrentProtocolVersion
+          } yield node_api
+            .GetNodeBuildInfoResponse()
+            .withVersion(BuildInfo.version)
+            .withScalaVersion(BuildInfo.scalaVersion)
+            .withSbtVersion(BuildInfo.sbtVersion)
+            .withSupportedNetworkProtocolVersion(SUPPORTED_VERSION.toProto)
+            .withCurrentNetworkProtocolVersion(currentProtocolVersion.toProto)
+
+        query.run(traceId).unsafeToFuture()
       }
     )
   }

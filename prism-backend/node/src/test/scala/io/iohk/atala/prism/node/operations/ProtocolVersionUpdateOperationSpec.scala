@@ -34,8 +34,12 @@ object ProtocolVersionUpdateOperationSpec {
           version = Some(
             node_models.ProtocolVersionInfo(
               versionName = versionInfo.versionName.getOrElse(""),
-              majorVersion = versionInfo.protocolVersion.major,
-              minorVersion = versionInfo.protocolVersion.minor,
+              protocolVersion = Some(
+                node_models.ProtocolVersion(
+                  majorVersion = versionInfo.protocolVersion.major,
+                  minorVersion = versionInfo.protocolVersion.minor
+                )
+              ),
               effectiveSince = versionInfo.effectiveSinceBlockIndex
             )
           )
@@ -130,6 +134,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         path.path mustBe Vector(
           "protocolVersionUpdate",
           "version",
+          "protocolVersion",
           "majorVersion"
         )
         message mustBe "Negative major version"
@@ -146,6 +151,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
         path.path mustBe Vector(
           "protocolVersionUpdate",
           "version",
+          "protocolVersion",
           "minorVersion"
         )
         message mustBe "Negative minor version"

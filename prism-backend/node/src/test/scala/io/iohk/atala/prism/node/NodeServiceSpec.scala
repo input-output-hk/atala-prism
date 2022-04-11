@@ -451,13 +451,24 @@ class NodeServiceSpec
   }
 
   "NodeService.getBuildInfo" should {
-    "return proper build information" in {
+    "return proper build and protocol information" in {
+      val currentNetworkProtocolMajorVersion = 2
+      val currentNetworkProtocolMinorVersion = 5
+
+      doReturn(
+        fake[ProtocolVersion](ProtocolVersion(currentNetworkProtocolMajorVersion, currentNetworkProtocolMinorVersion))
+      ).when(objectManagementService).getCurrentProtocolVersion
+
       val buildInfo = service.getNodeBuildInfo(GetNodeBuildInfoRequest())
 
       // This changes greatly, so just test something was set
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.7"
       buildInfo.sbtVersion mustBe "1.6.2"
+      buildInfo.supportedNetworkProtocolVersion.map(_.majorVersion) mustBe Some(1)
+      buildInfo.supportedNetworkProtocolVersion.map(_.minorVersion) mustBe Some(0)
+      buildInfo.currentNetworkProtocolVersion.map(_.majorVersion) mustBe Some(currentNetworkProtocolMajorVersion)
+      buildInfo.currentNetworkProtocolVersion.map(_.minorVersion) mustBe Some(currentNetworkProtocolMinorVersion)
     }
   }
 
