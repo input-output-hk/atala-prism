@@ -9,6 +9,7 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.protos.node_models
 import tofu.logging.derivation.loggable
 
 import java.time.Instant
@@ -104,6 +105,9 @@ package object models {
     def isFollowedBy(next: ProtocolVersion): Boolean =
       major == next.major && minor + 1 == next.minor ||
         major + 1 == next.major && next.minor == 0
+
+    def toProto: node_models.ProtocolVersion =
+      node_models.ProtocolVersion(majorVersion = major, minorVersion = minor)
   }
 
   object ProtocolVersion {

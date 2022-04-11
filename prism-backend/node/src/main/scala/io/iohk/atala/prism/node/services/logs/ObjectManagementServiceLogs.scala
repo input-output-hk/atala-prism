@@ -53,6 +53,18 @@ private[services] class ObjectManagementServiceLogs[
           )
         )
 
+  def getCurrentProtocolVersion: Mid[F, ProtocolVersion] =
+    in =>
+      info"getting current protocol version" *> in
+        .flatTap(protocolVersion =>
+          info"getting current protocol version - successfully done, got protocol version: $protocolVersion"
+        )
+        .onError(
+          errorCause"Encountered an error while getting current protocol version" (
+            _
+          )
+        )
+
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
   ): Mid[F, Option[AtalaOperationInfo]] =

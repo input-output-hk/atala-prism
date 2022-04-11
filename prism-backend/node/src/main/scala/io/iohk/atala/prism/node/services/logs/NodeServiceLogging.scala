@@ -9,6 +9,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.errors.NodeError
+import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import tofu.higherKind.Mid
@@ -105,4 +106,9 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       )
       .onError(errorCause"encountered an error while $description" (_))
   }
+
+  override def getCurrentProtocolVersion: Mid[F, ProtocolVersion] = in =>
+    info"getting current protocol version" *> in
+      .flatTap(res => info"current protocol version - done: $res")
+      .onError(errorCause"encountered an error while getting current protocol version" (_))
 }

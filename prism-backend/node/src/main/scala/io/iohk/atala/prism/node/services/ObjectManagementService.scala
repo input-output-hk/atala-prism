@@ -62,6 +62,8 @@ trait ObjectManagementService[F[_]] {
 
   def getLastSyncedTimestamp: F[Instant]
 
+  def getCurrentProtocolVersion: F[ProtocolVersion]
+
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
   ): F[Option[AtalaOperationInfo]]
@@ -204,6 +206,9 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
         maybeLastSyncedBlockTimestamp.value
       )
     } yield lastSyncedBlockTimestamp
+
+  def getCurrentProtocolVersion: F[ProtocolVersion] =
+    protocolVersionsRepository.getCurrentProtocolVersion()
 
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
