@@ -42,6 +42,8 @@ trait AtalaOperationsRepository[F[_]] {
   def getOperationInfo(
       atalaOperationId: AtalaOperationId
   ): F[Either[NodeError, Option[AtalaOperationInfo]]]
+
+  def getOperationsCount(status: AtalaOperationStatus): F[Either[NodeError, Int]]
 }
 
 object AtalaOperationsRepository {
@@ -128,6 +130,13 @@ private final class AtalaOperationsRepositoryImpl[F[_]: MonadCancelThrow](
     val query = AtalaOperationsDAO
       .getAtalaOperationInfo(atalaOperationId)
       .logSQLErrorsV2(opDescription)
+
+    connectionIOSafe(query).transact(xa)
+  }
+
+  def getOperationsCount(status: AtalaOperationStatus): F[Either[NodeError, Int]] = {
+    val opDescription = s"getting operations count"
+    val query = AtalaOperationsDAO.getAtalaOperationsCount(status).logSQLErrorsV2(opDescription)
 
     connectionIOSafe(query).transact(xa)
   }

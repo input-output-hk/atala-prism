@@ -25,8 +25,13 @@ import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerDa
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
+import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceSpec,
+  NodeService,
+  ObjectManagementService,
+  StatisticsService
+}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
   AnyOperationType,
@@ -63,6 +68,9 @@ class NodeServiceSpec
     mock[ObjectManagementService[IOWithTraceIdContext]]
   private val credentialBatchesRepository =
     mock[CredentialBatchesRepository[IOWithTraceIdContext]]
+
+  private val atalaOperationsRepository =
+    mock[AtalaOperationsRepository[IOWithTraceIdContext]]
   private val publicKeysLimit = 4
 
   def fake[T](a: T): ReaderT[IO, TraceId, T] =
@@ -89,7 +97,8 @@ class NodeServiceSpec
                 credentialBatchesRepository,
                 publicKeysLimit,
                 logs
-              )
+              ),
+              StatisticsService.unsafe(atalaOperationsRepository, logs)
             ),
             executionContext
           )

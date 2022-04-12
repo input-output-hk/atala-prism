@@ -5,7 +5,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.{errors, models}
-import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo}
+import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.higherKind.Mid
@@ -67,5 +67,17 @@ private[repositories] final class AtalaOperationsRepositoryLogs[F[
           )
         ).onError(
           errorCause"Encountered an error while getting operation info $atalaOperationId" (_)
+        )
+
+  override def getOperationsCount(status: AtalaOperationStatus): Mid[F, Either[NodeError, Int]] =
+    in =>
+      info"getting operations count with status $status" *>
+        in.flatTap(
+          _.fold(
+            err => error"Encountered an error while getting operations count with status $status: $err",
+            res => info"getting operations count with status $status - got $res"
+          )
+        ).onError(
+          errorCause"Encountered an error while getting operations count with status $status" (_)
         )
 }

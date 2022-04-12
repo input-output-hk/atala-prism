@@ -26,6 +26,7 @@ import io.iohk.atala.prism.node.services.{
   InMemoryLedgerService,
   NodeService,
   ObjectManagementService,
+  StatisticsService,
   SubmissionSchedulingService,
   SubmissionService
 }
@@ -120,7 +121,8 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
                 credentialBatchesRepository,
                 publicKeysLimit,
                 flowPocTestLogs
-              )
+              ),
+              StatisticsService.unsafe(atalaOperationsRepository, flowPocTestLogs)
             ),
             executionContext
           )

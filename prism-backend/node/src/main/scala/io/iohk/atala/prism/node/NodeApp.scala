@@ -129,7 +129,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         didPublicKeysLimit,
         logs
       )
-      nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
+      nodeStatisticsService <- StatisticsService.resource(atalaOperationsRepository, logs)
+      nodeGrpcService = new NodeGrpcServiceImpl(nodeService, nodeStatisticsService)
       server <- startServer(nodeGrpcService)
     } yield (submissionSchedulingService, server)
   }

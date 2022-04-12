@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
+import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
@@ -36,7 +37,10 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implicit
+class NodeGrpcServiceImpl(
+    nodeService: NodeService[IOWithTraceIdContext],
+    statisticsService: StatisticsService[IOWithTraceIdContext]
+)(implicit
     ec: ExecutionContext,
     runtime: IORuntime
 ) extends node_api.NodeServiceGrpc.NodeService {
@@ -63,6 +67,34 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
 
   }
 
+  override def getAvailableMetrics(request: GetAvailableMetricsRequest): Future[GetAvailableMetricsResponse] = {
+    val methodName = "getAvailableMetrics"
+
+    measureRequestFuture(serviceName, methodName) {
+      Future.successful(GetAvailableMetricsResponse(StatisticsService.METRICS))
+    }
+  }
+
+  override def getNodeStatistics(request: GetNodeStatisticsRequest): Future[GetNodeStatisticsResponse] = {
+    val methodName = "getNodeStatistics"
+
+    measureRequestFuture(serviceName, methodName) {
+      trace { traceId =>
+        val query = request.metrics.traverse(statisticsService.retrieveMetric)
+        val res = for {
+          metricsE <- query.run(traceId)
+          metrics = metricsE.zip(request.metrics).map { case (metricE, metricName) =>
+            metricE.fold(
+              err => f"Error while retrieving metric $metricName: $err",
+              value => value.toString
+            )
+          }
+        } yield GetNodeStatisticsResponse(metrics)
+        res.unsafeToFuture()
+      }
+    }
+  }
+
   override def getBatchState(
       request: GetBatchStateRequest
   ): Future[GetBatchStateResponse] = {
@@ -78,7 +110,6 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
         )
         query.run(traceId).unsafeToFuture()
       }
-
     }
   }
 
