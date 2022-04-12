@@ -8,7 +8,11 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
-import io.iohk.atala.prism.node.operations.CreateDIDOperation
+import io.iohk.atala.prism.node.operations.{
+  CreateDIDOperation,
+  IssueCredentialBatchOperation,
+  RevokeCredentialsOperation
+}
 import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, MetricsCountersRepository}
 import io.iohk.atala.prism.node.services.logs.StatisticsServiceLogs
 import tofu.higherKind.Mid
@@ -39,6 +43,10 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
       getAmountOfPendingOperations
     case "amount-of-published-dids" =>
       metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
+    case "amount-of-issued-credential-batches" =>
+      metricsCountersRepository.getCounter(IssueCredentialBatchOperation.metricCounterName).map(Right(_))
+    case "amount-of-credentials-revoked" =>
+      metricsCountersRepository.getCounter(RevokeCredentialsOperation.metricCounterName).map(Right(_))
     case _ =>
       Applicative[F].pure(Left(errors.NodeError.InvalidArgument(f"Metric $metricName does not exist")))
   }
@@ -48,7 +56,9 @@ object StatisticsService {
 
   final val METRICS: List[String] = List(
     "amount-of-pending-operations",
-    "amount-of-published-dids"
+    "amount-of-published-dids",
+    "amount-of-issued-credential-batches",
+    "amount-of-credentials-revoked"
   )
 
   def make[I[_]: Functor, F[_]: MonadCancelThrow](
