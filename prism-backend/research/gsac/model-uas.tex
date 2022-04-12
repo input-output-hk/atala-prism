@@ -164,16 +164,45 @@ on a per-signature basis, even if the signatures use the same \finsp. Thus,
 to) be programmed to extract specific utility values when needed, which may
 depend on the checks required by the verifier a signature was intended to.
 
-\paragraph{Helper Function \Identify.} %
-\todo{We use extract now...} In addition, we make use of a helper
-function \Identify for some of our definitions. This function receives
-a signature and a user secret key, and determines whether the latter was used
-to produce the former. This is in line with previous works on DAA
-\cite{bfg+11,cdl16} and group signatures without traditional open functions
-\cite{dl21,fgl21,gl19}. More concretely, the \Identify function, defined as $1/0
-\gets \Identify(\usk,\sig)$, conveys meaning to our definitions conditioned on
-the fact that, given a signature \sig accepted by \Verify, \Identify returns $1$
-for exactly one \usk.
+\paragraph{Helper functions \ExtractIssue and \ExtractSign.} In our modelling,
+we assume the existence of two functions, \ExtractIssue and \ExtractSign. They
+are not functions available in the actual scheme, but rather to the challenger,
+in the experiments we use to formalize security fof \UAS. Indeed, similar
+techniques have been used before to prove security in privacy-preserving schemes
+with some sort of accountability, but that do not offer conventional opening as
+vanilla group signatures. For instance, see related works on DAA
+\cite{bfg+11,cdl16} and group signature variants \cite{dl21,fgl21,gl19,lnpy21}
+More concretely, both functions are as follows:
+
+\begin{description}
+\item[$\ExtractIssue(\utrans) \rightarrow (\usk,\scred)$.] Receives an
+$\langle \Obtain, \Issue \rangle$ transcript, and returns the credentials (if
+any) and user secret key used during the execution of the protocol. It clearly
+needs an honest issuer as, otherwise, the transcripts won't be available.
+Consequently, we only use it to define the properties that require an honest
+issuer.
+\item[$\ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,\scred)$.]
+Receives a signature pair $(\sig,\yeval)$, as well as the inspector identifier
+\oid, and the identifiers of all issuers of the credentials used to produce the
+signature over \msg, and for \feval. It outputs the user secret key
+and credentials used to generate the signature.
+\end{description}
+
+Note that, both for \ExtractIssue and \ExtractSign, in the case of transcripts
+and signatures by honest users, it is enough to have access to the corresponding
+state information (described below) maintained by the challenger in our
+experiments. For join transcripts of corrupt users, or dishonestly produced
+signatures, we do need to perform actual extraction. How to do this will depend
+on each specific construction. Certainly, the challenger needs special
+knowledge/power such as decryption trapdoors, the ability to rewind the game, or
+program random oracles; the approach needs thus to depend on the concrete
+construction. Although, for the case of \ExtractIssue, online extractability
+(or alternative requirements, such as non-parallel or logarithmic number of
+joins) is necessary. \todo{\needcite Paper from Camenisch and Shoup on the need
+  for online extractability?} \todo{How do we do this in our construction(s)?
+  Can we be more specific here? Also, this poses an interesting question: Is
+  extraction a requirement for this kind of schemes? Can we find alternative
+  definitions?}
 
 \paragraph{Global Variables.} %
 The environment manages several global variables in the games posed to the
@@ -541,6 +570,88 @@ credentials, user key, and message.
 \subsubsection{Security Properties}
 \label{sssec:security}
 
+% \paragraph{Extractability.} %
+% \commentwho{Jesus}{I have a doubt here. On one hand, modelling the
+%   extractability-related properties here as in \cite{lnpy21} would lead to
+%   redundancy with the current unforgeability properties. I do like the
+%   precission in the definition of \cite{lnpy21}; but I do not like that,
+%   within the extractability property, they include ``domain-specific''
+%   concepts (e.g., open, etc.) On the other hand, we could model extractability
+%   as (an extension of) the Identify approach in e.g. \cite{gl19,dl21}. What
+%   I like about that is that it would not be redundant (we just assume the
+%   existance of a function extracting some secret values). What I do not like,
+%   is that the definition is not as precise as in \cite{lnpy12}. Namely, at the
+%   design stage, one just has to informally describe what Identify-Extract does;
+%   then, what it *really* does, has to be defined in the security proofs. That
+%   is, its definition is somehow deferred, which makes the presentation a bit
+%   harder to follow, IMO.}
+
+% Before getting into the ``actual'' security properties, we introduce an
+% auxiliary yet crucial property, extractability, that will allow us to formally
+% define unforgeability-related properties in a meaningful way. More concretely,
+% we require issuance extractability, and signing extractability. Informally, with
+% issuance extractability we require that given an additional trapdoor generated
+% at setup time, it is possible to extract the witnesses (user secret key and
+% credentials) used to request issuance of a new credential, from its $\langle
+% \Obtain,\Issue \rangle$ transcript. With signing extractability, we refer to the
+% requirement to be able to extract, given an additional trapdoor, the user secret
+% key and credentials used to produce any (possibly maliciously generated)
+% signature. The need to differentiate both comes from the fact that, for issuance
+% extractability, we need to assume honest issuers -- as otherwise, the $\langle
+% \Obtain,\Issue\rangle$ transcripts may
+% just not exist. Other than that, both properties are essentially the same: given
+% some proof an instance of an NP relation, they allow extracting the
+% corresponding witnesses. The need to resort to this extraction technique comes
+% from the fact of not including a conventional opening functionality. Indeed,
+% this has been used (at times, somehow implicitly) in related works on DAA
+% \cite{bfg+11,cdl16} and group signature variants \cite{dl21,fgl21,gl19,lnpy21}.
+
+% In more detail, we require the existence of three additional algorithms,
+% \ExtractSetup, \ExtractIssue, and \ExtractSign, as follows:
+
+% \begin{description}
+% \item[$\ExtractSetup(1^\secpar) \rightarrow (\parm,\extracttrap)$.] \todo{Describe,
+%     and mention that it must be indistinguishable from \Setup.}
+% \item[$\ExtractIssue(\extracttrap,\utrans) \rightarrow (\usk,\scred)$.] \todo{Describe.}
+% \item[$\ExtractSign(\extracttrap,\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,\scred)$.]
+%   \todo{Describe.}
+% \end{description}
+
+% With these algorithms, we formally define the issuance extractability and
+% signing extractability properties as shown in \figref{fig:exp-uas-extract}.
+
+% \begin{figure}[htp!]
+%   \procedure{$\ExpExtractIssue(\utrans)$}{%
+%     \pcreturn (\usk,\scred) \\    
+%   }
+
+%   \procedure{$\ExpExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval)$}{%
+%     \pcreturn (\usk,\scred)
+%   }
+  
+%   \caption{Issuance and signing extractability experiments for \UAS schemes.}
+%   \label{fig:exp-uas-extract}
+% \end{figure}
+
+% \begin{definition}{(Extractable issuance of \UAS)}
+%   We define the advantage \AdvExtractIssue of $\adv$ against \ExpExtractIssue as
+%   $\AdvExtractIssue=\Pr\lbrack\ExpExtractIssue(1^\secpar)=1\rbrack$.
+%   %
+%   A \UAS scheme has extractable issuance if, for any p.p.t. adversary $\adv$,
+%   \AdvExtractIssue is a negligible function of $1^\secpar$.
+% \end{definition}
+
+% \begin{definition}{(Extractable signing of \UAS)}
+%   We define the advantage \AdvExtractSign of $\adv$ against \ExpExtractSign as
+%   $\AdvExtractSign=\Pr\lbrack\ExpExtractSign(1^\secpar)=1\rbrack$.
+%   %
+%   A \UAS scheme has extractable signing if, for any p.p.t. adversary $\adv$,
+%   \AdvExtractSign is a negligible function of $1^\secpar$.
+% \end{definition}
+
+% For short, we say that an \UAS scheme that has both extractable issuance and
+% signing, is an extractable \UAS scheme.
+
 \paragraph{Anonymity.} %
 In group signatures, anonymity captures that no adversary must be able to learn,
 from any group signature, the identity (e.g., member index) of its signer. In 
@@ -735,7 +846,6 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
   \caption{Experiment for unforgeability of signatures in \UAS schemes.}
   \label{fig:exp-uas-unfor-sign}
 \end{figure}
-
 
 \begin{definition}{(Unforgeable issuance of \UAS)}
   We define the advantage \AdvForgeIssue of $\adv$ against \ExpForgeIssue as

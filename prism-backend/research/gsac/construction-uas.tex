@@ -8,174 +8,234 @@ instantiation.
 \subsection{Building Blocks}
 \label{ssec:bblocks}
 
-\subsubsection{Commitments}
+\paragraph{Vector Commitment schemes.} %
+Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
+\CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
+\gets \CCommit(\Cparm, \msgset; r)$ produces a commitment \Ccom over a set of
+messages \msgset, from which we may omit randomness $r$. \todo{Informally define
+  hiding and binding, leaving formal definitions to the appendix.}
 
-\todo{Introduce, and summarise correctness and security.}
+\paragraph{Encryption.} %
+Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
+\ESetup(\Esecpar)$ produces public parameters for the other algorithms.
+$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
+pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
+encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
+\Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
+  security properties we'll need.}
 
-\begin{description}
-  \item[$\Cparm \gets \CSetup(\Csecpar).$]
-  \item[$(\Ccom,\Copn) \gets \CCommit(\Cparm,\msg).$] 
-  \item[$\Cproof \gets \CProve(\Ccom,\Copn,\msg).$]    
-  \item[$1/0 \gets \CVerify(\Cproof,\Ccom).$] 
-\end{description}
+\paragraph{Digital Signatures.} %
+Defined as a tuple $(\SSetup,\SKeyGen,\SSign,\SVerify)$. Algorithm $\Sparm \gets
+\SSetup(\Ssecpar)$ produces public parameters for the other algorithms.
+$(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$ generates the verification-signing key
+pair, algorithm $\Ssig \gets \SSign(\Ssk,\msg)$ signs message \msg with
+signing key \Ssk, producing signature \Ssig, and $1/0 \gets \SVerify(\Svk,
+\Ssig,\msg)$ checks whether \Ssig is a valid signature over \msg, under
+verification key \Svk. \todo{Informally define security properties we'll need.}
 
-\subsubsection{Signatures with Proofs of Knowledge}
+\paragraph{Non-Interactive Zero-Knowledge.} %
+We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
+model \needcite. Informally, a NIZK scheme over an NP relation \NIZKRel is
+defined as a tuple $(\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel,
+\NIZKVerify^\NIZKRel)$. Algorithm $\NIZKcrs \gets \NIZKSetup^\NIZKRel
+(\NIZKsecpar)$ produces the common reference string \NIZKcrs. $\NIZKproof/\bot
+\gets \NIZKProve^\NIZKRel(\NIZKcrs,\NIZKw,\NIZKx)$ creates a NIZK proof of
+knowledge of witness \NIZKw for \NIZKx such that $(\NIZKw,\NIZKx) \in \NIZKRel$.
+$1/0 \gets \NIZKVerify^\NIZKRel(\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof.
+\todo{Informally define security properties we'll need.}
 
-As put forward in \cite{cl02}, a generic way to build anonymous credentials
-requires a digital signature scheme with efficient protocols for proving
-knowledge of a digital signature, and signing committed values. This approach
-also has much in common with the Sign-Randomize-Prove (SRP) approach to build
-group signatures \needcite. Thus, even a priori, it seems a good core component
-to build something that is actually in betwween GS and AC. In the sequel, we use
-\RS to refer to schemes of this type, which must provide the functionality
-specified by the following syntax:
+\paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
+We use signature schemes that allow signing messages, or commitments to messages,
+in blocks, and are compatible with (efficient) proof systems over the produced
+signature and signed (commitments to) messages. For this purpose, we define such
+schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,\SBCMSign,\SBCMVerify)$. Algorithm
+$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$ produces the public parameters for the
+scheme. $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a
+verification-signing key
+pair. Algorithm $\SBCMsig \gets \SBCMSign(\SBCMsk,\Ccom,\msgset)$ produces a
+signature over a set of committed messages \Ccom and a set of messages
+\msgset, where either \Ccom or \msgset may be empty. $1/0 \gets
+\SBCMVerify(\SBCMvk,\SBCMsig,\overline{\msgset})$ verifies a signature \SBCMsig
+over message set $\overline{\msgset}$, which must contain both the messages that
+were signed as commitments as well as those signed in ``the clear''. In
+addition, the produced signatures must be compatible with (efficient) NIZK
+proofs of knowledge of a signature, and of (arbitrary) claims over the signed
+(committed) messages.
+\todo{Informally define security properties we'll need.}
 
-\begin{description}
-\item[$(\RSvk,\RSsk) \gets \RSKeyGen(\RSsecpar,\RSlen)$.] Generates a key pair,
-  consisting on the signig key \RSsk and the verification key \RSvk, which
-  support sigining blocks of up to \RSlen messages.
-\item[$\RSsig \gets \RSSign(\RSsk,\msgset,\cmsgset)$.] Given signing key \RSsk,
-  a set of messages \msgset, and a set of commitments to messages, where
-  $|\msgset + \cmsgset| \le \RSlen$, returns a signature \RSsig.
-\item[$1/0 \gets \RSVerify(\RSvk,\RSsig,\amsgset)$.] Given a verification key
-  \RSvk, a signature \RSsig, supposedly over set of messages \amsgset which may
-  contain commitments to messages, returns $1$ or $0$. \todo{Assume that, within
-    \amsgset, it is possible to know which are commitments and wich plain
-    messages?}
-\item[$\RSproof/\bot \gets \RSProve(\RSsig,\amsgset,\D)$.] Given signature
-  \RSsig, over set of messages (and commitments to messages) \amsgset, out of
-  which those indexed by set \D are to be revealed, creates a proof of knowledge
-  \RSproof of \RSsig.
-\item[$1/0 \gets \RSProveVer(\RSproof,\msgset)$.] Given a proof of knowledge of
-  a signature over a set of messages, which includes \msgset, returns $1$ or
-  $0$.
-\end{description}
+% \subsubsection{Commitments}
 
-\todo{Summarise correctness and security.}
+% \todo{Introduce, and summarise correctness and security.}
 
-\subsubsection{Digital Signatures}
+% \begin{description}
+%   \item[$\Cparm \gets \CSetup(\Csecpar).$]
+%   \item[$(\Ccom,\Copn) \gets \CCommit(\Cparm,\msg).$] 
+%   \item[$\Cproof \gets \CProve(\Ccom,\Copn,\msg).$]    
+%   \item[$1/0 \gets \CVerify(\Cproof,\Ccom).$] 
+% \end{description}
 
-\todo{Introduce, and summarise correctness and security.}
+% \subsubsection{Signatures with Proofs of Knowledge}
 
-\begin{description}
-\item[$(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$.]
-\item[$\Ssig \gets \SSign(\Ssk,\msg)$.]
-\item[$1/0 \gets \SVerify(\Svk,\Ssig,\msg)$.]  
-\end{description}
+% As put forward in \cite{cl02}, a generic way to build anonymous credentials
+% requires a digital signature scheme with efficient protocols for proving
+% knowledge of a digital signature, and signing committed values. This approach
+% also has much in common with the Sign-Randomize-Prove (SRP) approach to build
+% group signatures \needcite. Thus, even a priori, it seems a good core component
+% to build something that is actually in betwween GS and AC. In the sequel, we use
+% \RS to refer to schemes of this type, which must provide the functionality
+% specified by the following syntax:
 
-\subsubsection{Encryption}
+% \begin{description}
+% \item[$(\RSvk,\RSsk) \gets \RSKeyGen(\RSsecpar,\RSlen)$.] Generates a key pair,
+%   consisting on the signig key \RSsk and the verification key \RSvk, which
+%   support sigining blocks of up to \RSlen messages.
+% \item[$\RSsig \gets \RSSign(\RSsk,\msgset,\cmsgset)$.] Given signing key \RSsk,
+%   a set of messages \msgset, and a set of commitments to messages, where
+%   $|\msgset + \cmsgset| \le \RSlen$, returns a signature \RSsig.
+% \item[$1/0 \gets \RSVerify(\RSvk,\RSsig,\amsgset)$.] Given a verification key
+%   \RSvk, a signature \RSsig, supposedly over set of messages \amsgset which may
+%   contain commitments to messages, returns $1$ or $0$. \todo{Assume that, within
+%     \amsgset, it is possible to know which are commitments and wich plain
+%     messages?}
+% \item[$\RSproof/\bot \gets \RSProve(\RSsig,\amsgset,\D)$.] Given signature
+%   \RSsig, over set of messages (and commitments to messages) \amsgset, out of
+%   which those indexed by set \D are to be revealed, creates a proof of knowledge
+%   \RSproof of \RSsig.
+% \item[$1/0 \gets \RSProveVer(\RSproof,\msgset)$.] Given a proof of knowledge of
+%   a signature over a set of messages, which includes \msgset, returns $1$ or
+%   $0$.
+% \end{description}
 
-\todo{Introduce, and summarise correctness and security.}
+% \todo{Summarise correctness and security.}
 
-\begin{description}
-\item[$(\Eek,\Edk) \gets \EKeyGen(\Esecpar)$.]
-\item[$\Ec \gets \EEnc(\Eek,\msg)$.]
-\item[$\msg \gets \EDec(\Edk,\Ec)$.]
-\end{description}
+% \subsubsection{Digital Signatures}
 
-\subsubsection{Non-Interactive ZK Proofs of Knowledge}
+% \todo{Introduce, and summarise correctness and security.}
 
-\todo{Introduce, and summarise correctness and security.}
+% \begin{description}
+% \item[$(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$.]
+% \item[$\Ssig \gets \SSign(\Ssk,\msg)$.]
+% \item[$1/0 \gets \SVerify(\Svk,\Ssig,\msg)$.]  
+% \end{description}
 
-\begin{description}
-\item[$\NIZKcrs\gets \NIZKSetup(\NIZKsecpar)$.]
-\item[$\NIZKproof \gets \NIZKProve(\NIZKcrs,\NIZKx,\NIZKw)$.]
-\item[$1/0 \gets \NIZKVerify(\NIZKcrs,\NIZKproof,\NIZKx)$.]
-\end{description}
+% \subsubsection{Encryption}
 
-We use $\NIZK^\Lang$ to denote a \NIZK which is used to prove statements on a
-given NP language \Lang.
+% \todo{Introduce, and summarise correctness and security.}
 
-\subsubsection{Signature Proofs of Knowledge}
+% \begin{description}
+% \item[$(\Eek,\Edk) \gets \EKeyGen(\Esecpar)$.]
+% \item[$\Ec \gets \EEnc(\Eek,\msg)$.]
+% \item[$\msg \gets \EDec(\Edk,\Ec)$.]
+% \end{description}
 
-\todo{Introduce, and summarise correctness and security.}
+% \subsubsection{Non-Interactive ZK Proofs of Knowledge}
 
-\begin{description}
-\item[$\SPKproof \gets \SPKProve(\SPKmsg,\SPKx,\SPKw)$.]
-\item[$1/0 \gets \SPKVerify(\SPKproof,\SPKmsg,\NIZKx)$.]
-\end{description}
+% \todo{Introduce, and summarise correctness and security.}
 
-We use $\SPK^\Lang$ to denote an \SPK which is used to prove statements on a
-given NP language \Lang.
+% \begin{description}
+% \item[$\NIZKcrs\gets \NIZKSetup(\NIZKsecpar)$.]
+% \item[$\NIZKproof \gets \NIZKProve(\NIZKcrs,\NIZKx,\NIZKw)$.]
+% \item[$1/0 \gets \NIZKVerify(\NIZKcrs,\NIZKproof,\NIZKx)$.]
+% \end{description}
+
+% We use $\NIZK^\Lang$ to denote a \NIZK which is used to prove statements on a
+% given NP language \Lang.
+
+% \subsubsection{Signature Proofs of Knowledge}
+
+% \todo{Introduce, and summarise correctness and security.}
+
+% \begin{description}
+% \item[$\SPKproof \gets \SPKProve(\SPKmsg,\SPKx,\SPKw)$.]
+% \item[$1/0 \gets \SPKVerify(\SPKproof,\SPKmsg,\NIZKx)$.]
+% \end{description}
+
+% We use $\SPK^\Lang$ to denote an \SPK which is used to prove statements on a
+% given NP language \Lang.
 
 \subsection{Generic Construction \CUASGen}
+\label{ssec:generic-construction-uas}
+
+We use three different NP relations in our generic construction. Namely,
+$\NIZKRel_{\Issue}$ for issuance, $\NIZKRel_{\Sign}$ for signing, and
+$\NIZKRel_{\Inspect}$ for inspection. We will be defining them in the
+corresponding protocol/algorithm.
 
 \todo{Many variables need renaming here.}
 
-\paragraph{$\parm \gets \Setup(\secpar)$.} %
+\paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
 \begin{itemize}
-  \item Parse \secpar as $(\Csecpar,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
-  \item $\Cparm \gets \CSetup(\Csecpar)$
-  \item $\NIZKparm \gets \NIZKSetup(\NIZKsecpar)$
-  \item Return $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
+\item Parse \secpar as $(\Csecpar,\NIZKsecpar,\SBCMsecpar,\Esecpar,\AttrSpace)$
+\item $\Cparm \gets \CSetup(\Csecpar)$
+\item $\SBCMparm \gets  \SBCMSetup(\SBCMsecpar)$
+\item $\Sparm \gets \SSetup(\Ssecpar)$  
+\item $\Eparm \gets \ESetup(\Esecpar)$
+\item $\NIZKcrs_{\Issue} \gets \NIZKSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar)$
+\item $\NIZKcrs_{\Sign} \gets \NIZKSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar)$
+\item $\NIZKcrs_{\Inspect} \gets \NIZKSetup^{\NIZKRel_{\Inspect}}(\NIZKsecpar)$
+\item Return $(\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},
+  \NIZKcrs_{\Sign},\NIZKcrs_{\Inspect},\AttrSpace)$
 \end{itemize}
 
 \paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
 \begin{itemize}
-\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
-\item $(\RSvk,\RSsk) \gets \RSKeyGen(\RSsecpar)$  
-\item $\sig_{\fissue} \gets \RSSign(\RSsk,\fissue,\bot)$
-\item $\ipk \gets (\RSvk,\fissue,\sig_{\fissue})$
-\item $\isk \gets \RSsk$
+\item Parse \parm as $(\cdot,\SBCMparm,\Sparm,\cdot,\cdot,\cdot,\cdot,\cdot)$
+\item $(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$
+\item $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$  
+\item $\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$
+\item $\ipk \gets (\Svk,\fissue,\sig_{\fissue})$
+\item $\isk \gets \Ssk$
 \item Return $(\ipk,\isk)$
 \end{itemize}
 
 \paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
 \begin{itemize}
-\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
-\item $(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$
-\item $(\Eek,\Edk) \gets \EKeyGen(\Esecpar)$
+\item Parse \parm as $(\cdot,\cdot,\cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$
+\item $(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$
+\item $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$
 \item $\sig_{\finsp} \gets \SSign(\Ssk,\finsp)$
 \item $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$
 \item $\osk \gets (\Ssk,\Edk)$
 \item Return $(\opk,\osk)$
 \end{itemize}
 
-\paragraph{$(\upk,\usk) \gets \UKeyGen(\parm)$.} %
+\paragraph{$\usk \gets \UKeyGen(\parm)$.} %
 \begin{itemize}
-\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar)$
-\item $(\Svk,\Ssk) \gets \SKeyGen(\Ssecpar)$
-\item Return $(\Svk,\Ssk)$
+\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar,\AttrSpace)$
+\item $\usk \getr \AttrSpace$
+\item Return \usk
 \end{itemize}
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
-  \Obtain(\usk,\attrs,\ldblbrace (gpk_i,\cred_i)\rdblbrace_{i \in \Issuers}),
-  \Issue(\isk,\upk,\attrs,\ldblbrace \gpk_i \rdblbrace_{i \in \Issuers})
+  \Obtain(\usk,\ldblbrace (\cred_i,\ipk_i)\rdblbrace_{i \in \Issuers},\attrs),
+  \Issue(\isk,\upk,\attrs,\ldblbrace \ipk_i \rdblbrace_{i \in \Issuers},\attrs)
   \rangle$.} %
-We define the NP language $\LangIss = \lbrace (\usk,
-\ldblbrace \cred_i \rdblbrace_{i \in \Issuers}): \fissue(\usk,\attrs,\ldblbrace
-(\gpk_i,\cred_i) \rdblbrace_{i \in \Issuers}) = 1 \land \Ccom = \CCommit(\usk)
-\rbrace$ \todo{\fissue needs to ensure that all {\cred}s are linked to \usk. How
-  to capture this?} The interactive protocol from a user to obtain a credential
-from an issuer of the system is as follows:
+To obtain a new credential, a user with secret key usk and credentials $\cred_i$,
+issued by issuers with public keys $\ipk_i$, requests a signature on commitments
+of both the user key and a new random credential identifier -- similarly to
+\GSAC. In addition, the user proves that the issuance function \fissue
+established by the issuer is satisfied by the $\cred_i$ credentials and its user
+secret key. For this, we define relation $\NIZKRel_{\Issue} = \lbrace (\usk,
+\credid,\scred), (\Ccom,\attrs): \Ccom = \CCommit((\usk,\credid)) \land
+\fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in \scred, \usk \in \cred
+\rbrace$. \todo{Refine the notation for $\attr \in \cred$. Also, need to make
+  the {\ipk}s explicit in it.} The interactive protocol from a user to obtain a
+credential from an issuer of the system is as follows:
 
 \begin{itemize}
-\item Issuer: $\ch \gets \bin^*$; Send \ch to User.
-\item User:
-  \begin{itemize}    
-  \item $\Ccom_{\usk} \gets \CCommit(\usk)$
-  % \item $\SPKproof^{\Lang} \gets
-  %   \SPK \lbrace (\usk): \Ccom_{\usk} = \CCommit(\Cparm,\usk) \rbrace (\ch)$
-  \item $\SPKproof^{\LangIss} \gets \SPKProve^{\LangIss}
-    (\ch,(\attrs,\Ccom_{\usk}, \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers}),
-    (\usk,\ldblbrace \cred_i \rdblbrace_{i \in \Issuers}))$
-  \item Send $(\attrs,\Ccom_{\usk},\SPKproof^{\LangIss})$ to Issuer
-  \end{itemize}
-\item Issuer:
-  \begin{itemize}
-%  \item $1 \stackrel{?}{=} \SPKVerify(\SPKproof^{\Lang},\Ccom_{\upk})$
-  \item $1 \stackrel{?}{=} \SPKVerify(\SPKproof^{\LangIss},\ch,
-    (\attrs,\Ccom_{\usk}, \ldblbrace \gpk_i \rdblbrace_{i \in \Issuers}))$
-  \item $\cred \gets \RSSign(\isk,\attrs,\Ccom_{\usk})$
-  \item $\utrans \gets (\Ccom_{\usk},\cred,\attrs)$
-  \item Send \cred to User and output \utrans.
-  \end{itemize}
-\item User:
-  \begin{itemize}
-  \item $1 \stackrel{?}{=} \RSVerify(\RSvk,\cred,(\attrs,\Ccom_{\usk}))$
-  \item Output \cred
-  \end{itemize}   
+\item \uline{User}: Compute a fresh credential identifier $\credid \getr
+  \AttrSpace$, and commit to it along with the user secret key with
+  $\Ccom \gets \CCommit((\usk,\credid))$. Compute proof $\NIZKproof \gets
+  \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},(\usk,\credid,\scred),
+  (\Ccom,\attrs))$. Send $(\Ccom,\NIZKproof)$ to Issuer.
+\item \uline{Issuer}: Verify \NIZKproof with $\NIZKVerify^{\NIZKRel_{\Issue}}
+  (\NIZKcrs_{\Issue},(\Ccom,\attrs))$, and abort if it fails. Then, compute
+  the credential by running $\cred \gets \SBCMSign(\SBCMsk,\Ccom,\attrs)$.
+  Send \cred to User. Output $\utrans \gets (\Ccom,\attrs,\cred,\NIZKproof)$.
+\item \uline{User}: Verify the credential with $\SBCMVerify(\SBCMvk,\cred,
+  \attrs \cup \lbrace \usk,\credid \rbrace)$. Reject if verification fails.
+  Otherwise, return \cred.
 \end{itemize}
 
 \paragraph{$\sig \gets \Sign(\gpk,\usk,\cred,\msg,\feval)$.} %
