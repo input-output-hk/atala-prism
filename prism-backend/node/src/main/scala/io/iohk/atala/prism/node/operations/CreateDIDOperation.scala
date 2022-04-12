@@ -21,6 +21,7 @@ case class CreateDIDOperation(
     digest: Sha256Digest,
     ledgerData: LedgerData
 ) extends Operation {
+  val metricCounterName: String = "number_of_created_dids"
 
   override def getCorrectnessData(
       keyId: String

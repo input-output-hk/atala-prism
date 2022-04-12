@@ -12,7 +12,6 @@ import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.node.services.logs.StatisticsServiceLogs
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
-import kamon.Kamon
 
 @derive(applyK)
 trait StatisticsService[F[_]] {

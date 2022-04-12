@@ -23,6 +23,7 @@ case class ProtocolVersionUpdateOperation(
     override val digest: Sha256Digest,
     override val ledgerData: LedgerData
 ) extends Operation {
+  override val metricCounterName: String = "number_of_protocol_updates"
 
   override def getCorrectnessData(
       keyId: String

@@ -119,6 +119,8 @@ case class UpdateDIDOperation(
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
     } yield ()
   }
+
+  override val metricCounterName: String = "number_of_did_updates"
 }
 
 object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {

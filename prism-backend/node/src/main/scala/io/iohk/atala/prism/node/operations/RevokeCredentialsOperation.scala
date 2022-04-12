@@ -22,6 +22,8 @@ case class RevokeCredentialsOperation(
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
+  override val metricCounterName: String = "number_of_revoked_credentials"
+
   override def linkedPreviousOperation: Option[Sha256Digest] = Some(
     previousOperation
   )

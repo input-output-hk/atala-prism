@@ -3,17 +3,19 @@ package io.iohk.atala.prism.node
 import java.time.Instant
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
+import doobie.implicits.toDoobieApplicativeErrorOps
+import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
+import io.iohk.atala.prism.node.operations.StateError.{CannotUpdateMetric, UnsupportedOperation}
 import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
-import io.iohk.atala.prism.node.repositories.daos.ProtocolVersionsDAO
+import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolVersionsDAO}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
@@ -142,6 +144,10 @@ package object operations {
     final case class UntrustedProposer(proposer: DidSuffix) extends StateError {
       override def name: String = "untrusted-proposer"
     }
+
+    final case class CannotUpdateMetric(err: String) extends StateError {
+      override def name: String = "cannot-update-metric"
+    }
   }
 
   /** Data required to verify the correctness of the operation */
@@ -154,6 +160,18 @@ package object operations {
 
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
+    val metricCounterName: String
+
+    def incrementMetricsCounter(): EitherT[ConnectionIO, StateError, Unit] =
+      EitherT {
+        println(f"incrementing $metricCounterName")
+        MetricsCountersDAO.incrementCounter(metricCounterName).attemptSomeSqlState {
+          case sqlstate.class42.UNDEFINED_COLUMN =>
+            CannotUpdateMetric(f"Metric counter [$metricCounterName] was not defined"): StateError
+          case err =>
+            CannotUpdateMetric(f"Can not update metric $metricCounterName: $err"): StateError
+        }
+      }
 
     /** Fetches key and possible previous operation reference from database */
     def getCorrectnessData(
@@ -186,6 +204,7 @@ package object operations {
       for {
         _ <- isSupported()
         _ <- applyStateImpl(applyConfig)
+        _ <- incrementMetricsCounter()
       } yield ()
 
     def digest: Sha256Digest
@@ -258,6 +277,7 @@ package object operations {
   }
 
   trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
+
     def parse(
         operation: node_models.AtalaOperation,
         ledgerData: LedgerData
