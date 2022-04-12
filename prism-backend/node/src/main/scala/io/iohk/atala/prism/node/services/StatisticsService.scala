@@ -8,7 +8,8 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
-import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
+import io.iohk.atala.prism.node.operations.CreateDIDOperation
+import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, MetricsCountersRepository}
 import io.iohk.atala.prism.node.services.logs.StatisticsServiceLogs
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
@@ -23,7 +24,8 @@ trait StatisticsService[F[_]] {
 }
 
 private final class StatisticsServiceImpl[F[_]: Applicative](
-    atalaOperationsRepository: AtalaOperationsRepository[F]
+    atalaOperationsRepository: AtalaOperationsRepository[F],
+    metricsCountersRepository: MetricsCountersRepository[F]
 ) extends StatisticsService[F] {
   def getAtalaOperationsCountByStatus(status: AtalaOperationStatus): F[Either[errors.NodeError, Int]] =
     atalaOperationsRepository.getOperationsCount(status)
@@ -35,6 +37,8 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
   def retrieveMetric(metricName: String): F[Either[errors.NodeError, Int]] = metricName match {
     case "amount-of-pending-operations" =>
       getAmountOfPendingOperations
+    case "amount-of-published-dids" =>
+      metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
     case _ =>
       Applicative[F].pure(Left(errors.NodeError.InvalidArgument(f"Metric $metricName does not exist")))
   }
@@ -43,11 +47,13 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
 object StatisticsService {
 
   final val METRICS: List[String] = List(
-    "amount-of-pending-operations"
+    "amount-of-pending-operations",
+    "amount-of-published-dids"
   )
 
   def make[I[_]: Functor, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
+      metricsCountersRepository: MetricsCountersRepository[F],
       logs: Logs[I, F]
   ): I[StatisticsService[F]] = {
     for {
@@ -58,20 +64,23 @@ object StatisticsService {
       val mid: StatisticsService[Mid[F, *]] = logs
 
       mid attach new StatisticsServiceImpl[F](
-        atalaOperationsRepository
+        atalaOperationsRepository,
+        metricsCountersRepository
       )
     }
   }
 
   def resource[I[_]: Applicative: Functor, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
+      metricsCountersRepository: MetricsCountersRepository[F],
       logs: Logs[I, F]
   ): Resource[I, StatisticsService[F]] = Resource.eval(
-    StatisticsService.make(atalaOperationsRepository, logs)
+    StatisticsService.make(atalaOperationsRepository, metricsCountersRepository, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
+      metricsCountersRepository: MetricsCountersRepository[F],
       logs: Logs[I, F]
-  ): StatisticsService[F] = StatisticsService.make(atalaOperationsRepository, logs).extract
+  ): StatisticsService[F] = StatisticsService.make(atalaOperationsRepository, metricsCountersRepository, logs).extract
 }

@@ -22,7 +22,7 @@ case class RevokeCredentialsOperation(
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
-  override val metricCounterName: String = "number_of_revoked_credentials"
+  override val metricCounterName: String = RevokeCredentialsOperation.metricCounterName
 
   override def linkedPreviousOperation: Option[Sha256Digest] = Some(
     previousOperation
@@ -112,6 +112,7 @@ case class RevokeCredentialsOperation(
 }
 
 object RevokeCredentialsOperation extends SimpleOperationCompanion[RevokeCredentialsOperation] {
+  val metricCounterName: String = "number_of_revoked_credentials"
 
   override def parse(
       operation: node_models.AtalaOperation,

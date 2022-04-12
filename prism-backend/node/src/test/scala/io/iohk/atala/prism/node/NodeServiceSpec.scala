@@ -25,7 +25,12 @@ import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerDa
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaOperationsRepository,
+  CredentialBatchesRepository,
+  DIDDataRepository,
+  MetricsCountersRepository
+}
 import io.iohk.atala.prism.node.services.{
   BlockProcessingServiceSpec,
   NodeService,
@@ -69,6 +74,8 @@ class NodeServiceSpec
   private val credentialBatchesRepository =
     mock[CredentialBatchesRepository[IOWithTraceIdContext]]
 
+  private val metricsCountersRepository = mock[MetricsCountersRepository[IOWithTraceIdContext]]
+
   private val atalaOperationsRepository =
     mock[AtalaOperationsRepository[IOWithTraceIdContext]]
   private val publicKeysLimit = 4
@@ -98,7 +105,7 @@ class NodeServiceSpec
                 publicKeysLimit,
                 logs
               ),
-              StatisticsService.unsafe(atalaOperationsRepository, logs)
+              StatisticsService.unsafe(atalaOperationsRepository, metricsCountersRepository, logs)
             ),
             executionContext
           )

@@ -23,7 +23,7 @@ case class ProtocolVersionUpdateOperation(
     override val digest: Sha256Digest,
     override val ledgerData: LedgerData
 ) extends Operation {
-  override val metricCounterName: String = "number_of_protocol_updates"
+  override val metricCounterName: String = ProtocolVersionUpdateOperation.metricCounterName
 
   override def getCorrectnessData(
       keyId: String
@@ -124,6 +124,7 @@ case class ProtocolVersionUpdateOperation(
 }
 
 object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolVersionUpdateOperation] {
+  val metricCounterName: String = "number_of_protocol_updates"
 
   override def parse(
       operation: proto.AtalaOperation,

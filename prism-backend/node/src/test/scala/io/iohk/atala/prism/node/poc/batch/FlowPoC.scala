@@ -57,6 +57,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var atalaObjectsTransactionsRepository: AtalaObjectsTransactionsRepository[IOWithTraceIdContext] = _
+  protected var metricsCountersRepository: MetricsCountersRepository[IOWithTraceIdContext] = _
   protected var keyValuesRepository: KeyValuesRepository[IOWithTraceIdContext] =
     _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
@@ -72,6 +73,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     atalaReferenceLedger = InMemoryLedgerService.unsafe(onAtalaReference, flowPocTestLogs)
     blockProcessingService = new BlockProcessingServiceImpl(ApplyOperationConfig(DidSuffix("0a1e3")))
     atalaOperationsRepository = AtalaOperationsRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
+    metricsCountersRepository = MetricsCountersRepository.unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
       .unsafe(dbLiftedToTraceIdIO, flowPocTestLogs)
     submissionService = SubmissionService.unsafe(
@@ -122,7 +124,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
                 publicKeysLimit,
                 flowPocTestLogs
               ),
-              StatisticsService.unsafe(atalaOperationsRepository, flowPocTestLogs)
+              StatisticsService.unsafe(atalaOperationsRepository, metricsCountersRepository, flowPocTestLogs)
             ),
             executionContext
           )

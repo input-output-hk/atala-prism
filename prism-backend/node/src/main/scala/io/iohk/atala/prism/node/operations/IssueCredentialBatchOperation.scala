@@ -24,8 +24,7 @@ case class IssueCredentialBatchOperation(
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
-
-  override val metricCounterName: String = "number_of_issued_credential_batches"
+  override val metricCounterName: String = IssueCredentialBatchOperation.metricCounterName
 
   override def getCorrectnessData(
       keyId: String
@@ -84,6 +83,7 @@ case class IssueCredentialBatchOperation(
 }
 
 object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCredentialBatchOperation] {
+  val metricCounterName: String = "number_of_issued_credential_batches"
 
   override def parse(
       operation: node_models.AtalaOperation,
