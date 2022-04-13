@@ -101,10 +101,6 @@ An \UAS scheme is composed by the following algorithms.
   keys $\ipk_i$, for evaluation function \feval and inspector key \opk.
 \item[$(\yinsp,\iproof)/\bot \gets \Inspect(\osk,\lbrace \ipk_i
   \rbrace_{i \in \Issuers},\sig,\yeval,\msg,\feval)$.] %
-  \todo{I think we do not need \trans here, see the generic construction. (This
-    was somehow inherited from \cite{bsz05}.) However, if it is indeed not
-    needed, it is noteworthy that we include/need it in \GSAC, but not here.
-    Justify/understand better why!}
   Executed by the inspector with private key \osk. Receives a signature $(\sig,
   \yeval)$ over message \msg and evaluation function \feval, generated using
   credentials issued by the issuers with public keys $\ipk_i$. If \sig is valid,
