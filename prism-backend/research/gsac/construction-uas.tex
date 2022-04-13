@@ -164,53 +164,38 @@ corresponding protocol/algorithm.
 \todo{Many variables need renaming here.}
 
 \paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
-\begin{itemize}
-\item Parse \secpar as $(\Csecpar,\NIZKsecpar,\SBCMsecpar,\Esecpar,\AttrSpace)$
-\item $\Cparm \gets \CSetup(\Csecpar)$
-\item $\SBCMparm \gets  \SBCMSetup(\SBCMsecpar)$
-\item $\Sparm \gets \SSetup(\Ssecpar)$  
-\item $\Eparm \gets \ESetup(\Esecpar)$
-\item $\NIZKcrs_{\Issue} \gets \NIZKSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar)$
-\item $\NIZKcrs_{\Sign} \gets \NIZKSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar)$
-\item $\NIZKcrs_{\Inspect} \gets \NIZKSetup^{\NIZKRel_{\Inspect}}(\NIZKsecpar)$
-\item Return $(\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},
-  \NIZKcrs_{\Sign},\NIZKcrs_{\Inspect},\AttrSpace)$
-\end{itemize}
+The setup process essentially consists on generating the public parameters
+for all the building blocks. In detail, it parses \secpar as $(\Csecpar,
+\NIZKsecpar,\SBCMsecpar,\Esecpar,\AttrSpace)$. Then, run $\Cparm \gets
+\CSetup(\Csecpar)$, $\SBCMparm \gets  \SBCMSetup(\SBCMsecpar)$, $\Sparm \gets
+\SSetup(\Ssecpar)$, $\Eparm \gets \ESetup(\Esecpar)$, $\NIZKcrs_{\Issue} \gets
+\NIZKSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar)$, $\NIZKcrs_{\Sign} \gets
+\NIZKSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar)$, and $\NIZKcrs_{\Inspect} \gets
+\NIZKSetup^{\NIZKRel_{\Inspect}}(\NIZKsecpar)$. Return $(\Cparm,\SBCMparm,
+\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},\NIZKcrs_{\Inspect},
+\AttrSpace)$
 
 \paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
-\begin{itemize}
-\item Parse \parm as $(\cdot,\SBCMparm,\Sparm,\cdot,\cdot,\cdot,\cdot,\cdot)$
-\item $(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$
-\item $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$  
-\item $\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$
-\item $\ipk \gets (\Svk,\fissue,\sig_{\fissue})$
-\item $\isk \gets \Ssk$
-\item Return $(\ipk,\isk)$
-\end{itemize}
+To generate its key pair, each issuer first parses \parm as $(\cdot,\SBCMparm,
+\Sparm,\cdot,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets
+\SKeyGen(\Sparm)$, $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$,
+$\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$, $\ipk \gets (\Svk,\fissue,
+\sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
 
 \paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
-\begin{itemize}
-\item Parse \parm as $(\cdot,\cdot,\cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$
-\item $(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$
-\item $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$
-\item $\sig_{\finsp} \gets \SSign(\Ssk,\finsp)$
-\item $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$
-\item $\osk \gets (\Ssk,\Edk)$
-\item Return $(\opk,\osk)$
-\end{itemize}
+To generate its key pair, each inspectur first parses \parm as $(\cdot,\cdot,
+\cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets \SKeyGen
+(\Sparm)$, $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$, $\sig_{\finsp} \gets \SSign
+(\Ssk,\finsp)$, $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk \gets
+(\Ssk,\Edk)$. Finally, returns $(\opk,\osk)$.
 
 \paragraph{$\usk \gets \UKeyGen(\parm)$.} %
-\begin{itemize}
-\item Parse \parm as $(\Cparm,\NIZKsecpar,\RSsecpar,\Ssecpar,\Esecpar,\AttrSpace)$
-\item $\usk \getr \AttrSpace$
-\item Return \usk
-\end{itemize}
+Each user, prior to requesting credentials, generates his secret key by parsing
+\parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\AttrSpace)$, and picking randomly
+$\usk \getr \AttrSpace$. Finally, return \usk.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle
-  \Obtain(\usk,\ldblbrace (\cred_i,\ipk_i)\rdblbrace_{i \in \Issuers},\attrs),
-  \Issue(\isk,\upk,\attrs,\ldblbrace \ipk_i \rdblbrace_{i \in \Issuers},\attrs)
-  \rangle$.} %
+  \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\upk,\scred,\attrs)\rangle$.} %
 To obtain a new credential, a user with secret key usk and credentials $\cred_i$,
 issued by issuers with public keys $\ipk_i$, requests a signature on commitments
 of both the user key and a new random credential identifier -- similarly to
@@ -238,60 +223,56 @@ credential from an issuer of the system is as follows:
   Otherwise, return \cred.
 \end{itemize}
 
-\paragraph{$\sig \gets \Sign(\gpk,\usk,\cred,\msg,\feval)$.} %
-We define the NP language $\LangSig = \lbrace (\upk,\cred,\y):
-\SVerify(\sig,\upk) = 1~\land~\Ec = \EEnc(\Eek,\y)~\land~
-\y = \finsp(\feval(\upk,\cred,\msg),\upk,\cred,\msg)\rbrace$. The
-signing algorithm is defined as follows:
-\todo{Argue that the composition of \finsp and \feval is not redundant even
-  though both depend on the same arguments. Namely, because \feval is defined
-  on a per-signature basis (akin to the policies of ACs), and \finsp is defined
-  once per group (akin to the open function in GSs). Hence, \finsp cannot just
-  be defined to ``contain'' \feval at setup time.}
+\paragraph{$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
+In the signing algorithm, we make use of the following relation:
+$\NIZKRel_{\Sign} = \lbrace (\usk,\scred,\yinsp),(\msg,\feval,\yeval,\Ec,\sipk)
+: \Ec = \EEnc(\Eek,\yinsp) \land \yeval = \feval(\usk,\scred,\msg) \land
+\yinsp = \finsp(\yeval,\usk,\scred,\msg) \land \forall \cred \in \scred,
+\SBCMVerify(\ipk,\cred,\attrs_{\cred} \cup \lbrace \usk,\credid \rbrace) = 1)
+\rbrace$, where we make two syntax abuses, to ease readability: with
+$\attrs_{\cred}$ we refer to the attributes in credential \cred, which its
+legitimate owner can recover easily (e.g., from secure storage); and, as stated
+before, $\ipk_{\cred}$ denotes the issuer public key of credential \cred, which
+we also assume to be easily recoverable from \cred, by its legitimate owner.
+\todo{Maybe, try to think of clearer naming conventions.}
+%
+From this, in order to produce a valid signature, the user first evaluates
+$\yeval \gets \feval (\usk,\scred,\msg)$, and decides whether or not to continue
+with the signing process -- this may depend, e.g., on the inspection policy of
+\opk, as the output of \feval may influence whether the user will be
+de-anonymizable or not, depending on the \finsp function in \opk.
+%
+Then, the user parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
+$\Verify(\Svk,\sig_{\finsp},\finsp) = 1$ (note that this step may be cached), to
+compute $\yinsp \gets \finsp(\yeval,\usk,\scred,\msg)$, and encrypt it with
+\Eek by running $\Ec \gets \EEnc(\Eek,\yeval)$. Finally, the user computes
+$\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,\scred,
+\yinsp))$ and  outputs $(\sig = (\NIZKproof,\Ec),\yeval)$.
 
-\begin{itemize}
-\item Parse \gpk as $(\ipk,\opk)$
-\item Parse \ipk as $(\RSvk,\fissue,\sig_{\fissue})$; Verify $\sig_{\fissue}$
-\item Parse \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$; Verify $\sig_{\finsp}$
-\item $\sig' \gets \SSign(\usk,\msg)$
-%\item $b \gets \feval(\upk,\cred,\msg)$
-\item % If $b=0$: 
-  $\y \gets \finsp(\feval(\upk,\cred,\msg),
-  \upk,\cred,\msg)$%; else $\y = \bot$.
-\item $\Ec \gets \EEnc(\Eek,\y)$
-\item $\SPKproof^{\LangSig} \gets \SPKProve^{\LangSig}(\msg,(\Ec,\sig'),
-  (\upk,\cred,\y))$
-\item Return $(\Ec,\sig',\SPKproof^{\LangSig})$
-\end{itemize}
+\paragraph{$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval)$.} %
+The ``cryptographic'' side of the verification essentially consists on checking
+the NIZK proof. That is, parse \sig as $(\NIZKproof,\Ec)$ and check whether
+$\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,\sipk)) = 1$. In
+addition, the verifier may further check whether \yeval meets its needs.
 
-\paragraph{$1/0 \gets \Verify(\gpk,\sig,\msg,\feval)$.} %
-\begin{itemize}
-\item Parse \sig as $(\Ec,\sig',\SPKproof^{\LangSig})$
-\item Return $\SPKVerify^{\LangSig}(\SPKproof^{\LangSig},\msg,(\Ec,\sig'))$ 
-\end{itemize}
+\paragraph{$(\yinsp,\NIZKproof)/\bot \gets
+  \Inspect(\osk,\sipk,\sig,\yeval,\msg,\feval)$.} %
+We first define NIZK relation $\NIZKRel_{\Inspect} = \lbrace (\osk),(\Ec,\yinsp)
+: \yinsp = \EDec(\osk,\Ec) \rbrace$.
+%
+For inspection, the inspector first verifies the signature by running $\Verify(
+\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the verification succeeds, it parses
+\sig as $(\NIZKproof,\Ec)$, decrypts \Ec by running $\yeval \gets \EDec(\osk,
+\Ec)$, and computes $\NIZKproof_{\Inspect} \gets \NIZKProve^{\NIZKRel_{\Inspect}}
+(\NIZKcrs_{\Inspect},(\osk),(\Ec,\yinsp))$. It returns $(\yinsp,
+\NIZKproof_{\Inspect})$.
 
-\paragraph{$(\y,\iproof)/\bot \gets \Inspect(\gpk,\osk,\trans,\sig,\msg,\feval)$.} %
-
-We follow the approach of \cite{bsz05} for verifiable openings. Namely, we
-define an NP language $\LangVerIns = \lbrace (\Eek,\Edk,r):
-(\Eek,\Edk) = \EKeyGen(\Esecpar;r) \land \y = \EDec(\Edk,\c) \rbrace$.
-
-\begin{itemize}
-\item Parse \osk as $(\Ssk,\Edk)$; \gpk as
-  $(\cdot,(\Svk,\Eek,\finsp,\sig_{\finsp}))$
-\item  $1 \stackrel{?}{=} \Verify(\gpk,\sig,\msg,\feval)$  
-\item $\y \gets \EDec(\Edk,\c)$
-\item $\NIZKproof^{\LangVerIns} \gets \NIZKProve(\NIZKcrs,(\c,\y),(\Eek,\Edk,r))$
-\item Return $\NIZKproof^{\LangVerIns}$
-\end{itemize}
-
-\paragraph{$1/0 \gets \Judge(\gpk,\y,\iproof,\sig,\msg)$.} %
-
-\begin{itemize}
-\item  $1 \stackrel{?}{=} \Verify(\gpk,\sig,\msg,\feval)$
-\item Parse \sig as $(\c,\cdot,\cdot)$  
-\item Return $\NIZKVerify(\NIZKcrs,\iproof,(\c,\y))$
-\end{itemize}
+\paragraph{$1/0 \gets \Judge(\opk,\yinsp,\NIZKproof,\sig,\yeval,\msg)$.} %
+To assess the validity of an inspection proof, first check the signature
+by running $\Verify(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the check succeeds,
+parse \sig as $((\cdot,\Ec),\cdot)$ and verify \NIZKproof with $\NIZKVerify
+(\NIZKcrs_{\Inspect},\NIZKproof,(\Ec,\yinsp))$. Accept it the NIZK verification
+passes, and reject otherwise.
 
 %%% Local Variables:
 %%% mode: latex

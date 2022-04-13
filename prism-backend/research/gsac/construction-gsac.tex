@@ -303,6 +303,18 @@ $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,(\Cusk,\Ccredid),\NIZKproof_{\Issue})$
 proving that only the credential request was made by the owner of \usk. If
 either check fails, the proof is rejected.
 
+\commentwho{Jesus}{For consistency with \UAS, maybe remove the need to return
+  \Attrs in \Open, and return \DAttrs instead. Then, we do not need to pass
+  \trans as a parameter to \Open, as \DAttrs is already attested for in the
+  signature being opened. It also makes sense from the point of view that we
+  are already revealing \upk, which would allow tracing; but otherwise don't
+  reveal anything else about the attributes of \upk -- attributes that whoever
+  requested the signature (the verifier) didn't seem to consider necessary, as
+  s/he only requested \DAttrs. Still, if we make this modification, mention the
+  possibility to return \Attrs, and the option to do it via adding \trans as a
+  parameter to \Open (or including an encryption of all attributes in the
+  signature, which is probably unrealistic.)}
+
 \subsection{Security of the \GSAC construction}
 
 \todo{XXX}
