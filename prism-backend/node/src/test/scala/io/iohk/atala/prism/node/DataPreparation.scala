@@ -4,29 +4,19 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.google.protobuf.ByteString
-import doobie.util.transactor.Transactor
 import doobie.implicits._
+import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo, TransactionStatus}
+import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectId,
-  AtalaObjectStatus,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus,
-  AtalaOperationInfo,
-  AtalaOperationStatus,
-  DIDData,
-  DIDPublicKey
-}
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
@@ -41,9 +31,10 @@ import io.iohk.atala.prism.node.repositories.daos.{
   PublicKeysDAO
 }
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
-import org.scalatest.OptionValues._
-import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
+import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
+import org.scalatest.OptionValues._
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
@@ -269,6 +260,12 @@ object DataPreparation {
       signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
   ): node_internal.AtalaBlock = {
     node_internal.AtalaBlock(operations = Seq(signedOperation))
+  }
+
+  def createBlock(
+      signedOperations: List[node_models.SignedAtalaOperation]
+  ): node_internal.AtalaBlock = {
+    node_internal.AtalaBlock(operations = signedOperations)
   }
 
   def createAtalaObject(

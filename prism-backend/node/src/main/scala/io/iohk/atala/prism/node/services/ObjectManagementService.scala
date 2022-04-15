@@ -14,10 +14,10 @@ import doobie.util.transactor.Transactor
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
 import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
+import io.iohk.atala.prism.node.errors.NodeError.{InvalidArgument, UnsupportedProtocolVersion}
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
@@ -58,7 +58,17 @@ trait ObjectManagementService[F[_]] {
       ops: node_models.SignedAtalaOperation*
   ): F[List[Either[NodeError, AtalaOperationId]]]
 
-  def getScheduledAtalaObjects(): F[Either[NodeError, List[AtalaObjectInfo]]]
+  def getScheduledAtalaObjects: F[Either[NodeError, List[AtalaObjectInfo]]]
+
+  def getUnconfirmedTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]]
+
+  def getConfirmedTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]]
 
   def getLastSyncedTimestamp: F[Instant]
 
@@ -194,8 +204,32 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     }
   }
 
-  override def getScheduledAtalaObjects(): F[Either[NodeError, List[AtalaObjectInfo]]] =
+  override def getScheduledAtalaObjects: F[Either[NodeError, List[AtalaObjectInfo]]] =
     atalaObjectsTransactionsRepository.getNotProcessedObjects
+
+  override def getUnconfirmedTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]] = {
+    val query = for {
+      _ <- EitherT.cond[F](limit <= 50, (), InvalidArgument(s"limit value $limit > 50"))
+      result <- EitherT(atalaObjectsTransactionsRepository.getUnconfirmedObjectTransactions(lastSeenTxId, limit))
+    } yield result
+
+    query.value
+  }
+
+  override def getConfirmedTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]] = {
+    val query = for {
+      _ <- EitherT.cond[F](limit <= 50, (), InvalidArgument(s"limit value $limit > 50"))
+      result <- EitherT(atalaObjectsTransactionsRepository.getConfirmedObjectTransactions(lastSeenTxId, limit))
+    } yield result
+
+    query.value
+  }
 
   def getLastSyncedTimestamp: F[Instant] =
     for {

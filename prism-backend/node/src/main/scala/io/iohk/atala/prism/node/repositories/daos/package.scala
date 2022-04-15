@@ -1,23 +1,23 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.data.NonEmptyList
-
-import java.time.Instant
+import doobie._
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import doobie.{Get, Meta, Put, Read, Write}
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.models.{BlockInfo, DidSuffix, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.daos.BaseDAO
+import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.models._
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
+
+import java.time.Instant
 
 package object daos extends BaseDAO {
 
@@ -363,6 +363,29 @@ package object daos extends BaseDAO {
           ProtocolVersion(major, minor),
           versionName,
           effectiveSince
+        )
+      }
+
+  implicit val transactionInfoRead: Read[TransactionInfo] =
+    Read[(Array[Byte], String, Option[Int], Option[Instant], Option[Int])]
+      .map { case (txId, ledger, maybeBlockNumber, maybeBlockTimestamp, maybeBlockIndex) =>
+        TransactionInfo(
+          TransactionId.from(txId).get,
+          Ledger.withNameInsensitive(ledger),
+          for {
+            bn <- maybeBlockNumber
+            bt <- maybeBlockTimestamp
+            bi <- maybeBlockIndex
+          } yield BlockInfo(bn, bt, bi)
+        )
+      }
+
+  val transactionInfoRead2Columns: Read[TransactionInfo] =
+    Read[(Array[Byte], String)]
+      .map { case (txId, ledger) =>
+        TransactionInfo(
+          TransactionId.from(txId).get,
+          Ledger.withNameInsensitive(ledger)
         )
       }
 }

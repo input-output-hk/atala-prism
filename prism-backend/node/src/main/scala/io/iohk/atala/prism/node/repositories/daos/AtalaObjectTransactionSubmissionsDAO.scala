@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.node.repositories.daos
 
-import java.time.Instant
-
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.fragment.Fragment
 import cats.syntax.functor._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.{AtalaObjectTransactionSubmission, AtalaObjectTransactionSubmissionStatus}
+
+import java.time.Instant
 
 object AtalaObjectTransactionSubmissionsDAO {
   private def updateStatusSql(
@@ -83,4 +83,42 @@ object AtalaObjectTransactionSubmissionsDAO {
       status: AtalaObjectTransactionSubmissionStatus
   ): ConnectionIO[Unit] =
     updateStatusSql(ledger, transactionId, status).update.run.void
+
+  // Returning all transactions in ledger which correspond to an AtalaObject with the status Pending
+  // Return sorted by submission_timestamp in descending order
+  def getUnconfirmedTransactions(
+      lastSeenTransactionId: Option[TransactionId],
+      limit: Option[Int]
+  ): ConnectionIO[List[TransactionInfo]] = {
+    val limitFr = limit.fold(Fragment.empty)(l => fr"LIMIT $l")
+    val baseFr: Fragment = lastSeenTransactionId match {
+      case None =>
+        sql"""
+             |SELECT tx.transaction_id, tx.ledger
+             |FROM atala_object_tx_submissions AS tx
+             |  INNER JOIN atala_objects AS obj ON tx.atala_object_id = obj.atala_object_id
+             |WHERE tx.status = 'IN_LEDGER' AND obj.atala_object_status = 'PENDING'
+             |ORDER BY tx.submission_timestamp DESC
+       """.stripMargin
+      case Some(lastSeenId) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT submission_timestamp AS last_seen_time
+             |  FROM atala_object_tx_submissions
+             |  WHERE transaction_id = $lastSeenId
+             |)
+             |SELECT tx.transaction_id, tx.ledger
+             |FROM atala_object_tx_submissions AS tx
+             |  INNER JOIN atala_objects AS obj ON tx.atala_object_id = obj.atala_object_id
+             |  CROSS JOIN CTE
+             |WHERE tx.status = 'IN_LEDGER' AND obj.atala_object_status = 'PENDING' AND
+             |       (tx.submission_timestamp < last_seen_time OR
+                        tx.submission_timestamp = last_seen_time AND tx.transaction_id < $lastSeenId)
+             |ORDER BY tx.submission_timestamp DESC, tx.transaction_id DESC
+         """.stripMargin
+    }
+    (baseFr ++ limitFr)
+      .query[TransactionInfo](transactionInfoRead2Columns)
+      .to[List]
+  }
 }

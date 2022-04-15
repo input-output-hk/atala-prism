@@ -8,6 +8,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
+import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
@@ -261,7 +262,7 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       trace { traceId =>
         val query =
           for {
-            operationsE <- nodeService.getScheduledAtalaOperations()
+            operationsE <- nodeService.getScheduledAtalaOperations
             operations = operationsE.fold(err => countAndThrowNodeError(methodName, err), info => info)
           } yield node_api
             .GetScheduledOperationsResponse()
@@ -283,6 +284,30 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
                 }
               )
             )
+        query.run(traceId).unsafeToFuture()
+      }
+    )
+  }
+
+  /** * PUBLIC
+    *
+    * Return a list of wallet transactions.
+    */
+  override def getWalletTransactionsPaginated(
+      request: GetWalletTransactionsRequest
+  ): Future[GetWalletTransactionsResponse] = {
+    val methodName = "getWalletTransactionsPaginated"
+
+    measureRequestFuture(serviceName, methodName)(
+      trace { traceId =>
+        val query =
+          for {
+            transactionsE <- nodeService
+              .getWalletTransactions(request.state, TransactionId.from(request.lastSeenTransactionId), request.limit)
+            transactions = transactionsE.fold(err => countAndThrowNodeError(methodName, err), info => info)
+          } yield node_api
+            .GetWalletTransactionsResponse()
+            .withTransactions(transactions.map(_.toProto))
         query.run(traceId).unsafeToFuture()
       }
     )

@@ -2,12 +2,13 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import cats.data.NonEmptyList
 import cats.syntax.functor._
+import doobie.Fragment
 import doobie.free.connection
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.util.fragments.in
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 
 import java.time.Instant
@@ -48,6 +49,44 @@ object AtalaObjectsDAO {
           new IllegalArgumentException("Transaction has bo block")
         )
     }
+  }
+
+  // Returning all transactions in ledger which correspond to an AtalaObject with the status Processed
+  // Return sorted by block time in descending order
+  def getConfirmedTransactions(
+      lastSeenTransactionId: Option[TransactionId],
+      limit: Option[Int]
+  ): ConnectionIO[List[TransactionInfo]] = {
+    val limitFr = limit.fold(Fragment.empty)(l => fr"LIMIT $l")
+    val baseFr: Fragment = lastSeenTransactionId match {
+      case None =>
+        sql"""
+             |SELECT tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+             |FROM atala_object_txs AS tx
+             |INNER JOIN atala_objects AS obj ON tx.atala_object_id = obj.atala_object_id
+             |WHERE obj.atala_object_status = 'PROCESSED'
+             |ORDER BY tx.block_number DESC, tx.block_index DESC
+       """.stripMargin
+      case Some(lastSeenId) =>
+        sql"""
+            |WITH CTE AS (
+            |  SELECT block_number AS last_seen_block_level, block_index AS last_seen_tx_index
+            |  FROM atala_object_txs
+            |  WHERE transaction_id = $lastSeenId
+            |)
+            |SELECT tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+            |FROM atala_object_txs AS tx
+            |  INNER JOIN atala_objects AS obj ON tx.atala_object_id = obj.atala_object_id
+            |  CROSS JOIN CTE
+            |WHERE obj.atala_object_status = 'PROCESSED' AND
+            |       (tx.block_number < last_seen_block_level OR
+                          tx.block_number = last_seen_block_level AND tx.block_index < last_seen_tx_index)
+            |ORDER BY tx.block_number DESC, tx.block_index DESC
+         """.stripMargin
+    }
+    (baseFr ++ limitFr)
+      .query[TransactionInfo]
+      .to[List]
   }
 
   def get(objectId: AtalaObjectId): ConnectionIO[Option[AtalaObjectInfo]] = {
