@@ -11,14 +11,6 @@
 
 \todo{Is it possible to give it in some generic sense?}
 
-\subsection{Combining Multiple Credentials in One Presentation}
-
-\todo{I think this might be possible if we can use \fissue so that any user can
-  create arbitrary groups, where he is the issuer, an can thus run
-  \Obtain,\Issue protocols to combine credentials from other groups. This is
-  probably inefficient (or, at least, more than doing so wihtout having to
-  create ad hoc groups), but at least allows the enhanced functionality...}
-
 \subsection{Restricting to Conventional GS and AC Schemes}
 
 \todo{It would be nice to prove that a \GSAC scheme to which we remove the
@@ -26,6 +18,7 @@
   where all credentials have no attributes, and where we restrict to only
   one credential per user, becomes a conventional GS scheme.}
 
+\todo{Also, restrict \UAS to ``plain'' \GSAC.}
 
 \subsection{Group Signatures with Message Dependent Opening}
 
@@ -39,6 +32,12 @@
 \todo{Can we come up with a (\fissue,\feval,\finsp) tuple that allows us to
   somehow mimic ring signatures (i.e., ``a group signature without issuer nor
   opening''? Does the model support this?}
+
+\subsection{Functional Signatures}
+
+\todo{I think that, by making \yeval explicit, \UAS is essentially a
+  privacy-preserving extension to Functional Signatures. Still, I read that paper
+  quite some time ago. Re-check.}
 
 %%% Local Variables:
 %%% mode: latex

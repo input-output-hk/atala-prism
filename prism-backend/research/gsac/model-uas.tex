@@ -231,13 +231,17 @@ with $\emptyset$.
   \end{description}
 \item[Tables for credentials-related data]:
   \begin{description}
-  \item[\CRED.] Stores information related to credentials obtained by honest
-    users. Thus, it is indexable by \cid. More specifically, it stores tuples of
-    the form $(\uid,\cred,\iid,\attrs,\scid)$, where \uid is the identity of the
-    owner of the credential, \cred (when available) is the credential itself,
-    \iid is the identifier of the credential issuer, \attrs are the attributes
-    included in \cred, and \scid are the identifiers of the credentials (if any)
-    that \uid used to request \cred.
+  \item[\CRED.] Stores information related to credentials obtained by users in
+    the system. Thus, it is indexable by \cid. More specifically, it stores
+    tuples of the form $(\uid,\cred,\iid,\attrs,\scid)$, where \uid is the
+    identity of the owner of the credential, \cred (when available) is the
+    credential itself, \iid is the identifier of the credential issuer, \attrs
+    are the attributes included in \cred, and \scid are the identifiers of the
+    credentials (if any) that \uid used to request \cred. For notational
+    convenience, we may use $\CRED[\scid]$ to refer to $\CRED[\cid]$ for all
+    $\cid \in \scid$. Also, when clear from context, we sometimes use
+    $\CRED[\cid]$ (resp. $\CRED[\scid]$ to mean \cred (resp. \scred) in
+    $\CRED[\cid] = (\cdot,\cred,\cdot,\cdot,\cdot)$ (resp. $\CRED[\scid]$).
   \item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
     ``\uid such that $\CRED[\cid] = (\uid, \cdot, \cdot, \cdot, \cdot)$''.
   \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
@@ -249,10 +253,9 @@ with $\emptyset$.
   \begin{description}
   \item[\SIG.] Maintains signatures generated via the \SIGN oracle, on behalf
     of honest users. Entries of this table are $(\oid,\scid,\sig,\yeval,\msg,
-    \feval)$,
-    where \oid is the inspector chosen for the signature, \scid is the set of
-    credentials used for signing, \feval is the evaluation function, and \sig
-    and \msg are the produced signature and signed message.
+    \feval)$, where \oid is the inspector chosen for the signature, \scid is the
+    set of credentials used for signing, \feval is the evaluation function, and
+    \sig and \msg are the produced signature and signed message.
   \item[\CSIG.] Maintains challenge signatures output to the adversary; i.e.,
     the table is indexable by challenge signatures \csig.
     Each entry contains also $\cuid_b$ and $\scid_b$ the challenge user and
@@ -503,6 +506,7 @@ is accepted by \Judge, and matches the output of applying \finsp on \yeval, the
 credentials, user key, and message.
 
 \begin{definition}{(Correctness of \UAS)}
+  \label{def:correctness-uas}
   An \UAS scheme is correct if, for any p.p.t. adversary $\adv$, \ExpCorrect
    outputs 1 with negligible probability.
 \end{definition}
@@ -515,48 +519,17 @@ credentials, user key, and message.
     \pcif \feval \notin \famfeval: \pcreturn 0 \\
     \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
     (\sig,\yeval) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
-    \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\sig,\msg,\feval) = 0: \pcreturn 1~
-    \pccomment{\sig fails to verify} \\
-    \pcif \CorrectIssue(\uid,\scid) = 0: \pcreturn 1~
-    \pccomment{Some \cid should not have been issued} \\
-    \pcif \CorrectEval(\oid,\uid,\scid,\msg,\sig,\yeval,\feval) = 0: \pcreturn 1~
-    \pccomment{The result of evaluation is wrong} \\
-    \pcif \CorrectInspect(\oid,\uid,\scid,\msg,\sig,\yeval,\feval) = 0: \pcreturn 1~
-    \pccomment{The result of inspection is wrong} \\
-    \pcreturn 0 \\
-  }
-
-  \procedure{$\CorrectIssue(\uid,\scid)$}{
+    \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\sig,\msg,\feval) = 0: \pcreturn 1 \\
     \pcfor \cid \in \scid \pcdo: \\
-    \pcind \iid \gets \ISR[\cid] \\
-    \pcind \textrm{Parse}~\ATTR[\cid]~\textrm{as}~(\attrs^\cid,\scid^\cid);~
-    \textrm{Parse}~\IK[\iid]~\textrm{as}~
-    ((\cdot,\fissue^\gid),\cdot) \\        
-    \pcind \pcif \fissue^\gid(\PUBUK[\uid],\CRED[\scid]^\cid,\attrs^\cid) = 0: 
-    \pcreturn 0 \\
-    \pcreturn 1 \\   
-  }
-
-  \procedure{$\CorrectEval(\oid,\uid,\scid,\msg,\sig,\yeval,\feval)$}{%
-    \pcif \feval(\UK[\uid],\CRED[\scid],\msg) \neq \yeval: \pcreturn 0 \\
-    \pcreturn 1 \\
-  }
-
-  \procedure{$\CorrectInspect(\oid,\uid,\scid,\msg,\sig,\yeval,\feval)$}{
-    \textrm{Parse}~\OK[\oid]~\textrm{as}~((\cdot,\finsp^\gid),\cdot) \\
-    \pccomment{\sig cannot be inspected} \\
-    \pcif \Inspect(\PRVOK[\oid],\PUBIK[\scid],\sig,\yeval,\msg,\feval) = \bot:
-    \pcreturn 0 \\
-    \pccomment{The produced $(\y,\iproof)$ pair is rejected by \Judge} \\
-    \pcif (\yinsp,\iproof) \gets \Inspect(\PRVOK[\gid],\PUBIK[\scid],\sig,
-    \msg,\feval)~\land \\
-    \hspace*{10pt}
-    \Judge(\PUBOK[\oid],\PUBIK[\scid],\y,\iproof,\sig,\yeval,\msg,\feval) = 0: \\
-    \pcind \pcreturn 0 \\
-    \pccomment{\yinsp is the wrong value} \\
-    \pcif \yinsp \neq \finsp^\gid(\yeval,\UK[\uid],\CRED[\scid],\msg)):
-    \pcreturn 0 \\
-    \pcreturn 1
+    \pcind \textrm{Let}~\scred^{\cid}~\textrm{be the credentials used to obtain}
+    ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,\fissue^{\cid}),\cdot)\\
+    \pcind \pcif \fissue^{\cid}(\PUBUK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
+    \pcif \feval(\UK[\uid],\CRED[\scid],\msg) \neq \yeval: \pcreturn 1 \\
+    (\yinsp,\iproof) \gets \Inspect(\PRVOK[\gid],\PUBIK[\scid],\sig,\msg,\feval) \\
+    \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\y,\iproof,\sig,\yeval,\msg,\feval)
+    = 0 \lor \yinsp \neq \finsp^\gid(\yeval,\UK[\uid],\CRED[\scid],\msg)): \\
+    \pcind \pcreturn 1 \\
+    \pcreturn 0
   }
   
   \caption{Correctness experiment for \UAS schemes.}
@@ -697,6 +670,7 @@ game is given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,
 \end{figure}
 
 \begin{definition}{(Anonymity of \UAS)}
+  \label{def:anonymity-uas}  
   We define the advantage \AdvAnon of $\adv$ against \ExpAnonb as
   $\AdvAnon=|\Pr\lbrack\ExpAnono(1^\secpar)=1\rbrack-
   \Pr\lbrack\ExpAnonz(1^\secpar)=1\rbrack|$.
@@ -844,6 +818,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 \end{figure}
 
 \begin{definition}{(Unforgeable issuance of \UAS)}
+  \label{def:issue-forge-uas}  
   We define the advantage \AdvForgeIssue of $\adv$ against \ExpForgeIssue as
   $\AdvForgeIssue=\Pr\lbrack\ExpForgeIssue(1^\secpar)=1\rbrack$.
   %
@@ -852,6 +827,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 \end{definition}
 
 \begin{definition}{(Unforgeable signing of \UAS)}
+  \label{def:sign-forge-uas}  
   We define the advantage \AdvForgeSign of $\adv$ against \ExpForgeSign as
   $\AdvForgeSign=\Pr\lbrack\ExpForgeSign(1^\secpar)=1\rbrack$.
   %
@@ -966,6 +942,7 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \end{figure}
 
 \begin{definition}{(Non-frameability of \UAS)}
+  \label{def:frame-uas}
   We define the advantage \AdvNonframe of $\adv$ against \ExpNonframe as
   $\AdvNonframe=\Pr\lbrack\ExpNonframe(1^\secpar)=1\rbrack$.
   %
