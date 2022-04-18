@@ -44,7 +44,7 @@ private[repositories] final class CredentialBatchesRepositoryLogs[F[
             err => error"Encountered an error while getting credential revocation time: $err",
             res =>
               info"getting credential revocation time for $batchId - successfully done ${res
-                .map(_.transactionId)}"
+                  .map(_.transactionId)}"
           )
         )
         .onError(

@@ -26,7 +26,7 @@ object DefaultCredentialType {
             .getOrElse(
               throw new RuntimeException(
                 s"Incorrect type: ${config
-                  .getString("type")}, for field ${config.getString("name")}" +
+                    .getString("type")}, for field ${config.getString("name")}" +
                   s"allowed values: ${CredentialTypeFieldType.values.map(_.entryName).mkString(", ")}"
               )
             )

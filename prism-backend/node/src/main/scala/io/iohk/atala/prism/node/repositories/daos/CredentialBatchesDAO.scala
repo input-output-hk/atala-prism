@@ -31,7 +31,7 @@ object CredentialBatchesDAO {
     sql"""
          |INSERT INTO credential_batches (batch_id, last_operation, issuer_did_suffix, merkle_root, issued_on, issued_on_absn, issued_on_osn, ledger, issued_on_transaction_id)
          |VALUES (${data.batchId}, ${data.lastOperation}, ${data.issuerDIDSuffix}, ${data.merkleRoot}, ${Instant
-      .ofEpochMilli(issuedOn.getAtalaBlockTimestamp)},
+        .ofEpochMilli(issuedOn.getAtalaBlockTimestamp)},
          | ${issuedOn.getAtalaBlockSequenceNumber}, ${issuedOn.getOperationSequenceNumber}, ${data.ledgerData.ledger}, ${data.ledgerData.transactionId})
        """.stripMargin.update.run.void
   }

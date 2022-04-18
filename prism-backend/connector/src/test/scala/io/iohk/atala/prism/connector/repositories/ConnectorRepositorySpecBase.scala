@@ -126,7 +126,7 @@ trait ConnectorRepositorySpecBase extends AtalaWithPostgresSpec {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
          |VALUES (${MessageId
-      .random()}, $connection, $sender, $recipient, $receivedAt, $content)
+        .random()}, $connection, $sender, $recipient, $receivedAt, $content)
          |RETURNING id""".stripMargin.runUnique[MessageId]()
   }
 

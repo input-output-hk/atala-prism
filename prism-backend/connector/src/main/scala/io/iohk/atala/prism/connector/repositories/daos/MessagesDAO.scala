@@ -23,7 +23,7 @@ object MessagesDAO {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
          |VALUES ($id, $connection, $sender, $recipient, ${Instant
-      .now()}, $content)""".stripMargin.update.run.void
+        .now()}, $content)""".stripMargin.update.run.void
   }
 
   def insert(

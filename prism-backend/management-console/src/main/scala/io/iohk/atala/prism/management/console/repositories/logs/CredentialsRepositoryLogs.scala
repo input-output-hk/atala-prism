@@ -47,7 +47,7 @@ private[repositories] final class CredentialsRepositoryLogs[F[
       info"getting credential by credential id $credentialId" *> in
         .flatTap(r =>
           info"getting credential by credential id result - ${r
-            .fold("not found")(_ => "found")}"
+              .fold("not found")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while getting credential by credential id" (

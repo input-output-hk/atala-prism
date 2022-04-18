@@ -84,7 +84,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"getting connection by id" *> in
         .flatTap(result =>
           info"getting connection by id - successfully done, ${result
-            .fold("not found")(_ => "found")}"
+              .fold("not found")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while getting connection by id" (_)
@@ -117,7 +117,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"getting other side info" *> in
         .flatTap(result =>
           info"getting other side info - successfully done, ${result
-            .fold("not found")(result => s"found, contains did - ${result.did.isDefined}, contains public key - ${result.publicKey.isDefined}")}"
+              .fold("not found")(result => s"found, contains did - ${result.did.isDefined}, contains public key - ${result.publicKey.isDefined}")}"
         )
         .onError(
           errorCause"encountered an error while getting other side info" (_)
@@ -130,7 +130,7 @@ private[repositories] final class ConnectionsRepositoryLogs[F[
       info"getting connection by token" *> in
         .flatTap(result =>
           info"getting connection by token - successfully done, ${result
-            .fold("not found")(_ => "found")}"
+              .fold("not found")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while getting connection by token" (_)
