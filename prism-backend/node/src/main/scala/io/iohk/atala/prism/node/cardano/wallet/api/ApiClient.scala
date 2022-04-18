@@ -131,7 +131,7 @@ private[wallet] object ApiClient {
         parsingFailure =>
           throw new RuntimeException(
             s"Cardano Wallet API Error: ${parsingFailure.message}, with response: ${response
-              .take(256)}",
+                .take(256)}",
             parsingFailure.underlying
           ),
         identity

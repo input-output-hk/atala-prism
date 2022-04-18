@@ -65,8 +65,8 @@ object PublicKeysDAO {
     sql"""
          |UPDATE public_keys
          |SET revoked_on = ${Instant.ofEpochMilli(
-      revokedOn.getAtalaBlockTimestamp
-    )},
+        revokedOn.getAtalaBlockTimestamp
+      )},
          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}

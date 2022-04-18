@@ -99,7 +99,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
       info"finding by institution id and name $institution $name" *> in
         .flatTap(result =>
           info"finding by institution id and name - ${result
-            .fold("found nothing")(_ => "found")}"
+              .fold("found nothing")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while finding by institution id and name" (
@@ -115,7 +115,7 @@ private[repositories] final class CredentialTypeRepositoryLogs[F[
       info"finding by institution id and credential type id $institution $credentialTypeId" *> in
         .flatTap(result =>
           info"finding by institution id and credential type id - ${result
-            .fold("found nothing")(_ => "found")}"
+              .fold("found nothing")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while finding by institution id and credential type id" (

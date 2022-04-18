@@ -33,7 +33,7 @@ private[services] class ConnectionsServiceLogs[
       info"getting connection by token $token" *> in
         .flatTap(res =>
           info"getting connection by token - successfully done, connection ${res
-            .fold("not found")(_ => "found")}"
+              .fold("not found")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while getting connection by token" (_)
@@ -101,7 +101,7 @@ private[services] class ConnectionsServiceLogs[
       info"getting connection by id $id, participant $participantId" *> in
         .flatTap(res =>
           info"getting connection by id - successfully done, connection ${res
-            .fold("not found")(_ => "found")}"
+              .fold("not found")(_ => "found")}"
         )
         .onError(
           errorCause"encountered an error while getting connection by id" (_)

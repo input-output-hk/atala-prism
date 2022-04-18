@@ -65,7 +65,7 @@ object TestCardanoBlockRepository {
          |    ${block.header.hash.value},
          |    $blockNoOption,
          |    (SELECT id FROM block WHERE hash = ${block.header.previousBlockHash
-      .map(_.value)}),
+        .map(_.value)}),
          |    ${block.header.time})
     """.stripMargin.update.run.transact(database).unsafeRunSync()
 

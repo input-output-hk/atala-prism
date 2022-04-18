@@ -188,11 +188,11 @@ object CredentialsDAO {
         |     JOIN contacts ON (c.contact_id = contacts.contact_id)
         |     LEFT JOIN PC USING (credential_id)
         |${whereAndOpt(
-      Some(fr"c.issuer_id = $issuedBy"),
-      whereCredentialType,
-      whereCreatedBefore,
-      whereCreatedAfter
-    )}
+        Some(fr"c.issuer_id = $issuedBy"),
+        whereCredentialType,
+        whereCreatedBefore,
+        whereCreatedAfter
+      )}
         |$orderBy
         |${limitFr(query.limit)}
         |${offsetFr(query.offset)}

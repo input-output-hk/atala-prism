@@ -393,7 +393,7 @@ private final class ContactsIntegrationServiceLogs[F[_]: ServiceLogging[
       info"getting contact $institutionId" *> in
         .flatTap(result =>
           info"getting contact - successfully done, contact ${result
-            .fold("not found")(_ => "found")}"
+              .fold("not found")(_ => "found")}"
         )
         .onError(errorCause"encountered an error while getting contact" (_))
 

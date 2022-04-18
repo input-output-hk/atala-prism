@@ -66,8 +66,8 @@ object ConnectorClient {
          |port = $port
          |whitelistedDID = $whitelistedDID
          |didPrivateKey = ${StringUtils.masked(
-        didPrivateKey.getHexEncoded
-      )}""".stripMargin
+          didPrivateKey.getHexEncoded
+        )}""".stripMargin
     }
   }
   object Config {

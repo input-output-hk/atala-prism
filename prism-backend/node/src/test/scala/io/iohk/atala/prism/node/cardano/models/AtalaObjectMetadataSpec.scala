@@ -219,13 +219,13 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
           |          "list" : [
           |            {
           |              "bytes" : "${atalaObjectByteStringsWithoutBlockVersion(
-          0
-        )}"
+            0
+          )}"
           |            },
           |            {
           |              "bytes" : "${atalaObjectByteStringsWithoutBlockVersion(
-          1
-        )}"
+            1
+          )}"
           |            }
           |          ]
           |        }

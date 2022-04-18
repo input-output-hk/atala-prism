@@ -28,7 +28,7 @@ object AtalaObjectsDAO {
     sql"""
          |INSERT INTO atala_objects (atala_object_id, object_content, atala_object_status, received_at)
          |VALUES (${data.objectId}, ${data.byteContent}, ${data.status}, ${Instant
-      .now()})
+        .now()})
          |ON CONFLICT (atala_object_id) DO NOTHING
        """.stripMargin.update.run
   }
