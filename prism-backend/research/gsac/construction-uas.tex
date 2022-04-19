@@ -105,31 +105,34 @@ Each user, prior to requesting credentials, generates his secret key by parsing
 $\usk \getr \AttrSpace$. Finally, return \usk.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\upk,\scred,\attrs)\rangle$.} %
+  \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\upk,\sipk,\attrs)\rangle$.} %
 The protocol is run between an issuer, and a user with secret key \usk and
 credentials \scred, where each $\cred \in \scred$ is issued by an issuer with
 public key $\ipk_{\cred}$ (which we assume that the user can easily retrieve,
 e.g., from secure storage, given \cred), and attests attributes
-$\attrs_{\cred}$. The user
-requests a signature on a commitment to the user key, as well as on the
-attributes in \attrs. In addition, the user proves that the issuance function
-\fissue established by the issuer is satisfied by the credentials in $\scred$
+$\attrs_{\cred}$. For readability we write $\attrs_{\scred}$ as abbreviation for
+$\lbrace \attrs_{\cred} \rbrace_{\cred \in \scred}$, and similarly for
+$\sipk_{\scred}$. The user requests a signature on a commitment to the user key,
+as well as on the attributes in \attrs. In addition, the user proves that the
+issuance function \fissue established by the issuer is satisfied by the
+credentials in $\scred$
 and its user secret key. For this, we define relation $\NIZKRel_{\Issue} = \lbrace
-(\usk,\scred), (\Ccom,\attrs): \Ccom = \CCommit(usk) \land \fissue(\usk,\scred,
-\attrs) = 1 \land \forall \cred \in \scred, \SBCMVerify(\ipk_{\cred},\cred,
+(\usk,\scred,\attrs_{\scred}), (\Ccom,\attrs,\sipk_{\scred}): \Ccom = \CCommit(usk) \land
+\fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in \scred,
+\SBCMVerify(\ipk_{\cred},\cred,
 \attrs_{\cred} \cup \lbrace \usk \rbrace) = 1 \rbrace$. The interactive protocol
 for a user to obtain a credential from an issuer of the system is as follows:
 
 \begin{itemize}
 \item \uline{User}: Commit to the user secret key with $\Ccom \gets
   \CCommit(\usk)$. Compute proof $\NIZKproof \gets
-  \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},(\usk,\scred),(\Ccom,
-  \attrs))$. Send $(\Ccom,\NIZKproof)$ to Issuer.
+  \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},(\usk,\scred,\attrs_{\scred}),
+  (\Ccom,\attrs))$. Send $(\Ccom,\NIZKproof)$ to Issuer.
 \item \uline{Issuer}: Verify \NIZKproof with $\NIZKVerify^{\NIZKRel_{\Issue}}
-  (\NIZKcrs_{\Issue},\NIZKproof,(\Ccom,\attrs))$, and abort if it fails. Then,
+  (\NIZKcrs_{\Issue},\NIZKproof,(\Ccom,\attrs,\sipk))$, and abort if it fails. Then,
   compute the credential by running $\cred \gets \SBCMSign(\SBCMsk,\Ccom,
-  \attrs)$. Send \cred to User. Output $\utrans \gets (\Ccom,\attrs,\cred,
-  \NIZKproof)$.
+  \attrs)$. Send \cred to User. Output $\utrans \gets (\Ccom,\attrs,\sipk,
+  \cred,\NIZKproof)$.
 \item \uline{User}: Verify the credential with $\SBCMVerify(\SBCMvk,\cred,
   \attrs \cup \lbrace \usk \rbrace)$. Reject if verification fails.
   Otherwise, return \cred.
@@ -137,12 +140,14 @@ for a user to obtain a credential from an issuer of the system is as follows:
 
 \paragraph{$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
 In the signing algorithm, we make use of the following relation:
-$\NIZKRel_{\Sign} = \lbrace (\usk,\scred,\yinsp),(\msg,\feval,\yeval,\Ec,\sipk)
-: \Ec = \EEnc(\Eek,\yinsp) \land \yeval = \feval(\usk,\scred,\msg) \land
+$\NIZKRel_{\Sign} = \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r),(\msg,\feval,
+\yeval,\Ec,\sipk_{\scred},\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land \yeval =
+\feval(\usk,\scred,\msg) \land
 \yinsp = \finsp(\yeval,\usk,\scred,\msg) \land \forall \cred \in \scred,
 \SBCMVerify(\ipk_{\cred},\cred,\attrs_{\cred} \cup \lbrace \usk \rbrace) = 1)
-\rbrace$ where, for each $\cred \in \scred$, $\attrs_{\cred}$ and $\ipk_{\cred}$
-are as in $\langle \Obtain,\Issue \rangle$.
+\rbrace$ where, for each $\cred \in \scred$, $\attrs_{\cred}$ and $\ipk_{\cred}$,
+as well as $\attrs_{\scred}$ and $\sipk_{\scred}$ are as in $\langle \Obtain,
+\Issue \rangle$.
 %
 From this, in order to produce a valid signature, the user first evaluates
 $\yeval \gets \feval (\usk,\scred,\msg)$, and decides whether or not to continue
@@ -153,10 +158,11 @@ de-anonymizable or not, depending on the \finsp function in \opk.
 Then, the user parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
 $\Verify(\Svk,\sig_{\finsp},\finsp) = 1$ (note that this step may be cached), to
 compute $\yinsp \gets \finsp(\yeval,\usk,\scred,\msg)$, and encrypt it with
-\Eek by running $\Ec \gets \EEnc(\Eek,\yeval)$. Finally, the user computes
+\Eek by running $\Ec \gets \EEnc(\Eek,\yeval;r)$ for some fresh randomness $r$.
+Finally, the user computes
 $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,\scred,
-\yinsp),(\msg,\feval,\yeval,\Ec,\sipk))$ and  outputs $(\sig = (\NIZKproof,\Ec),
-\yeval)$.
+\attrs_{\scred},\yinsp,r),(\msg,\feval,\yeval,\Ec,\sipk_{\scred},\Eek))$ and
+outputs $(\sig = (\NIZKproof,\Ec),\yeval)$.
 
 \paragraph{$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval)$.} %
 The ``cryptographic'' side of the verification essentially consists on checking

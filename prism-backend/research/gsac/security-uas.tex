@@ -1,0 +1,148 @@
+\subsection{Correctness and Security of \CUASGen}
+\label{ssec:security-uas}
+
+First, we define the \Identify, \ExtractIssue and \ExtractSign functions that
+are needed for some of the properties to be meaningful, in
+\figref{fig:helper-funcs}.
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{\textwidth}
+    \procedure{$\ExtractIssue(\parm,\trans)$}{%
+      \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Issue},\cdot,
+        \cdot,\cdot)$; $\NIZKcrs_{\Issue}$ as $(\NIZKcrs,\NIZKext)$; and
+        \trans as $(\Ccom,\attrs,\sipk,\cred,\NIZKproof)$} \\
+      \pcif \NIZKVerify(\NIZKcrs,\NIZKproof,(\Ccom,\attrs,\sipk)): 
+      \pcreturn \bot \\
+      (\usk,\scred,\attrs_{\scred}) \gets \NIZKExtII(\NIZKcrs,\NIZKext,
+      (\Ccom,\attrs,\sipk),\NIZKproof) \\
+      \pcreturn (\usk,\scred,\attrs_{\scred}) \\
+    }
+    
+    \procedure{$\ExtractSign(\parm,\oid,\siid,\sig,\yeval,\msg,\feval)$}{%
+      \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Sign},
+        \cdot,\cdot)$; $\NIZKcrs_{\Sign}$ as $(\NIZKcrs,\NIZKext)$; and
+        \sig as $(\NIZKproof,\Ec)$} \\
+      \textrm{Parse $\PUBOK[\oid]$ as $(\opk,\cdot)$ and let $\sipk \get
+        \PUBIK[\siid]$} \\
+      \pcif \NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,
+      \sipk,\opk)): \pcreturn \bot \\
+      (\usk,\scred,\attrs_{\scred},\yinsp,r) \gets \NIZKExtII(\NIZKcrs,\NIZKext,
+      (\msg,\feval,\yeval,\Ec,\sipk,\opk),\NIZKproof) \\
+      \pcreturn (\usk,\scred,\attrs_{\scred},\yinsp) \\
+    }
+    
+    \procedure{$\Identify(\usk,\attrs_{\cred},\cred)$}{%
+      \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\attrs_{\cred} \cup
+      \lbrace \usk \rbrace) \\
+    }    
+  \end{minipage}
+  \label{fig:helper-funcs}
+  \caption{Definition of helper functions \Identify, \ExtractIssue and
+    \ExtractSign, for \CUASGen.}
+\end{figure}
+
+\begin{theorem}[Correctness of \CUASGen]
+  \label{thm:correctness-uas}
+  If the underlying schemes for vector commitments, encryption, digital
+  signatures, signatures on blocks of committed messages, and NIZKs are
+  correct, our generic construction \CUASGen satisfies correctness as
+  defined in \defref{def:correctness-uas}.
+\end{theorem}
+
+\begin{proof}[\thmref{thm:correctness-uas}]
+  \todo{XXX}
+\end{proof}
+
+\begin{theorem}[Anonymity of \CUASGen]
+  \label{thm:anonymity-uas}
+  If the underlying encryption scheme is \todo{IND-CCA}, the vector commitment
+  scheme is \todo{binding}, the scheme for signatures on blocks of committed
+  messages is \todo{XXX}, and the NIZKs used for $\NIZKRel_{\Issue},
+  \NIZKRel_{\Sign}$, and $\NIZKRel_{\Inspect}$ are \todo{zero-knowledge} and
+  \todo{simulation-sound?}, our \CUASGen construction satisfies anonymity as
+  defined in \defref{def:anonymity-uas}.
+\end{theorem}
+
+\begin{proof}[\thmref{thm:anonymity-uas}]
+\end{proof}
+
+\begin{theorem}[Issuance unforgeability of \CUASGen]
+  \label{thm:issue-forge-uas}
+  If the underlying scheme for signatures on blocks of committed messages is
+  existentially unforgeable, and the NIZK used for $\NIZKRel_{\Issue}$ is
+  knowledge extractable and sound, then our \CUASGen construction satisfies
+  issuance unforgeability as defined in \defref{def:issue-forge-uas}, except
+  with negligible probability.
+\end{theorem}
+
+\todo{\usk belongs to \AttrSpace! I think this can lead to malleability attacks.
+  Make them disjoint?}
+
+\begin{proof}[\thmref{thm:issue-forge-uas}]
+  We show that the probability that \fissue outputs $0$ is negligible, as well
+  as the probability that the extracted \usk is not the one that was used to
+  request some of the credentials employed to obtain the credential specified by
+  the adversary.
+  %
+  For this purpose, we define two games, $G_0=\ExpForgeIssue$, and $G_1$, which
+  is exactly the same, but where, within the \Setup algorithm, we replace
+  $\NIZKSetup^{\Issue}$ with $\NIZKExtI^{\Issue}$. As per the definition of
+  \NIZK in \appref{sapp:nizk}, both games are indistinguishable.
+
+  Now, observe that the adversary is required to output a credential
+  identifier for which associated entries in \trans and \CRED exist; moreover,
+  if such a credential was produced by an issuer, we must have access to those
+  entries, as issuers are assumed to be honest.
+  %
+  Then, given that $\NIZKRel_{\Issue}$ is knowledge extractable, in game $G_1$
+  we can apply the \NIZKExtII function, which produces a tuple $(\usk,\scred,
+  \attrs_{\scred})$ from $\utrans = (\Ccom,\attrs,\sipk,\cred,\NIZKproof)$.
+  %
+  Since \NIZKproof is accepted by \ExtractIssue, from the soundness of \NIZK and
+  existential unforgeability of \SBCM, we know that all $\cred \in \scred$ are
+  valid signatures over \usk, and their respective $\attrs_{\cred}$. Thus,
+  \Identify returns $1$ for all $(\usk,\attrs_{\cred},\cred)$ tuples.
+  Moreover, all the credentials in \scred given to \fissue belong to the same
+  user, who is the owner of \usk.
+  %
+  Finally, since issuers are honest, we know that $\ATTR[\cid] = \attrs$ and,
+  consequently, $\fissue(\usk,\scred,\ATTR[\cid]) = \fissue(\usk,\scred,\attrs)
+  = 1$, due to the soundness of \NIZK.
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Signing unforgeability of \CUASGen]
+  \label{thm:sign-forge-uas}  
+\end{theorem}
+
+\begin{proof}[\thmref{thm:sign-forge-uas}]
+  As for \thmref{thm:issue-forge-uas}, we define two games, $G_0=\ExpForgeSign$,
+  and $G_1$, which is exactly the same, but where, within the \Setup algorithm,
+  we replace $\NIZKSetup^{\Sign}$ with $\NIZKExtI^{\Sign}$. As per the
+  definition of \NIZK in \appref{sapp:nizk}, both games are indistinguishable.
+  %
+  First, observe that, for the adversary to win the game, the signature it
+  outputs cannot be an honestly produced signature -- via a call to the \SIGN
+  oracle. Moreover, the signature is accepted by \Verify. Hence, the underlying
+  NIZK proof \NIZKproof is accepted by \NIZKVerify due to soundness of the
+  NIZK scheme; and \NIZKExtII produces a $(\usk,\scred,\attrs_{\scred},
+  \yinspect,r)$ tuple after knowledge extractability of NIZK.
+
+  and an honest
+  execution of \Inspect produces a result that is accepted by \Judge.
+  \qed
+\end{proof}
+
+\begin{theorem}[Non-frameability of \CUASGen]
+  \label{thm:frame-uas}
+\end{theorem}
+
+\begin{proof}[\thmref{thm:frame-uas}]
+\end{proof}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:
