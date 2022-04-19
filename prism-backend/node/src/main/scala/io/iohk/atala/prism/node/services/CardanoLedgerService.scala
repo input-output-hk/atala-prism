@@ -13,6 +13,7 @@ import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
+import io.iohk.atala.prism.node.models.Balance
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
@@ -88,6 +89,9 @@ class CardanoLedgerService[F[_]] private[services] (
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, Unit]] =
     cardanoClient.deleteTransaction(walletId, transactionId)
+
+  override def getWalletBalance: F[Either[CardanoWalletError, Balance]] =
+    cardanoClient.getWalletDetails(walletId).map(_.map(_.balance))
 
   private def scheduleSync(delay: FiniteDuration): Unit = {
     liftToFuture.lift(

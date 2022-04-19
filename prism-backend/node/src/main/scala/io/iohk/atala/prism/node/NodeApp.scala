@@ -123,6 +123,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         CredentialBatchesRepository.resource(liftedTransactor, logs)
       nodeService <- NodeService.resource(
         didDataRepository,
+        ledger,
         objectManagementService,
         credentialBatchesRepository,
         didPublicKeysLimit,

@@ -312,6 +312,32 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
       }
     )
   }
+
+  /** * PUBLIC
+    *
+    * Return the Node Wallet Balance
+    */
+  override def getWalletBalance(request: GetWalletBalanceRequest): Future[GetWalletBalanceResponse] = {
+    val methodName = "getWalletBalance"
+
+    measureRequestFuture(serviceName, methodName)(
+      trace { traceId =>
+        val query =
+          for {
+            maybeWalletBalance <- nodeService.getWalletBalance
+          } yield maybeWalletBalance.fold(
+            throw _,
+            walletBalance =>
+              node_api
+                .GetWalletBalanceResponse()
+                .withBalance(
+                  ByteString.copyFrom(walletBalance.available.toByteArray)
+                )
+          )
+        query.run(traceId).unsafeToFuture()
+      }
+    )
+  }
 }
 
 object NodeGrpcServiceImpl {

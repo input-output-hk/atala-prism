@@ -11,11 +11,13 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.UnderlyingLedger
+import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.InvalidArgument
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion, Balance}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
-import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
@@ -58,10 +60,13 @@ trait NodeService[F[_]] {
       lastSeenTransactionId: Option[TransactionId],
       limit: Int = 50
   ): F[Either[NodeError, List[TransactionInfo]]]
+
+  def getWalletBalance: F[Either[CardanoWalletError, Balance]]
 }
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
+    underlyingLedger: UnderlyingLedger[F],
     objectManagement: ObjectManagementService[F],
     credentialBatchesRepository: CredentialBatchesRepository[F],
     didPublicKeysLimit: Int
@@ -198,12 +203,16 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
           .pure[F]
     }
   }
+
+  override def getWalletBalance: F[Either[CardanoWalletError, Balance]] =
+    underlyingLedger.getWalletBalance
 }
 
 object NodeService {
 
   def make[I[_]: Functor, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
+      underlyingLedger: UnderlyingLedger[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
       didPublicKeysLimit: Int,
@@ -217,6 +226,7 @@ object NodeService {
       val mid: NodeService[Mid[F, *]] = logs
       mid attach new NodeServiceImpl[F](
         didDataRepository,
+        underlyingLedger,
         objectManagement,
         credentialBatchesRepository,
         didPublicKeysLimit
@@ -226,22 +236,31 @@ object NodeService {
 
   def resource[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
+      underlyingLedger: UnderlyingLedger[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
       didPublicKeysLimit: Int,
       logs: Logs[I, F]
   ): Resource[I, NodeService[F]] = Resource.eval(
-    make(didDataRepository, objectManagement, credentialBatchesRepository, didPublicKeysLimit, logs)
+    make(didDataRepository, underlyingLedger, objectManagement, credentialBatchesRepository, didPublicKeysLimit, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
+      underlyingLedger: UnderlyingLedger[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
       didPublicKeysLimit: Int,
       logs: Logs[I, F]
   ): NodeService[F] =
-    make(didDataRepository, objectManagement, credentialBatchesRepository, didPublicKeysLimit, logs).extract
+    make(
+      didDataRepository,
+      underlyingLedger,
+      objectManagement,
+      credentialBatchesRepository,
+      didPublicKeysLimit,
+      logs
+    ).extract
 
 }
 
