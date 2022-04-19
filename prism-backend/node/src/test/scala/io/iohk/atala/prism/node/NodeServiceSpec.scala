@@ -27,10 +27,10 @@ import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationKind.{
-  AnyOperation,
-  CredentialIssuanceOperation,
-  DidCreationOperation
+import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
+  AnyOperationType,
+  CreateDidOperationOperationType,
+  IssueCredentialBatchOperationType
 }
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
@@ -1072,9 +1072,11 @@ class NodeServiceSpec
         .when(objectManagementService)
         .getScheduledAtalaObjects()
 
-      val responseAny = service.getScheduledOperations(GetScheduledOperationsRequest(AnyOperation))
-      val responseCreation = service.getScheduledOperations(GetScheduledOperationsRequest(DidCreationOperation))
-      val responseIssuance = service.getScheduledOperations(GetScheduledOperationsRequest(CredentialIssuanceOperation))
+      val responseAny = service.getScheduledOperations(GetScheduledOperationsRequest(AnyOperationType))
+      val responseCreation =
+        service.getScheduledOperations(GetScheduledOperationsRequest(CreateDidOperationOperationType))
+      val responseIssuance =
+        service.getScheduledOperations(GetScheduledOperationsRequest(IssueCredentialBatchOperationType))
 
       responseAny.scheduledOperations.map(_.operation.get) must be(allOps)
       responseCreation.scheduledOperations.map(_.operation.get) must be(opsCreation)
