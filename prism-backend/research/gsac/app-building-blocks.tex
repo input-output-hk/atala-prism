@@ -4,13 +4,42 @@
 \subsection{Digital Signatures}
 \label{sapp:digital-signatures}
 
-Defined as a tuple $(\SSetup,\SKeyGen,\SSign,\SVerify)$. Algorithm $\Sparm \gets
-\SSetup(\Ssecpar)$ produces public parameters for the other algorithms.
-$(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$ generates the verification-signing key
-pair, algorithm $\Ssig \gets \SSign(\Ssk,\msg)$ signs message \msg with
-signing key \Ssk, producing signature \Ssig, and $1/0 \gets \SVerify(\Svk,
-\Ssig,\msg)$ checks whether \Ssig is a valid signature over \msg, under
-verification key \Svk. \todo{Informally define security properties we'll need.}
+We rely on digital signatures as a core building block. A digital signature
+provides the functionality defined by the following syntax:
+
+\begin{description}
+\item[$\Sparm \gets \SSetup(\Ssecpar)$.] It produces public parameters for the
+  other algorithms, given an input security parameter \Ssecpar.
+\item[$(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$.] Generates a verification-signing
+  key pair.
+\item[$\Ssig \gets \SSign(\Ssk,\msg)$.] Signs message \msg with signing key
+  \Ssk, producing signature \Ssig,  
+\item[$1/0 \gets \SVerify(\Svk,\Ssig,\msg)$.] Checks whether \Ssig is a valid
+  signature over \msg, under verification key \Svk.
+\end{description}
+
+A digital signature scheme is correct if honestly generated signatures, using
+honestly generated key pairs, are always accepted by \SVerify. \todo{define more
+  formally?}
+%
+A digital signature scheme \S has existential unforgeability if, for all p.p.t.
+adversaries $\adv$, $\Pr[\ExpEUF = 1]$ is a negligible function of the
+security parameter.
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{0.5\textwidth}
+    \procedure{$\ExpEUF(\Ssecpar)$}{%
+      \Sparm \gets \SSetup(\Ssecpar) \\
+      (\Svk,\Ssk) \gets \SKeyGen(\Sparm) \\
+      (\Ssig,\msg) \gets \adv^{\SSign(\Ssk,\cdot)}(\Svk) \\
+      \pcif \SVerify(\Svk,\Ssig,\msg) = 0: \pcreturn 0 \\
+      \pcif \msg~\textrm{was not queried to \SSign}: \pcreturn 1 \\
+      \pcreturn 0
+    }
+  \end{minipage}
+  \label{fig:euf-game}
+  \caption{Existential Unforgeability Game.}
+\end{figure}
 
 \subsection{Public-Key Encryption}
 \label{sapp:pk-encryption}
@@ -23,15 +52,69 @@ encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
 \Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
   security properties we'll need.}
 
-\subsection{Vector Commitments}
-\label{sapp:vector-commitments}
+\subsection{Commitments}
+\label{sapp:commitments}
 
-Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
-\CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
-\gets \CCommit(\Cparm, \msgset; r)$ produces a commitment \Ccom over a set of
-messages \msgset, from which we may omit randomness $r$. \todo{Informally define
-  hiding and binding, leaving formal definitions to the appendix.}
+A commitment scheme is defined by the following algorithms:
 
+\begin{description}
+\item[$\Cparm \gets \CSetup(\Csecpar)$.] Given a security parameter \Csecpar,
+  returns the public parameters \Cparm to commit messages.
+\item[$\Ccom \gets \CCommit(\Cparm,\msg,r)$.] Given the public parameters and
+  a message \msg, outputs a commitment \Ccom to \msg, for which randomness $r$
+  from some predefind randomness space $\mathcal{R}$ is used.
+\end{description}
+
+Opening a commitment \Ccom means revealing the message \msg and randomness $r$
+that were used to produce \Ccom. Commitment schemes are required to be binding
+and (usually) hiding:
+
+\begin{description}
+\item[Binding.] Intuitively, the binding property of commitment schemes means
+  that no adversary can change the message that has been committed to. More
+  formally, $\Pr[\ExpComBind = 1]$ must be a negligible function of the security
+  parameter.
+\item[Hiding.] The hiding property captures that no adversary should be able to
+  learn the message that was committed, when given only the commitment. This is
+  formally defined through \ExpComHideb, where $|\Pr[\ExpComHideb=1|b=1] -
+  \Pr[\ExpComHideb=1|b=0]|$ must be a negligible function of the security
+  parameter.
+\end{description}
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{0.5\textwidth}
+    \procedure{$\ExpComBind(\secpar)$}{%
+      \Cparm \gets \CSetup(\secpar) \\
+      (\msg_0,r_0,\msg_1,r_1) \gets \adv(\Cparm) \\
+      \Ccom_0 \gets \CCommit(\Cparm,\msg_0,r_0) \\
+      \Ccom_1 \gets \CCommit(\Cparm,\msg_1,r_1) \\
+      \pcif \msg_0 \neq \msg_1 \land \Ccom_0 = \Ccom_1: \pcreturn 1 \\
+      \pcreturn 0
+    }
+  \end{minipage}
+  \begin{minipage}[t]{0.5\textwidth}
+    \procedure{$\ExpComHideb(\secpar)$}{%
+      \Cparm \gets \CSetup(\secpar) \\
+      (\msg_0,\msg_1,st) \gets \adv(\Cparm) \\
+      r \getr \mathcal{R} \\
+      \Ccom \gets \CCommit(\Cparm,\msg_b,r) \\
+      b' \gets \adv(st,\Ccom) \\
+      \pcreturn b'
+    }
+  \end{minipage}
+  \label{fig:nizk-games}
+  \caption{Games for commitment schemes.}
+\end{figure}
+
+\paragraph{Commitments on Blocks of Messages.} We also use an extension
+of commitment schemes that allows committing to multiple messages at once. The
+properties we need are the same, and their definitions are extended in the
+natural way. Namely, $\CCommit$ receives a vector/block of messages, \msgset
+instead of a single message. In the games, the adversary returns sets of
+messages and, in the binding game, the comparison $\msg_0 \neq \msg_1$ now
+compares sets $\msgset_0$ and $\msgset_1$, which must differ in at least one
+element. This extension is straight-forward, for instance, from Pedersen
+commitments \cite{bcc+15}.
 
 \subsection{Signatures on Blocks of Committed Messages}
 \label{sapp:sbcm}

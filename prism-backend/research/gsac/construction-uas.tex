@@ -127,7 +127,7 @@ for a user to obtain a credential from an issuer of the system is as follows:
 \item \uline{User}: Commit to the user secret key with $\Ccom \gets
   \CCommit(\usk)$. Compute proof $\NIZKproof \gets
   \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},(\usk,\scred,\attrs_{\scred}),
-  (\Ccom,\attrs))$. Send $(\Ccom,\NIZKproof)$ to Issuer.
+  (\Ccom,\attrs,\sipk_{\scred}))$. Send $(\Ccom,\NIZKproof)$ to Issuer.
 \item \uline{Issuer}: Verify \NIZKproof with $\NIZKVerify^{\NIZKRel_{\Issue}}
   (\NIZKcrs_{\Issue},\NIZKproof,(\Ccom,\attrs,\sipk))$, and abort if it fails. Then,
   compute the credential by running $\cred \gets \SBCMSign(\SBCMsk,\Ccom,
@@ -167,7 +167,7 @@ outputs $(\sig = (\NIZKproof,\Ec),\yeval)$.
 \paragraph{$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval)$.} %
 The ``cryptographic'' side of the verification essentially consists on checking
 the NIZK proof. That is, parse \sig as $(\NIZKproof,\Ec)$ and check whether
-$\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,\sipk)) = 1$. In
+$\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,\sipk,\opk)) = 1$. In
 addition, the verifier may further check whether \yeval meets its needs.
 
 \paragraph{$(\yinsp,\NIZKproof)/\bot \gets

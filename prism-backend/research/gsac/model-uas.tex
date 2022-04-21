@@ -126,6 +126,11 @@ on user-private data). Also, in all cases, the user has to prove correctness of
 their computation. We introduce them next, \todo{and will give concrete examples
   in \secref{sec:uac-instantiation}.}
 
+\todo{Do our definitions protect from absurd schemes that leak \usk or \scred via
+  \fissue or \feval (I guess \finsp is ok)? E.g., $\feval(\usk,\scred,\msg) =
+  \usk$ deanonymizes the signer. I guess that anonymity should prevent that.
+  But check.}
+
 \begin{description}
 \item[$\fissue: (\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\attrs)
   \rightarrow 0/1$.] Chosen by issuers within a family of functions \famfissue,
@@ -582,7 +587,7 @@ game is given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,
 \OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\INSPECT,\CHALb)$
 
 \begin{figure}[htp!]
-  \procedure{$\ExpAnonb(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
      (\cuid_0,\cscid_0,\cuid_1,\cscid_1,\feval,\status) \gets \adv^{\Oanonc}
      (\choose,\parm) \\
@@ -703,7 +708,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 \OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\INSPECT$.
 
 \begin{figure}[htp!]
-    \procedure{$\ExpForgeIssue(1^\secpar)$}{%
+    \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       \cid \gets \adv^{\Oforgeissue}(\parm) \\
       \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \pcreturn 0 \\
@@ -720,7 +725,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 \end{figure}    
 
 \begin{figure}[htp!]
-    \procedure{$\ExpForgeSign(1^\secpar)$}{%
+    \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\oid,\siid,\sig,\yeval,\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
       \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\yeval,\msg,\feval) \in
@@ -729,7 +734,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \pcreturn 0 \\
       (\yinsp,\iproof) \gets \Inspect(\PRVOK[\oid],\siid,\sig,\yeval,\msg) \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg,\feval)
-      = 0: \pcreturn 0 \\
+      = 0: \pcreturn 1 \\
       (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets \ExtractSign(\oid,\siid,\sig,
       \yeval,\msg,\feval) \\
       \pcif \feval(\usk,\scred,\msg) \neq \yeval: \pcreturn 1 \\
@@ -849,7 +854,7 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$
 
 \begin{figure}[htp!]
-  \procedure{$\ExpNonframe(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
     (\oid,\siid,\sig,\yeval,\msg,\feval,\yinsp,\iproof) \gets
     \adv^{\Oframe}(\parm) \\
@@ -859,7 +864,8 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     \pcreturn 0 \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg) = 0:
     \pcreturn 0 \\
-    (\usk,\scred) \gets \ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \\
+    (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets
+    \ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \\
     \pcif \exists \uid \in \HU~\st~\PRVUK[\uid] = \usk: \pcreturn 1 \\
     \pcreturn 0
   }

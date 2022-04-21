@@ -22,7 +22,7 @@ are needed for some of the properties to be meaningful, in
       \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Sign},
         \cdot,\cdot)$; $\NIZKcrs_{\Sign}$ as $(\NIZKcrs,\NIZKext)$; and
         \sig as $(\NIZKproof,\Ec)$} \\
-      \textrm{Parse $\PUBOK[\oid]$ as $(\opk,\cdot)$ and let $\sipk \get
+      \textrm{Parse $\PUBOK[\oid]$ as $(\opk,\cdot)$ and let $\sipk \gets
         \PUBIK[\siid]$} \\
       \pcif \NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,
       \sipk,\opk)): \pcreturn \bot \\
@@ -72,7 +72,7 @@ are needed for some of the properties to be meaningful, in
   existentially unforgeable, and the NIZK used for $\NIZKRel_{\Issue}$ is
   knowledge extractable and sound, then our \CUASGen construction satisfies
   issuance unforgeability as defined in \defref{def:issue-forge-uas}, except
-  with negligible probability.
+  with negligible probability. \todo{EUF of \SBCM?}
 \end{theorem}
 
 \todo{\usk belongs to \AttrSpace! I think this can lead to malleability attacks.
@@ -113,7 +113,12 @@ are needed for some of the properties to be meaningful, in
 \end{proof}
 
 \begin{theorem}[Signing unforgeability of \CUASGen]
-  \label{thm:sign-forge-uas}  
+  \label{thm:sign-forge-uas}
+  If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is sound and knowledge
+  extractable, the NIZK scheme for $\NIZKRel_{\Inspect}$ is sound and knowledge
+  extractable, and \SBCM is existentially unforgeable, then our \CUASGen
+  construction satisfies signing unforgeability as defined in
+  \defref{def:sign-forge-uas}, except with negligible probability.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:sign-forge-uas}]
@@ -121,24 +126,102 @@ are needed for some of the properties to be meaningful, in
   and $G_1$, which is exactly the same, but where, within the \Setup algorithm,
   we replace $\NIZKSetup^{\Sign}$ with $\NIZKExtI^{\Sign}$. As per the
   definition of \NIZK in \appref{sapp:nizk}, both games are indistinguishable.
-  %
-  First, observe that, for the adversary to win the game, the signature it
-  outputs cannot be an honestly produced signature -- via a call to the \SIGN
-  oracle. Moreover, the signature is accepted by \Verify. Hence, the underlying
-  NIZK proof \NIZKproof is accepted by \NIZKVerify due to soundness of the
-  NIZK scheme; and \NIZKExtII produces a $(\usk,\scred,\attrs_{\scred},
-  \yinspect,r)$ tuple after knowledge extractability of NIZK.
 
-  and an honest
-  execution of \Inspect produces a result that is accepted by \Judge.
+  In order to define the winning conditions for the adversary in the signing
+  unforgeability game, consider the following events:
+
+  \begin{description}
+  \item[$V$.] Where $V = \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval) = 1$.
+  \item[$J$.] Where $J = \Judge(\opk,\sipk,\yinsp,\iproof,\sig,\yeval,\msg,
+    \feval) = 0$.
+  \item[$L$.] Where $L = (\msg,\feval,\yeval,\Ec,\sipk,\opk) \in
+    \NIZKLang^{\Sign}$.    
+  \item[$I$.] Where $I = \exists \cred \in \scred~\st~\Identify(\usk,
+    \attrs_{\cred},\msg) = 0$.
+  \end{description}
+
+  $\adv$ wins if $V \land (J \lor I) = (\overline{L} \land V \land (J \lor I))
+  \lor (L \land V \land (J \lor I))$.
+  %
+  $V$ implies that $(\msg,\feval,\yeval,\Ec,\sipk,\opk) \in \NIZKRel^{\Sign}$.
+  Thus, after soundness of $\NIZK^{\Sign}$, the probability of $\overline{L}
+  \land V \land (J \lor I)$ is negligible in the security parameter.
+  %
+  For $(L \land V \land (J \lor I))$ to be satisfied, there are three cases:
+  \begin{enumerate}
+  \item $L \land V \land J \land \overline{I}$. The game returns 1 in step 6.
+  \item $L \land V \land J \land I$.  The game returns 1 in step 6.
+  \item $L \land V \land \overline{J} \land I$. The game returns 1 in step 10. 
+  \end{enumerate}
+
+  In case 1, $L \land V$ implies that $(\msg,\feval,\yeval,\Ec,\sipk,\opk) \in
+  \NIZKRel^{\Sign}$. More concretely, soundness of $NIZK^{\Sign}$ implies that
+  $\Ec = \EEnc(\opk,\yinsp;r)$, for $\yinsp$ and $r$ known to the signer. Since
+  $(\yinsp,\iproof)$ is generated honestly by the challenger from
+  $(\opk,\sipk,\sig = (\NIZKproof_{\Sign},\Ec),\yeval,\msg)$, correctness of
+  public key encryption implies that $\EDec(\osk,\Ec) = \yinsp$. Consequently,
+  the probability of $L \land V \land J \land \overline{I}$ = 0, as \Judge
+  checks precisely that \Ec is a correct encryption of \yinsp under \opk.
+
+  The analysis for case 2 is the same as for case 1.
+
+  For case 3, $(\msg,\feval,\yeval,\Ec,\sipk,\opk) \in \NIZKRel^{\Sign}$,
+  $\Judge(\opk,\sipk,\yinsp,\iproof,\sig,\yeval,\msg,\feval)
+  = 1$, but there exists some credential \cred for which $\Identify(\usk,
+  \attrs_{\cred},\msg)=0$. Note that \usk, $\attrs_{\cred}$ and \cred (for all
+  $\cred \in \scred$) are output by \ExtractSign. Thus, after the knowledge
+  extraction property and soudness of $\NIZK^{\Sign}$, $(\msg,\feval,\yeval,\Ec,
+  \sipk,\opk) \in \NIZKRel^{\Sign}$, which more concretely means that
+  $\SBCMVerify(\ipk_{\cred},\cred,\attrs_{\cred} \cup \lbrace \usk \rbrace) = 1
+  = \Identify(\usk,\attrs_{\cred},\cred)$, for all $\cred \in \scred$. The
+  probability of case 3 is therefore $0$.
+  %
+  Moreover, since \SBCMVerify returns $1$ for all $\cred \in \scred$, it must
+  be that all of them were obtained via queries to the \ISSUE or \OBTISS
+  oracles. Otherwise, if there exists some \cred that was not obtained via
+  a call to these oracles, the pair $(\lbrace \usk \rbrace \cup \attrs_{\cred},
+  \cred)$ constitutes an existential forgery of \SBCM.
+
+  Cases 1, 2 and 3 above account for winning conditions at steps 6 and 10.
+  % 
+  Additionally, $\adv$ wins at step 8 if $\feval(\usk,\scred,\msg) \neq \yeval$,
+  where \yeval is the value output by the adversary in step 2. However, since
+  $\Verify(\opk,\sipk,\sig,\yeval,\msg,\feval) = 1$, soundness of $NIZK^{\Sign}$
+  implies that this has negligible probability.
+  %
+  Similarly, $\adv$ wins at step 9 if (1) $\finsp(\yeval,\usk,\scred,\msg) \neq
+  \yinsp$, where \yinsp is the value output by \Inspect at line 5; or if (2)
+  $\yinsp \neq \yinsp'$, where $\yinsp'$ is the value extracted by \ExtractSign
+  at step 7. For (1), soundness of $\NIZK^{\Sign}$ ensures that \yinsp is the
+  correct evaluation of \finsp, whereas soundness of $\NIZK^{\Inspect}$ and
+  correctness of the public key encryption ensure that this is also the value
+  output by \Inspect. Thus, the probability of $\adv$ winning the game because
+  of (1) is negligible. Finally, for (2), knowledge extractability of
+  $\NIZK^{\Inspect}$ and correctness of the public key encryption ensure that
+  the $\yinsp'$ value extracted by \NIZKExtII matches the value produced by
+  \Inspect.
+  %
   \qed
 \end{proof}
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
+  If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is sound and knowledge
+  extractable, and the \SBCM scheme is existentially unforgeable, then our
+  \CUASGen construction satisfies non-frameability as defined in
+  \defref{def:frame-uas}, except with negligible probability.  
 \end{theorem}
 
 \begin{proof}[\thmref{thm:frame-uas}]
+  As for \thmref{thm:issue-forge-uas}, we define two games, $G_0=\ExpNonframe$,
+  and $G_1$, which is exactly the same, but where, within the \Setup algorithm,
+  we replace $\NIZKSetup^{\Sign}$ with $\NIZKExtI^{\Sign}$. As per the
+  definition of \NIZK in \appref{sapp:nizk}, both games are indistinguishable.
+
+  Next, assume that the adversary wins in $G_1$. This means that $G_1$ outputs
+  $1$ at step 7, which implies that the signature and inspection proof produced
+  by the adversary at step 2 are accepted respectively by \Verify at step 4, and
+  by \Judge at step 5. This means that 
 \end{proof}
 
 
