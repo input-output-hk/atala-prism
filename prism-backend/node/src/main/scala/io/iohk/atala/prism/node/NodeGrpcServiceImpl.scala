@@ -11,18 +11,21 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
-import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
   AtalaOperationStatus
 }
+import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
-import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationKind.{
-  AnyOperation,
-  CredentialIssuanceOperation,
-  DidCreationOperation
+import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
+  AnyOperationType,
+  CreateDidOperationOperationType,
+  IssueCredentialBatchOperationType,
+  ProtocolVersionUpdateOperationType,
+  RevokeCredentialsOperationType,
+  UpdateDidOperationOperationType
 }
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api}
@@ -264,11 +267,18 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
             .GetScheduledOperationsResponse()
             .withScheduledOperations(
               operations.filter(o =>
-                request.operationsKind match {
-                  case AnyOperation => true
-                  case DidCreationOperation => o.operation.isDefined && o.operation.get.operation.isCreateDid
-                  case CredentialIssuanceOperation =>
+                request.operationsType match {
+                  case AnyOperationType => true
+                  case CreateDidOperationOperationType =>
+                    o.operation.isDefined && o.operation.get.operation.isCreateDid
+                  case UpdateDidOperationOperationType =>
+                    o.operation.isDefined && o.operation.get.operation.isUpdateDid
+                  case IssueCredentialBatchOperationType =>
                     o.operation.isDefined && o.operation.get.operation.isIssueCredentialBatch
+                  case RevokeCredentialsOperationType =>
+                    o.operation.isDefined && o.operation.get.operation.isRevokeCredentials
+                  case ProtocolVersionUpdateOperationType =>
+                    o.operation.isDefined && o.operation.get.operation.isProtocolVersionUpdate
                   case _ => false
                 }
               )
