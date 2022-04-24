@@ -102,7 +102,7 @@ and (usually) hiding:
       \pcreturn b'
     }
   \end{minipage}
-  \label{fig:nizk-games}
+  \label{fig:com-games}
   \caption{Games for commitment schemes.}
 \end{figure}
 
@@ -137,17 +137,18 @@ proofs of knowledge of a signature, and of (arbitrary) claims over the signed
 (committed) messages.
 \todo{Informally define security properties we'll need.}
 
-\subsection{Non-Interactive Zero-Knowledge Proofs of Knowledge}
+\subsection{Simulation-Extractable Non-Interactive Zero-Knowledge
+  Proofs of Knowledge}
 \label{sapp:nizk}
 
 Let \NIZKRel be an NP relation defined by pairs of elements $(\NIZKx,\NIZKw)$,
 where \NIZKx is a statement and \NIZKw a witness proving that $(\NIZKx,\NIZKw)
 \in \NIZKRel$. For concrete relations, we write $\NIZKRel = \lbrace (\NIZKx),
 (\NIZKw): f(x,w) \rbrace$, where $f(x,w)$ is a boolean predicate denoting the
-concrete conditions that \NIZKx and \NIZKw need to meet. The set of all $(\NIZKx,
-\NIZKw) \in \NIZKRel$ is called the language, or \NIZKLang, for \NIZKRel.
-$\NIZKx \notin \NIZKLang$ means that there is no $\NIZKw$ such that $(\NIZKx,
-\NIZKw) \in \NIZKRel$. \todo{Check this definition.}
+concrete conditions that \NIZKx and \NIZKw need to meet. The set of all \NIZKx
+such that there exists a \NIZKw for which $(\NIZKx,\NIZKw) \in \NIZKRel$ is the
+language, or \NIZKLang, for \NIZKRel. $\NIZKx \notin \NIZKLang$ means that
+there is no $\NIZKw$ such that $(\NIZKx,\NIZKw) \in \NIZKRel$.
 
 We use non-interactive zero-knowledge proofs of knowledge (NIZKPoK, or, for
 short, NIZK) over NP relations, in the Common Reference String (CRS) model
@@ -163,32 +164,33 @@ defined as follows \cite{gos06}:
   \NIZKproof is a valid proof for \NIZKx.
 \end{description}
 
-Moreover, a NIZK system has additional algorithms $(\NIZKSimI,\NIZKSimII)$ and
-$(\NIZKExtI,\NIZKExtII)$ defined as follows:
+Any zero-knowledge proof of knowledge must meet completeness, soundness and
+zero-knowledge,properties. We further need an extra property, called
+\emph{simulation-extractability} \cite{cl06}, which amplifies the security
+requirements of simulation soundness.
+%
+To define more formally the properties we need, we have to define three extra
+algorithms:
 
 \begin{description}
-\item[$(\NIZKcrs,\NIZKext) \gets \NIZKSimI(\NIZKsecpar)$.] Produces a \NIZKcrs
-  as the \NIZKSetup algorithm, along with a \todo{simulation} trapdoor.
-  % The output of \NIZKSimI is required to be indistinguishable from that of
-  % \NIZKSetup.
-\item[$\NIZKproof \gets \NIZKSimII(\NIZKcrs,\NIZKext,\NIZKx)$.] Given a
-  \todo{simulation} trapdoor, and a statement $\NIZKx \in \NIZKLang$,
+\item[$(\NIZKcrs,\NIZKtrap) \gets \NIZKSimSetup(\NIZKsecpar)$.] Produces a
+  \NIZKcrs as the \NIZKSetup algorithm, along with a trapdoor \NIZKtrap.
+\item[$\NIZKproof \gets \NIZKSim(\NIZKcrs,\NIZKtrap,\NIZKx)$.] Given a trapdoor
+  \NIZKtrap produced by \NIZKSimSetup, and a statement $\NIZKx \in \NIZKLang$,
   produces a simulated proof \NIZKproof of $\NIZKx \in \NIZKLang$.
-\item[$(\NIZKcrs,\NIZKext) \gets \NIZKExtI(\NIZKsecpar)$.] Produces a \NIZKcrs
-  as the \NIZKSetup algorithm, along with an extraction trapdoor \NIZKext.
-\item[$\NIZKw \gets \NIZKExtII(\NIZKcrs,\NIZKext,\NIZKx,\NIZKproof)$.] Given
-  an extraction trapdoor \NIZKext produced by \NIZKExtI, and a proof \NIZKproof
-  for $\NIZKext \in \NIZKLang$, returns a valid \NIZKw for \NIZKx.
+\item[$\NIZKw \gets \NIZKExtract(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKproof)$.] Given
+  a trapdoor \NIZKtrap produced by \NIZKSimSetup, and a proof \NIZKproof for
+  $\NIZKx \in \NIZKLang$, returns a valid \NIZKw for \NIZKx.
 \end{description}
 
 When we want to make explicit the NP relation \NIZKRel to which the previous
 algorithms refer to, we use $\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel$, 
 $\NIZKVerify^\NIZKRel$, etc., and omit the \NIZK prefix and subindex when clear
-from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\ExtI,\ExtII,\SimI,
-\SimII)$ needs to meet the following properties:
+from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\SimSetup,\Sim,
+\Extract)$ needs to meet the following properties:
 
 \paragraph{Completeness.} %
-Ensures that, for any $(\NIZKx,\NIZKw) \in \NIZKRel)$, any honest prover will be
+Ensures that, for any $(\NIZKx,\NIZKw) \in \NIZKRel$, any honest prover will be
 able to create a proof \NIZKproof that is accepted by any honest verifier, with
 overwhelming probability. More precisely, $\Pr\lbrack\ExpNIZKComp\rbrack = 1$
 with overwhelming probability, for any p.p.t. \adv, for \ExpNIZKComp in
@@ -202,23 +204,31 @@ is, for \ExpNIZKSound as in \figref{fig:nizk-games}, $\Pr\lbrack\ExpNIZKSound\rb
 adversaries, we talk of Non-Interactive \emph{arguments}, while if soundness
 holds even against unbounded adversaries, we talks about Non-Interactive proofs.
 
-\paragraph{Knowledge extraction.} %
-For all possible adversaries computing a valid proof \NIZKproof over a statement
-$\NIZKx \in \NIZKLang$, computed using a \NIZKcrs produced by \ExtI and given
-\NIZKext also produced by \ExtI, \ExtII outputs a witness \NIZKw such that
-$(\NIZKx,\NIZKw) \in \NIZKRel$. That is, for all valid statements in the
-language and a proof, we can extract a valid witness given some special
-knowledge ($\NIZKext$). \todo{Capture either here or in the game that the
-  output of \ExtI needs to be indistinguishable to the output of \Setup.}
-
 \paragraph{Zero-knowledge.} %
-Intuitively, captures that no information can be learned from an statement and
+Intuitively, captures that no information can be learned from a statement and
 proof pair, beyond their validity (or not). This is captured by requiring the
 adversary to distinguish between a run in the real world ($b=0$), where the
 setup is done with \Setup, and $\adv$ has access to an honest prover
-\Prove; and a run in an ideal world ($b=1$), where the setup is run by
-a simulator \SimI, and proofs are generated by \SimII, except when $\adv$
-specifies $(\NIZKx,\NIZKw) \notin \NIZKRel$.
+\Prove; and a run in an ideal world ($b=1$), where the setup is replaced by
+\SimSetup, and proofs are simulated with the help of the trapdoor produced by
+\SimSetup, except when $\adv$ specifies $(\NIZKx,\NIZKw) \notin \NIZKRel$. Note
+that, in the context of simulation-extractable NIZK, this property not only
+requires that the simulated proofs are indistinguishable to the real ones; it
+also requires that \SimSetup is indistinguishable from \Setup. All this is
+formalised by requiring that $|\Pr[\ExpNIZKZKb(\secpar) = 1 | b = 1] -
+\Pr[\ExpNIZKZKb(\secpar) = 1 | b = 0]$ be a negligible function of \secpar,
+where \ExpNIZKZKb is as defined in \figref{fig:nizk-games}.
+
+\paragraph{Simulation-Extractability.} As stated, simulation-extractability
+is an extension to simulation soundness. In a nutshell,
+simulation-extractability requires that, even after having received a polynomial
+number of simulated proofs of knowledge, no adversary can output a valid proof
+of knowledge from which no witness can be extracted. It implies simulation
+soundness, which ``just'' requires that no adversary can produce a valid proof
+after having seen polynomially many simulated proofs (but does not guarantee
+extraction). Formally, for simulation-extractability we require that
+$\Pr[\ExpNIZKSimExt] = 1$ is a negligible function of \secpar, where
+\ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
 
 \begin{figure}[ht!]
   \begin{minipage}[t]{0.5\textwidth}
@@ -230,14 +240,20 @@ specifies $(\NIZKx,\NIZKw) \notin \NIZKRel$.
       b \gets \Verify(\NIZKcrs,\NIZKproof,\NIZKx) \\
       \pcreturn b \\
     }
-    \procedure{$\ExpNIZKExt(\secpar)$}{%
-      (\NIZKcrs,\NIZKext) \gets \ExtI(\secpar) \\
-      (\NIZKx,\NIZKproof) \gets \adv(\NIZKcrs) \\
-      \NIZKw \gets \NIZKExtII(\NIZKcrs,\NIZKext,\NIZKx,\NIZKproof) \\
+    \procedure{$\ExpNIZKSimExt(\secpar)$}{%
+      (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\secpar) \\
+      (\NIZKx,\NIZKproof) \gets \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}
+      (\NIZKcrs) \\
+      \pcind \textrm{Where}~\Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
+      \pcind \pcind
+      \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw) \in \NIZKRel \\
+      \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel \\
+      \NIZKw' \gets \Extract(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKproof) \\
       \pcif \Verify(\NIZKcrs,\NIZKproof,\NIZKx) = 1 \land
-      (\NIZKx,\NIZKw) \notin \NIZKRel: \\
-      \pcind \pcreturn 0 \\
-      \pcreturn 1
+      (\NIZKx,\NIZKw') \notin \NIZKRel~\land \\
+      \pcind \NIZKx~\textrm{was not queried to $\Sim$ via $\Sim'$}: \\
+      \pcind \pcreturn 1 \\
+      \pcreturn 0
     }    
   \end{minipage}
   \begin{minipage}[t]{0.5\textwidth}
@@ -249,28 +265,34 @@ specifies $(\NIZKx,\NIZKw) \notin \NIZKRel$.
       \pcind \pcreturn 0 \\
       \pcreturn 1 \\
     }
+    
     \procedure{$\ExpNIZKZKb(\secpar)$}{%
       \pcif b = 0: \\
       \pcind \NIZKcrs \gets \Setup(\secpar) \\
       \pcind \pcreturn \adv^{\Prove(\NIZKcrs,\cdot,\cdot)}(\NIZKcrs) \\
       \pcif b = 1: \\
-      \pcind (\NIZKcrs,\NIZKext) \gets \SimI(\secpar) \\
-      \pcind \pcreturn \adv^{\Sim'(\NIZKcrs,\NIZKext,\cdot,\cdot)}(\NIZKcrs),~
+      \pcind (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\secpar) \\
+      \pcind \pcreturn \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}(\NIZKcrs),~
       \textrm{where} \\
-      \pcind \Sim'(\NIZKcrs,\NIZKext,\NIZKx,\NIZKw)~\textrm{returns} \\
-      \pcind \pcind \SimII(\NIZKcrs,\NIZKext,\NIZKx)~\pcif (\NIZKx,\NIZKw)
+      \pcind \Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
+      \pcind \pcind \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw)
       \in \NIZKRel \\
       \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel
     }    
   \end{minipage}
   \label{fig:nizk-games}
-  \caption{Games for NIZK schemes.}
+  \caption{Games for Simulation-Extractable NIZK schemes.}
 \end{figure}
 
-\iffalse
-\paragraph{Simulation Soundness.} %
-\fi
-
+As studied in \cite{cl06}, simulation-extractable NIZKPoKs formalize the concept
+of ``signatures of knowledge'' (see, e.g., \cite{cs97}). Which basically means
+that, given an $(\NIZKx,\NIZKw)$ pair from an NP relation, we can treat \NIZKx
+as a public key, and \NIZKw as its corresponding private key, and leverage them
+to build digital signature schemes -- with the advantage of being able to do so
+while proving arbitrary claims, as long as they can be represented as an NP
+relation. We note that, given a simulation-extractable NIZK system, it is
+straightforward to build a signature of knowledge by adding the message to be
+signed in the statement of the NIZK.
 
 %%% Local Variables:
 %%% mode: latex
