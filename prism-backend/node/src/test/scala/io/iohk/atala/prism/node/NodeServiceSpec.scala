@@ -469,11 +469,27 @@ class NodeServiceSpec
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.13.7"
       buildInfo.sbtVersion mustBe "1.6.2"
-      buildInfo.supportedNetworkProtocolVersion.map(_.majorVersion) mustBe Some(1)
-      buildInfo.supportedNetworkProtocolVersion.map(_.minorVersion) mustBe Some(0)
-      buildInfo.currentNetworkProtocolVersion.map(_.majorVersion) mustBe Some(currentNetworkProtocolMajorVersion)
-      buildInfo.currentNetworkProtocolVersion.map(_.minorVersion) mustBe Some(currentNetworkProtocolMinorVersion)
     }
+  }
+
+  "return proper protocol information" in {
+    val currentNetworkProtocolMajorVersion = 2
+    val currentNetworkProtocolMinorVersion = 5
+
+    doReturn(
+      fake[ProtocolVersion](ProtocolVersion(currentNetworkProtocolMajorVersion, currentNetworkProtocolMinorVersion))
+    ).when(objectManagementService).getCurrentProtocolVersion
+
+    val nodeNetworkProtocolInfo = service.getNodeNetworkProtocolInfo(GetNodeNetworkProtocolInfoRequest())
+
+    nodeNetworkProtocolInfo.supportedNetworkProtocolVersion.map(_.majorVersion) mustBe Some(1)
+    nodeNetworkProtocolInfo.supportedNetworkProtocolVersion.map(_.minorVersion) mustBe Some(0)
+    nodeNetworkProtocolInfo.currentNetworkProtocolVersion.map(_.majorVersion) mustBe Some(
+      currentNetworkProtocolMajorVersion
+    )
+    nodeNetworkProtocolInfo.currentNetworkProtocolVersion.map(_.minorVersion) mustBe Some(
+      currentNetworkProtocolMinorVersion
+    )
   }
 
   "NodeService.getWalletBalance" should {
