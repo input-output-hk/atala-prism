@@ -438,6 +438,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \yeval = \feval(\PUBUK[\cuid_0],\CRED[\cscid_0],\msg) \neq \\
           \pcind \feval(\PUBUK[\cuid_1],\CRED[\cscid_1],\msg):
           \pcreturn \bot \\
+          \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
           (\yeval,\csig_b) \gets \Sign(\PRVUK[\cuid_b],\PUBOK[\oid], \\
           \hspace*{71pt}\CRED[\cscid_b],\msg,\feval) \\
           (\yeval,\csig_{1-b}) \gets \Sign(\PRVUK[\cuid_{1-b}],\PUBOK[\oid], \\
@@ -446,7 +447,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \lbrace (\oid,\cuid_b,\cscid_b,\msg,\feval,\yeval,\\
           \hspace*{74pt}\cuid_{1-b},\csig_{1-b},\cscid_{1-b})
           \rbrace \\
-          \pcreturn \csig_b
+          \pcreturn (\csig_b,\yeval)
         }        
         
       \end{minipage}
@@ -477,7 +478,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \feval) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\sig,\yeval,\msg,\feval) \rbrace \\
-          \pcreturn \sig \\
+          \pcreturn (\sig,\yeval) \\
         }                
 
         \procedure{$\INSPECT(\oid,\sig,\yeval,\msg)$}{%
@@ -631,6 +632,12 @@ output of \feval. We opt not to require that, though, as it directly allows
 our model to cover interesting use cases -- such as restricting to selective
 disclosure, or privacy-preserving variants of functional signatures \todo{check
   the latter, and perhaps expand}.
+
+\todo{Mention (probably, in future work?) that since the public keys of the
+  credential issuers are assumed to be public, we must enforce that challenge
+  users with same issuers per credential are used in the challenge oracle. This
+  is to avoid trivial wins. But not sure if the naive extension of hiding also
+  the issuers would make sense in the real world (which issuers are trusted?)}
 
 \paragraph{Unforgeability.} In anonymous credentials, unforgeability requires
 that no adversary can succeed in a credential presentation for attributes that

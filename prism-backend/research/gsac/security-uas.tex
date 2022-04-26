@@ -55,15 +55,63 @@ are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Anonymity of \CUASGen]
   \label{thm:anonymity-uas}
-  If the underlying encryption scheme is \todo{IND-CCA}, the vector commitment
-  scheme is \todo{binding}, the scheme for signatures on blocks of committed
-  messages is \todo{XXX}, and the NIZKs used for $\NIZKRel_{\Issue},
-  \NIZKRel_{\Sign}$, and $\NIZKRel_{\Inspect}$ are \todo{zero-knowledge} and
-  \todo{simulation-sound?}, our \CUASGen construction satisfies anonymity as
+  If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge and
+  simulation-extractable, our \CUASGen construction satisfies anonymity as
   defined in \defref{def:anonymity-uas}.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:anonymity-uas}]
+  In this proof, we restrict to the case in which the adversary can only make
+  one query to the challenge oracle. Note however that the generalization to
+  polynomially many queries given in \cite{bsz05} applies here too (with the
+  corresponding security loss). Thus, proving security for one query to the
+  challenge oracle is enough.
+
+  We start from $G_0=\ExpAnonb$, and define game $G_1$ to be exactly the same
+  as $G_0$, except that, within the $\Setup$ algorithm, we replace
+  $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. By simulation
+  extractability, $G_1$ is indistinguishable from $G_0$.
+  
+  From $G_1$, we consider $G^0_1$, which we define to be $G_1$, for $b=0$
+  (i.e., \ExpAnonz, using $\NIZKSimSetup^{\Sign}$). The challenge sent to the
+  adversary is $(\csig_0,\yeval) \gets \Sign(\PRVUK[\cuid_0],\PUBOK[\oid],
+  \CRED[\scid_0],\msg,\feval)$, where $\csig_0 = (\pi_0,\Ec_{\yinsp})$, with
+  $\pi_0 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\msg,\feval,\yeval,
+  \Ec_{\yinsp},\PUBIK[\scid_0],\PUBOK[\oid]),(\PRVUK[\cuid_0],
+  \CRED[\scid_0],\attrs_{\scid_0},\yinsp,r))$ and $\Ec_{\yinsp} =
+  \EEnc(\PUBOK[\oid],\yinsp;r)$.
+  %
+  Further, we build $G_2^0$ from $G_1^0$ by simulating the proof $\pi_0$. That
+  is, in $G_{2,0}$, $\csig_0 = (\pi_0^s,\Ec_{\yinsp})$, where $\pi^s_0 =
+  \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
+  \Ec_{\yinsp},\PUBIK[\scid_0],\PUBOK[\oid]))$. By zero-knowledgeness
+  of $\NIZK^{\Sign}$, $G_2^0$ is indistinguishable from $G_1^0$.
+
+  Similarly, we consider $G_1^1$ and $G_2^1$. That is, $G_1^1$ is $G_1$
+  for $b=1$, where the challenge
+  sent to the adversary is $(\csig_1,\yeval) \gets \Sign(\PRVUK[\cuid_1],
+  \PUBOK[\oid],\CRED[\scid_1],\msg,\feval)$, where $\csig_1 = (\pi_1,
+  \Ec_{\yinsp})$, with $\pi_1 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},
+  (\msg,\feval,\yeval,\Ec_{\yinsp},\PUBIK[\scid_1],\PUBOK[\oid]),
+  (\PRVUK[\cuid_1],\CRED[\scid_1],\attrs_{\scid_1},\yinsp,r'))$ and $\Ec_{\yinsp}
+  = \EEnc(\PUBOK[\oid],\yinsp;r')$. As before, $G_2^1$ is built from $G_1^1$,
+  simulating $\pi_1$. That is, in $G_2^1$, $\csig_1 = (\pi_1^s,\Ec_{\yinsp})$,
+  where $\pi^s_1 = \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,
+  \feval,\yeval,\Ec_{\yinsp},\PUBIK[\scid_1],\PUBOK[\oid]))$. Again, by
+  zero-knowledge of $\NIZK^{\Sign}$, $G_2^1$ is indistinguishable from $G_1^1$.
+  Note also that $G_2^1=G_2^0$, as in the challenge oracle, used in the
+  anonymity game, we restrict to $\PUBIK[\scid_0] = \PUBIK[\scid_1]$.
+
+  Finally, consider the definition of $\AdvAnon=|\Pr\lbrack
+  \ExpAnono(1^\secpar)=1\rbrack-\Pr\lbrack\ExpAnonz(1^\secpar)=1\rbrack|$. As
+  argued, $G_1$ is indistinguishable from $\ExpAnonb$, thus
+  $\AdvAnon \approx |\Pr\lbrack G_1^1(1^\secpar)=1\rbrack-\Pr\lbrack
+  G_1^0(1^\secpar)=1\rbrack| \approx
+  |\Pr\lbrack G_2^1(1^\secpar)=1\rbrack-\Pr\lbrack
+  G_2^0(1^\secpar)=1\rbrack|$. Since $G_2^1=G_2^0$, it follows that
+  \AdvAnon is negligible.
+  %
+  \qed
 \end{proof}
 
 \begin{theorem}[Issuance unforgeability of \CUASGen]
@@ -72,7 +120,7 @@ are needed for some of the properties to be meaningful, in
   existentially unforgeable, and the NIZK used for $\NIZKRel_{\Issue}$ is
   simulation extractable and sound, then our \CUASGen construction satisfies
   issuance unforgeability as defined in \defref{def:issue-forge-uas}, except
-  with negligible probability. \todo{EUF of \SBCM?}
+  with negligible probability.
 \end{theorem}
 
 \todo{\usk belongs to \AttrSpace! I think this can lead to malleability attacks.
@@ -94,7 +142,8 @@ are needed for some of the properties to be meaningful, in
   if such a credential was produced by an issuer, we must have access to those
   entries, as issuers are assumed to be honest.
   %
-  Then, given that $\NIZKRel_{\Issue}$ is knowledge extractable, in game $G_1$
+  Then, given that $\NIZKRel_{\Issue}$ is knowledge extractable (which is implied
+  by simulation-extractability), in game $G_1$
   we can apply the \NIZKExtract function, which produces a tuple $(\usk,\scred,
   \attrs_{\scred})$ from $\utrans = (\Ccom,\attrs,\sipk,\cred,\NIZKproof)$.
   %
@@ -170,7 +219,7 @@ are needed for some of the properties to be meaningful, in
   = 1$, but there exists some credential \cred for which $\Identify(\usk,
   \attrs_{\cred},\msg)=0$. Note that \usk, $\attrs_{\cred}$ and \cred (for all
   $\cred \in \scred$) are output by \ExtractSign. Thus, after the
-  simulation-extractability property and soudness of $\NIZK^{\Sign}$, $(\msg,
+  simulation-extractability property and soundness of $\NIZK^{\Sign}$, $(\msg,
   \feval,\yeval,\Ec,\sipk,\opk) \in \NIZKRel^{\Sign}$, which more concretely
   means that $\SBCMVerify(\ipk_{\cred},\cred,\attrs_{\cred} \cup \lbrace \usk
   \rbrace) = 1 = \Identify(\usk,\attrs_{\cred},\cred)$, for all $\cred \in
@@ -240,7 +289,7 @@ are needed for some of the properties to be meaningful, in
   the $u$-th user's \usk. \advB then simulates all the NIZK proofs associated to
   the $u$-th user, in calls to \OBTAIN, \SIGN and \INSPECT. Again, due to the
   zero-knowledge property of the associated NIZK systems, the outputs of the
-  moddified oracles are indistinguishable from the original outputs (as \Ccom
+  modified oracles are indistinguishable from the original outputs (as \Ccom
   is a valid commitment of a user secret key). Eventually, $\adv$ outputs a
   $(\sig,\yeval,\msg,\feval,\yinsp,\iproof)$ tuple that is accepted by \Verify
   and \Judge. Due to simulation extractability of $NIZK^{\Sign}$, \ExtractSign
