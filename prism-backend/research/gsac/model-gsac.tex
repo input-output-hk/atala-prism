@@ -85,17 +85,16 @@ In the model described below, we follow closely the definitions from
 \item[$1/0 \gets \Verify(\gpk,\sig,\DAttrs,\msg)$.] Checks whether \sig is a
   valid signature revealing the attribute set \DAttrs of its signing credential,
   over message \msg.
-\item[$(\upk,\Attrs,\oproof)/\bot \gets
-  \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg)$.]
+\item[$(\upk,\oproof)/\bot \gets
+  \Open(\gpk,\osk,\sig,\DAttrs,\msg)$.]
   Given a signature \sig over message \msg, produced by a credential with
-  attributes containing the set \DAttrs owned by a user with key \upk, returns
-  the attribute set \Attrs encoded in the credential used to create the
-  signature, and a proof of opening correctness \oproof; or $\bot$ if the
+  attributes containing the set \DAttrs, returns the public key \upk of the
+  signer, and a proof of opening correctness \oproof; or $\bot$ if the
   opening process fails.
-\item[$1/0 \gets \Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,
+\item[$1/0 \gets \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,
   \msg)$.] Checks if \oproof is a valid opening correctness proof stating that
-  the user with key \upk and attributes \Attrs generated signature \sig over
-  message \msg, revealing attributes $\DAttrs \subseteq \Attrs$. 
+  the user with key \upk generated signature \sig over message \msg, revealing
+  attributes $\DAttrs$. 
 \end{description}
 
 The correctness and security properties are defined with the help of the
@@ -197,10 +196,9 @@ signature, revealing the public key pair of the user, must also be accepted by
     \pcif \DAttrs \nsubseteq \ATTR[\cid] :
     \pcreturn \bot \\
     \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\DAttrs,\msg) \\
-    (\upk,\Attrs,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) \\
+    (\upk,\oproof) \gets \Open(\gpk,\osk,\sig,\DAttrs,\msg) \\
     \pcif \Verify(\gpk, \sig, \DAttrs,\msg) = 0 \lor
-    \Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg) = 0~\lor\\
-     \pcind \DAttrs \nsubseteq \Attrs \lor \Attrs \neq \ATTR[\cid]: \\
+    \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0: \\
      \pcind \pcreturn 1 \\
     \pcreturn 0
   }
@@ -296,13 +294,9 @@ formally define traceability in the \ExpTrace experiment in
     \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1~\land~( \\
     \pcind \pccomment{\Open fails} \\
     \pcind \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) = \bot~\lor \\
-    \pcind \pccomment{\Open succeeds, but ...} \\
-    \pcind \Open(\gpk,\osk,\utrans,\sig,\DAttrs,\msg) =
-    (\upk,\Attrs,\oproof)~\land\\
-    \pcind \pcind \pccomment{... the proof is rejected by \Judge, or
-      it is accepted but \DAttrs is not contained in \Attrs} \\
-    \pcind \pcind (\Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg) = 0
-    \lor \DAttrs \nsubseteq \Attrs) \\
+    \pcind \pccomment{\Open succeeds, but the proof is rejected by \Judge} \\
+    \pcind \Open(\gpk,\osk,\sig,\DAttrs,\msg) =
+    (\upk,\oproof) \land \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0 \\
     ) \\
     \pcreturn 0
   }
@@ -345,13 +339,12 @@ during \Open.
     \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-     (\sig,\DAttrs,\msg,\upk,\Attrs,\oproof) \gets
+     (\sig,\DAttrs,\msg,\upk,\oproof) \gets
      \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN}(\gpk,\isk,\osk) \\
      \textrm{Let}~\uid~\textrm{be st}~\PUBUK[\uid] = (\upk,\cdot) \\
      \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1 \land 
-     \Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg) = 1~\land \\
-     \pcind \uid \in \HU \land (\sig \notin \SIG[\uid] \lor
-     \DAttrs \nsubseteq \Attrs) \\
+     \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 1~\land \\
+     \pcind \uid \in \HU \land \sig \notin \SIG[\uid] \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \GSAC schemes.}

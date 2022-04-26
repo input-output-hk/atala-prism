@@ -158,12 +158,11 @@
 
 Intuitively, the credentials that we generate for our \GSAC construction are
 Pedersen commitments to $(\usk,\credid,\Attrs)$ tuples; i.e., they have
-the following structure: $\gen{h}_0^r\gen{h}_1^{\usk}\gen{h}_2^{\credid}
-\prod_{i \in [3,\nattrs+2]}\gen{h}_i^{\Attrs_i}$, where the exponent in
-$\gen{h_0}$ is a fresh random value that ensures hiding, the exponents in
-$\gen{h_1}$ and $\gen{h_2}$ encode the user private key and (unique) credential
-identifier, and the remaining attributes are encoded in different
-exponentitaions. This will actually be part of a BBS+ signature, which makes it
+the following structure: $\gen{h}_0^r\gen{h}_1^{\usk}\prod_{i \in [2,\nattrs+1]}
+\gen{h}_i^{\Attrs_i}$, where the exponent in $\gen{h_0}$ is a fresh random value
+that ensures hiding, the exponent in $\gen{h_1}$ encodes the user private
+key, and the remaining attributes are encoded in different
+exponentiations. This will actually be part of a BBS+ signature, which makes it
 easy to add subsequent and efficient zero-knowledge proofs. Concretely, we will
 be using several \NIZK proof systems, one for the $\langle \Obtain,\Issue
 \rangle$ interactive protocol, another for signing, and a third one for opening.
@@ -172,9 +171,9 @@ The concrete algorithms are as follows.
 
 \paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
 Generates a bilinear group $\BB = (p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,e) \gets
-\PGen(\secpar)$, $\nattrs+5$ additional generators $\gen{g},\gen{h},\gen{h}_0,...,
-\gen{h}_{\nattrs+2}$ of $\GG_1$. Returns $\parm \gets
-(\secpar,\nattrs,\BB,\gen{g},\gen{h}_0,...,\gen{h}_{\nattrs+2})$.
+\PGen(\secpar)$, $\nattrs+4$ additional generators $\gen{g},\gen{h},\gen{h}_0,...,
+\gen{h}_{\nattrs+1}$ of $\GG_1$. Returns $\parm \gets
+(\secpar,\nattrs,\BB,\gen{g},\gen{h},\gen{h}_0,...,\gen{h}_{\nattrs+1})$.
 
 \paragraph{$\IKeyGen(\parm) \rightarrow (\ipk,\isk)$.} %
 Parses \parm as $(\secpar,\dots)$ and runs $\NIZKcrs \gets \NIZKSetup(\secpar)$.
@@ -203,27 +202,26 @@ identifier is freshly chosen at random for each credential. Of course, although
 both will be formally included as attributes in the credential, neither will be
 revealed during signing. But still, including them will be crucial for opening.
 For proving knowledge of the private key and credential identifier, we define
-relation $\NIZKRel_{\Issue} = \lbrace (r, \usk, \credid),
-(\Cusk,\Ccredid): \Cusk = \gen{h}_0^r\gen{h}_1^{\usk} \land \Ccredid =
-\gen{h}_2^{\credid}\rbrace$.
+relation $\NIZKRel_{\Issue} = \lbrace (r, \usk), \Ccom: \Ccom =
+\gen{h}_0^r\gen{h}_1^{\usk}\rbrace$.
 
 \begin{itemize}
-\item \underline{User}: Compute fresh randomness $r,\credid \getr \ZZ^*_p,
-  \Cusk \gets \gen{h}_0^r\gen{h}_1^{\usk}$, $\Ccredid \gets \gen{h}_2^{\credid}$
-  and $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs,(r,\usk,\credid),
-  (\Cusk,\Ccredid))$. Send $(\Cusk,\Ccredid,\NIZKproof)$ to Issuer.
-\item \underline{Issuer}: Run $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,(\Cusk,
-  \Ccredid),\NIZKproof)$ and return $0$ if it fails. Else, compute
+\item \underline{User}: Fetch fresh randomness $r \getr \ZZ^*_p,
+  \Ccom \gets \gen{h}_0^r\gen{h}_1^{\usk}$, and compute $\NIZKproof \gets
+  \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs,(r,\usk),
+  \Ccom)$. Send $(\Ccom,\NIZKproof)$ to Issuer.
+\item \underline{Issuer}: Run $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,\Ccom,
+  \NIZKproof)$ and return $0$ if it fails. Else, compute
   $x,\tilde{s} \getr \ZZ^*_p, A \gets
-  (\gen{g}_1\Cusk h_0^{\tilde{s}} \Ccredid \prod_{i \in \Attrs}
+  (\gen{g}_1\Ccom h_0^{\tilde{s}} \prod_{i \in \Attrs}
   \gen{h}_i^{\Attrs_i})^{1/(\isk+x)}$.
   Send $(A,x,\tilde{s})$ to User, and output $\utrans \gets
-  ((\Cusk,\Ccredid),(A,x,\tilde{s}),\Attrs,\NIZKproof)$.
+  (\Ccom,(A,x,\tilde{s}),\Attrs,\NIZKproof)$.
 \item \underline{User}: If $A = 1_{\GG_1}$: return $0$. Else, compute
   $s \gets r + \tilde{s}$. If $e(A,\gen{g}_2)^xe(A,\ipk) \neq
-  e(\gen{g}_1\Cusk\gen{h}_0^{\tilde{s}}\Ccredid\prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i},
+  e(\gen{g}_1\Ccom\gen{h}_0^{\tilde{s}}\prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i},
   \gen{g}_2)$: return $0$. Else, return
-  $(\credid,A,x,s)$.
+  $(A,x,s)$.
 \end{itemize}
 
 \paragraph{$\Sign(\gpk,\usk,\cred,\DAttrs,\msg) \rightarrow \sig$.} %
@@ -235,85 +233,66 @@ to, in addition to proving knowledge of a signature (which, for us is the user
 credential), also prove that the attributes encoding \credid and \usk within
 the credential match the encrypted values. Finally, the user commits to \msg,
 and includes the commitment within the proof. For this, we define relation
-$\NIZKRel_{\Sign}= \lbrace (r,r',\usk,\credid,\Attrs,r_2,r_3,s',\msg),(\DAttrs,
-c_1,c_2,c'_1,c'_2,\Cmsg):
-\Cmsg = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk} \land
-c'_1 = g^{r'} \land c'_2 = \opk^{r'}\gen{h_2}^{\credid} \land
-\hat{A}/d = (A')^{-x}\gen{h}_0^{r_2} \land
+$\NIZKRel_{\Sign}= \lbrace (r,\usk,\Attrs,r_2,r_3,s',\msg),(\DAttrs,c_1,c_2,
+\Cmsg): \Cmsg = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk}
+\land \hat{A}/d = (A')^{-x}\gen{h}_0^{r_2} \land
 \gen{g}_1 \prod_{i \in \DAttrs} \gen{h}_i^{\Attrs_i} =
-d^{r_3}\gen{h}_0^{-s'}\gen{h}_1^{-\usk}\gen{h}_2^{-\credid}
+d^{r_3}\gen{h}_0^{-s'}\gen{h}_1^{-\usk}
 \prod_{i \notin \DAttrs} \gen{h}_i^{-\Attrs_i} \rbrace$.
 
 \begin{itemize}
 \item Parse \gpk as $(\ipk,\opk)$, and \cred as $(A,x,s)$.
 \item Parse \cred as $(\credid,A,x,s)$ and re-randomize it as $r_1,r_2 \getr
   \ZZ^*_p, r_3 \gets r_1^{-1}, s' \gets s - r_2r_3$, $A' \gets A^{r_1},
-  \hat{A} \gets (A')^{-x}(\gen{g}_1\gen{h}_0^s\gen{h}_1^{\usk}\gen{h}_2^{\credid}
+  \hat{A} \gets (A')^{-x}(\gen{g}_1\gen{h}_0^s\gen{h}_1^{\usk}
   \prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i})^{r_1}$,
-  $d \gets (\gen{g}_1\gen{h}_0^s\gen{h}_1^{\usk}\gen{h}_2^{\credid}
+  $d \gets (\gen{g}_1\gen{h}_0^s\gen{h}_1^{\usk}
   \prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i})^{r_1}\gen{h}_0^{-r_2}$.
-\item Encrypt $\upk=\gen{h}_1^{\usk}$ and $\Ccredid=\gen{h}_2^{\credid}$
-  with ElGamal as $r,r' \getr \ZZ^*_P,
-  c \gets (c_1 = \gen{g}^r,c_2 = \opk^r\gen{h}_1^{\usk})$,
-  $c' \gets (c'_1 = \gen{g}^{r'},c'_2 = \opk^{r'}\gen{h}_2^{\credid})$
+\item Encrypt $\upk=\gen{h}_1^{\usk}$ with ElGamal as $r \getr \ZZ^*_P,
+  c \gets (c_1 = \gen{g}^r,c_2 = \opk^r\gen{h}_1^{\usk})$.
 \item Compute $\Cmsg \gets \gen{h}^\msg$ and
   $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs,
-  (r,r',\usk,\credid,\Attrs,r_2,r_3,s',\msg), (\DAttrs,c_1,c_2,c'_1,c'_2,\Cmsg))$.
-\item Return $\sig \gets (c=(c_1,c_2),c'=(c'_1,c'_2),(A',\hat{A},d),\NIZKproof)$.
+  (r,\usk,\Attrs,r_2,r_3,s',\msg), (\DAttrs,c_1,c_2,\Cmsg))$.
+\item Return $\sig \gets (c=(c_1,c_2),(A',\hat{A},d),\NIZKproof)$.
 \end{itemize}
 
 \paragraph{$\Verify(\gpk,\sig,\DAttrs,\msg) \rightarrow 1/0$.} %
-Parse \gpk as $(\ipk,\opk)$ and $\sig$ as $(c=(c_1,c_2),c'=(c'_1,c'_2),
+Parse \gpk as $(\ipk,\opk)$ and $\sig$ as $(c=(c_1,c_2),
 (A',\hat{A},d), \NIZKproof)$. Check that $A' \neq 1_{\GG_1}$ and $e(A',\ipk) =
 e(\hat{A},\gen{g}_2)$. Compute $\Cmsg \gets \gen{h}^\msg,$ and return
-$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\DAttrs,c_1,c_2,c'_1,c'_2,\Cmsg),
+$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\DAttrs,c_1,c_2,\Cmsg),
 \NIZKproof)$.
 
-\paragraph{$\Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg)
-  \rightarrow (\upk,\Attrs,\oproof)/\bot$.} %
+\paragraph{$\Open(\gpk,\osk,\sig,\DAttrs,\msg)
+  \rightarrow (\upk,\oproof)/\bot$.} %
 For open algorithms, we define the following relation for correct decryption of
 ElGamal ciphertexts: $\NIZKRel_{\Open} = \lbrace (\osk),(\msg,c_1,c_2):
 c_2/c_1^{\osk} = \msg \rbrace$. Given $\NIZKRel_{\Open}$, the opener proceeds as
 follows.
 
 First, check that $\Verify$ accepts the signature, and abort otherwise. If \sig
-is accepted, then parse \sig as $(c=(c_1,c_2),c'=(c'_1,c'_2),\cdot,\NIZKproof)$.
-Set $\upk \gets c_2/c_1^{\osk}$, and $\Ccredid \gets c'_2/{c'_1}^{\osk}$. Find
-entry $((\Cusk,\Ccredid),(A,x,\tilde{s}),\Attrs,\NIZKproof_{\Issue})$ in \trans,
-and return $\bot$ if it does not exist. If it exists, compute proofs of correct
-decryption
-by running $\NIZKproof_1 \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,
-(\upk,c_1,c_2))$ and $\NIZKproof_2 \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,
-\osk,(\Ccredid,c'_1,c'_2))$, and return $(\upk,\Attrs,\oproof = (\Cusk,
-\Ccredid,(A,x,\tilde{s}),\NIZKproof_1,\NIZKproof_2,\NIZKproof_{\Issue}))$.
+is accepted, then parse \sig as $(c=(c_1,c_2),\cdot,\cdot)$.
+Set $\upk \gets c_2/c_1^{\osk}$. Compute the proof of correct decryption
+by running $\oproof \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,
+(\upk,c_1,c_2))$, and return $(\upk,\oproof)$.
 
-\paragraph{$\Judge(\gpk,\upk,\Attrs,\oproof,\sig,\DAttrs,\msg)
+\paragraph{$\Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg)
   \rightarrow 1/0$.} %
-First, check that $\Verify$ accepts \sig, and abort otherwise. Then, parse
-\sig as $(c=(c_1,c_2),c'=(c'_1,c'_2),\cdot,\NIZKproof_\sig)$, and parse \oproof
-as $(\Cusk,\Ccredid,(A,x,\tilde{s}),\NIZKproof_1,\NIZKproof_2,
-\NIZKproof_{\Issue})$. To verify
-the opening proof, we have to: (1) run $\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,
-(\upk,c_1,c_2),\NIZKproof_1)$ and $\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,
-(\Ccredid,c'_1,c'_2),\NIZKproof_2)$, proving correctness of the respective
-decryptions; (2) verify the BBS+ signature by checking $e(A,\gen{g}_2)^x
-e(A,\ipk) \stackrel{?}{=} e(\gen{g}_1\Cusk\gen{h}_0^{\tilde{s}}\Ccredid
-\prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i},g_2)$; and (3) run
-$\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,(\Cusk,\Ccredid),\NIZKproof_{\Issue})$
-proving that only the credential request was made by the owner of \usk. If
-either check fails, the proof is rejected.
+First, check that $\Verify$ accepts \sig, and abort otherwise. If the signature
+is accepted, then parse \sig as $(c=(c_1,c_2),\cdot,\cdot)$ and return
+$\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\upk,c_1,c_2),\oproof)$.
 
-\commentwho{Jesus}{For consistency with \UAS, maybe remove the need to return
-  \Attrs in \Open, and return \DAttrs instead. Then, we do not need to pass
-  \trans as a parameter to \Open, as \DAttrs is already attested for in the
-  signature being opened. It also makes sense from the point of view that we
-  are already revealing \upk, which would allow tracing; but otherwise don't
-  reveal anything else about the attributes of \upk -- attributes that whoever
-  requested the signature (the verifier) didn't seem to consider necessary, as
-  s/he only requested \DAttrs. Still, if we make this modification, mention the
-  possibility to return \Attrs, and the option to do it via adding \trans as a
-  parameter to \Open (or including an encryption of all attributes in the
-  signature, which is probably unrealistic.)}
+% \commentwho{Jesus}{For consistency with \UAS, maybe remove the need to return
+%   \Attrs in \Open, and return \DAttrs instead. Then, we do not need to pass
+%   \trans as a parameter to \Open, as \DAttrs is already attested for in the
+%   signature being opened. It also makes sense from the point of view that we
+%   are already revealing \upk, which would allow tracing; but otherwise don't
+%   reveal anything else about the attributes of \upk -- attributes that whoever
+%   requested the signature (the verifier) didn't seem to consider necessary, as
+%   s/he only requested \DAttrs. Still, if we make this modification, mention the
+%   possibility to return \Attrs, and the option to do it via adding \trans as a
+%   parameter to \Open (or including an encryption of all attributes in the
+%   signature, which is probably unrealistic.)}
 
 \subsection{Security of the \GSAC construction}
 
