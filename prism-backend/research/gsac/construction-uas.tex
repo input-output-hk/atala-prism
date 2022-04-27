@@ -1,70 +1,9 @@
-\section{\CUASGen: A Generic \UAS Construction}
-\label{sec:gen-construction}
+\subsection{\CUASGen: A Generic \UAS Construction}
+\label{ssec:generic-construction-uas}
 
 In this section, we give a generic construction of an \UAS scheme, based on
 generic building blocks. In \secref{sec:instantiation}, we give a concrete
 instantiation.
-
-\subsection{Building Blocks}
-\label{ssec:bblocks}
-
-\paragraph{Vector Commitment schemes.} %
-Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
-\CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
-\gets \CCommit(\Cparm, \msgset; r)$ produces a commitment \Ccom over a set of
-messages \msgset, from which we may omit randomness $r$. \todo{Informally define
-  hiding and binding, leaving formal definitions to the appendix.}
-
-\paragraph{Public-Key Encryption.} %
-Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
-\ESetup(\Esecpar)$ produces public parameters for the other algorithms.
-$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
-pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
-encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
-\Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
-  security properties we'll need.}
-
-\paragraph{Digital Signatures.} %
-Defined as a tuple $(\SSetup,\SKeyGen,\SSign,\SVerify)$. Algorithm $\Sparm \gets
-\SSetup(\Ssecpar)$ produces public parameters for the other algorithms.
-$(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$ generates the verification-signing key
-pair, algorithm $\Ssig \gets \SSign(\Ssk,\msg)$ signs message \msg with
-signing key \Ssk, producing signature \Ssig, and $1/0 \gets \SVerify(\Svk,
-\Ssig,\msg)$ checks whether \Ssig is a valid signature over \msg, under
-verification key \Svk. \todo{Informally define security properties we'll need.}
-
-\paragraph{Non-Interactive Zero-Knowledge.} %
-We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
-model \needcite. Informally, a NIZK scheme over an NP relation \NIZKRel is
-defined as a tuple $(\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel,
-\NIZKVerify^\NIZKRel)$. Algorithm $\NIZKcrs \gets \NIZKSetup^\NIZKRel
-(\NIZKsecpar)$ produces the common reference string \NIZKcrs. $\NIZKproof/\bot
-\gets \NIZKProve^\NIZKRel(\NIZKcrs,\NIZKw,\NIZKx)$ creates a NIZK proof of
-knowledge of witness \NIZKw for \NIZKx such that $(\NIZKw,\NIZKx) \in \NIZKRel$.
-$1/0 \gets \NIZKVerify^\NIZKRel(\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof.
-\todo{Informally define security properties we'll need.}
-
-\paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
-We use signature schemes that allow signing messages, or commitments to messages,
-in blocks, and are compatible with (efficient) proof systems over the produced
-signature and signed (commitments to) messages. For this purpose, we define such
-schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,\SBCMSign,\SBCMVerify)$. Algorithm
-$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$ produces the public parameters for the
-scheme. $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a
-verification-signing key
-pair. Algorithm $\SBCMsig \gets \SBCMSign(\SBCMsk,\Ccom,\msgset)$ produces a
-signature over a set of committed messages \Ccom and a set of messages
-\msgset, where either \Ccom or \msgset may be empty. $1/0 \gets
-\SBCMVerify(\SBCMvk,\SBCMsig,\overline{\msgset})$ verifies a signature \SBCMsig
-over message set $\overline{\msgset}$, which must contain both the messages that
-were signed as commitments as well as those signed in ``the clear''. In
-addition, the produced signatures must be compatible with (efficient) NIZK
-proofs of knowledge of a signature, and of (arbitrary) claims over the signed
-(committed) messages.
-\todo{Informally define security properties we'll need.}
-
-\subsection{Generic Construction \CUASGen}
-\label{ssec:generic-construction-uas}
 
 We use three different NP relations in our generic construction. Namely,
 $\NIZKRel_{\Issue}$ for issuance, $\NIZKRel_{\Sign}$ for signing, and
@@ -188,6 +127,8 @@ by running $\Verify(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the check succeeds
 parse \sig as $((\cdot,\Ec),\cdot)$ and verify \NIZKproof with $\NIZKVerify
 (\NIZKcrs_{\Inspect},\NIZKproof,(\Ec,\yinsp))$. Accept it the NIZK verification
 passes, and reject otherwise.
+
+%\input{security-uas.tex}
 
 %%% Local Variables:
 %%% mode: latex

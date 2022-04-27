@@ -1,0 +1,54 @@
+\subsection{Correctness and Security of \GSACGen}
+\label{ssec:security-gsac}
+
+\begin{theorem}[Correctness of \GSACGen]
+  \label{thm:correctness-gsac}
+  If the underlying schemes for \todo{xxx}, our generic construction \GSACGen
+  satisfies correctness as defined in \defref{def:correctness-gsac}.
+\end{theorem}
+
+\begin{proof}[\thmref{thm:correctness-gsac}]
+  \todo{XXX}
+\end{proof}
+
+\begin{theorem}[Anonymity of \GSACGen]
+  \label{thm:anonymity-gsac}
+  If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge and
+  simulation-extractable, our \GSACGen construction satisfies anonymity as
+  defined in \defref{def:anonymity-gsac}.
+\end{theorem}
+
+\begin{proof}[\thmref{thm:anonymity-gsac}]
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Traceability of \GSACGen]
+  \label{thm:trace-gsac}
+  If the underlying scheme for \todo{xxx}, then our \GSACGen construction
+  satisfies traceability as defined in \defref{def:trace-gsac}, except
+  with negligible probability.
+\end{theorem}
+
+\todo{\usk belongs to \AttrSpace! I think this can lead to malleability attacks.
+  Make them disjoint?}
+
+\begin{proof}[\thmref{thm:trace-gsac}]
+  \qed
+\end{proof}
+
+\begin{theorem}[Non-frameability of \GSACGen]
+  \label{thm:frame-gsac}
+  If the underlying schemes for \todo{xxx}, then our \GSACGen construction
+  satisfies non-frameability as defined in \defref{def:frame-gsac}, except with
+  negligible probability.
+\end{theorem}
+
+\begin{proof}[\thmref{thm:frame-gsac}]
+  \qed
+\end{proof}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "gsac"
+%%% End:

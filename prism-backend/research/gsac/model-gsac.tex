@@ -58,8 +58,8 @@ In the model described below, we follow closely the definitions from
 \cite{bsz05} for group signatures, and \cite{fhs19} for anonymous credentials
 (which are in turn influenced by \cite{bsz05}).
 
-\subsection{Syntax}
-\label{ssec:syntax}
+\subsubsection{Syntax}
+\label{sssec:syntax-gsac}
 
 \begin{description}
 \item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
@@ -187,6 +187,12 @@ by \Verify. Moreover, an honestly produced correctness proof of opening for such
 signature, revealing the public key pair of the user, must also be accepted by
 \Judge.
 
+\begin{definition}{(Correctness of \GSAC)}
+  \label{def:correctness-gsac}
+  A \GSAC scheme is correct if, for any p.p.t. adversary $\adv$, \ExpGSACCorrect
+  outputs 1 with negligible probability.
+\end{definition}
+
 \begin{figure}[htp!]
   \procedure{$\ExpGSACCorrect(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
@@ -206,8 +212,10 @@ signature, revealing the public key pair of the user, must also be accepted by
   \label{fig:exp-gsac-corr}
 \end{figure}
 
-\subsection{Security Properties}
-\label{ssec:security}
+\todo{Correctness definition.}
+
+\subsubsection{Security Properties}
+\label{sssec:security-gsac}
 
 \paragraph{Anonymity.} %
 In group signatures, anonymity captures that no adversary must be able to learn,
@@ -255,6 +263,7 @@ sees. Therefore, all security relies \emph{only} on the user secret key.
 \end{figure}
 
 \begin{definition}{(Anonymity of \GSAC)}
+  \label{def:anonymity-gsac}
   We define the advantage \AdvGSACAnon of $\adv$ against \ExpGSACAnonb as
   $\AdvGSACAnon=|\Pr\lbrack\ExpGSACAnono(1^\secpar)=1\rbrack-
   \Pr\lbrack\ExpGSACAnonz(1^\secpar)=1\rbrack|$.
@@ -305,6 +314,7 @@ formally define traceability in the \ExpTrace experiment in
 \end{figure}
 
 \begin{definition}{(Traceability of \GSAC)}
+  \label{def:trace-gsac}
   We define the advantage \AdvGSACTrace of $\adv$ against \ExpGSACTrace as
   $\AdvGSACTrace=\Pr\lbrack\ExpGSACTrace(1^\secpar)=1\rbrack$.
   %
@@ -352,6 +362,7 @@ during \Open.
 \end{figure}
 
 \begin{definition}{(Non-frameability of \GSAC)}
+  \label{def:frame-gsac}
   We define the advantage \AdvGSACNonframe of $\adv$ against \ExpGSACNonframe as
   $\AdvGSACNonframe=\Pr\lbrack\ExpGSACNonframe(1^\secpar)=1\rbrack$.
   %

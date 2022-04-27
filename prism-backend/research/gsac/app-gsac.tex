@@ -89,15 +89,14 @@
           \pcif \textrm{no such \cid exists, or there is more than one}: \\
           \pcind \pcreturn \bot \\
           \pcif \sig \in \CSIG: \pcreturn \bot \\
-          (\upk,\Attrs,\oproof) \gets
-          \Open(\gpk,\osk,\trans[\cid],\sig,\DAttrs,\msg) \\
+          (\upk,\oproof) \gets \Open(\gpk,\osk,\sig,\DAttrs,\msg) \\
 %          \OSIG \gets \OSIG \cup \lbrace (\sig,\upk,\cred) \rbrace \\
 %          \CCRED \gets \CCRED \cup \lbrace \cid \rbrace \\
-          \pcreturn (\upk,\Attrs,\oproof) \\
+          \pcreturn (\upk,\oproof) \\
         }
 
         \procedure{$\CHALb(\ccid_0,\ccid_1,\DAttrs,\msg)$}{%
-          \pcif \ATTR[\ccid_0] \cap \ATTR[\ccid_1] \nsubseteq \DAttrs:
+          \pcif \DAttrs \nsubseteq \ATTR[\ccid_0] \cap \ATTR[\ccid_1]:
           \pcreturn \bot \\
           \pcif \cuid_0 \neq \bot \lor \cuid_1 \neq \bot: \pcreturn \bot \\
           \cuid_0 = \OWNR[\ccid_0];~\cuid_1 = \OWNR[\ccid_1] \\
@@ -120,6 +119,137 @@
 
 \subsection{Detailed Proofs}
 \label{sapp:gsac-proofs}
+
+\subsection{Concrete Instantiation with BBS+}
+\label{sapp:gsac-instantiation}
+
+Intuitively, the credentials that we generate for our \GSAC construction are
+Pedersen commitments to $(\usk,\credid,\Attrs)$ tuples; i.e., they have
+the following structure: $\gen{h}_0^r\gen{h}_1^{\usk}\prod_{i \in [2,\nattrs+1]}
+\gen{h}_i^{\Attrs_i}$, where the exponent in $\gen{h_0}$ is a fresh random value
+that ensures hiding, the exponent in $\gen{h_1}$ encodes the user private
+key, and the remaining attributes are encoded in different
+exponentiations. This will actually be part of a BBS+ signature, which makes it
+easy to add subsequent and efficient zero-knowledge proofs. Concretely, we will
+be using several \NIZK proof systems, one for the $\langle \Obtain,\Issue
+\rangle$ interactive protocol, another for signing, and a third one for opening.
+Each will have its own relation, that we define in the corresponding algorithm.
+The concrete algorithms are as follows.
+
+\paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
+Generates a bilinear group $\BB = (p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,e) \gets
+\PGen(\secpar)$, $\nattrs+4$ additional generators $\gen{g},\gen{h},\gen{h}_0,...,
+\gen{h}_{\nattrs+1}$ of $\GG_1$. Returns $\parm \gets
+(\secpar,\nattrs,\BB,\gen{g},\gen{h},\gen{h}_0,...,\gen{h}_{\nattrs+1})$.
+
+\paragraph{$\IKeyGen(\parm) \rightarrow (\ipk,\isk)$.} %
+Parses \parm as $(\secpar,\dots)$ and runs $\NIZKcrs \gets \NIZKSetup(\secpar)$.
+Outputs $\isk \gets \ZZ^*_p$, and $\ipk \gets (\NIZKcrs,\gen{g}_2^{\isk})$.
+
+\paragraph{$\OKeyGen(\parm) \rightarrow (\opk,\osk)$.} %
+Outputs $\osk \gets \ZZ^*_p$, and $\opk \gets \gen{g}^{\osk}$. This is the
+opener's ElGamal encryption key pair \needcite.
+
+\paragraph{$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.} %
+Outputs $\usk \gets \ZZ^*_p$, and $\upk \gets \gen{h}_1^{\usk}$. \upk will
+simply be used to compute Pedersen commitments \needcite to \usk. However,
+it is useful to precompute it, and we treat it as a sort of ``public key''.
+
+\paragraph{$\langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle
+  \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.} %
+This interactive protocol is essentially a BBS+ signing  process. The user
+commits to its private key, proves knowledge of the corresponding private
+key, and asks the issuer to sign the commitment, along with any other arbitraty
+set of revealed attributes \Attrs. For proving knowledge of the private key, we
+define relation $\NIZKRel_{\Issue} = \lbrace (r, \usk), \Ccom: \Ccom =
+\gen{h}_0^r\gen{h}_1^{\usk}\rbrace$.
+
+\begin{itemize}
+\item \underline{User}: Fetch fresh randomness $r \getr \ZZ^*_p,
+  \Ccom \gets \gen{h}_0^r\gen{h}_1^{\usk}$, and compute $\NIZKproof \gets
+  \NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs,(r,\usk),
+  \Ccom)$. Send $(\Ccom,\NIZKproof)$ to Issuer.
+\item \underline{Issuer}: Run $\NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs,\Ccom,
+  \NIZKproof)$ and return $0$ if it fails. Else, compute
+  $x,\tilde{s} \getr \ZZ^*_p, A \gets
+  (\gen{g}_1\Ccom h_0^{\tilde{s}} \prod_{i \in \Attrs}
+  \gen{h}_i^{\Attrs_i})^{1/(\isk+x)}$.
+  Send $(A,x,\tilde{s})$ to User, and output $\utrans \gets
+  (\Ccom,(A,x,\tilde{s}),\Attrs,\NIZKproof)$.
+\item \underline{User}: If $A = 1_{\GG_1}$: return $0$. Else, compute
+  $s \gets r + \tilde{s}$. If $e(A,\gen{g}_2)^xe(A,\ipk) \neq
+  e(\gen{g}_1\Ccom\gen{h}_0^{\tilde{s}}\prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i},
+  \gen{g}_2)$: return $0$. Else, return
+  $(A,x,s)$.
+\end{itemize}
+
+\paragraph{$\Sign(\gpk,\usk,\cred,\DAttrs,\msg) \rightarrow \sig$.} %
+To create a signature, the user first randomizes its BBS+ credential \cred and
+encrypts its public key \upk (note that $\upk=\gen{h}_1^{\usk}$ with the
+opener's encryption key. Then, we extend the usual NIZK protocol for proving
+knowledge of BBS+ signatures \cite{cdl16b} to, in addition to proving knowledge
+of a signature (which, for us is the user credential), also prove that the
+attribute encoding \usk within the credential match the encrypted value.
+Finally, the user commits to \msg, and includes this commitment within the
+proof. For this, we define relation
+$\NIZKRel_{\Sign}= \lbrace (r,\usk,\Attrs,r_2,r_3,s',\msg),(\DAttrs,c_1,c_2,
+\Cmsg): \Cmsg = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk}
+\land \hat{A}/d = (A')^{-x}\gen{h}_0^{r_2} \land
+\gen{g}_1 \prod_{i \in \DAttrs} \gen{h}_i^{\Attrs_i} =
+d^{r_3}\gen{h}_0^{-s'}\gen{h}_1^{-\usk}
+\prod_{i \notin \DAttrs} \gen{h}_i^{-\Attrs_i} \rbrace$.
+
+\begin{itemize}
+\item Parse \gpk as $(\ipk,\opk)$, and \cred as $(A,x,s)$.
+\item Re-randomize \cred as $r_1,r_2 \getr
+  \ZZ^*_p, r_3 \gets r_1^{-1}, s' \gets s - r_2r_3$, $A' \gets A^{r_1},
+  \hat{A} \gets (A')^{-x}(\gen{g}_1\gen{h}_0^s\gen{h}_1^{\usk}
+  \prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i})^{r_1}$,
+  $d \gets (\gen{g}_1\gen{h}_0^s\gen{h}_1^{\usk}
+  \prod_{i \in \Attrs}\gen{h}_i^{\Attrs_i})^{r_1}\gen{h}_0^{-r_2}$.
+\item Encrypt $\upk=\gen{h}_1^{\usk}$ with ElGamal as $r \getr \ZZ^*_p,
+  c \gets (c_1 = \gen{g}^r,c_2 = \opk^r\gen{h}_1^{\usk})$.
+\item Compute $\Cmsg \gets \gen{h}^\msg$ and
+  $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs,
+  (r,\usk,\Attrs,r_2,r_3,s',\msg), (\DAttrs,c_1,c_2,\Cmsg))$.
+\item Return $\sig \gets (c=(c_1,c_2),(A',\hat{A},d),\NIZKproof)$.
+\end{itemize}
+
+\paragraph{$\Verify(\gpk,\sig,\DAttrs,\msg) \rightarrow 1/0$.} %
+Parse \gpk as $(\ipk,\opk)$ and $\sig$ as $(c=(c_1,c_2),
+(A',\hat{A},d), \NIZKproof)$. Check that $A' \neq 1_{\GG_1}$ and $e(A',\ipk) =
+e(\hat{A},\gen{g}_2)$. Compute $\Cmsg \gets \gen{h}^\msg,$ and return
+$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\DAttrs,c_1,c_2,\Cmsg),
+\NIZKproof)$.
+
+\paragraph{$\Open(\gpk,\osk,\sig,\DAttrs,\msg)
+  \rightarrow (\upk,\oproof)/\bot$.} %
+For open algorithms, we define the following relation for correct decryption of
+ElGamal ciphertexts: $\NIZKRel_{\Open} = \lbrace \osk,(c_1,c_2,\msg):
+c_2/c_1^{\osk} = \msg \rbrace$. Given $\NIZKRel_{\Open}$, the opener first,
+checks that $\Verify$ accepts the signature, and aborts otherwise. If \sig
+is accepted, then parses \sig as $(c=(c_1,c_2),\cdot,\cdot)$.
+Sets $\upk \gets c_2/c_1^{\osk}$. Finally, computes the proof of correct
+decryption by running $\oproof \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,
+\osk,(\upk,c_1,c_2))$, and returns $(\upk,\oproof)$.
+
+\paragraph{$\Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg)
+  \rightarrow 1/0$.} %
+First, check that $\Verify$ accepts \sig, and abort otherwise. If the signature
+is accepted, then parse \sig as $(c=(c_1,c_2),\cdot,\cdot)$ and return
+$\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(c_1,c_2,\upk),\oproof)$.
+
+% \commentwho{Jesus}{For consistency with \UAS, maybe remove the need to return
+%   \Attrs in \Open, and return \DAttrs instead. Then, we do not need to pass
+%   \trans as a parameter to \Open, as \DAttrs is already attested for in the
+%   signature being opened. It also makes sense from the point of view that we
+%   are already revealing \upk, which would allow tracing; but otherwise don't
+%   reveal anything else about the attributes of \upk -- attributes that whoever
+%   requested the signature (the verifier) didn't seem to consider necessary, as
+%   s/he only requested \DAttrs. Still, if we make this modification, mention the
+%   possibility to return \Attrs, and the option to do it via adding \trans as a
+%   parameter to \Open (or including an encryption of all attributes in the
+%   signature, which is probably unrealistic.)}
 
 %%% Local Variables:
 %%% mode: latex
