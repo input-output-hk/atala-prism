@@ -4,8 +4,8 @@ import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
-import doobie.util.transactor
 import doobie.implicits._
+import doobie.util.transactor
 import io.circe.Json
 import io.circe.syntax._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
@@ -20,9 +20,17 @@ import io.iohk.atala.prism.management.console.errors.{
   PublishedCredentialsNotRevoked
 }
 import io.iohk.atala.prism.management.console.models._
-import org.scalatest.OptionValues._
+import io.iohk.atala.prism.management.console.repositories.CredentialsRepositorySpec.markAsRevoked
 import io.iohk.atala.prism.management.console.repositories.daos.CredentialTypeDao
+import io.iohk.atala.prism.protos.console_models.CredentialStatus
+import io.iohk.atala.prism.protos.console_models.CredentialStatus.{
+  CREDENTIAL_DRAFT,
+  CREDENTIAL_REVOKED,
+  CREDENTIAL_SENT,
+  CREDENTIAL_SIGNED
+}
 import io.iohk.atala.prism.utils.IOUtils._
+import org.scalatest.OptionValues._
 import tofu.logging.Logs
 
 import scala.jdk.CollectionConverters._
@@ -327,6 +335,103 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .unsafeToFuture()
         .futureValue
       result must be(empty)
+    }
+  }
+
+  "getBy" should {
+    "return credentials filtered by status" in {
+      val issuerId = createParticipant("Issuer X")
+      val group =
+        createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val subject =
+        createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      val credential1 = createGenericCredential(issuerId, subject, tag = "A")
+      val credential2 = createGenericCredential(issuerId, subject, tag = "B")
+      val credential3 = createGenericCredential(issuerId, subject, tag = "C")
+      val credential4 = createGenericCredential(issuerId, subject, tag = "D")
+
+      publishCredential(issuerId, credential2)
+      publishCredential(issuerId, credential3)
+      publishCredential(issuerId, credential4)
+      markAsRevoked(credential4.credentialId)
+
+      credentialsRepository
+        .markAsShared(
+          issuerId,
+          NonEmptyList.of(credential3.credentialId)
+        )
+        .unsafeToFuture()
+        .futureValue
+
+      def query(status: CredentialStatus): GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        limit = 2,
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.CreatedOn,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Ascending
+        ),
+        filters = Some(GenericCredential.FilterBy(credentialStatus = Some(status)))
+      )
+
+      def testStatus(status: CredentialStatus, expected: List[GenericCredential.Id]) = {
+        credentialsRepository
+          .getBy(issuerId, query(status))
+          .map(_.map(_.credentialId))
+          .unsafeToFuture()
+          .futureValue mustBe
+          expected
+      }
+
+      testStatus(CREDENTIAL_DRAFT, List(credential1.credentialId))
+      testStatus(CREDENTIAL_SIGNED, List(credential2.credentialId))
+      testStatus(CREDENTIAL_SENT, List(credential3.credentialId))
+      testStatus(CREDENTIAL_REVOKED, List(credential4.credentialId))
+    }
+
+    "return credential by contact name and externalId" in {
+      val issuerId = createParticipant("Issuer X")
+      val group =
+        createInstitutionGroup(issuerId, InstitutionGroup.Name("grp2"))
+      val contact1 =
+        createContact(issuerId, "IOHK Student1", Some(group.name))
+      val credential1 = createGenericCredential(issuerId, contact1.contactId, tag = "A1").credentialId
+      val credential2 = createGenericCredential(issuerId, contact1.contactId, tag = "B1").credentialId
+
+      val contact2 =
+        createContact(issuerId, "IOHK Student2", Some(group.name))
+      val credential3 = createGenericCredential(issuerId, contact2.contactId, tag = "C1").credentialId
+
+      def query(
+          name: Option[String],
+          externalId: Option[Contact.ExternalId]
+      ): GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.CreatedOn,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Ascending
+        ),
+        filters = Some(GenericCredential.FilterBy(contactName = name, contactExternalId = externalId))
+      )
+
+      def testContact(
+          name: Option[String],
+          externalId: Option[Contact.ExternalId] = None,
+          expected: List[GenericCredential.Id]
+      ) = {
+        credentialsRepository
+          .getBy(issuerId, query(name, externalId))
+          .map(_.map(_.credentialId))
+          .unsafeToFuture()
+          .futureValue mustBe
+          expected
+      }
+
+      testContact(name = Some(contact1.name), expected = List(credential1, credential2))
+      testContact(name = Some(contact2.name), expected = List(credential3))
+      testContact(
+        name = Some(contact1.name),
+        externalId = Some(contact1.externalId),
+        expected = List(credential1, credential2)
+      )
+      testContact(name = Some(contact1.name), externalId = Some(contact2.externalId), expected = List())
     }
   }
 
@@ -754,15 +859,6 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .unsafeToFuture()
         .futureValue mustBe a[Some[_]]
     }
-
-    def markAsRevoked(credentialId: GenericCredential.Id): Unit = {
-      val operationId = 1.to(64).map(_ => "a").mkString("")
-      sql"""
-            |UPDATE published_credentials
-            |SET revoked_on_operation_id = decode($operationId, 'hex')
-            |WHERE credential_id = ${credentialId.uuid.toString}::uuid
-       """.stripMargin.update.run.void.transact(database).unsafeRunSync()
-    }
   }
 
   "storeRevocationData" should {
@@ -908,6 +1004,15 @@ object CredentialsRepositorySpec {
 
   private val aProof = new MerkleInclusionProof(aHash, 1, List(aHash).asJava)
   private val anEncodedCred = "encodedSignedCredenital"
+
+  def markAsRevoked(credentialId: GenericCredential.Id)(implicit database: transactor.Transactor[IO]): Unit = {
+    val operationId = 1.to(64).map(_ => "a").mkString("")
+    sql"""
+         |UPDATE published_credentials
+         |SET revoked_on_operation_id = decode($operationId, 'hex')
+         |WHERE credential_id = ${credentialId.uuid.toString}::uuid
+       """.stripMargin.update.run.void.transact(database).unsafeRunSync()
+  }
 
   def publish(
       issuerId: ParticipantId,

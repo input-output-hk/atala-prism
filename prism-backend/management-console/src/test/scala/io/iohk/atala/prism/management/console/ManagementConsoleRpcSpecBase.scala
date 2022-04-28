@@ -156,6 +156,7 @@ class ManagementConsoleRpcSpecBase extends RpcSpecBase {
   lazy val credentialsIntegrationService =
     CredentialsIntegrationService.unsafe(
       credentialsRepository,
+      contactsRepository,
       nodeMock,
       connectorMock,
       managementConsoleTestLogs

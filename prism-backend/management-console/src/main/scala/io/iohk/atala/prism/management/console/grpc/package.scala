@@ -8,6 +8,9 @@ import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
 import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.credentials.CredentialBatchId
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, Sha256Digest}
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.management.console.grpc.ProtoCodecs.{checkListUniqueness, toTimestamp}
@@ -20,23 +23,18 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   GetCredentialIssuance
 }
 import io.iohk.atala.prism.management.console.validations.JsonValidator
-import io.iohk.atala.prism.protos.{common_models, console_models}
-import io.iohk.atala.prism.protos.common_models.SortByDirection
-import io.iohk.atala.prism.protos.console_api._
-import io.scalaland.chimney.dsl._
-import io.scalaland.chimney.Transformer
-
-import java.time.LocalDate
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.ConnectionToken
+import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
+import io.iohk.atala.prism.protos.console_api._
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.protos.node_api.ScheduleOperationsResponse
+import io.iohk.atala.prism.protos.{common_models, console_models}
 import io.iohk.atala.prism.utils.{Base64Utils, GrpcUtils}
+import io.scalaland.chimney.Transformer
+import io.scalaland.chimney.dsl._
 
+import java.time.LocalDate
 import scala.util.{Failure, Success, Try}
 
 package object grpc {
@@ -577,6 +575,31 @@ package object grpc {
           .map(CredentialTypeId.optional)
           .getOrElse(Success(None))
 
+      val contactExternalIdT =
+        request.filterBy
+          .map(i =>
+            if (i.contactExternalId.isEmpty)
+              Success(None)
+            else
+              Contact.ExternalId
+                .validated(i.contactExternalId)
+                .map(Some(_))
+          )
+          .getOrElse(Success(None))
+
+      val contactName =
+        request.filterBy
+          .map(_.contactName.trim)
+          .filter(_.nonEmpty)
+
+      val contactConnectionStatus = request.filterBy
+        .map(_.contactConnectionStatus)
+        .filterNot(_.isStatusMissing)
+
+      val credentialStatus = request.filterBy
+        .map(_.credentialStatus)
+        .filterNot(_.isCredentialStatusMissing)
+
       val defaultSortBy = ResultOrdering[GenericCredential.SortBy](
         GenericCredential.SortBy.CreatedOn
       )
@@ -584,6 +607,7 @@ package object grpc {
         request.sortBy
           .map(toGenericCredentialResultOrdering)
           .getOrElse(Success(defaultSortBy))
+
       val allowedLimit = 0 to 100
       val defaultLimit = 10
       val limitT = Try {
@@ -611,6 +635,7 @@ package object grpc {
         limit <- limitT
         credentialType <- credentialTypeT
         offset <- offsetT
+        contactExternalId <- contactExternalIdT
       } yield PaginatedQueryConstraints(
         limit = limit,
         offset = offset,
@@ -619,6 +644,10 @@ package object grpc {
         filters = Some(
           GenericCredential.FilterBy(
             credentialType = credentialType,
+            credentialStatus = credentialStatus,
+            contactConnectionStatus = contactConnectionStatus,
+            contactName = contactName,
+            contactExternalId = contactExternalId,
             createdAfter = createdAfter,
             createdBefore = createdBefore
           )

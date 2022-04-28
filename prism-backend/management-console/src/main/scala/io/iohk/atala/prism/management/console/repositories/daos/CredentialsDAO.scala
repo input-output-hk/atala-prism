@@ -1,8 +1,6 @@
 package io.iohk.atala.prism.management.console.repositories.daos
 
 import cats.data.NonEmptyList
-
-import java.time.Instant
 import cats.implicits._
 import doobie._
 import doobie.implicits._
@@ -14,6 +12,14 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.queries._
+import io.iohk.atala.prism.protos.console_models.CredentialStatus.{
+  CREDENTIAL_DRAFT,
+  CREDENTIAL_REVOKED,
+  CREDENTIAL_SENT,
+  CREDENTIAL_SIGNED
+}
+
+import java.time.Instant
 
 object CredentialsDAO {
 
@@ -150,7 +156,8 @@ object CredentialsDAO {
       issuedBy: ParticipantId,
       contactId: Contact.Id
   ): doobie.ConnectionIO[List[GenericCredential]] = {
-    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++
+      selectGenericCredential ++
       fr"""
          |FROM draft_credentials c
          |     JOIN PTS USING (issuer_id)
@@ -166,7 +173,8 @@ object CredentialsDAO {
 
   def getBy(
       issuedBy: ParticipantId,
-      query: GenericCredential.PaginatedQuery
+      query: GenericCredential.PaginatedQuery,
+      onlyContacts: Option[NonEmptyList[Contact.Id]] = None
   ): doobie.ConnectionIO[List[GenericCredential]] = {
     val orderBy = orderByFr(query.ordering, "credential_id") {
       case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
@@ -190,17 +198,48 @@ object CredentialsDAO {
         fr"c.created_at::DATE >= $createdAfter"
       }
 
-    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++ fr"""
+    val whereContactExternalId =
+      query.filters.flatMap(_.contactExternalId).map { externalId =>
+        fr"contacts.external_id = $externalId"
+      }
+
+    val whereContactName =
+      query.filters.flatMap(_.contactName).map { name =>
+        val nameWildCarded = s"%$name%"
+        fr"contacts.name ILIKE $nameWildCarded"
+      }
+
+    val whereCredentialStatus =
+      query.filters.flatMap(_.credentialStatus).map {
+        case CREDENTIAL_DRAFT => fr"PC.issuance_operation_hash is NULL"
+        case CREDENTIAL_SIGNED =>
+          fr"PC.issuance_operation_hash is NOT NULL AND PC.shared_at is NULL AND PC.revoked_on_operation_id is NULL"
+        case CREDENTIAL_SENT => fr"PC.shared_at is NOT NULL AND PC.revoked_on_operation_id is NULL"
+        case CREDENTIAL_REVOKED => fr"PC.revoked_on_operation_id is NOT NULL"
+        case _ => throw new IllegalArgumentException("Invalid credential status")
+      }
+
+    val whereInContacts =
+      onlyContacts.map { contactsId =>
+        in(fr"c.contact_id", contactsId)
+      }
+
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++
+      selectGenericCredential ++ fr"""
         |FROM draft_credentials c
         |     JOIN PTS USING (issuer_id)
         |     JOIN contacts ON (c.contact_id = contacts.contact_id)
         |     LEFT JOIN PC USING (credential_id)
         |${whereAndOpt(
-        Some(fr"c.issuer_id = $issuedBy"),
-        whereCredentialType,
-        whereCreatedBefore,
-        whereCreatedAfter
-      )}
+          Some(fr"c.issuer_id = $issuedBy"),
+          whereCredentialType,
+          whereCredentialStatus,
+          whereContactExternalId,
+          whereContactName,
+          whereInContacts,
+          whereCreatedBefore,
+          whereCreatedAfter
+        )}
         |$orderBy
         |${limitFr(query.limit)}
         |${offsetFr(query.offset)}

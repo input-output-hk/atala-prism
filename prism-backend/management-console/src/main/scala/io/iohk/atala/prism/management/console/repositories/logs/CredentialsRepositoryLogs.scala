@@ -57,7 +57,8 @@ private[repositories] final class CredentialsRepositoryLogs[F[
 
   override def getBy(
       issuedBy: ParticipantId,
-      query: PaginatedQuery
+      query: PaginatedQuery,
+      contacts: Option[NonEmptyList[Contact.Id]]
   ): Mid[F, List[GenericCredential]] =
     in =>
       info"getting credentials by query" *> in

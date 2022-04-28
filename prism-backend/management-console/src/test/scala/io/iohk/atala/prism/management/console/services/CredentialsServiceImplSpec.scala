@@ -4,46 +4,42 @@ import cats.data.ReaderT
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
+import com.google.protobuf.timestamp.Timestamp
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.management.console.ManagementConsoleRpcSpecBase
+import io.iohk.atala.prism.logging.TraceId
+import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup}
-import io.iohk.atala.prism.management.console.DataPreparation.{
-  createContact,
-  createGenericCredential,
-  createInstitutionGroup,
-  createParticipant,
-  getBatchData,
-  publishBatch,
-  publishCredential
-}
-import io.iohk.atala.prism.management.console.DataPreparation
+import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
+import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.protos._
+import io.iohk.atala.prism.protos.common_models.OperationStatus.UNKNOWN_OPERATION
 import io.iohk.atala.prism.protos.connector_api.SendMessagesResponse
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
-import io.iohk.atala.prism.protos.{common_models, connector_api, connector_models, console_api, node_api, node_models}
+import io.iohk.atala.prism.protos.console_models.CredentialStatus.{
+  CREDENTIAL_DRAFT,
+  CREDENTIAL_SENT,
+  CREDENTIAL_SIGNED,
+  CREDENTIAL_STATUS_MISSING
+}
+import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, CredentialStatus}
+import io.iohk.atala.prism.protos.node_api.GetOperationInfoResponse
+import io.iohk.atala.prism.protos.node_models.OperationOutput
+import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito.StubbingOps
 import org.mockito.Mockito.verify
 import org.scalatest.OptionValues.convertOptionToValuable
-import org.mockito.ArgumentMatchersSugar.*
 
 import java.util.UUID
-import com.google.protobuf.timestamp.Timestamp
-import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
-
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.protos.common_models.OperationStatus.UNKNOWN_OPERATION
-import io.iohk.atala.prism.protos.node_api.GetOperationInfoResponse
-import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
 
@@ -254,6 +250,132 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           missingConnection.connectionStatus
         )
       }
+    }
+
+    "retrieve credentials filtered by a contact status" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.getPublicKey
+      val did = generateDid(publicKey)
+      val issuerId = createParticipant(issuerName, did)
+
+      val connectionToken1 = "connectionToken1"
+      val connectionStatus1 = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
+      val contact1 = createContact(
+        issuerId,
+        "Contact 1",
+        None,
+        connectionToken = connectionToken1
+      )
+      val originalCredential1 =
+        DataPreparation.createGenericCredential(issuerId, contact1.contactId, tag = "XXX").credentialId
+      val originalCredential2 =
+        DataPreparation.createGenericCredential(issuerId, contact1.contactId, tag = "CCC").credentialId
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(
+          Sha256.compute("SomeRandomHash".getBytes())
+        )
+
+      // we need to first store the batch data in the db
+      publishBatch(
+        mockCredentialBatchId,
+        issuanceOpHash,
+        AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
+      )
+      val mockHash = Sha256.compute("".getBytes())
+      val mockMerkleProof =
+        new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential1,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val connectionToken2 = "connectionToken2"
+      val connectionStatus2 = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+      val contact2 = createContact(
+        issuerId,
+        "Contact 2",
+        None,
+        connectionToken = connectionToken2
+      )
+      val originalCredential3 =
+        DataPreparation.createGenericCredential(issuerId, contact2.contactId, tag = "YYY").credentialId
+
+      val contactConnections = List(
+        connector_models.ContactConnection(
+          connectionStatus = connectionStatus1,
+          connectionToken = connectionToken1
+        ),
+        connector_models.ContactConnection(
+          connectionStatus = connectionStatus2,
+          connectionToken = connectionToken2
+        )
+      )
+
+      def testContactStatus(
+          status: ContactConnectionStatus,
+          credentialStatus: CredentialStatus,
+          expected: Vector[GenericCredential.Id]
+      ) = {
+        val request = console_api
+          .GetGenericCredentialsRequest()
+          .withLimit(10)
+          .withFilterBy(
+            console_api.GetGenericCredentialsRequest
+              .FilterBy()
+              .withContactConnectionStatus(status)
+              .withCredentialStatus(credentialStatus)
+          )
+        val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+        usingApiAsCredentials(rpcRequest) { serviceStub =>
+          connectorMock.getConnectionStatus(*).returns {
+            ReaderT.liftF(
+              IO.pure(
+                contactConnections
+              )
+            )
+          }
+          val response = serviceStub.getGenericCredentials(request)
+          response.credentials.map(x => GenericCredential.Id.from(x.credentialId).get) must be(expected)
+        }
+      }
+
+      testContactStatus(
+        ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        credentialStatus = CREDENTIAL_STATUS_MISSING,
+        Vector(originalCredential1, originalCredential2)
+      )
+      testContactStatus(
+        ContactConnectionStatus.STATUS_CONNECTION_MISSING,
+        credentialStatus = CREDENTIAL_STATUS_MISSING,
+        Vector(originalCredential3)
+      )
+
+      testContactStatus(
+        ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        credentialStatus = CREDENTIAL_SIGNED,
+        Vector(originalCredential1)
+      )
+
+      testContactStatus(
+        ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        credentialStatus = CREDENTIAL_DRAFT,
+        Vector(originalCredential2)
+      )
+
+      testContactStatus(
+        ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
+        credentialStatus = CREDENTIAL_SENT,
+        Vector()
+      )
     }
   }
 

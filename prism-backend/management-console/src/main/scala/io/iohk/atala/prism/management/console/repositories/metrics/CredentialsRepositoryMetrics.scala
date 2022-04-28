@@ -56,7 +56,8 @@ final class CredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThr
 
   override def getBy(
       issuedBy: ParticipantId,
-      query: PaginatedQuery
+      query: PaginatedQuery,
+      onlyContacts: Option[NonEmptyList[Contact.Id]]
   ): Mid[F, List[GenericCredential]] =
     _.measureOperationTime(getByQueryTimer)
 
