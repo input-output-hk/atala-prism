@@ -1,21 +1,22 @@
 package io.iohk.atala.prism.node.services.logs
 
+import cats.MonadThrow
+import cats.syntax.applicativeError._
+import cats.syntax.traverse._
 import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.services.ObjectManagementService
+import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 import io.iohk.atala.prism.node.services.models._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 import tofu.syntax.monadic._
-import cats.syntax.traverse._
-import cats.syntax.applicativeError._
-import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 
 import java.time.Instant
-import cats.MonadThrow
 
 private[services] class ObjectManagementServiceLogs[
     F[_]: ServiceLogging[*[_], ObjectManagementService[F]]: MonadThrow
@@ -90,7 +91,7 @@ private[services] class ObjectManagementServiceLogs[
       id => info"scheduling single Atala operation - successfully done, result: $id"
     )
 
-  override def getScheduledAtalaObjects(): Mid[F, Either[errors.NodeError, List[AtalaObjectInfo]]] = {
+  override def getScheduledAtalaObjects: Mid[F, Either[errors.NodeError, List[AtalaObjectInfo]]] = {
     val description = s"getting not processed Atala objects"
     in =>
       info"$description" *> in
@@ -100,6 +101,46 @@ private[services] class ObjectManagementServiceLogs[
             ret => info"$description - successfully got ${ret.size} objects"
           )
         }
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
+
+  override def getUnconfirmedTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): Mid[F, Either[errors.NodeError, List[TransactionInfo]]] = {
+    val description = s"getting unconfirmed transactions: lastSeenTxId = $lastSeenTxId, limit = $limit"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            ret => info"$description - successfully got ${ret.size} transactions"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
+
+  override def getConfirmedTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): Mid[F, Either[errors.NodeError, List[TransactionInfo]]] = {
+    val description = s"getting confirmed transactions: lastSeenTxId = $lastSeenTxId, limit = $limit"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            ret => info"$description - successfully got ${ret.size} transactions"
+          )
+        )
         .onError(
           errorCause"Encountered an error while $description" (
             _

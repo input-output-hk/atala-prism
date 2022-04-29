@@ -6,13 +6,17 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.Ledger.InMemory
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectStatus,
   AtalaObjectTransactionSubmission,
   AtalaObjectTransactionSubmissionStatus
 }
+import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
 
@@ -290,7 +294,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
     }
   }
 
-  "updateStatus" should {
+  "AtalaObjectTransactionSubmissionsDAO.updateStatus" should {
     def getAll(): IndexedSeq[AtalaObjectTransactionSubmission] = {
       AtalaObjectTransactionSubmissionStatus.values
         .flatten { status =>
@@ -324,6 +328,81 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
         pendingSubmission.copy(status = AtalaObjectTransactionSubmissionStatus.InLedger)
       )
     }
+  }
+
+  "AtalaObjectTransactionSubmissionsDAO.getUnconfirmedTransactions" should {
+    "get all unconfirmed transactions" in {
+      val objIds = insertAtalaObjects()
+      val expectedTxs = insertTransactionSubmissions(objIds).reverse
+
+      val resultTxs =
+        AtalaObjectTransactionSubmissionsDAO.getUnconfirmedTransactions(None, None).runSync
+
+      resultTxs must be(expectedTxs)
+    }
+
+    "get unconfirmed transactions after lastTxId" in {
+      val objIds = insertAtalaObjects()
+      val expectedTxs = insertTransactionSubmissions(objIds).reverse
+
+      val resultTxs =
+        AtalaObjectTransactionSubmissionsDAO
+          .getUnconfirmedTransactions(Some(expectedTxs.head.transactionId), None)
+          .runSync
+      resultTxs must be(expectedTxs.tail)
+
+      val resultTxs2 =
+        AtalaObjectTransactionSubmissionsDAO
+          .getUnconfirmedTransactions(Some(expectedTxs.head.transactionId), Some(1))
+          .runSync
+      resultTxs2 must be(expectedTxs.slice(1, 2))
+    }
+  }
+
+  private def insertTransactionSubmissions(
+      objectIds: List[AtalaObjectId],
+      statuses: List[AtalaObjectTransactionSubmissionStatus] = List(InLedger, InLedger, InLedger)
+  ): List[TransactionInfo] = {
+    val txIds = (1 to objectIds.size)
+      .map(idx => TransactionId.from(Sha256.compute(s"transactionId${idx + 1}".getBytes).getValue).value)
+      .toList
+
+    objectIds.zip(statuses).zipWithIndex.zip(txIds).foreach { case (((objId, st), idx), txId) =>
+      val submission = AtalaObjectTransactionSubmission(
+        objId,
+        ledger,
+        txId,
+        Instant.ofEpochMilli(10.toLong * (idx + 1)),
+        st
+      )
+      AtalaObjectTransactionSubmissionsDAO.insert(submission).runSync
+    }
+    txIds.map(id => TransactionInfo(transactionId = id, InMemory))
+  }
+
+  private def insertAtalaObjects(
+      statuses: List[AtalaObjectStatus] =
+        List(AtalaObjectStatus.Pending, AtalaObjectStatus.Pending, AtalaObjectStatus.Pending)
+  ): List[AtalaObjectId] = {
+    val blockOperations =
+      List(
+        List(BlockProcessingServiceSpec.signedCreateDidOperation),
+        List(BlockProcessingServiceSpec.signedUpdateDidOperation),
+        List(BlockProcessingServiceSpec.signedCreateDidOperation, BlockProcessingServiceSpec.signedUpdateDidOperation)
+      )
+    val atalaObjects = blockOperations.map(ops => DataPreparation.createAtalaObject(DataPreparation.createBlock(ops)))
+
+    atalaObjects.zip(statuses).foreach { case (obj, st) =>
+      AtalaObjectsDAO
+        .insert(
+          AtalaObjectsDAO.AtalaObjectCreateData(AtalaObjectId.of(obj), obj.toByteArray, st)
+        )
+        .transact(database)
+        .unsafeToFuture()
+        .void
+        .futureValue
+    }
+    atalaObjects.map(AtalaObjectId.of)
   }
 
   private def insertAtalaObject(

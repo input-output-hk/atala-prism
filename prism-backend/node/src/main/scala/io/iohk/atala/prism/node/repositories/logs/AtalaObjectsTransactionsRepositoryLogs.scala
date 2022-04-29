@@ -4,7 +4,7 @@ import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
@@ -188,6 +188,46 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryLogs[F[
           _.fold(
             err => error"Encountered an error while $description $err",
             ret => info"$description - successfully got ${ret.size} objects"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
+
+  override def getUnconfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): Mid[F, Either[NodeError, List[TransactionInfo]]] = {
+    val description = s"getting unconfirmed transactions: lastSeenTxId = $lastSeenTxId, limit = $limit"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            ret => info"$description - successfully got ${ret.size} transactions"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while $description" (
+            _
+          )
+        )
+  }
+
+  override def getConfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): Mid[F, Either[NodeError, List[TransactionInfo]]] = {
+    val description = s"getting confirmed transactions: lastSeenTxId = $lastSeenTxId, limit = $limit"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while $description $err",
+            ret => info"$description - successfully got ${ret.size} transactions"
           )
         )
         .onError(

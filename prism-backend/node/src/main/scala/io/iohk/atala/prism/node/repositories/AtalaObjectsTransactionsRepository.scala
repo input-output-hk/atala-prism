@@ -1,18 +1,17 @@
 package io.iohk.atala.prism.node.repositories
 
-import cats.{Applicative, Comonad, Functor}
-import cats.effect.Resource
+import cats.effect.{MonadCancelThrow, Resource}
 import cats.implicits._
+import cats.{Applicative, Comonad, Functor}
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.free.connection
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionStatus}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.{AtalaObjectCreateData, AtalaObjectSetTransactionInfo}
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
@@ -20,12 +19,12 @@ import io.iohk.atala.prism.node.repositories.logs.AtalaObjectsTransactionsReposi
 import io.iohk.atala.prism.node.repositories.metrics.AtalaObjectsTransactionsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 
 import java.time.{Duration, Instant}
-import cats.effect.MonadCancelThrow
 
 private class AtalaObjectCannotBeModified extends Exception
 
@@ -68,6 +67,16 @@ trait AtalaObjectsTransactionsRepository[F[_]] {
       oldObjectStatus: AtalaObjectStatus,
       newObjectStatus: AtalaObjectStatus
   ): F[Either[NodeError, Int]]
+
+  def getUnconfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]]
+
+  def getConfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]]
 }
 
 object AtalaObjectsTransactionsRepository {
@@ -248,6 +257,32 @@ private final class AtalaObjectsTransactionsRepositoryImpl[F[_]: MonadCancelThro
       .recover { case _: AtalaObjectCannotBeModified =>
         None
       }
+  }
+
+  override def getUnconfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]] = {
+    val opDescription =
+      s"getting unconfirmed Cardano transactions with params lastSeenTxId=$lastSeenTxId, limit=$limit"
+    val query =
+      AtalaObjectTransactionSubmissionsDAO
+        .getUnconfirmedTransactions(lastSeenTxId, Some(limit))
+        .logSQLErrorsV2(opDescription)
+    connectionIOSafe(query).transact(xa)
+  }
+
+  override def getConfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]] = {
+    val opDescription =
+      s"getting confirmed Cardano transactions with params lastSeenTxId=$lastSeenTxId, limit=$limit"
+    val query =
+      AtalaObjectsDAO
+        .getConfirmedTransactions(lastSeenTxId, Some(limit))
+        .logSQLErrorsV2(opDescription)
+    connectionIOSafe(query).transact(xa)
   }
 
   private def toAtalaObjectTransactionSubmissionStatus(

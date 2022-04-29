@@ -1070,7 +1070,7 @@ class NodeServiceSpec
 
       doReturn(fake[Either[NodeError, List[AtalaObjectInfo]]](Right(dummyObjects)))
         .when(objectManagementService)
-        .getScheduledAtalaObjects()
+        .getScheduledAtalaObjects
 
       val responseAny = service.getScheduledOperations(GetScheduledOperationsRequest(AnyOperationType))
       val responseCreation =

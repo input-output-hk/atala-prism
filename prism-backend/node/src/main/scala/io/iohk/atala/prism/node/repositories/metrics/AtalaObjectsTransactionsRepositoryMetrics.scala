@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
+import cats.effect.MonadCancelThrow
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{
@@ -16,7 +17,6 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import tofu.higherKind.Mid
 
 import java.time.Duration
-import cats.effect.MonadCancelThrow
 
 private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
     _
@@ -35,6 +35,12 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
 
   private lazy val getNotProcessedObjectsTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getNotProcessedObjects")
+
+  private lazy val getUnconfirmedObjectTransactionsTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getUnconfirmedObjectTransactions")
+
+  private lazy val getConfirmedObjectTransactionsTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getConfirmedObjectTransactions")
 
   private lazy val updateSubmissionStatusTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "updateSubmissionStatus")
@@ -100,4 +106,16 @@ private[repositories] final class AtalaObjectsTransactionsRepositoryMetrics[F[
 
   override def getNotProcessedObjects: Mid[F, Either[NodeError, List[AtalaObjectInfo]]] =
     _.measureOperationTime(getNotProcessedObjectsTimer)
+
+  override def getUnconfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): Mid[F, Either[NodeError, List[TransactionInfo]]] =
+    _.measureOperationTime(getUnconfirmedObjectTransactionsTimer)
+
+  override def getConfirmedObjectTransactions(
+      lastSeenTxId: Option[TransactionId],
+      limit: Int
+  ): Mid[F, Either[NodeError, List[TransactionInfo]]] =
+    _.measureOperationTime(getConfirmedObjectTransactionsTimer)
 }

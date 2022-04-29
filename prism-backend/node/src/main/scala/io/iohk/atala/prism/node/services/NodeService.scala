@@ -10,15 +10,18 @@ import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
+import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors.NodeError
+import io.iohk.atala.prism.node.errors.NodeError.InvalidArgument
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_api.GetWalletTransactionsRequest
 import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
 import tofu.logging.{Logs, ServiceLogging}
@@ -40,7 +43,7 @@ trait NodeService[F[_]] {
 
   def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
 
-  def getScheduledAtalaOperations(): F[Either[NodeError, List[node_models.SignedAtalaOperation]]]
+  def getScheduledAtalaOperations: F[Either[NodeError, List[node_models.SignedAtalaOperation]]]
 
   def parseOperations(ops: Seq[node_models.SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]]
 
@@ -49,6 +52,12 @@ trait NodeService[F[_]] {
   def getLastSyncedTimestamp: F[Instant]
 
   def getCurrentProtocolVersion: F[ProtocolVersion]
+
+  def getWalletTransactions(
+      transactionType: node_api.GetWalletTransactionsRequest.TransactionState,
+      lastSeenTransactionId: Option[TransactionId],
+      limit: Int = 50
+  ): F[Either[NodeError, List[TransactionInfo]]]
 }
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
@@ -147,9 +156,8 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   override def scheduleAtalaOperations(ops: SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]] =
     objectManagement.scheduleAtalaOperations(ops: _*)
 
-  override def getScheduledAtalaOperations(): F[Either[NodeError, List[SignedAtalaOperation]]] =
-    objectManagement
-      .getScheduledAtalaObjects()
+  override def getScheduledAtalaOperations: F[Either[NodeError, List[SignedAtalaOperation]]] =
+    objectManagement.getScheduledAtalaObjects
       .map(_.map(_.flatMap(obj => obj.getAtalaBlock.map(_.operations).getOrElse(Seq()))))
 
   override def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]] =
@@ -173,6 +181,23 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   override def getLastSyncedTimestamp: F[Instant] = objectManagement.getLastSyncedTimestamp
 
   override def getCurrentProtocolVersion: F[ProtocolVersion] = objectManagement.getCurrentProtocolVersion
+
+  override def getWalletTransactions(
+      transactionType: GetWalletTransactionsRequest.TransactionState,
+      lastSeenTransactionId: Option[TransactionId],
+      limit: Int
+  ): F[Either[NodeError, List[TransactionInfo]]] = {
+    transactionType match {
+      case GetWalletTransactionsRequest.TransactionState.Ongoing =>
+        objectManagement.getUnconfirmedTransactions(lastSeenTransactionId, limit)
+      case GetWalletTransactionsRequest.TransactionState.Confirmed =>
+        objectManagement.getConfirmedTransactions(lastSeenTransactionId, limit)
+      case _ =>
+        Either
+          .left[NodeError, List[TransactionInfo]](InvalidArgument("Unrecognized transaction type"): NodeError)
+          .pure[F]
+    }
+  }
 }
 
 object NodeService {
