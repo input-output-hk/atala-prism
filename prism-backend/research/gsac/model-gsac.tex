@@ -248,7 +248,7 @@ that (via the \SIGN and \CHALb oracles) create the signatures that the adversary
 sees. Therefore, all security relies \emph{only} on the user secret key.
 
 \begin{figure}[htp!]
-  \procedure{$\ExpGSACAnonb(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpGSACAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
@@ -288,25 +288,24 @@ will. The game then lets the adversary add honest and corrupt users, create
 honest signatures, and open them. The adversary wins if, after this interaction,
 is able to produce a $(\sig,\DAttrs,\msg)$ tuple that is accepted by \Verify,
 but either cannot be opened, it can be opened but the proof is rejected by
-\Judge, or even though it is accepted by \Judge, there is no credential issued
-to the user pointed to by \Open that contains the set of attributes \DAttrs. We
+\Judge, or even though it is accepted by \Judge, there is no credential
+controlled by the adversary that contains the set of attributes \DAttrs. We
 formally define traceability in the \ExpTrace experiment in
 \figref{fig:exp-gsac-trace}.
 
 \begin{figure}[htp!]
-  \procedure{$\ExpGSACTrace(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpGSACTrace(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
     \gpk \gets (\ipk,\opk) \\
     (\sig,\DAttrs,\msg) \gets
     \adv^{\HUGEN,\CUGEN,\RREG,\OBTISS,\ISSUE,\SIGN,\OPEN}(\gpk,\osk) \\
-    \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1~\land~( \\
-    \pcind \pccomment{\Open fails} \\
-    \pcind \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) = \bot~\lor \\
-    \pcind \pccomment{\Open succeeds, but the proof is rejected by \Judge} \\
-    \pcind \Open(\gpk,\osk,\sig,\DAttrs,\msg) =
-    (\upk,\oproof) \land \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0 \\
-    ) \\
+    \pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 0: \pcreturn 0 \\
+    \pcif \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) = \bot: \pcreturn 1 \\
+    \textrm{Let}~(\upk,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) \\
+    \pcif \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0: \pcreturn 1 \\
+    \pcelse \pcif \forall \uid \in \CU, \nexists (\uid,\cdot,\Attrs) \in
+    \CRED~\st~\DAttrs \subseteq \Attrs: \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Traceability experiment for \GSAC schemes.}
@@ -345,7 +344,7 @@ disclosed in the signature are not contained in the set of attributes revealed
 during \Open.
 
 \begin{figure}[htp!]
-  \procedure{$\ExpGSACNonframe(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpGSACNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
@@ -375,6 +374,11 @@ during \Open.
   in the GS literature. Here, it is best to follow the AC literature, as a same
   user (key) may be associated to multiple join protocols. So there are HUGEN
   and CUGEN oracles.}
+
+\todo{Other modelling choice: We could return the full set of attributes
+  contained in the credential used for creating an opened signature, but that
+  would require either complicating the proof, or access to the transcripts log
+  at open time, which I opted to avoid for better compatibility with \UAS.}
 
 \todo{Argue that our properties cover (and augment) a direct combination
   (even if possible) of their GS and AC counterparts. Specifically, anonymity

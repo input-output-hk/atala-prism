@@ -60,9 +60,9 @@ A commitment scheme is defined by the following algorithms:
 \begin{description}
 \item[$\Cparm \gets \CSetup(\Csecpar)$.] Given a security parameter \Csecpar,
   returns the public parameters \Cparm to commit messages.
-\item[$\Ccom \gets \CCommit(\Cparm,\msg,r)$.] Given the public parameters and
+\item[$\Ccom \gets \CCommit(\Cparm,\msg;r)$.] Given the public parameters and
   a message \msg, outputs a commitment \Ccom to \msg, for which randomness $r$
-  from some predefind randomness space $\mathcal{R}$ is used.
+  from some predefined randomness space $\mathcal{R}$ is used.
 \end{description}
 
 Opening a commitment \Ccom means revealing the message \msg and randomness $r$
@@ -80,6 +80,8 @@ and (usually) hiding:
   \Pr[\ExpComHideb=1|b=0]|$ must be a negligible function of the security
   parameter.
 \end{description}
+
+\todo{Commitments with proofs, needed for \SBCM.}
 
 \begin{figure}[ht!]
   \begin{minipage}[t]{0.5\textwidth}
@@ -116,26 +118,73 @@ compares sets $\msgset_0$ and $\msgset_1$, which must differ in at least one
 element. This extension is straight-forward, for instance, from Pedersen
 commitments \cite{bcc+15}.
 
-\subsection{Signatures on Blocks of Committed Messages}
+\subsection{Signatures over Blocks of Committed Messages}
 \label{sapp:sbcm}
 
-We use signature schemes that allow signing messages, or commitments to messages,
-in blocks, and are compatible with (efficient) proof systems over the produced
-signature and signed (commitments to) messages. For this purpose, we define such
-schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,\SBCMSign,\SBCMVerify)$. Algorithm
-$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$ produces the public parameters for the
-scheme. $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a
-verification-signing key
-pair. Algorithm $\SBCMsig \gets \SBCMSign(\SBCMsk,\Ccom,\msgset)$ produces a
-signature over a set of committed messages \Ccom and a set of messages
-\msgset, where either \Ccom or \msgset may be empty. $1/0 \gets
-\SBCMVerify(\SBCMvk,\SBCMsig,\overline{\msgset})$ verifies a signature \SBCMsig
-over message set $\overline{\msgset}$, which must contain both the messages that
-were signed as commitments as well as those signed in ``the clear''. In
-addition, the produced signatures must be compatible with (efficient) NIZK
-proofs of knowledge of a signature, and of (arbitrary) claims over the signed
-(committed) messages.
-\todo{Informally define security properties we'll need.}
+\todo{Formal models on signatures over blocks of committed messages? I'm just
+  informally stating a model here, but there must be some more formal
+  reference...}
+
+We use signature schemes that allow signing messages and commitments to messages
+in blocks (\SBCM), and are also compatible with (efficient) proof systems over
+the produced signature and signed (commitments to) messages. Such schemes build
+on a predefined scheme for commitments on blocks of messages \C (see
+\secref{sapp:commitments}). The algorithms composing an \SBCM scheme are as
+follows:
+
+\begin{description}
+\item[$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$.] It produces public parameters
+  for the other algorithms, given an input security parameter \Ssecpar.
+\item[$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.] Generates a
+  verification-signing key pair.
+\item[$\SBCMsig \gets \langle \SBCMCom(\overline{\smsg},\smsg),
+  \SBCMSign(\SBCMsk,\smsg) \rangle$.] An interactive protocol between two
+  parties with shared input a block of messages \smsg. The party running
+  \SBCMCom further knows a set of messages $\overline{\smsg}$ to be
+  block-committed and then signed along with \smsg. The party running \SBCMSign
+  controls the signing key \SBCMsk. As a result, both parties get signature
+  \SBCMSig.
+\item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\smsg)$.] Checks whether \SBCMsig
+  is a valid signature over the set of messages \smsg (independently on whether
+  the messages where signed as commitments or not), under verification key
+  \SBCMvk.
+\end{description}
+
+In addition, we require that the produced signatures must be compatible with
+(efficient) NIZK proofs of knowledge of a signature, and of (arbitrary) claims
+over the signed (committed) messages.
+
+Informally, an \SBCM scheme is correct if signatures generated between an honest
+party running \SBCMCom with message sets $\overline{\smsg}$ and \smsg, and an
+honest signer running \SBCMSign over \smsg, for honestly generated parameters
+and key pairs, results in a signature over $\smsg \cup \overline{\smsg} $that is
+accepted by \SBCMVerify.
+
+A digital signature scheme is correct if honestly generated signatures, using
+honestly generated key pairs, are always accepted by \SVerify. \todo{define more
+  formally?}
+%
+A digital signature scheme \S has existential unforgeability if, for all p.p.t.
+adversaries $\adv$, $\Pr[\ExpEUF = 1]$ is a negligible function of the
+security parameter.
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{0.5\textwidth}
+    \procedure{$\ExpSBCMEUF(\Ssecpar)$}{%
+      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
+      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
+      (\SBCMsig,\smsg) \gets
+      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
+      \pcif \SVerify(\SBCMvk,\SBCMsig,\smsg) = 0: \pcreturn 0 \\
+      \pcif \nexists (\smsg',\sCcom=\CCommit(\Cparm,\smsg''))~\st~
+      (\lbrace \smgs' \rbrace \cup \lbrace \smgs'' \rbrace) \subseteq \smsg
+      \textrm{a query}~()~\textrm{was made to \SBCMSign}: \pcreturn 1 \\
+      \pcreturn 0
+    }
+  \end{minipage}
+  \label{fig:euf-game}
+  \caption{Existential Unforgeability Game.}
+\end{figure}
 
 \subsection{Simulation-Extractable Non-Interactive Zero-Knowledge
   Proofs of Knowledge}

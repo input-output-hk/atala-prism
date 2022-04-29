@@ -40,8 +40,7 @@
           \langle \Obtain(\gpk,\PRVUK[\uid],\Attrs), \\
           \pcind \pcind \pcind \pcind \pcind \pcind
           \Issue(\gpk,\isk,\Attrs) \rangle \\
-          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \trans[\cid] \gets \utrans;~\CRED[\cid] \gets (\uid,\cred,\Attrs) \\
           \pcreturn \top \\
         }        
 
@@ -50,8 +49,7 @@
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
           \langle \Obtain(\gpk,\PRVUK[\uid],\Attrs),\adv \rangle \\
-          \CRED[\cid] \gets \cred \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \CRED[\cid] \gets (\uid,\cred,\Attrs) \\
           \pcreturn \top \\
         }
         
@@ -70,8 +68,8 @@
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cdot, \utrans \rangle \gets
           \langle \adv, \Issue(\gpk,\isk,\Attrs) \rangle \\
-          \trans[\cid] \gets \utrans \\
-          \OWNR[\cid] \gets \uid;~\ATTR[\cid] \gets \Attrs \\
+          \trans[\cid] \gets \utrans;~
+          \CRED[\cid] \gets (\uid,\cdot,\Attrs) \\
           \pcreturn \top \\          
         }        
 
