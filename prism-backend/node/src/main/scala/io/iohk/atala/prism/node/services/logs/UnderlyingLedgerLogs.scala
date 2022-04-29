@@ -12,6 +12,7 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 import cats.MonadThrow
+import io.iohk.atala.prism.node.models.Balance
 
 class UnderlyingLedgerLogs[
     F[_]: ServiceLogging[*[_], UnderlyingLedger[F]]: MonadThrow
@@ -63,6 +64,19 @@ class UnderlyingLedgerLogs[
         )
         .onError(
           errorCause"Encountered an error while deleting transaction" (_)
+        )
+
+  override def getWalletBalance: Mid[F, Either[CardanoWalletError, Balance]] =
+    in =>
+      info"getting wallet balance" *> in
+        .flatTap(
+          _.fold(
+            er => error"Encountered an error while getting wallet balance: $er",
+            result => info"getting wallet balance- successfully done: $result"
+          )
+        )
+        .onError(
+          errorCause"Encountered an error while wallet balance" (_)
         )
 
   def getOperationsIds(obj: AtalaObject): List[AtalaOperationId] = {

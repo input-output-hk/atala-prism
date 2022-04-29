@@ -16,6 +16,7 @@ import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, Lovelace}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Pending, Scheduled}
@@ -56,6 +57,8 @@ class NodeServiceSpec
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
+  private val underlyingLedger =
+    mock[UnderlyingLedger[IOWithTraceIdContext]]
   private val objectManagementService =
     mock[ObjectManagementService[IOWithTraceIdContext]]
   private val credentialBatchesRepository =
@@ -81,6 +84,7 @@ class NodeServiceSpec
             new NodeGrpcServiceImpl(
               NodeService.unsafe(
                 didDataRepository,
+                underlyingLedger,
                 objectManagementService,
                 credentialBatchesRepository,
                 publicKeysLimit,
@@ -469,6 +473,20 @@ class NodeServiceSpec
       buildInfo.supportedNetworkProtocolVersion.map(_.minorVersion) mustBe Some(0)
       buildInfo.currentNetworkProtocolVersion.map(_.majorVersion) mustBe Some(currentNetworkProtocolMajorVersion)
       buildInfo.currentNetworkProtocolVersion.map(_.minorVersion) mustBe Some(currentNetworkProtocolMinorVersion)
+    }
+  }
+
+  "NodeService.getWalletBalance" should {
+    "return wallet balance" in {
+      val walletBalance = Balance(Lovelace(2))
+
+      doReturn(
+        fake[Either[CardanoWalletError, Balance]](Right[CardanoWalletError, Balance](walletBalance))
+      ).when(underlyingLedger).getWalletBalance
+
+      val getWalletBalanceResponse = service.getWalletBalance(GetWalletBalanceRequest())
+
+      getWalletBalanceResponse.balance mustBe ByteString.copyFrom(walletBalance.available.toByteArray)
     }
   }
 

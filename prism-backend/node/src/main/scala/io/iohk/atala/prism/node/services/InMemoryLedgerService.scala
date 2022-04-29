@@ -5,7 +5,8 @@ import cats.implicits._
 import cats.{Applicative, Comonad, Functor, MonadThrow}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models._
-import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
+import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode, Lovelace}
+import io.iohk.atala.prism.node.models.Balance
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
@@ -66,6 +67,9 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](
       "In-memory transactions cannot be deleted",
       CardanoWalletErrorCode.TransactionAlreadyInLedger
     ).asLeft[Unit].pure[F]
+
+  override def getWalletBalance: F[Either[CardanoWalletError, Balance]] =
+    Balance(Lovelace(0)).asRight[CardanoWalletError].pure[F]
 }
 
 object InMemoryLedgerService {

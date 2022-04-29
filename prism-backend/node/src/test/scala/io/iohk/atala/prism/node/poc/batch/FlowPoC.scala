@@ -115,6 +115,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
             new NodeGrpcServiceImpl(
               NodeService.unsafe(
                 didDataRepository,
+                atalaReferenceLedger,
                 objectManagementService,
                 credentialBatchesRepository,
                 publicKeysLimit,
