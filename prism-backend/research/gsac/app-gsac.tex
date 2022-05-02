@@ -118,6 +118,163 @@
 \subsection{Detailed Proofs}
 \label{sapp:gsac-proofs}
 
+\commentwho{Jesus}{Strictly, in our generic construction we require IND-CCA (is
+  that a strict requirement? or can it be downgraded to IND-CPA?), but in the
+  following concrete instantiation, we use ElGamal, which is IND-CPA. However,
+  we actually ``lift'' ElGamal with NIZKs of the encrypted plaintexts, which is
+  essentially IND-CCA as far as I know. Still, make sure to mention that.}
+
+\begin{proof}[\thmref{thm:correctness-gsac}]
+  \todo{XXX}
+\end{proof}
+
+\begin{proof}[\thmref{thm:anonymity-gsac}]
+  We prove that the probability of an adversary distinguishing signatures by
+  challenge users is negligible. For the proof, we restrict to the case of
+  allowing only one query to the challenge oracle. The extension to a polynomial
+  number of queries given in \cite{bsz05} applies here, with the corresponding
+  security loss.
+
+  We begin with game $G_0=\ExpGSACAnonb$. From it, we build $G_1$, where we
+  simply replace the \NIZKSetup functions for $\NIZKRel_{\Sign}$ and
+  $\NIZKRel_{\Open}$ within the \Setup algorithm. $G_1$ is indistinguishable
+  from $G_0$ due to the zero-knowledge property of the NIZK systems.
+
+  From $G_1$, we build $G_2$, where within the challenge signature produced by
+  \CHALb, we replace the \Ccom value encrypted within \Sign with a random
+  string of the appropriate length (e.g., the same length of the encrypted
+  message in $G_1$). The corresponding proof for $\NIZKRel_{\Sign}$ is thus
+  also simulated. The zero-knowledge and simulation-extractability properties
+  of the NIZKs for $\NIZKRel_{\Sign}$, and IND-CCA of the encryption
+  scheme, ensure that the result is indistinguishable to the adversary.
+
+  Now, observe that in $G_2$, the challenge signature received by the adversary
+  is completely independent from the challenge bit $b$. Moreover, as argued,
+  $G_2$ is indistinguishable from $G_0$, where the adversary plays the original
+  \ExpGSACAnonb game. Thus, our generic construction of \GSAC satisfies
+  anonymity, except with negligible probability.
+  %
+  \qed
+\end{proof}
+
+\begin{proof}[\thmref{thm:trace-gsac}]
+  Assuming the NIZK systems are sound, we build an adversary against existential
+  unforgeability of the signature scheme for blocks of committed messages.
+  %
+  Consider the following events:
+
+  \begin{description}
+  \item[$O$.] The \Open algorithm returns $\bot$.
+  \item[$J$.] The \Judge algorithm returns $0$.
+  \item[$D$.] No credential owned by a user in \CU contains \DAttrs.
+  \end{description}
+
+  Given these events, the adversary wins if:
+
+  \begin{description}
+  \item[$W_1 = O$.] \Open returns $\bot$ (line 5 of \ExpGSACTrace).
+  \item[$W_2 = \overline{O} \land J$.] \Open does not fail, but \Judge rejects
+    the output of \Open (line 7 of \ExpGSACTrace).
+  \item[$W_3 = \overline{O} \land \overline{J} \land D$.] \Open does not fail,
+    \Judge accepts the output by \Open, but no corrupt user has a credential
+    containing \DAttrs (line 8 of \ExpGSACTrace).
+  \end{description}
+
+  Clearly, since the group signature is verified at step 4 of the game, if
+  verification succeeds, soundness of $\NIZK_{\Sign}$ implies that $(\Ccom_m,
+  \Ec,\DAttrs) \in \NIZKLang_{\Sign}$, except with negligible probability
+  $2^{-\NIZKsecpar}$. Also, observe that each of the winning events for the
+  adversary described above are disjoint. Thus:
+
+  \begin{equation}
+    \AdvGSACTrace(\secpar) = \Pr[W_1]+\Pr[W_2]+\Pr[W_3]+\negl(\NIZKsecpar)
+  \end{equation}
+
+  $\Pr[W_1]=0$ is directly deduced from the fact that $(\Ccom_m,\Ec,\DAttrs)
+  \in \NIZKLang_{\Sign}$ due to soundness of $\NIZKRel_{\Sign}$. Concretely,
+  we know that \Open does not abort due to rejection of the signature by
+  \Verify (as this is checked in line 4 of \ExpGSACTrace too) and, thus,
+  $\Ec = \EEnc(\opk,\Ccom)$ which, by correctness of the encryption algorithm,
+  implies that $\Ccom = \EDec(\osk,\Ec)$, where $\upk=\Ccom=\CCommit(\usk;0)$.
+  Completeness of $\NIZK_{\Open}$ thus implies that the \Open algorithm can
+  compute the opening proof \oproof, and return $(\upk,\oproof)$.
+  
+  $\Pr[W_2] = 0$ is similarly deduced from soundness of $\NIZK_{\Sign}$ and
+  completeness of $\NIZK_{\Open}$, since the opening proof is computed
+  honestly in line 6 of \ExpGSACTrace.
+
+  Finally, assume that there is an adversary $\adv$ against \ExpGSACTrace that
+  wins by event $W_3$. Then, it is straight forward to build an adversary \advB
+  against unforgeability of the signature scheme on blocks of committed
+  messages. Namely, \advB creates the parameters with \Setup and the opening
+  key pair with \OKeyGen, but instead of running \IKeyGen, sets the verification
+  key to the one received in the \ExpSBCMOMF game. In calls by $\adv$ to \OBTISS
+  and \ISSUE oracles, \advB replaces the \Issue algorithm with corresponding
+  calls to its $\langle \cdot,\SBCMSign \rangle$ oracle. The other oracles are
+  unchanged. Without loss of generality, suppose that $\adv$ makes a total of
+  $n$ queries to \OBTISS and \ISSUE, combined; which implies that \advB makes
+  a total of $n$ queries to its own oracle. If, in such an execution, $\adv$
+  wins by event $W_3$, it means that it has produced a signature \sig, revealing
+  attribute set \DAttrs, that is accepted by \Verify, for which \Open does not
+  fail, and for which an honestly generated open proof is accepted by \Judge,
+  but such that no issued credential contains \DAttrs. Soundness of
+  $\NIZK_{\Sign}$ implies that \sig is a valid signature over $\Attrs \cup
+  \lbrace \usk \rbrace$, and $\DAttrs \subseteq \Attrs$; but \sig has not been
+  produced via a call to the $\langle \cdot,\SBCMSign \rangle$ oracle. Thus,
+  \advB can output at least $n+1$ valid signatures, which contradicts security
+  of \SBCM.
+  %
+  By assumption of security of \SBCM, $\Pr[W_3]$ must therefore be negligible in
+  $\SBCMsecpar$ and, consequently: $\AdvGSACTrace(\secpar) = \negl(\SBCMsecpar)+
+  \negl(\NIZKsecpar)$, which is negligible.  
+  \qed
+\end{proof}
+
+\begin{proof}[\thmref{thm:frame-gsac}]
+  We build an adversary \advB who, given an adversary $\adv$ against
+  \ExpGSACNonframe, breaks the hiding property of \C.
+
+  To do so, we start with $G_0=\ExpGSACNonframe$. From $G_0$, we build $G_1$
+  by replacing $\NIZKSetup^{\NIZKRel_{\Issue}}$ and  $\NIZKSetup^{\NIZKRel_{\Sign}}$
+  with $\NIZKSimSetup^{\NIZKRel_{\Issue}}$ and $\NIZKSimSetup^{\NIZKRel_{\Sign}}$,
+  within the \Setup algorithm. Due to the zero-knowledge property of both
+  $\NIZK^{\NIZKRel_{\Issue}}$ and $\NIZK^{\NIZKRel_{\Sign}}$, $G_1$ is
+  indistinguishable from $G_0$.
+
+  We now build \advB from $G_1$. Recall that \advB is an adversary against
+  hiding of \C and, thus, receives a commitment \Ccom, committing to one out
+  of two possible messages, $\msg_0$ and $\msg_1$, which \advB picks at random
+  from $\AttrSpace$. \advB initializes everything as $G_1$ and, in addition,
+  chooses a random integer $u \in [q]$, where $q$ will be the maximim number of
+  users to let $\adv$ create via calls to the \HUGEN oracle (note though that
+  $q$ can be as large as desired, as it remains a polynomial function of the
+  security parameter). In the $u$-th call to the \HUGEN oracle, \advB ignores
+  sets $(\upk,\usk)$ to $(\Ccom,\bot)$. Calls to the \OBTAIN and \SIGN oracles
+  are dealt with as usual, except when $\adv$ requests credentials or signatures
+  on behalf of the $u$-th user. In that cases, \advB simulates the corresponding
+  NIZK proofs by calling $\NIZKSim^{\NIZKRel_{\Issue}}$ or
+  $\NIZKSim^{\NIZKRel_{\Sign}}$, respectively. Due to the
+  simulation-extractability property of both NIZK systems, the output produced
+  by the oracles is indistinguishable from that in $G_1$ and, consequently, from
+  $G_0=\ExpGSACNonframe$.
+
+  Finally, assume that $\adv$ wins \ExpGSACNonframe with non-negligible
+  probability. This means that it outputs a $(\sig = (\Ec,\pi_\sig),\DAttrs,
+  \msg,\upk,\pi)$, where $(\sig,\DAttrs,\msg)$ are accepted by \Verify, and
+  $(\upk,\pi,\sig,\DAttrs,\msg)$ are accepted by \Judge. Thus, after soundness
+  of $\NIZK^{\NIZKRel_{\Sign}}$ and $\NIZK^{\NIZKRel_{\Open}}$, we know that
+  \upk is the correct public key associated to an honest user \uid, but as per
+  the winning condition, \sig has not been produced via a call to the \SIGN
+  oracle for a \cid owned by \uid. Therefore, we can extract the \usk
+  corresponding to \upk from the $\pi_{\sig}$ proof. Since executions in the
+  environment prepared by \advB are indistinguishable to $\adv$ from executions
+  of $G_0$, we can assume that the probability that the \uid associated to the
+  \sig output by $\adv$ equals $1/q$. In that case, \usk precisely matches
+  $\msg_b$, and \advB wins the hiding game against \C. Since we assume \C
+  to be hiding, this probability must therefore be negligible.   
+  \qed
+\end{proof}
+
 \subsection{Concrete Instantiation with BBS+}
 \label{sapp:gsac-instantiation}
 

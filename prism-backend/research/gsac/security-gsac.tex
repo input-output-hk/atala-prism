@@ -1,128 +1,43 @@
 \subsection{Correctness and Security of \GSACGen}
 \label{ssec:security-gsac}
 
+For the sake of brevity, here we just enuntiate the main theorems related to
+correctness and security of \GSAC, and defer the full proofs to
+\appref{sapp:gsac-proofs}.
+
 \begin{theorem}[Correctness of \GSACGen]
   \label{thm:correctness-gsac}
   If the underlying schemes for \todo{xxx}, our generic construction \GSACGen
   satisfies correctness as defined in \defref{def:correctness-gsac}.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:correctness-gsac}]
-  \todo{XXX}
-\end{proof}
-
 \begin{theorem}[Anonymity of \GSACGen]
   \label{thm:anonymity-gsac}
-  If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge and
+  If the underlying $\NIZK^{\NIZKRel_{\Sign}}$ scheme is zero-knowledge and
   simulation-extractable, and the encryption system is IND-CCA secure,
   our \GSACGen construction satisfies anonymity as defined in
   \defref{def:anonymity-gsac}.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:anonymity-gsac}]
-  We prove that the probability of an adversary distinguishing signatures by
-  challenge users is negligible. For the proof, we restrict to the case of
-  allowing only one query to the challenge oracle. The extension to a polynomial
-  number of queries given in \cite{bsz05} applies here, with the corresponding
-  security loss.
-
-  We begin with game $G_0=\ExpGSACAnonb$. From it, we build $G_1$, where we
-  simply replace the \NIZKSetup functions for $\NIZKRel_{\Sign}$ and
-  $\NIZKRel_{\Open}$ within the \Setup algorithm. $G_1$ is indistinguishable
-  from $G_0$ due to the zero-knowledge property of the NIZK systems.
-
-  From $G_1$, we build $G_2$, where within the challenge signature produced by
-  \CHALb, we replace the \Ccom value encrypted within \Sign, with a random
-  string of the appropriate length (e.g., the same length of the encrypted
-  message in $G_1$). The corresponding proof for $\NIZKRel_{\Sign}$ is thus
-  also simulated. The zero-knowledge and simulation-extractability properties
-  of the NIZKs for $\NIZKRel_{\Sign}$, and IND-CCA of the encryption
-  scheme, ensure that the result is indistinguishable to the adversary.
-
-  Now, observe that in $G_2$, the challenge signature received by the adversary
-  is completely independent from the challenge bit $b$. Moreover, as argued,
-  $G_2$ is indistinguishable from $G_0$, where the adversary plays the original
-  \ExpGSACAnonb game. Thus, our generic construction of \GSAC satisfies
-  anonymity, except with negligible probability.
-  %
-  \qed
-\end{proof}
-
 \begin{theorem}[Traceability of \GSACGen]
   \label{thm:trace-gsac}
-  If the underlying NIZK schemes for $\NIZKRel_{\Sign}$ %and $\NIZKRel_{\Open}$
-  is sound, and the signature scheme for blocks of committed messages is
-  existentially unforgeable, then our \GSACGen construction satisfies
-  traceability as defined in \defref{def:trace-gsac}, except with negligible
+  If the underlying $\NIZK^{\NIZKRel_{\Sign}}$ scheme is sound, the
+  $\NIZK^{\NIZKRel_{\Open}}$ is  complete, the public-key encryption algorithm
+  is correct, and the signature scheme for blocks of committed messages is
+  one-more unforgeable, then our \GSACGen construction satisfies traceability as
+  defined in \defref{def:trace-gsac}, except with negligible
   probability.
 \end{theorem}
 
-\todo{\usk belongs to \AttrSpace! I think this can lead to malleability attacks.
-  Make them disjoint?}
-
-\begin{proof}[\thmref{thm:trace-gsac}]
-  Assuming the NIZK systems are sound, we build an adversary against existential
-  unforgeability of the signature scheme for blocks of committed messages.
-  %
-  Consider the following events:
-
-  \begin{description}
-  \item[$O$.] The \Open algorithm returns $\bot$.
-  \item[$J$.] The \Judge algorithm returns $0$.
-  \item[$D$.] No credential owned by a user in \CU contains \DAttrs.
-  \end{description}
-
-  Given these events, the adversary wins if:
-
-  \begin{description}
-  \item[$W_1 = O$.] \Open returns $\bot$ (line 5 of \ExpGSACTrace).
-  \item[$W_2 = \overline{O} \land J$.] \Open does not fail, but \Judge rejects
-    the output of \Open (line 7 of \ExpGSACTrace).
-  \item[$W_3 = \overline{O} \land \overline{J} \land D$.] \Open does not fail,
-    \Judge accepts the output by \Open, but no corrupt user has a credential
-    containing \DAttrs (line 8 of \ExpGSACTrace).
-  \end{description}
-
-  Clearly, since the group signature is verified at step 4 of the game, if
-  verification succeeds, soundness of $\NIZK_{\Sign}$ implies that $(\Ccom_m,
-  \Ec,\DAttrs) \in \NIZKLang_{\Sign}$, except with negligible probability, say
-  $2^{-\NIZKsecpar}$. Also, observe that each of the winning events for the
-  adversary described above are disjoint. Thus:
-
-  \begin{equation}
-    \AdvGSACTrace(\secpar) = \Pr[W_1]+\Pr[W_2]+\Pr[W_3]+2^{-\NIZKsecpar}
-  \end{equation}
-
-  $\Pr[W_1]=0$ is directly deduced from the fact that $(\Ccom_m,\Ec,\DAttrs)
-  \in \NIZKLang_{\Sign}$ due to soundness of $\NIZKRel_{\Sign}$. Concretely,
-  we know that \Open does not abort due to rejection of the signature by
-  \Verify (as this is checked in line 4 of \ExpGSACTrace too) and, thus,
-  $\Ec = \EEnc(\opk,\Ccom)$ which, by correctness of the encryption algorithm,
-  implies that $\Ccom = \EDec(\osk,\Ec)$, where $\upk=\Ccom=\CCommit(\usk;0)$.
-  Completeness of $\NIZK_{\Open}$ thus implies that the \Open algorithm can
-  compute the opening proof \oproof, and return $(\upk,\oproof)$.
-  
-  $\Pr[W_2] = 0$ is similarly deduced from soundness of $\NIZKRel_{\Sign}$ and
-  completeness of $\NIZKRel_{\Open}$, since the opening proof is computed
-  honestly in line 6 of \ExpGSACTrace.
-
-  Finally, assume that there is an adversary $\adv$ against \ExpNonTrace that
-  wins by event $W_3$. We build an adversary against unforgeability of the
-  signature scheme on blocks of committed messages.
-  
-  \qed
-\end{proof}
-
 \begin{theorem}[Non-frameability of \GSACGen]
   \label{thm:frame-gsac}
-  If the underlying schemes for \todo{xxx}, then our \GSACGen construction
+  If the underlying scheme for $\NIZK^{\NIZKRel_{\Issue}}$,
+  $\NIZK^{\NIZKRel_{\Sign}}$ and $\NIZK^{\NIZKRel_{\Open}}$ are sound,
+  zero-knowledge, and simulation-extractable, and
+  the commitment scheme \C is hiding, then our generic \GSACGen construction
   satisfies non-frameability as defined in \defref{def:frame-gsac}, except with
   negligible probability.
 \end{theorem}
-
-\begin{proof}[\thmref{thm:frame-gsac}]
-  \qed
-\end{proof}
 
 %%% Local Variables:
 %%% mode: latex

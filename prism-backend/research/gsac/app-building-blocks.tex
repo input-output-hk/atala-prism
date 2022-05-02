@@ -19,15 +19,15 @@ provides the functionality defined by the following syntax:
 \end{description}
 
 A digital signature scheme is correct if honestly generated signatures, using
-honestly generated key pairs, are always accepted by \SVerify. \todo{define more
-  formally?}
+honestly generated key pairs, are always accepted by \SVerify. 
 %
 A digital signature scheme \S has existential unforgeability if, for all p.p.t.
-adversaries $\adv$, $\Pr[\ExpEUF = 1]$ is a negligible function of the
+adversaries $\adv$, $\Pr[\ExpEUF(\Ssecpar) = 1]$ is a negligible function of the
 security parameter.
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{0.5\textwidth}
+  \begin{minipage}[t]{\textwidth}
+    \centering
     \procedure{$\ExpEUF(\Ssecpar)$}{%
       \Sparm \gets \SSetup(\Ssecpar) \\
       (\Svk,\Ssk) \gets \SKeyGen(\Sparm) \\
@@ -44,13 +44,46 @@ security parameter.
 \subsection{Public-Key Encryption}
 \label{sapp:pk-encryption}
 
-Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
-\ESetup(\Esecpar)$ produces public parameters for the other algorithms.
-$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
-pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
-encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
-\Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
-  security properties we'll need.}
+A public-key encryption scheme is defined by the following algorithms:
+
+\begin{description}
+\item[$\Eparm \gets \ESetup(\Esecpar)$.] Produces public parameters \Eparm given
+  a security parameter \Esecpar.
+\item[$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$.] Given public parameters \Eparm,
+  produces an encryption-decryption keypair $(\Eek,\Edk)$.
+\item[$\Ec \gets \EEnc(\Eek,\msg)$.] Encrypts message \msg with encryption key
+  \Eek, producing ciphertext \Ec.
+\item[$\msg \gets \EDec(\Edk,\Ec)$.] Decrypts ciphertext \Ec with decryption key
+  \Edk.
+\end{description}
+
+A public-key encryption scheme is correct if, given a honestly generated key
+pair $(\Eek,\Edk)$, produced with honestly generated parameters \Eparm,
+$\Pr[\EDec(\Edk,\EEnc(\Eek,\msg))=\msg] = 1$ with overwhelming probability.
+
+A public-key encryption scheme has IND-CCA2 security if
+$\Pr[\ExpINDCCAiio(\Esecpar) = 1] - \Pr[\ExpINDCCAiiz(\Esecpar) = 1]|$ is
+a negligible function of \Esecpar, for any p.p.t. adversary \adv, where
+\ExpINDCCAiib is as defined in \figref{fig:indcca2-game}.
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{\textwidth}
+    \centering      
+    \procedure{$\ExpINDCCAiib(\Esecpar)$}{%
+      \Eparm \gets \ESetup(\Esecpar) \\
+      (\Eek,\Edk) \gets \EKeyGen(\Eparm) \\
+      b^* \gets \adv^{\ELR(b,\cdot,\cdot),\EDEC(\Edk,\cdot)}(\Eek),
+      ~\textrm{where:} \\
+      \pcind \ELR(b,\msg_0,\msg_1)~\textrm{returns}~\EEnc(\Eek,\msg_b),
+      ~\textrm{and} \\
+      \pcind \EDEC(\Edk,\Ec)~\textrm{returns}~\EDec(\Edk,\Ec) \\
+      \pcif \EDEC~\textrm{has been called with an output of \ELR, abort} \\
+      \pcreturn b^*
+    }
+  \end{minipage}
+  \label{fig:indcca2-game}
+  \caption{IND-CCA2 Game.}
+\end{figure}
 
 \subsection{Commitments}
 \label{sapp:commitments}
@@ -72,21 +105,19 @@ and (usually) hiding:
 \begin{description}
 \item[Binding.] Intuitively, the binding property of commitment schemes means
   that no adversary can change the message that has been committed to. More
-  formally, $\Pr[\ExpComBind = 1]$ must be a negligible function of the security
-  parameter.
+  formally, $\Pr[\ExpComBind(\Csecpar) = 1]$ must be a negligible function of
+  the security parameter.
 \item[Hiding.] The hiding property captures that no adversary should be able to
   learn the message that was committed, when given only the commitment. This is
-  formally defined through \ExpComHideb, where $|\Pr[\ExpComHideb=1|b=1] -
-  \Pr[\ExpComHideb=1|b=0]|$ must be a negligible function of the security
-  parameter.
+  formally defined through \ExpComHideb, where $|\Pr[\ExpComHideb(\Csecpar)=1|
+  b=1] - \Pr[\ExpComHideb(\Csecpar)=1|b=0]|$ must be a negligible function of
+  the security parameter.
 \end{description}
-
-\todo{Commitments with proofs, needed for \SBCM.}
 
 \begin{figure}[ht!]
   \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpComBind(\secpar)$}{%
-      \Cparm \gets \CSetup(\secpar) \\
+    \procedure{$\ExpComBind(\Csecpar)$}{%
+      \Cparm \gets \CSetup(\Csecpar) \\
       (\msg_0,r_0,\msg_1,r_1) \gets \adv(\Cparm) \\
       \Ccom_0 \gets \CCommit(\Cparm,\msg_0,r_0) \\
       \Ccom_1 \gets \CCommit(\Cparm,\msg_1,r_1) \\
@@ -123,7 +154,8 @@ commitments \cite{bcc+15}.
 
 \todo{Formal models on signatures over blocks of committed messages? I'm just
   informally stating a model here, but there must be some more formal
-  reference...}
+  reference... \cite{cl02,asm06,ps16} all kind of allow signatures on blocks of
+  (committed) messages, but they seem to use ad hoc models.}
 
 We use signature schemes that allow signing messages and commitments to messages
 in blocks (\SBCM), and are also compatible with (efficient) proof systems over
@@ -137,13 +169,13 @@ follows:
   for the other algorithms, given an input security parameter \Ssecpar.
 \item[$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.] Generates a
   verification-signing key pair.
-\item[$\SBCMsig \gets \langle \SBCMCom(\overline{\smsg},\smsg),
+\item[$\SBCMsig/\bot \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg},\smsg),
   \SBCMSign(\SBCMsk,\smsg) \rangle$.] An interactive protocol between two
   parties with shared input a block of messages \smsg. The party running
   \SBCMCom further knows a set of messages $\overline{\smsg}$ to be
   block-committed and then signed along with \smsg. The party running \SBCMSign
   controls the signing key \SBCMsk. As a result, both parties get signature
-  \SBCMSig.
+  \SBCMsig over $\smsg \cup \overline{\smsg}$.
 \item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\smsg)$.] Checks whether \SBCMsig
   is a valid signature over the set of messages \smsg (independently on whether
   the messages where signed as commitments or not), under verification key
@@ -154,37 +186,68 @@ In addition, we require that the produced signatures must be compatible with
 (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary) claims
 over the signed (committed) messages.
 
+\paragraph{Correctness.} %
 Informally, an \SBCM scheme is correct if signatures generated between an honest
 party running \SBCMCom with message sets $\overline{\smsg}$ and \smsg, and an
 honest signer running \SBCMSign over \smsg, for honestly generated parameters
-and key pairs, results in a signature over $\smsg \cup \overline{\smsg} $that is
+and key pairs, results in a signature over $\smsg \cup \overline{\smsg}$ that is
 accepted by \SBCMVerify.
 
-A digital signature scheme is correct if honestly generated signatures, using
-honestly generated key pairs, are always accepted by \SVerify. \todo{define more
-  formally?}
-%
-A digital signature scheme \S has existential unforgeability if, for all p.p.t.
-adversaries $\adv$, $\Pr[\ExpEUF = 1]$ is a negligible function of the
-security parameter.
+\paragraph{Unforgeability.} %
+It must be unfeasible for an adversary to produce signatures over blocks of
+messages that have not been signed (in plain, or committed shape) by the
+signer. More formally, an \SBCM scheme is unforgeable if, for all p.p.t.
+adversaries $\adv$, $\Pr[\ExpSBCMOMF(\SBCMsecpar) = 1]$, as defined in
+\figref{fig:sbcm-games}, is a negligible function of the security parameter.
+Note that this follows the ``one-more-forgery'' type of definition of blind
+signatures \cite{bold02}.
+
+\paragraph{Blindness.} %
+Finally, the signer must not learn the plaintext values of the messages that are
+signed in committed form. Note that this is a weaker notion than the usual
+blindness property of blind signature schemes, where it is required that the
+adversary cannot link a signature to the signing process that produced it.
+Formally, blindness for \SBCM schemes is defined as in \ExpSBCMBlindb in
+\figref{fig:sbcm-games}. An \SBCM scheme is blind if, for all p.p.t.
+adversaries $\adv$, $|\Pr[\ExpSBCMBlindo(\SBCMsecpar) = 1] -
+\Pr[\ExpSBCMBlindz(\SBCMsecpar) = 1]|$ is a negligible function of the security
+parameter.
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpSBCMEUF(\Ssecpar)$}{%
+  \begin{minipage}[t]{\textwidth}
+    \centering
+    
+    \procedure{$\ExpSBCMOMF(\SBCMsecpar)$}{%
       \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
       (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
-      (\SBCMsig,\smsg) \gets
+      ((\sig_1,\smsg_1),\dots,(\sig_{n+1},\smsg_{n+1})) \gets
       \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
-      \pcif \SVerify(\SBCMvk,\SBCMsig,\smsg) = 0: \pcreturn 0 \\
-      \pcif \nexists (\smsg',\sCcom=\CCommit(\Cparm,\smsg''))~\st~
-      (\lbrace \smgs' \rbrace \cup \lbrace \smgs'' \rbrace) \subseteq \smsg
-      \textrm{a query}~()~\textrm{was made to \SBCMSign}: \pcreturn 1 \\
+      \pcif \exists i \in [n+1]~\st~\SBCMVerify(\SBCMvk,\sig_i,\smsg_i) = 0:
+      \pcreturn 0 \\
+      \pcif \exists i \neq j \in [n+1]~\st~\smsg_i = \smsg_j: \pcreturn 0 \\
+      \pcif \langle \cdot, \SBCMSign(\SBCMsk,\cdot)\rangle~
+      \textrm{was called more than $k$ times}: \pcreturn 0 \\
+      \pcreturn 1 \\
+    }
+    
+    \procedure{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
+      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
+      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
+      (\overline{\smsg}_0,\overline{\smsg}_1,\smsg) \gets
+      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
+      \csig \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg}_b,\smsg),
+      \SBCMSign(\SBCMsk,\smsg) \rangle \\
+      b^* \gets \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk,
+      \csig) \\
+      \pcif b = b^*: \pcreturn 1 \\
       \pcreturn 0
     }
   \end{minipage}
-  \label{fig:euf-game}
-  \caption{Existential Unforgeability Game.}
+  \label{fig:sbcm-games}
+  \caption{Games for \SBCM schemes.}
 \end{figure}
+
+\todo{BBS+ is proven to have EUF, but nothing is said against OMF. Relationship?}
 
 \subsection{Simulation-Extractable Non-Interactive Zero-Knowledge
   Proofs of Knowledge}
@@ -241,17 +304,18 @@ from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\SimSetup,\Sim,
 \paragraph{Completeness.} %
 Ensures that, for any $(\NIZKx,\NIZKw) \in \NIZKRel$, any honest prover will be
 able to create a proof \NIZKproof that is accepted by any honest verifier, with
-overwhelming probability. More precisely, $\Pr\lbrack\ExpNIZKComp\rbrack = 1$
-with overwhelming probability, for any p.p.t. \adv, for \ExpNIZKComp in
-\figref{fig:nizk-games}.
+overwhelming probability. More precisely, $\Pr\lbrack\ExpNIZKComp(\NIZKsecpar)
+\rbrack = 1$ with overwhelming probability, for any p.p.t. \adv, for
+\ExpNIZKComp in \figref{fig:nizk-games}.
 
 \paragraph{Soundness.} %
 Ensures that no adversary can create proofs accepted by \Verify, for
 statements $\NIZKx \notin \NIZKLang$, except with negligible probability. That
-is, for \ExpNIZKSound as in \figref{fig:nizk-games}, $\Pr\lbrack\ExpNIZKSound\rbrack
-= 1$ with overwhelming probability. If this holds only against p.p.t.
-adversaries, we talk of Non-Interactive \emph{arguments}, while if soundness
-holds even against unbounded adversaries, we talks about Non-Interactive proofs.
+is, for \ExpNIZKSound as in \figref{fig:nizk-games}, $\Pr\lbrack\ExpNIZKSound
+(\NIZKsecpar)\rbrack=1$ with overwhelming probability. If this holds only
+against p.p.t. adversaries, we talk of Non-Interactive \emph{arguments}, while
+if soundness holds even against unbounded adversaries, we talks about
+Non-Interactive proofs.
 
 \paragraph{Zero-knowledge.} %
 Intuitively, captures that no information can be learned from a statement and
@@ -264,8 +328,8 @@ setup is done with \Setup, and $\adv$ has access to an honest prover
 that, in the context of simulation-extractable NIZK, this property not only
 requires that the simulated proofs are indistinguishable to the real ones; it
 also requires that \SimSetup is indistinguishable from \Setup. All this is
-formalised by requiring that $|\Pr[\ExpNIZKZKb(\secpar) = 1 | b = 1] -
-\Pr[\ExpNIZKZKb(\secpar) = 1 | b = 0]$ be a negligible function of \secpar,
+formalised by requiring that $|\Pr[\ExpNIZKZKb(\NIZKsecpar) = 1 | b = 1] -
+\Pr[\ExpNIZKZKb(\NIZKsecpar) = 1 | b = 0]$ be a negligible function of \secpar,
 where \ExpNIZKZKb is as defined in \figref{fig:nizk-games}.
 
 \paragraph{Simulation-Extractability.} As stated, simulation-extractability
@@ -276,21 +340,21 @@ of knowledge from which no witness can be extracted. It implies simulation
 soundness, which ``just'' requires that no adversary can produce a valid proof
 after having seen polynomially many simulated proofs (but does not guarantee
 extraction). Formally, for simulation-extractability we require that
-$\Pr[\ExpNIZKSimExt] = 1$ is a negligible function of \secpar, where
-\ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
+$\Pr[\ExpNIZKSimExt(\NIZKsecpar)] = 1$ is a negligible function of \secpar,
+where \ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
 
 \begin{figure}[ht!]
   \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpNIZKComp(\secpar)$}{%
-      \NIZKcrs \gets \Setup(\secpar) \\
+    \procedure{$\ExpNIZKComp(\NIZKsecpar)$}{%
+      \NIZKcrs \gets \Setup(\NIZKsecpar) \\
       (\NIZKx,\NIZKw) \gets \adv(\NIZKcrs) \\
       \pcif (\NIZKx,\NIZKw) \notin \NIZKRel: \pcreturn 0 \\
       \NIZKproof \gets \Prove(\NIZKcrs,\NIZKx,\NIZKw) \\
       b \gets \Verify(\NIZKcrs,\NIZKproof,\NIZKx) \\
       \pcreturn b \\
     }
-    \procedure{$\ExpNIZKSimExt(\secpar)$}{%
-      (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\secpar) \\
+    \procedure{$\ExpNIZKSimExt(\NIZKsecpar)$}{%
+      (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\NIZKsecpar) \\
       (\NIZKx,\NIZKproof) \gets \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}
       (\NIZKcrs) \\
       \pcind \textrm{Where}~\Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
@@ -306,8 +370,8 @@ $\Pr[\ExpNIZKSimExt] = 1$ is a negligible function of \secpar, where
     }    
   \end{minipage}
   \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpNIZKSound(\secpar)$}{%
-      \NIZKcrs \gets \Setup(\secpar) \\
+    \procedure{$\ExpNIZKSound(\NIZKsecpar)$}{%
+      \NIZKcrs \gets \Setup(\NIZKsecpar) \\
       (\NIZKproof,\NIZKx) \gets \adv(\NIZKcrs) \\
       \pcif \NIZKx \notin \NIZKLang \land
       \Verify(\NIZKcrs,\NIZKproof,\NIZKx): \\
@@ -315,9 +379,9 @@ $\Pr[\ExpNIZKSimExt] = 1$ is a negligible function of \secpar, where
       \pcreturn 1 \\
     }
     
-    \procedure{$\ExpNIZKZKb(\secpar)$}{%
+    \procedure{$\ExpNIZKZKb(\NIZKsecpar)$}{%
       \pcif b = 0: \\
-      \pcind \NIZKcrs \gets \Setup(\secpar) \\
+      \pcind \NIZKcrs \gets \Setup(\NIZKsecpar) \\
       \pcind \pcreturn \adv^{\Prove(\NIZKcrs,\cdot,\cdot)}(\NIZKcrs) \\
       \pcif b = 1: \\
       \pcind (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\secpar) \\

@@ -304,8 +304,8 @@ formally define traceability in the \ExpTrace experiment in
     \pcif \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) = \bot: \pcreturn 1 \\
     \textrm{Let}~(\upk,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) \\
     \pcif \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0: \pcreturn 1 \\
-    \pcelse \pcif \forall \uid \in \CU, \nexists (\uid,\cdot,\Attrs) \in
-    \CRED~\st~\DAttrs \subseteq \Attrs: \pcreturn 1 \\
+    \pcelse \pcif \forall \uid \in \CU \cup \HU, \nexists (\uid,\cdot,\Attrs)
+    \in \CRED~\st~\DAttrs \subseteq \Attrs: \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Traceability experiment for \GSAC schemes.}

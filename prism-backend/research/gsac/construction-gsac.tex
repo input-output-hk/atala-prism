@@ -15,7 +15,7 @@ In the following algorithms, we make use of three different NP relations for
   \Ccom = \CCommit(\usk; r) \rbrace$.
 \item[$\NIZKRel_{\Sign}$:] Produced by users when signing a message. It is
   defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\Ccom,\Attrs,\msg,\SBCMsig),
-  (\Cmsg,\Ec,\DAttrs) : \Cmsg = \CCommit(\msg) \land \Ccom \gets
+  (\Cmsg,\Ec,\DAttrs) : \Cmsg = \CCommit(\msg) \land \Ccom =
   \CCommit(\usk; 0) \land \Ec = \EEnc(\opk,\Ccom)
   \land \SBCMVerify(\ipk,\SBCMsig,\Attrs \cup \lbrace \usk \rbrace) = 1
   \land \DAttrs \subseteq \Attrs \rbrace$.
