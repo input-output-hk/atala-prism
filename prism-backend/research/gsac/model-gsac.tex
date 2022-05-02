@@ -189,8 +189,8 @@ signature, revealing the public key pair of the user, must also be accepted by
 
 \begin{definition}{(Correctness of \GSAC)}
   \label{def:correctness-gsac}
-  A \GSAC scheme is correct if, for any p.p.t. adversary $\adv$, \ExpGSACCorrect
-  outputs 1 with negligible probability.
+  A \GSAC scheme is correct if, for any p.p.t. adversary $\adv$,
+  $\Pr[\ExpGSACCorrect(1^\secpar) = 1]$ is a negligible function of \secpar.
 \end{definition}
 
 \begin{figure}[htp!]
@@ -211,8 +211,6 @@ signature, revealing the public key pair of the user, must also be accepted by
   \caption{Correctness experiment for \GSAC schemes.}
   \label{fig:exp-gsac-corr}
 \end{figure}
-
-\todo{Correctness definition.}
 
 \subsubsection{Security Properties}
 \label{sssec:security-gsac}
@@ -369,7 +367,29 @@ during \Open.
   \AdvNonframe is a negligible function of $1^\secpar$.
 \end{definition}
 
-\paragraph{Discussion.} %
+\subsubsection{A note comparing \GSAC with group signatures and
+  anonymous credentials.} %
+
+\GSAC is a direct combination of group signatures and anonymous credentials.
+%
+On the one hand, by restricting to credentials without attributes (i.e., where
+the only attribute is the user secret key), we get a vanilla group signature
+scheme. Although, strictly, our scheme allows users to fetch more than one
+credential -- which goes beyond vanilla group signatures -- this can be
+trivially ``compensated'' by requiring users to prove ownership of a
+conventional digital identity during the $\langle \Obtain,\Issue \rangle$
+protocol\footnote{This is indeed common practice, but also frequently ommitted
+  in research papers.}.
+%
+On the other hand, by instantiating a \GSAC scheme (e.g., as \GSACGen) and simply
+throwing out the opener's key pair (thus, making \Open and \Judge useless), one
+gets a vanilla anonymous credential system. Or, keeping \osk, one can build an
+anonymous credential system with blacklisting, which can be directly built via
+the \Open function.
+
+\todo{Can we do formal proofs here of $GSAC \implies$ GS and $GSAC \implies AC$?}
+
+\iffalse
 \todo{Modelling choices: HU and CU lists are typically updated in join protocols
   in the GS literature. Here, it is best to follow the AC literature, as a same
   user (key) may be associated to multiple join protocols. So there are HUGEN
@@ -380,15 +400,11 @@ during \Open.
   would require either complicating the proof, or access to the transcripts log
   at open time, which I opted to avoid for better compatibility with \UAS.}
 
-\todo{Argue that our properties cover (and augment) a direct combination
-  (even if possible) of their GS and AC counterparts. Specifically, anonymity
-  of \GSAC is stronger than anonymity in GS and AC, and the same for trace and
-  non-frame.}
-
 \todo{It would be nice to prove that a \GSAC scheme to which we remove the
   \Open/\Judge functions becomes an AC scheme. And conversely, a \GSAC scheme
   where all credentials have no attributes, and where we restrict to only
   one credential per user, becomes a conventional GS scheme.}
+\fi
 
 %%% Local Variables:
 %%% mode: latex

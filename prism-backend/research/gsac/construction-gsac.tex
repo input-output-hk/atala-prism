@@ -27,10 +27,15 @@ In the following algorithms, we make use of three different NP relations for
 In a nutshell \todo{describe high-level approach}.
 
 \paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
-Sets up the public parameters \todo{can be distributed across responsible
-  parties?}. Namely: $\Cparm \gets \CSetup(\secpar)$, $\Eparm \gets
-\ESetup(\secpar)$, $\SBCMparm \gets \SBCMSetup(\secpar)$, $\NIZKcrs \gets
-\NIZKSetup(\secpar)$. Outputs $\parm \gets (\Cparm,\SBCMparm,\Eparm,\NIZKcrs)$.
+Sets up the public parameters. Namely: $\Cparm \gets \CSetup(\secpar)$, $\Eparm
+\gets \ESetup(\secpar)$, $\SBCMparm \gets \SBCMSetup(\secpar)$,
+$\NIZKcrs_{\Issue} \gets \NIZKSetup^{\Issue}(\secpar)$, $\NIZKcrs_{\Sign} \gets
+\NIZKSetup^{\Sign} (\secpar)$, $\NIZKcrs_{\Open}\gets \NIZKSetup^{\Open}(\secpar)$.
+Outputs $\parm \gets (\Cparm,\SBCMparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},
+\NIZKcrs_{\Open})$. Note that parts of this process can be left to individual
+parties (e.g., \SBCMSetup, $\NIZKSetup^{\Issue}$ to the issuer, or \ESetup and
+$\NIZKSetup^{\Open}$ to the opener) who later publish the output, but we
+concentrate them here in \Setup for readability.
 
 \paragraph{$\IKeyGen(\parm) \rightarrow (\ipk,\isk)$.} %
 Generates the signing key pair for the issuer, by parsing \parm as

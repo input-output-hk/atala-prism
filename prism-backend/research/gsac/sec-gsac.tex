@@ -1,7 +1,66 @@
-\section{\GSAC: Merging Group Signatures and Anonymous Credentials}
+\section{\GSAC: Merging Group Signatures and Anonymous
+  Credentials}
 \label{sec:gsac}
 
-\todo{Some intro here}
+\todo{I think we should extend ``vanilla'' \GSAC to return the full \Attrs
+  in \Open, but without needing \trans as a parameter to \Open (for compatibility
+  with \UAS). This can be done by encrypting all attributes, including their
+  ciphertext in the signature, and proving they are part of the credential. This
+  would render the scheme too costly, but helps in arguing in favour of \UAS.}
+
+Before moving into our full-fledged scheme for universal anonymous signatures,
+we take a first step which, albeit somehow obvious and simple, helps understand
+our final goal. Namely, we give a scheme that combines in a quite direct manner
+the functionality of group signature schemes, and that of anonymous credential
+schemes.
+
+\paragraph{Why is this merge necessary in the real world?} %
+Despite being an \emph{a priori} simple combination of both schemes we argue
+that such a combination:
+
+\begin{itemize}
+\item Enables a natural way to incorporate accountability within 
+  privacy-preserving identities. Furthermore, it does so in a formal way,
+  via the traceability notion and, crucially, the non-frameability one,
+  (which is not present in anonymous credentials).
+\item Provides meaning to the conventional \Open functionality of group
+  signatures, which traditionally has only required that an abstract concept of
+  ``identity'' be returned. Concretely, assuming honest issuance (which is
+  already a requirement in anonymous credentials; and in group signatures for
+  traceability), we can make specific claims about the attributes associated to
+  de-anonymized signers. Otherwise, without integrating attributes within the
+  issued credentials, the value returned by \Open serves barely for blacklisting
+  or similar functionalities -- but otherwise gives no information straight away
+  about the signer's identity, forcing implementors to rely to non-cryptographic
+  means to retrieve such information.
+\end{itemize}
+
+\paragraph{Intuition of our design and construction.} %
+Functionally, we combine both worlds. Namely, a user can get as many credentials
+as s/he wants -- although all are tied to the same user key --, and signatures
+(or credential presentations) of the same credential must be unlinkable. In this
+simplified first step, we restrict to selective attribute disclosure, meaning
+that signatures produced by a credential reveal only a subset of the attributes
+in that credential. Given such a signature, there is a trusted opener who can
+de-anonymize its signer, producing back its public key, as well as a proof of
+correct opening.
+
+With respect to the model, privacy-wise this direct combination requires that
+any two signatures (credential presentations) reveal nothing about the
+credential used to produce them, beyond the revealed attributes. For this first
+step, security-wise we stick to the conventional separation of
+unforgeability-related properties in group signatures. That is, traceability
+requires that, in the presence of an honest issuer, all valid signatures must
+originate from a credential issued by the issuer; and, moreover, that no
+user can claim having attributes that have not been issued to a single
+credential. As in group signatures, if the issuer is corrupt, all we can hope
+for is that honest users do not get undeserved blame; but, other than that,
+the adversary can obviously obtain credentials with arbitrary attributes. Still,
+note that this is a clear gain with respect to conventional anonymous credential
+systems, which offer no security against a malicious issuer.
+
+Finally, in this first step, we restrict ourselves to signatures/presentations
+involving only one credential and, as stated, to selective attribute disclosure.
 
 \input{model-gsac.tex}
 \input{construction-gsac.tex}
