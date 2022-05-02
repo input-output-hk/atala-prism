@@ -164,7 +164,6 @@ package object operations {
 
     def incrementMetricsCounter(): EitherT[ConnectionIO, StateError, Unit] =
       EitherT {
-        println(f"incrementing $metricCounterName")
         MetricsCountersDAO.incrementCounter(metricCounterName).attemptSomeSqlState {
           case sqlstate.class42.UNDEFINED_COLUMN =>
             CannotUpdateMetric(f"Metric counter [$metricCounterName] was not defined"): StateError

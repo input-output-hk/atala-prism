@@ -83,10 +83,10 @@ class NodeGrpcServiceImpl(
         val query = request.metrics.traverse(statisticsService.retrieveMetric)
         val res = for {
           metricsE <- query.run(traceId)
-          metrics = metricsE.zip(request.metrics).map { case (metricE, metricName) =>
+          metrics = metricsE.zip(request.metrics).map { case (metricE, _) =>
             metricE.fold(
-              err => f"Error while retrieving metric $metricName: $err",
-              value => value.toString
+              _ => 0.0,
+              value => value.toDouble
             )
           }
         } yield GetNodeStatisticsResponse(metrics)

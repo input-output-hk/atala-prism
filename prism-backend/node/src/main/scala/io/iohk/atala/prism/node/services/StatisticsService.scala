@@ -22,7 +22,7 @@ import tofu.logging.{Logs, ServiceLogging}
 trait StatisticsService[F[_]] {
   def getAtalaOperationsCountByStatus(status: AtalaOperationStatus): F[Either[errors.NodeError, Int]]
 
-  def getAmountOfPendingOperations: F[Either[errors.NodeError, Int]]
+  def getNumberOfPendingOperations: F[Either[errors.NodeError, Int]]
 
   def retrieveMetric(metricName: String): F[Either[errors.NodeError, Int]]
 }
@@ -34,18 +34,18 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
   def getAtalaOperationsCountByStatus(status: AtalaOperationStatus): F[Either[errors.NodeError, Int]] =
     atalaOperationsRepository.getOperationsCount(status)
 
-  def getAmountOfPendingOperations: F[Either[errors.NodeError, Int]] = {
+  def getNumberOfPendingOperations: F[Either[errors.NodeError, Int]] = {
     atalaOperationsRepository.getOperationsCount(AtalaOperationStatus.RECEIVED)
   }
 
   def retrieveMetric(metricName: String): F[Either[errors.NodeError, Int]] = metricName match {
-    case "amount-of-pending-operations" =>
-      getAmountOfPendingOperations
-    case "amount-of-published-dids" =>
+    case "number-of-pending-operations" =>
+      getNumberOfPendingOperations
+    case "number-of-published-dids" =>
       metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
-    case "amount-of-issued-credential-batches" =>
+    case "number-of-issued-credential-batches" =>
       metricsCountersRepository.getCounter(IssueCredentialBatchOperation.metricCounterName).map(Right(_))
-    case "amount-of-credentials-revoked" =>
+    case "number-of-credentials-revoked" =>
       metricsCountersRepository.getCounter(RevokeCredentialsOperation.metricCounterName).map(Right(_))
     case _ =>
       Applicative[F].pure(Left(errors.NodeError.InvalidArgument(f"Metric $metricName does not exist")))
@@ -55,10 +55,10 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
 object StatisticsService {
 
   final val METRICS: List[String] = List(
-    "amount-of-pending-operations",
-    "amount-of-published-dids",
-    "amount-of-issued-credential-batches",
-    "amount-of-credentials-revoked"
+    "number-of-pending-operations",
+    "number-of-published-dids",
+    "number-of-issued-credential-batches",
+    "number-of-credentials-revoked"
   )
 
   def make[I[_]: Functor, F[_]: MonadCancelThrow](

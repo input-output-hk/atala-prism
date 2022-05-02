@@ -22,11 +22,11 @@ class MetricsCountersDAOSpec extends AtalaWithPostgresSpec {
           MetricsCountersDAO.incrementCounter(metricName).transact(database).unsafeRunSync()
         }
       }
-//
-//      metricCounters.foreach { case (metricName, metricCounter) =>
-//        val counter = MetricsCountersDAO.getCounter(metricName).transact(database).unsafeRunSync()
-//        counter must be(metricCounter)
-//      }
+
+      metricCounters.foreach { case (metricName, metricCounter) =>
+        val counter = MetricsCountersDAO.getCounter(metricName).transact(database).unsafeRunSync()
+        counter must be(metricCounter)
+      }
     }
   }
 }

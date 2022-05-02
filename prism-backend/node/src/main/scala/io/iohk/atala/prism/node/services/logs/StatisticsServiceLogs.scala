@@ -24,7 +24,7 @@ class StatisticsServiceLogs[F[_]: ServiceLogging[*[_], StatisticsService[F]]: Mo
       .onError(errorCause"encountered an error while getting number of operations with status $status" (_))
   }
 
-  def getAmountOfPendingOperations: Mid[F, Either[errors.NodeError, Int]] = { in =>
+  def getNumberOfPendingOperations: Mid[F, Either[errors.NodeError, Int]] = { in =>
     info"getting amount of pending operations" *> in
       .flatTap(
         _.fold(
