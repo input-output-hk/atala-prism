@@ -97,21 +97,9 @@ associated to the same person.
 \subsection{Cryptographic Building Blocks}
 \label{ssec:cryptobblocks}
 
-\paragraph{Vector Commitment schemes.} %
-Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
-\CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
-\gets \CCommit(\Cparm, \msgset; r)$ produces a commitment \Ccom over a set of
-messages \msgset, from which we may omit randomness $r$. \todo{Informally define
-  hiding and binding, leaving formal definitions to the appendix.}
-
-\paragraph{Public-Key Encryption.} %
-Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
-\ESetup(\Esecpar)$ produces public parameters for the other algorithms.
-$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
-pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
-encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
-\Ec)$ decrypts ciphertexts using decryption key \Edk. \todo{Informally define
-  security properties we'll need.}
+Next we introduce the main building blocks we will be using in our
+constructions. More detailed definitions and references appear in
+\appref{app:crypto-building-blocks}.
 
 \paragraph{Digital Signatures.} %
 Defined as a tuple $(\SSetup,\SKeyGen,\SSign,\SVerify)$. Algorithm $\Sparm \gets
@@ -120,37 +108,65 @@ $(\Svk,\Ssk) \gets \SKeyGen(\Sparm)$ generates the verification-signing key
 pair, algorithm $\Ssig \gets \SSign(\Ssk,\msg)$ signs message \msg with
 signing key \Ssk, producing signature \Ssig, and $1/0 \gets \SVerify(\Svk,
 \Ssig,\msg)$ checks whether \Ssig is a valid signature over \msg, under
-verification key \Svk. \todo{Informally define security properties we'll need.}
+verification key \Svk. We rely on existentially unforgeable digital signature
+schemes.
+
+\paragraph{Public-Key Encryption.} %
+Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
+\ESetup(\Esecpar)$ produces public parameters for the other algorithms.
+$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
+pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
+encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
+\Ec)$ decrypts ciphertexts using decryption key \Edk. We rely on \todo{IND-CCA}
+public-key encryption schemes.
+
+\paragraph{(Vector) Commitment Schemes.} %
+Defined as a tuple $(\CSetup,\CCommit)$. Algorithm $\Cparm \gets
+\CSetup(\Csecpar)$ produces the parameters for committing to values. $\Ccom
+\gets \CCommit(\Cparm, \smsg; r)$ produces a commitment \Ccom over a set of
+messages \smsg, using randomness $r$ (which we may omit when explicitly
+stating it is not necessary). We will further use commitment schemes that
+allow committing to vectors of messages. Therein, the \CCommit algorithm simply
+receives a vector of messages. In both cases, we require hiding and binding
+(vector) commitment schemes.
+
+\paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
+We use signature schemes that allow signing blocks of messages, or commitments
+to blocks of messages, and which are furthermore compatible with (efficient)
+proof systems over the produced signature and signed (commitments to) messages.
+For this purpose, we define such schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,
+\SBCMCom,\SBCMSign,\SBCMVerify)$. Algorithm $\SBCMparm \gets
+\SBCMSetup(\SBCMsecpar)$ produces the public parameters for the scheme.
+$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a verification-signing
+key pair. $\SBCMsig/\bot \gets\langle \SBCMCom(\SBCMvk,\overline{smsg},\smsg),
+\SBCMSign(\SBCMsk,\smsg) \rangle$ is an interactive protocol between a user, who
+runs \SBCMCom and has a set of messages $\overline{\smsg}$ to be block-committed,
+and a signer, who owns signing key \SBCMsk; both also receive common input a
+block of messages \smsg. The output of the protocol is a signature over
+$\overline{\smsg} \cup \smsg$. Algorithm $1/0 \gets \SBCMVerify(\SBCMvk,
+\SBCMsig,\widetilde{\smsg})$ verifies a signature \SBCMsig over message set
+$\widetilde{\smsg}$, which must contain both the messages that were signed as
+a block commitment as well as those signed in ``the clear''. In addition, the
+produced signatures must be compatible with (efficient) NIZK proofs of knowledge
+of a signature, and of (arbitrary) claims over the signed (committed) messages.
+An \SBCM scheme must provide \todo{one-more-forgery} type of security.
 
 \paragraph{Non-Interactive Zero-Knowledge.} %
 We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
-model \needcite. Informally, a NIZK scheme over an NP relation \NIZKRel is
-defined as a tuple $(\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel,
-\NIZKVerify^\NIZKRel)$. Algorithm $\NIZKcrs \gets \NIZKSetup^\NIZKRel
-(\NIZKsecpar)$ produces the common reference string \NIZKcrs. $\NIZKproof/\bot
-\gets \NIZKProve^\NIZKRel(\NIZKcrs,\NIZKw,\NIZKx)$ creates a NIZK proof of
-knowledge of witness \NIZKw for \NIZKx such that $(\NIZKw,\NIZKx) \in \NIZKRel$.
-$1/0 \gets \NIZKVerify^\NIZKRel(\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof.
-\todo{Informally define security properties we'll need.}
-
-\paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
-We use signature schemes that allow signing messages, or commitments to messages,
-in blocks, and are compatible with (efficient) proof systems over the produced
-signature and signed (commitments to) messages. For this purpose, we define such
-schemes as a tuple $(\SBCMSetup,\SBCMKeyGen,\SBCMSign,\SBCMVerify)$. Algorithm
-$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$ produces the public parameters for the
-scheme. $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$ produces a
-verification-signing key
-pair. Algorithm $\SBCMsig \gets \SBCMSign(\SBCMsk,\Ccom,\msgset)$ produces a
-signature over a set of committed messages \Ccom and a set of messages
-\msgset, where either \Ccom or \msgset may be empty. $1/0 \gets
-\SBCMVerify(\SBCMvk,\SBCMsig,\overline{\msgset})$ verifies a signature \SBCMsig
-over message set $\overline{\msgset}$, which must contain both the messages that
-were signed as commitments as well as those signed in ``the clear''. In
-addition, the produced signatures must be compatible with (efficient) NIZK
-proofs of knowledge of a signature, and of (arbitrary) claims over the signed
-(committed) messages.
-\todo{Informally define security properties we'll need.}
+model. Informally, a NIZK scheme over an NP relation \NIZKRel is defined as a
+tuple $(\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel,\NIZKVerify^\NIZKRel)$.
+Algorithm $\NIZKcrs \gets \NIZKSetup^\NIZKRel(\NIZKsecpar)$ produces the common
+reference string \NIZKcrs. $\NIZKproof/\bot \gets \NIZKProve^\NIZKRel(\NIZKcrs,
+\NIZKx,\NIZKw)$ creates a NIZK proof of knowledge of witness \NIZKw for \NIZKx
+such that $(\NIZKw,\NIZKx) \in \NIZKRel$. $1/0 \gets \NIZKVerify^\NIZKRel
+(\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof. Within NIZK systems, we
+further need schemes that provide simulation-extractability, which in a nutshell
+means that no adversary can produce a proof from which we cannot extract a
+witness, even after seeing polynomially many simulated proofs. To model
+simulation-extractable NIZKs, we further need algorithms \NIZKSimSetup,
+\NIZKSim, and \NIZKExtract, that allow simulating proofs and extracting
+witnesses. The properties we build on are completeness, soundness,
+zero-knowledgeness, and simulation-extractability.
 
 \subsection{Notation}
 \label{ssec:notation}

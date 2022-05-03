@@ -1,13 +1,23 @@
 \subsection{\GSACGen: A Generic Construction for \GSAC}
 \label{ssec:generic-gsac}
 
-\todo{Do we mention earlier that GSAC only supports selective disclosure?}
+In a nutshell, our generic \GSAC construction leverages a signature scheme
+on blocks of (committed) messages, where each message to be signed is an
+attribute in the produced credential; with the exception of the user secret key,
+which is treated as a special attribute. Moreover, the user secret key is also
+the only ``attribute'' signed in committed form, to prevent the issuer from
+learning it. On top of that, we make use of NIZKs to: (1) during credential
+issuance, have users prove knowledge of the secret key; (2) during signing,
+have users prove knowledge of the user secret key, unrevealed attributes, and
+a credential including all (revealed and unrevealed) attributes; and (3), during
+open, to have the opener prove correctness of the decryption of the user
+``public'' key. Concerning the user public keys, they are mere commitments to
+the user secret key (with $0$ as randomness -- although could be any fixed
+value), that serve to univocally identify a user, without revealing its secret
+key.
 
-\subsubsection{Definition}
-\label{sssec:generic-gsac-definition}
-
-In the following algorithms, we make use of three different NP relations for
-\NIZK proof systems:
+In more detail, in the following algorithms, we make use of three different NP
+relations for \NIZK proof systems:
 
 \begin{description}
 \item[$\NIZKRel_{\Issue}$:] Produced by users requesting a credential. It is
@@ -24,7 +34,8 @@ In the following algorithms, we make use of three different NP relations for
   \msg = \EDec(\osk,\Ec) \rbrace$.
 \end{description}
 
-In a nutshell \todo{describe high-level approach}.
+With the help of those \NIZK proof systems, we build the algorithms for
+\GSACGen as follows:
 
 \paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
 Sets up the public parameters. Namely: $\Cparm \gets \CSetup(\secpar)$, $\Eparm
@@ -54,12 +65,14 @@ Generates users' key pairs by choosing a random value within the attribute space
 
 \paragraph{$\langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle
   \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.} %
-In a nutshell, the user commits to a random credential identifier, and requests
-a signature over commitments of its user secret key and credential identifier,
-as well as the attributes in \Attrs. The user proves knowledge of the committed
-values, and the issuer sends the signature (credential) in return. More
-concretely:
+In a nutshell, the user requests a signature over a commitment of its user
+secret key, as well as the attributes in \Attrs. The user proves knowledge of
+the committed value, and the issuer sends the signature (credential) in return.
+More concretely:
 
+\todo{This is not consistent with the $\langle \SBCMCom,\SBCMSign \rangle$
+  definition...}
+  
 \begin{itemize}
 \item \underline{User}: Commit to the user secret key by running $\Ccom \gets
   \CCommit(\usk)$. Generate proof $\NIZKproof \gets

@@ -149,20 +149,41 @@ compares sets $\msgset_0$ and $\msgset_1$, which must differ in at least one
 element. This extension is straight-forward, for instance, from Pedersen
 commitments \cite{bcc+15}.
 
+\subsection{Signatures over Blocks of Messages}
+\label{sapp:sbm}
+
+\todo{Intro to \SBM (CL,BBS+,PS...)}
+
 \subsection{Signatures over Blocks of Committed Messages}
 \label{sapp:sbcm}
 
-\todo{Formal models on signatures over blocks of committed messages? I'm just
-  informally stating a model here, but there must be some more formal
-  reference... \cite{cl02,asm06,ps16} all kind of allow signatures on blocks of
-  (committed) messages, but they seem to use ad hoc models.}
+To the best of our knowledge, models of existing schemes for signing blocks of
+messages like \cite{cl02,asm06,ps16} target precisely the case of signing blocks
+of \emph{plain} messages, as described in \appref{sapp:sbm}. However, for our
+generic constructions, we need interactive signing protocols between a user
+and a signer, where the user has a block of messages to sign blindly, and both
+receive a common block of messages to be also included in the resulting
+signature. This is precisely the case of partially blind signatures, that
+collapse to blind signatures when there is no common message between user
+and signer; and to conventional signatures when the user does not input a
+message to be blindly signed \cite{ao00}. Partially blind signatures, as
+blind signatures \cite{ps96}, cannot be modelled with the conventional security
+against existential forgeries. Simply because the user is actually expected to
+be able to create signatures on messages unknown to the signer, which formally
+translates into the impossibility to check whether a signature output by the
+adversary is over a message that has been queried to the signing oracle or not.
+Instead of using the conventional existential unforgeability property,
+(partially) blind signature schemes move to the ``one-more'' paradigm, which
+demands that no adversary can produce $n+1$ signatures after having interacted
+with the signing oracle at most $n$ times.
 
-We use signature schemes that allow signing messages and commitments to messages
-in blocks (\SBCM), and are also compatible with (efficient) proof systems over
-the produced signature and signed (commitments to) messages. Such schemes build
-on a predefined scheme for commitments on blocks of messages \C (see
-\secref{sapp:commitments}). The algorithms composing an \SBCM scheme are as
-follows:
+Informally, the mentioned \SBM schemes \cite{cl02,asm06,ps16} and related works
+\cite{cdl16b} \todo{check} describe ways to support signing committed blocks of
+messages. But do not give security models of the resulting construction, nor
+of course prove its security. As we aim at using this variant as a generic
+building block, we give a formal model of such extension, that we call
+Signatures over Blocks of Committed Messages (\SBCM), from a generic \SBM model.
+The algorithms composing an \SBCM scheme are as follows:
 
 \begin{description}
 \item[$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$.] It produces public parameters
@@ -176,22 +197,23 @@ follows:
   block-committed and then signed along with \smsg. The party running \SBCMSign
   controls the signing key \SBCMsk. As a result, both parties get signature
   \SBCMsig over $\smsg \cup \overline{\smsg}$.
-\item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\smsg)$.] Checks whether \SBCMsig
-  is a valid signature over the set of messages \smsg (independently on whether
-  the messages where signed as commitments or not), under verification key
-  \SBCMvk.
+\item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\widetilde{\smsg})$.] Checks
+  whether \SBCMsig is a valid signature over the set of messages
+  $\widetilde{\smsg}$ (independently on whether the messages where signed as
+  commitments or not), under verification key \SBCMvk.
 \end{description}
 
-In addition, we require that the produced signatures must be compatible with
-(efficient) NIZK proofs of knowledge of a signature, and of (arbitrary) claims
-over the signed (committed) messages.
+Note that these functionality is just a generalization of partially blind
+signature schemes, where both user and signer can produce signatures over
+blocks of (committed) messages. The correctness and security properties are
+then defined as follows.
 
 \paragraph{Correctness.} %
 Informally, an \SBCM scheme is correct if signatures generated between an honest
 party running \SBCMCom with message sets $\overline{\smsg}$ and \smsg, and an
 honest signer running \SBCMSign over \smsg, for honestly generated parameters
 and key pairs, results in a signature over $\smsg \cup \overline{\smsg}$ that is
-accepted by \SBCMVerify.
+accepted by \SBCMVerify. 
 
 \paragraph{Unforgeability.} %
 It must be unfeasible for an adversary to produce signatures over blocks of
@@ -247,7 +269,13 @@ parameter.
   \caption{Games for \SBCM schemes.}
 \end{figure}
 
-\todo{BBS+ is proven to have EUF, but nothing is said against OMF. Relationship?}
+Finally, in addition, we require that the produced signatures must be compatible
+with (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary)
+claims over the signed (committed) messages.
+
+\subsubsection{From EUF-secure \SBM schemes to OMF-secure \SBCM
+  schemes} %
+\todo{Describe and prove.}
 
 \subsection{Simulation-Extractable Non-Interactive Zero-Knowledge
   Proofs of Knowledge}
@@ -263,9 +291,9 @@ language, or \NIZKLang, for \NIZKRel. $\NIZKx \notin \NIZKLang$ means that
 there is no $\NIZKw$ such that $(\NIZKx,\NIZKw) \in \NIZKRel$.
 
 We use non-interactive zero-knowledge proofs of knowledge (NIZKPoK, or, for
-short, NIZK) over NP relations, in the Common Reference String (CRS) model
-\needcite. A NIZK system is a tuple $(\NIZKSetup,\NIZKProve,\NIZKVerify)$,
-defined as follows \cite{gos06}:
+short, NIZK) over NP relations, in the Common Reference String (CRS) model. A
+NIZK system is a tuple $(\NIZKSetup,\NIZKProve,\NIZKVerify)$, defined as follows
+\cite{gos06}:
 
 \begin{description}
 \item[$\NIZKcrs \gets \NIZKSetup(\NIZKsecpar)$.] Generates a CRS \NIZKcrs from

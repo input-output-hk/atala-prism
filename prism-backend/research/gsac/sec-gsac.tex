@@ -6,7 +6,9 @@
   in \Open, but without needing \trans as a parameter to \Open (for compatibility
   with \UAS). This can be done by encrypting all attributes, including their
   ciphertext in the signature, and proving they are part of the credential. This
-  would render the scheme too costly, but helps in arguing in favour of \UAS.}
+  would render the scheme too costly, but helps in arguing in favour of \UAS.
+  Still, leaving that for after having updated the \UAS section, to see how
+  it fits the global picture.}
 
 Before moving into our full-fledged scheme for universal anonymous signatures,
 we take a first step which, albeit somehow obvious and simple, helps understand
@@ -35,7 +37,7 @@ that such a combination:
   means to retrieve such information.
 \end{itemize}
 
-\paragraph{Intuition of our design and construction.} %
+\paragraph{Intuition for our design and construction.} %
 Functionally, we combine both worlds. Namely, a user can get as many credentials
 as s/he wants -- although all are tied to the same user key --, and signatures
 (or credential presentations) of the same credential must be unlinkable. In this
@@ -51,20 +53,23 @@ credential used to produce them, beyond the revealed attributes. For this first
 step, security-wise we stick to the conventional separation of
 unforgeability-related properties in group signatures. That is, traceability
 requires that, in the presence of an honest issuer, all valid signatures must
-originate from a credential issued by the issuer; and, moreover, that no
-user can claim having attributes that have not been issued to a single
-credential. As in group signatures, if the issuer is corrupt, all we can hope
-for is that honest users do not get undeserved blame; but, other than that,
-the adversary can obviously obtain credentials with arbitrary attributes. Still,
-note that this is a clear gain with respect to conventional anonymous credential
-systems, which offer no security against a malicious issuer.
-
+originate from a credential issued by the issuer; and, from the AC domain, we
+import the requirement that no user can claim having attributes that have not
+been issued to a single credential. As in group signatures, if the issuer is
+corrupt, all we can hope for is that honest users do not get undeserved blame;
+but, other than that, the adversary can obviously obtain credentials with
+arbitrary attributes. Still, note that this is a clear gain with respect to
+conventional anonymous credential systems, which offer no security against a
+malicious issuer.
+%
 Finally, in this first step, we restrict ourselves to signatures/presentations
-involving only one credential and, as stated, to selective attribute disclosure.
+involving only one credential, to a system with only one issuer and opener  and,
+as stated, to selective attribute disclosure.
 
 \input{model-gsac.tex}
 \input{construction-gsac.tex}
 \input{security-gsac.tex}
+\input{extensions-gsac.tex}
 
 %%% Local Variables:
 %%% mode: latex

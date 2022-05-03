@@ -275,6 +275,36 @@
   \qed
 \end{proof}
 
+\subsubsection{\GSAC with Interactive Presentations}
+\label{ssap:interactive-gsac}
+
+Next, we sketch proofs of security for the case of \GSAC with interactive
+presentations like in the case of anonymous credentials.
+
+\paragraph{Anonymity.} To see why the interactive variant is anonymous, assume
+an adversary $\adv$ against anonymity in that case. We build \advB against the
+non-interactive \ExpGSACAnonb as follows. \advB initializes everything as in the
+\ExpGSACAnonb game. When $\adv$ initiates a call to its interactive \SIGN (resp.
+\CHALb) oracle, \advB picks a random number, and sends it to the adversary,
+along with the response of its own (non-interactive) \SIGN (resp. \CHALb)
+oracle where, to the message passed as parameter to its oracle, concatenates the
+produced random number. After such simulation, \advB just outputs whatever
+$\adv$ outputs. Clearly, the simulation is perfect and, if $\adv$ wins with
+non-negligible probability in the interactive case, then so does \advB in the
+non-interactive case.
+
+\paragraph{Traceability.} The simulation described for the anonymity case (i.e.,
+\advB choosing the random numbers, and concatenating them to the message to be
+signed) applies here too. Thus, an adversary against traceability in the
+interactive case, can be used to build an adversary that breaks traceability in
+the non-interactive counterpart.
+
+\paragraph{Non-frameability.} The simulation described for the anonymity case
+(i.e., \advB choosing the random numbers, and concatenating them to the message
+to be signed) applies here too. Thus, an adversary against non-frameability in
+the interactive case, can be used to build an adversary that breaks
+non-frameability in the non-interactive counterpart. 
+
 \subsection{Concrete Instantiation with BBS+}
 \label{sapp:gsac-instantiation}
 

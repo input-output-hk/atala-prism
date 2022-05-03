@@ -1,9 +1,55 @@
 \section{From \GSAC to \UAS}
 \label{sec:uas}
 
-\todo{Some intro here}
+\GSAC is a very interesting exercise that showcases the advantages of direct
+combination of group signatures and anonymous credentials. However, it also
+inherits a main limitation: it is too strict in regards to the utility it
+offers. The most excruciating example of this fact is that in \GSAC, via \Open,
+one can only get the actual identity of the signer. Even though with the inclusion
+of attributes the concept of ``identity'' can now be meaningfully defined, we
+may not want to fully de-anonymize the signer. Instead, we may be interested in
+revealing arbitrary functions of its identity and the signed message. Also, for
+the sake of illustation, we restricted to the case of selective disclosure, and
+to only one credential per signature. Then, the natural question is whether we
+can model an extension to \GSAC that is compatible both with constructions with
+that support selective disclosure, and with constructions that support arbitrary
+claims on the
+credential attributes; and, as it is also common in the anonymous credentials
+(or verifiable credentials \needcite) domains, to allow credential holders to
+combine multiple credentials into one signature/presentation. Similarly, we can
+also generalize \GSAC by allowing users to leverage previously obtained
+credentials in order to obtain new ones; possibly, applying arbitrary issuance
+policies. In a nutshell, our generalization of \GSAC into Universal Anonymous
+Signatures (\UAS), enables:
 
-\todo{Concept of ``group'' is blurred in \UAS.}
+\begin{itemize}
+\item Using previously obtained credentials to request new ones, applying
+  arbitrary policies to the credentials involved in the request, in
+  order to determine whether the new issuance should proceed or not.
+\item Modulating the type of utility one wants to get directly from signatures.
+  That is, let signatures disclose a subset of the attributes in the credentials
+  involved in the signing process, prove arbitrary claims over those attributes,
+  or even reveal absolutely nothing at all beyond that that an owner of a valid
+  credential created the signature.
+\item Defining arbitrary de-anonymization functions, over the signer's
+  credentials and signed message. This can range from producing the user public
+  key (as in group signatures), to disallowing any kind of de-anonymization,
+  passing through any intermediate de-anonymization function, like revealing
+  the nationality of the signer, or its banking account number, even if this
+  was not revealed at the signing stage.
+\end{itemize}
+
+Furthermore, to make the concept more flexible, we no longer restrict to the
+case of one issuer and one opener. Instead, \UAS supports multiple issuers (as
+in generalized variants of anonymous credentials), as well as multiple openers,
+each one with a predefined inspection function. Thus, it supports use cases like
+having a user produce a signature with credentials obtained from issuers A and
+B, which can be inspected by opener C; but later use the same credentials
+from issuers A and B, to produce a signature that can be inspected by opener D.
+A consequence of this is that the concept of ``group'', which was very present
+in \GSAC, is now blurred in \UAS, and we get closer to the context of anonymous
+credentials -- while still offering the accountability we inherit from \GSAC
+via \Open and \Judge.
 
 \input{model-uas.tex}
 \input{construction-uas.tex}
