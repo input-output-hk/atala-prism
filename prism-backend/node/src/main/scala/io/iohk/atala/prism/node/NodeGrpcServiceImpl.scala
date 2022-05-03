@@ -232,15 +232,35 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
     val methodName = "getNodeBuildInfo"
 
     measureRequestFuture(serviceName, methodName)(
+      trace { _ =>
+        Future
+          .successful(
+            node_api
+              .GetNodeBuildInfoResponse()
+              .withVersion(BuildInfo.version)
+              .withScalaVersion(BuildInfo.scalaVersion)
+              .withSbtVersion(BuildInfo.sbtVersion)
+          )
+      }
+    )
+  }
+
+  /** * PUBLIC
+    *
+    * Retrieves the Network Protocol info.
+    */
+  override def getNodeNetworkProtocolInfo(
+      request: GetNodeNetworkProtocolInfoRequest
+  ): Future[GetNodeNetworkProtocolInfoResponse] = {
+    val methodName = "getNodeNetworkProtocolInfo"
+
+    measureRequestFuture(serviceName, methodName)(
       trace { traceId =>
         val query =
           for {
             currentProtocolVersion <- nodeService.getCurrentProtocolVersion
           } yield node_api
-            .GetNodeBuildInfoResponse()
-            .withVersion(BuildInfo.version)
-            .withScalaVersion(BuildInfo.scalaVersion)
-            .withSbtVersion(BuildInfo.sbtVersion)
+            .GetNodeNetworkProtocolInfoResponse()
             .withSupportedNetworkProtocolVersion(SUPPORTED_VERSION.toProto)
             .withCurrentNetworkProtocolVersion(currentProtocolVersion.toProto)
 
