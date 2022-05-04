@@ -44,7 +44,7 @@ Each user, prior to requesting credentials, generates his secret key by parsing
 $\usk \getr \AttrSpace$. Finally, return \usk.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\upk,\sipk,\attrs)\rangle$.} %
+  \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle$.} %
 The protocol is run between an issuer, and a user with secret key \usk and
 credentials \scred, where each $\cred \in \scred$ is issued by an issuer with
 public key $\ipk_{\cred}$ (which we assume that the user can easily retrieve,
@@ -60,8 +60,12 @@ and its user secret key. For this, we define relation $\NIZKRel_{\Issue} = \lbra
 \fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in \scred,
 \SBCMVerify(\ipk_{\cred},\cred,
 \attrs_{\cred} \cup \lbrace \usk \rbrace) = 1 \rbrace$. The interactive protocol
-for a user to obtain a credential from an issuer of the system is as follows:
+for a user to obtain a credential from an issuer of the system is then simply an
+execution of the interactive signing protocol of an \SBCM scheme, where the user
+runs $\SBCMCom(\ipk,\usk,\attrs)$, and the issuer runs $\SBCMSign(\isk,\attrs)$;
+in both cases, using $\NIZKRel_{\Issue}$ as \NIZK relation.
 
+\iffalse
 \begin{itemize}
 \item \uline{User}: Commit to the user secret key with $\Ccom \gets
   \CCommit(\usk)$. Compute proof $\NIZKproof \gets
@@ -76,6 +80,7 @@ for a user to obtain a credential from an issuer of the system is as follows:
   \attrs \cup \lbrace \usk \rbrace)$. Reject if verification fails.
   Otherwise, return \cred.
 \end{itemize}
+\fi
 
 \paragraph{$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
 In the signing algorithm, we make use of the following relation:

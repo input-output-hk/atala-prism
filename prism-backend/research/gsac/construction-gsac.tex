@@ -68,7 +68,12 @@ Generates users' key pairs by choosing a random value within the attribute space
 In a nutshell, the user requests a signature over a commitment of its user
 secret key, as well as the attributes in \Attrs. The user proves knowledge of
 the committed value, and the issuer sends the signature (credential) in return.
-More concretely:
+This is directly an execution of the interactive signing protocol of an \SBCM
+scheme, in which the user parses \gpk as $(\ipk,\opk)$ and runs $\SBCMCom(\ipk,
+\usk,\Attrs)$, and the issuer runs $\SBCMSign(\isk,\Attrs)$; in both cases,
+using $\NIZKRel_{\Issue}$ as \NIZK relation.
+
+\iffalse
 
 \todo{This is not consistent with the $\langle \SBCMCom,\SBCMSign \rangle$
   definition...}
@@ -86,6 +91,7 @@ More concretely:
   \SBCMsig,\Attrs \cup \lbrace \usk \rbrace)$, and return $\bot$ if
   verification fails. Otherwise, return $\cred \gets \SBCMsig$.
 \end{itemize}
+\fi
 
 \paragraph{$\Sign(\gpk,\usk,\cred,\DAttrs,\msg) \rightarrow \sig$.} %
 Commit to the message and recompute the user public key by running

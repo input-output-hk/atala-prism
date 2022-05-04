@@ -149,134 +149,6 @@ compares sets $\msgset_0$ and $\msgset_1$, which must differ in at least one
 element. This extension is straight-forward, for instance, from Pedersen
 commitments \cite{bcc+15}.
 
-\subsection{Signatures over Blocks of Messages}
-\label{sapp:sbm}
-
-\todo{Intro to \SBM (CL,BBS+,PS...)}
-
-\subsection{Signatures over Blocks of Committed Messages}
-\label{sapp:sbcm}
-
-To the best of our knowledge, models of existing schemes for signing blocks of
-messages like \cite{cl02,asm06,ps16} target precisely the case of signing blocks
-of \emph{plain} messages, as described in \appref{sapp:sbm}. However, for our
-generic constructions, we need interactive signing protocols between a user
-and a signer, where the user has a block of messages to sign blindly, and both
-receive a common block of messages to be also included in the resulting
-signature. This is precisely the case of partially blind signatures, that
-collapse to blind signatures when there is no common message between user
-and signer; and to conventional signatures when the user does not input a
-message to be blindly signed \cite{ao00}. Partially blind signatures, as
-blind signatures \cite{ps96}, cannot be modelled with the conventional security
-against existential forgeries. Simply because the user is actually expected to
-be able to create signatures on messages unknown to the signer, which formally
-translates into the impossibility to check whether a signature output by the
-adversary is over a message that has been queried to the signing oracle or not.
-Instead of using the conventional existential unforgeability property,
-(partially) blind signature schemes move to the ``one-more'' paradigm, which
-demands that no adversary can produce $n+1$ signatures after having interacted
-with the signing oracle at most $n$ times.
-
-Informally, the mentioned \SBM schemes \cite{cl02,asm06,ps16} and related works
-\cite{cdl16b} \todo{check} describe ways to support signing committed blocks of
-messages. But do not give security models of the resulting construction, nor
-of course prove its security. As we aim at using this variant as a generic
-building block, we give a formal model of such extension, that we call
-Signatures over Blocks of Committed Messages (\SBCM), from a generic \SBM model.
-The algorithms composing an \SBCM scheme are as follows:
-
-\begin{description}
-\item[$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$.] It produces public parameters
-  for the other algorithms, given an input security parameter \Ssecpar.
-\item[$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.] Generates a
-  verification-signing key pair.
-\item[$\SBCMsig/\bot \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg},\smsg),
-  \SBCMSign(\SBCMsk,\smsg) \rangle$.] An interactive protocol between two
-  parties with shared input a block of messages \smsg. The party running
-  \SBCMCom further knows a set of messages $\overline{\smsg}$ to be
-  block-committed and then signed along with \smsg. The party running \SBCMSign
-  controls the signing key \SBCMsk. As a result, both parties get signature
-  \SBCMsig over $\smsg \cup \overline{\smsg}$.
-\item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\widetilde{\smsg})$.] Checks
-  whether \SBCMsig is a valid signature over the set of messages
-  $\widetilde{\smsg}$ (independently on whether the messages where signed as
-  commitments or not), under verification key \SBCMvk.
-\end{description}
-
-Note that these functionality is just a generalization of partially blind
-signature schemes, where both user and signer can produce signatures over
-blocks of (committed) messages. The correctness and security properties are
-then defined as follows.
-
-\paragraph{Correctness.} %
-Informally, an \SBCM scheme is correct if signatures generated between an honest
-party running \SBCMCom with message sets $\overline{\smsg}$ and \smsg, and an
-honest signer running \SBCMSign over \smsg, for honestly generated parameters
-and key pairs, results in a signature over $\smsg \cup \overline{\smsg}$ that is
-accepted by \SBCMVerify. 
-
-\paragraph{Unforgeability.} %
-It must be unfeasible for an adversary to produce signatures over blocks of
-messages that have not been signed (in plain, or committed shape) by the
-signer. More formally, an \SBCM scheme is unforgeable if, for all p.p.t.
-adversaries $\adv$, $\Pr[\ExpSBCMOMF(\SBCMsecpar) = 1]$, as defined in
-\figref{fig:sbcm-games}, is a negligible function of the security parameter.
-Note that this follows the ``one-more-forgery'' type of definition of blind
-signatures \cite{bold02}.
-
-\paragraph{Blindness.} %
-Finally, the signer must not learn the plaintext values of the messages that are
-signed in committed form. Note that this is a weaker notion than the usual
-blindness property of blind signature schemes, where it is required that the
-adversary cannot link a signature to the signing process that produced it.
-Formally, blindness for \SBCM schemes is defined as in \ExpSBCMBlindb in
-\figref{fig:sbcm-games}. An \SBCM scheme is blind if, for all p.p.t.
-adversaries $\adv$, $|\Pr[\ExpSBCMBlindo(\SBCMsecpar) = 1] -
-\Pr[\ExpSBCMBlindz(\SBCMsecpar) = 1]|$ is a negligible function of the security
-parameter.
-
-\begin{figure}[ht!]
-  \begin{minipage}[t]{\textwidth}
-    \centering
-    
-    \procedure{$\ExpSBCMOMF(\SBCMsecpar)$}{%
-      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
-      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
-      ((\sig_1,\smsg_1),\dots,(\sig_{n+1},\smsg_{n+1})) \gets
-      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
-      \pcif \exists i \in [n+1]~\st~\SBCMVerify(\SBCMvk,\sig_i,\smsg_i) = 0:
-      \pcreturn 0 \\
-      \pcif \exists i \neq j \in [n+1]~\st~\smsg_i = \smsg_j: \pcreturn 0 \\
-      \pcif \langle \cdot, \SBCMSign(\SBCMsk,\cdot)\rangle~
-      \textrm{was called more than $k$ times}: \pcreturn 0 \\
-      \pcreturn 1 \\
-    }
-    
-    \procedure{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
-      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
-      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
-      (\overline{\smsg}_0,\overline{\smsg}_1,\smsg) \gets
-      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
-      \csig \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg}_b,\smsg),
-      \SBCMSign(\SBCMsk,\smsg) \rangle \\
-      b^* \gets \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk,
-      \csig) \\
-      \pcif b = b^*: \pcreturn 1 \\
-      \pcreturn 0
-    }
-  \end{minipage}
-  \label{fig:sbcm-games}
-  \caption{Games for \SBCM schemes.}
-\end{figure}
-
-Finally, in addition, we require that the produced signatures must be compatible
-with (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary)
-claims over the signed (committed) messages.
-
-\subsubsection{From EUF-secure \SBM schemes to OMF-secure \SBCM
-  schemes} %
-\todo{Describe and prove.}
-
 \subsection{Simulation-Extractable Non-Interactive Zero-Knowledge
   Proofs of Knowledge}
 \label{sapp:nizk}
@@ -434,6 +306,260 @@ while proving arbitrary claims, as long as they can be represented as an NP
 relation. We note that, given a simulation-extractable NIZK system, it is
 straightforward to build a signature of knowledge by adding the message to be
 signed in the statement of the NIZK.
+
+\iffalse
+\subsection{Signatures over Blocks of Messages}
+\label{sapp:sbm}
+
+A signature scheme on blocks of messages (\SBM) allows a signer to create a
+single signature over a set of messages. The resulting signature is typically
+more concise than just creating multiple signatures, and typical schemes
+\cite{cl02,asm06,ps16} are additionally compatible with efficient proof
+protocols over the signed messages. The functionality offered by an \SBM scheme
+is as follow:
+
+\begin{description}
+\item[$\SBMparm \gets \SBMSetup(\SBMsecpar)$.] It produces public parameters
+  for the other algorithms, given an input security parameter \SBMsecpar.
+\item[$(\SBMvk,\SBMsk) \gets \SBMKeyGen(\SBMparm)$.] Generates a
+  verification-signing key pair.
+\item[$\SBMsig \gets \SBMSign(\SBMsk,\smsg)$.] Produces a signature \sig, over
+  a block of messages \smsg, using signing key \SBMsk.
+\item[$1/0 \gets \SBMVerify(\SBMvk,\SBMsig,\widetilde{\smsg})$.] Checks
+  whether \SBMsig is a valid signature over the set of messages \smsg, under
+  verification key \SBMvk.
+\end{description}
+
+An \SBM scheme must satisfy correctness and unforgeability properties.
+
+\paragraph{Correctness.} %
+Informally, an \SBM scheme is correct if signatures generated between an honest
+party running running \SBMSign over \smsg, for honestly generated parameters
+and key pairs, results in a signature over $\smsg \cup \overline{\smsg}$ that is
+accepted by \SBMVerify.
+
+\paragraph{Unforgeability.} %
+It must be unfeasible for an adversary to produce signatures over blocks of
+messages that have not been signed by the signer. More formally, an \SBM scheme
+is unforgeable if, for all p.p.t. adversaries $\adv$, $\Pr[\ExpSBMEUF
+(\SBMsecpar) = 1]$, as defined in \figref{fig:sbm-games}, is a negligible
+function of the security parameter. 
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{\textwidth}
+    \centering    
+    \procedure{$\ExpSBMEUF(\SBMsecpar)$}{%
+      \SBMparm \gets \SBMSetup(\SBMsecpar) \\
+      (\SBMvk,\SBMsk) \gets \SBMKeyGen(\SBMparm) \\
+      (\SBMsig,\smsg) \gets \adv^{\SSign(\SBMsk,\cdot)}(\SBMvk) \\
+      \pcif \SBMVerify(\SBMvk,\SBMsig,\smsg) = 0: \pcreturn 0 \\
+      \pcif \smsg~\textrm{was not queried to \SBMSign}: \pcreturn 1 \\
+      \pcreturn 0
+    }
+  \end{minipage}
+  \label{fig:sbm-games}
+  \caption{Unforgeability game for \SBM schemes.}
+\end{figure}
+\fi
+
+\subsection{Signatures over Blocks of Committed Messages}
+\label{sapp:sbcm}
+
+For our generic constructions, we use interactive signing protocols between a
+user and a signer, where the user has a block of messages to sign blindly, and
+both receive a common block of messages to be also included in the resulting
+signature. This is precisely the case of partially blind signatures, that
+collapse to blind signatures when there is no common message between user
+and signer; and to conventional signatures when the user does not input a
+message to be blindly signed \cite{ao00}. Partially blind signatures, as
+blind signatures \cite{ps96}, cannot be modelled with the conventional security
+against existential forgeries. Simply because the user is actually expected to
+be able to create signatures on messages unknown to the signer, which formally
+translates into the impossibility to check whether a signature output by the
+adversary is over a message that has been queried to the signing oracle or not.
+Thus, instead of using the conventional existential unforgeability property,
+(partially) blind signature schemes move to the ``one-more'' paradigm, which
+demands that no adversary can produce $n+1$ distinct signatures after having
+interacted with the signing oracle at most $n$ times.
+
+To the best of our knowledge, models of existing schemes for signing blocks of
+messages like \cite{cl02,asm06,ps16,cdl16b} target the case of signing blocks
+of \emph{plain} messages, and are subsequently informally extended to support
+signing commitments to blocks of messages via interactive protocols. However,
+they do not support signing both committed and plain messages (although the
+extension is trivial); and, more importantly, do not give security models of
+the resulting construction, nor of course prove its security. While the
+extension seems straightforward, the modelling needs to be changed due to the
+mentioned nuance of the conventional EUF notion not being compatible with
+interactive signing protocols where the signer does not learn (some of) the
+signed message(s). As we aim at using this variant as a generic building block,
+we briefly model such a scheme for Signatures over Blocks of Committed Messages
+(\SBCM).
+
+The syntax for an \SBCM scheme is as follows:
+
+\begin{description}
+\item[$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$.] It produces public parameters
+  for the other algorithms, given an input security parameter \SBCMsecpar.
+\item[$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.] Generates a
+  verification-signing key pair.
+\item[$\SBCMsig/\bot \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg},\smsg),
+  \SBCMSign(\SBCMsk,\smsg) \rangle$.] An interactive protocol between two
+  parties with shared input a block of messages \smsg. The party running
+  \SBCMCom further knows a set of messages $\overline{\smsg}$ to be
+  block-committed and then signed along with \smsg. The party running \SBCMSign
+  controls the signing key \SBCMsk. As a result, both parties get signature
+  \SBCMsig over $\smsg \cup \overline{\smsg}$.
+\item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\overline{\smsg},\smsg)$.] Checks
+  whether \SBCMsig is a valid signature over the set of messages
+  $\overline{\smsg}$ and \smsg, under verification key \SBCMvk.
+\end{description}
+
+Note that these functionality is just a generalization of partially blind
+signature schemes, where both user and signer can produce signatures over
+blocks of (committed) messages. The correctness and security properties are
+then defined as follows.
+
+\paragraph{Correctness.} %
+Informally, an \SBCM scheme is correct if signatures generated between an honest
+party running \SBCMCom with message sets $\overline{\smsg}$ and \smsg, and an
+honest signer running \SBCMSign over \smsg, for honestly generated parameters
+and key pairs, results in a signature over $\overline{\smsg}$ and \smsg that is
+accepted by \SBCMVerify. 
+
+\paragraph{Unforgeability.} %
+It must be unfeasible for an adversary to produce signatures over blocks of
+messages that have not been signed (in plain, or committed shape) by the
+signer. More formally, an \SBCM scheme is unforgeable if, for all p.p.t.
+adversaries $\adv$, $\Pr[\ExpSBCMOMF(\SBCMsecpar) = 1]$, as defined in
+\figref{fig:sbcm-games}, is a negligible function of the security parameter.
+Note that this follows the ``one-more-forgery'' type of definition of blind
+signatures \cite{bold02}.
+
+\paragraph{Blindness.} %
+Finally, the signer must not learn the plaintext values of the messages that are
+signed in committed form. Note that this is a weaker notion than the usual
+blindness property of blind signature schemes, where it is required that the
+adversary cannot link a signature to the signing process that produced it.
+Formally, blindness for \SBCM schemes is defined as in \ExpSBCMBlindb in
+\figref{fig:sbcm-games}. An \SBCM scheme is blind if, for all p.p.t.
+adversaries $\adv$, $|\Pr[\ExpSBCMBlindo(\SBCMsecpar) = 1] -
+\Pr[\ExpSBCMBlindz(\SBCMsecpar) = 1]|$ is a negligible function of the security
+parameter.
+
+\begin{figure}[ht!]
+  \begin{minipage}[t]{\textwidth}
+    \centering
+    
+    \procedure{$\ExpSBCMOMF(\SBCMsecpar)$}{%
+      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
+      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
+      ((\sig_1,\overline{\smsg}_1, \smsg_1),\dots,
+      (\sig_{n+1},\overline{\smsg}_{n+1},\smsg_{n+1})) \gets
+      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
+      \pcif \exists i \in [n+1]~\st~\SBCMVerify(\SBCMvk,\sig_i,
+      \overline{\smsg}_i,\smsg_i) = 0: \pcreturn 0 \\
+      \pcif \exists i \neq j \in [n+1]~\st~\smsg_i = \smsg_j \land
+      \overline{\smsg}_i = \overline{\smsg}_j: \pcreturn 0 \\
+      \pcif \langle \cdot, \SBCMSign(\SBCMsk,\cdot)\rangle~
+      \textrm{was called more than $k$ times}: \pcreturn 0 \\
+      \pcreturn 1 \\
+    }
+    
+    \procedure{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
+      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
+      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
+      (\overline{\smsg}_0,\overline{\smsg}_1,\smsg) \gets
+      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
+      \csig \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg}_b,\smsg),
+      \SBCMSign(\SBCMsk,\smsg) \rangle \\
+      b^* \gets \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk,
+      \csig) \\
+      \pcif b = b^*: \pcreturn 1 \\
+      \pcreturn 0
+    }
+  \end{minipage}
+  \label{fig:sbcm-games}
+  \caption{Games for \SBCM schemes.}
+\end{figure}
+
+Finally, in addition, we require that the produced signatures must be compatible
+with (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary)
+claims over the signed (committed) messages.
+
+\subsection{An Instantiation of \SBCM with BBS+}
+
+Next, we give an instantiation of an \SBCM scheme, based on BBS+ signatures.
+We emphasize again that this is essentially equivalent to the protocol for
+signing committed block of messages in \cite{asm06} and, also, to the equivalent
+ones in \cite{cl02,ps16} (although not for BBS+ signatures). The main difference
+being that we allow merging committed blocks of messages and blocks of
+(plaintext) messages into the same signature.
+%
+Note also that, in our instantiation, we just include a generic \NIZK, for some
+relation over witness $\overline{\smsg}$ (i.e., the messages to be blindly
+signed), and statement $(\Ccom,\smsg)$ (i.e., their block commitment, and the
+plainly signed messages). This is intentional, as we want to support cases where
+proving arbitrary predicates is possible (as opposed to ``just'' proving that
+the commitment is over the messages in $\overline{\smsg}$).
+%
+When we want to make explicit the relation over which the employed \NIZK is
+defined, we add a $\NIZKRel$ superscript to the algorithms.
+
+\paragraph{$\SBCMparm \gets \SBCMSetup(\SBCMsecpar,\nattrs,\tnattrs)$.} %
+Generates a bilinear group $\BB = (p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,e)
+\gets \PGen(\SBCMsecpar)$, and $\nattrs+\tnattrs+1$ additional generators
+$\gen{g}$, $\gen{h}_1,...,\gen{h}_{\nattrs}$,$\gen{\th}_1,...,\gen{\th}_{\tnattrs}$
+of $\GG_1$. Returns $\SBCMparm \gets (\SBCMsecpar,\nattrs,\tnattrs,\BB,
+\gen{g},\gen{h}_1,...,\gen{h}_{\nattrs},\gen{\th}_1,...,\gen{\th}_{\tnattrs})$.
+We assume that \SBCMparm is available to all other algorithms, even when not
+explicitly passed as an argument.
+
+\paragraph{$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.} %
+Parses \SBCMparm as $(\cdot,\cdot,(p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,e),
+\dots$ $\NIZKcrs \gets \NIZKSetup(\secpar)$. Outputs $\SBCMsk \gets \ZZ^*_p$,
+and $\SBCMvk \gets (\NIZKcrs,\gen{g}_2^{\SBCMsk})$.
+
+\paragraph{$\SBCMsig/\bot \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg},
+  \smsg), \SBCMSign(\SBCMsk,\smsg) \rangle$.} %
+
+\begin{itemize}
+\item \underline{User}: If $|\smsg|>\nattrs$ or $|\overline{\smsg}|>\tnattrs$,
+  abort. Else, fetch fresh randomness $r \getr \ZZ^*_p$, compute $\Ccom \gets
+  \gen{g}^r\prod_{i \in [|\overline{\smsg}|]}\gen{\th}_i^{\overline{\smsg}_i}$,
+  and $\NIZKproof \gets \NIZKProve(\NIZKcrs,(r,\overline{\smsg}),\Ccom)$.
+  Send $(\Ccom,\NIZKproof)$ to Issuer.
+\item \underline{Signer}: If $|\smsg|>\nattrs$, abort. Else, run $\NIZKVerify
+  (\NIZKcrs,\Ccom,\NIZKproof)$ and return $0$ if it fails. Else, compute
+  $x,\tilde{s} \getr \ZZ^*_p, A \gets (\gen{g}_1\Ccom \gen{g}^{\tilde{s}}
+  \prod_{i \in |\smsg|}\gen{h}_i^{\smsg_i})^{1/(\SBCMsk+x)}$. Send
+  $(A,x,\tilde{s})$ to User.
+\item \underline{User}: If $A = 1_{\GG_1}$: return $0$. Else, compute
+  $s \gets r + \tilde{s}$. If $e(A,\gen{g}_2)^xe(A,\SBCMvk) \neq
+  e(\gen{g}_1\Ccom\gen{g}^{\tilde{s}}\prod_{i \in |\smsg|}\gen{h}_i^{\smsg_i},
+  \gen{g}_2)$: return $0$. Else, return $(A,x,s)$.
+\end{itemize}
+
+\paragraph{$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\overline{\smsg},\smsg)$.} %
+To verify a signature \SBCMsig, for message set $\overline{\smsg}$ that was
+signed as a block commitment, and message set \smsg, signed as plaintext, parse
+\SBCMsig as $(A,x,s)$ and check if $e(A,\gen{g}_2^x\SBCMvk) =
+e(\gen{g}_1\gen{g}^s\prod_{i \in |\overline{\smsg}|}\gen{h}^{\overline{\smsg}_i}
+\prod_{i \in |\smsg|}\gen{h}^{\smsg_i},\gen{g}_2)$
+
+\paragraph{Proving Knowledge of Signature.} %
+Note that proving knowledge of a BBS+ signature as produced in our \SBCM variant
+is essentially the same as in \cite{asm06,cdl16b}, only needing to account for
+the different basis for messages signed in committed and plain form.
+
+\subsubsection{Security.} Next, we sketch that the given BBS+ interactive
+signing protocol is correct and OMF-secure.
+
+\paragraph{Correctness.} \todo{XXX}
+
+\paragraph{OMF security.} \todo{YYY}
+
+
 
 %%% Local Variables:
 %%% mode: latex
