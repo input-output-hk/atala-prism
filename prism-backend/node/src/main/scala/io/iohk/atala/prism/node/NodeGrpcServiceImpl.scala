@@ -12,6 +12,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.metrics.StatisticsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
@@ -71,7 +72,11 @@ class NodeGrpcServiceImpl(
     val methodName = "getAvailableMetrics"
 
     measureRequestFuture(serviceName, methodName) {
-      Future.successful(GetAvailableMetricsResponse(StatisticsService.METRICS))
+      Future.successful(
+        GetAvailableMetricsResponse(
+          StatisticsCounters.MetricCounter.lowerCaseNamesToValuesMap.keys.toList
+        )
+      )
     }
   }
 

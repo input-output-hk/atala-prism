@@ -7,6 +7,13 @@ import cats.effect.{MonadCancelThrow, Resource}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.errors
+import io.iohk.atala.prism.node.metrics.StatisticsCounters
+import io.iohk.atala.prism.node.metrics.StatisticsCounters.MetricCounter.{
+  NumberOfCredentialsRevoked,
+  NumberOfIssuedCredentialBatches,
+  NumberOfPendingOperations,
+  NumberOfPublishedDids
+}
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperation,
@@ -38,28 +45,27 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
     atalaOperationsRepository.getOperationsCount(AtalaOperationStatus.RECEIVED)
   }
 
-  def retrieveMetric(metricName: String): F[Either[errors.NodeError, Int]] = metricName match {
-    case "number-of-pending-operations" =>
-      getNumberOfPendingOperations
-    case "number-of-published-dids" =>
-      metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
-    case "number-of-issued-credential-batches" =>
-      metricsCountersRepository.getCounter(IssueCredentialBatchOperation.metricCounterName).map(Right(_))
-    case "number-of-credentials-revoked" =>
-      metricsCountersRepository.getCounter(RevokeCredentialsOperation.metricCounterName).map(Right(_))
-    case _ =>
-      Applicative[F].pure(Left(errors.NodeError.InvalidArgument(f"Metric $metricName does not exist")))
-  }
+  def retrieveMetric(metricNameStr: String): F[Either[errors.NodeError, Int]] =
+    StatisticsCounters.MetricCounter
+      .withNameLowercaseOnlyOption(metricNameStr)
+      .fold(
+        Applicative[F].pure[Either[errors.NodeError, Int]](
+          Left(errors.NodeError.InvalidArgument(f"Metric $metricNameStr does not exist"))
+        )
+      ) {
+        case NumberOfPendingOperations =>
+          getNumberOfPendingOperations
+        case NumberOfPublishedDids =>
+          metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
+        case NumberOfIssuedCredentialBatches =>
+          metricsCountersRepository.getCounter(IssueCredentialBatchOperation.metricCounterName).map(Right(_))
+        case NumberOfCredentialsRevoked =>
+          metricsCountersRepository.getCounter(RevokeCredentialsOperation.metricCounterName).map(Right(_))
+      }
+
 }
 
 object StatisticsService {
-
-  final val METRICS: List[String] = List(
-    "number-of-pending-operations",
-    "number-of-published-dids",
-    "number-of-issued-credential-batches",
-    "number-of-credentials-revoked"
-  )
 
   def make[I[_]: Functor, F[_]: MonadCancelThrow](
       atalaOperationsRepository: AtalaOperationsRepository[F],
