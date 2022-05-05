@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console.models
 
 import cats.data.NonEmptyList
 import derevo.derive
+import enumeratum.{DoobieEnum, Enum, EnumEntry}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -72,6 +73,19 @@ case class PublicationData(
     storedAt: Instant // the time when the publication data was stored in the database
 )
 
+sealed abstract class OperationStatus(value: String) extends EnumEntry {
+  override def entryName: String = value
+}
+object OperationStatus extends Enum[OperationStatus] with DoobieEnum[OperationStatus] {
+  lazy val values = findValues
+
+  final case object UknownOperation extends OperationStatus("UNKNOWN_OPERATION")
+  final case object PendingSubmission extends OperationStatus("PENDING_SUBMISSION")
+  final case object AwaitConfirmation extends OperationStatus("AWAIT_CONFIRMATION")
+  final case object ConfirmAndApplied extends OperationStatus("CONFIRMED_AND_APPLIED")
+  final case object ConfirmAndRejected extends OperationStatus("CONFIRMED_AND_REJECTED")
+}
+
 final case class GenericCredential(
     credentialId: GenericCredential.Id,
     issuedBy: ParticipantId,
@@ -86,7 +100,8 @@ final case class GenericCredential(
     connectionToken: ConnectionToken,
     publicationData: Option[PublicationData],
     sharedAt: Option[Instant],
-    revokedOnOperationId: Option[AtalaOperationId]
+    revokedOnOperationId: Option[AtalaOperationId],
+    revokedOnOperationStatus: Option[OperationStatus]
 )
 
 object GenericCredential {

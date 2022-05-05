@@ -41,6 +41,8 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.protos.common_models.OperationStatus.UNKNOWN_OPERATION
+import io.iohk.atala.prism.protos.node_api.GetOperationInfoResponse
 import io.iohk.atala.prism.protos.node_models.OperationOutput
 
 class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUtil {
@@ -116,10 +118,14 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
             )
           )
         }
+        nodeMock.getOperationInfo(*).returns {
+          Future.successful(GetOperationInfoResponse().withOperationStatus(UNKNOWN_OPERATION))
+        }
 
         val response = serviceStub.getGenericCredentials(request)
         response.credentials.size must be(1)
         response.credentials.head.revokedOnOperationId.toByteArray must be(mockRevocationOperationId.value.toArray)
+        response.credentials.head.revokedOnOperationStatus must be(UNKNOWN_OPERATION)
       }
     }
 
@@ -655,12 +661,16 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
             )
           )
         }
-
+        nodeMock.getOperationInfo(*).returns {
+          Future.successful(GetOperationInfoResponse().withOperationStatus(UNKNOWN_OPERATION))
+        }
         val response = serviceStub.getContactCredentials(request)
         response.genericCredentials.size must be(1)
         response.genericCredentials.head.revokedOnOperationId.toByteArray must be(
           mockRevocationOperationId.value.toArray
         )
+        response.genericCredentials.head.revokedOnOperationStatus must be(UNKNOWN_OPERATION)
+
       }
     }
   }
