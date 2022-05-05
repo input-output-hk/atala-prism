@@ -3,6 +3,34 @@
 
 \comment{This section is just a placeholder for now...}
 
+Some notes on future work, to expand/refine/remove:
+
+\begin{itemize}
+\item Add support for open functions over sets of previously issued signatures.
+  This would cover existing schemes like \cite{dl21}, and possibly cool cases
+  such as training AI models on private data, in a federated manner, without
+  revealing the identity of the node running the model.
+\item Currently, in \UAS, we need to restrict challenge users to present
+  credentials issued by the same set of issuers. Technically, I guess that this
+  could be done by making the issuers' public keys part of the witness (although,
+  at what cost?). But then, how would verifiers be able to determine whether
+  they trust the issuers of the credentials used to compute the signature? It
+  would be as if an employer has to accept a University degree, without knowing
+  which university issued it.  
+\item Potentially very cool improvement in the modelling: maybe we can leverage
+  a decentralized append-only bulletin board (so, a blockchain) to reduce trust
+  on the issuers (except identity proofing, we could probably eliminate it...)
+  That would be quite innovative, as in GS literature, the issuer has so far
+  alwasy been thought to be necessarily honest. (Disclaimer: this was Ezequiel's
+  suggestion!)
+\item The current syntax of \UAS does not seem to support blind issuance. This
+  would however be trivial to achieve by adding a set of attributes to be
+  blindly issued in the \Obtain algorithm, and then requiring that they are
+  validated in \fissue. In the generic construction, this would be directly
+  supported too, as a block of messages to be signed as part of the block
+  commitment.
+\end{itemize}
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "uas"

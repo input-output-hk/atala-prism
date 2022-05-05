@@ -35,7 +35,8 @@ On the other hand, by instantiating a \GSAC scheme and simply
 throwing out the opener's key pair (thus, making \Open and \Judge useless), one
 gets a vanilla anonymous credential system. Or, keeping \osk, one can build an
 anonymous credential system with blacklisting, which can be directly built via
-the \Open function.
+the \Open function -- although at the cost of fully de-anonymizing blacklisted
+credentials, which is much more invasive than just blacklisting.
 
 \todo{Can we do formal proofs here of $GSAC \implies$ GS and $GSAC \implies AC$?}
 

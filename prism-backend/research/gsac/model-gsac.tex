@@ -71,28 +71,28 @@ In the model described below, we follow closely the definitions from
 \item[$(\upk,\usk) \gets \UKeyGen(\parm)$.] Given global system parameters
   \parm, returns a user's key pair.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle \Obtain(\gpk,\usk,\Attrs),\Issue(\gpk,\isk,\Attrs) \rangle$.]
+  \langle \Obtain(\gpk,\usk,\attrs),\Issue(\gpk,\isk,\attrs) \rangle$.]
   This interactive protocol lets a user with key pair (\upk,\usk) running the
-  \Obtain process, obtain a credential \cred with attributes \Attrs, by
+  \Obtain process, obtain a credential \cred with attributes \attrs, by
   communicating with an issuer, with private key \isk, running the \Issue
   counterpart. The user outputs the produced credential \cred, while the issuer
   outputs the protocol transcript \utrans for the produced credential.
-\item[$\sig \gets \Sign(\gpk,\usk,\cred,\DAttrs,\msg)$.] The user with
+\item[$\sig \gets \Sign(\gpk,\usk,\cred,\dattrs,\msg)$.] The user with
   with secret key \usk, who obtained a credential \cred, produces a signature
-  \sig over message \msg, revealing subset of attributes \DAttrs in \cred.
-\item[$1/0 \gets \Verify(\gpk,\sig,\DAttrs,\msg)$.] Checks whether \sig is a
-  valid signature revealing the attribute set \DAttrs of its signing credential,
+  \sig over message \msg, revealing subset of attributes \dattrs in \cred.
+\item[$1/0 \gets \Verify(\gpk,\sig,\dattrs,\msg)$.] Checks whether \sig is a
+  valid signature revealing the attribute set \dattrs of its signing credential,
   over message \msg.
 \item[$(\upk,\oproof)/\bot \gets
-  \Open(\gpk,\osk,\sig,\DAttrs,\msg)$.]
+  \Open(\gpk,\osk,\sig,\dattrs,\msg)$.]
   Given a signature \sig over message \msg, produced by a credential with
-  attributes containing the set \DAttrs, returns the public key \upk of the
+  attributes containing the set \dattrs, returns the public key \upk of the
   signer, and a proof of opening correctness \oproof; or $\bot$ if the
   opening process fails.
-\item[$1/0 \gets \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,
+\item[$1/0 \gets \Judge(\gpk,\upk,\oproof,\sig,\dattrs,
   \msg)$.] Checks if \oproof is a valid opening correctness proof stating that
   the user with key \upk generated signature \sig over message \msg, revealing
-  attributes $\DAttrs$. 
+  attributes $\dattrs$. 
 \end{description}
 
 The correctness and security properties are defined with the help of the
@@ -176,9 +176,9 @@ oracles, which are formally defined in \appref{app:gsac-formal}.
 \paragraph{Correctness.} %
 Correctness of \GSAC schemes is formalized through the experiment in
 \figref{fig:exp-gsac-corr}. It states that a signature for some message \msg,
-revealing attributes \DAttrs, which was honestly produced through a credential
+revealing attributes \dattrs, which was honestly produced through a credential
 that was obtained by an honest user interacting with an honest issuer, with a
-set of attributes \Attrs such that $\DAttrs \subseteq \Attrs$, must be accepted
+set of attributes \attrs such that $\dattrs \subseteq \attrs$, must be accepted
 by \Verify. Moreover, an honestly produced correctness proof of opening for such
 signature, revealing the public key pair of the user, must also be accepted by
 \Judge.
@@ -194,13 +194,13 @@ signature, revealing the public key pair of the user, must also be accepted by
      \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-    (\cid,\DAttrs,\msg) \gets \adv^{\HUGEN,\OBTISS,\RREG}(\gpk) \\
-    \pcif \DAttrs \nsubseteq \ATTR[\cid] :
+    (\cid,\dattrs,\msg) \gets \adv^{\HUGEN,\OBTISS,\RREG}(\gpk) \\
+    \pcif \dattrs \nsubseteq \ATTR[\cid] :
     \pcreturn \bot \\
-    \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\DAttrs,\msg) \\
-    (\upk,\oproof) \gets \Open(\gpk,\osk,\sig,\DAttrs,\msg) \\
-    \pcif \Verify(\gpk, \sig, \DAttrs,\msg) = 0 \lor
-    \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0: \\
+    \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\dattrs,\msg) \\
+    (\upk,\oproof) \gets \Open(\gpk,\osk,\sig,\dattrs,\msg) \\
+    \pcif \Verify(\gpk, \sig, \dattrs,\msg) = 0 \lor
+    \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 0: \\
      \pcind \pcreturn 1 \\
     \pcreturn 0
   }
@@ -276,10 +276,10 @@ Our notion of traceability for \GSAC combines both requirements. It assumes an
 honest issuer, as otherwise the adversary can create untraceable credentials at
 will. The game then lets the adversary add honest and corrupt users, create
 honest signatures, and open them. The adversary wins if, after this interaction,
-is able to produce a $(\sig,\DAttrs,\msg)$ tuple that is accepted by \Verify,
+is able to produce a $(\sig,\dattrs,\msg)$ tuple that is accepted by \Verify,
 but either cannot be opened, it can be opened but the proof is rejected by
 \Judge, or even though it is accepted by \Judge, there is no credential
-that contains the set of attributes \DAttrs. We formally define traceability in
+that contains the set of attributes \dattrs. We formally define traceability in
 the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
 
 \begin{figure}[htp!]
@@ -287,14 +287,14 @@ the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
     \parm \gets \Setup(1^\secpar) \\
     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
     \gpk \gets (\ipk,\opk) \\
-    (\sig,\DAttrs,\msg) \gets
+    (\sig,\dattrs,\msg) \gets
     \adv^{\HUGEN,\CUGEN,\RREG,\OBTISS,\ISSUE,\SIGN,\OPEN}(\gpk,\osk) \\
-    \pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 0: \pcreturn 0 \\
-    \pcif \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) = \bot: \pcreturn 1 \\
-    \textrm{Let}~(\upk,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\DAttrs,\msg) \\
-    \pcif \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 0: \pcreturn 1 \\
-    \pcelse \pcif \forall \uid \in \CU \cup \HU, \nexists (\uid,\cdot,\Attrs)
-    \in \CRED~\st~\DAttrs \subseteq \Attrs: \pcreturn 1 \\
+    \pcif \Verify(\gpk,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
+    \pcif \Open(\gpk,\osk,\trans,\sig,\dattrs,\msg) = \bot: \pcreturn 1 \\
+    \textrm{Let}~(\upk,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\dattrs,\msg) \\
+    \pcif \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 0: \pcreturn 1 \\
+    \pcelse \pcif \forall \uid \in \CU \cup \HU, \nexists (\uid,\cdot,\attrs)
+    \in \CRED~\st~\dattrs \subseteq \attrs: \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Traceability experiment for \GSAC schemes.}
@@ -324,7 +324,7 @@ by having open proofs output the identity of a user who did not create the
 signature being opened.
 %
 In \GSAC schemes, in order for a user to be framed, the adversary first needs to
-create a $(\sig,\DAttrs,\msg,\upk,\oproof)$ tuple such that the signature,
+create a $(\sig,\dattrs,\msg,\upk,\oproof)$ tuple such that the signature,
 attributes, and message are accepted by \Verify, and which, along with the user
 public key, and open correctness proof, are accepted by \Judge.
 Then, the adversary wins the game if the owner of the credential is honest, but
@@ -338,11 +338,11 @@ the signature was not produced via the \SIGN oracle.
     \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-     (\sig,\DAttrs,\msg,\upk,\oproof) \gets
+     (\sig,\dattrs,\msg,\upk,\oproof) \gets
      \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN}(\gpk,\isk,\osk) \\
      \textrm{Let}~\uid~\textrm{be st}~\PUBUK[\uid] = (\upk,\cdot) \\
-     \pcreturn 1~\pcif \Verify(\gpk,\sig,\DAttrs,\msg) = 1 \land 
-     \Judge(\gpk,\upk,\oproof,\sig,\DAttrs,\msg) = 1~\land \\
+     \pcreturn 1~\pcif \Verify(\gpk,\sig,\dattrs,\msg) = 1 \land 
+     \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 1~\land \\
      \pcind \uid \in \HU \land \sig \notin \SIG[\uid] \\
      \pcreturn 0
   }

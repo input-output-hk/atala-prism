@@ -5,8 +5,8 @@
 combination of group signatures and anonymous credentials. However, it also
 inherits a main limitation: it is too strict in regards to the utility it
 offers. The most excruciating example of this fact is that in \GSAC, via \Open,
-one can only get the actual identity of the signer. Even though with the inclusion
-of attributes the concept of ``identity'' can now be meaningfully defined, we
+one can only get the actual identity of the signer. Even though the inclusion
+of attributes makes the concept of ``identity'' meaningful, we
 may not want to fully de-anonymize the signer. Instead, we may be interested in
 revealing arbitrary functions of its identity and the signed message. Also, for
 the sake of illustation, we restricted to the case of selective disclosure, and
@@ -15,7 +15,8 @@ can model an extension to \GSAC that is compatible both with constructions with
 that support selective disclosure, and with constructions that support arbitrary
 claims on the
 credential attributes; and, as it is also common in the anonymous credentials
-(or verifiable credentials \needcite) domains, to allow credential holders to
+(or verifiable credentials\footnote{\url{https://www.w3.org/TR/vc-data-model/}.
+  Last access, May 5th, 2022.}) domains, to allow credential holders to
 combine multiple credentials into one signature/presentation. Similarly, we can
 also generalize \GSAC by allowing users to leverage previously obtained
 credentials in order to obtain new ones; possibly, applying arbitrary issuance
@@ -35,8 +36,7 @@ Signatures (\UAS), enables:
   credentials and signed message. This can range from producing the user public
   key (as in group signatures), to disallowing any kind of de-anonymization,
   passing through any intermediate de-anonymization function, like revealing
-  the nationality of the signer, or its banking account number, even if this
-  was not revealed at the signing stage.
+  concrete attributes, or functions of them.
 \end{itemize}
 
 Furthermore, to make the concept more flexible, we no longer restrict to the

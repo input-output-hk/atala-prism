@@ -2,15 +2,39 @@
 \label{ssec:generic-construction-uas}
 
 In this section, we give a generic construction of an \UAS scheme, based on
-generic building blocks. In \secref{sec:instantiation}, we give a concrete
+generic building blocks. In \todo{\secref{sec:instantiation}}, we give a concrete
 instantiation.
 
-We use three different NP relations in our generic construction. Namely,
-$\NIZKRel_{\Issue}$ for issuance, $\NIZKRel_{\Sign}$ for signing, and
-$\NIZKRel_{\Inspect}$ for inspection. We will be defining them in the
-corresponding protocol/algorithm.
+We use three different NP relations in our generic construction. Namely:
 
-\todo{Many variables need renaming here.}
+\begin{description}
+\item[$\NIZKRel_{\Issue}$:] Set by issuers, governs the rules for issuing
+  new credentials. It is defined as $\NIZKRel_{\Issue} = \lbrace
+  (\usk,\scred,\attrs_{\scred}), (\Ccom,\attrs,\sipk_{\scred}): \Ccom =
+  \CCommit(usk) \land \fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in
+  \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1 \rbrace$,
+  where for readability we write $\attrs_{\scred}$ as abbreviation for $\lbrace
+  \attrs_{\cred} \rbrace_{\cred \in \scred}$, and similarly for $\sipk_{\scred}$.
+  Basically, this relation requires that, in order to issue a credential with
+  attribtes \attr, and bound to \usk, the requester has to commit to \usk and
+  prove knowledge of it, as well as prove that all additional credentials needed
+  for the issuing to be granted, meet some defined policy \fissue.
+\item[$\NIZKRel_{\Sign}$:] Can be set by anyone but, for simplicity, assume
+  verifiers define them. Governs what utility information is directly revealed
+  by signatures. It is defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\scred,
+  \attrs_{\scred},\yinsp,r),(\msg,\feval,\yeval,\Ec,\sipk_{\scred},\Eek): \Ec =
+  \EEnc(\Eek,\yinsp;r) \land \yeval = \feval(\usk,\scred,\msg) \land
+  \yinsp = \finsp(\yeval,\usk,\scred,\msg) \land \forall \cred \in \scred,
+  \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$, with
+  $\attrs_{\scred}$ and $\sipk_{\scred}$ as in $\NIZKRel_{\Issue}$. In a
+  nutshell, this relation ensures that signatures will produce the correct
+  signature evaluation and opening values, and that any credential used to
+  create the signature is bound to the same \usk key.
+\item[$\NIZKRel_{\Open}$:] Set by openers, governs the utility information
+  to be extracted by the \Open algorithm. It is defined as $\NIZKRel_{\Open} =
+  \lbrace (\osk),(\Ec,\yinsp): \yinsp = \EDec(\osk,\Ec) \rbrace$. It proves
+  that the decryption of the opening utility value has been done correctly.
+\end{description}
 
 \paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
 The setup process essentially consists on generating the public parameters
@@ -19,10 +43,15 @@ for all the building blocks. In detail, it parses \secpar as $(\Csecpar,
 \CSetup(\Csecpar)$, $\SBCMparm \gets  \SBCMSetup(\SBCMsecpar)$, $\Sparm \gets
 \SSetup(\Ssecpar)$, $\Eparm \gets \ESetup(\Esecpar)$, $\NIZKcrs_{\Issue} \gets
 \NIZKSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar)$, $\NIZKcrs_{\Sign} \gets
-\NIZKSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar)$, and $\NIZKcrs_{\Inspect} \gets
-\NIZKSetup^{\NIZKRel_{\Inspect}}(\NIZKsecpar)$. Return $(\Cparm,\SBCMparm,
-\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},\NIZKcrs_{\Inspect},
-\AttrSpace)$
+\NIZKSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar)$, and $\NIZKcrs_{\Open} \gets
+\NIZKSetup^{\NIZKRel_{\Open}}(\NIZKsecpar)$. Return $(\Cparm,\SBCMparm,
+\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},\NIZKcrs_{\Open},
+\AttrSpace)$. Note that many of these parameter setup algorithms can
+actually be run by separate entities (respecting some commonalities like,
+e.g., same pairing-friendly curves). For instance, each opener could
+run its own \ESetup algorithm, or each verifier its
+$\NIZKSetup^{\NIZKRel_{\Sign}}$, to advertise the signing evaluation functions
+it accepts. For simplicity of exposition, we bundle them together here.
 
 \paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
 To generate its key pair, each issuer first parses \parm as $(\cdot,\SBCMparm,
@@ -32,7 +61,7 @@ $\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$, $\ipk \gets (\Svk,\fissue,
 \sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
 
 \paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
-To generate its key pair, each inspector first parses \parm as $(\cdot,\cdot,
+To generate its key pair, each opener first parses \parm as $(\cdot,\cdot,
 \cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets \SKeyGen
 (\Sparm)$, $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$, $\sig_{\finsp} \gets \SSign
 (\Ssk,\finsp)$, $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk \gets
@@ -49,21 +78,18 @@ The protocol is run between an issuer, and a user with secret key \usk and
 credentials \scred, where each $\cred \in \scred$ is issued by an issuer with
 public key $\ipk_{\cred}$ (which we assume that the user can easily retrieve,
 e.g., from secure storage, given \cred), and attests attributes
-$\attrs_{\cred}$. For readability we write $\attrs_{\scred}$ as abbreviation for
-$\lbrace \attrs_{\cred} \rbrace_{\cred \in \scred}$, and similarly for
-$\sipk_{\scred}$. The user requests a signature on a commitment to the user key,
+$\attrs_{\cred}$. The user requests a signature on a commitment to the user key,
 as well as on the attributes in \attrs. In addition, the user proves that the
 issuance function \fissue established by the issuer is satisfied by the
 credentials in $\scred$
-and its user secret key. For this, we define relation $\NIZKRel_{\Issue} = \lbrace
-(\usk,\scred,\attrs_{\scred}), (\Ccom,\attrs,\sipk_{\scred}): \Ccom = \CCommit(usk) \land
-\fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in \scred,
-\SBCMVerify(\ipk_{\cred},\cred,
-\attrs_{\cred} \cup \lbrace \usk \rbrace) = 1 \rbrace$. The interactive protocol
-for a user to obtain a credential from an issuer of the system is then simply an
-execution of the interactive signing protocol of an \SBCM scheme, where the user
-runs $\SBCMCom(\ipk,\usk,\attrs)$, and the issuer runs $\SBCMSign(\isk,\attrs)$;
-in both cases, using $\NIZKRel_{\Issue}$ as \NIZK relation.
+and its user secret key. For this, we use relation $\NIZKRel_{\Issue}$, as
+defined above. The interactive protocol for a user to obtain a credential from
+an issuer of the system is then simply an execution of the interactive signing
+protocol of an \SBCM scheme, where the user runs $\SBCMCom(\ipk,\usk,\attrs)$,
+and the issuer runs $\SBCMSign(\isk,\attrs)$; in both cases, using
+$\NIZKRel_{\Issue}$ as \NIZK relation. The credential \cred produced by the user
+is the result of the interactive signing protocol, and the \utrans entry for
+the issuer is its transcript which is a $(\Ccom,\attrs,\sipk,\cred,\pi)$ tuple.
 
 \iffalse
 \begin{itemize}
@@ -83,19 +109,11 @@ in both cases, using $\NIZKRel_{\Issue}$ as \NIZK relation.
 \fi
 
 \paragraph{$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
-In the signing algorithm, we make use of the following relation:
-$\NIZKRel_{\Sign} = \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r),(\msg,\feval,
-\yeval,\Ec,\sipk_{\scred},\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land \yeval =
-\feval(\usk,\scred,\msg) \land
-\yinsp = \finsp(\yeval,\usk,\scred,\msg) \land \forall \cred \in \scred,
-\SBCMVerify(\ipk_{\cred},\cred,\attrs_{\cred} \cup \lbrace \usk \rbrace) = 1)
-\rbrace$ where, for each $\cred \in \scred$, $\attrs_{\cred}$ and $\ipk_{\cred}$,
-as well as $\attrs_{\scred}$ and $\sipk_{\scred}$ are as in $\langle \Obtain,
-\Issue \rangle$.
-%
+In the signing algorithm, we make use of relation $\NIZKRel_{\Sign}$.
+% 
 From this, in order to produce a valid signature, the user first evaluates
 $\yeval \gets \feval (\usk,\scred,\msg)$, and decides whether or not to continue
-with the signing process -- this may depend, e.g., on the inspection policy of
+with the signing process -- this may depend, e.g., on the opening policy of
 \opk, as the output of \feval may influence whether the user will be
 de-anonymizable or not, depending on the \finsp function in \opk.
 %
@@ -115,22 +133,21 @@ $\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,\sipk,\opk)) = 1$. In
 addition, the verifier may further check whether \yeval meets its needs.
 
 \paragraph{$(\yinsp,\NIZKproof)/\bot \gets
-  \Inspect(\osk,\sipk,\sig,\yeval,\msg,\feval)$.} %
-We first define NIZK relation $\NIZKRel_{\Inspect} = \lbrace (\osk),(\Ec,\yinsp)
-: \yinsp = \EDec(\osk,\Ec) \rbrace$.
+  \Open(\osk,\sipk,\sig,\yeval,\msg,\feval)$.} %
+Here we leverage relation $\NIZKRel_{\Open}$.
 %
-For inspection, the inspector first verifies the signature by running $\Verify(
-\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the verification succeeds, it parses
+To open a signature, the opener first verifies the signature by running $\Verify
+(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the verification succeeds, it parses
 \sig as $(\NIZKproof,\Ec)$, decrypts \Ec by running $\yeval \gets \EDec(\osk,
-\Ec)$, and computes $\NIZKproof_{\Inspect} \gets \NIZKProve^{\NIZKRel_{\Inspect}}
-(\NIZKcrs_{\Inspect},\osk,(\Ec,\yinsp))$. It returns $(\yinsp,
-\NIZKproof_{\Inspect})$.
+\Ec)$, and computes $\NIZKproof_{\Open} \gets \NIZKProve^{\NIZKRel_{\Open}}
+(\NIZKcrs_{\Open},\osk,(\Ec,\yinsp))$. It returns $(\yinsp,
+\NIZKproof_{\Open})$.
 
 \paragraph{$1/0 \gets \Judge(\opk,\yinsp,\NIZKproof,\sig,\yeval,\msg)$.} %
-To assess the validity of an inspection proof, first check the signature
+To assess the validity of an opening proof, first check the signature
 by running $\Verify(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the check succeeds,
 parse \sig as $((\cdot,\Ec),\cdot)$ and verify \NIZKproof with $\NIZKVerify
-(\NIZKcrs_{\Inspect},\NIZKproof,(\Ec,\yinsp))$. Accept it the NIZK verification
+(\NIZKcrs_{\Open},\NIZKproof,(\Ec,\yinsp))$. Accept it the NIZK verification
 passes, and reject otherwise.
 
 %\input{security-uas.tex}

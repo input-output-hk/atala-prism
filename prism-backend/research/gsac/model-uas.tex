@@ -1,66 +1,30 @@
 \subsection{Model for \UAS Schemes}
 \label{ssec:model-uas}
 
-\comment{\textbf{DISCLAIMER}: I've done a major rewriting of most
-  properties. For now, please ignore the text until I have been able to sync
-  it.}
+We now define our model for Universal Anonymous Signatures. Property-wise, we
+maintain anonymity, non-frameability, and include two extra unforgeability
+properties: unforgeability of issuance, which ensures that issuance policies
+are not circumvented; and unforgeability of signatures, guaranteeing that
+signing policies are respected, as well as soundness of opening.
 
-We now define our model for Universal Anonymous Signatures. At a very high
-level, it is a combination of the main models for group signatures and
-anonymous credentials -- we try to extract the most useful features from both.
-Instead of considering just one group, as in group signatures, we directly and
-explicitly include support for multiple issuers as in anonymous credentials.
-Moreover, instead of letting each user own a single credential, we allow
-multiple credentials per user, even within the same group. This of course
-makes us put forward refined notions of anonymity, traceability and
-non-frameability. Note that, property-wise, we keep the three main properties
-from group signatures, rather than sticking to the two usual properties of
-anonymous credentials (anonymity and unforgeability). This is a consequence
-of keeping the inspection capability from group signatures, which we consider
-crucial in order to ensure some sort of accountability even in very adversarial
-contexts where the issuer may be corrupt.
-%
-But, as stated in the introduction, we go beyond just combining anonymous
-credentials and group signatures, and include support for arbitrary policies
-during issuance, signing, and inspection. Consequently, our model needs to
-capture the flexibility that these policies provide. In short, manipulations of
-the issuance policy are only considered forgeries if the adversary manages to
-create a valid signature using a credential that was obtained by dishonestly
-manipulating the issuance policy (we discuss this further in the traceability
-definition). Signing policies are taken into account both in the anonymity
-property, where we need to restrict that both credentials used to produce the
-challenge signatures always satisfy the policy, and in traceability.
-\commentwho{Jesus}{Think a bit more about the following claim, and update if
-  needed.}
-We cannot give any assurance on the signing policies when the issuers are
-corrupt, and thus they are not considered in the non-frameability property.
-Inspection policies are considered both in traceability and non-frameability,
-where the adversary wins if it manages to somehow alter the correct output of
-\Inspect. What is even suprising, is that given the possible non-injectivity of
-the inspection function lets us reach an even stronger notion of anonymity.
-Namely, \uline{we can allow the adversary to open challenge signatures, as
-  long as the inspection function outputs the same value for both}. We give more
-details on these aspects in the actual definitions of the security properties.
-%
-Finally, from a functional perspective, we require that both issuer and
-inspector fix the issuance predicate \fissue and inspection function \finsp when
-generating their public keys. Indeed, both will be part of the common group key.
-This also makes our definitions easier, as supporting multiple issuance
-predicate and inspection functions per group would require to consider many
-special cases -- and, anyway, that would probably end up being equivalent to
-just requiring that a new group needs to be created per each $(\fissue,\finsp)$
-pair. On the other hand, signing policies can be defined at signing time (in
-practice, most probably by the verifiers). This is in line with the usual
-practice in anonymous credentials, that let users prove arbitrary claims on
-their credentials, as long as they are met by the contained attributes.
+From a functional perspective, we require that each issuer and opener fix
+the issuance predicate \fissue and opener function \finsp when generating
+their public keys. On the other hand, signature evaluation functions \feval can
+be defined at signing time. This is in line with the usual practice in anonymous
+credentials, that let
+users prove arbitrary claims on their credentials, as long as they are met by
+the contained attributes. In practice, most probably, the signing policy to be
+employed in each signature will be defined by the verifier (or jointly between
+user and verifier), including the specification of which inspector will be
+able to post-process signatures\footnote{See, for instance, the concept of
+  presentation exchanges, or requests, in the context of Verifiable Credentials:
+  \url{https://identity.foundation/presentation-exchange/} (last access, May
+  5th, 2022).}. Beyond these general policies, which already give much
+flexibility, the syntax for \UAS supports multiple issuers and openers, and
+lets users leverage multiple credentials to request issuance of new ones, and
+to produce signatures.
 
-\subsubsection{Syntax}
-\label{sssec:syntax}
-
-An \UAS scheme is composed by the following algorithms.
-
-\todo{The notation for multisets is not strictly correct. Still, leaving it as
-  is for now.} 
+\subsubsection{Syntax.} An \UAS scheme is composed by the following algorithms:
 
 \begin{description}
 \item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
@@ -72,10 +36,9 @@ An \UAS scheme is composed by the following algorithms.
   requestors meet the conditions to be issued a credential, an issuer runs
   \IKeyGen to generate its issuing key pair. 
 \item[$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.] Given global system
-  parameters \parm, and function \finsp, an inspector runs \OKeyGen to generate
-  its inspecting key pair. The function \finsp defines the type of utility that
-  will be extractable from those pairs that do not meet conditions defined
-  at signing time (typically, by verifiers).
+  parameters \parm, and function \finsp, an opener runs \OKeyGen to generate
+  its opening key pair. The function \finsp defines the type of utility that
+  will be extractable from signatures.
 \item[$\usk \gets \UKeyGen(\parm)$.] Given global system parameters
   \parm, returns a user's secret key.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
@@ -89,34 +52,33 @@ An \UAS scheme is composed by the following algorithms.
   where $\cred_i$ is a credential obtained from the issuer with public
   key $\ipk_i$. The user outputs the produced credential \cred, while
   the issuer outputs the protocol transcript \utrans for the produced
-  credential. To ease notation, we assume that the group to which each
-  credential belongs is available from the credential itself, and therefore
-  omit the $\ipk_i$ values from the syntax, unless necessary to avoid ambiguity.
+  credential. To ease notation, we assume that the issuer public key associated
+  to credential is available from the credential itself, and therefore
+  omit the $\ipk_i$ values from the syntax, unless necessary to avoid
+  ambiguity.
 \item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\lbrace (\cred_i,\ipk_i)
   \rbrace_{i \in \Issuers},\msg,\feval)$.] %
-  Upon receiving a user secret key \usk, inspector public key \opk, a set of
+  Upon receiving a user secret key \usk, opener public key \opk, a set of
   credential-issuer pairs $(\cred_i,\ipk_i)$, a message \msg and evaluation
   function \feval, returns signature \sig and value \yeval.
 \item[$1/0 \gets \Verify(\opk, \lbrace \ipk_i \rbrace_{i \in \Issuers},\sig,
   \yeval,\msg,\feval)$.] Checks whether $(\sig,\yeval)$ is a valid signature
   over message \msg, from a user with credentials issued by issuers with public
   keys $\ipk_i$, for evaluation function \feval and inspector key \opk.
-\item[$(\yinsp,\iproof)/\bot \gets \Inspect(\osk,\lbrace \ipk_i
+\item[$(\yinsp,\iproof)/\bot \gets \Open(\osk,\lbrace \ipk_i
   \rbrace_{i \in \Issuers},\sig,\yeval,\msg,\feval)$.] %
-  Executed by the inspector with private key \osk. Receives a signature $(\sig,
+  Executed by the opener with private key \osk. Receives a signature $(\sig,
   \yeval)$ over message \msg and evaluation function \feval, generated using
   credentials issued by the issuers with public keys $\ipk_i$. If \sig is valid,
-  the function outputs a value $\yinsp$ derived from the signer's public key,
-  credentials, message, and signature, as well as a proof of correct
-  inspection.
+  the function outputs a value $\yinsp$.
 \item[$1/0 \gets \Judge(\opk,\lbrace ipk_i \rbrace_{i \in \Issuers},\yinsp,
   \iproof,\sig,\yeval,\msg,\feval)$.] %
-  Checks if \iproof is a valid inspection correctness proof for the value \yinsp,
-  obtained by applying \Inspect to the the signature $(\sig,\yeval)$ over
+  Checks if \iproof is a valid opening correctness proof for the value \yinsp,
+  obtained by applying \Open to the the signature $(\sig,\yeval)$ over
   message \msg, and for evaluation function \feval. 
 \end{description}
 
-\paragraph{Issuance, evaluation, and inspection functions.} %
+\paragraph{Issuance, evaluation, and opening functions.} %
 We emphasize that, both in our syntax definition, as well as on the following
 modelling, we make use of three different and abstract functions: \fissue,
 \feval and \finsp. The three functions are introduced to allow customized
@@ -124,54 +86,49 @@ governance of the resulting instantiation of an \UAS scheme. They will be
 defined by different parties, but in all cases, they are run by users (maybe,
 on user-private data). Also, in all cases, the user has to prove correctness of
 their computation. We introduce them next, \todo{and will give concrete examples
-  in \secref{sec:uac-instantiation}.}
-
-\todo{Do our definitions protect from absurd schemes that leak \usk or \scred via
-  \fissue or \feval (I guess \finsp is ok)? E.g., $\feval(\usk,\scred,\msg) =
-  \usk$ deanonymizes the signer. I guess that anonymity should prevent that.
-  But check.}
+  in \secref{sec:uas-instantiation}.}
 
 \begin{description}
-\item[$\fissue: (\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\attrs)
+\item[$\fissue: (\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\attrs)
   \rightarrow 0/1$.] Chosen by issuers within a family of functions \famfissue,
   the issuance function defines what customized conditions an issuer requires
-  in order to issue credentials, when receiving a request from user with public
-  key \upk, for attributes \attrs. \fissue may run checks on a (possibly empty)
-  set of additional credentials $\cred_i$, all bound to \upk, and possibly
+  in order to issue credentials, when receiving a request from user with secret
+  key \usk, for attributes \attrs. \fissue may run checks on a (possibly empty)
+  set of additional credentials $\cred_i$, all bound to \usk, and possibly
   issued by other issuers. \fissue returns $1$ to accept a request, $0$ to
   reject it.
-\item[$\feval: (\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\msg)
-  \rightarrow \yeval$.] Evaluation functions, from a family of functions
-  \famfeval, can be set on a per-signature basis. The evaluation function
-  defines customized conditions to be met by the owner of a user key \upk and
-  credentials $\cred_i$, bound to \upk, in order to sign a concrete message
-  \msg. Its outputs \yeval must belong in a well defined set \rngfeval.
-\item[$\finsp: (\yeval,\upk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},
+\item[$\feval: (\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\msg)
+  \rightarrow \yeval$.] Signing evaluation functions, from a family of functions
+  \famfeval, can be set on a per-signature basis. They receive the user secret
+  key \usk, credentials $\cred_i$, and message to be signed \msg, and can be
+  used to control the information related to the signer that will be revealed
+  alongside a signature, and to modulate the behaviour of \finsp. Its outputs
+  \yeval must belong in a well defined set \rngfeval.
+\item[$\finsp: (\yeval,\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},
   \msg) \rightarrow \yinsp$.]
-  Chosen by inspectors from a family of functions \famfinsp. The inspection
-  functions define what utility value, derived from the user's public key,
-  credentials, and signed message, should be extractable by an inspector.
+  Chosen by openers from a family of functions \famfinsp. The opening
+  functions define what utility value, derived from the user's secret key,
+  credentials, and signed message, should be extractable by an opener.
   Note that \finsp also receives as input a value in the range of the \feval
-  function, \rngfeval. This will allow inspection logic to depend on the value
+  function, \rngfeval. This allows opening logic to depend on the value
   produced by the evaluation function. The output of \finsp is a value
   \yinsp, which must belong in a well defined set \rngfinsp.
 \end{description}
 
 We emphasize that, even though \finsp and \feval seem redundant, they are not.
 To see this, observe that \finsp is defined by inspectors, and will be fixed in
-all signatures ``inspectable'' by the inspector that defined it. On the other
-hand, \feval can be defined by (e.g.) verifiers and, as such, it can be changed
-on a per-signature basis, even if the signatures use the same \finsp. Thus,
-\feval can (and is intended to) be programmed to contain the conditions set by
-(e.g.) verifiers for signatures they receive; whereas \finsp can (and is intended
-to) be programmed to extract specific utility values when needed, which may
-depend on the checks required by the verifier a signature was intended to.
+all signatures that can be opened by the opener who defined it. On the other
+hand, \feval can be defined by (e.g.) verifiers on a per-signature basis, even
+if the signatures use the same \finsp. Thus, \feval can be programmed to contain
+the conditions set by (e.g.) verifiers for signatures they receive; whereas
+\finsp can be programmed to extract specific utility values when needed, which
+may depend on the checks required by the verifier a signature was intended to.
 
-\paragraph{Helper functions \ExtractIssue and \ExtractSign.} In our modelling,
-we assume the existence of three functions, \Identify, \ExtractIssue and
-\ExtractSign. They are not functions available in the actual scheme, but rather
-to the challenger, in the experiments we use to formalize security fof \UAS.
-Indeed, similar techniques have been used before to prove security in
+\paragraph{Helper functions \Identify, \ExtractIssue and \ExtractSign.} In our
+modelling, we assume the existence of three functions, \Identify, \ExtractIssue
+and \ExtractSign. They are not functions available in the actual scheme, but
+rather to the challenger in the experiments we use to formalize security fof
+\UAS. Indeed, similar techniques have been used before to prove security in
 privacy-preserving schemes with some sort of accountability, but that do not
 offer conventional opening as vanilla group signatures. For instance, see
 related works on DAA \cite{bfg+11,cdl16} and group signature variants
@@ -180,7 +137,9 @@ related works on DAA \cite{bfg+11,cdl16} and group signature variants
 \begin{description}
 \item[$\Identify(\usk,\attrs_{\cred},\cred)$.] Returns $1$ if \cred has been
   issued over attributes $\attrs_{\cred}$ and for a user with secret key \usk.
-  Otherwise, it returns $0$.
+  Otherwise, it returns $0$. In order to be meaningful, this requires that,
+  for every $(\attrs_{\cred},\cred)$ pair, there is at most one \usk that makes
+  \Identify return $1$.
 \item[$\ExtractIssue(\utrans) \rightarrow (\usk,\scred,\attrs_{\scred})$.]
   Receives an $\langle \Obtain, \Issue \rangle$ transcript, and returns the
   credentials (if any), their attributes, and the user secret key used during
@@ -188,37 +147,31 @@ related works on DAA \cite{bfg+11,cdl16} and group signature variants
   an honest issuer as, otherwise, the transcripts won't be available.
   Consequently, we only use it to define the properties that require an honest
   issuer.
-\item[$\ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,\scred)$.]
-  Receives a signature pair $(\sig,\yeval)$, as well as the inspector identifier
-  \oid, and the identifiers of all issuers of the credentials used to produce the
-  signature over \msg, and for \feval. It outputs the user secret key
-  and credentials used to generate the signature.
+\item[$\ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,
+  \scred)$.] Receives a signature pair $(\sig,\yeval)$, as well as the opener
+  identifier \oid, and the identifiers of all issuers of the credentials used to
+  produce the signature over \msg, and for \feval. It outputs the user secret
+  key and credentials used to generate the signature.
 \end{description}
 
-Note that, both for the three functions, in the case of credentials,
-transcripts, and signatures by honest users, it is enough to have access to the
-corresponding state information (described below) maintained by the challenger
-in our experiments. For credentials and join transcripts of corrupt users, or
+Note that, for the three functions, in the case of credentials, transcripts,
+and signatures by honest users, it is enough to have access to the corresponding
+state information (described below) maintained by the challenger in our
+experiments. For credentials and join transcripts of corrupt users, or
 dishonestly produced signatures, we do need to perform actual extraction. How to
 do this will depend on each specific construction. Certainly, the challenger
 needs special knowledge/power such as decryption trapdoors, the ability to
-rewind the game, or program random oracles; the approach needs thus to depend on
-the concrete construction. Although, for the case of \ExtractIssue, online
-extractability (or alternative requirements, such as non-parallel or logarithmic
-number of joins) is necessary. %
-\todo{\needcite Paper from Camenisch and Shoup on the need
-  for online extractability?} \todo{How do we do this in our construction(s)?
-  Can we be more specific here? Also, this poses an interesting question: Is
-  extraction a requirement for this kind of schemes? Can we find alternative
-  definitions?}
+rewind the game, or program random oracles. The approach needs thus to depend on
+the concrete construction, although. Although, for the case of \ExtractIssue,
+online extractability \needcite (or alternative requirements, such as
+non-parallel or logarithmic number of joins) is necessary.
 
 \paragraph{Global Variables.} %
 The environment manages several global variables in the games posed to the
 adversary. Users are referred to with user identifiers, \uid; for credentials,
-we use \cid; for groups, \gid. For credentials and groups, we use bold font to
-denote sets: i.e., \scid and \sgid denote sets of credential and group
-identifiers. All tables/sets are initialized as empty tables/sets, denoted
-with $\emptyset$.
+we use \cid; for issuers, \iid; and for openers, \oid. In all cases, we use bold
+font to denote sets: e.g., \scid and \siid denote sets of credential and issuer
+identifiers. All tables/sets are initialized as empty tables/sets.
 
 \begin{description}
 \item[Tables for parties]:
@@ -227,7 +180,7 @@ with $\emptyset$.
     i.e., they are sets of {\uid}s.
   \item[\HI and \CI.] Keep track of honest (\HI) and corrupted (\CI) issuers;
     i.e., they are sets of {\iid}s.
-  \item[\HO and \CO.] Keep track of honest (\HO) and corrupted (\CO) inspectors;
+  \item[\HO and \CO.] Keep track of honest (\HO) and corrupted (\CO) openers;
     i.e., they are sets of {\oid}s.
   \end{description}
 \item[Tables for keys]:
@@ -238,7 +191,7 @@ with $\emptyset$.
     $\IK[\iid]$ refers to the key pair of the issuer with identifier \iid. We
     use \PUBIK to refer to the public component, which also includes the \fissue
     function; and \PRVIK refers to the private component of the key pair.
-  \item[\OK, \PUBOK, \PRVOK.] Same as \IK, but for inspector key pairs. Instead
+  \item[\OK, \PUBOK, \PRVOK.] Same as \IK, but for opener key pairs. Instead
     of \fissue, \OK includes the \finsp function.
   \end{description}
 \item[Tables for credentials-related data]:
@@ -265,16 +218,16 @@ with $\emptyset$.
   \begin{description}
   \item[\SIG.] Maintains signatures generated via the \SIGN oracle, on behalf
     of honest users. Entries of this table are $(\oid,\scid,\sig,\yeval,\msg,
-    \feval)$, where \oid is the inspector chosen for the signature, \scid is the
-    set of credentials used for signing, \feval is the evaluation function, and
-    \sig and \msg are the produced signature and signed message.
+    \feval)$, where \oid is the opener chosen for the signature, \scid is the
+    set of credentials used for signing, \feval is the signing evaluation
+    function, and \sig and \msg are the produced signature and signed message.
   \item[\CSIG.] Maintains challenge signatures output to the adversary; i.e.,
     the table is indexable by challenge signatures \csig.
     Each entry contains also $\cuid_b$ and $\scid_b$ the challenge user and
     credential identifiers set used to produce \csig; as well as the
     corresponding challenge user and credential set indexed by the complementary
-    $1-b$; the signed message \msg and evaluation function \feval, the result of
-    \feval, \yeval, and the inspector identifier \oid.
+    $1-b$; the signed message \msg and signing evaluation function \feval, the
+    result of \feval, \yeval, and the opener identifier \oid.
   \end{description}
 \end{description}
 
@@ -312,12 +265,12 @@ oracles, which are formally defined in \figref{fig:oracles1} and
   requesting an honest issuer to produce credentials for them.
 \item[\SIGN.] Lets the adversary get signatures from credentials belonging
   to honest users.
-\item[\OPEN.] Given an honestly produced signature, lets the adversary learn
-  which credential was used to produce it.
-\item[\CHALb.] Upon receiving two challenge credentials, a common intersecting
-  set of attributes, and a message, returns a signature produced by one of these
-  two credentials, defined by the bit $b$, which is established in the anonymity
-  game.
+\item[\OPEN.] Given an honestly produced signature, outputs the result of the
+  opening function, along with a correctness proof.
+\item[\CHALb.] Upon receiving two challenge users and credential sets, a common
+  singing evaluation function and a message, returns a signature produced by one
+  of these two user and credential sets, defined by the bit $b$, which is
+  established in the anonymity game.
 \end{description}
 
 {%\setlength\intextsep{\sep}
@@ -481,7 +434,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn (\sig,\yeval) \\
         }                
 
-        \procedure{$\INSPECT(\oid,\sig,\yeval,\msg)$}{%
+        \procedure{$\OPEN(\oid,\sig,\yeval,\msg)$}{%
           \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\sig,\yeval,\msg,\feval)
           \in \SIG[\uid] \\
           (\yinsp,\iproof) \gets
@@ -514,14 +467,14 @@ and valid function \feval produced honestly leveraging credential set \scid,
 owned by user \uid, is accepted by \Verify. Moreover, all the credentials in
 \scid met the conditions set by the corresponding \fissue defined by the issuer
 which issued each credential. Similarly, the output \yeval of \feval matches the
-value produced by \Sign alognside with \sig; and the value produced by \Inspect
+value produced by \Sign alongside with \sig; and the value produced by \Open
 is accepted by \Judge, and matches the output of applying \finsp on \yeval, the
 credentials, user key, and message.
 
 \begin{definition}{(Correctness of \UAS)}
   \label{def:correctness-uas}
-  An \UAS scheme is correct if, for any p.p.t. adversary $\adv$, \ExpCorrect
-   outputs 1 with negligible probability.
+  An \UAS scheme is correct if, for any p.p.t. adversary $\adv$,
+  $\ExpCorrect(1^\secpar)$ outputs 1 with negligible probability.
 \end{definition}
 
 \begin{figure}[htp!]
@@ -543,8 +496,7 @@ credentials, user key, and message.
     = 0 \lor \yinsp \neq \finsp^\gid(\yeval,\UK[\uid],\CRED[\scid],\msg)): \\
     \pcind \pcreturn 1 \\
     \pcreturn 0
-  }
-  
+  }  
   \caption{Correctness experiment for \UAS schemes.}
   \label{fig:exp-uas-corr}
 \end{figure}
@@ -572,20 +524,20 @@ of their attributes.
 
 In our notion of anonymity for \UAS, we need to merge the previous constraints.
 In order to prevent trivial wins by the adversary, we have to restrict that the
-evaluation function outputs the same value for both user-credentials pairs. Very
-interestingly, since our inspection functionality does not (necessarily) output
-the identity of the signer, \uline{we can even allow the adversary to
-  inspect challenge signatures, as long as they produce the same output upon
-  inspection}. Other than this, the overall approach is similar: as in group
-signatures and anonymous credentials, the adversary picks two pairs of honest
-users and credential sets. We also require the adversary to pick an evaluation
-function and an inspector (hence, an inspection function). Then, the
+signing evaluation function outputs the same value for both user-credentials
+pairs. Very interestingly, since our opening functionality does not
+(necessarily) output the identity of the signer, \uline{we can even allow the
+  adversary to open challenge signatures, as long as they produce the same
+  output}. Other than this, the overall approach is similar: as
+in group signatures and anonymous credentials, the adversary picks two pairs of
+honest users and credential sets. We also require the adversary to pick an
+evaluation function and an opener (hence, an opening function). Then, the
 user-credential pair defind by the value of $b$ (unknown to the adversary) is
 used to program the \CHALb oracle. The formal specification of the anonymity
 game is given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,
 \CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,
-\WREG,\SIGN,\INSPECT)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,
-\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\INSPECT,\CHALb)$
+\WREG,\SIGN,\OPEN)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,
+\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\CHALb)$
 
 \begin{figure}[htp!]
   \procedure[linenumbering]{$\ExpAnonb(1^\secpar)$}{%
@@ -612,16 +564,16 @@ game is given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,
 
 \paragraph{Discussion on the generality of anonymity in \UAS schemes.} %
 This notion of anonymity is more general than that of group signatures in the
-sense that calls to the \INSPECT oracle reveal an arbitrary function of the
+sense that calls to the \OPEN oracle reveal an arbitrary function of the
 identity of the user -- which can certainly be the member index itself, as it
 is frequent in group signatures, or any other function computable from the
-user public key, its credentials, and produced signature. Moreover, note that
+user key, its credentials, and signed message. Moreover, note that
 our notion is even stronger than the conventional ``CCA-like'' anonymity notion
 that gives the adversary access to the open oracle, only restricting it when
 trying to open challenge signature. Precisely the introduction of generic
-inspection functions allows us to \uline{\emph{let the adversary open
-    challenge signatures $\csig_b$}} as long as the counterpart $\csig_{1-b}$
-makes \Inspect produce the same \y value as output. This is certainly not
+opening functions allows us to let the adversary open challenge signatures
+$\csig_b$ as long as the counterpart $\csig_{1-b}$
+makes \Open produce the same \y value as output. This is certainly not
 possible when using conventional opening, since it directly outputs the identity
 of the signer -- which cannot be the same for different challenge users.
 
@@ -633,12 +585,6 @@ our model to cover interesting use cases -- such as restricting to selective
 disclosure, or privacy-preserving variants of functional signatures \todo{check
   the latter, and perhaps expand}.
 
-\todo{Mention (probably, in future work?) that since the public keys of the
-  credential issuers are assumed to be public, we must enforce that challenge
-  users with same issuers per credential are used in the challenge oracle. This
-  is to avoid trivial wins. But not sure if the naive extension of hiding also
-  the issuers would make sense in the real world (which issuers are trusted?)}
-
 \paragraph{Unforgeability.} In anonymous credentials, unforgeability requires
 that no adversary can succeed in a credential presentation for attributes that
 are not contained in a legitimately issued credential (set) it controls. Note
@@ -647,11 +593,11 @@ adversary can get credentials on any attribute set it wants.
 %
 The somehow equivalent property in group signatures, inasmuch it also requires
 honest issuers, is traceability. It captures the security of the
-inspection-related functionality (e.g., \Inspect and \Judge) over signatures
+open-related functionality (e.g., \Open and \Judge) over signatures
 that produced by potentially malicious signers, in the presence of an honest
 issuer. In a nutshell, it ensures that every signature accepted by
 the verification algorithm must have been created by a user who joined the
-group, and that the result of \Inspect (and thus, \Judge) over such a valid
+group, and that the result of \Open (and thus, \Judge) over such a valid
 signature is consistent with its signer. With conventional opening, this is
 essentially checked by requesting the adversary to produce a signature,
 obtaining -- via open -- the ``identifier'' of the user who produced the
@@ -662,57 +608,59 @@ matching keys extracted during join transcripts, with keys used for signing
 for reliable bookkeeping during joins) than for anonymous credentials, honest
 issuers are required for traceability of group signatures too.
 
-In \UAS schemes, users can prove claims over the attributes they own
--- attested via obtained credentials -- through the \feval function. Thus, we
-need to capture the same unforgeability requirement as in anonymous credentials.
-Namely, that the \yeval value returned by \Sign along with the signature,
-matches the expected one from the specified \feval function.
-On the other hand, the inspection capabilities of \UAS schemes also call for a
+In our \UAS scheme we need to allow users prove claims over the attributes they
+own -- attested via obtained credentials -- through the \feval function.
+Roughly, we capture this roughly as in unforgeability requirement of anonymous
+credentials. Namely, that the \yeval value returned by \Sign along with the
+signature, matches the expected one from the specified \feval function.
+On the other hand, the opening capabilities of \UAS schemes also call for a
 traceability-like property. However, note that, as opposed to group signatures,
 $\langle \Obtain,\Issue \rangle$ protocols are over credentials rather than
 users -- although, ultimately, credentials must be owned by some user.
-However, we need to ensure that all signatures have been produced by credentials
-that have been obtained from an (honest) issuer. Furthermore, since \Inspect
+Furthermore, since \Open
 does not return the actual identity of the signer, but a function \finsp of it
-(and other arguments), we need to make sure that the output of \Inspect
+(and other arguments), we need to make sure that the output of \Open
 matches the output of \finsp. As in group signatures with non-conventional open,
 we resort to extraction-based techniques. All this is captured via \ExpForgeSign
 in \figref{fig:exp-uas-unfor-issue}. Therein, the adversary is challenged to
 produce a signature $(\sig,\yeval)$ over message \msg and for evaluation
-function \feval; as well as the identifiers for the inspector (\oid) and
+function \feval; as well as the identifiers for the opener (\oid) and
 credential issuers (\siid) used to compute the signature. As in traditional
 group signatures, the adversary wins if the signature is accepted by \Verify,
-yet \Inspect or \Judge fail. Then, the game extracts the user key and
+yet \Open or \Judge fail. Then, the game extracts the user key and
 credentials used to produce the signature. From it, the game checks if the
-output of \feval matches the \yeval value produced by the adversry -- this
+output of \feval matches the \yeval value produced by the adversary -- this
 mimics the behaviour of unforgeability in anonymous credentials. Finally, the
-game also checks that the output of \Inspect (even if accepted by \Judge)
+game also checks that the output of \Open (even if accepted by \Judge)
 matches the output of \finsp. If there is any mismatch in the last two checks,
-the adversary wins the game.
+or some of the credentials used to produce the signature do not correspond to
+the secret key that was allegedly used to request them, the adversary wins the
+game.
 
-\UAS schemes include yet another generalisation that requires unforgeability-like
-security, though. Concretely, the issuance function \fissue. Thus, an \UAS
-scheme needs to make sure that no credential is issued unless its corresponding
+Our \UAS scheme includes yet another generalisation that requires unforgeability-like
+security, though. Concretely, the issuance function \fissue. We need to make
+sure that no credential is issued unless its corresponding
 request meets the defined issuance policy. From the point of view of group
 signatures, this may seem redundant. After all, if all valid signatures produce
-consistent evaluation and inspection results, given the employed user key,
+consistent evaluation and opening results, given the employed user key,
 credentials, and signed message, the notion of traceability seems to be
 satisfied. However, from the point of view of anonymous credentials, an attacker
-being able to obtain a credential, even though it does not meet the required
+being able to obtain a credential, even when it does not meet the required
 conditions to have it issued, is clearly problematic: it would allow to prove
 claims over attributes it does not really ``own'' (even if the output of \Sign
-and \Inspect are consistent with the values returned by \feval and \finsp, and
-the credential was obtained via an $\langle \Obtain,\Issue \rangle$). To capture
-this, we define the \ExpForgeIssue experiment. In the experiment, the adversary
-is challenged to produce a credential identifier that must be associated to an
-existing $\langle \Obtain,\Issue \rangle$ interaction -- thus, the corresponding
-\trans entry must exist (which we can check, as the issuer is honest).
-The adversary wins if, either the extraction process fails, or the extracted
-user secret key and credentials make the corresponding issuance function fail.
+and \Open are consistent with the values returned by \feval and \finsp, and
+the credential was obtained via an $\langle \Obtain,\Issue \rangle$ run). To
+capturethis, we define the \ExpForgeIssue experiment. In the experiment, the
+adversary is challenged to produce a credential identifier that must be
+associated to an existing $\langle \Obtain,\Issue \rangle$ interaction -- thus,
+the corresponding \trans entry must exist (which we can check, as the issuer is
+honest). The adversary wins if, either the extraction process fails, or the
+extracted user secret key and credentials make the corresponding issuance
+function fail.
 
 For both \ExpForgeIssue and \ExpForgeSign, the adversary is given access to the
 oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
-\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\INSPECT$.
+\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$.
 
 \begin{figure}[htp!]
     \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
@@ -777,43 +725,38 @@ For short, we say that an \UAS scheme that has both unforgeable issuance and
 signing, is an unforgeable \UAS scheme.
 
 \paragraph{Discussion on the generality of unforgeability in \UAS schemes.} %
-\todo{Re-check and re-write as needed}.
-The notion of traceability we present for \UAS is strictly more general than
-the corresponding one for group signatures. This is again a direct
-consequence of the fact that \Inspect, which can return an arbitrary function
-of the signer's credential (and signed message), is a generalization of the
-conventional \Open -- if we make \Inspect return just the identity of the
-signer, then we get something similar to the usual notion of traceability.
-Although, even in that case, we need to take into account attributes, and the
-fact that the same user may obtain multiple credentials (that is why, even when
-having \Inspect return the identity of the signer, our notion is not exactly
-the same). And, in this sense, the unforgeability notion that \UAS have is
-equivalent to that of anonymous credentials. It would seem, though, that we do
-not need the traceability part of group signatures; after all, it is the
-protection against wrong claims on attributes what enables meaningful and
-flexible authentication. However, the type of protection against misuses of
-the inspection functionality that we can get with an honest issuer (as in
-traceability) is much higher than without an honest user (as in
-non-frameability). Specifically, with an honest issuer we can ensure that
-the adversary cannot even alter the value returned by \Inspect on signatures
-by corrupt users, nor the output of the signing predicate \feval. Whereas, with
-a corrupt issuer, all we can ensure is that
-the adversary cannot forge a signature from an honest user for which \Inspect
+The notion of signature unforgeability we present for \UAS is strictly more
+general than the corresponding one of traceability for group signatures. This is
+again a direct consequence of the fact that \Open can return an arbitrary
+function of the signer's key and credentials (and signed message), whic is a
+strict generalization of the conventional \Open. Although, even in that case, we
+need to take into account attributes, and the fact that the same user may obtain
+multiple credentials (that is why, even when having \Open return the identity of
+the signer, our notion is not exactly the same). In this sense, the sign
+unforgeability notion for \UAS is equivalent to that of anonymous
+credentials. It would seem, though, that we do not need the traceability part of
+group signatures; after all, it is the protection against wrong claims on
+attributes what enables meaningful and flexible authentication. However, the
+type of protection against misuses of the open functionality that we can
+get with an honest issuer (as in traceability) is much higher than without an
+honest issuer (as in non-frameability). Specifically, with an honest issuer we
+can ensure that the adversary cannot even alter the value returned by \Open on
+signatures by corrupt users, nor the output of the signing predicate \feval.
+Whereas, with a corrupt issuer, all we can ensure is that
+the adversary cannot forge a signature from an honest user for which \Open
 returns the same value as a signature by that honest user would produce; and,
 certainly, a corrupt issuer can arbitrarily issue credentials meeting any
-desired predicate \feval .Traceability is, therefore, a core property to ensure
-accountability.
+desired predicate \feval. Signing unforgeability is, therefore, a core property
+to ensure accountability.
 
-Note also that we have implicitly assumed an unforgeability relaxation in the
-sense that we do not consider a forgery the fact that an adversary can obtain
-credentials that do not meet the \fissue predicate \emph{as long as they are
-  not used to produced untraceable signatures}. Indeed, this is in line with
-previous work \cite[Section 3.3.3]{ckl+15}, and it does make sense as, in the
-real world, being able to fraudulently obtain credentials that cannot be later
-used to authenticate, does not pose a risk. However, an adversary breaking
-the issue policy defined by \fissue to get a credential and later using it to
-create a valid signature (i.e., meeting \feval or \finsp) is considered a
-forgery by our definition.
+Similarly, by adding the related notion of issuance unforgeability, we ensure
+that no credential can be issued that did not meet the corresponding issuance
+policy. This is again something not necessary in group signatures (with
+verifiable openings), where \Judge accepting the opening proof implies that
+there is a valid join transcript associated to the membership credential used
+to produce the signature. However, in \UAS, even though that transcript exists,
+we need to make sure that the issuance policy was satisfied -- and this is not
+something (easily) extractable from the signature.
 
 \paragraph{Non-frameability.} %
 Non-frameability variants are a core unforgeability-type property in group
@@ -823,42 +766,35 @@ consider conditional anonymity notions pointed to by Elizabeth}). It is a quite
 strong property, as it must be ensured even in the presence of dishonest issuer
 and opener. Intuitively, it prevents the adversary from creating a signature
 that can be (even in some generic sense) associated to an honest user who did
-not produce it. Depending on the inspection capabilities of the scheme,
+not produce it. Depending on the opening capabilities of the scheme,
 this framing could be done in different ways; i.e., by convincing third parties
 that signatures by different (possibly corrupt) users are linked, or directly
-by having inspection proofs output the identity of a user who did not create the
-signature being inspected.
+by having opening proofs output the identity of a user who did not create the
+signature being opened.
 
 The notion of non-frameability in \UAS schemes is unavoidably more subtle than
 in group signatures, though. To see this, we note that, by allowing arbitrary
-evaluation and inspection functions to be used, it can be perfectly valid to
+evaluation and open functions to be used, it can be perfectly valid to
 have a signature produced by a corrupted user output the same \yeval or \yinsp
-values than the one that \feval or \finsp output when evaluating or inspecting
-a signature by an honest user. As a concrete example, imagine an inspection
-function that returns the banking account number (or cryptocurrency address) to
-be used to request payment of a fine. In this example, a corrupted user and an
-honest user could both have delegated this to some agency\footnote{\todo{Maybe,
-    come up with a better example. How about spam filters that apply some sort
-    of classification engine? \finsp could be this engine, and emails by many
-    different users could be classified just as ``Spam'' or ``Not spam''}}, so
-it makes perfect sense that the inspection function returns the same value for
-both users.
+values than the ones output when evaluating or opening a signature by an honest
+user. As a concrete example, imagine an open function that returns the
+nationality of the signer. In any country, there will be many users (corrupt or
+not) sharing nationality.
 %
 More generally, since the issuer is dishonest in non-frameability properties
-and, in \UAS, the value produced by \Inspect may depend on the attributes
+and, in \UAS, the value produced by \Open may depend on the attributes
 included in user credentials, the adversary may even be able to just produce
-``legitimate'' inspections that output any desired value.
+``legitimate'' openings that output any desired value.
 
 Thus, we again need to resort to extraction techniques. In the non-frameability
 definition for \UAS, given in experiment \ExpNonframe in
 \figref{fig:exp-uas-frame}, the adversary is challenged to produce a signature
-and inspection proof that accepted by \Verify and \Judge, respectively. From
+and opening proof that is accepted by \Verify and \Judge, respectively. From
 the signature, we then extract the secret key of the signer, and match it
 against the secret keys of the honest users. The adversary wins if there is a
-match (and the signature, of course, has not been queried to \SIGN). In the
-game, the adversary has access to the oracles in 
-$\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
-\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$
+match and the signature has not been queried to \SIGN. In the game, the
+adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
+\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$.
 
 \begin{figure}[htp!]
   \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
@@ -890,25 +826,18 @@ $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \end{definition}
 
 \paragraph{Discussion on the generality of non-frameability in \UAS schemes.} %
-\todo{Re-check and re-write as needed}.
 Anonymous credentials do not have non-frameability property and, thus, it is
 hard to make a comparison. However, we can draw some connections with AC schemes
 that support revocation, as revocation is somehow equivalent to linking, which
 is a type of inspection available in group signatures. In this sense, note that
 basic revocation (without straight deanonymization) can be trivially achieved
-through our generic \Inspect function. For instance, one could set \finsp to
+through our generic \Open function. For instance, one could set \finsp to
 be a pseudorandom number seeded with the user's public key (or credential). In
-this sense, \Inspect could be essentially seen as a Verifiable Random Function.
-If we compare with group signatures, our notion is again more general than the
-conventional one. Indeed, in typical group signatures, \Open returns the
-identity of the signer, and thus non-frameability does not allow the same value
-to be returned when opening signatures by different users. Otherwise, a
-corrupted user controlled by the adversary could be able to create a signature
-opening to some honest user (hence, framing him). But this is again possible
-with our definition which, in case of making \Inspect equal \Open, becomes
-equivalent to conventional non-frameability. However, it also allows more
-generic situations in which signatures by different users may return the same
-value. 
+this sense, \Open could be essentially seen as a Verifiable Random Function.
+If we compare with group signatures, our notion is also more general than the
+conventional one, again for the same reason as sign unforgeability (i.e., \Open
+can return any value, not just the signer's identity). Thus, the need to extract
+the signer's data in order to detect if a framing has taken place.
   
 %%% Local Variables:
 %%% mode: latex
