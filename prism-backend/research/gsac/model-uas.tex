@@ -124,37 +124,46 @@ the conditions set by (e.g.) verifiers for signatures they receive; whereas
 \finsp can be programmed to extract specific utility values when needed, which
 may depend on the checks required by the verifier a signature was intended to.
 
-\paragraph{Helper functions \Identify, \ExtractIssue and \ExtractSign.} In our
-modelling, we assume the existence of three functions, \Identify, \ExtractIssue
-and \ExtractSign. They are not functions available in the actual scheme, but
-rather to the challenger in the experiments we use to formalize security fof
-\UAS. Indeed, similar techniques have been used before to prove security in
-privacy-preserving schemes with some sort of accountability, but that do not
-offer conventional opening as vanilla group signatures. For instance, see
-related works on DAA \cite{bfg+11,cdl16} and group signature variants
-\cite{dl21,fgl21,gl19,lnpy21}. More concretely, both functions are as follows:
+\paragraph{Helper functions \ExtractIssue, \ExtractSign, \IdentifyCred, and
+  \IdentifyUK.} In our modelling, we assume the existence of four functions,
+\ExtractIssue, \ExtractSign, \IdentifyCred, and \IdentifyUK. They are not
+functions available in the actual scheme, but rather to the challenger in the
+experiments we use to formalize security of \UAS schemes. Similar techniques
+have been used before to prove security in privacy-preserving schemes with some
+sort of accountability, but that do not offer conventional opening as vanilla
+group signatures. For instance, see related works on DAA \cite{bfg+11,cdl16} and
+group signature variants \cite{dl21,fgl21,gl19,lnpy21}. More concretely, these
+functions are as follows:
 
 \begin{description}
-\item[$\Identify(\usk,\attrs_{\cred},\cred)$.] Returns $1$ if \cred has been
+\item[$\ExtractIssue(\utrans) \rightarrow (\usk,\attrs_{\scred},\scred)$.]
+  Receives an $\langle \Obtain, \Issue \rangle$ transcript, and returns the
+  credentials (if any) and their attributes that were involved
+  in the request. It clearly needs an honest issuer as, otherwise, the
+  transcripts won't be available. Consequently, we only use it to define the
+  properties that require an honest issuer.
+\item[$\ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,
+  \scred,\attrs_{\scred},\yinsp)$.] Receives a signature pair $(\sig,\yeval)$,
+  as well as the opener identifier \oid, and the identifiers of all issuers of
+  the credentials used to produce the signature over \msg, and for \feval. It
+  outputs the user secret key and credentials (with their attributes) used to
+  generate the signature, and the value returned by the opening fuction.
+\item[$\IdentifyCred(\usk,\attrs_{\cred},\cred)$.] Returns $1$ if \cred has been
   issued over attributes $\attrs_{\cred}$ and for a user with secret key \usk.
   Otherwise, it returns $0$. In order to be meaningful, this requires that,
   for every $(\attrs_{\cred},\cred)$ pair, there is at most one \usk that makes
-  \Identify return $1$.
-\item[$\ExtractIssue(\utrans) \rightarrow (\usk,\scred,\attrs_{\scred})$.]
-  Receives an $\langle \Obtain, \Issue \rangle$ transcript, and returns the
-  credentials (if any), their attributes, and the user secret key used during
-  the execution of the $\langle\Obtain,\Issue\rangle$ protocol. It clearly needs
-  an honest issuer as, otherwise, the transcripts won't be available.
-  Consequently, we only use it to define the properties that require an honest
-  issuer.
-\item[$\ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,
-  \scred)$.] Receives a signature pair $(\sig,\yeval)$, as well as the opener
-  identifier \oid, and the identifiers of all issuers of the credentials used to
-  produce the signature over \msg, and for \feval. It outputs the user secret
-  key and credentials used to generate the signature.
+  \IdentifyCred return $1$.
+\item[$\IdentifyUK(\uid,\usk)$.] Returns $1$ is \usk is {\uid}'s secret key.
+  This is trivial for honest users, for which this must be a one-to-one
+  relationship between {\uid}s and {\usk}s. For corrupt users, \IdentifyUK has
+  to iterate through the $\langle\Obtain,\Issue\rangle$ transcripts associated
+  to \uid, extract the used secret key, and check if there is a match. Note that
+  this does not guarantee that there will be only one \usk per corrupt \uid,
+  though. Also, when used for corrupt users, this can only be used when the
+  issuer is honest.  
 \end{description}
 
-Note that, for the three functions, in the case of credentials, transcripts,
+Note that, for all the helper functions, in the case of credentials, transcripts,
 and signatures by honest users, it is enough to have access to the corresponding
 state information (described below) maintained by the challenger in our
 experiments. For credentials and join transcripts of corrupt users, or
@@ -162,9 +171,9 @@ dishonestly produced signatures, we do need to perform actual extraction. How to
 do this will depend on each specific construction. Certainly, the challenger
 needs special knowledge/power such as decryption trapdoors, the ability to
 rewind the game, or program random oracles. The approach needs thus to depend on
-the concrete construction, although. Although, for the case of \ExtractIssue,
+the concrete construction. \todo{Although, for the case of \ExtractIssue,
 online extractability \needcite (or alternative requirements, such as
-non-parallel or logarithmic number of joins) is necessary.
+non-parallel or logarithmic number of joins) is necessary.}
 
 \paragraph{Global Variables.} %
 The environment manages several global variables in the games posed to the
@@ -298,8 +307,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\HUGEN(\uid)$}{%
           \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
-          (\upk,\usk) \gets \UKeyGen(\parm) \\
-          \UK[\uid] \gets (\upk,\usk);
+          \usk \gets \UKeyGen(\parm) \\
+          \UK[\uid] \gets \usk;
           \HU \gets \HU \cup \lbrace  \uid \rbrace \\
           \pcreturn \top \\
         }
@@ -330,13 +339,13 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \osk \\
         }        
         
-        \procedure{$\CUGEN(\uid,\upk)$}{%          
+        \procedure{$\CUGEN(\uid)$}{%          
           \pcif \uid \in \CU: \pcreturn \bot \\
           \CU \gets \CU \cup \lbrace \uid \rbrace \\          
           \pcif \uid \in \HU: \\
           \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
           \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
-          \pcelse: \UK[\uid] = (\upk,\bot) \\          
+          \pcelse: \UK[\uid] = \bot \\          
           \pcreturn \top \\
         }
 
@@ -380,7 +389,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\PRVUK[\uid],\CRED[\scid],\attrs),\adv \rangle \\
+          \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs),\adv \rangle \\
           \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
           \pcreturn \top \\
         }
@@ -388,13 +397,13 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\CHALb(\oid,\cuid_{0,1},\cscid_{0,1},\msg,\feval)$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \oid \in \CO: \pcreturn \bot \\
-          \pcif \yeval = \feval(\PUBUK[\cuid_0],\CRED[\cscid_0],\msg) \neq \\
-          \pcind \feval(\PUBUK[\cuid_1],\CRED[\cscid_1],\msg):
+          \pcif \yeval = \feval(\UK[\cuid_0],\CRED[\cscid_0],\msg) \neq \\
+          \pcind \feval(\UK[\cuid_1],\CRED[\cscid_1],\msg):
           \pcreturn \bot \\
           \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
-          (\yeval,\csig_b) \gets \Sign(\PRVUK[\cuid_b],\PUBOK[\oid], \\
+          (\yeval,\csig_b) \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
           \hspace*{71pt}\CRED[\cscid_b],\msg,\feval) \\
-          (\yeval,\csig_{1-b}) \gets \Sign(\PRVUK[\cuid_{1-b}],\PUBOK[\oid], \\
+          (\yeval,\csig_{1-b}) \gets \Sign(\UK[\cuid_{1-b}],\PUBOK[\oid], \\
           \hspace*{80pt}\CRED[\cscid_{1-b}],\msg,\feval) \\          
           \CSIG[\csig_b] \gets 
           \lbrace (\oid,\cuid_b,\cscid_b,\msg,\feval,\yeval,\\
@@ -417,7 +426,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot:
           \pcreturn \bot \\
           \langle \cred, \utrans \rangle \gets
-          \langle \Obtain(\PRVUK[\uid],\CRED[\scid],\attrs), \\
+          \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs), \\
           \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\scid],\attrs)
           \rangle \\
           \trans[\cid] \gets \utrans \\
@@ -427,7 +436,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\SIGN(\oid,\uid,\scid,\msg,\feval)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
-          (\sig,\yeval) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,
+          (\sig,\yeval) \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,
           \feval) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\sig,\yeval,\msg,\feval) \rbrace \\
@@ -484,12 +493,12 @@ credentials, user key, and message.
     \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
     \pcif \feval \notin \famfeval: \pcreturn 0 \\
     \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
-    (\sig,\yeval) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
+    (\sig,\yeval) \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
     \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\sig,\msg,\feval) = 0: \pcreturn 1 \\
     \pcfor \cid \in \scid \pcdo: \\
     \pcind \textrm{Let}~\scred^{\cid}~\textrm{be the credentials used to obtain}
     ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,\fissue^{\cid}),\cdot)\\
-    \pcind \pcif \fissue^{\cid}(\PUBUK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
+    \pcind \pcif \fissue^{\cid}(\UK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
     \pcif \feval(\UK[\uid],\CRED[\scid],\msg) \neq \yeval: \pcreturn 1 \\
     (\yinsp,\iproof) \gets \Inspect(\PRVOK[\gid],\PUBIK[\scid],\sig,\msg,\feval) \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\y,\iproof,\sig,\yeval,\msg,\feval)
@@ -671,8 +680,9 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \IK[\iid]~\textrm{as}~((\ipk,\fissue),\cdot) \\
       (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trans[\cid]) \\
       \pcif \fissue(\usk,\scred,\ATTR[\cid]) = 0 \lor
-      \exists \cred \in \scred~\st~\Identify(\usk,\attrs_{\cred},\cred) = 0: \\
+      \exists \cred \in \scred~\st~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0: \\
       \pcind \pcreturn 1 \\
+%      \pcif \nexists \uid~\st~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1 \\
       \pcreturn 0
     }
   \caption{Experiment for unforgeability of credential issuance in \UAS schemes.}
@@ -695,8 +705,9 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \pcif \feval(\usk,\scred,\msg) \neq \yeval: \pcreturn 1 \\
       \pcif \finsp(\yeval,\usk,\scred,\msg) \neq \yinsp \lor \yinsp \neq \yinsp':
       \pcreturn 1 \\
-      \pcif \exists \cred \in \scred~\st~\Identify(\usk,\attrs_{\cred},\cred) = 0:
+      \pcif \exists \cred \in \scred~\st~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
       \pcreturn 1 \\
+      \pcif \nexists \uid~\st~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1 \\
       \pcreturn 0
     }
   \caption{Experiment for unforgeability of signatures in \UAS schemes.}
@@ -809,7 +820,7 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets
     \ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \\
-    \pcif \exists \uid \in \HU~\st~\PRVUK[\uid] = \usk: \pcreturn 1 \\
+    \pcif \exists \uid \in \HU~\st~\UK[\uid] = \usk: \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Experiment for non-frameability on \UAS schemes.}

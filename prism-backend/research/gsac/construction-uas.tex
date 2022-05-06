@@ -10,8 +10,8 @@ We use three different NP relations in our generic construction. Namely:
 \begin{description}
 \item[$\NIZKRel_{\Issue}$:] Set by issuers, governs the rules for issuing
   new credentials. It is defined as $\NIZKRel_{\Issue} = \lbrace
-  (\usk,\scred,\attrs_{\scred}), (\Ccom,\attrs,\sipk_{\scred}): \Ccom =
-  \CCommit(usk) \land \fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in
+  (\usk,\scred,\attrs_{\scred},r), (\Ccom,\attrs,\sipk_{\scred}): \Ccom =
+  \CCommit(usk;r) \land \fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in
   \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1 \rbrace$,
   where for readability we write $\attrs_{\scred}$ as abbreviation for $\lbrace
   \attrs_{\cred} \rbrace_{\cred \in \scred}$, and similarly for $\sipk_{\scred}$.

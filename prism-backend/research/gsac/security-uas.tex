@@ -1,21 +1,21 @@
 \subsection{Correctness and Security of \CUASGen}
 \label{ssec:security-uas}
 
-First, we define the \Identify, \ExtractIssue and \ExtractSign functions that
-are needed for some of the properties to be meaningful, in
+First, we define the \ExtractIssue, \ExtractSign, \IdentifyCred and \IdentifyUK
+functions that are needed for some of the properties to be meaningful, in
 \figref{fig:helper-funcs}.
 
 \begin{figure}[ht!]
   \begin{minipage}[t]{\textwidth}
-    \procedure{$\ExtractIssue(\parm,\trans)$}{%
+    \procedure{$\ExtractIssue(\parm,\utrans)$}{%
       \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Issue},\cdot,
         \cdot,\cdot)$; $\NIZKcrs_{\Issue}$ as $(\NIZKcrs,\NIZKtrap)$; and
-        \trans as $(\Ccom,\attrs,\sipk,\cred,\NIZKproof)$} \\
+        \utrans as $(\Ccom,\sipk,\cred,\NIZKproof)$} \\
       \pcif \NIZKVerify(\NIZKcrs,\NIZKproof,(\Ccom,\attrs,\sipk)): 
       \pcreturn \bot \\
       (\usk,\scred,\attrs_{\scred}) \gets \NIZKExtract(\NIZKcrs,\NIZKtrap,
       (\Ccom,\attrs,\sipk),\NIZKproof) \\
-      \pcreturn (\usk,\scred,\attrs_{\scred}) \\
+      \pcreturn (\usk,\attrs,\scred,\attrs_{\scred}) \\
     }
     
     \procedure{$\ExtractSign(\parm,\oid,\siid,\sig,\yeval,\msg,\feval)$}{%
@@ -26,18 +26,26 @@ are needed for some of the properties to be meaningful, in
         \PUBIK[\siid]$} \\
       \pcif \NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,
       \sipk,\opk)): \pcreturn \bot \\
-      (\usk,\scred,\attrs_{\scred},\yinsp,r) \gets \NIZKExtract(\NIZKcrs,\NIZKtrap,
-      (\msg,\feval,\yeval,\Ec,\sipk,\opk),\NIZKproof) \\
+      (\usk,\scred,\attrs_{\scred},\yinsp,r) \gets \NIZKExtract(\NIZKcrs,
+      \NIZKtrap, (\msg,\feval,\yeval,\Ec,\sipk,\opk),\NIZKproof) \\
       \pcreturn (\usk,\scred,\attrs_{\scred},\yinsp) \\
     }
     
-    \procedure{$\Identify(\usk,\attrs_{\cred},\cred)$}{%
+    \procedure{$\IdentifyCred(\usk,\attrs_{\cred},\cred)$}{%
       \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
-    }    
+    }
+
+    \procedure{$\IdentifyUK(\uid,\usk)$}{%
+      \pcif \uid \in \HU: \pcreturn \usk = \UK[\uid] \\
+      \pcfor \cid~\st~\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot) \\
+      \pcind (\usk',\cdot,\cdot,\cdot) \gets \ExtractIssue(\parm,\trans[\cid]) \\
+      \pcind \pcif \usk = \usk': \pcreturn 1 \\
+      \pcreturn 0
+    }
   \end{minipage}
   \label{fig:helper-funcs}
-  \caption{Definition of helper functions \Identify, \ExtractIssue and
-    \ExtractSign, for \CUASGen.}
+  \caption{Definition of helper functions \ExtractIssue, \ExtractSign,
+    \IdentifyCred, and \IdentifyUK, for \CUASGen.}
 \end{figure}
 
 \begin{theorem}[Correctness of \CUASGen]
@@ -54,9 +62,9 @@ are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Anonymity of \CUASGen]
   \label{thm:anonymity-uas}
-  If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge and
-  simulation-extractable, our \CUASGen construction satisfies anonymity as
-  defined in \defref{def:anonymity-uas}.
+  If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge, our
+  \CUASGen construction satisfies anonymity as defined in
+  \defref{def:anonymity-uas}.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:anonymity-uas}]
@@ -68,8 +76,8 @@ are needed for some of the properties to be meaningful, in
 
   We start from $G_0=\ExpAnonb$, and define game $G_1$ to be exactly the same
   as $G_0$, except that, within the $\Setup$ algorithm, we replace
-  $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. By simulation
-  extractability, $G_1$ is indistinguishable from $G_0$.
+  $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. By zero-knowledgeness,
+  $G_1$ is indistinguishable from $G_0$.
   
   From $G_1$, we consider $G^0_1$, which we define to be $G_1$, for $b=0$
   (i.e., \ExpAnonz, using $\NIZKSimSetup^{\Sign}$). The challenge sent to the
@@ -98,7 +106,7 @@ are needed for some of the properties to be meaningful, in
   where $\pi^s_1 = \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,
   \feval,\yeval,\Ec_{\yinsp},\PUBIK[\scid_1],\PUBOK[\oid]))$. Again, by
   zero-knowledge of $\NIZK^{\Sign}$, $G_2^1$ is indistinguishable from $G_1^1$.
-  Note also that $G_2^1=G_2^0$, as in the challenge oracle, used in the
+  Note also that $G_2^1=G_2^0$ as, in the challenge oracle used in the
   anonymity game, we restrict to $\PUBIK[\scid_0] = \PUBIK[\scid_1]$.
 
   Finally, consider the definition of $\AdvAnon=|\Pr\lbrack
@@ -115,15 +123,10 @@ are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Issuance unforgeability of \CUASGen]
   \label{thm:issue-forge-uas}
-  If the underlying scheme for signatures on blocks of committed messages is
-  existentially unforgeable, and the NIZK used for $\NIZKRel_{\Issue}$ is
-  simulation extractable and sound, then our \CUASGen construction satisfies
-  issuance unforgeability as defined in \defref{def:issue-forge-uas}, except
-  with negligible probability.
+  If the underlying NIZK used for $\NIZKRel_{\Issue}$ is simulation extractable
+  and sound, then our \CUASGen construction satisfies issuance unforgeability as
+  defined in \defref{def:issue-forge-uas}, except with negligible probability.
 \end{theorem}
-
-\todo{\usk belongs to \AttrSpace! I think this can lead to malleability attacks.
-  Make them disjoint?}
 
 \begin{proof}[\thmref{thm:issue-forge-uas}]
   We show that the probability that \fissue outputs $0$ is negligible, as well
@@ -146,12 +149,11 @@ are needed for some of the properties to be meaningful, in
   we can apply the \NIZKExtract function, which produces a tuple $(\usk,\scred,
   \attrs_{\scred})$ from $\utrans = (\Ccom,\attrs,\sipk,\cred,\NIZKproof)$.
   %
-  Since \NIZKproof is accepted by \ExtractIssue, from the soundness of \NIZK and
-  existential unforgeability of \SBCM, we know that all $\cred \in \scred$ are
-  valid signatures over \usk, and their respective $\attrs_{\cred}$. Thus,
-  \Identify returns $1$ for all $(\usk,\attrs_{\cred},\cred)$ tuples.
-  Moreover, all the credentials in \scred given to \fissue belong to the same
-  user, who is the owner of \usk.
+  Since \NIZKproof is accepted by \ExtractIssue, from the soundness of \NIZK, we
+  know that all $\cred \in \scred$ are valid signatures over \usk, and their
+  respective $\attrs_{\cred}$. Thus, \IdentifyCred returns $1$ for all $(\usk,
+  \attrs_{\cred},\cred)$ tuples. That is, all the credentials in \scred given
+  to \fissue belong to the same user, who is the owner of \usk.
   %
   Finally, since issuers are honest, we know that $\ATTR[\cid] = \attrs$ and,
   consequently, $\fissue(\usk,\scred,\ATTR[\cid]) = \fissue(\usk,\scred,\attrs)
@@ -162,18 +164,18 @@ are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Signing unforgeability of \CUASGen]
   \label{thm:sign-forge-uas}
-  If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is sound and simulation
-  extractable, the NIZK scheme for $\NIZKRel_{\Inspect}$ is sound and simulation
-  extractable, and \SBCM is existentially unforgeable, then our \CUASGen
-  construction satisfies signing unforgeability as defined in
+  If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is zero-knowledge, sound,
+  and simulation extractable, the NIZK scheme for $\NIZKRel_{\Inspect}$ is sound
+  and simulation extractable, and \SBCM is one-more unforgeable, then our
+  \CUASGen construction satisfies signing unforgeability as defined in
   \defref{def:sign-forge-uas}, except with negligible probability.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:sign-forge-uas}]
   As for \thmref{thm:issue-forge-uas}, we define two games, $G_0=\ExpForgeSign$,
-  and $G_1$, which is exactly the same, but where, within the \Setup algorithm,
-  we replace $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. As per the
-  definition of \NIZK in \appref{sapp:nizk}, both games are indistinguishable.
+  and $G_1$, which is exactly the same but where, within the \Setup algorithm,
+  we replace $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. After
+  zero-knowledgeness of $\NIZK^{\Sign}$, both games are indistinguishable.
 
   From $G_1$, and in order to define the winning conditions for the adversary
   in the signing unforgeability game, consider the following events:
@@ -184,7 +186,7 @@ are needed for some of the properties to be meaningful, in
     \feval) = 0$.
   \item[$L$.] Where $L = (\msg,\feval,\yeval,\Ec,\sipk,\opk) \in
     \NIZKLang^{\Sign}$.    
-  \item[$I$.] Where $I = \exists \cred \in \scred~\st~\Identify(\usk,
+  \item[$I$.] Where $I = \exists \cred \in \scred~\st~\IdentifyCred(\usk,
     \attrs_{\cred},\msg) = 0$.
   \end{description}
 
@@ -215,20 +217,20 @@ are needed for some of the properties to be meaningful, in
 
   For case 3, $(\msg,\feval,\yeval,\Ec,\sipk,\opk) \in \NIZKRel^{\Sign}$,
   $\Judge(\opk,\sipk,\yinsp,\iproof,\sig,\yeval,\msg,\feval)
-  = 1$, but there exists some credential \cred for which $\Identify(\usk,
+  = 1$, but there exists some credential \cred for which $\IdentifyCred(\usk,
   \attrs_{\cred},\msg)=0$. Note that \usk, $\attrs_{\cred}$ and \cred (for all
   $\cred \in \scred$) are output by \ExtractSign. Thus, after the
   simulation-extractability property and soundness of $\NIZK^{\Sign}$, $(\msg,
   \feval,\yeval,\Ec,\sipk,\opk) \in \NIZKRel^{\Sign}$, which more concretely
-  means that $\SBCMVerify(\ipk_{\cred},\cred,\attrs_{\cred} \cup \lbrace \usk
-  \rbrace) = 1 = \Identify(\usk,\attrs_{\cred},\cred)$, for all $\cred \in
-  \scred$. The probability of case 3 is therefore $0$.
+  means that, for all $\cred \in \scred$, $\SBCMVerify(\ipk_{\cred},\cred,\usk,
+  \attrs_{\cred}) = 1 = \IdentifyCred(\usk,\attrs_{\cred},\cred)$. The
+  probability of case 3 is therefore $0$.
   %
   Moreover, since \SBCMVerify returns $1$ for all $\cred \in \scred$, it must
   be that all of them were obtained via queries to the \ISSUE or \OBTISS
   oracles. Otherwise, if there exists some \cred that was not obtained via
-  a call to these oracles, the pair $(\lbrace \usk \rbrace \cup \attrs_{\cred},
-  \cred)$ constitutes an existential forgery of \SBCM.
+  a call to these oracles, the tuple $(\usk, \attrs_{\cred}, \cred)$ constitutes
+  a forgery of \SBCM.
 
   Cases 1, 2 and 3 above account for winning conditions at steps 6 and 10.
   % 
@@ -248,6 +250,16 @@ are needed for some of the properties to be meaningful, in
   $\NIZK^{\Inspect}$ and correctness of the public key encryption ensure that
   the $\yinsp'$ value extracted by \NIZKExtract matches the value produced by
   \Inspect.
+
+  The only remaining option for $\adv$ to win is via winning condition at line
+  11. At that point, we already know that all credentials are bound to the same
+  user key (otherwise, the adversary wins at line 10). If this key is not
+  associated to any known user, this means that there is no matching $\langle
+  \Obtain,\Issue\rangle$ transcript for a credential over $\usk$ --i.e., the
+  honest issuer did not issue any credential to \usk. But, as \sig must have
+  been produced with at least one credential (extracted at step 7), then this
+  credential is a forgery, breaking security against one-more forgery of the
+  \SBCM scheme.  
   %
   \qed
 \end{proof}
@@ -293,8 +305,7 @@ are needed for some of the properties to be meaningful, in
   $(\sig,\yeval,\msg,\feval,\yinsp,\iproof)$ tuple that is accepted by \Verify
   and \Judge. Due to simulation extractability of $NIZK^{\Sign}$, \ExtractSign
   must be able to produce a $(\usk,\scred,\attrs_{\scred},\yinsp')$ tuple. Since
-  $\adv$ wins the
-  non-frameability game with non-neglibible probability, with probability $1/q$,
+  $\adv$ wins the non-frameability game, with probability $1/q$,
   the \usk value belongs to the $u$-th honest user, so it must be equal to
   either $\msg_0$ or $\msg_1$; \advB responds accordingly to its challenge in
   the game for the hiding property of the commmitment scheme. By assumption,
