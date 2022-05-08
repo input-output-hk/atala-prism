@@ -13,7 +13,15 @@ The approach to turn our non-interactive singing-verification into an
 interactive protocol that ensures freshness is evident: prior to signing the
 message, we require that the honest verifier sends to the user a number picked
 uniformly at random from an appropriate domain, which must be concatenated to
-the signed message. We sketch a proof for why does this result in a secure
+the signed message. If there is no need to actually sign a message, then the
+message is set to an empty string, and the user only signs the random number.
+%
+Syntactically, instead of having non-interactive $\sig \gets \Sign(\gpk,\usk,
+\cred,\dattrs,\msg)$ and $1/0 \gets \Verify(\gpk,\sig,\dattrs,\msg)$ algorithms,
+we have a $1/0 \gets \langle \Sign(\gpk,\usk,\cred,\dattrs),\Verify(\gpk,
+\dattrs) \rangle$ interactive protocol.
+%
+We sketch a proof for why does this result in a secure
 \GSAC scheme with interactive signing and verification in
 \appref{ssap:interactive-gsac}
 

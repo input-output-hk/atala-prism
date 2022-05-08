@@ -1,0 +1,243 @@
+\section{Relating \UAS with Other Schemes, and Variations}
+\label{ssec:transformations}
+
+In order to justify \UAS's universality, in this section we describe how does
+\UAS schemes relate with other similar systems. \todo{The relationships seem
+  quite straightforward; thus, we only informally sketch how one could build
+  other schemes (or something very similar to them) from \UAS, and leave the
+  formal analysis for futher work.}
+%
+As a first (informal) observation, we note that the same transformation to
+interactive presentations as described in \GSAC applies here.
+
+\subsection{\GSAC from \UAS}
+Take the generic construction for \UAS in \secref{ssec:generic-construction-uas}.
+First, consider the constant issuance function $\fissue^1(\usk,\scred,\attrs) =
+1$. Next, consider $\finsp^{\upk}(\yeval,\usk,\scred,\msg) \coloneqq
+\CCommit(\usk;0)$, and $\feval^{\dattrs}(\usk,\cred,\msg) \coloneqq \dattrs(\cred)$,
+where $\dattrs(\cred)$ is the function returning the attributes indexed by
+\dattrs within \cred (which we can assume to be easy to do with proper
+encoding). It is straightforward to see that an \UAS scheme with $\fissue^1$
+as issuance function, $\feval^{\dattrs}$ as signing evaluation function, and
+$\finsp^{\upk}$ as opening function, is an implementation of the functionality
+described for \GSAC --which, in addition, lets the signer use more than one
+credential per signature; although this can of course be restricted
+implementation-wise.
+%
+Furthermore, the anonymity, sign unforgeability, and non-frameability properties
+of \UAS directly imply the anonymity, traceability, and non-frameability
+properties of \GSAC.
+
+\paragraph{Vanilla Group Signatures and Anonymous Credentials from \UAS.} As a
+corollary to the previous analysis, recall that, in \secref{ssec:variants-gsac}
+we proved that \GSAC implies both group signatures and anonymous credentials.
+Thus, since \UAS implies \GSAC, \UAS implies also both group signatures and
+anonymous credentials.
+
+\subsection{\UAS with Multiple Openers}
+We briefly mention that we have defined \UAS signatures as being ``openable'' by
+only one opener. However, since there is no tight relation between issuer and
+opener (as in conventional group signatures), note that it is trivial to extend
+to the case with multiple openers per signature. In that case, the
+$\NIZKRel_{\Sign}$ relation should be extended to include proofs of correct
+encryption of the \yinsp values produced by each chosen opener.
+Similarly, the sign unforgeability and non-frameability definitions should be
+extended to check correctness of the corresponding extra open values.
+
+\subsection{Group Signatures with Message Dependent Opening}
+
+In \cite{khk+19}, one of the first group signature schemes with a certain
+flexibility in the open-related functionality was introduced. Briefly, a group
+signature scheme with message dependent opening works as a conventional group
+signature scheme, with the addition that it is only possible to open signatures
+over specific messages (e.g., text with offensive language). For this, the
+authors introduce an extra authority, the admitter, who creates a
+``message-specific token'' for each message that they deem unacceptable.
+These message-specific tokens are later needed by the opener, in order to open
+signatures over unacceptable messages.
+
+\UAS can implement this functionality in a straightforward manner. Define
+$\finsp^{\smsg}(\yeval,\usk,\cred,\msg) \coloneqq \lbrace \pcif \msg \in \smsg:
+\pcreturn \CCommit(\usk;0); \pcelse \pcreturn \bot \rbrace$. Also, let
+$\feval^0(\usk,\scred,\msg) \coloneqq \pcreturn 0$. Then, \UAS with $\fissue^1$
+as issuance function, $\feval^0$ as signing evaluation function, and
+$\finsp^{\smsg}$ as opening function, implements a message-dependent opening
+group signature scheme -- again, restricting to one credential per user and
+signature, as before. Moreover, it implements the same functionality without
+an extra authority.
+
+\todo{In \cite{khk+19}, the authors prove that GS-MDO implies identity-based
+  encryption. \UAS implying GS-MDO would thus imply IBE, but we do not use
+  IBE in our constructions. Is there some connection between some of the main
+  building blocks we use, and IBE?}
+
+\subsection{Ring Signatures}
+
+In a nutshell, ring signatures \needcite are like group signatures where
+rather than having an issuer accepting users into a group, any user can create
+an ad hoc group composed by himself, and any arbitrary set of other users that
+have advertised their public keys in some publicly accessible way. Also, in
+ring signatures no de-anonymization is possible\footnote{At least, in vanilla
+  ring signatures. Some variants allow some sort of linkability; for instance
+  \needcite}, although the most distinguishing property is probably the lack of
+issuer, which has led some relevant systems like Monero%
+\footnote{\url{https://www.getmonero.org/resources/moneropedia/ringsignatures.html}.
+  Last access on May 8th, 2022.} to opt for ring signatures rather than, e.g.,
+group signatures.
+
+To reach (vanilla) ring signatures from \UAS, we have to slightly alter our
+generic construction. This is due to the fact that the NP relation
+$\NIZKRel^{\Sign}$ defined in \secref{ssec:generic-construction-uas} reveals the
+issuers' public keys. This is a problem as, intuitively, the signer in a ring
+signature is a sort of issuer for the ad hoc group. To hide the issuer, we
+replace the NP relation in \secref{ssec:generic-construction-uas} with
+$\NIZKRel^{\Sign-prv} \coloneqq \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r,
+\sipk_{\scred}),(\msg,\feval,\yeval,\Ec,\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land
+\yeval = \feval(\usk,\scred,\msg) \land \yinsp = \finsp(\yeval,\usk,\scred,\msg)
+\land \forall \cred \in \scred,\SBCMVerify(\ipk_{\cred},\cred,\usk,
+\attrs_{\cred}) = 1) \rbrace$. That is, the public keys of the issuers are now
+part of the witness in the NP relation, which means that they will not
+be revealed in the proofs.
+%
+Besides $\NIZKRel^{\Sign-prv}$, let $ring$ be an ad hoc set containing the
+public keys of the users that the signer wants to include in its ad hoc group.
+We define $\fissue^{ring}(\usk,\scred,\attrs) \coloneqq \lbrace \pcif \attrs
+\subseteq ring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
+\pcreturn 0 \rbrace$. That is, if we let the attributes in a credential be
+public keys, this function means that a credential will be issued if all the
+public keys specified as attributes to be included in the credential are part of
+the union of the ad hoc ring and the public key of the signer. We also define
+$\feval^{\attrs}(\usk,\cred,\msg) \coloneqq \lbrace \pcif \CCommit(\usk;0) \in
+\attrs: \pcreturn \attrs(\cred); \pcelse \pcreturn \bot \rbrace$, where
+$\attrs(\cred)$ is the function that returns all the attributes encoded in a
+credential. That is, if the public key of the signer is included in the ring,
+return all the attributes in the credential (i.e., all the public keys in the
+ring); otherwise, abort. Finally, let $\finsp^0(\yeval,\usk,\cred,\msg) = 0$.
+
+Then, an \UAS scheme with $\NIZKRel^{\Sign-prv}$ as NP relation for
+$\NIZK^{\Sign}$, and $\fissue^{ring}$, $\feval^{\attrs}$, and $\finsp^0$ is
+intuitively a ring signature scheme. To see this, observe that any user can
+act as an issuer. Thus, the owner of \usk can issue to himself a credential
+for any arbitrary ring it desires. While the $\NIZKRel^{\Issue}$ reveals the
+issuer's public key, note that this is irrelevant, as the issuer is the user
+himself. Then, the newly defined $\NIZKRel^{\Sign-prv}$ does exactly the same
+as in our original \UAS scheme, but without revealing the issuer's public key.
+$\feval^{\attrs}$ reveals all the attributes in the credential, which are
+the public keys of the ring, including the signer's public key. This is actually
+what ring signatures do: the signer, who is the owner of the private key
+associated to one of the public keys in the ring, advertises which are the
+public keys in the ring, and proves knowledge of one of them. If the NIZK
+proof verifies, this means that the signer is indeed the owner of such a private
+key. Finally, since $\finsp^0$ returns always $0$, then no de-anonymization is
+possible.
+
+\subsection{Multimodal Private Signatures}
+
+\commentwho{Jesus}{How to cite the Crypto22 paper?}
+
+To show that Multimodal Private Signatures (MPS) \needcite can be built from
+\UAS, we need to give an alternative, simulation-based, definition of the
+anonymity property. In the simulation-based approach, we require the adversary
+to guess the bit $b$ defining whether it is interacting with the real world,
+where it gets signatures by real users, or with a simulation, where all
+signatures are simulated and do not contain information about the signer.
+This alternative formulation is given in \figref{fig:exp-uas-simanon}, where
+$\Osimanon = (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,
+\OO\rbrace\CORR,\OBTAIN,\WREG)$.
+
+\begin{figure}[htp!]
+
+  \centering
+  \procedure[linenumbering]{$\ExpSimAnonb(1^\secpar)$}{%
+    \pcif b = 0: \\
+    \parm \gets \Setup(1^\secpar) \\    
+    \pcind b^* \gets \adv^{\Osimanon,\SIGN,\OPEN}(\parm) \\
+    \pcelse: \\
+    \parm \gets \SIMSETUP(1^\secpar) \\
+    \pcind b^* \gets \adv^{\Osimanon,\SIMSIGN,\SIMOPEN}(\parm) \\    
+    \pcreturn b^*
+  }
+  
+  \caption{Simulation-based anonymity experiment for \UAS schemes.}
+  \label{fig:exp-uas-simanon}
+\end{figure}
+
+\begin{definition}{(Simulatable Anonymity of \UAS)}
+  \label{def:sim-anonymity-uas}  
+  We define the advantage \AdvSimAnon of $\adv$ against \ExpSimAnonb as
+  $\AdvSimAnon=|\Pr\lbrack\ExpSimAnono(1^\secpar)=1\rbrack-
+  \Pr\lbrack\ExpSimAnonz(1^\secpar)=1\rbrack|$.
+  %
+  An \UAS scheme satisfies simulatable anonymity if there exists simulators
+  \SIMSETUP, \SIMSIGN and \SIMOPEN such that, for any p.p.t. adversary $\adv$,
+  \AdvSimAnon is a negligible function of $1^\secpar$.
+\end{definition}
+
+Note that, for our generic construction \CUASGen, \SIMSETUP, \SIMSIGN, and
+\SIMOPEN are straightforward, as all we need to do is:
+
+\begin{itemize}
+\item To build \SIMSETUP, just replace the $\NIZKSetup^{\Sign}$ and
+  $\NIZKSetup^{\Open}$ algorithms within \Setup, by their respective
+  $\NIZKSimSetup$ algorithms.
+\item To build \SIMSIGN from the \SIGN oracle, just simulate the NIZK proof
+  contained in the signatures produced by the \Sign algorithm.
+\item To build \SIMOPEN from the \OPEN oracle, just simulate the NIZK proof
+  showing opening correctness, instead of producing them as in the \Open
+  algorithm.
+\end{itemize}
+
+Indistinguishability then follows from the zero-knowledge property of each
+corresponding NIZK system. Since both scenarios are indistinguishable, and
+all signature-related proofs received by the adversary in the simulation do not
+depend on any witness (as they are simulated), then it follows that the
+adversary cannot gain any information about signers in the real world.
+
+With this alternative definition, we can achieve a generalisation of MPS
+basically by, insted of returning the plaintext \yeval value, returning an
+encryption of it under the inspector's public key; additionally proving 
+that the value used to compute the output of \finsp is the plaintext \yeval
+value. In more detail, given any \feval function, we first define an
+encrypted variant $\feval^{enc}(\usk,\scred,\msg) \coloneqq \lbrace \yeval
+\gets \feval(\usk,\scred,\msg); \yeval' \gets \EEnc(\opk,\yeval); \pcreturn
+\yeval' \rbrace$.
+%
+Naturally, the $\NIZKRel_{\Sign}$ has to be correspondigly extended, as
+$\NIZKRel_{\Sign}^{enc} = \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r),(\msg,
+\feval,\yeval,\Ec,\sipk_{\scred},\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land
+\yeval = \EEnc(\opk,\feval(\usk,\scred,\msg)) \land \yinsp = \finsp(\feval(\usk,
+\scred,\msg),\usk,\scred,\msg) \land \forall \cred \in \scred,
+\SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$.
+
+Given this approach, the need to provide an alternative definition for anonymity
+is clearer. Namely, in the original \CHALb oracle, we restrict that the
+signatures produced by both challenge users output the same \yeval value.
+However, if instead of returning the plaintext \yeval value, we return an
+encrypted version of it (as we do in the variant just described), this clearly
+becomes unachievable.
+
+\todo{It would seem that the simulation-based anonymity definition is more
+  general. Can we prove that? Concretely, if it is also good for selective
+  disclosure, we may just adopt it as default.}
+
+\subsection{Delegatable Credentials}
+
+Building delegatable credentials is also straightforward, thanks to the \fissue
+function. For instance, take the simplification of level-based delegation, where
+the owner of a credential of level $n$ can only issue credentials of level
+$n+1$. Without loss of generality, assume that the credential level is encoded
+in the first attribute of the credential, which we denote with $a_1$. In this
+context, any owner of a credential of level $n$ can define an issuance function
+$\fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1; \pcelse \pcreturn 0
+\rbrace$.
+
+\subsection{Functional Signatures}
+
+\todo{I think that, by making \yeval explicit, \UAS is essentially a
+  privacy-preserving extension to Functional Signatures. Still, I read that paper
+  quite some time ago. Re-check.}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:
