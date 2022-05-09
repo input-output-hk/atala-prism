@@ -25,8 +25,10 @@ relations for \NIZK proof systems:
   \Ccom = \CCommit(\usk; r) \rbrace$.
 \item[$\NIZKRel_{\Sign}$:] Produced by users when signing a message. It is
   defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\Ccom,\attrs,\msg,\SBCMsig),
-  (\Cmsg,\Ec,\dattrs) : \Cmsg = \CCommit(\msg) \land \Ccom =
-  \CCommit(\usk; 0) \land \Ec = \EEnc(\opk,\Ccom)
+  (\Cmsg,\Ec,\sEc^{\attrs},\dattrs,n) : \Cmsg = \CCommit(\msg) \land \Ccom =
+  \CCommit(\usk; 0) \land \Ec = \EEnc(\opk,\Ccom) \land
+  \sEc_1^{\attrs} = \EEnc(\opk,\attrs_1) \land \dots
+  \sEc_n^{\attrs} = \EEnc(\opk,\attrs_n) \land
   \land \SBCMVerify(\ipk,\SBCMsig,\usk,\attrs) = 1
   \land \dattrs \subseteq \attrs \rbrace$.
 \item[$\NIZKRel_{\Open}$:] Used by the opener when opening a signature. It
@@ -99,30 +101,39 @@ a $(\Ccom,\attrs,\cred,\pi)$ tuple.
 \paragraph{$\Sign(\gpk,\usk,\cred,\dattrs,\msg) \rightarrow \sig$.} %
 Commit to the message and recompute the user public key by running
 $\Cmsg \gets \CCommit(\msg), \Ccom \gets \CCommit(\usk; 0)$.
-Encrypt \Ccom as $\Ec \gets \EEnc(\opk,\Ccom)$ and create a NIZK proof using
-$\NIZKRel_{\Sign}$ as $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}
-(\NIZKcrs,(\usk,\Ccom,\attrs,\msg,\cred),
-(\Cmsg,\Ec,\dattrs))$. Output $\sig \gets (\Ec,\NIZKproof)$.
-
-\paragraph{$\Verify(\gpk,\sig,\dattrs,\msg) \rightarrow 1/0$.} %
-Parse \sig as $(\Ec,\NIZKproof)$, compute $\Cmsg \gets \CCommit(\msg)$ and
-return $\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\Cmsg,\Ec,\dattrs),
+Encrypt \Ccom as $\Ec \gets \EEnc(\opk,\Ccom)$, each attribute $\attrs_i \in
+\attrs$ as $\sEc^{\attrs}_i \gets \EEnc(\opk,\attrs_i)$ for $i \in n =
+|\attrs|$, and compute  $\NIZKproof \gets
+\NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs,(\usk,\Ccom,\attrs,\msg,\cred),(\Cmsg,
+\Ec,\dattrs,\sEc^{\attrs},n))$. Output $\sig \gets (\Ec,\sEc^{\attrs},
 \NIZKproof)$.
 
+\paragraph{$\Verify(\gpk,\sig,\dattrs,\msg) \rightarrow 1/0$.} %
+Parse \sig as $(\Ec,\sEc^{\attrs},\NIZKproof)$, compute $\Cmsg \gets
+\CCommit(\msg)$ and return $\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\Cmsg,\Ec,
+\dattrs,\sEc^{\attrs},n),\NIZKproof)$.
+
 \paragraph{$\Open(\gpk,\osk,\trans,\sig,\dattrs,\msg)
-  \rightarrow (\upk,\oproof)/\bot$.} %
+  \rightarrow (\upk,\attrs,\oproof)/\bot$.} %
 First, verify the signature with $\Verify(\gpk,\sig,\dattrs,\msg)$ and
-return $\bot$ if verification fails. Else, parse \sig as $(\Ec,\NIZKproof)$
-and run $\upk \gets \EDec(\osk,\Ec)$. Compute proof of correct decryption
-as $\oproof_{\Open} \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\Ec,
-\upk))$. Return $(\upk,\oproof_{\Open})$.
+return $\bot$ if verification fails. Else, parse \sig as $(\Ec,\sEc^{\attrs},
+\NIZKproof)$ and run $\upk \gets \EDec(\osk,\Ec)$, $\attrs_1 \gets \EDec(\osk,
+\sEc_1^{\attrs}), \dots, \attrs_n \gets \EDec(\osk,\sEc_n^{\attrs})$. Compute
+proof of correct decryption for all encrypted values as
+$\oproof_{\Open} \gets (\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\Ec,
+\upk)),\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\sEc_1^{\attrs},\attrs_1),
+\dots,\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\sEc_n^{\attrs},\attrs_n))$.
+Return $(\upk,\oproof_{\Open})$.
 
 \paragraph{$\Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg)
   \rightarrow 1/0$.} %
 First, verify the signature with $\Verify(\gpk,\sig,\dattrs,\msg)$ and
 return $\bot$ if verification fails. If verification suceeds, parse
-\sig as $(\Ec,\cdot)$ and return $\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\Ec,
-\upk))$.
+\sig as $(\Ec,\sEc^{\attrs},\cdot)$ and return
+$\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\Ec,\upk)) \land
+\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\sEc_1^{\attrs},\attrs_1)) \land
+\dots \land
+\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\sEc_n^{\attrs},\attrs_n))$.
 
 
 %%% Local Variables:

@@ -83,16 +83,18 @@ In the model described below, we follow closely the definitions from
 \item[$1/0 \gets \Verify(\gpk,\sig,\dattrs,\msg)$.] Checks whether \sig is a
   valid signature revealing the attribute set \dattrs of its signing credential,
   over message \msg.
-\item[$(\upk,\oproof)/\bot \gets
+\item[$(\upk,\attrs,\oproof)/\bot \gets
   \Open(\gpk,\osk,\sig,\dattrs,\msg)$.]
   Given a signature \sig over message \msg, produced by a credential with
   attributes containing the set \dattrs, returns the public key \upk of the
-  signer, and a proof of opening correctness \oproof; or $\bot$ if the
-  opening process fails.
-\item[$1/0 \gets \Judge(\gpk,\upk,\oproof,\sig,\dattrs,
-  \msg)$.] Checks if \oproof is a valid opening correctness proof stating that
-  the user with key \upk generated signature \sig over message \msg, revealing
-  attributes $\dattrs$. 
+  signer, and the attribute set \attr contained in the credential used to
+  generate the signature, along with a proof of opening correctness \oproof; or
+  $\bot$ if the opening process fails.
+\item[$1/0 \gets \Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,
+  \msg)$.] Checks if \oproof is a valid opening proof for the
+  statement: ``The owner of a credential over attribute set \attrs, and owner
+  of public key \upk, created signature \sig, which reveals attribute set
+  $\dattrs \subseteq \attrs$''.
 \end{description}
 
 The correctness and security properties are defined with the help of the
@@ -198,9 +200,9 @@ signature, revealing the public key pair of the user, must also be accepted by
     \pcif \dattrs \nsubseteq \ATTR[\cid] :
     \pcreturn \bot \\
     \sig \gets \Sign(\gpk,\PRVUK[\OWNR[\cid]],\CRED[\cid],\dattrs,\msg) \\
-    (\upk,\oproof) \gets \Open(\gpk,\osk,\sig,\dattrs,\msg) \\
+    (\upk,\attrs,\oproof) \gets \Open(\gpk,\osk,\sig,\dattrs,\msg) \\
     \pcif \Verify(\gpk, \sig, \dattrs,\msg) = 0 \lor
-    \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 0: \\
+    \Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg) = 0: \\
      \pcind \pcreturn 1 \\
     \pcreturn 0
   }
@@ -291,10 +293,11 @@ the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
     \adv^{\HUGEN,\CUGEN,\RREG,\OBTISS,\ISSUE,\SIGN,\OPEN}(\gpk,\osk) \\
     \pcif \Verify(\gpk,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
     \pcif \Open(\gpk,\osk,\trans,\sig,\dattrs,\msg) = \bot: \pcreturn 1 \\
-    \textrm{Let}~(\upk,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,\dattrs,\msg) \\
-    \pcif \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 0: \pcreturn 1 \\
+    \textrm{Let}~(\upk,\attrs,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,
+    \dattrs,\msg) \\
+    \pcif \Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg) = 0: \pcreturn 1 \\
     \pcelse \pcif \forall \uid \in \CU \cup \HU, \nexists (\uid,\cdot,\attrs)
-    \in \CRED~\st~\dattrs \subseteq \attrs: \pcreturn 1 \\
+    \in \CRED \lor \dattrs \not\subseteq \attrs: \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Traceability experiment for \GSAC schemes.}
@@ -338,12 +341,13 @@ the signature was not produced via the \SIGN oracle.
     \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-     (\sig,\dattrs,\msg,\upk,\oproof) \gets
+     (\sig,\dattrs,\msg,\upk,\attrs,\oproof) \gets
      \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN}(\gpk,\isk,\osk) \\
      \textrm{Let}~\uid~\textrm{be st}~\PUBUK[\uid] = (\upk,\cdot) \\
-     \pcreturn 1~\pcif \Verify(\gpk,\sig,\dattrs,\msg) = 1 \land 
-     \Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg) = 1~\land \\
-     \pcind \uid \in \HU \land \sig \notin \SIG[\uid] \\
+     \pcif \Verify(\gpk,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
+     \pcif \Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
+     \pcif (\uid \in \HU \land \sig \notin \SIG[\uid])
+     \lor \dattrs \not\subseteq \attrs : \pcreturn 1 \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \GSAC schemes.}

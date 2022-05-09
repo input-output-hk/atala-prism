@@ -87,10 +87,10 @@
           \pcif \textrm{no such \cid exists, or there is more than one}: \\
           \pcind \pcreturn \bot \\
           \pcif \sig \in \CSIG: \pcreturn \bot \\
-          (\upk,\oproof) \gets \Open(\gpk,\osk,\sig,\dattrs,\msg) \\
+          (\upk,\attrs,\oproof) \gets \Open(\gpk,\osk,\sig,\dattrs,\msg) \\
 %          \OSIG \gets \OSIG \cup \lbrace (\sig,\upk,\cred) \rbrace \\
 %          \CCRED \gets \CCRED \cup \lbrace \cid \rbrace \\
-          \pcreturn (\upk,\oproof) \\
+          \pcreturn (\upk,\attrs,\oproof) \\
         }
 
         \procedure{$\CHALb(\ccid_0,\ccid_1,\dattrs,\msg)$}{%
@@ -118,11 +118,14 @@
 \subsection{Detailed Proofs}
 \label{sapp:gsac-proofs}
 
-\commentwho{Jesus}{Strictly, in our generic construction we require IND-CCA (is
-  that a strict requirement? or can it be downgraded to IND-CPA?), but in the
-  following concrete instantiation, we use ElGamal, which is IND-CPA. However,
-  we actually ``lift'' ElGamal with NIZKs of the encrypted plaintexts, which is
-  essentially IND-CCA as far as I know. Still, make sure to mention that.}
+\todo{Need to update the proofs with the updated definitions, now returning
+  \attrs as part of \Open.}
+
+\commentwho{Jesus}{Strictly, in our generic construction we require IND-CCA, but
+  in the following concrete instantiation, we use ElGamal, which is IND-CPA.
+  However, we actually ``lift'' ElGamal with NIZKs of the encrypted plaintexts,
+  which is essentially IND-CCA as far as I know. Still, make sure to mention
+  that.}
 
 \begin{proof}[\thmref{thm:correctness-gsac}]
   \todo{XXX}
@@ -377,8 +380,11 @@ of a signature (which, for us is the user credential), also prove that the
 attribute encoding \usk within the credential match the encrypted value.
 Finally, the user commits to \msg, and includes this commitment within the
 proof. For this, we define relation
-$\NIZKRel_{\Sign}= \lbrace (r,\usk,\attrs,r_2,r_3,s',\msg),(\dattrs,c_1,c_2,
-\Cmsg): \Cmsg = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk}
+$\NIZKRel_{\Sign}= \lbrace (r,t_1,\dots,t_n,\usk,\attrs,r_2,r_3,s',\msg),(\dattrs,c_1,c_2,
+\Cmsg,\sEc^{\attrs},n): \Cmsg = \gen{h}^\msg \land c_1 = g^r \land c_2 = \opk^r\gen{h}_1^{\usk}
+\land \sEc^{\attrs}_{1,1} = g^{t_1} \land \sEc^{\attrs}_{1,2} = \opk^{t_1}\gen{h}_2^{\attrs_1}
+\land \dots
+\land \sEc^{\attrs}_{n,1} = g^{t_n} \land \sEc^{\attrs}_{n,2} = \opk^{t_n}\gen{h}_{n+1}^{\attrs_n}
 \land \hat{A}/d = (A')^{-x}\gen{h}_0^{r_2} \land
 \gen{g}_1 \prod_{i \in \dattrs} \gen{h}_i^{\attrs_i} =
 d^{r_3}\gen{h}_0^{-s'}\gen{h}_1^{-\usk}
@@ -396,33 +402,43 @@ d^{r_3}\gen{h}_0^{-s'}\gen{h}_1^{-\usk}
   c \gets (c_1 = \gen{g}^r,c_2 = \opk^r\gen{h}_1^{\usk})$.
 \item Compute $\Cmsg \gets \gen{h}^\msg$ and
   $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs,
-  (r,\usk,\attrs,r_2,r_3,s',\msg), (\dattrs,c_1,c_2,\Cmsg))$.
-\item Return $\sig \gets (c=(c_1,c_2),(A',\hat{A},d),\NIZKproof)$.
+  (r,t_1,\dots,t_n,\usk,\attrs,r_2,r_3,s',\msg), (\dattrs,c_1,c_2,\Cmsg,
+  \sEc^{\attrs},n))$.
+\item Return $\sig \gets (c=(c_1,c_2),\sEc^{\attrs},(A',\hat{A},d),\NIZKproof)$.
 \end{itemize}
 
 \paragraph{$\Verify(\gpk,\sig,\dattrs,\msg) \rightarrow 1/0$.} %
-Parse \gpk as $(\ipk,\opk)$ and $\sig$ as $(c=(c_1,c_2),
+Parse \gpk as $(\ipk,\opk)$ and $\sig$ as $(c=(c_1,c_2),\sEc^{\attrs},
 (A',\hat{A},d), \NIZKproof)$. Check that $A' \neq 1_{\GG_1}$ and $e(A',\ipk) =
 e(\hat{A},\gen{g}_2)$. Compute $\Cmsg \gets \gen{h}^\msg,$ and return
-$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\dattrs,c_1,c_2,\Cmsg),
-\NIZKproof)$.
+$\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\dattrs,c_1,c_2,\Cmsg,\sEc^{\attrs},
+n),\NIZKproof)$.
 
 \paragraph{$\Open(\gpk,\osk,\sig,\dattrs,\msg)
-  \rightarrow (\upk,\oproof)/\bot$.} %
+  \rightarrow (\upk,\attrs,\oproof)/\bot$.} %
 For open algorithms, we define the following relation for correct decryption of
 ElGamal ciphertexts: $\NIZKRel_{\Open} = \lbrace \osk,(c_1,c_2,\msg):
-c_2/c_1^{\osk} = \msg \rbrace$. Given $\NIZKRel_{\Open}$, the opener first,
+c_2/c_1^{\osk} = \msg \rbrace$. Given $\NIZKRel_{\Open}$, the opener first
 checks that $\Verify$ accepts the signature, and aborts otherwise. If \sig
-is accepted, then parses \sig as $(c=(c_1,c_2),\cdot,\cdot)$.
-Sets $\upk \gets c_2/c_1^{\osk}$. Finally, computes the proof of correct
-decryption by running $\oproof \gets \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,
-\osk,(\upk,c_1,c_2))$, and returns $(\upk,\oproof)$.
+is accepted, then parses \sig as $(c=(c_1,c_2),\sEc^{\attrs},\cdot,\cdot)$.
+Sets $\upk \gets c_2/c_1^{\osk}$, and
+$\attrs_i \gets \sEc^{\attrs}_{i,2}/(\sEc^{\attrs}_{i,1})^{\osk}$. Finally,
+computes the proof of correct decryption by running $\oproof \gets
+(\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\upk,c_1,c_2)),
+\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\attrs_1,\sEc^{\attrs}_{1,1},\sEc^{\attrs}_{1,2})),
+\dots,
+\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\attrs_n,\sEc^{\attrs}_{n,1},\sEc^{\attrs}_{n,2})))$,
+and returns $(\upk,(\attrs_1,\dots,\attrs_n),\oproof)$.
 
-\paragraph{$\Judge(\gpk,\upk,\oproof,\sig,\dattrs,\msg)
+\paragraph{$\Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg)
   \rightarrow 1/0$.} %
 First, check that $\Verify$ accepts \sig, and abort otherwise. If the signature
-is accepted, then parse \sig as $(c=(c_1,c_2),\cdot,\cdot)$ and return
-$\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(c_1,c_2,\upk),\oproof)$.
+is accepted, then parse \sig as $(c=(c_1,c_2),\sEc^{\attrs},\cdot,\cdot)$,
+parse \oproof as $(\oproof_0,\oproof_1,\dots,\oproof_n)$ and
+return $\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(c_1,c_2,\upk),\oproof_0) \land
+\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\sEc^{\attrs}_{1,1},\sEc^{\attrs}_{1,2},\attrs_1),\oproof_1) \land
+\dots \land
+\NIZKVerify^{\NIZKRel_{\Open}}(\NIZKcrs,(\sEc^{\attrs}_{n,1},\sEc^{\attrs}_{n,2},\attrs_n),\oproof_n)$.
 
 % \commentwho{Jesus}{For consistency with \UAS, maybe remove the need to return
 %   \attrs in \Open, and return \dattrs instead. Then, we do not need to pass

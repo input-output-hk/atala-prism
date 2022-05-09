@@ -117,7 +117,7 @@ Defined as a tuple $(\ESetup,\EKeyGen,\EEnc,\EDec)$. Algorithm $\Eparm \gets
 $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$ generates the encryption-decryption key
 pair, algorithm $\Ec \gets \EEnc(\Eek,\msg)$ encrypts message \msg with
 encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\Edk,
-\Ec)$ decrypts ciphertexts using decryption key \Edk. We rely on \todo{IND-CCA}
+\Ec)$ decrypts ciphertexts using decryption key \Edk. We rely on IND-CCA
 public-key encryption schemes.
 
 \paragraph{(Vector) Commitment Schemes.} %

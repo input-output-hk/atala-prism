@@ -451,7 +451,7 @@ parameter.
   \begin{minipage}[t]{\textwidth}
     \centering
     
-    \procedure{$\ExpSBCMOMF(\SBCMsecpar)$}{%
+    \procedure[linenumbering]{$\ExpSBCMOMF(\SBCMsecpar)$}{%
       \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
       (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
       ((\sig_1,\overline{\smsg}_1, \smsg_1),\dots,
@@ -462,11 +462,13 @@ parameter.
       \pcif \exists i \neq j \in [n+1]~\st~\smsg_i = \smsg_j \land
       \overline{\smsg}_i = \overline{\smsg}_j: \pcreturn 0 \\
       \pcif \langle \cdot, \SBCMSign(\SBCMsk,\cdot)\rangle~
-      \textrm{was called more than $k$ times}: \pcreturn 0 \\
-      \pcreturn 1 \\
+      \textrm{was called more than $n$ times}: \pcreturn 0 \\
+      \pcreturn 1
     }
+
+    \vspace*{0.5em}
     
-    \procedure{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
+    \procedure[linenumbering]{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
       \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
       (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
       (\overline{\smsg}_0,\overline{\smsg}_1,\smsg) \gets
@@ -553,13 +555,44 @@ is essentially the same as in \cite{asm06,cdl16b}, only needing to account for
 the different basis for messages signed in committed and plain form.
 
 \subsubsection{Security.} Next, we sketch that the given BBS+ interactive
-signing protocol is correct and OMF-secure.
+signing protocol is correct, OMF-secure, and ensures blindness.
 
 \paragraph{Correctness.} \todo{XXX}
 
-\paragraph{OMF security.} \todo{YYY}
+\paragraph{OMF security.} The proof for OMF security is essentially the
+same as that of EUF security for BBS+ signatures \cite{cdl16b}, which gives a
+reduction against the $q$-SDH problem. There is only one exception: in the proof
+for BBS+ EUF-security, when the adversary against EUF-security queries a
+signature, the simulator (the adversary against $q$-SDH) has to simulate the
+signature. For this, it requires the $l$ messages in the message set to be
+signed, which in plain BBS+ it is not a problem, as they are received in the
+clear. In the case of \SBCM, however, some of the messages to be signed are
+received as part of a commitment. Note however that, in \SBCM, besides receiving
+the commitment, we also receive a NIZK proof of knowledge of the corresponding
+messages. Thus, the adversary against $q$-SDH in the OMF case only needs to
+extract the witnesses from the proof. This is doable after soundness of NIZK.
+If the NIZK also has online-extractability, then we do not need to impose
+further requirements. If it is not, then the \SBCM scheme should not allow
+parallel signing requests, or limit the total number of signatures to be
+created to a logarithmic function of the security parameter (which is probably
+not reasonable in most cases; although it may be for group signature-like
+settings). We refer to \cite[Lemma 1]{cdl16b} for the full details of the proof
+of EUF security in BBS+.
+%
+\todo{If needed, do the actual proof. Should essentially be a copy-paste of
+  that in \cite{cdl16b}...}
 
-
+\paragraph{Blindness.} Blindness of \SBCM is a direct consequence of the
+hiding property of the underlying block commitment scheme. Indeed, assume an
+adversary $\adv$ against blindness of \SBCM. Then, $\adv$ can be used by
+\advB against the hiding property of the commitment scheme in a straightforward
+manner. That is, once $\adv$ outputs its two sets of messages to be signed in
+committed form (i.e., $\overline{\smsg}_0$ and $\overline{\smsg}_1$, it feeds
+them directly to its environment in \ExpComHideb; \advB awaits for the response
+(a commitment of $\overline{\smsg}_b$), and forwards it to $\adv$. Finally,
+\advB outputs whatever $\adv$ outputs. Clearly, if $\adv$ wins the blindness
+game for \SBCM with non-negligible probability, so does \advB agains the hiding
+game of the commitment scheme.
 
 %%% Local Variables:
 %%% mode: latex
