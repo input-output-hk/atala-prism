@@ -110,6 +110,8 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
          |WHERE participant_id = $participantId
        """.stripMargin.update.run.void
   }
+  val mockMerkleInclusionProof =
+    """{"hash":"7d25e48be1c6475429bd33adbd5b7657340f264e62c2bf9b25ea478d9d3a2566","index":0,"siblings":[]}"""
 
   "storeCredential" should {
     "store credential in the database" in {
@@ -131,6 +133,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
+        .withBatchInclusionProof(mockMerkleInclusionProof)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -166,6 +169,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
+        .withBatchInclusionProof(mockMerkleInclusionProof)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -189,6 +193,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential2)
         .withCredentialExternalId(mockCredentialExternalId.value)
+        .withBatchInclusionProof(mockMerkleInclusionProof)
       val rpcRequest2 = SignedRpcRequest.generate(keyPair, did, request2)
 
       usingApiAs(rpcRequest2) { serviceStub =>
@@ -243,6 +248,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
+        .withBatchInclusionProof(mockMerkleInclusionProof)
       val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
 
       usingApiAs(rpcRequest) { serviceStub =>
@@ -275,6 +281,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
+        .withBatchInclusionProof(mockMerkleInclusionProof)
 
       val rpcStoreRequest =
         SignedRpcRequest.generate(keyPair, did, storeRequest)
@@ -314,6 +321,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         .withConnectionToken(token)
         .withEncodedSignedCredential(encodedSignedCredential)
         .withCredentialExternalId(mockCredentialExternalId.value)
+        .withBatchInclusionProof(mockMerkleInclusionProof)
       val rpcStoreRequest =
         SignedRpcRequest.generate(keyPair, did, storeRequest)
       usingApiAs(rpcStoreRequest) { serviceStub =>
@@ -358,6 +366,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
           .withConnectionToken(token)
           .withEncodedSignedCredential(encodedSignedCredential)
           .withCredentialExternalId(messageId.value)
+          .withBatchInclusionProof(mockMerkleInclusionProof)
       }
 
       storeRequests.map { storeRequest =>

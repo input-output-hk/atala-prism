@@ -14,7 +14,6 @@ case class ReceivedSignedCredential(
     receivedAt: Instant,
     batchInclusionProof: Option[MerkleInclusionProof]
 )
-//FIXME where is class derivation MerkleInclusionProof ??
 @derive(loggable)
 class CredentialExternalId private (val value: String) extends AnyVal
 

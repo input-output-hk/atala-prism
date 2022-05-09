@@ -28,8 +28,9 @@ object ReceivedCredentialsDAO {
   ): ConnectionIO[Unit] = {
     val receivedId = UUID.randomUUID()
     val receivedAt = Instant.now()
-    sql"""INSERT INTO received_credentials (received_id, contact_id, encoded_signed_credential, credential_external_id, received_at)
-         |VALUES ($receivedId, ${data.contactId}, ${data.encodedSignedCredential}, ${data.credentialExternalId}, $receivedAt)
+    val inclusion_proof = data.batchInclusionProof.map(_.encode())
+    sql"""INSERT INTO received_credentials (received_id, contact_id, encoded_signed_credential, credential_external_id, received_at, inclusion_proof)
+         |VALUES ($receivedId, ${data.contactId}, ${data.encodedSignedCredential}, ${data.credentialExternalId}, $receivedAt, $inclusion_proof)
          |ON CONFLICT (credential_external_id) DO NOTHING
        """.stripMargin.update.run.void
   }
