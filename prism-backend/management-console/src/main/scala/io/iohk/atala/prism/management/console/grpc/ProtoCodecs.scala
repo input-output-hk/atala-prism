@@ -112,7 +112,8 @@ object ProtoCodecs {
     console_models.StoredSignedCredential(
       individualId = receivedSignedCredential.individualId.toString,
       encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
-      storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some
+      storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some,
+      batchInclusionProof = receivedSignedCredential.batchInclusionProof.map(_.encode()).getOrElse("") // FIXME
     )
   }
 

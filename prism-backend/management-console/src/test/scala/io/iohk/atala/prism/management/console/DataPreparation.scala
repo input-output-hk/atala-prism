@@ -227,7 +227,8 @@ object DataPreparation {
     val request = ReceivedSignedCredentialData(
       contactId = contactId,
       credentialExternalId = CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
-      encodedSignedCredential = "signed-data-mock"
+      encodedSignedCredential = "signed-data-mock",
+      batchInclusionProof = Some(MerkleInclusionProof.decode("merkleInclusionProof-data-mock"))
     )
 
     ReceivedCredentialsDAO

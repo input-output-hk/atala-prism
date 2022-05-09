@@ -51,7 +51,8 @@ final case class DeleteCredentials(
 final case class StoreCredential(
     connectionToken: ConnectionToken,
     encodedSignedCredential: String,
-    credentialExternalId: CredentialExternalId
+    credentialExternalId: CredentialExternalId,
+    batchInclusionProof: Option[MerkleInclusionProof]
 )
 
 final case class GetLatestCredential()

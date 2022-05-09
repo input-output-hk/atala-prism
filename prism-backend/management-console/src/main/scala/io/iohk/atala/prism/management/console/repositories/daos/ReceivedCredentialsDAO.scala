@@ -13,12 +13,14 @@ import io.iohk.atala.prism.management.console.models.{
   ParticipantId,
   ReceivedSignedCredential
 }
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
 
 object ReceivedCredentialsDAO {
   case class ReceivedSignedCredentialData(
       contactId: Contact.Id,
       encodedSignedCredential: String,
-      credentialExternalId: CredentialExternalId
+      credentialExternalId: CredentialExternalId,
+      batchInclusionProof: Option[MerkleInclusionProof]
   )
 
   def insertSignedCredential(
@@ -38,14 +40,14 @@ object ReceivedCredentialsDAO {
   ): ConnectionIO[List[ReceivedSignedCredential]] = {
     val statement = contactIdMaybe match {
       case Some(contactId) =>
-        sql"""SELECT contact_id, encoded_signed_credential, received_at
+        sql"""SELECT contact_id, encoded_signed_credential, received_at, inclusion_proof
              |FROM received_credentials JOIN contacts USING (contact_id)
              |WHERE created_by = $verifierId AND contact_id = $contactId
              |ORDER BY received_at
        """.stripMargin
 
       case None =>
-        sql"""SELECT contact_id, encoded_signed_credential, received_at
+        sql"""SELECT contact_id, encoded_signed_credential, received_at, inclusion_proof
              |FROM received_credentials JOIN contacts USING (contact_id)
              |WHERE created_by = $verifierId
              |ORDER BY received_at

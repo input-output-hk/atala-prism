@@ -920,7 +920,8 @@ package object grpc {
       } yield StoreCredential(
         connectionToken,
         request.encodedSignedCredential,
-        credentialExternalId
+        credentialExternalId,
+        Some(MerkleInclusionProof.decode(request.batchInclusionProof))
       )
     }
 

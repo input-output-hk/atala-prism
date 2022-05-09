@@ -6,12 +6,15 @@ import tofu.logging.derivation.loggable
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
 
 case class ReceivedSignedCredential(
     individualId: Contact.Id,
     encodedSignedCredential: String,
-    receivedAt: Instant
+    receivedAt: Instant,
+    batchInclusionProof: Option[MerkleInclusionProof]
 )
+//FIXME where is class derivation MerkleInclusionProof ??
 @derive(loggable)
 class CredentialExternalId private (val value: String) extends AnyVal
 
