@@ -669,9 +669,6 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
           .futureValue
           .value
 
-      println("#" * 100)
-      println(contactWithDetails.receivedCredentials.headOption)
-
       contactWithDetails.receivedCredentials.headOption.flatMap(_.batchInclusionProof).isDefined mustBe (true)
     }
 

@@ -113,5 +113,31 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       result must be(Some(mockCredentialExternalId2))
     }
+
+    "be return the batchInclusionProof if one is set" in {
+      val contactId =
+        DataPreparation.createContact(verifierId, "Individual", None).contactId
+
+      val encodedSignedCredential1 =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val mockCredentialExternalId1 = CredentialExternalId.random()
+      val merkleInclusionProof = MerkleInclusionProof.decode(
+        """{"hash":"7d25e48be1c6475429bd33adbd5b7657340f264e62c2bf9b25ea478d9d3a2566","index":0,"siblings":[]}"""
+      )
+
+      create(contactId, encodedSignedCredential1, mockCredentialExternalId1, Some(merkleInclusionProof))
+
+      // Add time padding to make sure that the second credential is created strictly after the first one
+      Thread.sleep(10)
+
+      val result =
+        receivedCredentialsRepository
+          .getCredentialsFor(verifierId, Some(contactId))
+          .unsafeRunSync()
+
+      result.head.batchInclusionProof must be(Some(merkleInclusionProof))
+
+    }
+
   }
 }

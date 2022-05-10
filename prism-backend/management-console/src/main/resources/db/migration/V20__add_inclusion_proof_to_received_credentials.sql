@@ -1,4 +1,4 @@
--- ATL-220
+-- ATL-220 Store the credentials proof
 ALTER TABLE received_credentials
-    ADD COLUMN inclusion_proof TEXT NULL; -- FIXME shoud we use TEXT NOT NULL DEFAULT '';
+    ADD COLUMN inclusion_proof TEXT NULL;
 
