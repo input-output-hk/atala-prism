@@ -114,7 +114,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
       result must be(Some(mockCredentialExternalId2))
     }
 
-    "be return the batchInclusionProof if one is set" in {
+    "be return the batchInclusionProof if one is set (ATL-220)" in {
       val contactId =
         DataPreparation.createContact(verifierId, "Individual", None).contactId
 
