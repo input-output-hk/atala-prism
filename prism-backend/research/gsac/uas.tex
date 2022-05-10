@@ -25,18 +25,18 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
   Much work has been done in the last 4 decades on privacy-preserving
   identities and authentication that tries to incorporate some sort of utility
   and accountability without losing (too much) privacy. Among the most relevant
-  efforts we can find group signatures and anonymous credentials.
+  efforts we can find group signatures (GS) and anonymous credentials (AC).
   %
-  Anonymous credentials (AC) let users obtain attestations by trusted
+  AC let users obtain attestations by trusted
   issuers on certain attributes -- thus implicitly defining the concept of
   identity as ``a set of attributes'' -- and allow credential owners to prove
   claims on these attributes. Indeed, this has proven to be very
-  flexible, to the point that it has served as inspiration to design W3C's
+  flexible, to the point that it inspired the design of W3C's
   Verifiable Credentials, a relevant industry-led effort. However, the
-  accountability offered by anonymous credentials is quite limited; frequently
-  restricted to blacklisting, if present at all.
+  accountability in AC schemes is quite limited; frequently restricted to
+  blacklisting, if present at all.
   %
-  On the other hand, group signatures (GS) have traditionally focused on plain
+  On the other hand, GS have traditionally focused on plain
   authentication without attributes (except very few exceptions), making instead
   more emphasis on the accountability side. That is, not only allowing full
   deanonymization, but also variants such as sequential linking, user-controlled
@@ -45,13 +45,13 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
   Not surprisingly, GS and AC share very common syntax, models and frequently
   also constructions.
 
-  We argue that, for the real world, both functionalities are essential. Taking
+  We argue that, in the real world, both functionalities are essential. Taking
   advantage of their similarities, we first propose a trivial combination, that
-  we refer to with the original \GSAC acronym. Through \GSAC, we
-  showcase the benefits of even a simple combination. We give a common syntax,
+  we refer to with the imaginative \GSAC acronym. Through \GSAC, we showcase
+  the benefits that even a simple combination brings. We give a common syntax,
   security model, and generic construction for \GSAC.
   %
-  Next, we acknowledge that even \GSAC has strong limitations. Namely, it is too
+  Next, we acknowledge that \GSAC has limitations. Namely, it is too
   strict in the rules one can apply during issuance of credentials, and signing
   and opening of the produced signatures. While generalizations along these
   lines have been explored independently in the GS and AC domains, to the best
@@ -68,7 +68,8 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
   now well-defined, given the incorporation of attributes from the AC domain).
   %
   The techniques and building blocks we leverage are well known. The challenge
-  is, rather, on the definitional side.
+  is, rather, on the definitional side. To further evidence the universality of
+  \UAS, we show how more restricted schemes can be built from vanilla \UAS.
 \end{abstract}
 
 \input{introduction.tex}
