@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
 import io.iohk.atala.prism.management.console.integrations.ContactsIntegrationService.DetailedContactWithConnection
 import io.iohk.atala.prism.management.console.models.{Contact, GenericCredential, InstitutionGroup, Statistics, _}
+import io.iohk.atala.prism.protos.common_models.OperationStatus.UNKNOWN_OPERATION
 import io.iohk.atala.prism.protos.console_api.GetContactResponse
 import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, Group, StoredSignedCredential}
 import io.iohk.atala.prism.protos.{common_models, connector_models, console_api, console_models}
@@ -143,6 +144,7 @@ object ProtoCodecs {
       .withContactData(credential.contactData.noSpaces)
       .withConnectionStatus(connection.connectionStatus)
       .withExternalId(credential.externalId.value)
+      .withRevokedOnOperationStatus(toOperationStatus(credential.revokedOnOperationStatus))
       .withSharedAt(
         credential.sharedAt.map(_.toProtoTimestamp).getOrElse(Timestamp())
       )
@@ -157,6 +159,12 @@ object ProtoCodecs {
         .withBatchInclusionProof(data.inclusionProof.encode)
         .withPublicationStoredAt(data.storedAt.toProtoTimestamp)
     }
+  }
+
+  def toOperationStatus(
+      operationStatus: Option[OperationStatus]
+  ): common_models.OperationStatus = {
+    operationStatus.flatMap(os => common_models.OperationStatus.fromName(os.entryName)).getOrElse(UNKNOWN_OPERATION)
   }
 
   def toContactProto(
