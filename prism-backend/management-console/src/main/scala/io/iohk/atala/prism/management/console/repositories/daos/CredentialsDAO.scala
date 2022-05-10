@@ -29,7 +29,7 @@ object CredentialsDAO {
         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_at, c.credential_type_id,
         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data, connection_token,
         |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
-        |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
+        |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id, PC.revoked_on_operation_status
       """.stripMargin
 
   private def withPublishedCredentialsPC(
@@ -40,7 +40,7 @@ object CredentialsDAO {
         fr"""
            |PC AS (
            |  SELECT credential_id, batch_id, issuance_operation_hash, issuance_operation_id, encoded_signed_credential, inclusion_proof,
-           |         stored_at, shared_at, revoked_on_operation_id
+           |         stored_at, shared_at, revoked_on_operation_id, revoked_on_operation_status
            |  FROM published_credentials JOIN published_batches USING (batch_id)
            |  WHERE credential_id = $credentialId
            |)
@@ -49,7 +49,7 @@ object CredentialsDAO {
         fr"""
           |PC AS (
           |  SELECT credential_id, batch_id, issuance_operation_hash, issuance_operation_id, encoded_signed_credential, inclusion_proof,
-          |         stored_at, shared_at, revoked_on_operation_id
+          |         stored_at, shared_at, revoked_on_operation_id, revoked_on_operation_status
           |  FROM published_credentials JOIN published_batches USING (batch_id)
           |)
           """.stripMargin
@@ -75,7 +75,7 @@ object CredentialsDAO {
     ) ++
       fr"""|SELECT inserted.*, contacts.external_id, PTS.name AS issuer_name, contacts.contact_data, connection_token,
            |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
-           |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id
+           |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id, PC.revoked_on_operation_status
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN contacts ON (inserted.contact_id = contacts.contact_id)

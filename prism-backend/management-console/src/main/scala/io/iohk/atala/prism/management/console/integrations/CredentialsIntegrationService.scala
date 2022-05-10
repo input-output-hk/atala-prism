@@ -35,6 +35,9 @@ import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
 import cats.MonadThrow
 import cats.effect.MonadCancelThrow
+import io.iohk.atala.prism.protos.node_api.GetOperationInfoRequest
+
+import scala.concurrent.Future
 
 @derive(applyK)
 trait CredentialsIntegrationService[F[_]] {
@@ -115,19 +118,35 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
         .getBy(issuedBy, contactId)
     )
 
+  private def appendRevocationStatus(
+      genericCredentials: List[GenericCredential]
+  ): F[List[GenericCredential]] =
+    genericCredentials.map { genericCredential =>
+      genericCredential.revokedOnOperationId
+        .map { operationId =>
+          ex.deferFuture(nodeService.getOperationInfo(GetOperationInfoRequest(operationId.toProtoByteString)))
+            .map(operationInfo =>
+              genericCredential
+                .copy(revokedOnOperationStatus = Some(OperationStatus.withName(operationInfo.operationStatus.name)))
+            )
+        }
+        .getOrElse(ex.deferFuture(Future.successful(genericCredential)))
+    }.sequence
+
   private def getAndAppendConnectionStatus(
       genericCredentialSupplier: => F[List[GenericCredential]]
   ): F[GetGenericCredentialsResult] =
     for {
       genericCredentials <- genericCredentialSupplier
+      genericCredentialsWithOperationStatus <- appendRevocationStatus(genericCredentials)
       connectionStatuses <- connector.getConnectionStatus(
-        genericCredentials.map(_.connectionToken)
+        genericCredentialsWithOperationStatus.map(_.connectionToken)
       )
       tokenToConnection = connectionStatuses
         .map(c => ConnectionToken(c.connectionToken) -> c)
         .toMap
     } yield GetGenericCredentialsResult(
-      genericCredentials
+      genericCredentialsWithOperationStatus
         .map { genericCredential =>
           GenericCredentialWithConnection(
             genericCredential,
