@@ -224,10 +224,14 @@ object DataPreparation {
   def createReceivedCredential(
       contactId: Contact.Id
   )(implicit database: Transactor[IO]): Unit = {
+    val merkleInclusionProof = MerkleInclusionProof.decode(
+      """{"hash":"7d25e48be1c6475429bd33adbd5b7657340f264e62c2bf9b25ea478d9d3a2566","index":0,"siblings":[]}"""
+    )
     val request = ReceivedSignedCredentialData(
       contactId = contactId,
       credentialExternalId = CredentialExternalId(Random.alphanumeric.take(10).mkString("")),
-      encodedSignedCredential = "signed-data-mock"
+      encodedSignedCredential = "signed-data-mock",
+      batchInclusionProof = Some(merkleInclusionProof)
     )
 
     ReceivedCredentialsDAO

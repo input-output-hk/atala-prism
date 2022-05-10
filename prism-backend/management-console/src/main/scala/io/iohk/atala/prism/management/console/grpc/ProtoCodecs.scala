@@ -17,6 +17,7 @@ import java.time.{Instant, LocalDate}
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 
 import scala.util.{Failure, Success, Try}
+import scala.util.chaining._
 
 object ProtoCodecs {
 
@@ -110,11 +111,19 @@ object ProtoCodecs {
   def receivedSignedCredentialToProto(
       receivedSignedCredential: ReceivedSignedCredential
   ): StoredSignedCredential = {
-    console_models.StoredSignedCredential(
-      individualId = receivedSignedCredential.individualId.toString,
-      encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
-      storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some
-    )
+    console_models
+      .StoredSignedCredential(
+        individualId = receivedSignedCredential.individualId.toString,
+        encodedSignedCredential = receivedSignedCredential.encodedSignedCredential,
+        storedAt = receivedSignedCredential.receivedAt.toProtoTimestamp.some
+      )
+      .pipe(storedSignedCredential =>
+        receivedSignedCredential.batchInclusionProof
+          .map(_.encode()) match {
+          case Some(proof) => storedSignedCredential.withBatchInclusionProof(proof)
+          case None => storedSignedCredential
+        }
+      )
   }
 
   def genericCredentialToProto(

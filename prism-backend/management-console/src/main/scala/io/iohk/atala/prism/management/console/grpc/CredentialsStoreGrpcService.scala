@@ -45,7 +45,7 @@ class CredentialsStoreGrpcService(
 
   override def storeCredential(
       request: console_api.StoreCredentialRequest
-  ): Future[console_api.StoreCredentialResponse] =
+  ): Future[console_api.StoreCredentialResponse] = {
     auth[StoreCredential]("storeCredential", request) { (participantId, typedRequest, traceId) =>
       val flow = for {
         data <- EitherT {
@@ -58,7 +58,8 @@ class CredentialsStoreGrpcService(
                   ReceivedSignedCredentialData(
                     contact.contactId,
                     typedRequest.encodedSignedCredential,
-                    typedRequest.credentialExternalId
+                    typedRequest.credentialExternalId,
+                    typedRequest.batchInclusionProof
                   )
                 }
             }
@@ -76,6 +77,7 @@ class CredentialsStoreGrpcService(
         .unsafeToFuture()
         .toFutureEither
     }
+  }
 
   override def getLatestCredentialExternalId(
       request: GetLatestCredentialExternalIdRequest

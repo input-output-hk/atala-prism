@@ -12,6 +12,7 @@ import tofu.logging.Logs
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import io.iohk.atala.prism.crypto.MerkleInclusionProof
 
 class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
   val logs: Logs[IO, IO] = Logs.sync[IO, IO]
@@ -42,14 +43,16 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
   def create(
       contactId: Contact.Id,
       encodedSignedCredential: String,
-      credentialExternalId: CredentialExternalId
+      credentialExternalId: CredentialExternalId,
+      batchInclusionProof: Option[MerkleInclusionProof]
   ): Unit = {
     receivedCredentialsRepository
       .createReceivedCredential(
         ReceivedSignedCredentialData(
           contactId,
           encodedSignedCredential,
-          credentialExternalId
+          credentialExternalId,
+          batchInclusionProof
         )
       )
       .unsafeRunSync()
@@ -65,7 +68,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
         "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId = CredentialExternalId.random()
 
-      create(contactId, encodedSignedCredential, mockCredentialExternalId)
+      create(contactId, encodedSignedCredential, mockCredentialExternalId, None)
 
       val result =
         receivedCredentialsRepository
@@ -92,7 +95,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
         "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId1 = CredentialExternalId.random()
 
-      create(contactId, encodedSignedCredential1, mockCredentialExternalId1)
+      create(contactId, encodedSignedCredential1, mockCredentialExternalId1, None)
 
       // Add time padding to make sure that the second credential is created strictly after the first one
       Thread.sleep(10)
@@ -101,7 +104,7 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
         "b4cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
       val mockCredentialExternalId2 = CredentialExternalId.random()
 
-      create(contactId, encodedSignedCredential2, mockCredentialExternalId2)
+      create(contactId, encodedSignedCredential2, mockCredentialExternalId2, None)
 
       val result =
         receivedCredentialsRepository
@@ -110,5 +113,31 @@ class ReceivedCredentialsRepositorySpec extends AtalaWithPostgresSpec {
 
       result must be(Some(mockCredentialExternalId2))
     }
+
+    "be return the batchInclusionProof if one is set (ATL-220)" in {
+      val contactId =
+        DataPreparation.createContact(verifierId, "Individual", None).contactId
+
+      val encodedSignedCredential1 =
+        "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
+      val mockCredentialExternalId1 = CredentialExternalId.random()
+      val merkleInclusionProof = MerkleInclusionProof.decode(
+        """{"hash":"7d25e48be1c6475429bd33adbd5b7657340f264e62c2bf9b25ea478d9d3a2566","index":0,"siblings":[]}"""
+      )
+
+      create(contactId, encodedSignedCredential1, mockCredentialExternalId1, Some(merkleInclusionProof))
+
+      // Add time padding to make sure that the second credential is created strictly after the first one
+      Thread.sleep(10)
+
+      val result =
+        receivedCredentialsRepository
+          .getCredentialsFor(verifierId, Some(contactId))
+          .unsafeRunSync()
+
+      result.head.batchInclusionProof must be(Some(merkleInclusionProof))
+
+    }
+
   }
 }

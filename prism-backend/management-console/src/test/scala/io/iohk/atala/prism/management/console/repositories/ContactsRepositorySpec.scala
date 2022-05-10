@@ -657,6 +657,21 @@ class ContactsRepositorySpec extends AtalaWithPostgresSpec {
       contactWithDetails.receivedCredentials.size mustBe 1
     }
 
+    "return the batchInclusionProof when received credentials" in {
+      val institutionId = createParticipant("Institution X")
+      val contactA = createContact(institutionId, "Alice", None)
+      createReceivedCredential(contactA.contactId)
+
+      val contactWithDetails =
+        repository
+          .find(institutionId, contactA.contactId)
+          .unsafeToFuture()
+          .futureValue
+          .value
+
+      contactWithDetails.receivedCredentials.headOption.flatMap(_.batchInclusionProof).isDefined mustBe (true)
+    }
+
     "return no contact when the contact is missing (institutionId and contactId not correlated)" in {
       val institutionXId = createParticipant("Institution X")
       val institutionYId = createParticipant("Institution Y")
