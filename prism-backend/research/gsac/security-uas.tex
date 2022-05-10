@@ -56,7 +56,7 @@ functions that are needed for some of the properties to be meaningful, in
   defined in \defref{def:correctness-uas}.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:correctness-uas}]
+\begin{proof}[\thmref{thm:correctness-uas}; Correctness of \CUASGen]
   \todo{XXX}
 \end{proof}
 
@@ -67,7 +67,7 @@ functions that are needed for some of the properties to be meaningful, in
   \defref{def:anonymity-uas}.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:anonymity-uas}]
+\begin{proof}[\thmref{thm:anonymity-uas}; Anonymity of \CUASGen]
   In this proof, we restrict to the case in which the adversary can only make
   one query to the challenge oracle. Note however that the generalization to
   polynomially many queries given in \cite{bsz05} applies here too (with the
@@ -128,7 +128,7 @@ functions that are needed for some of the properties to be meaningful, in
   defined in \defref{def:issue-forge-uas}, except with negligible probability.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:issue-forge-uas}]
+\begin{proof}[\thmref{thm:issue-forge-uas}; Issue unforgeability of \CUASGen]
   We show that the probability that \fissue outputs $0$ is negligible, as well
   as the probability that the extracted \usk is not the one that was used to
   request some of the credentials employed to obtain the credential specified by
@@ -171,7 +171,7 @@ functions that are needed for some of the properties to be meaningful, in
   \defref{def:sign-forge-uas}, except with negligible probability.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:sign-forge-uas}]
+\begin{proof}[\thmref{thm:sign-forge-uas}; Sign unforgeability of \CUASGen]
   As for \thmref{thm:issue-forge-uas}, we define two games, $G_0=\ExpForgeSign$,
   and $G_1$, which is exactly the same but where, within the \Setup algorithm,
   we replace $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. After
@@ -266,16 +266,28 @@ functions that are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
-  If the underlying NIZK schemes are zero-knowledge and the scheme used for
-  $\NIZK^{\Sign}$ is simulation-extractable, and the commitment scheme is
-  hiding, then our \CUASGen construction satisfies non-frameability as defined
-  in \defref{def:frame-uas}, except with negligible probability.
+  If the underlying scheme for $\NIZK^{\Issue}$ is zero-knowledge, the scheme
+  for $\NIZK^{\Sign}$ is zero-knowledge, sound and simulation-extractable, the
+  scheme for $\NIZK^{\Open}$ is zero-knowledge and sound, and the commitment
+  scheme is hiding, then our \CUASGen construction satisfies non-frameability as
+  defined in \defref{def:frame-uas}, except with negligible probability.
 \end{theorem}
 
-\begin{proof}[\thmref{thm:frame-uas}]
-  We prove that, given an adversary $\adv$ against non-frameability of \CUASGen,
-  we can build an adversary \advB that breaks the hiding property of the
-  underlying commitment scheme, with non-negligible probability.
+\begin{proof}[\thmref{thm:frame-uas}; Non-frameability of \CUASGen]
+  First, note that the adversary wins if it produces a signature that traces to
+  an honest user (which, in our case, is tested by checking whether the
+  extracted \usk belongs ot an honest user); and, in addition, either (1) the
+  signature was not produced via a call to the \SIGN oracle, or (2) the opening
+  value output by the adversary and accepted by \Judge, does not match the
+  extracted one (i.e., the one used as witness to $\NIZKRel^{\Sign}$). Note that
+  the probability of (2) is negligible due to soundness of $\NIZK^{\Sign}$ and
+  $\NIZK^{\Open}$, given that \Verify and \Judge accept the signature and
+  opening proof.
+  
+  Next we prove that, given an adversary $\adv$ against non-frameability of
+  \CUASGen, under condition (1) above, we can build an adversary \advB that
+  breaks the hiding property of the underlying commitment scheme, with
+  non-negligible probability.
 
   We start from $G_0=\ExpNonframe$. $\adv$ makes queries to the oracles in
   \Oframe.

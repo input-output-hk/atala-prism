@@ -812,15 +812,17 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     \parm \gets \Setup(1^\secpar) \\
     (\oid,\siid,\sig,\yeval,\msg,\feval,\yinsp,\iproof) \gets
     \adv^{\Oframe}(\parm) \\
-    \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\yeval,\msg,\feval) \in \SIG[\uid]:
-    \pcreturn 0 \\
+%    \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\yeval,\msg,\feval) \in \SIG[\uid]:
+%    \pcreturn 0 \\
     \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\yeval,\msg,\feval) = 0:
     \pcreturn 0 \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg) = 0:
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets
     \ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \\
-    \pcif \exists \uid \in \HU~\st~\UK[\uid] = \usk: \pcreturn 1 \\
+    \pcif \exists \uid \in \HU~\st~\UK[\uid] = \usk~\land \\
+    \pcind (\nexists (\cdot,\cdot,\sig,\yeval,\msg,\feval) \in \SIG[\uid]
+    \lor \yinsp \neq \yinsp'): \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Experiment for non-frameability on \UAS schemes.}

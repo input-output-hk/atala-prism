@@ -343,11 +343,12 @@ the signature was not produced via the \SIGN oracle.
      \gpk \gets (\ipk,\opk) \\
      (\sig,\dattrs,\msg,\upk,\attrs,\oproof) \gets
      \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN}(\gpk,\isk,\osk) \\
-     \textrm{Let}~\uid~\textrm{be st}~\PUBUK[\uid] = (\upk,\cdot) \\
      \pcif \Verify(\gpk,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
      \pcif \Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
-     \pcif (\uid \in \HU \land \sig \notin \SIG[\uid])
-     \lor \dattrs \not\subseteq \attrs : \pcreturn 1 \\
+     \textrm{Let}~\uid~\textrm{be st}~\PUBUK[\uid] = (\upk,\cdot) \\
+     \pcif \textrm{no such \uid exists}: \pcreturn 0 \\
+     \pcif \uid \in \HU \land (\sig \notin \SIG[\uid]
+     \lor \dattrs \not\subseteq \attrs): \pcreturn 1 \\
      \pcreturn 0
   }
   \caption{Non-frameability experiment for \GSAC schemes.}

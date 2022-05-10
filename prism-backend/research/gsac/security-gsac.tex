@@ -31,12 +31,11 @@ correctness and security of \GSAC, and defer the full proofs to
 
 \begin{theorem}[Non-frameability of \GSACGen]
   \label{thm:frame-gsac}
-  If the underlying scheme for $\NIZK^{\NIZKRel_{\Issue}}$,
-  $\NIZK^{\NIZKRel_{\Sign}}$ and $\NIZK^{\NIZKRel_{\Open}}$ are sound,
-  zero-knowledge, and simulation-extractable, and
-  the commitment scheme \C is hiding, then our generic \GSACGen construction
-  satisfies non-frameability as defined in \defref{def:frame-gsac}, except with
-  negligible probability.
+  If the scheme for $\NIZK^{\Issue}$ is zero-knowledge, the scheme for
+  $\NIZK^{\Sign}$ is zero-knowledge and sound, the scheme for $\NIZK^{\Open}$ is
+  sound, and the commitment scheme \C is hiding, then our generic \GSACGen
+  construction satisfies non-frameability as defined in \defref{def:frame-gsac},
+  except with negligible probability.
 \end{theorem}
 
 %%% Local Variables:
