@@ -1,35 +1,42 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-\comment{This section is just a placeholder for now...}
+In this work, we have described how a direct combination of the group signatures
+(GS) and anonymous credentials (AC) research lines results in a scheme that can
+bring benefit to real world use cases. Going further, we generalized such simple
+combination into Universal Anonymous Signatures, or \UAS. Our model for \UAS
+covers straight away a large subset of GS and AC variants, while still giving
+system designers the flexibility to decide on the specific tradeoff between
+privacy, utility, accountability and computational overhead that fits their
+setting best. More concretely, our model for \UAS supports arbitrary issuance
+policies, signature evaluation functions, and opening functions, without losing
+definitional meaning. We also gave a generic construction from well known
+building blocks, and prove that it meets our security model.
 
-Some notes on future work, to expand/refine/remove:
-
-\begin{itemize}
-\item Add support for open functions over sets of previously issued signatures.
-  This would cover existing schemes like \cite{dl21}, and possibly cool cases
-  such as training AI models on private data, in a federated manner, without
-  revealing the identity of the node running the model.
-\item Currently, in \UAS, we need to restrict challenge users to present
-  credentials issued by the same set of issuers. Technically, I guess that this
-  could be done by making the issuers' public keys part of the witness (although,
-  at what cost?). But then, how would verifiers be able to determine whether
-  they trust the issuers of the credentials used to compute the signature? It
-  would be as if an employer has to accept a University degree, without knowing
-  which university issued it.  
-\item Potentially very cool improvement in the modelling: maybe we can leverage
-  a decentralized append-only bulletin board (so, a blockchain) to reduce trust
-  on the issuers (except identity proofing, we could probably eliminate it...)
-  That would be quite innovative, as in GS literature, the issuer has so far
-  alwasy been thought to be necessarily honest. (Disclaimer: this was Ezequiel's
-  suggestion!)
-\item The current syntax of \UAS does not seem to support blind issuance. This
-  would however be trivial to achieve by adding a set of attributes to be
-  blindly issued in the \Obtain algorithm, and then requiring that they are
-  validated in \fissue. In the generic construction, this would be directly
-  supported too, as a block of messages to be signed as part of the block
-  commitment.
-\end{itemize}
+Even though the generalization effort we do is significant, there are still
+ways to go further.
+%
+For instance, we do not hide the issuer(s) of the
+credential(s) employed to produce a signature (resp., request a new credential).
+Thus, we can only ensure privacy among signatures (resp., credential requests)
+that involve credentials issued by the same issuer set. While hiding the issuers
+of the involved credentials is certainly possible (we show how to do it at
+signing time, in order to build ring signatures), we argue that it may be
+desirable to leave it as is, at least, initially. The reason being that issuers
+are still what conveys trust to a system where credentials contain attributes
+attested by these issuers. Indeed, if it is already hard for verifiers to decide
+whether or not to trust an unanonymous issuer, one can imagine that it would be
+even harder to decide whether or not to trust an anonymous one. This question
+is core to the domain of trust registries \needcite, for instance.
+%
+A second desirable improvement, perhaps clearer from a technical point of view,
+is to extend our model to support non-trivial utility and accountability across
+multiple signatures from the same signer. More concretely, let our \feval and
+\finsp functions (and perhaps also \fissue?) operate on multiple signatures by
+the same \usk. That can lead to an extended \UAS scheme which would support
+advanced use cases such as rate limiting (or $k$-TAA \cite{asm06}); or might
+be even privately training an AI model based on one's authenticated
+past activity, and prove that the model has been trained honestly.
 
 %%% Local Variables:
 %%% mode: latex

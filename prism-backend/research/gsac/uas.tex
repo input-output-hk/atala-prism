@@ -9,8 +9,16 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \usepackage{hyperref}
 \usepackage{mathtools}
 
+\setcounter{tocdepth}{2}
+
 \title{Universal Anonymous Signatures}
-\author{}
+\author{Jesus Diaz\inst{1} \and Markulf Kohlweiss\inst{2}}
+
+\institute{Input Output Global,\\
+\email{jesus.diazvico@iohk.io},\\
+\and
+Input Output Global and University of Edinburgh,\\
+\email{markulf.kohlweiss@ed.ac.uk}}
 
 % Custom shorthands for this paper
 \input{symbols.tex}
@@ -18,7 +26,7 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \input{symbols-uas.tex}
 
 \begin{document}
-\maketitle
+{\def\addcontentsline#1#2#3{}\maketitle}%\maketitle
 
 
 \begin{abstract}
@@ -30,15 +38,13 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
   AC let users obtain attestations by trusted
   issuers on certain attributes -- thus implicitly defining the concept of
   identity as ``a set of attributes'' -- and allow credential owners to prove
-  claims on these attributes. Indeed, this has proven to be very
-  flexible, to the point that it inspired the design of W3C's
-  Verifiable Credentials, a relevant industry-led effort. However, the
-  accountability in AC schemes is quite limited; frequently restricted to
-  blacklisting, if present at all.
+  claims on these attributes. While this has proven to be very
+  flexible, accountability in AC schemes is quite limited; frequently restricted
+  to blacklisting, if present at all.
   %
-  On the other hand, GS have traditionally focused on plain
-  authentication without attributes (except very few exceptions), making instead
-  more emphasis on the accountability side. That is, not only allowing full
+  On the other hand, GS have traditionally focused on plain authentication
+  without attributes, making instead more emphasis on the accountability side.
+  That is, not only allowing full
   deanonymization, but also variants such as sequential linking, user-controlled
   anonymity, or even full unlinkability.
   %
@@ -46,37 +52,32 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
   also constructions.
 
   We argue that, in the real world, both functionalities are essential. Taking
-  advantage of their similarities, we first propose a trivial combination, that
-  we refer to with the imaginative \GSAC acronym. Through \GSAC, we showcase
-  the benefits that even a simple combination brings. We give a common syntax,
-  security model, and generic construction for \GSAC.
+  advantage of their similarities, we first propose a trivial combination,
+  \GSAC, showcasing the benefits even a simple combination brings. We give a
+  common syntax, security model, and generic construction for \GSAC.
   %
-  Next, we acknowledge that \GSAC has limitations. Namely, it is too
-  strict in the rules one can apply during issuance of credentials, and signing
-  and opening of the produced signatures. While generalizations along these
+  Next, we generalize \GSAC into our Universal Anonymous Signatures (\UAS)
+  proposal by allowing arbitrary policies at issuance, signing and opening
+  time, among other improvements. While generalizations along these
   lines have been explored independently in the GS and AC domains, to the best
-  of our knowledge, no single scheme offers full flexibility.
-  We define a syntax, security model, and give a generic
-  construction for a scheme meeting these requirements. Given its high
-  flexibility to cater for different needs, we name it Universal Anonymous
-  Signatures (\UAS). Indeed, an \UAS scheme lets issuers decide on issuance
-  policies, which easily enable advanced use cases such as delegation, or
-  issuance conditioned identity-related claims. It can also be used to build
-  schemes that allow signers prove arbitrary claims on their identities, as well
-  as deciding on which should be the opening authority that can apply some
-  commonly agreed deanonymization function over the signer's identity (which is
-  now well-defined, given the incorporation of attributes from the AC domain).
+  of our knowledge, no single scheme offers such full flexibility.
+  We define a syntax, security model, and give a generic construction for a
+  scheme meeting these requirements. Furthermore, we show how our model for
+  \UAS is a generalization of previous well known schemes in the GS and AC
+  domains.
   %
   The techniques and building blocks we leverage are well known. The challenge
   is, rather, on the definitional side. To further evidence the universality of
   \UAS, we show how more restricted schemes can be built from vanilla \UAS.
 \end{abstract}
 
+\tableofcontents
+
 \input{introduction.tex}
 \input{preliminaries.tex}
 \input{sec-gsac.tex}
 \input{sec-uas.tex}
-\input{benchmarks.tex}
+%\input{benchmarks.tex}
 \input{conclusion.tex}
 
 \bibliographystyle{splncs04}

@@ -95,7 +95,285 @@ a wide range of real world scenarios?}
 \subsection{Our Contributions}
 \label{ssec:contributions}
 
-In this work, we make our attempt on addressing both questions.
+In this work, we make our attempt on addressing both questions. We start with a
+direct combination of GS and AC. While this does not pose many definitional nor
+technical challenges, it is a good exercise to showcase benefits obtained from
+even a simple combination. This directly answers in the affirmative our first
+question above. However, a direct combination does not address at all the
+flexibility that we aim at -- simply because it inherits the limitations of
+the vanilla GS and AC approaches we build on. Thus, we make an extra step with
+the goal to add such flexibility, spanning three diretions, allowing:
+
+\begin{itemize}
+\item Arbitrary issuance policies.
+\item Arbitrary signature evaluation functions.
+\item Arbitrary opening functions.
+\end{itemize}
+
+As we discuss next, this directly gives place to a scheme that can be seen as a
+strict generalization of many existing GS and AC schemes. To achieve it, we
+encounter some definitional challenges, although the result is a simple-enough
+model that still follows main practices of its GS and AC ancestors.
+Interestingly, despite the challenges for the modelling, we show a generic
+construction from well known building blocks.
+
+\paragraph{\GSAC: Direct combination of GS and AC.} %
+As stated, on the one hand GS lacks mechanisms to add useful identifying
+information associated to signers, but has well grounded mechanisms for
+accountability. On the other hand, AC is in the exact opposite situation. Thus,
+taking advantage of their frequently shared approaches, we merge them in an
+attempt to reach a scheme that is good in both aspects.
+
+In fact, taking this unifying path is a low hanging fruit if one looks at recent
+works. For instance, BBS+ signatures \cite{asm06,cdl16b} have been used recently
+to build both group signatures \cite{gl19,dl21,fgl21}, but are also one of the
+main candidates to incorporate anonymity into verifiable credentials%
+\footnote{``W3C Credential Exchange using BBS+ Signatures'',
+  \url{https://github.com/hyperledger/aries-rfcs/blob/main/features/0646-bbs-credentials/README.md}. Last access May 11th, 2020.}.%
+The interest of the verifiable credentials community in BBS+ is not accidental,
+though, as BBS+ follow the CL signatures line of work \cite{cl02}. CL signatures
+allow creating a single signature over a set of messages, which can be directly
+used to bundle a set of attributes (messages) into the same signature
+(credential). Indeed, this was the trigger for some of the first, and possibly
+the most fruitful branch of, anonymous credentials systems \cite{cl01,cl04}
+\needcite. Other very closely related signature scheme, PS16 \cite{ps16} can
+also be used to build group signatures, see \cite[Appendix A.1]{ps15} or
+\cite{cdl+20}; as well as anonymous credentials \cite[Appendix A.2]{ps15} or
+\cite{sms+19}.
+
+While GS and AC schemes share many internal aspects, they do differ in some,
+even beyond the obvious differences in functionality. In those cases, our
+approach is to adopt the one that seems more general.
+%
+For instance,
+anonymous credentials typically employ interactive credential presentations,
+meaning that a credential owner and a verifier run an interactive
+protocol by means of which the verifier gets convinced that the credential owner
+indeed owns a credential meeting some requirement defined in terms of the
+attributes it attests. On the other hand, in the GS domain, signing and
+verification are non-interactive processes. We follow the non-interactive
+approach, and then show how to trivially convert it into an interactive
+protocol.
+%
+Another difference lies in the fact that, in group signatures, each member gets
+only one membership credential, while in anonymous credentials, users can get
+arbitrarily many (different) credentials. This is natural, as in group
+signatures the only goal is to prove membership into a group and, thus, one
+credential is enough. But, in anonymous credentials, the same user can own
+multiple credentials (even from the same issuer), each attesting a different
+set of attributes. On this occasion, our logical decission is to lean towards
+anonymous credentials, as we aim at supporting arbitrarily many attributes per
+credential.
+
+An exception to this rule is that, in our modelling of \GSAC, we restrict to
+only one issuer and one credential per signature. This is not the most general
+choice, though, as in AC schemes it is frequent to assume a scenario with
+multiple issuers, and let users leverage multiple credentials in the same
+presentation. This is merely for definitional simplicity, and we ``fix'' it
+in \UAS.
+
+Additionally, within the AC domain, some works allow proving arbitrary claims
+over the attributes in a credential \needcite; while others simply allow
+selectively disclose subsets of these attributes. For \GSAC, we do the latter.
+Despite not being the most general option (although it is more general than the
+GS approach, as it does not even have attributes), it is enough to illustrate
+the advantages of unifying both worlds. Again, in \UAS we generalize this
+aspect.
+
+Finally, modelling-wise we also have two choices: follow a UC-based definition
+\needcite, or a game-based one \needcite. Independently on the pros and cons of
+each, in GS the standard is the game-based approach
+\cite{bmw03,bsz05,bcc+16,kty04,ky05}, although close relatives to GS, like DAA, prefer the
+UC approach \needcite. On the AC line of work, while some UC models exist
+\needcite, game-based definitions also seem prevalent \cite{fhs19} \needcite.
+Thus, the logical choice (at least, for a first step) seems to be game-based
+definitions. Concretely, we take strong inspiration from \cite{bsz05} for the
+GS branch, and from \cite{fhs19} for the AC one.
+
+\subsubsection{\UAS: Generalizing \GSAC.} %
+\GSAC is the first step towards achieving identity and authentication systems
+with both utility and accountability, yet it presents some limitations. Some we
+have already mentioned: it models a system with only one issuer, only allows
+using one credential to produce a signature, and only supports selective
+disclosure. We overview other limitations, that we address also with \UAS.
+
+\paragraph{Generalizing issuance protocols.} %
+In \GSAC, it is also not possible to leverage previously obtained credentials in
+order to obtain new ones -- from the same issuer, or from another. Note that, if
+we want to be really flexible, addressing this does not just mean letting the
+user specify a set of credentials in the interactive protocol for obtaining a
+new one. Concretely: What do we want to allow the user to prove with those extra
+credentials? This is essentially the same case as in interactive credential
+presentations. Thus, it seems reasonable to allow the same flexibility: namely,
+proving arbitrary claims over the attributes in the credentials involved in the
+request, without revealing them. We make only one exception, though: we do not
+include support to blindly carry attributes from one credential used in the
+request, to the new credential. This is indeed possible in some schemes
+\needcite. However, we argue that, by including support to merge multiple
+credentials into the same signature, this is no longer necessary. And indeed
+it is even realistic, as it does not make much sense to expect that an issuer
+attests an attribute that he cannot access in the clear (even despite it being
+attested by some other issuer). In any case, adding support to prove arbitrary
+claims at issuance time does introduce additional modelling needs. Namely, we
+need to give a generic predicate definition, say \fissue. Then, our model needs
+to make sure that, during the interactive issuance protocol, satisfaction of
+this predicate is ensured. This is not straightforward, though. One option is,
+as \cite{ckl+15} does for their issuance tokens, interpret that, if no
+illegitimately obtained credential is used to produce a signature, then this
+does no harm; so we only need to check at signature verification time that all
+involved credentials were legitimately obtained. However, this turns into a
+convoluted definition, which requires to mix claims of actions performed during
+credential issuance with actions performed during signing (credential
+presentation in \cite{ckl+15}). Instead, we opt for creating two separate
+unforgeability-related properties: one capturing security at issuance time, and
+another capturing security at signature creation time. Naturally, both require
+honest issuers, as we detail later on.
+
+\paragraph{Generalizing signature generation.} %
+Another generalization point is on the utility revealed at signing time. As
+stated, in \GSAC we restrict to selective disclosure. This is already a
+generalization with respect to GS, where this is not considered, possibly with
+the only exception of \cite{khad07a,khad07b,emo09,aa14}. These works on
+Attribute-Based Group Signatures (ABGS) are however too restricive:
+\cite{khad07a,khad07b,aa14} only consider fixed rules to apply over an
+attribute set in order to be able to create signatures (i.e., if a different
+ruleset is to be applied, a new group is needed). \cite{emo09} allows some
+alterations to previous rules, but instead require updates of the group public
+key, which is probably unacceptable in most situations. Instead of following the
+ABGS approach, we adopt the AC one, and simply require that the signer has to
+prove some arbitrary claim over the attributes in the credentials s/he uses to
+create a signature. This is thus orthogonal to group/issuer public key
+generation, which is what forces ABGS to update them every time a change in the
+rules takes place. Our approach to allow revealing arbitrary utility information
+at signing time is to let signers/verifiers decide on a \emph{signature
+  evaluation function}, \feval, which operates on the user secret key, the
+user credentials, and the signed message. This \feval function thus defines what
+verifiers (or third parties) will learn straight away from a valid signature.
+Note though that signing does not only reduce to simply computing (and proving)
+\feval's output. In addition, users have to prove that all the employed
+credentials are bound to the same user key, and that the opening information
+(more on this next) is also correct. This means that it is perfectly valid to
+define \feval functions that reveal absolutely nothing (e.g., always output
+$0$), and yet have a meaningful signing operation. Modelling-wise, this forces
+us to restrict that, in the anonymity property, the produced challenge
+signatures must produce the same \feval output, which may seem too strong,
+although it seems hard to avoid. The only alternative we find is actually a
+useful generalization, which is to formulate anonymity with a simulation-based
+approach. While still compatible with cases in which the output of \feval has
+the same in both challenge signatures, it additionally allows useful
+constructions in which the output of \feval is encrypted, e.g., under the
+opener's key. In this way, only the opener will learn it, when/if needed -- it
+removes utility at signing time, but gives more flexibility at opening time,
+without sacrificing privacy.
+
+\paragraph{Generalizing accountability.} %
+Finally, the last generalization point is on accountability. In \GSAC, we simply
+added conventional opening functionality of GS. Recent works have taken a next
+step towards generalizing this. For instance, in BiAS \cite{lnpy21}, the user
+learns on a per signature basis whether its signature will be deanonymizable or
+not, depending on whether a given policy (over the message, user identity, and
+some NP witness) is satisfied. This is even generalized further in MPS \needcite%
+\footnote{\textcolor{orange}{The MPS work and our \UAS generalization have been
+    simultaneously designed. Coincidentally, an early MPS draft came to our
+    knowledge as part of a peer-review process while we were working on \UAS.
+    Consequently, even though \UAS had already essentially been specified by
+    then, MPS has influenced our work, and an acknowledgement in that regard is
+    in order.}},
+where, somewhat like in \UAS, it is also possible to output any arbitrary
+function of the user identity. In \UAS, we define a function \finsp to govern
+what identifying information is revealed upon signature opening. There is one
+crucial difference, though. Both BiAS and MPS rely on a vaguely defined concept
+of ``identity''. That is, it
+is not clear how to interpret the fact that the output of a function depends
+on someone's identity, when this identity boils down to a member index or
+long-term public key. On more practical terms, it seems hard to avoid having
+to rely on yet extra third parties that vouch for extra identifying information
+associated to those member indexes or public keys; or to use the member
+indexes/public keys as labels to a somewhat publicly verifiable table with
+information about that user (which seems to go against privacy). Note that, by
+explicitly including \emph{meaningful} identifying information in the shape of
+attested attributes into the membership credentials (which \UAS inherits from
+its AC ancestor), producing an output that depends on the identity of the
+signer does have ``real-world'' meaning. We also note that our signature
+evaluation function has an equivalent in MPS, which also receives the signer's
+identity as a parameter. Therefore, the same rationale applies.
+%
+Yet another generalization on the accountability side is that, by adhering to
+the multiple issuer setting, the concept of group (very present in GS) gets
+blurred in \UAS. Somehow naturally, we also allow multiple openers and, what is
+more important in practical terms, there is no tight relation between issuer
+and opener. That is, a user who obtained a credential from issuer $I_A$, can use
+it to produce a signature which can be opened by opener $O_1$, and later use
+that same credential to produce another signature openable by opener $O_2$.
+Furthermore, while we define a syntax where only one opener is considered, the
+extension to multiple openers per signature is trivial (with the corresponding
+unavoidable loss in privacy).
+
+On the definitional side, incorporating this flexible opening policies leads to
+considering alternative definitions. This was already observed in prior GS works
+that do not rely on traditional opening \cite{gl19,dl21,fgl21}. These works
+follow the line of DAA, where a helper Identify function is added that formally
+allows to test whether a user (key) is indeed the signer behind a signature
+(necessary for traceability/unforgeability), or if it is not (necessary for
+non-frameability). This is however not enough in our case since, as we rely on
+further pieces of information to produce the utility and accountability outputs
+(concretely, the message and the identity of the signer; not just its signing
+key). Thus, we need to explicitly resort to extraction helper functions, as
+\cite{lnpy21}. Looking at our generic construction, this seems a natural choice,
+and easy to achieve via zero-knowledge proof of knowledge systems. However, it
+raises an interesting theoretical question of whether it is possible to
+build, or even model, systems like \UAS without relying on extraction.
+
+\paragraph{Universality of \UAS.} %
+As stated, a main goal of \UAS is to reach a general enough model that covers a
+large enough portion of the functionality modelled by previous GS and AC works,
+and even goes beyond (e.g., through the \fissue, \feval and \finsp functions).
+To showcase the universality of \UAS, we describe how, given a generic
+construction of \UAS, the \fissue, \feval, and \finsp functions can be used to
+come up with generic constructions of very well known schemes in the GS and AC
+domains. Directly, \UAS is a generalization of \GSAC, which we prove to be a
+strict generalization of vanilla GS and vanilla AC. Consequently, vanilla GS and
+AC are a strict subset of \UAS. We also show how to build MPS schemes \needcite
+which is on itself a generalization of BiAS \cite{lnpy21}; as well as group
+signatures with message-dependent opening \cite{ehk+19}, or delegatable
+anonymous credentials \needcite.
+%
+Interestingly, ``pure'' ring signatures \cite{rst06} can also be built from
+\UAS, where with ``pure'' we mean that \UAS-based ring signatures do not require
+an actual issuer -- i.e., users can act as issuers. This may even be suprising,
+given that we build on
+group signatures, where having no issuer of group credentials is just not
+possible\footnote{Nobatly, mimicking ring signatures without issuers is
+  trivially not possible in MPS, as its model does not support multiple
+  issuers. This seems crucial as, in essence, a ring signature is a group
+  signature where every user can become an issuer.}. Moreover, the
+unforgeability notion, that requires trust on the issuer in the setting of group
+signatures, is still applicable here, as long as the verifier trusts all
+the public keys involved in the \UAS-based ring signature (just the same
+as in conventional ring signatures). \todo{Although, on this regard, it is
+  interesting to explore how attributes come into the picture.}
+
+\subsubsection{Is the extra overhead reasonable?} %
+Finally, a logical question to ask, of the utmost pratical relevance and
+especially given the generalization points we include, is whether all this
+overhead is worthy, or even acceptable, in the real world. Obviously, without
+concrete instantiations all we can do is abstractly argue about this. In this
+regard, we make an important observation, though: the \UAS model we propose is
+meaningful even when defining \fissue, \feval and \finsp to be the trivial
+issuance, signature evaluation, and opening functions. More concretely, one
+perfectly can: (1) set \fissue to return always $1$, implying that no extra
+constrain is placed on the credentials used to request a new one; (2) define
+\feval to be a constant function, meaning that no signature reveals any
+identifying information on its signer; and (3), let \finsp always return the
+user's public key, as in conventional group signatures; or also a constant
+function, meaning that no revocation is possible. Even in those cases, we reach
+a scheme that may be suitable for certain scenarios, as it would basically be
+a vanilla GS or AC scheme, or GSAC, with similar computational costs.
+This means that a system designer that builds on an \UAS scheme can apply
+whatever tradeoff between privacy, utility, accountability, and extra costs
+is most suitable to his setting, without the need to model everything from
+scratch if the need to tweak something arises.
+
 
 %%% Local Variables:
 %%% mode: latex
