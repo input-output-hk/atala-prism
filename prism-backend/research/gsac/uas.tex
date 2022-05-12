@@ -9,6 +9,20 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \usepackage{hyperref}
 \usepackage{mathtools}
 
+%% Set/unset to activate/deactivate author comments and TODOs
+\def\authnotes{0}
+
+%%% Allows line-breaks in math formulae after commas
+\AtBeginDocument{%
+  \mathchardef\mathcomma\mathcode`\,
+  \mathcode`\,="8000 
+}
+{\catcode`,=\active
+  \gdef,{\mathcomma\discretionary{}{}{}}
+}
+
+%%%
+
 \setcounter{tocdepth}{2}
 
 \title{Universal Anonymous Signatures}

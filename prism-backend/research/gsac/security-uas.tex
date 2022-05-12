@@ -50,14 +50,26 @@ functions that are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Correctness of \CUASGen]
   \label{thm:correctness-uas}
-  If the underlying schemes for vector commitments, encryption, digital
-  signatures, signatures on blocks of committed messages, and NIZKs are
-  correct, our generic construction \CUASGen satisfies correctness as
+  If the underlying schemes for commitments, encryption and \SBCM, are correct,
+  as well as the NIZKs for $\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$, and
+  $\NIZKRel_{\Open}$, our generic construction \CUASGen satisfies correctness as
   defined in \defref{def:correctness-uas}.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:correctness-uas}; Correctness of \CUASGen]
-  \todo{XXX}
+  By correctness of \SBCM and the NIZK for $\NIZKRel_{\Sign}$, the signature
+  produced at line 5 of \ExpCorrect is accepted at line 6 by \Verify.
+  Moreover, all the credentials employed to honestly produce the signature,
+  identified with \scid, meet their respective issuance policies due to
+  correctness of the NIZK for $\NIZKRel_{\Issue}$, so no $\fissue^\cid$ check
+  returns $0$ at line 9. Similarly, as $\feval \in \famfeval$ is checked at
+  line 3, and due to correctness of the NIZK for $\NIZKRel_{\Sign}$, the
+  output of \feval matches \yeval at line $10$, which is furthermore computed
+  over $\usk=\UK[\uid]$ due to correctness of the commitment scheme. Finally,
+  correctness of the NIZKs for $\NIZKRel_{\Sign}$ and $\NIZKRel_{\Open}$, and
+  correctness of the encryption scheme, ensure that \Judge accepts the proof
+  produced by \Open, and \yinsp is the correct value for the chosen
+  $\finsp^{\oid}$.
 \end{proof}
 
 \begin{theorem}[Anonymity of \CUASGen]
@@ -165,7 +177,7 @@ functions that are needed for some of the properties to be meaningful, in
 \begin{theorem}[Signing unforgeability of \CUASGen]
   \label{thm:sign-forge-uas}
   If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is zero-knowledge, sound,
-  and simulation extractable, the NIZK scheme for $\NIZKRel_{\Inspect}$ is sound
+  and simulation extractable, the NIZK scheme for $\NIZKRel_{\Open}$ is sound
   and simulation extractable, and \SBCM is one-more unforgeable, then our
   \CUASGen construction satisfies signing unforgeability as defined in
   \defref{def:sign-forge-uas}, except with negligible probability.
@@ -240,16 +252,16 @@ functions that are needed for some of the properties to be meaningful, in
   implies that this has negligible probability.
   %
   Similarly, $\adv$ wins at step 9 if (1) $\finsp(\yeval,\usk,\scred,\msg) \neq
-  \yinsp$, where \yinsp is the value output by \Inspect at line 5; or if (2)
+  \yinsp$, where \yinsp is the value output by \Open at line 5; or if (2)
   $\yinsp \neq \yinsp'$, where $\yinsp'$ is the value extracted by \ExtractSign
   at step 7. For (1), soundness of $\NIZK^{\Sign}$ ensures that \yinsp is the
-  correct evaluation of \finsp, whereas soundness of $\NIZK^{\Inspect}$ and
+  correct evaluation of \finsp, whereas soundness of $\NIZK^{\Open}$ and
   correctness of the public key encryption ensure that this is also the value
-  output by \Inspect. Thus, the probability of $\adv$ winning the game because
+  output by \Open. Thus, the probability of $\adv$ winning the game because
   of (1) is negligible. Finally, for (2), simulation-extractability of
-  $\NIZK^{\Inspect}$ and correctness of the public key encryption ensure that
+  $\NIZK^{\Open}$ and correctness of the public key encryption ensure that
   the $\yinsp'$ value extracted by \NIZKExtract matches the value produced by
-  \Inspect.
+  \Open.
 
   The only remaining option for $\adv$ to win is via winning condition at line
   11. At that point, we already know that all credentials are bound to the same
@@ -293,7 +305,7 @@ functions that are needed for some of the properties to be meaningful, in
   \Oframe.
 
   For $G_1$, within \Setup, we replace the \Setup algorithms for the three
-  NIZKs (\Issue, \Sign and \Inspect) with their corresponding \SimSetup
+  NIZKs (\Issue, \Sign and \Open) with their corresponding \SimSetup
   variants. Consequently, the corresponding queries to \Prove are also
   simulated via the simulator. By the zero-knowledge property of the NIZK
   systems, $G_1$ is indistinguishable from $G_0$.

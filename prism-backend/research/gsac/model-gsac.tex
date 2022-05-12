@@ -192,7 +192,7 @@ signature, revealing the public key pair of the user, must also be accepted by
 \end{definition}
 
 \begin{figure}[htp!]
-  \procedure{$\ExpGSACCorrect(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpGSACCorrect(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
@@ -315,9 +315,8 @@ the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
 
 \paragraph{Non-frameability.} %
 Non-frameability variants are a core unforgeability-type property in group
-signatures. However, no similar property is modelled for anonymous credentials
-(see the discussion in \todo{\secref{sec:introduction}} for further detail). It
-is a quite strong
+signatures. However, no similar property is modelled for anonymous credentials.
+It is a quite strong
 property, as it must be ensured even in the presence of dishonest issuer and
 opener. Intuitively, it prevents the adversary from creating a signature that
 frames an honest user. Depending on the inspection capabilities of the scheme,

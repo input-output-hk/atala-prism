@@ -557,7 +557,8 @@ the different basis for messages signed in committed and plain form.
 \subsubsection{Security.} Next, we sketch that the given BBS+ interactive
 signing protocol is correct, OMF-secure, and ensures blindness.
 
-\paragraph{Correctness.} \todo{XXX}
+\paragraph{Correctness.} Correctness is direct from correctness of the
+commitment scheme, the NIZK system, and BBS+.
 
 \paragraph{OMF security.} The proof for OMF security is essentially the
 same as that of EUF security for BBS+ signatures \cite{cdl16b}, which gives a
@@ -579,7 +580,7 @@ not reasonable in most cases; although it may be for group signature-like
 settings). We refer to \cite[Lemma 1]{cdl16b} for the full details of the proof
 of EUF security in BBS+.
 %
-\todo{If needed, do the actual proof. Should essentially be a copy-paste of
+\jdv{If needed, do the actual proof. Should essentially be a copy-paste of
   that in \cite{cdl16b}...}
 
 \paragraph{Blindness.} Blindness of \SBCM is a direct consequence of the

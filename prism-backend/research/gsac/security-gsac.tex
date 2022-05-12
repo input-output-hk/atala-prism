@@ -7,7 +7,9 @@ correctness and security of \GSAC, and defer the full proofs to
 
 \begin{theorem}[Correctness of \GSACGen]
   \label{thm:correctness-gsac}
-  If the underlying schemes for \todo{xxx}, our generic construction \GSACGen
+  If the underlying \SBCM, encryption, and commitment schemes are correct, and
+  the NIZK systems for $NIZKRel_{\Issue}$, $NIZKRel_{\Sign}$, and $NIZKRel_{\Open}$
+  are also correct, our generic construction \GSACGen
   satisfies correctness as defined in \defref{def:correctness-gsac}.
 \end{theorem}
 
@@ -31,8 +33,8 @@ correctness and security of \GSAC, and defer the full proofs to
 
 \begin{theorem}[Non-frameability of \GSACGen]
   \label{thm:frame-gsac}
-  If the scheme for $\NIZK^{\Issue}$ is zero-knowledge, the scheme for
-  $\NIZK^{\Sign}$ is zero-knowledge and sound, the scheme for $\NIZK^{\Open}$ is
+  If the NIZK schemes for $\NIZKRel_{\Issue}$ is zero-knowledge, the scheme for
+  $\NIZKRel_{\Sign}$ is zero-knowledge and sound, the scheme for $\NIZKRel_{\Open}$ is
   sound, and the commitment scheme \C is hiding, then our generic \GSACGen
   construction satisfies non-frameability as defined in \defref{def:frame-gsac},
   except with negligible probability.

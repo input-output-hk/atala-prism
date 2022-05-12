@@ -2,14 +2,6 @@
   Credentials}
 \label{sec:gsac}
 
-\todo{I think we should extend ``vanilla'' \GSAC to return the full \attrs
-  in \Open, but without needing \trans as a parameter to \Open (for compatibility
-  with \UAS). This can be done by encrypting all attributes, including their
-  ciphertext in the signature, and proving they are part of the credential. This
-  would render the scheme too costly, but helps in arguing in favour of \UAS.
-  Still, leaving that for after having updated the \UAS section, to see how
-  it fits the global picture.}
-
 Before moving into our full-fledged scheme for universal anonymous signatures,
 we take a first step which, albeit somehow obvious and simple, helps understand
 our final goal. Namely, we give a scheme that combines in a quite direct manner

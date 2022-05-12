@@ -1,8 +1,8 @@
 \section{Relating \UAS with Other Schemes, and Variations}
-\label{ssec:transformations}
+\label{sec:transformations}
 
 In order to justify \UAS's universality, in this section we describe how does
-\UAS schemes relate with other similar systems. \todo{The relationships seem
+\UAS schemes relate with other similar systems. \jdv{The relationships seem
   quite straightforward; thus, we only informally sketch how one could build
   other schemes (or something very similar to them) from \UAS, and leave the
   formal analysis for futher work.}
@@ -66,21 +66,21 @@ group signature scheme -- again, restricting to one credential per user and
 signature, as before. Moreover, it implements the same functionality without
 an extra authority.
 
-\todo{In \cite{khk+19}, the authors prove that GS-MDO implies identity-based
+\jdv{In \cite{khk+19}, the authors prove that GS-MDO implies identity-based
   encryption. \UAS implying GS-MDO would thus imply IBE, but we do not use
   IBE in our constructions. Is there some connection between some of the main
   building blocks we use, and IBE?}
 
 \subsection{Ring Signatures}
 
-In a nutshell, ring signatures \needcite are like group signatures where
+In a nutshell, ring signatures \cite{rst06} are like group signatures where
 rather than having an issuer accepting users into a group, any user can create
 an ad hoc group composed by himself, and any arbitrary set of other users that
 have advertised their public keys in some publicly accessible way. Also, in
 ring signatures no de-anonymization is possible\footnote{At least, in vanilla
   ring signatures. Some variants allow some sort of linkability; for instance
-  \needcite}, although the most distinguishing property is probably the lack of
-issuer, which has led some relevant systems like Monero%
+  \cite{lww04}}, although the most distinguishing property is probably the lack
+of issuer, which has led some relevant systems like Monero%
 \footnote{\url{https://www.getmonero.org/resources/moneropedia/ringsignatures.html}.
   Last access on May 8th, 2022.} to opt for ring signatures rather than, e.g.,
 group signatures.
@@ -195,7 +195,7 @@ adversary cannot gain any information about signers in the real world.
 
 With this alternative definition, we can achieve a generalisation of MPS
 basically by, insted of returning the plaintext \yeval value, returning an
-encryption of it under the inspector's public key; additionally proving 
+encryption of it under the opener's public key; additionally proving 
 that the value used to compute the output of \finsp is the plaintext \yeval
 value. In more detail, given any \feval function, we first define an
 encrypted variant $\feval^{enc}(\usk,\scred,\msg) \coloneqq \lbrace \yeval
@@ -216,7 +216,7 @@ However, if instead of returning the plaintext \yeval value, we return an
 encrypted version of it (as we do in the variant just described), this clearly
 becomes unachievable.
 
-\todo{It would seem that the simulation-based anonymity definition is more
+\jdv{It would seem that the simulation-based anonymity definition is more
   general. Can we prove that? Concretely, if it is also good for selective
   disclosure, we may just adopt it as default.}
 
@@ -231,9 +231,8 @@ context, any owner of a credential of level $n$ can define an issuance function
 $\fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1; \pcelse \pcreturn 0
 \rbrace$.
 
-\subsection{Functional Signatures}
-
-\todo{I think that, by making \yeval explicit, \UAS is essentially a
+\jdv{\subsection{Functional Signatures}}
+\jdv{I think that, by making \yeval explicit, \UAS is essentially a
   privacy-preserving extension to Functional Signatures. Still, I read that paper
   quite some time ago. Re-check.}
 

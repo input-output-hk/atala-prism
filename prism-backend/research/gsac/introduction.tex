@@ -4,14 +4,21 @@
 % What is the context for this research? Introduce previous works on this topic,
 % in one paragraph. (Privacy-preserving identities, with accountability (APPI))
 Successful identity representation, management, and usage are, on its own, among
-the toughest problems in the Internet and digital communications at large
-\needcite. Just as an illustration, think
+the toughest problems in the Internet and digital communications at large%
+\footnote{``Digital identity is one of the 21st century's biggest challenges'':
+  \url{https://www.maddyness.com/uk/2021/11/04/digital-identity-is-one-of-the-21st-centurys-biggest-challenges/}. Last access, May 12th, 2022.}.
+Just as an illustration, think
 of usernames and passwords, which end up being unmanageable as soon as we need
-to start remembering a few \needcite; or traditional vertical PKIs, like X.509,
-which are too rigid, and frequently require too much trust \needcite; or
-horizontal PKIs, such as PGP, that are also too rigid, and do not scale well
-\needcite. If, in addition, we require privacy, the scenario becomes even more
-challenging. Technologies like OpenID and OAuth \needcite make identity more
+to start remembering a few%
+\footnote{``The problem of passwords and how to deal with it'': \url{https://www.computerweekly.com/feature/The-problem-of-passwords-and-how-to-deal-with-it}. Last access,
+May 12th, 2022.}; or traditional vertical PKIs, like X.509 \cite{rfc5280},
+which are too rigid, and frequently require too much trust; or
+horizontal PKIs, such as PGP, that are also too rigid, and are hard to manage
+and scale\footnote{``What's the matter with PGP?'': \url{https://blog.cryptographyengineering.com/2014/08/13/whats-matter-with-pgp/}. Last access, May 12th, 2022}.
+If, in addition, we require privacy, the scenario becomes even more
+challenging. Technologies like OpenID\footnote{\url{https://openid.net/}. Last
+  access, May 12th, 2022.} and OAuth\footnote{\url{https://oauth.net/}. Last
+  access, May 12th, 2022.} make identity more
 manageable (from the point of view of service providers) through Single Sign
 On solutions. But this comes at the cost of introducing centralization points
 that gain way too much knowledge beyond what is actually necessary. Holding
@@ -42,9 +49,10 @@ drawbacks:
 Concerning (1), either the signer is anonymous (before opening); or fully
 deanonymized (after opening). Some variants on the traditional opening do not
 fully deanonymize, but incorporate some other strict tradeoff. Like giving the
-users full control \cite{dl21}, only allowing linking \needcite, or some
+users full control \cite{dl21}, only allowing de-anonymization based on the
+signed message \cite{ehk+19}, or some
 arbitrary extension such as allowing deanonymization only to the eyes of other
-group members \needcite, or sequential linkability \cite{dl21}. While these
+group members \cite{manu06}, or sequential linkability \cite{dl21}. While these
 variants may be very suitable for concrete settings, it is not hard to see that
 adapting them to other scenarios will be hard -- if possible at all.
 
@@ -135,8 +143,9 @@ though, as BBS+ follow the CL signatures line of work \cite{cl02}. CL signatures
 allow creating a single signature over a set of messages, which can be directly
 used to bundle a set of attributes (messages) into the same signature
 (credential). Indeed, this was the trigger for some of the first, and possibly
-the most fruitful branch of, anonymous credentials systems \cite{cl01,cl04}
-\needcite. Other very closely related signature scheme, PS16 \cite{ps16} can
+the most fruitful branch of, anonymous credentials systems (see
+\cite{cl01,cl02,cl04}, among others). Other very closely related signature
+scheme, PS16 \cite{ps16} can
 also be used to build group signatures, see \cite[Appendix A.1]{ps15} or
 \cite{cdl+20}; as well as anonymous credentials \cite[Appendix A.2]{ps15} or
 \cite{sms+19}.
@@ -173,7 +182,8 @@ presentation. This is merely for definitional simplicity, and we ``fix'' it
 in \UAS.
 
 Additionally, within the AC domain, some works allow proving arbitrary claims
-over the attributes in a credential \needcite; while others simply allow
+over the attributes in a credential \cite{bcc+09,cklm14,dmm+18,fhs19}; while
+others simply allow to
 selectively disclose subsets of these attributes. For \GSAC, we do the latter.
 Despite not being the most general option (although it is more general than the
 GS approach, as it does not even have attributes), it is enough to illustrate
@@ -181,11 +191,12 @@ the advantages of unifying both worlds. Again, in \UAS we generalize this
 aspect.
 
 Finally, modelling-wise we also have two choices: follow a UC-based definition
-\needcite, or a game-based one \needcite. Independently on the pros and cons of
-each, in GS the standard is the game-based approach
-\cite{bmw03,bsz05,bcc+16,kty04,ky05}, although close relatives to GS, like DAA, prefer the
-UC approach \needcite. On the AC line of work, while some UC models exist
-\needcite, game-based definitions also seem prevalent \cite{fhs19} \needcite.
+\cite{cane20}, or a game-based one \cite{shoup04}. Independently on the pros and
+cons of each, in GS the standard is the game-based approach
+\cite{bmw03,bsz05,bcc+16,kty04,ky05}, although close relatives to GS, like DAA,
+prefer the UC approach \cite{cdl16,cdl16b,ccd+17,cdl17}. On the AC line of work,
+while some UC models exist \cite{}, game-based definitions also seem prevalent
+\cite{bcc+09,cks10,cl11,cklm12,cmz14,dmm+18,fhs19}.
 Thus, the logical choice (at least, for a first step) seems to be game-based
 definitions. Concretely, we take strong inspiration from \cite{bsz05} for the
 GS branch, and from \cite{fhs19} for the AC one.
@@ -209,7 +220,7 @@ proving arbitrary claims over the attributes in the credentials involved in the
 request, without revealing them. We make only one exception, though: we do not
 include support to blindly carry attributes from one credential used in the
 request, to the new credential. This is indeed possible in some schemes
-\needcite. However, we argue that, by including support to merge multiple
+\cite{bcl04}. However, we argue that, by including support to merge multiple
 credentials into the same signature, this is no longer necessary. And indeed
 it is even realistic, as it does not make much sense to expect that an issuer
 attests an attribute that he cannot access in the clear (even despite it being
@@ -336,7 +347,7 @@ strict generalization of vanilla GS and vanilla AC. Consequently, vanilla GS and
 AC are a strict subset of \UAS. We also show how to build MPS schemes \needcite
 which is on itself a generalization of BiAS \cite{lnpy21}; as well as group
 signatures with message-dependent opening \cite{ehk+19}, or delegatable
-anonymous credentials \needcite.
+anonymous credentials \cite{bcc+09,cklm14}.
 %
 Interestingly, ``pure'' ring signatures \cite{rst06} can also be built from
 \UAS, where with ``pure'' we mean that \UAS-based ring signatures do not require
@@ -350,7 +361,7 @@ possible\footnote{Nobatly, mimicking ring signatures without issuers is
 unforgeability notion, that requires trust on the issuer in the setting of group
 signatures, is still applicable here, as long as the verifier trusts all
 the public keys involved in the \UAS-based ring signature (just the same
-as in conventional ring signatures). \todo{Although, on this regard, it is
+as in conventional ring signatures). \jdv{Although, on this regard, it is
   interesting to explore how attributes come into the picture.}
 
 \subsubsection{Is the extra overhead reasonable?} %

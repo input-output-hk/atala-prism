@@ -15,7 +15,7 @@ credentials, that let
 users prove arbitrary claims on their credentials, as long as they are met by
 the contained attributes. In practice, most probably, the signing policy to be
 employed in each signature will be defined by the verifier (or jointly between
-user and verifier), including the specification of which inspector will be
+user and verifier), including the specification of which opener will be
 able to post-process signatures\footnote{See, for instance, the concept of
   presentation exchanges, or requests, in the context of Verifiable Credentials:
   \url{https://identity.foundation/presentation-exchange/} (last access, May
@@ -64,7 +64,7 @@ to produce signatures.
 \item[$1/0 \gets \Verify(\opk, \lbrace \ipk_i \rbrace_{i \in \Issuers},\sig,
   \yeval,\msg,\feval)$.] Checks whether $(\sig,\yeval)$ is a valid signature
   over message \msg, from a user with credentials issued by issuers with public
-  keys $\ipk_i$, for evaluation function \feval and inspector key \opk.
+  keys $\ipk_i$, for evaluation function \feval and opener key \opk.
 \item[$(\yinsp,\iproof)/\bot \gets \Open(\osk,\lbrace \ipk_i
   \rbrace_{i \in \Issuers},\sig,\yeval,\msg,\feval)$.] %
   Executed by the opener with private key \osk. Receives a signature $(\sig,
@@ -85,8 +85,9 @@ modelling, we make use of three different and abstract functions: \fissue,
 governance of the resulting instantiation of an \UAS scheme. They will be
 defined by different parties, but in all cases, they are run by users (maybe,
 on user-private data). Also, in all cases, the user has to prove correctness of
-their computation. We introduce them next, \todo{and will give concrete examples
-  in \secref{sec:uas-instantiation}.}
+their computation. We introduce them next, and give concrete examples for
+building specific well-known restrictions of \UAS in
+\secref{sec:transformations}.
 
 \begin{description}
 \item[$\fissue: (\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\attrs)
@@ -116,7 +117,7 @@ their computation. We introduce them next, \todo{and will give concrete examples
 \end{description}
 
 We emphasize that, even though \finsp and \feval seem redundant, they are not.
-To see this, observe that \finsp is defined by inspectors, and will be fixed in
+To see this, observe that \finsp is defined by openers, and will be fixed in
 all signatures that can be opened by the opener who defined it. On the other
 hand, \feval can be defined by (e.g.) verifiers on a per-signature basis, even
 if the signatures use the same \finsp. Thus, \feval can be programmed to contain
@@ -171,9 +172,9 @@ dishonestly produced signatures, we do need to perform actual extraction. How to
 do this will depend on each specific construction. Certainly, the challenger
 needs special knowledge/power such as decryption trapdoors, the ability to
 rewind the game, or program random oracles. The approach needs thus to depend on
-the concrete construction. \todo{Although, for the case of \ExtractIssue,
-online extractability \needcite (or alternative requirements, such as
-non-parallel or logarithmic number of joins) is necessary.}
+the concrete construction. \jdv{Although, for the case of \ExtractIssue,
+  online extractability (or alternative requirements, such as non-parallel or
+  logarithmic number of joins) is necessary.}
 
 \paragraph{Global Variables.} %
 The environment manages several global variables in the games posed to the
@@ -253,11 +254,11 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 \begin{description}
 \item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
   the associated issuance function.
-\item[\OGEN.] Adds a new inspector to the game, generating its key pair and
+\item[\OGEN.] Adds a new opener to the game, generating its key pair and
   setting the associated evaluation and inspection functions.
 \item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
   key to the adversary.
-\item[\OCORR.] Corrupts an existing (and honest) inspector, by giving its secret
+\item[\OCORR.] Corrupts an existing (and honest) opener, by giving its secret
   key to the adversary.  
 \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
   the user's key pair.
@@ -358,7 +359,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
     }
 
     \caption{Detailed oracles available in our model (1/2). Oracles for
-      generating key material for users, issuers, and inspectors.}
+      generating key material for users, issuers, and openers.}
     \label{fig:oracles1}
   \end{figure*}
 }
@@ -447,13 +448,13 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\sig,\yeval,\msg,\feval)
           \in \SIG[\uid] \\
           (\yinsp,\iproof) \gets
-          \Inspect(\PRVOK[\oid],\GK[\scid],\sig,\yeval,\msg,\feval) \\
+          \Open(\PRVOK[\oid],\GK[\scid],\sig,\yeval,\msg,\feval) \\
           \pcif \CSIG[\sig] \neq \bot: \\
           \pcind \textrm{Parse $\CSIG[\sig]$ as $(\oid,\cuid_b,\scid_b,\msg,
             \feval,\yeval$} \\
           \hspace*{83pt}\cuid_{1-b},\csig_{1-b},\scid_{1-b}) \\
           \pcind (\yinsp',\iproof') \gets
-          \Inspect(\PRVOK[\oid],\IK[\siid],\\
+          \Open(\PRVOK[\oid],\IK[\siid],\\
           \hspace*{107pt} \sig_{1-b},\msg,\feval) \\
           \pcind \pcif \yinsp' \neq \yinsp: \pcreturn \bot \\
           \pcreturn (\yinsp,\iproof)
@@ -487,7 +488,7 @@ credentials, user key, and message.
 \end{definition}
 
 \begin{figure}[htp!]
-  \procedure{$\ExpCorrect(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
     (\uid,\oid,\scid,\msg,\feval)
     \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
@@ -500,7 +501,7 @@ credentials, user key, and message.
     ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,\fissue^{\cid}),\cdot)\\
     \pcind \pcif \fissue^{\cid}(\UK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
     \pcif \feval(\UK[\uid],\CRED[\scid],\msg) \neq \yeval: \pcreturn 1 \\
-    (\yinsp,\iproof) \gets \Inspect(\PRVOK[\gid],\PUBIK[\scid],\sig,\msg,\feval) \\
+    (\yinsp,\iproof) \gets \Open(\PRVOK[\gid],\PUBIK[\scid],\sig,\msg,\feval) \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\y,\iproof,\sig,\yeval,\msg,\feval)
     = 0 \lor \yinsp \neq \finsp^\gid(\yeval,\UK[\uid],\CRED[\scid],\msg)): \\
     \pcind \pcreturn 1 \\
@@ -591,7 +592,7 @@ has to produce the same output on both challenge user-credentials pairs.
 However, by doing so, we would force all constructions to maintain private the
 output of \feval. We opt not to require that, though, as it directly allows
 our model to cover interesting use cases -- such as restricting to selective
-disclosure, or privacy-preserving variants of functional signatures \todo{check
+disclosure, or privacy-preserving variants of functional signatures \jdv{check
   the latter, and perhaps expand}.
 
 \paragraph{Unforgeability.} In anonymous credentials, unforgeability requires
@@ -697,7 +698,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \SIG[\uid]: \pcreturn 0 \\
       \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\yeval,\msg,\feval) = 0:
       \pcreturn 0 \\
-      (\yinsp,\iproof) \gets \Inspect(\PRVOK[\oid],\siid,\sig,\yeval,\msg) \\
+      (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\sig,\yeval,\msg) \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg,\feval)
       = 0: \pcreturn 1 \\
       (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets \ExtractSign(\oid,\siid,\sig,
@@ -771,17 +772,15 @@ something (easily) extractable from the signature.
 
 \paragraph{Non-frameability.} %
 Non-frameability variants are a core unforgeability-type property in group
-signatures. However, no similar property is modeled for anonymous credentials
-(\todo{see the discussion in \secref{sec:introduction} for further detail. Also,
-consider conditional anonymity notions pointed to by Elizabeth}). It is a quite
-strong property, as it must be ensured even in the presence of dishonest issuer
-and opener. Intuitively, it prevents the adversary from creating a signature
-that can be (even in some generic sense) associated to an honest user who did
-not produce it. Depending on the opening capabilities of the scheme,
-this framing could be done in different ways; i.e., by convincing third parties
-that signatures by different (possibly corrupt) users are linked, or directly
-by having opening proofs output the identity of a user who did not create the
-signature being opened.
+signatures. However, no similar property is modeled for anonymous credentials.
+It is a quite strong property, as it must be ensured even in the presence of
+dishonest issuer and opener. Intuitively, it prevents the adversary from
+creating a signature that can be (even in some generic sense) associated to an
+honest user who did not produce it. Depending on the opening capabilities of the
+scheme, this framing could be done in different ways; i.e., by convincing third
+parties that signatures by different (possibly corrupt) users are linked, or
+directly by having opening proofs output the identity of a user who did not
+create the signature being opened.
 
 The notion of non-frameability in \UAS schemes is unavoidably more subtle than
 in group signatures, though. To see this, we note that, by allowing arbitrary

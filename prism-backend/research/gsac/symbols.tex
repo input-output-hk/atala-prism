@@ -1,13 +1,13 @@
 \definecolor{darkgreen}{rgb}{0.1,0.7,0.1}
 \newcommand{\todo}[1]{{\colorbox{red}{\bf TODO:}\textcolor{red}{#1}}}
-\newcommand{\doubt}[1]{{\colorbox{blue}
-    {\textcolor{white}{\bf DOUBT:}}\textcolor{blue}{#1}}}
-\newcommand{\response}[1]{{\colorbox{orange}{\bf RESPONSE:}
-                                             \textcolor{orange}{#1}}}
-\newcommand{\modified}[1]{{\textcolor{orange}{#1}}}
-\newcommand{\commentwho}[2]{{\colorbox{darkgreen}{{\bf #1:}}
-    \textcolor{darkgreen}{#2}}}
-\newcommand{\comment}[1]{{\textcolor{orange}{\# #1}}}
+\newcommand{\doubt}[1]{\ifnum\authnotes=1 {\colorbox{blue}
+    {\textcolor{white}{\bf DOUBT:}}\textcolor{blue}{#1}} \else \fi}
+\newcommand{\response}[1]{\ifnum\authnotes=1 {\colorbox{orange}{\bf RESPONSE:}
+                                             \textcolor{orange}{#1}} \else \fi}
+\newcommand{\modified}[1]{\ifnum\authnotes=1 {\textcolor{orange}{#1}} \else \fi}
+\newcommand{\commentwho}[2]{\ifnum\authnotes=1 {\colorbox{darkgreen}{{\bf #1:}}
+    \textcolor{darkgreen}{#2}} \else \fi}
+\newcommand{\comment}[1]{\ifnum\authnotes=1 {\textcolor{orange}{\# #1}} \else \fi}
 %\newcommand{\note}[1]{{\colorbox{gray}{\bf NOTE:}\textcolor{gray} {#1}}}
 \newcommand{\needcite}{[\colorbox{red}{?}]}
 \newcommand{\figref}[1]{Fig. \ref{#1}}
@@ -17,6 +17,8 @@
 \newcommand{\appref}[1]{Appendix \ref{#1}}
 \newcommand{\defref}[1]{Definition \ref{#1}}
 \newcommand{\thmref}[1]{Theorem \ref{#1}}
+
+\newcommand{\jdv}[1]{\commentwho{Jesus}{#1}}
 
 %\renewcommand{\qedsymbol}{$\blacksquare$}
 \newcommand{\br}[1]{\ensuremath{\lbrack #1 \rbrack}}
@@ -143,12 +145,19 @@
 
 % NIZK
 \def\NIZK{\ensuremath{NIZK}\xspace}
+\def\NIZKRel{\ensuremath{\mathcal{R}}\xspace}
 \def\NIZKSetup{\ensuremath{\NIZK.Setup}\xspace}
+\def\NIZKSetupRel{\ensuremath{\NIZK.Setup^{\NIZKRel}}\xspace}
 \def\NIZKProve{\ensuremath{\NIZK.Prove}\xspace}
+\def\NIZKProveRel{\ensuremath{\NIZK.Prove^{\NIZKRel}}\xspace}
 \def\NIZKVerify{\ensuremath{\NIZK.Verify}\xspace}
+\def\NIZKVerifyRel{\ensuremath{\NIZK.Verify^{\NIZKRel}}\xspace}
 \def\NIZKSim{\ensuremath{\NIZK.Sim}\xspace}
+\def\NIZKSimRel{\ensuremath{\NIZK.Sim^{\NIZKRel}}\xspace}
 \def\NIZKSimSetup{\ensuremath{\NIZK.SimSetup}\xspace}
+\def\NIZKSimSetupRel{\ensuremath{\NIZK.SimSetup^{\NIZKRel}}\xspace}
 \def\NIZKExtract{\ensuremath{\NIZK.Extract}\xspace}
+\def\NIZKExtractRel{\ensuremath{\NIZK.Extract^{\NIZKRel}}\xspace}
 \def\Setup{\ensuremath{Setup}\xspace}
 \def\Prove{\ensuremath{Prove}\xspace}
 \def\Verify{\ensuremath{Verify}\xspace}
@@ -162,13 +171,11 @@
 \def\NIZKproof{\ensuremath{\pi}\xspace}
 \def\NIZKx{\ensuremath{x}\xspace}
 \def\NIZKw{\ensuremath{w}\xspace}
-\def\NIZKRel{\ensuremath{\mathcal{R}}\xspace}
 \def\NIZKLang{\ensuremath{\mathcal{L}}\xspace}
 \def\ExpNIZKComp{\ensuremath{\Exp^{comp}_{\NIZK,\adv}}\xspace}
 \def\ExpNIZKSound{\ensuremath{\Exp^{sound}_{\NIZK,\adv}}\xspace}
 \def\ExpNIZKSimExt{\ensuremath{\Exp^{simext}_{\NIZK,\adv}}\xspace}
 \def\ExpNIZKZKb{\ensuremath{\Exp^{zk-b}_{\NIZK,\adv}}\xspace}
-
 
 % SPK
 \def\SPK{\ensuremath{SPK}\xspace}

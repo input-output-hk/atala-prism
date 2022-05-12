@@ -118,17 +118,31 @@
 \subsection{Detailed Proofs}
 \label{sapp:gsac-proofs}
 
-\todo{Need to update the proofs with the updated definitions, now returning
-  \attrs as part of \Open.}
-
-\commentwho{Jesus}{Strictly, in our generic construction we require IND-CCA, but
+\jdv{Strictly, in our generic construction we require IND-CCA, but
   in the following concrete instantiation, we use ElGamal, which is IND-CPA.
   However, we actually ``lift'' ElGamal with NIZKs of the encrypted plaintexts,
-  which is essentially IND-CCA as far as I know. Still, make sure to mention
-  that.}
+  but this not may be enough. Check and look for alternatives if not good.}
 
 \begin{proof}[\thmref{thm:correctness-gsac}; Correctness of \GSACGen]
-  \todo{XXX}
+  By correctness of \SBCM and the NIZK for $\NIZKRel^{\Issue}$, an honestly
+  obtained credential \cid, from an honest issuer, is a valid \SBCM signature
+  over
+  attribute set $\ATTR[\cid]$, associated to the user key of some honest user
+  which, by convention, we denote with $\OWNR[\cid]$ -- thus, the secret key
+  bound to the credential is $\PRVUK[\OWNR[\cid]]=\usk$. Since, at line 3 of the
+  \ExpGSACCorrect game the environment checks that the \dattrs set output by
+  $\adv$ is contained within the chosen credential \cid, again by correctness of
+  \SBCM, the encryption scheme, and correctness of the NIZK for
+  $\NIZKRel_{\Sign}$, \Sign succeeds with overwhelming
+  probability, and \sig contains an encryption, under \opk, of $\ATTR[\cid]$,
+  and due to correctness of the commitment scheme \C, also of $\upk =
+  \CCommit(\usk;0)$. Additionally, correctness of the NIZK for
+  $\NIZKRel_{\Open}$ ensures that \Open is able to decrypt them back into \upk,
+  and that $\attrs=
+  \ATTR[\cid]$, respectively. Finally, correctness of the NIZK for
+  $\NIZKRel_{\Sign}$ and the NIZK for $\NIZKRel_{\Open}$ ensure that \Verify and
+  \Judge accept the signature and opening proof, respectively, with overwhelming
+  probability.
 \end{proof}
 
 \begin{proof}[\thmref{thm:anonymity-gsac}; Anonymity of \GSACGen]
@@ -366,11 +380,11 @@ Outputs $\isk \gets \ZZ^*_p$, and $\ipk \gets (\NIZKcrs,\gen{g}_2^{\isk})$.
 
 \paragraph{$\OKeyGen(\parm) \rightarrow (\opk,\osk)$.} %
 Outputs $\osk \gets \ZZ^*_p$, and $\opk \gets \gen{g}^{\osk}$. This is the
-opener's ElGamal encryption key pair \needcite.
+opener's ElGamal encryption key pair.
 
 \paragraph{$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.} %
 Outputs $\usk \gets \ZZ^*_p$, and $\upk \gets \gen{h}_1^{\usk}$. \upk will
-simply be used to compute Pedersen commitments \needcite to \usk. However,
+simply be used to compute Pedersen commitments to \usk. However,
 it is useful to precompute it, and we treat it as a sort of ``public key''.
 
 \paragraph{$\langle \Obtain(\gpk,\usk,\attrs),\Issue(\gpk,\isk,\attrs) \rangle
