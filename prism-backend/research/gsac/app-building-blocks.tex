@@ -489,7 +489,7 @@ Finally, in addition, we require that the produced signatures must be compatible
 with (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary)
 claims over the signed (committed) messages.
 
-\subsection{An Instantiation of \SBCM with BBS+}
+\subsubsection{An Instantiation of \SBCM with BBS+}
 
 Next, we give an instantiation of an \SBCM scheme, based on BBS+ signatures.
 We emphasize again that this is essentially equivalent to the protocol for
@@ -553,9 +553,6 @@ e(\gen{g}_1\gen{g}^s\prod_{i \in |\overline{\smsg}|}\gen{h}^{\overline{\smsg}_i}
 Note that proving knowledge of a BBS+ signature as produced in our \SBCM variant
 is essentially the same as in \cite{asm06,cdl16b}, only needing to account for
 the different basis for messages signed in committed and plain form.
-
-\subsubsection{Security.} Next, we sketch that the given BBS+ interactive
-signing protocol is correct, OMF-secure, and ensures blindness.
 
 \paragraph{Correctness.} Correctness is direct from correctness of the
 commitment scheme, the NIZK system, and BBS+.

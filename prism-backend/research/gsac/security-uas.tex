@@ -50,7 +50,8 @@ functions that are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Correctness of \CUASGen]
   \label{thm:correctness-uas}
-  If the underlying schemes for commitments, encryption and \SBCM, are correct,
+  If the underlying schemes for commitments, public-key encryption and \SBCM,
+  are correct,
   as well as the NIZKs for $\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$, and
   $\NIZKRel_{\Open}$, our generic construction \CUASGen satisfies correctness as
   defined in \defref{def:correctness-uas}.
@@ -135,9 +136,9 @@ functions that are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Issuance unforgeability of \CUASGen]
   \label{thm:issue-forge-uas}
-  If the underlying NIZK used for $\NIZKRel_{\Issue}$ is simulation extractable
-  and sound, then our \CUASGen construction satisfies issuance unforgeability as
-  defined in \defref{def:issue-forge-uas}, except with negligible probability.
+  If the underlying NIZK used for $\NIZKRel_{\Issue}$ is zero-knowledge,
+  simulation extractable and sound, then our \CUASGen construction satisfies
+  issuance unforgeability as defined in \defref{def:issue-forge-uas}.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:issue-forge-uas}; Issue unforgeability of \CUASGen]
@@ -148,8 +149,8 @@ functions that are needed for some of the properties to be meaningful, in
   %
   For this purpose, we define two games, $G_0=\ExpForgeIssue$, and $G_1$, which
   is exactly the same, but where, within the \Setup algorithm, we replace
-  $\NIZKSetup^{\Issue}$ with $\NIZKSimSetup^{\Issue}$. As per the definition of
-  \NIZK in \appref{sapp:nizk}, both games are indistinguishable.
+  $\NIZKSetup^{\Issue}$ with $\NIZKSimSetup^{\Issue}$. Due to zero-knowledgeness
+  of $\NIZK^{\NIZKRel_{\Issue}}$, both games are indistinguishable.
 
   Now, observe that the adversary is required to output a credential
   identifier for which associated entries in \trans and \CRED exist; moreover,

@@ -155,15 +155,15 @@ to blocks of messages, and which are furthermore compatible with (efficient)
 proof systems over the produced signature and signed (commitments to) messages.
 For this purpose, we define such schemes as a tuple (\SBCMSetup,\SBCMKeyGen,
 \SBCMCom,\SBCMSign,\SBCMVerify). Algorithm $\parm \gets \SBCMSetup(\secpar)$
-produces the public parameters for the scheme.
+produces the public parameters for the scheme. %
 $(\vk,\sk) \gets \SBCMKeyGen(\parm)$ produces a verification-signing
-key pair. $\\sig/\bot \gets\langle \SBCMCom(\vk,\overline{\smsg},\smsg),
+key pair. $\sig/\bot \gets\langle \SBCMCom(\vk,\overline{\smsg},\smsg),
   \SBCMSign(\sk,\smsg) \rangle$ is an interactive protocol between a user, who
 runs \SBCMCom and has a set of messages $\overline{\smsg}$ to be block-committed,
-and a signer, who owns signing key \SBCMsk; both also receive common input a
+and a signer, who owns signing key \sk; both also receive common input a
 block of messages \smsg. The output of the protocol is a signature over
 $\overline{\smsg} \cup \smsg$. Algorithm $1/0 \gets \SBCMVerify(\vk,
-\sig,\overline{\smsg},\smsg)$ verifies a signature \SBCMsig over message set
+\sig,\overline{\smsg},\smsg)$ verifies a signature \sig over message set
 $\overline{\smsg} \cup \smsg$. In addition, the
 produced signatures must be compatible with (efficient) NIZK proofs of knowledge
 of a signature, and of (arbitrary) claims over the signed (committed) messages.
@@ -172,10 +172,10 @@ An \SBCM scheme must provide one-more-forgery type of security.
 \subsection{Notation}
 \label{ssec:notation}
 
-We use common notation habits. $y \gets A(x)$ means that algorithm $A$, on input
-$x$, produces output $y$. When $A$ is a probabilistic process, and we want to
-make explicit the randomness $r$, we use $y \gets A(x;r)$. $\langle y_A,y_B \gets
-\langle A(x_A),B(x_B)\rangle$ denotes algorithms $A$ and $B$, running an
+We follow common notation habits. $y \gets A(x)$ means that algorithm $A$, on
+input $x$, produces output $y$. When $A$ is a probabilistic process, and we want
+to make explicit the randomness $r$, we use $y \gets A(x;r)$. $\langle y_A,y_B
+\gets \langle A(x_A),B(x_B)\rangle$ denotes algorithms $A$ and $B$, running an
 interactive protocol, where $A$ receives $x_A$ as input and produces $y_A$ as
 output, and $B$ receives $x_B$ and produces $y_B$.
 %
@@ -188,7 +188,9 @@ the setup algorithm of an underlying NIZK system is performed associated to
 relation $\NIZKRel$; $\SBCMparm$ are the public parameters for an \SBCM scheme,
 and $\Eparm$ are the public parameters for an encryption scheme. Variables
 written in bold font denote sets, e.g., while we use \ipk to denote a single
-issuer public key, \sipk denotes a set of issuer's public keys.
+issuer public key, \sipk denotes a set of issuer's public keys. To refer to
+a specific element of a set, we use subindexes, e.g., $\sipk_i$ is the $i$-th
+\ipk within \sipk.
 %
 We also assume the existence of a well defined attribute space over which
 issuers in our schemes can issue credentials on. We denote this set with

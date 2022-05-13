@@ -15,7 +15,7 @@ that such a combination:
 \begin{itemize}
 \item Enables a natural way to incorporate accountability within 
   privacy-preserving identities. Furthermore, it does so in a formal way,
-  via the traceability notion and, crucially, the non-frameability one,
+  via the traceability notion and, crucially, the non-frameability one
   (which is not present in anonymous credentials).
 \item Provides meaning to the conventional \Open functionality of group
   signatures, which traditionally has only required that an abstract concept of
@@ -31,7 +31,7 @@ that such a combination:
 
 \paragraph{Intuition for our design and construction.} %
 Functionally, we combine both worlds. Namely, a user can get as many credentials
-as s/he wants -- although all are tied to the same user key --, and signatures
+as s/he wants -- although all are bound to the same user key --, and signatures
 (or credential presentations) of the same credential must be unlinkable. In this
 simplified first step, we restrict to selective attribute disclosure, meaning
 that signatures produced by a credential reveal only a subset of the attributes
@@ -41,8 +41,8 @@ correct opening.
 
 With respect to the model, privacy-wise this direct combination requires that
 any two signatures (credential presentations) reveal nothing about the
-credential used to produce them, beyond the revealed attributes. For this first
-step, security-wise we stick to the conventional separation of
+credential used to produce them, beyond the revealed attributes.
+Security-wise we stick to the conventional separation of
 unforgeability-related properties in group signatures. That is, traceability
 requires that, in the presence of an honest issuer, all valid signatures must
 originate from a credential issued by the issuer; and, from the AC domain, we

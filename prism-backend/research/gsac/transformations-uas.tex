@@ -1,7 +1,7 @@
 \section{Relating \UAS with Other Schemes, and Variations}
 \label{sec:transformations}
 
-In order to justify \UAS's universality, in this section we describe how does
+In order to justify \UAS's universality, in this section we describe how do
 \UAS schemes relate with other similar systems. \jdv{The relationships seem
   quite straightforward; thus, we only informally sketch how one could build
   other schemes (or something very similar to them) from \UAS, and leave the
@@ -37,8 +37,8 @@ anonymous credentials.
 \subsection{\UAS with Multiple Openers}
 We briefly mention that we have defined \UAS signatures as being ``openable'' by
 only one opener. However, since there is no tight relation between issuer and
-opener (as in conventional group signatures), note that it is trivial to extend
-to the case with multiple openers per signature. In that case, the
+opener (as opposed to conventional group signatures), it is trivial to
+extend to the case with multiple openers per signature. In that case, the
 $\NIZKRel_{\Sign}$ relation should be extended to include proofs of correct
 encryption of the \yinsp values produced by each chosen opener.
 Similarly, the sign unforgeability and non-frameability definitions should be
@@ -52,7 +52,7 @@ signature scheme with message dependent opening works as a conventional group
 signature scheme, with the addition that it is only possible to open signatures
 over specific messages (e.g., text with offensive language). For this, the
 authors introduce an extra authority, the admitter, who creates a
-``message-specific token'' for each message that they deem unacceptable.
+``message-specific token'' for each message that is deemed unacceptable.
 These message-specific tokens are later needed by the opener, in order to open
 signatures over unacceptable messages.
 
@@ -79,7 +79,7 @@ an ad hoc group composed by himself, and any arbitrary set of other users that
 have advertised their public keys in some publicly accessible way. Also, in
 ring signatures no de-anonymization is possible\footnote{At least, in vanilla
   ring signatures. Some variants allow some sort of linkability; for instance
-  \cite{lww04}}, although the most distinguishing property is probably the lack
+  \cite{lww04}.}, although the most distinguishing property is probably the lack
 of issuer, which has led some relevant systems like Monero%
 \footnote{\url{https://www.getmonero.org/resources/moneropedia/ringsignatures.html}.
   Last access on May 8th, 2022.} to opt for ring signatures rather than, e.g.,
@@ -87,7 +87,7 @@ group signatures.
 
 To reach (vanilla) ring signatures from \UAS, we have to slightly alter our
 generic construction. This is due to the fact that the NP relation
-$\NIZKRel^{\Sign}$ defined in \secref{ssec:generic-construction-uas} reveals the
+$\NIZKRel_{\Sign}$ defined in \secref{ssec:generic-construction-uas} reveals the
 issuers' public keys. This is a problem as, intuitively, the signer in a ring
 signature is a sort of issuer for the ad hoc group. To hide the issuer, we
 replace the NP relation in \secref{ssec:generic-construction-uas} with
@@ -99,10 +99,10 @@ $\NIZKRel^{\Sign-prv} \coloneqq \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r,
 part of the witness in the NP relation, which means that they will not
 be revealed in the proofs.
 %
-Besides $\NIZKRel^{\Sign-prv}$, let $ring$ be an ad hoc set containing the
+Besides $\NIZKRel^{\Sign-prv}$, let \sring be an ad hoc set containing the
 public keys of the users that the signer wants to include in its ad hoc group.
-We define $\fissue^{ring}(\usk,\scred,\attrs) \coloneqq \lbrace \pcif \attrs
-\subseteq ring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
+We define $\fissue^{\sring}(\usk,\scred,\attrs) \coloneqq \lbrace \pcif \attrs
+\subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
 \pcreturn 0 \rbrace$. That is, if we let the attributes in a credential be
 public keys, this function means that a credential will be issued if all the
 public keys specified as attributes to be included in the credential are part of
@@ -130,10 +130,12 @@ public keys in the ring, and proves knowledge of one of them. If the NIZK
 proof verifies, this means that the signer is indeed the owner of such a private
 key. Finally, since $\finsp^0$ returns always $0$, then no de-anonymization is
 possible.
+%
+Interestingly, this construction based on \UAS allows adding extra attributes
+(beyond the public keys in the ring) to the produced signatures, which may be
+useful for real world use cases.
 
 \subsection{Multimodal Private Signatures}
-
-\commentwho{Jesus}{How to cite the Crypto22 paper?}
 
 To show that Multimodal Private Signatures (MPS) \needcite can be built from
 \UAS, we need to give an alternative, simulation-based, definition of the
@@ -207,7 +209,8 @@ $\NIZKRel_{\Sign}^{enc} = \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r),(\msg,
 \feval,\yeval,\Ec,\sipk_{\scred},\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land
 \yeval = \EEnc(\opk,\feval(\usk,\scred,\msg)) \land \yinsp = \finsp(\feval(\usk,
 \scred,\msg),\usk,\scred,\msg) \land \forall \cred \in \scred,
-\SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$.
+\SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$. This would
+also seem to require that the used public-key encryption scheme is IND-CCA.
 
 Given this approach, the need to provide an alternative definition for anonymity
 is clearer. Namely, in the original \CHALb oracle, we restrict that the
@@ -226,10 +229,10 @@ Building delegatable credentials is also straightforward, thanks to the \fissue
 function. For instance, take the simplification of level-based delegation, where
 the owner of a credential of level $n$ can only issue credentials of level
 $n+1$. Without loss of generality, assume that the credential level is encoded
-in the first attribute of the credential, which we denote with $a_1$. In this
-context, any owner of a credential of level $n$ can define an issuance function
-$\fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1; \pcelse \pcreturn 0
-\rbrace$.
+in the first attribute of the credential (after the \usk), which we denote with
+$a_1$. In this context, any owner of a credential of level $n$ can define an
+issuance function $\fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1;
+\pcelse \pcreturn 0 \rbrace$.
 
 \jdv{\subsection{Functional Signatures}}
 \jdv{I think that, by making \yeval explicit, \UAS is essentially a

@@ -5,7 +5,7 @@ We now define our model for Universal Anonymous Signatures. Property-wise, we
 maintain anonymity, non-frameability, and include two extra unforgeability
 properties: unforgeability of issuance, which ensures that issuance policies
 are not circumvented; and unforgeability of signatures, guaranteeing that
-signing policies are respected, as well as soundness of opening.
+signature evaluation policies are respected, as well as soundness of opening.
 
 From a functional perspective, we require that each issuer and opener fix
 the issuance predicate \fissue and opener function \finsp when generating
@@ -13,7 +13,8 @@ their public keys. On the other hand, signature evaluation functions \feval can
 be defined at signing time. This is in line with the usual practice in anonymous
 credentials, that let
 users prove arbitrary claims on their credentials, as long as they are met by
-the contained attributes. In practice, most probably, the signing policy to be
+the contained attributes. In practice, most probably, the signature evaluation
+policy to be
 employed in each signature will be defined by the verifier (or jointly between
 user and verifier), including the specification of which opener will be
 able to post-process signatures\footnote{See, for instance, the concept of
@@ -24,7 +25,9 @@ flexibility, the syntax for \UAS supports multiple issuers and openers, and
 lets users leverage multiple credentials to request issuance of new ones, and
 to produce signatures.
 
-\subsubsection{Syntax.} An \UAS scheme is composed by the following algorithms:
+\subsubsection{Syntax.} An \UAS scheme is composed by the following algorithms,
+where for readability we assume that issuer public keys (\ipk) are extractable
+from credentials:
 
 \begin{description}
 \item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
@@ -43,36 +46,30 @@ to produce signatures.
   \parm, returns a user's secret key.
 \item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle
-  \Obtain(\usk,\lbrace (\cred_i,\ipk_i)\rbrace_{i \in \Issuers},\attrs),
-  \Issue(\isk,\lbrace \ipk_i \rbrace_{i \in \Issuers},\attrs))
+  \Obtain(\usk,\scred,\attrs),
+  \Issue(\isk,\sipk,\attrs))
   \rangle$.] %
   This interactive protocol lets a user with key \usk running the
   \Obtain process, receive a credential \cred from an issuer in the system, on
-  attribute set $\attrs$. The user leverages a set of $(\cred_i,\ipk_i)$ pairs,
-  where $\cred_i$ is a credential obtained from the issuer with public
-  key $\ipk_i$. The user outputs the produced credential \cred, while
+  attribute set $\attrs$. The user leverages a set of credentials \scred,
+  each with a matching issuer key in \sipk.
+  The user outputs the produced credential \cred, while
   the issuer outputs the protocol transcript \utrans for the produced
-  credential. To ease notation, we assume that the issuer public key associated
-  to credential is available from the credential itself, and therefore
-  omit the $\ipk_i$ values from the syntax, unless necessary to avoid
-  ambiguity.
-\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\lbrace (\cred_i,\ipk_i)
-  \rbrace_{i \in \Issuers},\msg,\feval)$.] %
+  credential.
+\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.] %
   Upon receiving a user secret key \usk, opener public key \opk, a set of
-  credential-issuer pairs $(\cred_i,\ipk_i)$, a message \msg and evaluation
+  credentials \scred, a message \msg and evaluation
   function \feval, returns signature \sig and value \yeval.
-\item[$1/0 \gets \Verify(\opk, \lbrace \ipk_i \rbrace_{i \in \Issuers},\sig,
-  \yeval,\msg,\feval)$.] Checks whether $(\sig,\yeval)$ is a valid signature
+\item[$1/0 \gets \Verify(\opk, \sipk,\sig,\yeval,\msg,\feval)$.]
+  Checks whether $(\sig,\yeval)$ is a valid signature
   over message \msg, from a user with credentials issued by issuers with public
-  keys $\ipk_i$, for evaluation function \feval and opener key \opk.
-\item[$(\yinsp,\iproof)/\bot \gets \Open(\osk,\lbrace \ipk_i
-  \rbrace_{i \in \Issuers},\sig,\yeval,\msg,\feval)$.] %
+  keys in \sipk, for evaluation function \feval and opener key \opk.
+\item[$(\yinsp,\iproof)/\bot \gets \Open(\osk,\sipk,\sig,\yeval,\msg,\feval)$.]
   Executed by the opener with private key \osk. Receives a signature $(\sig,
   \yeval)$ over message \msg and evaluation function \feval, generated using
-  credentials issued by the issuers with public keys $\ipk_i$. If \sig is valid,
+  credentials issued by the issuers with public keys in \sipk. If \sig is valid,
   the function outputs a value $\yinsp$.
-\item[$1/0 \gets \Judge(\opk,\lbrace ipk_i \rbrace_{i \in \Issuers},\yinsp,
-  \iproof,\sig,\yeval,\msg,\feval)$.] %
+\item[$1/0 \gets \Judge(\opk,\sipk,\yinsp,\iproof,\sig,\yeval,\msg,\feval)$.] %
   Checks if \iproof is a valid opening correctness proof for the value \yinsp,
   obtained by applying \Open to the the signature $(\sig,\yeval)$ over
   message \msg, and for evaluation function \feval. 
@@ -90,23 +87,22 @@ building specific well-known restrictions of \UAS in
 \secref{sec:transformations}.
 
 \begin{description}
-\item[$\fissue: (\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\attrs)
+\item[$\fissue: (\usk,\scred,\attrs)
   \rightarrow 0/1$.] Chosen by issuers within a family of functions \famfissue,
   the issuance function defines what customized conditions an issuer requires
   in order to issue credentials, when receiving a request from user with secret
   key \usk, for attributes \attrs. \fissue may run checks on a (possibly empty)
-  set of additional credentials $\cred_i$, all bound to \usk, and possibly
+  set of additional credentials \scred, all bound to \usk, and possibly
   issued by other issuers. \fissue returns $1$ to accept a request, $0$ to
   reject it.
-\item[$\feval: (\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},\msg)
+\item[$\feval: (\usk,\scred,\msg)
   \rightarrow \yeval$.] Signing evaluation functions, from a family of functions
   \famfeval, can be set on a per-signature basis. They receive the user secret
-  key \usk, credentials $\cred_i$, and message to be signed \msg, and can be
+  key \usk, credentials \scred, and message to be signed \msg. \feval can be
   used to control the information related to the signer that will be revealed
   alongside a signature, and to modulate the behaviour of \finsp. Its outputs
   \yeval must belong in a well defined set \rngfeval.
-\item[$\finsp: (\yeval,\usk,\lbrace (\cred_i,\ipk_i) \rbrace_{i \in \Issuers},
-  \msg) \rightarrow \yinsp$.]
+\item[$\finsp: (\yeval,\usk,\scred,\msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
   functions define what utility value, derived from the user's secret key,
   credentials, and signed message, should be extractable by an opener.
@@ -126,8 +122,8 @@ the conditions set by (e.g.) verifiers for signatures they receive; whereas
 may depend on the checks required by the verifier a signature was intended to.
 
 \paragraph{Helper functions \ExtractIssue, \ExtractSign, \IdentifyCred, and
-  \IdentifyUK.} In our modelling, we assume the existence of four functions,
-\ExtractIssue, \ExtractSign, \IdentifyCred, and \IdentifyUK. They are not
+  \IdentifyUK.} In our modelling, we assume the existence of fhese four
+functions. They are not
 functions available in the actual scheme, but rather to the challenger in the
 experiments we use to formalize security of \UAS schemes. Similar techniques
 have been used before to prove security in privacy-preserving schemes with some
@@ -155,26 +151,26 @@ functions are as follows:
   for every $(\attrs_{\cred},\cred)$ pair, there is at most one \usk that makes
   \IdentifyCred return $1$.
 \item[$\IdentifyUK(\uid,\usk)$.] Returns $1$ is \usk is {\uid}'s secret key.
-  This is trivial for honest users, for which this must be a one-to-one
+  This is trivial for honest users, for which there must be a one-to-one
   relationship between {\uid}s and {\usk}s. For corrupt users, \IdentifyUK has
   to iterate through the $\langle\Obtain,\Issue\rangle$ transcripts associated
   to \uid, extract the used secret key, and check if there is a match. Note that
   this does not guarantee that there will be only one \usk per corrupt \uid,
   though. Also, when used for corrupt users, this can only be used when the
-  issuer is honest.  
+  issuer is honest, as transcripts are needed. 
 \end{description}
 
 Note that, for all the helper functions, in the case of credentials, transcripts,
 and signatures by honest users, it is enough to have access to the corresponding
 state information (described below) maintained by the challenger in our
 experiments. For credentials and join transcripts of corrupt users, or
-dishonestly produced signatures, we do need to perform actual extraction. How to
-do this will depend on each specific construction. Certainly, the challenger
+dishonestly produced signatures, we do need to perform actual extraction.
+Certainly, the challenger
 needs special knowledge/power such as decryption trapdoors, the ability to
 rewind the game, or program random oracles. The approach needs thus to depend on
-the concrete construction. \jdv{Although, for the case of \ExtractIssue,
-  online extractability (or alternative requirements, such as non-parallel or
-  logarithmic number of joins) is necessary.}
+the concrete construction. \jdv{Although, for the case of \ExtractIssue and
+  \IdentifyUK, online extractability (or alternative requirements, such as
+  non-parallel or logarithmic number of joins) is necessary.}
 
 \paragraph{Global Variables.} %
 The environment manages several global variables in the games posed to the
@@ -184,7 +180,7 @@ font to denote sets: e.g., \scid and \siid denote sets of credential and issuer
 identifiers. All tables/sets are initialized as empty tables/sets.
 
 \begin{description}
-\item[Tables for parties]:
+\item[Sets for parties]:
   \begin{description}
   \item[\HU and \CU.] Keep track of honest (\HU) and corrupted (\CU) users;
     i.e., they are sets of {\uid}s.
@@ -242,11 +238,6 @@ identifiers. All tables/sets are initialized as empty tables/sets.
 \end{description}
 
 \paragraph{Oracles.} %
-Oracles are the interface of the adversary with the corresponding games. In
-other words: through these oracles, the game environment exposes to the adversary
-functionality that could otherwise be executed only by honest parties with
-private knowledge -- knowledge that would make the adversary capable of
-trivially breaking the security properties formalized in the experiments.
 In the game-based definitions of our \UAS model, we leverage the following
 oracles, which are formally defined in \figref{fig:oracles1} and
 \figref{fig:oracles2}. 
@@ -263,7 +254,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
   the user's key pair.
 \item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
-  user already exists and is honest, corrupts it.
+  user already exists and is honest, corrupts it, leaking its key and
+  credentials.
 \item[\RREG.] Reads the given transcript table entry.
 \item[\WREG.] Sets a transcript table entry to the given value.
 \item[\OBTISS.] Lets the adversary add a new honestly generated credential to
@@ -374,7 +366,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\ISSUE(\cid,\uid,\iid,\attrs,\siid)$}{%
           \pcif \uid \notin \CU: \pcreturn \bot \\          
           \pcif \iid \notin \HI: \pcreturn \bot \\
-          \pcif \exists \iid' \in \ISR[\scid] \notin \HI: \pcreturn \bot \\
+          %\pcif \exists \iid' \in \ISR[\scid] \notin \HI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cdot, \utrans \rangle \gets
           \langle \adv, 
@@ -388,7 +380,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot: \pcreturn \bot \\
+          %\pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
           \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs),\adv \rangle \\
           \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
@@ -423,8 +415,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \HI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
-          \pcif \exists \iid' \in \ISR[\scid]~\st~\iid' \notin \HI: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot:
+          %\pcif \exists \iid' \in \ISR[\scid]~\st~\iid' \notin \HI: \pcreturn \bot \\
+          %\pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot:
           \pcreturn \bot \\
           \langle \cred, \utrans \rangle \gets
           \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs), \\
@@ -448,7 +440,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\sig,\yeval,\msg,\feval)
           \in \SIG[\uid] \\
           (\yinsp,\iproof) \gets
-          \Open(\PRVOK[\oid],\GK[\scid],\sig,\yeval,\msg,\feval) \\
+          \Open(\PRVOK[\oid],\PUBIK[\scid],\sig,\yeval,\msg,\feval) \\
           \pcif \CSIG[\sig] \neq \bot: \\
           \pcind \textrm{Parse $\CSIG[\sig]$ as $(\oid,\cuid_b,\scid_b,\msg,
             \feval,\yeval$} \\
@@ -473,9 +465,9 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 \paragraph{Correctness.} %
 Correctness of \UAS schemes is formalized through the experiment in
 \figref{fig:exp-uas-corr}. It states that a signature over any arbitrary message
-and valid function \feval produced honestly leveraging credential set \scid,
+and valid function \feval, produced honestly leveraging credential set \scid,
 owned by user \uid, is accepted by \Verify. Moreover, all the credentials in
-\scid met the conditions set by the corresponding \fissue defined by the issuer
+\scid meet the conditions set by the corresponding \fissue defined by the issuer
 which issued each credential. Similarly, the output \yeval of \feval matches the
 value produced by \Sign alongside with \sig; and the value produced by \Open
 is accepted by \Judge, and matches the output of applying \finsp on \yeval, the
@@ -515,25 +507,9 @@ credentials, user key, and message.
 \label{sssec:security}
 
 \paragraph{Anonymity.} %
-In group signatures, anonymity captures that no adversary must be able to learn,
-from any group signature, the identity (e.g., member index) of its signer. In 
-anonymous credentials, it requires that no adversary should learn anything about
-the holder of a successfully shown credential, beyond that he owns a credential
-attesting for the claimed predicate of the attributes it contains. In both GS
-and AC, it is also typically required that
-multiple signatures/presentations by the users are unlinkable. The approach to
-formally state this property is in both cases frequently the same: the adversary
-picks two (honest) users (or credentials in the AC case), the game randomly
-chooses one of them, and lets the adversary request challenge
-signatures/presentations from it. The adversary wins if it succeeds in guessing
-which was the chosen user/credential better than guessing at random. In group
-signatures, the game must also restrict the adversary from opening challenge
-signatures. In anonymous credentials, the game must further constraint the
-adversary to output credentials that both meet the same (challenge) predicate
-of their attributes.
-
-In our notion of anonymity for \UAS, we need to merge the previous constraints.
-In order to prevent trivial wins by the adversary, we have to restrict that the
+In addition to the considerations made for \GSAC (see \secref{ssec:model-gsac}),
+in our notion of anonymity for \UAS,
+in order to prevent trivial wins by the adversary, we have to restrict that the
 signing evaluation function outputs the same value for both user-credentials
 pairs. Very interestingly, since our opening functionality does not
 (necessarily) output the identity of the signer, \uline{we can even allow the
@@ -593,7 +569,7 @@ However, by doing so, we would force all constructions to maintain private the
 output of \feval. We opt not to require that, though, as it directly allows
 our model to cover interesting use cases -- such as restricting to selective
 disclosure, or privacy-preserving variants of functional signatures \jdv{check
-  the latter, and perhaps expand}.
+  the latter}, although we show how to do that in \secref{sec:transformations}.
 
 \paragraph{Unforgeability.} In anonymous credentials, unforgeability requires
 that no adversary can succeed in a credential presentation for attributes that
@@ -618,11 +594,11 @@ matching keys extracted during join transcripts, with keys used for signing
 for reliable bookkeeping during joins) than for anonymous credentials, honest
 issuers are required for traceability of group signatures too.
 
-In our \UAS scheme we need to allow users prove claims over the attributes they
+In our \UAS scheme we allow users prove claims over the attributes they
 own -- attested via obtained credentials -- through the \feval function.
-Roughly, we capture this roughly as in unforgeability requirement of anonymous
-credentials. Namely, that the \yeval value returned by \Sign along with the
-signature, matches the expected one from the specified \feval function.
+Roughly, we capture this as in unforgeability requirement of anonymous
+credentials. Namely, we check that the \yeval value returned by \Sign along with
+the signature, matches the expected one from the specified \feval function.
 On the other hand, the opening capabilities of \UAS schemes also call for a
 traceability-like property. However, note that, as opposed to group signatures,
 $\langle \Obtain,\Issue \rangle$ protocols are over credentials rather than
@@ -660,7 +636,7 @@ conditions to have it issued, is clearly problematic: it would allow to prove
 claims over attributes it does not really ``own'' (even if the output of \Sign
 and \Open are consistent with the values returned by \feval and \finsp, and
 the credential was obtained via an $\langle \Obtain,\Issue \rangle$ run). To
-capturethis, we define the \ExpForgeIssue experiment. In the experiment, the
+capture this, we define the \ExpForgeIssue experiment. In the experiment, the
 adversary is challenged to produce a credential identifier that must be
 associated to an existing $\langle \Obtain,\Issue \rangle$ interaction -- thus,
 the corresponding \trans entry must exist (which we can check, as the issuer is
@@ -740,7 +716,7 @@ signing, is an unforgeable \UAS scheme.
 The notion of signature unforgeability we present for \UAS is strictly more
 general than the corresponding one of traceability for group signatures. This is
 again a direct consequence of the fact that \Open can return an arbitrary
-function of the signer's key and credentials (and signed message), whic is a
+function of the signer's key and credentials (and signed message), which is a
 strict generalization of the conventional \Open. Although, even in that case, we
 need to take into account attributes, and the fact that the same user may obtain
 multiple credentials (that is why, even when having \Open return the identity of
@@ -766,24 +742,14 @@ that no credential can be issued that did not meet the corresponding issuance
 policy. This is again something not necessary in group signatures (with
 verifiable openings), where \Judge accepting the opening proof implies that
 there is a valid join transcript associated to the membership credential used
-to produce the signature. However, in \UAS, even though that transcript exists,
-we need to make sure that the issuance policy was satisfied -- and this is not
-something (easily) extractable from the signature.
+to produce the signature. However, in \UAS, given that the credentials contain
+attributes, even though that transcript exists, we need to make sure that the
+issuance policy over these attributes was satisfied -- and this is not something
+(easily) extractable from the signature.
 
 \paragraph{Non-frameability.} %
-Non-frameability variants are a core unforgeability-type property in group
-signatures. However, no similar property is modeled for anonymous credentials.
-It is a quite strong property, as it must be ensured even in the presence of
-dishonest issuer and opener. Intuitively, it prevents the adversary from
-creating a signature that can be (even in some generic sense) associated to an
-honest user who did not produce it. Depending on the opening capabilities of the
-scheme, this framing could be done in different ways; i.e., by convincing third
-parties that signatures by different (possibly corrupt) users are linked, or
-directly by having opening proofs output the identity of a user who did not
-create the signature being opened.
-
 The notion of non-frameability in \UAS schemes is unavoidably more subtle than
-in group signatures, though. To see this, we note that, by allowing arbitrary
+in group signatures. To see this, we note that, by allowing arbitrary
 evaluation and open functions to be used, it can be perfectly valid to
 have a signature produced by a corrupted user output the same \yeval or \yinsp
 values than the ones output when evaluating or opening a signature by an honest
@@ -802,7 +768,9 @@ definition for \UAS, given in experiment \ExpNonframe in
 and opening proof that is accepted by \Verify and \Judge, respectively. From
 the signature, we then extract the secret key of the signer, and match it
 against the secret keys of the honest users. The adversary wins if there is a
-match and the signature has not been queried to \SIGN. In the game, the
+match and the signature has not been queried to \SIGN, or if the value \yinsp
+output by the adversary is accepted by \Judge, yet it is different from the
+extracted $\yinsp'$ value. In the game, the
 adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$.
 

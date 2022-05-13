@@ -6,8 +6,8 @@ generic building blocks. We use three different NP relations in our generic
 construction. Namely:
 
 \begin{description}
-\item[$\NIZKRel_{\Issue}$:] Set by issuers, governs the rules for issuing
-  new credentials. It is defined as $\NIZKRel_{\Issue} = \lbrace
+\item[$\NIZKRel_{\Issue}$:] Set by issuers, governs via \fissue the rules for
+  issuing new credentials. It is defined as $\NIZKRel_{\Issue} = \lbrace
   (\usk,\scred,\attrs_{\scred},r), (\Ccom,\attrs,\sipk_{\scred}): \Ccom =
   \CCommit(usk;r) \land \fissue(\usk,\scred,\attrs) = 1 \land \forall \cred \in
   \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1 \rbrace$,
@@ -18,8 +18,9 @@ construction. Namely:
   prove knowledge of it, as well as prove that all additional credentials needed
   for the issuing to be granted, meet some defined policy \fissue.
 \item[$\NIZKRel_{\Sign}$:] Can be set by anyone but, for simplicity, assume
-  verifiers define them. Governs what utility information is directly revealed
-  by signatures. It is defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\scred,
+  verifiers define them. Governs via \feval and \finsp what utility
+  information is directly revealed by signatures, or extracted by openers.
+  It is defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\scred,
   \attrs_{\scred},\yinsp,r),(\msg,\feval,\yeval,\Ec,\sipk_{\scred},\Eek): \Ec =
   \EEnc(\Eek,\yinsp;r) \land \yeval = \feval(\usk,\scred,\msg) \land
   \yinsp = \finsp(\yeval,\usk,\scred,\msg) \land \forall \cred \in \scred,
@@ -28,10 +29,9 @@ construction. Namely:
   nutshell, this relation ensures that signatures will produce the correct
   signature evaluation and opening values, and that any credential used to
   create the signature is bound to the same \usk key.
-\item[$\NIZKRel_{\Open}$:] Set by openers, governs the utility information
-  to be extracted by the \Open algorithm. It is defined as $\NIZKRel_{\Open} =
-  \lbrace (\osk),(\Ec,\yinsp): \yinsp = \EDec(\osk,\Ec) \rbrace$. It proves
-  that the decryption of the opening utility value has been done correctly.
+\item[$\NIZKRel_{\Open}$:] Ensures that the utility information extracted by
+  the \Open algorithm is correct. It is defined as $\NIZKRel_{\Open} =
+  \lbrace (\osk),(\Ec,\yinsp): \yinsp = \EDec(\osk,\Ec) \rbrace$.
 \end{description}
 
 \paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
@@ -63,12 +63,12 @@ To generate its key pair, each opener first parses \parm as $(\cdot,\cdot,
 \cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets \SKeyGen
 (\Sparm)$, $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$, $\sig_{\finsp} \gets \SSign
 (\Ssk,\finsp)$, $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk \gets
-(\Ssk,\Edk)$. Finally, returns $(\opk,\osk)$.
+(\Ssk,\Edk)$.
 
 \paragraph{$\usk \gets \UKeyGen(\parm)$.} %
 Each user, prior to requesting credentials, generates his secret key by parsing
 \parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\AttrSpace)$, and picking randomly
-$\usk \getr \AttrSpace$. Finally, return \usk.
+$\usk \getr \AttrSpace$.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle$.} %

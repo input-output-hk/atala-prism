@@ -23,7 +23,7 @@ manageable (from the point of view of service providers) through Single Sign
 On solutions. But this comes at the cost of introducing centralization points
 that gain way too much knowledge beyond what is actually necessary. Holding
 users accountable, or extracting utility out of their actions, is trivial in
-this cases -- although that comes at the cost of barely having privacy.
+these cases -- although that comes at the cost of barely having privacy.
 
 % What are the main approaches of previous works to achieve APPI? How are they
 % lacking? If possible, use titled paragraphs to emphasize the main points.
@@ -56,7 +56,7 @@ group members \cite{manu06}, or sequential linkability \cite{dl21}. While these
 variants may be very suitable for concrete settings, it is not hard to see that
 adapting them to other scenarios will be hard -- if possible at all.
 
-Concerning (2), it is even surprising that, during the almost 30 years of
+Concerning (2), it is even surprising that, during the roughly 30 years of
 research in group signatures, the notion of ``identity'' of a group member
 mostly reduces to an integer representing the order in which a user joined
 the group -- or, at the most, some long-term public key. Thus, even with
@@ -107,7 +107,7 @@ In this work, we make our attempt on addressing both questions. We start with a
 direct combination of GS and AC. While this does not pose many definitional nor
 technical challenges, it is a good exercise to showcase benefits obtained from
 even a simple combination. This directly answers in the affirmative our first
-question above. However, a direct combination does not address at all the
+question above. However, a direct combination does not achieve at all the
 flexibility that we aim at -- simply because it inherits the limitations of
 the vanilla GS and AC approaches we build on. Thus, we make an extra step with
 the goal to add such flexibility, spanning three diretions, allowing:
@@ -139,7 +139,7 @@ main candidates to incorporate anonymity into verifiable credentials%
 \footnote{``W3C Credential Exchange using BBS+ Signatures'',
   \url{https://github.com/hyperledger/aries-rfcs/blob/main/features/0646-bbs-credentials/README.md}. Last access May 11th, 2020.}.%
 The interest of the verifiable credentials community in BBS+ is not accidental,
-though, as BBS+ follow the CL signatures line of work \cite{cl02}. CL signatures
+though, as BBS+ follows the CL signatures line of work \cite{cl02}. CL signatures
 allow creating a single signature over a set of messages, which can be directly
 used to bundle a set of attributes (messages) into the same signature
 (credential). Indeed, this was the trigger for some of the first, and possibly
@@ -183,8 +183,8 @@ in \UAS.
 
 Additionally, within the AC domain, some works allow proving arbitrary claims
 over the attributes in a credential \cite{bcc+09,cklm14,dmm+18,fhs19}; while
-others simply allow to
-selectively disclose subsets of these attributes. For \GSAC, we do the latter.
+others simply allow to selectively disclose subsets of these attributes
+\cite{cks10,cl11,cdhk15,hs21}. For \GSAC, we do the latter.
 Despite not being the most general option (although it is more general than the
 GS approach, as it does not even have attributes), it is enough to illustrate
 the advantages of unifying both worlds. Again, in \UAS we generalize this
@@ -195,18 +195,19 @@ Finally, modelling-wise we also have two choices: follow a UC-based definition
 cons of each, in GS the standard is the game-based approach
 \cite{bmw03,bsz05,bcc+16,kty04,ky05}, although close relatives to GS, like DAA,
 prefer the UC approach \cite{cdl16,cdl16b,ccd+17,cdl17}. On the AC line of work,
-while some UC models exist \cite{}, game-based definitions also seem prevalent
-\cite{bcc+09,cks10,cl11,cklm12,cmz14,dmm+18,fhs19}.
+while some UC models exist \cite{cks10}, game-based definitions also seem
+prevalent \cite{bcc+09,cl11,cklm12,cmz14,dmm+18,fhs19}.
 Thus, the logical choice (at least, for a first step) seems to be game-based
 definitions. Concretely, we take strong inspiration from \cite{bsz05} for the
 GS branch, and from \cite{fhs19} for the AC one.
 
 \subsubsection{\UAS: Generalizing \GSAC.} %
-\GSAC is the first step towards achieving identity and authentication systems
-with both utility and accountability, yet it presents some limitations. Some we
-have already mentioned: it models a system with only one issuer, only allows
-using one credential to produce a signature, and only supports selective
-disclosure. We overview other limitations, that we address also with \UAS.
+\GSAC is the first step towards achieving privacy-preserving identity and
+authentication systems with both utility and accountability, yet it presents
+some limitations. Some we have already mentioned: it models a system with only
+one issuer, only allows using one credential to produce a signature, and only
+supports selective disclosure. We overview other limitations, that we address
+also with \UAS.
 
 \paragraph{Generalizing issuance protocols.} %
 In \GSAC, it is also not possible to leverage previously obtained credentials in
@@ -271,7 +272,7 @@ signatures must produce the same \feval output, which may seem too strong,
 although it seems hard to avoid. The only alternative we find is actually a
 useful generalization, which is to formulate anonymity with a simulation-based
 approach. While still compatible with cases in which the output of \feval has
-the same in both challenge signatures, it additionally allows useful
+the same value in both challenge signatures, it additionally allows useful
 constructions in which the output of \feval is encrypted, e.g., under the
 opener's key. In this way, only the opener will learn it, when/if needed -- it
 removes utility at signing time, but gives more flexibility at opening time,

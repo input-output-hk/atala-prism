@@ -25,12 +25,11 @@ personal secret key, which they can use to get as many credentials as they wish.
 Subsequently, they can use any of those credentials to create \GSAC signatures.
 This has, as expected, some nuanced impact in the modelling. For instance, in
 group signatures, tracing and non-frameability are frequently dependent on the
-open function, which (among other things) returns an index pointing to the join
-transcript associated with the user who produced the signature given by the
-adversary as a response to the game's challenge. In our approach, though, each
-user may have many such transcripts -- one per credential that the user
-obtains. However, note that what actually provides meaning to these notions
-is not the index; but the associated user key pair, which is moreover necessary
+open function, which (among other things) returns an member index. In our
+approach, though, each user may have many such transcripts -- one per credential
+that the user obtains. However, note that what actually provides meaning to
+these notions is not the index; but the attributes in the credential, which is
+moreover necessary
 to prove that the opening has been performed honestly. Thus, with some
 restructuring of the corresponding games, we can still capture the main
 meaning of these traceability and non-frameability notions from group
@@ -51,10 +50,6 @@ group signatures -- which, up to now, had considered membership credentials
 attributes (if we think from a group signature perspective) is that, in order
 to avoid trivial wins, the anonymity game has to enforce that both challenge
 credentials reveal the same predicate on their attributes.
-
-In the model described below, we follow closely the definitions from
-\cite{bsz05} for group signatures, and \cite{fhs19} for anonymous credentials
-(which are in turn influenced by \cite{bsz05}).
 
 \subsubsection{Syntax for \GSAC schemes}
 \label{sssec:syntax-gsac}
@@ -87,7 +82,7 @@ In the model described below, we follow closely the definitions from
   \Open(\gpk,\osk,\sig,\dattrs,\msg)$.]
   Given a signature \sig over message \msg, produced by a credential with
   attributes containing the set \dattrs, returns the public key \upk of the
-  signer, and the attribute set \attr contained in the credential used to
+  signer, and the attribute set \attrs contained in the credential used to
   generate the signature, along with a proof of opening correctness \oproof; or
   $\bot$ if the opening process fails.
 \item[$1/0 \gets \Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,
@@ -98,7 +93,7 @@ In the model described below, we follow closely the definitions from
 \end{description}
 
 The correctness and security properties are defined with the help of the
-following sets of oracles, and global variables that help oracles and games
+following sets of oracles and global variables that help oracles and games
 keep consistent state.
 
 \paragraph{Global variables.} %
@@ -112,7 +107,7 @@ even though he may not know the actual contents of the key pairs or credentials.
 In games that involve challenge user or credential identifiers, we use \cuid and
 \ccid to refer to these challenge user/credential.
 %
-The games keep track of the user keys (through set \UK) and credentials (through
+The games keep track of the user keys (through table \UK) and credentials (through
 table \CRED) that are created as a result of oracle calls by the adversary. We
 use the user and credential identifiers to reference specific user key pairs,
 credentials, and credential attributes.
@@ -125,7 +120,7 @@ is the set of attributes that was assigned to the credential with identifier
 credential \cid was issued to.
 %
 Additionally, the games keep track of all honest and corrupt users that have
-been generated, through sets \HU and \CU, respectively. They also keep track of
+been generated through sets \HU and \CU, respectively. They also keep track of
 the signatures that have been honestly produced, through the \SIG table. Since
 signatures are produced through credentials, the \SIG table is indexed with
 {\cid}s. For the anonymity game, we also need to keep track of the challenge
@@ -134,7 +129,7 @@ by allowing any of them to be opened.
 %
 All global variables are assumed to be initially set by the games to empty
 values, and all tables/sets are initialized as empty tables/sets. Also, for
-readability, we abuse the syntax as follows: we
+readability, we abuse the syntax and
 write $\CRED[\uid]$ to mean $\CRED[\cid]$ for all $\cid$ such that
 $\OWNR[\cid] = \uid$.% ; we also sometimes use \upk as a ``synonym'' of \uid, as it
 % is possible to do a reverse lookup from the \UK table (i.e., $\CRED[\upk]$ can
@@ -150,8 +145,6 @@ In the game-based definitions of our \GSAC model, we leverage the following
 oracles, which are formally defined in \appref{app:gsac-formal}.
 
 \begin{description}
-\item[\RREG.] Reads the given transcript table entry.
-\item[\WREG.] Sets a transcript table entry to the given value.
 \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
   the user's key pair.
 \item[\CUGEN.] If the specified user identifier is not already in the game,
@@ -165,6 +158,8 @@ oracles, which are formally defined in \appref{app:gsac-formal}.
   receive credentials.
 \item[\ISSUE.] Allows the adversary to play the role of dishonest users,
   requesting an honest issuer to produce credentials for them.
+\item[\RREG.] Reads the given transcript table entry.
+\item[\WREG.] Sets a transcript table entry to the given value.  
 \item[\SIGN.] Lets the adversary get signatures from credentials belonging
   to honest users.
 \item[\OPEN.] Given an honestly produced signature, lets the adversary learn
@@ -182,8 +177,8 @@ revealing attributes \dattrs, which was honestly produced through a credential
 that was obtained by an honest user interacting with an honest issuer, with a
 set of attributes \attrs such that $\dattrs \subseteq \attrs$, must be accepted
 by \Verify. Moreover, an honestly produced correctness proof of opening for such
-signature, revealing the public key pair of the user, must also be accepted by
-\Judge.
+signature, revealing the public key pair of the user and credential attributes,
+must also be accepted by \Judge.
 
 \begin{definition}{(Correctness of \GSAC)}
   \label{def:correctness-gsac}
@@ -326,9 +321,12 @@ by having open proofs output the identity of a user who did not create the
 signature being opened.
 %
 In \GSAC schemes, in order for a user to be framed, the adversary first needs to
-create a $(\sig,\dattrs,\msg,\upk,\oproof)$ tuple such that the signature,
+create a $(\sig,\dattrs,\msg,\upk,\attrs,\oproof)$ tuple such that the signature,
 attributes, and message are accepted by \Verify, and which, along with the user
-public key, and open correctness proof, are accepted by \Judge.
+public key, and open correctness proof, are accepted by \Judge; or, alternatively,
+produce a signature revealing \dattrs, which is accepted by \Verify, and \Judge
+accepts \attrs as the attribute set in the used credential owned by \upk, but
+$\dattrs \not\subseteq \attrs$.
 Then, the adversary wins the game if the owner of the credential is honest, but
 the signature was not produced via the \SIGN oracle.
 

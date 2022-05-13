@@ -11,10 +11,10 @@ issuance, have users prove knowledge of the secret key; (2) during signing,
 have users prove knowledge of the user secret key, unrevealed attributes, and
 a credential including all (revealed and unrevealed) attributes; and (3), during
 open, to have the opener prove correctness of the decryption of the user
-``public'' key. Concerning the user public keys, they are mere commitments to
-the user secret key (with $0$ as randomness -- although could be any fixed
-value), that serve to univocally identify a user, without revealing its secret
-key.
+``public'' key and credential attributes. Concerning the user public keys, they
+are mere commitments to the user secret key (with $0$ as randomness -- although
+could be any fixed value), that serve to univocally identify a user, without
+revealing its secret key.
 
 In more detail, in the following algorithms, we make use of three different NP
 relations for \NIZK proof systems:
@@ -42,13 +42,14 @@ With the help of those \NIZK proof systems, we build the algorithms for
 \paragraph{$\Setup(\secpar,\nattrs) \rightarrow \parm$.} %
 Sets up the public parameters. Namely: $\Cparm \gets \CSetup(\secpar)$, $\Eparm
 \gets \ESetup(\secpar)$, $\SBCMparm \gets \SBCMSetup(\secpar)$,
-$\NIZKcrs_{\Issue} \gets \NIZKSetup^{\Issue}(\secpar)$, $\NIZKcrs_{\Sign} \gets
-\NIZKSetup^{\Sign} (\secpar)$, $\NIZKcrs_{\Open}\gets \NIZKSetup^{\Open}(\secpar)$.
+$\NIZKcrs_{\Issue} \gets \NIZKSetup^{\NIZKRel_{\Issue}}(\secpar)$,
+$\NIZKcrs_{\Sign} \gets \NIZKSetup^{\NIZKRel_{\Sign}} (\secpar)$,
+$\NIZKcrs_{\Open}\gets \NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$.
 Outputs $\parm \gets (\Cparm,\SBCMparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},
 \NIZKcrs_{\Open})$. Note that parts of this process can be left to individual
 parties (e.g., \SBCMSetup, $\NIZKSetup^{\Issue}$ to the issuer, or \ESetup and
 $\NIZKSetup^{\Open}$ to the opener) who later publish the output, but we
-concentrate them here in \Setup for readability.
+concentrate them in \Setup for readability.
 
 \paragraph{$\IKeyGen(\parm) \rightarrow (\ipk,\isk)$.} %
 Generates the signing key pair for the issuer, by parsing \parm as
@@ -67,9 +68,9 @@ Generates users' key pairs by choosing a random value within the attribute space
 
 \paragraph{$\langle \Obtain(\gpk,\usk,\attrs),\Issue(\gpk,\isk,\attrs) \rangle
   \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.} %
-In a nutshell, the user requests a signature over a commitment of its user
-secret key, as well as the attributes in \attrs. The user proves knowledge of
-the committed value, and the issuer sends the signature (credential) in return.
+In a nutshell, the user requests a signature over his public key (a commitment
+of its user key), as well as the attributes in \attrs. The user proves knowledge
+of the committed value, and the issuer sends the signature (credential) in return.
 This is directly an execution of the interactive signing protocol of an \SBCM
 scheme, in which the user parses \gpk as $(\ipk,\opk)$ and runs $\SBCMCom(\ipk,
 \usk,\attrs)$, and the issuer runs $\SBCMSign(\isk,\attrs)$; in both cases,
@@ -111,7 +112,7 @@ Encrypt \Ccom as $\Ec \gets \EEnc(\opk,\Ccom)$, each attribute $\attrs_i \in
 \paragraph{$\Verify(\gpk,\sig,\dattrs,\msg) \rightarrow 1/0$.} %
 Parse \sig as $(\Ec,\sEc^{\attrs},\NIZKproof)$, compute $\Cmsg \gets
 \CCommit(\msg)$ and return $\NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs,(\Cmsg,\Ec,
-\dattrs,\sEc^{\attrs},n),\NIZKproof)$.
+\dattrs,\sEc^{\attrs},n),\NIZKproof)$, where $n=|\sEc^{\attrs}|$.
 
 \paragraph{$\Open(\gpk,\osk,\trans,\sig,\dattrs,\msg)
   \rightarrow (\upk,\attrs,\oproof)/\bot$.} %
@@ -123,7 +124,7 @@ proof of correct decryption for all encrypted values as
 $\oproof_{\Open} \gets (\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\Ec,
 \upk)),\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\sEc_1^{\attrs},\attrs_1),
 \dots,\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs,\osk,(\sEc_n^{\attrs},\attrs_n))$.
-Return $(\upk,\oproof_{\Open})$.
+Return $(\upk,\attrs,\oproof_{\Open})$.
 
 \paragraph{$\Judge(\gpk,\upk,\attrs,\oproof,\sig,\dattrs,\msg)
   \rightarrow 1/0$.} %
