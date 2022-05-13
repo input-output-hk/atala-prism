@@ -31,26 +31,67 @@ import tofu.logging.{Logs, ServiceLogging}
 import java.time.Instant
 import scala.util.Try
 
+/** Implements logic for RPC calls in Node gRPC Server.
+ */
 @derive(applyK)
 trait NodeService[F[_]] {
 
+  /** Retrieves all public keys associated with `did`
+   *
+   * @param didStr
+   *   Decentralized Identifier following PRISM protocol
+   */
   def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]]
 
+  /** Get information about credentials batch identified by `batchId`. See `BatchData` for the details.
+   *
+   * @param batchId
+   *   identifier of the credentials batch.
+   */
   def getBatchState(batchId: String): F[Either[NodeError, BatchData]]
 
+  /** Retrieves information on credential revocation.
+   *
+   * @param batchId
+   *   batch containing the credential.
+   * @param credentialHash
+   *   hash represents the credential inside the batch.
+   * @return
+   */
   def getCredentialRevocationData(
       batchId: String,
       credentialHash: ByteString
   ): F[Either[NodeError, CredentialRevocationTime]]
 
+  /** Schedules a list of operations for further publication to the underlying ledger.
+   *
+   * @param ops
+   *   one or more operation.
+   */
   def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
 
+  /** Retrieves a list of scheduled operations.
+   *
+   * @return
+   */
   def getScheduledAtalaOperations: F[Either[NodeError, List[node_models.SignedAtalaOperation]]]
 
+  /** Parses AtalaOperations from protobuf structures to Node internal data structures.
+   *
+   * @param ops Sequence of SignedAtalaOperations
+   * @return
+   */
   def parseOperations(ops: Seq[node_models.SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]]
 
+  /** Retrieves information about the operation. See `OperationInfo` for the details.
+   *
+   * @param atalaOperationIdBS
+   *   identifier of the operation.
+   */
   def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]]
 
+  /** Retrieves the timestamp of the latest Blockchain block synchronized with the PRISM Node.
+   */
   def getLastSyncedTimestamp: F[Instant]
 
   def getCurrentProtocolVersion: F[ProtocolVersion]
