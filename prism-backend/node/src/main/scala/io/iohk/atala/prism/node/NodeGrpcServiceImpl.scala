@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.node
 
 import cats.effect.unsafe.IORuntime
+import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.atala.prism.BuildInfo
@@ -11,6 +12,7 @@ import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.models.TransactionId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.metrics.StatisticsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
@@ -36,7 +38,10 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implicit
+class NodeGrpcServiceImpl(
+    nodeService: NodeService[IOWithTraceIdContext],
+    statisticsService: StatisticsService[IOWithTraceIdContext]
+)(implicit
     ec: ExecutionContext,
     runtime: IORuntime
 ) extends node_api.NodeServiceGrpc.NodeService {
@@ -63,6 +68,38 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
 
   }
 
+  override def getAvailableMetrics(request: GetAvailableMetricsRequest): Future[GetAvailableMetricsResponse] = {
+    val methodName = "getAvailableMetrics"
+
+    measureRequestFuture(serviceName, methodName) {
+      Future.successful(
+        GetAvailableMetricsResponse(
+          StatisticsCounters.MetricCounter.lowerCaseNamesToValuesMap.keys.toList
+        )
+      )
+    }
+  }
+
+  override def getNodeStatistics(request: GetNodeStatisticsRequest): Future[GetNodeStatisticsResponse] = {
+    val methodName = "getNodeStatistics"
+
+    measureRequestFuture(serviceName, methodName) {
+      trace { traceId =>
+        val query = request.metrics.traverse(statisticsService.retrieveMetric)
+        val res = for {
+          metricsE <- query.run(traceId)
+          metrics = metricsE.zip(request.metrics).map { case (metricE, _) =>
+            metricE.fold(
+              _ => 0.0,
+              value => value.toDouble
+            )
+          }
+        } yield GetNodeStatisticsResponse(metrics)
+        res.unsafeToFuture()
+      }
+    }
+  }
+
   override def getBatchState(
       request: GetBatchStateRequest
   ): Future[GetBatchStateResponse] = {
@@ -78,7 +115,6 @@ class NodeGrpcServiceImpl(nodeService: NodeService[IOWithTraceIdContext])(implic
         )
         query.run(traceId).unsafeToFuture()
       }
-
     }
   }
 

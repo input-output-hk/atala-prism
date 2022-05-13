@@ -25,6 +25,7 @@ import io.iohk.atala.prism.node.repositories.{
   CredentialBatchesRepository,
   DIDDataRepository,
   KeyValuesRepository,
+  MetricsCountersRepository,
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.services.{
@@ -32,6 +33,7 @@ import io.iohk.atala.prism.node.services.{
   InMemoryLedgerService,
   NodeService,
   ObjectManagementService,
+  StatisticsService,
   SubmissionSchedulingService,
   SubmissionService
 }
@@ -75,6 +77,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
   protected var atalaReferenceLedger: UnderlyingLedger[IOWithTraceIdContext] = _
   protected var blockProcessingService: BlockProcessingServiceImpl = _
   protected var objectManagementService: ObjectManagementService[IOWithTraceIdContext] = _
+  protected var metricsCountersRepository: MetricsCountersRepository[IOWithTraceIdContext] = _
   protected var submissionService: SubmissionService[IOWithTraceIdContext] = _
   protected var submissionSchedulingService: SubmissionSchedulingService = _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
@@ -99,6 +102,7 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
       dbLiftedToTraceIdIO,
       endorsementsFlowPoCLogs
     )
+    metricsCountersRepository = MetricsCountersRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     atalaObjectsTransactionsRepository = AtalaObjectsTransactionsRepository
       .unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
     keyValuesRepository = KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, endorsementsFlowPoCLogs)
@@ -148,7 +152,8 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
                 credentialBatchesRepository,
                 publicKeysLimit,
                 endorsementsFlowPoCLogs
-              )
+              ),
+              StatisticsService.unsafe(atalaOperationsRepository, metricsCountersRepository, endorsementsFlowPoCLogs)
             ),
             executionContext
           )

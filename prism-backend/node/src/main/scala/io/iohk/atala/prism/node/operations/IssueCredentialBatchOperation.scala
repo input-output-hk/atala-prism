@@ -24,6 +24,7 @@ case class IssueCredentialBatchOperation(
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
+  override val metricCounterName: String = IssueCredentialBatchOperation.metricCounterName
 
   override def getCorrectnessData(
       keyId: String
@@ -54,32 +55,35 @@ case class IssueCredentialBatchOperation(
   }
 
   override def applyStateImpl(_config: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit] =
-    EitherT {
-      CredentialBatchesDAO
-        .insert(
-          CreateCredentialBatchData(
-            credentialBatchId,
-            digest,
-            issuerDIDSuffix,
-            merkleRoot,
-            ledgerData
+    for {
+      _ <- EitherT {
+        CredentialBatchesDAO
+          .insert(
+            CreateCredentialBatchData(
+              credentialBatchId,
+              digest,
+              issuerDIDSuffix,
+              merkleRoot,
+              ledgerData
+            )
           )
-        )
-        .attemptSomeSqlState {
-          case sqlstate.class23.UNIQUE_VIOLATION =>
-            StateError.EntityExists(
-              "credential",
-              credentialBatchId.getId
-            ): StateError
-          case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
-            // that shouldn't happen, as key verification requires issuer in the DB,
-            // but putting it here just in the case
-            StateError.EntityMissing("issuerDID", issuerDIDSuffix.getValue)
-        }
-    }
+          .attemptSomeSqlState {
+            case sqlstate.class23.UNIQUE_VIOLATION =>
+              StateError.EntityExists(
+                "credential",
+                credentialBatchId.getId
+              ): StateError
+            case sqlstate.class23.FOREIGN_KEY_VIOLATION =>
+              // that shouldn't happen, as key verification requires issuer in the DB,
+              // but putting it here just in the case
+              StateError.EntityMissing("issuerDID", issuerDIDSuffix.getValue)
+          }
+      }
+    } yield ()
 }
 
 object IssueCredentialBatchOperation extends SimpleOperationCompanion[IssueCredentialBatchOperation] {
+  val metricCounterName: String = "number_of_issued_credential_batches"
 
   override def parse(
       operation: node_models.AtalaOperation,

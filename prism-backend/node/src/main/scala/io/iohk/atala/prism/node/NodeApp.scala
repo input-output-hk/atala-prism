@@ -121,6 +121,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       )
       credentialBatchesRepository <-
         CredentialBatchesRepository.resource(liftedTransactor, logs)
+      metricsCountersRepository <- MetricsCountersRepository.resource(liftedTransactor, logs)
       nodeService <- NodeService.resource(
         didDataRepository,
         ledger,
@@ -129,7 +130,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         didPublicKeysLimit,
         logs
       )
-      nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
+      nodeStatisticsService <- StatisticsService.resource(atalaOperationsRepository, metricsCountersRepository, logs)
+      nodeGrpcService = new NodeGrpcServiceImpl(nodeService, nodeStatisticsService)
       server <- startServer(nodeGrpcService)
     } yield (submissionSchedulingService, server)
   }

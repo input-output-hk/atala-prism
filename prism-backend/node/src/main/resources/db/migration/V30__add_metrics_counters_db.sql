@@ -1,0 +1,4 @@
+CREATE TABLE metrics_counters(
+  counter_name VARCHAR(256) PRIMARY KEY NOT NULL,
+  counter_value NON_NEGATIVE_INT_TYPE NOT NULL DEFAULT 0
+);

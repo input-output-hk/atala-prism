@@ -25,6 +25,7 @@ case class UpdateDIDOperation(
     digest: Sha256Digest,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
+  override val metricCounterName: String = UpdateDIDOperation.metricCounterName
 
   override def linkedPreviousOperation: Option[Sha256Digest] = Some(
     previousOperation
@@ -122,6 +123,7 @@ case class UpdateDIDOperation(
 }
 
 object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
+  val metricCounterName: String = "number_of_did_updates"
 
   protected def parseAction(
       action: ValueAtPath[node_models.UpdateDIDAction],

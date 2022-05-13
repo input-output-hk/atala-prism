@@ -28,6 +28,13 @@ object AtalaOperationsDAO {
     Update[AtalaOperationData](insertSQL).updateMany(dataMany)
   }
 
+  def getAtalaOperationsCount(status: AtalaOperationStatus): ConnectionIO[Int] =
+    sql"""
+         |SELECT COUNT(*)
+         |FROM atala_operations
+         |WHERE atala_operation_status = $status
+       """.stripMargin.query[Int].unique
+
   def updateAtalaOperationStatus(
       atalaOperationId: AtalaOperationId,
       atalaOperationStatus: AtalaOperationStatus,

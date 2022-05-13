@@ -25,6 +25,9 @@ private[repositories] final class AtalaOperationsRepositoryMetrics[F[
   private lazy val getOperationInfoTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getOperationInfo")
 
+  private lazy val getOperationsCountTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "getOperationsCount")
+
   def insertOperation(
       objectId: AtalaObjectId,
       objectBytes: Array[Byte],
@@ -44,4 +47,7 @@ private[repositories] final class AtalaOperationsRepositoryMetrics[F[
       atalaOperationId: AtalaOperationId
   ): Mid[F, Either[NodeError, Option[AtalaOperationInfo]]] =
     _.measureOperationTime(getOperationInfoTimer)
+
+  def getOperationsCount(status: AtalaOperationStatus): Mid[F, Either[NodeError, Int]] =
+    _.measureOperationTime(getOperationsCountTimer)
 }
