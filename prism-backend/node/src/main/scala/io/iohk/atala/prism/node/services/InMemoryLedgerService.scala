@@ -17,7 +17,7 @@ import tofu.logging.{Logs, ServiceLogging}
 import java.time.Instant
 
 /** Emulates underlying ledger with in memory data structures instead of blockchain. Useful for debugging and testing.
- */
+  */
 private final class InMemoryLedgerService[F[_]: MonadThrow](
     onAtalaObject: AtalaObjectNotificationHandler[F]
 ) extends UnderlyingLedger[F] {

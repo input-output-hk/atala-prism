@@ -28,29 +28,29 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 /** Implements ledger structure based on Cardano. Interacts with the cardano wallet using REST API requests. This
- * service also tracks all Cardano blocks and retrieves relevant PRISM operations from transaction metadata.
- *
- * @param network
- *   defines Cardano deployment (TESTNET, MAINNET).
- * @param walletId
- *   identifier of the Cardano wallet we use for publishing new transactions.
- * @param walletPassphrase
- *   secret passphrase for the wallet.
- * @param paymentAddress
- *   every transaction should have a payment address.
- * @param blockNumberSyncStart
- *   service looks for PRISM operations in Cardano blocks with number greater than `blockNumberSyncStart`.
- * @param blockConfirmationsToWait
- *   minimum block confirmations required to consider operations "confirmed".
- * @param cardanoClient
- *   service for creating REST API calls to the Cardano Wallet.
- * @param keyValueService
- *   service for storing useful internal data such as the number of the latest synchronized cardano block.
- * @param onCardanoBlock
- *   callback on every new confirmed Cardano block.
- * @param onAtalaObject
- *   callback on every AtalaObject found in confirmed transactions.
- */
+  * service also tracks all Cardano blocks and retrieves relevant PRISM operations from transaction metadata.
+  *
+  * @param network
+  *   defines Cardano deployment (TESTNET, MAINNET).
+  * @param walletId
+  *   identifier of the Cardano wallet we use for publishing new transactions.
+  * @param walletPassphrase
+  *   secret passphrase for the wallet.
+  * @param paymentAddress
+  *   every transaction should have a payment address.
+  * @param blockNumberSyncStart
+  *   service looks for PRISM operations in Cardano blocks with number greater than `blockNumberSyncStart`.
+  * @param blockConfirmationsToWait
+  *   minimum block confirmations required to consider operations "confirmed".
+  * @param cardanoClient
+  *   service for creating REST API calls to the Cardano Wallet.
+  * @param keyValueService
+  *   service for storing useful internal data such as the number of the latest synchronized cardano block.
+  * @param onCardanoBlock
+  *   callback on every new confirmed Cardano block.
+  * @param onAtalaObject
+  *   callback on every AtalaObject found in confirmed transactions.
+  */
 class CardanoLedgerService[F[_]] private[services] (
     network: CardanoNetwork,
     walletId: WalletId,
@@ -84,7 +84,7 @@ class CardanoLedgerService[F[_]] private[services] (
   scheduleSync(30.seconds)
 
   /** Publishes AtalaObject containing a list of operations inside.
-   */
+    */
   override def publish(
       obj: node_internal.AtalaObject
   ): F[Either[CardanoWalletError, PublicationInfo]] = {
@@ -108,15 +108,15 @@ class CardanoLedgerService[F[_]] private[services] (
   }
 
   /** Retrieves the current transaction status by its identifier
-   */
+    */
   override def getTransactionDetails(
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, TransactionDetails]] =
     cardanoClient.getTransaction(walletId, transactionId)
 
   /** Deletes the transaction from the queue in the Cardano Wallet if it's possible. Returns
-   * `CardanoWalletError.TransactionAlreadyInLedger` if the transaction was already published on the Ledger.
-   */
+    * `CardanoWalletError.TransactionAlreadyInLedger` if the transaction was already published on the Ledger.
+    */
   override def deleteTransaction(
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, Unit]] =
@@ -126,7 +126,7 @@ class CardanoLedgerService[F[_]] private[services] (
     cardanoClient.getWalletDetails(walletId).map(_.map(_.balance))
 
   /** After the initial `delay`, schedules synchronization of PRISM Node with Cardano ledger.
-   */
+    */
   private def scheduleSync(delay: FiniteDuration): Unit = {
     liftToFuture.lift(
       timer.sleep(delay) >>
@@ -191,7 +191,7 @@ class CardanoLedgerService[F[_]] private[services] (
   }
 
   /** Sync block `blockNo` with internal state.
-   */
+    */
   private def syncBlock(blockNo: Int): F[Unit] = {
     for {
       // Retrieve block header and the list of transactions in the block.
@@ -208,7 +208,7 @@ class CardanoLedgerService[F[_]] private[services] (
   }
 
   /** Sequentially sync transactions in the `block`.
-   */
+    */
   private def processAtalaObjects(block: Block.Full): F[Unit] = {
     val notifications: List[AtalaObjectNotification] = for {
       // Iterate over transactions in the block.
