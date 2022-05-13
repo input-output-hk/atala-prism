@@ -27,6 +27,30 @@ import tofu.logging.{Logs, ServiceLogging}
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+/** Implements ledger structure based on Cardano. Interacts with the cardano wallet using REST API requests. This
+  * service also tracks all Cardano blocks and retrieves relevant PRISM operations from transaction metadata.
+  *
+  * @param network
+  *   defines Cardano deployment (TESTNET, MAINNET).
+  * @param walletId
+  *   identifier of the Cardano wallet we use for publishing new transactions.
+  * @param walletPassphrase
+  *   secret passphrase for the wallet.
+  * @param paymentAddress
+  *   every transaction should have a payment address.
+  * @param blockNumberSyncStart
+  *   service looks for PRISM operations in Cardano blocks with number greater than `blockNumberSyncStart`.
+  * @param blockConfirmationsToWait
+  *   minimum block confirmations required to consider operations "confirmed".
+  * @param cardanoClient
+  *   service for creating REST API calls to the Cardano Wallet.
+  * @param keyValueService
+  *   service for storing useful internal data such as the number of the latest synchronized cardano block.
+  * @param onCardanoBlock
+  *   callback on every new confirmed Cardano block.
+  * @param onAtalaObject
+  *   callback on every AtalaObject found in confirmed transactions.
+  */
 class CardanoLedgerService[F[_]] private[services] (
     network: CardanoNetwork,
     walletId: WalletId,
@@ -59,12 +83,15 @@ class CardanoLedgerService[F[_]] private[services] (
   // Schedule the initial sync
   scheduleSync(30.seconds)
 
+  /** Publishes AtalaObject containing a list of operations inside.
+    */
   override def publish(
       obj: node_internal.AtalaObject
   ): F[Either[CardanoWalletError, PublicationInfo]] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
 
     for {
+      // send new creation request to the Cardano wallet
       txId <- cardanoClient
         .postTransaction(
           walletId,
@@ -80,11 +107,16 @@ class CardanoLedgerService[F[_]] private[services] (
     )
   }
 
+  /** Retrieves the current transaction status by its identifier
+    */
   override def getTransactionDetails(
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, TransactionDetails]] =
     cardanoClient.getTransaction(walletId, transactionId)
 
+  /** Deletes the transaction from the queue in the Cardano Wallet if it's possible. Returns
+    * `CardanoWalletError.TransactionAlreadyInLedger` if the transaction was already published on the Ledger.
+    */
   override def deleteTransaction(
       transactionId: TransactionId
   ): F[Either[CardanoWalletError, Unit]] =
@@ -93,6 +125,8 @@ class CardanoLedgerService[F[_]] private[services] (
   override def getWalletBalance: F[Either[CardanoWalletError, Balance]] =
     cardanoClient.getWalletDetails(walletId).map(_.map(_.balance))
 
+  /** After the initial `delay`, schedules synchronization of PRISM Node with Cardano ledger.
+    */
   private def scheduleSync(delay: FiniteDuration): Unit = {
     liftToFuture.lift(
       timer.sleep(delay) >>
@@ -112,33 +146,41 @@ class CardanoLedgerService[F[_]] private[services] (
     ()
   }
 
-  /** Syncs Atala objects from blocks and returns whether there are remaining blocks to sync.
+  /** Sync Atala objects from blocks and returns whether there are remaining blocks to sync.
     */
   private[services] def syncAtalaObjects(): F[Boolean] = {
     for {
+      // Gets the number of the latest block processed by PRISM Node.
       maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
+      // Calculates the next block based on the initial `blockNumberSyncStart` and the latest synced block.
       lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(
         maybeLastSyncedBlockNo,
         blockNumberSyncStart
       )
+      // Gets the latest block from the Cardano database.
       latestBlock <- cardanoClient.getLatestBlock
+      // Calculates the latest confirmed block based on amount of required confirmations.
       lastConfirmedBlockNo = latestBlock.map(
         _.header.blockNo - blockConfirmationsToWait
       )
       syncStart = lastSyncedBlockNo + 1
+      // Sync no more than `MAX_SYNC_BLOCKS` during one `syncAtalaObjects` iteration.
       syncEnd = lastConfirmedBlockNo.map(
         math.min(_, lastSyncedBlockNo + MAX_SYNC_BLOCKS)
       )
+      // Sync all blocks with numbers from `syncStart` to `syncEnd`
       _ <- syncEnd.traverse(end => syncBlocks(syncStart to end))
     } yield lastConfirmedBlockNo
       .flatMap(last => syncEnd.map(last > _))
       .getOrElse(false)
   }
 
+  // Sync blocks in the given range.
   private def syncBlocks(blockNos: Range): F[Unit] = {
     if (blockNos.isEmpty) {
       ().pure[F]
     } else {
+      // Sequentially sync blocks from the given range one by one.
       blockNos.foldLeft(().pure[F]) { case (previous, blockNo) =>
         for {
           _ <- previous
@@ -148,23 +190,34 @@ class CardanoLedgerService[F[_]] private[services] (
     }
   }
 
+  /** Sync block `blockNo` with internal state.
+    */
   private def syncBlock(blockNo: Int): F[Unit] = {
     for {
+      // Retrieve block header and the list of transactions in the block.
       blockEit <- cardanoClient
         .getFullBlock(blockNo)
+      // Trigger the callback `onCardanoBlock`.
       _ <-
         blockEit
           .map(block => onCardanoBlock(block.toCanonical))
           .getOrElse(Monad[F].pure(new Exception("syncBlock failed")))
+      // Look over transactions in the block.
       _ <- blockEit.traverse(processAtalaObjects)
     } yield ()
   }
 
+  /** Sequentially sync transactions in the `block`.
+    */
   private def processAtalaObjects(block: Block.Full): F[Unit] = {
     val notifications: List[AtalaObjectNotification] = for {
+      // Iterate over transactions in the block.
       transaction <- block.transactions
+      // Retrieve metadata from the transaction if it exists.
       metadata <- transaction.metadata
+      // Parse metadata in accordance with the PRISM protocol if it's possible.
       atalaObject <- AtalaObjectMetadata.fromTransactionMetadata(metadata)
+      // Create new notification if `atalaObject` was successfully retrieved from the transaction metadata.
       notification = AtalaObjectNotification(
         atalaObject,
         TransactionInfo(
@@ -182,7 +235,9 @@ class CardanoLedgerService[F[_]] private[services] (
     } yield notification
 
     for {
+      // Trigger `onAtalaObject` callback on every successfully parsed AtalaObject.
       _ <- notifications.traverse(onAtalaObject)
+      // Update the number of the latest synchronized block.
       _ <- updateLastSyncedBlock(block)
     } yield ()
   }
