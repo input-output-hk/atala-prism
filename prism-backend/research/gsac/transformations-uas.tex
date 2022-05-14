@@ -1,21 +1,49 @@
 \section{Relating \UAS with Other Schemes, and Variations}
 \label{sec:transformations}
 
-In order to justify \UAS's universality, in this section we describe how do
-\UAS schemes relate with other similar systems. \jdv{The relationships seem
-  quite straightforward; thus, we only informally sketch how one could build
-  other schemes (or something very similar to them) from \UAS, and leave the
-  formal analysis for futher work.}
-%
-As a first (informal) observation, we note that the same transformation to
-interactive presentations as described in \GSAC applies here.
+In order to justify \UAS's universality, in this section we describe how can
+we leverage our \UAS scheme to build other known schemes, only by specifying
+different issuance, signature evaluation, and opening functions; as well as,
+occasionally, some minor variations in some NIZK relations. Table
+\tabref{tab:uas-alt-funcs} summarizes the different functions we use in our
+subsequent variations of \UAS. \jdv{The relationships seem quite
+  straightforward; thus, we only informally sketch how one could build other
+  schemes (or something very similar to them) from \UAS, and leave the formal
+  analysis for futher work.}
+
+\begin{table}[ht!]
+  \begin{tabular}{c | c | c | c | c | c}
+    \bf Target scheme & \bf $\NIZKRel_{\Sign}$ variant & \bf \fissue variant & \bf \feval variant & \bf \finsp variant & \bf  Defined in \\
+    \hline
+    \GSAC & None & $\fissue^1$ & $\feval^{\dattrs}$ & $\finsp^{\upk}$
+    & \secref{ssec:uas-gsac} \\
+    \bf GS-MDO & None & $\fissue^1$ & $\feval^0$ & $\finsp^{\smsg}$
+    & \secref{ssec:uas-gsmdo} \\
+    \bf Ring sigs. & $\NIZKRel_{\Sign-prv}$ & $\fissue^{\sring}$ & $\feval^{\attrs}$ & $\finsp^0$ & \secref{ssec:uas-ring} \\
+    \bf MPS\footnote{Building MPS from \UAS also requires a simple definitional change. See
+    \secref{ssec:uas-mps}.} & $\NIZKRel_{\Sign-enc}$ & Any & $\feval^{enc}$ & Any & \secref{ssec:uas-mps} \\
+    \bf Delegatable creds & None & $\fissue^n$ & Any & Any & \secref{ssec:uas-delcred} \\
+  \end{tabular}
+  \caption{How to build related schemes from \UAS.}
+  \label{tab:uas-alt-funcs}
+\end{table}
 
 \subsection{\GSAC from \UAS}
+\label{ssec:uas-gsac}
+
 Take the generic construction for \UAS in \secref{ssec:generic-construction-uas}.
-First, consider the constant issuance function $\fissue^1(\usk,\scred,\attrs) =
-1$. Next, consider $\finsp^{\upk}(\yeval,\usk,\scred,\msg) \coloneqq
-\CCommit(\usk;0)$, and $\feval^{\dattrs}(\usk,\cred,\msg) \coloneqq \dattrs(\cred)$,
-where $\dattrs(\cred)$ is the function returning the attributes indexed by
+First, consider the constant issuance function $\fissue^1$, the signature
+evaluation function $\feval^{\dattrs}$, and the opening function $\finsp^{\upk}$,
+as defined in \esref{eq:uas-gsac-funcs}
+
+\begin{align}
+  & \fissue^1(\usk,\scred,\attrs) \coloneqq 1 \nonumber \\
+  & \feval^{\dattrs}(\usk,\cred,\msg) \coloneqq \dattrs(\cred)
+  & \finsp^{\upk}(\yeval,\usk,\scred,\msg) \coloneqq \CCommit(\usk;0) \nonumber \\
+    \label{eq:uas-gsac-funcs}
+\end{align}
+
+Where $\dattrs(\cred)$ is the function returning the attributes indexed by
 \dattrs within \cred (which we can assume to be easy to do with proper
 encoding). It is straightforward to see that an \UAS scheme with $\fissue^1$
 as issuance function, $\feval^{\dattrs}$ as signing evaluation function, and
@@ -35,6 +63,8 @@ Thus, since \UAS implies \GSAC, \UAS implies also both group signatures and
 anonymous credentials.
 
 \subsection{\UAS with Multiple Openers}
+\label{ssec:uas-multiopen}
+
 We briefly mention that we have defined \UAS signatures as being ``openable'' by
 only one opener. However, since there is no tight relation between issuer and
 opener (as opposed to conventional group signatures), it is trivial to
@@ -45,6 +75,7 @@ Similarly, the sign unforgeability and non-frameability definitions should be
 extended to check correctness of the corresponding extra open values.
 
 \subsection{Group Signatures with Message Dependent Opening}
+\label{ssec:uas-gsmdo}
 
 In \cite{khk+19}, one of the first group signature schemes with a certain
 flexibility in the open-related functionality was introduced. Briefly, a group
@@ -54,17 +85,17 @@ over specific messages (e.g., text with offensive language). For this, the
 authors introduce an extra authority, the admitter, who creates a
 ``message-specific token'' for each message that is deemed unacceptable.
 These message-specific tokens are later needed by the opener, in order to open
-signatures over unacceptable messages.
+signatures over unacceptable messages. \UAS can implement this functionality in
+a straightforward manner, by leveraging $\fissue^1$ as defined in
+\esref{eq:uas-gsac-funcs}, and $\feval^0$ and $\finsp^{\smsg}$, as defined in
+\esref{eq:uas-gsmdo-funcs}.
 
-\UAS can implement this functionality in a straightforward manner. Define
-$\finsp^{\smsg}(\yeval,\usk,\cred,\msg) \coloneqq \lbrace \pcif \msg \in \smsg:
-\pcreturn \CCommit(\usk;0); \pcelse \pcreturn \bot \rbrace$. Also, let
-$\feval^0(\usk,\scred,\msg) \coloneqq \pcreturn 0$. Then, \UAS with $\fissue^1$
-as issuance function, $\feval^0$ as signing evaluation function, and
-$\finsp^{\smsg}$ as opening function, implements a message-dependent opening
-group signature scheme -- again, restricting to one credential per user and
-signature, as before. Moreover, it implements the same functionality without
-an extra authority.
+\begin{align}
+  & \feval^0(\usk,\scred,\msg) \coloneqq \pcreturn 0 \nonumber \\
+  & \finsp^{\smsg}(\yeval,\usk,\cred,\msg) \coloneqq \lbrace \pcif \msg \in \smsg:
+    \pcreturn \CCommit(\usk;0); \pcelse \pcreturn \bot \rbrace
+    \label{eq:uas-gsmdo-funcs}
+\end{align}
 
 \jdv{In \cite{khk+19}, the authors prove that GS-MDO implies identity-based
   encryption. \UAS implying GS-MDO would thus imply IBE, but we do not use
@@ -72,6 +103,7 @@ an extra authority.
   building blocks we use, and IBE?}
 
 \subsection{Ring Signatures}
+\label{ssec:uas-ring}
 
 In a nutshell, ring signatures \cite{rst06} are like group signatures where
 rather than having an issuer accepting users into a group, any user can create
@@ -91,28 +123,40 @@ $\NIZKRel_{\Sign}$ defined in \secref{ssec:generic-construction-uas} reveals the
 issuers' public keys. This is a problem as, intuitively, the signer in a ring
 signature is a sort of issuer for the ad hoc group. To hide the issuer, we
 replace the NP relation in \secref{ssec:generic-construction-uas} with
-$\NIZKRel^{\Sign-prv} \coloneqq \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r,
-\sipk_{\scred}),(\msg,\feval,\yeval,\Ec,\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land
-\yeval = \feval(\usk,\scred,\msg) \land \yinsp = \finsp(\yeval,\usk,\scred,\msg)
-\land \forall \cred \in \scred,\SBCMVerify(\ipk_{\cred},\cred,\usk,
-\attrs_{\cred}) = 1) \rbrace$. That is, the public keys of the issuers are now
-part of the witness in the NP relation, which means that they will not
-be revealed in the proofs.
-%
-Besides $\NIZKRel^{\Sign-prv}$, let \sring be an ad hoc set containing the
-public keys of the users that the signer wants to include in its ad hoc group.
-We define $\fissue^{\sring}(\usk,\scred,\attrs) \coloneqq \lbrace \pcif \attrs
-\subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
-\pcreturn 0 \rbrace$. That is, if we let the attributes in a credential be
-public keys, this function means that a credential will be issued if all the
-public keys specified as attributes to be included in the credential are part of
-the union of the ad hoc ring and the public key of the signer. We also define
-$\feval^{\attrs}(\usk,\cred,\msg) \coloneqq \lbrace \pcif \CCommit(\usk;0) \in
-\attrs: \pcreturn \attrs(\cred); \pcelse \pcreturn \bot \rbrace$, where
-$\attrs(\cred)$ is the function that returns all the attributes encoded in a
-credential. That is, if the public key of the signer is included in the ring,
-return all the attributes in the credential (i.e., all the public keys in the
-ring); otherwise, abort. Finally, let $\finsp^0(\yeval,\usk,\cred,\msg) = 0$.
+$\NIZKRel_{\Sign-prv}$. We also use issuance function $\fissue^{\sring}$,
+signature evaluation function $\feval^{\attrs}$, and opening function
+$\finsp^0$. All of them are specified in \esref{eq:uas-ring-funcs}.
+
+\begin{align}
+  & \NIZKRel_{\Sign-prv} \coloneqq \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r,
+    \sipk_{\scred}),(\msg,\feval,\yeval,\Ec,\Eek): \nonumber \\
+  & \hspace*{6.405em}\Ec = \EEnc(\Eek,\yinsp;r) \land \nonumber \\
+  & \hspace*{6.40em}\forall \cred \in \scred,\SBCMVerify(\ipk_{\cred},\cred,\usk,
+    \attrs_{\cred}) = 1) \land \nonumber \\
+  & \hspace*{6.40em}\yeval = \feval(\usk,\scred,\msg) \land
+    \yinsp = \finsp(\yeval,\usk,\scred,\msg)
+     \rbrace \nonumber \\
+  & \fissue^{\sring}(\usk,\scred,\attrs) \coloneqq \lbrace \pcif \attrs
+    \subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
+    \pcreturn 0 \rbrace \nonumber \\
+  & \feval^{\attrs}(\usk,\cred,\msg) \coloneqq \lbrace \pcif \CCommit(\usk;0) \in
+    \attrs: \pcreturn \attrs(\cred); \pcelse \pcreturn \bot \rbrace \nonumber \\
+  & \finsp^0(\yeval,\usk,\cred,\msg) \coloneqq 0 \label{eq:uas-ring-funcs}
+\end{align}
+
+Where \sring is some (arbitrary) ad hoc set containing the public keys of the
+users that the signer wants to include in its ring. In $\NIZKRel_{\Sign-prv}$
+the public keys of the issuers are now part of the witness in the NP relation,
+which means that they will not be revealed in the proofs. Also, observe that, if
+we let the attributes in a credential be public keys, $\fissue^{\sring}$ means
+that a credential will be issued if all the public keys specified as attributes
+to be included in the credential are part of the union of the ring and the
+public key of the signer. To build $\feval^{\attrs}$, we define $\attrs(\cred)$
+to be the function that returns all the attributes encoded in a credential.
+Then, if the public key of the signer is included in the ring, $\feval^{\attrs}$
+returns all the attributes in the credential (i.e., all the public keys in the
+ring); otherwise, it aborts. Finally, let $\finsp^0$ disallows any
+de-anonymization.
 
 Then, an \UAS scheme with $\NIZKRel^{\Sign-prv}$ as NP relation for
 $\NIZK^{\Sign}$, and $\fissue^{ring}$, $\feval^{\attrs}$, and $\finsp^0$ is
@@ -136,6 +180,7 @@ Interestingly, this construction based on \UAS allows adding extra attributes
 useful for real world use cases.
 
 \subsection{Multimodal Private Signatures}
+\label{ssec:uas-mps}
 
 To show that Multimodal Private Signatures (MPS) \needcite can be built from
 \UAS, we need to give an alternative, simulation-based, definition of the
@@ -196,21 +241,28 @@ depend on any witness (as they are simulated), then it follows that the
 adversary cannot gain any information about signers in the real world.
 
 With this alternative definition, we can achieve a generalisation of MPS
-basically by, insted of returning the plaintext \yeval value, returning an
+basically by, instead of returning the plaintext \yeval value, returning an
 encryption of it under the opener's public key; additionally proving 
 that the value used to compute the output of \finsp is the plaintext \yeval
-value. In more detail, given any \feval function, we first define an
-encrypted variant $\feval^{enc}(\usk,\scred,\msg) \coloneqq \lbrace \yeval
-\gets \feval(\usk,\scred,\msg); \yeval' \gets \EEnc(\opk,\yeval); \pcreturn
-\yeval' \rbrace$.
-%
-Naturally, the $\NIZKRel_{\Sign}$ has to be correspondigly extended, as
-$\NIZKRel_{\Sign}^{enc} = \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r),(\msg,
-\feval,\yeval,\Ec,\sipk_{\scred},\Eek): \Ec = \EEnc(\Eek,\yinsp;r) \land
-\yeval = \EEnc(\opk,\feval(\usk,\scred,\msg)) \land \yinsp = \finsp(\feval(\usk,
-\scred,\msg),\usk,\scred,\msg) \land \forall \cred \in \scred,
-\SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$. This would
-also seem to require that the used public-key encryption scheme is IND-CCA.
+value. In more detail, we define an extended $\NIZKRel_{\Sign-enc}$ relation,
+and, given any \feval function, a variant $\feval^{enc}$ operating on an
+encryption of \yeval. Both are specified in \esref{eq:uas-mps-funcs}.
+
+\begin{align}
+  & \NIZKRel_{\Sign-enc} \coloneqq \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r),
+    (\msg,\feval,\yeval,\Ec,\sipk_{\scred},\Eek): \nonumber \\
+  & \hspace*{6.00em}\Ec = \EEnc(\Eek,\yinsp;r) \land \nonumber \\
+  & \hspace*{6.00em}\forall \cred \in \scred,\SBCMVerify(\ipk_{\cred},\cred,\usk,
+  \attrs_{\cred}) = 1) \land \nonumber \\
+  & \hspace*{6.00em}\yeval = \EEnc(\opk,\feval(\usk,\scred,\msg)) \land \nonumber \\
+  & \hspace*{6.00em}\yinsp = \finsp(\feval(\usk,\scred,\msg),\usk,\scred,\msg)
+    \rbrace \nonumber \\
+  & \feval^{enc}(\usk,\scred,\msg) \coloneqq \lbrace \yeval
+    \gets \feval(\usk,\scred,\msg); \yeval' \gets \EEnc(\opk,\yeval); \pcreturn
+    \yeval' \rbrace \label{eq:uas-mps-funcs}
+\end{align}
+
+This would also require that the public-key encryption scheme is IND-CCA.
 
 Given this approach, the need to provide an alternative definition for anonymity
 is clearer. Namely, in the original \CHALb oracle, we restrict that the
@@ -224,6 +276,7 @@ becomes unachievable.
   disclosure, we may just adopt it as default.}
 
 \subsection{Delegatable Credentials}
+\label{ssec:uas-delcred}
 
 Building delegatable credentials is also straightforward, thanks to the \fissue
 function. For instance, take the simplification of level-based delegation, where
@@ -231,8 +284,12 @@ the owner of a credential of level $n$ can only issue credentials of level
 $n+1$. Without loss of generality, assume that the credential level is encoded
 in the first attribute of the credential (after the \usk), which we denote with
 $a_1$. In this context, any owner of a credential of level $n$ can define an
-issuance function $\fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1;
-\pcelse \pcreturn 0 \rbrace$.
+issuance function $\fissue^n$, as in \eref{eq:uas-delcred-func}.
+
+\begin{align}
+  \fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1;
+  \pcelse \pcreturn 0 \rbrace \label{eq:uas-delcred-func}
+\end{align}
 
 \jdv{\subsection{Functional Signatures}}
 \jdv{I think that, by making \yeval explicit, \UAS is essentially a
