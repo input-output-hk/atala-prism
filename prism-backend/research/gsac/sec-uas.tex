@@ -11,7 +11,7 @@ may not want to fully de-anonymize the signer. Instead, we may be interested in
 revealing arbitrary functions of its identity and the signed message. Also, for
 the sake of illustation, we restricted to the case of selective disclosure, and
 to only one credential per signature. Then, the natural question is whether we
-can model an extension to \GSAC that is compatible both with constructions with
+can model an extension to \GSAC that is compatible both with constructions
 that support selective disclosure, and with constructions that support arbitrary
 claims on the
 credential attributes; and, as it is also common in the anonymous credentials
@@ -21,23 +21,32 @@ combine multiple credentials into one signature/presentation. Similarly, we can
 also generalize \GSAC by allowing users to leverage previously obtained
 credentials in order to obtain new ones; possibly, applying arbitrary issuance
 policies. In a nutshell, our generalization of \GSAC into Universal Anonymous
-Signatures (\UAS), enables:
+Signatures (\UAS), captured in \figref{fig:proof-blocks-uas}, enables:
 
 \begin{itemize}
-\item Using previously obtained credentials to request new ones, applying
-  arbitrary policies to the credentials involved in the request, in
-  order to determine whether the new issuance should proceed or not.
-\item Modulating the type of utility one wants to get directly from signatures.
-  That is, let signatures disclose a subset of the attributes in the credentials
-  involved in the signing process, prove arbitrary claims over those attributes,
-  or even reveal absolutely nothing at all beyond that that an owner of a valid
-  credential created the signature.
-\item Defining arbitrary de-anonymization functions, over the signer's
-  credentials and signed message. This can range from producing the user public
-  key (as in group signatures), to disallowing any kind of de-anonymization,
-  passing through any intermediate de-anonymization function, like revealing
-  concrete attributes, or functions of them.
+\item Using previously obtained credentials to request new ones, applying a
+  configurable policy defined via an issuance function \fissue, which determines
+  whether the new issuance should proceed or not.
+\item Modulating the type of utility one wants to get directly from signatures,
+  via a signature evaluation function \feval. \feval can be programmed to reveal
+  nothing, selective disclosure, arbitrary claims over the credentials'
+  attributes, etc.
+\item Defining arbitrary accountability information that will be extractable by
+  openers through an opening function \finsp. This can range from no information
+  at all, to functions on subsets of the attributes, to full de-anonymization.
 \end{itemize}
+
+\begin{figure}[ht!]
+  \input{figures/proof-blocks-uas.tex}
+  \caption{Comparison of statements proved per operation in \GSAC and \UAS.
+    $K(x)$ means proving knowledge of $x$; $E(y)$ means proving correct
+    encryption of $y$; $D(z)$ means proving correct decryption of $z$. In
+    \UAS, solid boxes span configurable statements that control issuance; dashed
+    boxes span configurable statements that control utility; dotted boxes span
+    configurable statements that control accountability. Unboxed statements are
+    fixed, and are thus common to all \GSAC/\UAS schemes.}
+  \label{fig:proof-blocks-uas}
+\end{figure}
 
 Furthermore, to make the concept more flexible, we no longer restrict to the
 case of one issuer and one opener. Instead, \UAS supports multiple issuers (as

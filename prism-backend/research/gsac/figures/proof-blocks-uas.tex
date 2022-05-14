@@ -1,0 +1,36 @@
+\begin{tikzpicture}
+
+  \pgfdeclarelayer{bg}    % declare background layer
+  \pgfsetlayers{bg,main}  % set the order of the layers (main is the standard layer)
+
+  \node (GSAC) at (3.00,3.50) { \GSAC };
+  \node (UAS) at (9.00,3.50) { \UAS };
+
+  \node (issue) at (0.00,2.50) { \bf Issue };
+  \node (sign) at (0.00,1.50) { \bf Sign };  
+  \node (open) at (0.00,0.50) { \bf Open };
+
+  \node (issue-gsac) at (3.00,2.50) { $K(\usk)$ };
+  \node[align=center] (sign-gsac) at (3.00,1.50)
+  { $K(\usk) \land E(\upk) \land E(\attrs)~\land$ \\
+    $\dattrs \subseteq \attrs$ };
+  \node (open-gsac) at (3.00,0.50) { $D(\upk) \land D(\attrs)$ };
+
+  \node (issue-uas) at (9.00,2.50)
+  { $K(\usk) \land \usk \in \scred \land \fissue(\cdot) = 1$ };
+  \node[align=center] (sign-uas) at (9.00,1.50)
+  { $K(\usk) \land \usk \in \scred \land E(\yinsp)~\land$ \\
+    $\yeval = \feval(\cdot) \land \yinsp = \finsp(\yeval,\cdot)$
+  };
+  \node (open-uas) at (9.00,0.50) { $D(\yinsp)$ };
+
+  \draw[draw=black,thick] (10.00,2.29) rectangle ++(1.43,0.44);
+  \draw[draw=black,dashed,thick] (6.80,1.09) rectangle ++(1.75,0.44);
+  \draw[draw=black,dotted,thick] (8.85,1.09) rectangle ++(2.30,0.44);
+    
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
