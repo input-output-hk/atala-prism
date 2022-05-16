@@ -24,17 +24,6 @@ class StatisticsServiceLogs[F[_]: ServiceLogging[*[_], StatisticsService[F]]: Mo
       .onError(errorCause"encountered an error while getting number of operations with status $status" (_))
   }
 
-  def getNumberOfPendingOperations: Mid[F, Either[errors.NodeError, Int]] = { in =>
-    info"getting amount of pending operations" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while getting amount of pending operations: $err",
-          _ => info"getting amount of pending operations - successfully done"
-        )
-      )
-      .onError(errorCause"encountered an error while getting amount of pending operations" (_))
-  }
-
   def retrieveMetric(metricName: String): Mid[F, Either[errors.NodeError, Int]] = { in =>
     info"retrieving metric $metricName" *> in
       .flatTap(

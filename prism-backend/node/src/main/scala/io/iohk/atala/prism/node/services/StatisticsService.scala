@@ -9,10 +9,12 @@ import derevo.tagless.applyK
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.metrics.StatisticsCounters
 import io.iohk.atala.prism.node.metrics.StatisticsCounters.MetricCounter.{
+  NumberOfAppliedTransactions,
   NumberOfCredentialsRevoked,
   NumberOfIssuedCredentialBatches,
   NumberOfPendingOperations,
-  NumberOfPublishedDids
+  NumberOfPublishedDids,
+  NumberOfRejectedTransactions
 }
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.operations.{
@@ -29,8 +31,6 @@ import tofu.logging.{Logs, ServiceLogging}
 trait StatisticsService[F[_]] {
   def getAtalaOperationsCountByStatus(status: AtalaOperationStatus): F[Either[errors.NodeError, Int]]
 
-  def getNumberOfPendingOperations: F[Either[errors.NodeError, Int]]
-
   def retrieveMetric(metricName: String): F[Either[errors.NodeError, Int]]
 }
 
@@ -41,10 +41,6 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
   def getAtalaOperationsCountByStatus(status: AtalaOperationStatus): F[Either[errors.NodeError, Int]] =
     atalaOperationsRepository.getOperationsCount(status)
 
-  def getNumberOfPendingOperations: F[Either[errors.NodeError, Int]] = {
-    atalaOperationsRepository.getOperationsCount(AtalaOperationStatus.RECEIVED)
-  }
-
   def retrieveMetric(metricNameStr: String): F[Either[errors.NodeError, Int]] =
     StatisticsCounters.MetricCounter
       .withNameLowercaseOnlyOption(metricNameStr)
@@ -54,13 +50,17 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
         )
       ) {
         case NumberOfPendingOperations =>
-          getNumberOfPendingOperations
+          getAtalaOperationsCountByStatus(AtalaOperationStatus.RECEIVED)
         case NumberOfPublishedDids =>
           metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
         case NumberOfIssuedCredentialBatches =>
           metricsCountersRepository.getCounter(IssueCredentialBatchOperation.metricCounterName).map(Right(_))
         case NumberOfCredentialsRevoked =>
           metricsCountersRepository.getCounter(RevokeCredentialsOperation.metricCounterName).map(Right(_))
+        case NumberOfAppliedTransactions =>
+          getAtalaOperationsCountByStatus(AtalaOperationStatus.APPLIED)
+        case NumberOfRejectedTransactions =>
+          getAtalaOperationsCountByStatus(AtalaOperationStatus.REJECTED)
       }
 
 }
