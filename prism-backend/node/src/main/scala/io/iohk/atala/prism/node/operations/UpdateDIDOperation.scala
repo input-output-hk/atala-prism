@@ -52,10 +52,16 @@ case class UpdateDIDOperation(
       }.subflatMap { didKey =>
         Either.cond(
           didKey.keyUsage == KeyUsage.MasterKey,
-          didKey.key,
+          didKey,
           StateError.InvalidKeyUsed("master key")
         )
-      }
+      }.subflatMap { didKey =>
+        Either.cond(
+          didKey.revokedOn.isEmpty,
+          didKey,
+          StateError.KeyAlreadyRevoked()
+        )
+      }.map(_.key)
     } yield CorrectnessData(key, Some(lastOperation))
   }
 
