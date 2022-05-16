@@ -10,6 +10,7 @@ import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
+import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -233,6 +234,28 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
       key mustBe masterKeys.getPublicKey
       previousOperation mustBe Some(createDidOperation.digest)
+    }
+
+    "fail given master key revoked" in {
+      createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
+
+      PublicKeysDAO
+        .revoke(createDidOperation.id, "master", dummyLedgerData)
+        .transact(database)
+        .unsafeRunSync()
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(signedExampleOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      val result = parsedOperation
+        .getCorrectnessData("master")
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      result mustBe Left(StateError.KeyAlreadyRevoked())
     }
   }
 
