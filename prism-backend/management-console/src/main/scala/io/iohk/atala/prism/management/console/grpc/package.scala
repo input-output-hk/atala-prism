@@ -538,13 +538,10 @@ package object grpc {
           GenericCredential.SortBy.CredentialType
         case GetGenericCredentialsRequest.SortBy.Field.CREATED_ON =>
           GenericCredential.SortBy.CreatedOn
-        // FIXME TODO UNCOMENT!
-        // case GetGenericCredentialsRequest.SortBy.Field.EXTERNAL_ID =>
-        //   GenericCredential.SortBy.ExternalId
-        // case GetGenericCredentialsRequest.SortBy.Field.CREDENTIAL_STATUS =>
-        //   GenericCredential.SortBy.CredentialStatus
-        // case GetGenericCredentialsRequest.SortBy.Field.CONTACT_STATUS =>
-        //   GenericCredential.SortBy.ContactStatus
+        case GetGenericCredentialsRequest.SortBy.Field.EXTERNAL_ID =>
+          GenericCredential.SortBy.ExternalId
+        case GetGenericCredentialsRequest.SortBy.Field.CREDENTIAL_STATUS =>
+          GenericCredential.SortBy.CredentialStatus
 
         case GetGenericCredentialsRequest.SortBy.Field.Unrecognized(x) =>
           throw new RuntimeException(s"Unrecognized SortBy Field: $x")

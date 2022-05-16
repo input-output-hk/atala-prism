@@ -34,7 +34,7 @@ object CredentialsDAO {
         |       WHEN PC.revoked_on_operation_id IS NOT NULL THEN 'Revoked'
         |       WHEN PC.shared_at IS NOT NULL THEN 'Sent'
         |       WHEN PC.stored_at IS NOT NULL THEN 'Signed'
-        |       ELSE 'Draf'
+        |       ELSE 'Draft'
         |   END AS credential_status
       """.stripMargin
 
@@ -172,6 +172,7 @@ object CredentialsDAO {
       case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
       case GenericCredential.SortBy.CreatedOn => "c.created_at"
       case GenericCredential.SortBy.ExternalId => "external_id"
+      case GenericCredential.SortBy.CredentialStatus => "credential_status"
     }
 
     val whereCredentialType =
