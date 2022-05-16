@@ -29,7 +29,13 @@ object CredentialsDAO {
         |SELECT credential_id, c.issuer_id, c.contact_id, credential_data, c.created_at, c.credential_type_id,
         |       c.credential_issuance_contact_id, external_id, PTS.name AS issuer_name, contact_data, connection_token,
         |       PC.batch_id, PC.issuance_operation_hash, PC.issuance_operation_id, PC.encoded_signed_credential, PC.inclusion_proof,
-        |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id, PC.revoked_on_operation_status
+        |       PC.stored_at, PC.shared_at, PC.revoked_on_operation_id, PC.revoked_on_operation_status,
+        |   CASE
+        |       WHEN PC.revoked_on_operation_id IS NOT NULL THEN 'Revoked'
+        |       WHEN PC.shared_at IS NOT NULL THEN 'Sent'
+        |       WHEN PC.stored_at IS NOT NULL THEN 'Signed'
+        |       ELSE 'Draf'
+        |   END AS credential_status
       """.stripMargin
 
   private def withPublishedCredentialsPC(
@@ -165,6 +171,7 @@ object CredentialsDAO {
     val orderBy = orderByFr(query.ordering, "credential_id") {
       case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
       case GenericCredential.SortBy.CreatedOn => "c.created_at"
+      case GenericCredential.SortBy.ExternalId => "external_id"
     }
 
     val whereCredentialType =

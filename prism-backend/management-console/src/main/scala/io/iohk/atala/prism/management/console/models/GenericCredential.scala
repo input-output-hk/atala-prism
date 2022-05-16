@@ -115,6 +115,8 @@ object GenericCredential {
   object SortBy {
     final case object CredentialType extends SortBy
     final case object CreatedOn extends SortBy
+    final case object ExternalId extends SortBy
+    final case object CredentialStatus extends SortBy
   }
 
   final case class FilterBy(
