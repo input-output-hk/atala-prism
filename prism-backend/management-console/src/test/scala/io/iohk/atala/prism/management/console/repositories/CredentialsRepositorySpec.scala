@@ -267,6 +267,55 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         credential2
       )
     }
+
+    "support sorting by ExternalId Ascending / Descending" in {
+      val issuerId = createParticipant("Issuer X")
+      val groupA = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val groupB = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp2"))
+      val groupC = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp3"))
+      val groupD = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp4"))
+      val subjectA = createContact(issuerId, "IOHK Student 1", Some(groupA.name)).contactId
+      val subjectB = createContact(issuerId, "IOHK Student 2", Some(groupB.name)).contactId
+      val subjectC = createContact(issuerId, "IOHK Student 3", Some(groupC.name)).contactId
+      val subjectD = createContact(issuerId, "IOHK Student 4", Some(groupD.name)).contactId
+      // val credential1 =
+      createGenericCredential(issuerId, subjectA, tag = "A")
+      // val credential2 =
+      createGenericCredential(issuerId, subjectB, tag = "B")
+      // val credential3 =
+      createGenericCredential(issuerId, subjectC, tag = "C")
+      // val credential4 =
+      createGenericCredential(issuerId, subjectD, tag = "D")
+
+      val queryAscending: GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.ExternalId,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Ascending
+        )
+      )
+
+      credentialsRepository
+        .getBy(issuerId, queryAscending)
+        .unsafeToFuture()
+        .map(_.map(_.externalId.value))
+        .futureValue
+        .toSeq mustBe sorted
+
+      val queryDescending: GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.ExternalId,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Descending
+        )
+      )
+
+      credentialsRepository
+        .getBy(issuerId, queryDescending)
+        .unsafeToFuture()
+        .map(_.map(_.externalId.value))
+        .futureValue
+        .toSeq
+        .reverse mustBe sorted
+    }
   }
 
   "getBy" should {
