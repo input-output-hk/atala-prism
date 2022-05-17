@@ -10,10 +10,10 @@ import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.MerkleInclusionProof
-import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.{MerkleInclusionProof, Sha256Digest}
 import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, CredentialStatus}
 import tofu.logging.derivation.loggable
 
 final case class CreateGenericCredential(
@@ -121,6 +121,10 @@ object GenericCredential {
 
   final case class FilterBy(
       credentialType: Option[CredentialTypeId] = None,
+      credentialStatus: Option[CredentialStatus] = None,
+      contactConnectionStatus: Option[ContactConnectionStatus] = None,
+      contactExternalId: Option[Contact.ExternalId] = None,
+      contactName: Option[String] = None,
       createdAfter: Option[LocalDate] = None,
       createdBefore: Option[LocalDate] = None
   )

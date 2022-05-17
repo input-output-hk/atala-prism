@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.integrations
 
-import cats.{Comonad, Functor, Monad}
-import cats.effect.Resource
+import cats.data.NonEmptyList
+import cats.effect.{MonadCancelThrow, Resource}
 import cats.syntax.applicative._
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
@@ -9,6 +9,7 @@ import cats.syntax.comonad._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import cats.{Comonad, Functor, Monad, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.connector.AtalaOperationId
@@ -22,20 +23,19 @@ import io.iohk.atala.prism.management.console.integrations.CredentialsIntegratio
   GetGenericCredentialsResult
 }
 import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery
+import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
+import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, CredentialsRepository}
 import io.iohk.atala.prism.models.ConnectionToken
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
+import io.iohk.atala.prism.protos.node_api.GetOperationInfoRequest
 import io.iohk.atala.prism.protos.{connector_models, node_api}
 import org.slf4j.{Logger, LoggerFactory}
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
-import cats.MonadThrow
-import cats.effect.MonadCancelThrow
-import io.iohk.atala.prism.protos.node_api.GetOperationInfoRequest
 
 import scala.concurrent.Future
 
@@ -65,6 +65,7 @@ trait CredentialsIntegrationService[F[_]] {
 
 private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
     credentialsRepository: CredentialsRepository[F],
+    contactsRepository: ContactsRepository[F],
     nodeService: node_api.NodeServiceGrpc.NodeService,
     connector: ConnectorClient[F]
 )(implicit ex: Execute[F])
@@ -103,11 +104,46 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
   def getGenericCredentials(
       issuedBy: ParticipantId,
       query: GenericCredential.PaginatedQuery
-  ): F[GetGenericCredentialsResult] =
-    getAndAppendConnectionStatus(
-      credentialsRepository
-        .getBy(issuedBy, query)
-    )
+  ): F[GetGenericCredentialsResult] = {
+
+    val connectionStatusFilterOpt = query.filters.flatMap(x => x.contactConnectionStatus)
+    connectionStatusFilterOpt match {
+      case None =>
+        getAndAppendConnectionStatus(
+          credentialsRepository.getBy(issuedBy, query)
+        )
+      case Some(connectionStatusFilter) =>
+        for {
+          allContacts <- contactsRepository.getBy(
+            issuedBy,
+            PaginatedQueryConstraints(ordering = ResultOrdering(Contact.SortBy.Name)),
+            ignoreFilterLimit = true
+          )
+          allConnectionStatuses <- connector.getConnectionStatus(
+            allContacts.map(_.details.connectionToken)
+          )
+          tokenToConnection =
+            allConnectionStatuses
+              .filter(_.connectionStatus == connectionStatusFilter)
+              .map(c => ConnectionToken(c.connectionToken) -> c)
+              .toMap
+          filteredContacts = allContacts.filter(c => tokenToConnection.contains(c.details.connectionToken))
+          credentials <-
+            if (filteredContacts.isEmpty)
+              List.empty.pure
+            else
+              credentialsRepository.getBy(issuedBy, query, NonEmptyList.fromFoldable(filteredContacts.map(_.contactId)))
+        } yield GetGenericCredentialsResult(
+          credentials
+            .map { genericCredential =>
+              GenericCredentialWithConnection(
+                genericCredential,
+                tokenToConnection(genericCredential.connectionToken)
+              )
+            }
+        )
+    }
+  }
 
   def getContactCredentials(
       issuedBy: ParticipantId,
@@ -187,6 +223,7 @@ object CredentialsIntegrationService {
 
   def apply[F[_]: Execute: MonadCancelThrow, R[_]: Functor](
       credentialsRepository: CredentialsRepository[F],
+      contactsRepository: ContactsRepository[F],
       nodeService: node_api.NodeServiceGrpc.NodeService,
       connector: ConnectorClient[F],
       logs: Logs[R, F]
@@ -200,6 +237,7 @@ object CredentialsIntegrationService {
       val mid = logs
       mid attach new CredentialsIntegrationServiceImpl[F](
         credentialsRepository,
+        contactsRepository,
         nodeService,
         connector
       )
@@ -207,12 +245,14 @@ object CredentialsIntegrationService {
 
   def unsafe[F[_]: Execute: MonadCancelThrow, R[_]: Comonad](
       credentialsRepository: CredentialsRepository[F],
+      contactsRepository: ContactsRepository[F],
       nodeService: node_api.NodeServiceGrpc.NodeService,
       connector: ConnectorClient[F],
       logs: Logs[R, F]
   ): CredentialsIntegrationService[F] =
     CredentialsIntegrationService(
       credentialsRepository,
+      contactsRepository,
       nodeService,
       connector,
       logs
@@ -220,6 +260,7 @@ object CredentialsIntegrationService {
 
   def makeResource[F[_]: Execute: MonadCancelThrow, R[_]: Monad](
       credentialsRepository: CredentialsRepository[F],
+      contactsRepository: ContactsRepository[F],
       nodeService: node_api.NodeServiceGrpc.NodeService,
       connector: ConnectorClient[F],
       logs: Logs[R, F]
@@ -227,6 +268,7 @@ object CredentialsIntegrationService {
     Resource.eval(
       CredentialsIntegrationService(
         credentialsRepository,
+        contactsRepository,
         nodeService,
         connector,
         logs
