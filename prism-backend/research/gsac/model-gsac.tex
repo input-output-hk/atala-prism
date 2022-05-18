@@ -217,12 +217,12 @@ he owns a credential containing the revealed attributes. In both GS and AC, it
 is also typically required that
 multiple signatures/presentations by the users are unlinkable. The approach to
 formally state this property is in both cases frequently the same: the adversary
-picks two (honest) users (or credentials in the AC case), the game randomly
-chooses one of them, and lets the adversary request challenge
-signatures/presentations from it. The adversary wins if it succeeds in guessing
-which was the chosen user/credential better than guessing at random. In group
-signatures, the game must also restrict the adversary from opening challenge
-signatures. In anonymous credentials, the game must further constraint the
+requests signatures from one out of two challenge users/credentials, where the
+one actually producing the signatures is defined by a bit $b$. The adversary
+wins if it succeeds in guessing which was the chosen user/credential better than
+guessing at random. In group signatures, the game must also restrict the
+adversary from opening challenge
+signatures. In anonymous credentials, the game must constraint the
 adversary to pick credentials that have some common subset of attributes, and
 to use that common subset to request the challenge presentations. Here, we need
 to take into account both. Furthermore, a key difference with group signatures
@@ -239,10 +239,8 @@ specification of the anonymity game is given in \figref{fig:exp-gsac-anonb}.
      \parm \gets \Setup(1^\secpar) \\
      (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
      \gpk \gets (\ipk,\opk) \\
-     (\cid_0,\cid_1,\status) \gets
-     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN}(\choose,\gpk,\isk) \\
      b^* \gets
-     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN,\CHALb}(\guess,\gpk,\isk,\status) \\
+     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN,\CHALb}(\gpk,\isk,\status) \\
      \pcreturn b^*
   }
   \caption{Anonymity experiment for \GSAC schemes.}
@@ -285,7 +283,7 @@ the \ExpTrace experiment in \figref{fig:exp-gsac-trace}.
     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
     \gpk \gets (\ipk,\opk) \\
     (\sig,\dattrs,\msg) \gets
-    \adv^{\HUGEN,\CUGEN,\RREG,\OBTISS,\ISSUE,\SIGN,\OPEN}(\gpk,\osk) \\
+    \adv^{\HUGEN,\CUGEN,\RREG,\OBTISS,\ISSUE,\SIGN}(\gpk,\osk) \\
     \pcif \Verify(\gpk,\sig,\dattrs,\msg) = 0: \pcreturn 0 \\
     \pcif \Open(\gpk,\osk,\trans,\sig,\dattrs,\msg) = \bot: \pcreturn 1 \\
     \textrm{Let}~(\upk,\attrs,\oproof) \gets \Open(\gpk,\osk,\trans,\sig,

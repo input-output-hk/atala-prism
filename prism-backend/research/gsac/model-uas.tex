@@ -390,6 +390,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\CHALb(\oid,\cuid_{0,1},\cscid_{0,1},\msg,\feval)$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \oid \in \CO: \pcreturn \bot \\
+          \pcif \feval \notin \famfeval: \pcreturn \bot \\          
           \pcif \yeval = \feval(\UK[\cuid_0],\CRED[\cscid_0],\msg) \neq \\
           \pcind \feval(\UK[\cuid_1],\CRED[\cscid_1],\msg):
           \pcreturn \bot \\
@@ -429,6 +430,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\SIGN(\oid,\uid,\scid,\msg,\feval)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \feval \notin \famfeval: \pcreturn \bot \\
           (\sig,\yeval) \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,
           \feval) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
@@ -515,23 +517,20 @@ pairs. Very interestingly, since our opening functionality does not
 (necessarily) output the identity of the signer, \uline{we can even allow the
   adversary to open challenge signatures, as long as they produce the same
   output}. Other than this, the overall approach is similar: as
-in group signatures and anonymous credentials, the adversary picks two pairs of
-honest users and credential sets. We also require the adversary to pick an
-evaluation function and an opener (hence, an opening function). Then, the
-user-credential pair defind by the value of $b$ (unknown to the adversary) is
-used to program the \CHALb oracle. The formal specification of the anonymity
-game is given in \figref{fig:exp-uas-anonb}, where $\Oanonc \gets (\lbrace\HU,
-\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,
-\WREG,\SIGN,\OPEN)$ and $\Oanong \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,
-\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\CHALb)$
+in group signatures and anonymous credentials, the adversary asks for challenge
+signatures from either one of two honest users and credential sets -- bit $b$,
+unkown to the adversary, defining which one is used. Note that the adversary
+also has to pick a signature valuation function \feval, as well as an opener
+(passed as arguments to the \SIGN and \CHALb oracles). The formal specification
+of the anonymity game is given in \figref{fig:exp-uas-anonb}, where $\Oanon
+\gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace
+\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\CHALb)$
 
 \begin{figure}[htp!]
+  \centering
   \procedure[linenumbering]{$\ExpAnonb(1^\secpar)$}{%
      \parm \gets \Setup(1^\secpar) \\
-     (\cuid_0,\cscid_0,\cuid_1,\cscid_1,\feval,\status) \gets \adv^{\Oanonc}
-     (\choose,\parm) \\
-     \pcif \feval \notin \famfeval: \pcreturn \bot \\
-     b^* \gets \adv^{\Oanong} (\guess,\status) \\
+     b^* \gets \adv^{\Oanon} (\status,\parm) \\
      \pcreturn b^*
   }
   \caption{Anonymity experiment for \UAS schemes.}

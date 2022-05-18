@@ -96,7 +96,6 @@
         \procedure{$\CHALb(\ccid_0,\ccid_1,\dattrs,\msg)$}{%
           \pcif \dattrs \nsubseteq \ATTR[\ccid_0] \cap \ATTR[\ccid_1]:
           \pcreturn \bot \\
-          \pcif \cuid_0 \neq \bot \lor \cuid_1 \neq \bot: \pcreturn \bot \\
           \cuid_0 = \OWNR[\ccid_0];~\cuid_1 = \OWNR[\ccid_1] \\
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
  %         \pcif \ccid_0 \in \CCRED \lor \ccid_1 \in \CCRED: \pcreturn \bot \\
