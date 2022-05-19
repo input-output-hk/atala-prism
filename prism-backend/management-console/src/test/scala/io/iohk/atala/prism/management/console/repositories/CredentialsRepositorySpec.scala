@@ -3,7 +3,6 @@ package io.iohk.atala.prism.management.console.repositories
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import cats.syntax.functor._
 import doobie.util.transactor
 import doobie.implicits._
 import io.circe.Json
@@ -268,7 +267,7 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       )
     }
 
-    "support sorting by ExternalId Ascending / Descending" in {
+    "support sorting by ExternalId (Ascending / Descending)" in {
       val issuerId = createParticipant("Issuer X")
       val groupA = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
       val groupB = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp2"))
@@ -278,13 +277,9 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
       val subjectB = createContact(issuerId, "IOHK Student 2", Some(groupB.name)).contactId
       val subjectC = createContact(issuerId, "IOHK Student 3", Some(groupC.name)).contactId
       val subjectD = createContact(issuerId, "IOHK Student 4", Some(groupD.name)).contactId
-      // val credential1 =
       createGenericCredential(issuerId, subjectA, tag = "A")
-      // val credential2 =
       createGenericCredential(issuerId, subjectB, tag = "B")
-      // val credential3 =
       createGenericCredential(issuerId, subjectC, tag = "C")
-      // val credential4 =
       createGenericCredential(issuerId, subjectD, tag = "D")
 
       val queryAscending: GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
@@ -315,6 +310,65 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .futureValue
         .toSeq
         .reverse mustBe sorted
+    }
+
+    "support sorting by CredentialStatus (Ascending / Descending)" in {
+      val issuerId = createParticipant("Issuer X")
+      val group = createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val subject = createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      val credential1 = createGenericCredential(issuerId, subject, tag = "A")
+      val credential2 = createGenericCredential(issuerId, subject, tag = "B")
+      val credential3 = createGenericCredential(issuerId, subject, tag = "C")
+      val credential4 = createGenericCredential(issuerId, subject, tag = "D")
+
+      publishCredential(issuerId, credential2)
+      publishCredential(issuerId, credential3)
+      publishCredential(issuerId, credential4)
+      markAsRevoked(credential4.credentialId)
+
+      credentialsRepository
+        .markAsShared(issuerId, NonEmptyList.of(credential3.credentialId))
+        .unsafeToFuture()
+        .futureValue
+
+      // NOTES:
+      // 1' credential1 -> Draft
+      // 2' credential4 -> Revoked
+      // 3' credential3 -> Signed
+      // 4' credential2 -> Sent
+      val expected =
+        List(
+          credential1.credentialId,
+          credential4.credentialId,
+          credential3.credentialId,
+          credential2.credentialId
+        )
+
+      val queryAscending: GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.CredentialStatus,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Ascending
+        )
+      )
+
+      credentialsRepository
+        .getBy(issuerId, queryAscending)
+        .unsafeToFuture()
+        .map(_.map(_.credentialId))
+        .futureValue mustBe expected
+
+      val queryDescending: GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.CredentialStatus,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Descending
+        )
+      )
+
+      credentialsRepository
+        .getBy(issuerId, queryDescending)
+        .unsafeToFuture()
+        .map(_.map(_.credentialId))
+        .futureValue mustBe expected.reverse
     }
   }
 
@@ -802,15 +856,6 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
         .getBy(credential2.credentialId)
         .unsafeToFuture()
         .futureValue mustBe a[Some[_]]
-    }
-
-    def markAsRevoked(credentialId: GenericCredential.Id): Unit = {
-      val operationId = 1.to(64).map(_ => "a").mkString("")
-      sql"""
-            |UPDATE published_credentials
-            |SET revoked_on_operation_id = decode($operationId, 'hex')
-            |WHERE credential_id = ${credentialId.uuid.toString}::uuid
-       """.stripMargin.update.run.void.transact(database).unsafeRunSync()
     }
   }
 

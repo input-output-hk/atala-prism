@@ -190,7 +190,7 @@ object CredentialsDAO {
         fr"c.created_at::DATE >= $createdAfter"
       }
 
-    val aux = (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++ fr"""
+    (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++ selectGenericCredential ++ fr"""
         |FROM draft_credentials c
         |     JOIN PTS USING (issuer_id)
         |     JOIN contacts ON (c.contact_id = contacts.contact_id)
@@ -205,11 +205,6 @@ object CredentialsDAO {
         |${limitFr(query.limit)}
         |${offsetFr(query.offset)}
         |""".stripMargin)
-
-    // println("#" * 100)
-    // println(aux.toString())
-
-    aux
       .query[GenericCredential]
       .to[List]
   }

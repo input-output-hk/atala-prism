@@ -2,6 +2,7 @@ package io.iohk.atala.prism.management.console
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
+import cats.syntax.functor._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.circe.Json
@@ -350,5 +351,16 @@ object DataPreparation {
       .transact(database)
       .unsafeRunSync()
     ()
+  }
+
+  def markAsRevoked(
+    credentialId: GenericCredential.Id
+  )(implicit database: Transactor[IO]): Unit = {
+    val operationId = 1.to(64).map(_ => "a").mkString("")
+    sql"""
+          |UPDATE published_credentials
+          |SET revoked_on_operation_id = decode($operationId, 'hex')
+          |WHERE credential_id = ${credentialId.uuid.toString}::uuid
+     """.stripMargin.update.run.void.transact(database).unsafeRunSync()
   }
 }
