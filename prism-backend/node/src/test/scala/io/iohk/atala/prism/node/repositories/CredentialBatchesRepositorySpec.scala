@@ -198,6 +198,49 @@ class CredentialBatchesRepositorySpec extends AtalaWithPostgresSpec {
         .toOption
         .flatten must be(Some(expectedState))
     }
+
+    "revocation of previously revoked credential doesn't throw any errors" in {
+      val randomBatchId = CredentialBatchId.random()
+      val randomIssuerDIDSuffix = DidSuffix(Sha256.compute("did".getBytes()).getHexValue)
+      val randomLastOperation = Sha256.compute("lastOperation".getBytes())
+      val randomMerkleRoot = new MerkleRoot(Sha256.compute("merkleRoot".getBytes()))
+      val randomCredentialId1 = Sha256.compute("randomCredential1".getBytes())
+      val randomCredentialId2 = Sha256.compute("randomCredential2".getBytes())
+      val randomCredentialId3 = Sha256.compute("randomCredential3".getBytes())
+      val randomIssuedOnLedgerData = dummyLedgerData
+
+      val randomRevocationTime =
+        new TimestampInfo(Instant.now().toEpochMilli, 10, 100)
+      val randomRevocationLedgerData = LedgerData(
+        TransactionId
+          .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
+          .value,
+        Ledger.InMemory,
+        randomRevocationTime
+      )
+
+      registerDID(randomIssuerDIDSuffix)
+
+      DataPreparation.createBatch(
+        randomBatchId,
+        randomLastOperation,
+        randomIssuerDIDSuffix,
+        randomMerkleRoot,
+        randomIssuedOnLedgerData
+      )
+
+      DataPreparation.revokeCredentials(
+        randomBatchId,
+        List(randomCredentialId1, randomCredentialId2),
+        randomRevocationLedgerData
+      )
+
+      DataPreparation.revokeCredentials(
+        randomBatchId,
+        List(randomCredentialId2, randomCredentialId3),
+        randomRevocationLedgerData
+      )
+    }
   }
 }
 
