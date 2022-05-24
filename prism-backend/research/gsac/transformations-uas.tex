@@ -104,6 +104,7 @@ a straightforward manner, by leveraging $\fissue^1$ as defined in
 
 \subsection{Ring Signatures}
 \label{ssec:uas-ring}
+\todo{This subsection needs much refinement.}
 
 In a nutshell, ring signatures \cite{rst06} are like group signatures where
 rather than having an issuer accepting users into a group, any user can create
@@ -117,10 +118,12 @@ of issuer, which has led some relevant systems like Monero%
   Last access on May 8th, 2022.} to opt for ring signatures rather than, e.g.,
 group signatures.
 
+\todo{Explain the following better...}
 To reach (vanilla) ring signatures from \UAS, we have to slightly alter our
 generic construction. This is due to the fact that the NP relation
 $\NIZKRel_{\Sign}$ defined in \secref{ssec:generic-construction-uas} reveals the
-issuers' public keys. This is a problem as, intuitively, the signer in a ring
+public key of the issuer of each credential used to produce the signatures.
+This is a problem as, intuitively, the signer in a ring
 signature is a sort of issuer for the ad hoc group. To hide the issuer, we
 replace the NP relation in \secref{ssec:generic-construction-uas} with
 $\NIZKRel_{\Sign-prv}$. We also use issuance function $\fissue^{\sring}$,
@@ -144,8 +147,17 @@ $\finsp^0$. All of them are specified in \esref{eq:uas-ring-funcs}.
   & \finsp^0(\yeval,\usk,\cred,\msg) \coloneqq 0 \label{eq:uas-ring-funcs}
 \end{align}
 
-Where \sring is some (arbitrary) ad hoc set containing the public keys of the
-users that the signer wants to include in its ring. In $\NIZKRel_{\Sign-prv}$
+Where $\usk \gets \isk$ for each issuer/user and, consequently 
+\sring is some (arbitrary) ad hoc set containing the public keys of the
+users (issuers) that the signer wants to include in its ring%
+\footnote{Note that, implicitly, this conditions that the space of issuer public
+  keys is a subset of \AttrSpace. If this is not the case ``by default'', this
+  can be achieved via some appropriate mapping (e.g., an FDH or a XOF
+  \needcite). That is, instead of having the ring be a set of {\ipk}s, we
+  have the ring be a set of $F({\ipk}s)$, where $F$ is an appropriate mapping.
+  For simplicity of exposition, we assume that the space of issuer public keys
+  is compatible with \AttrSpace.}.
+In $\NIZKRel_{\Sign-prv}$
 the public keys of the issuers are now part of the witness in the NP relation,
 which means that they will not be revealed in the proofs. Also, observe that, if
 we let the attributes in a credential be public keys, $\fissue^{\sring}$ means

@@ -294,7 +294,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\ICORR(\iid)$}{%
           \pcif \iid \in \CI \lor \iid \notin \HI: \pcreturn \bot \\
           \HI \gets \HI \setminus \lbrace \iid \rbrace \\
-          \CI \gets \CI \cup \lbrace \gid \rbrace \\
+          \CI \gets \CI \cup \lbrace \iid \rbrace \\
           \pcreturn \isk \\
         }        
 
