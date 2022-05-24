@@ -1,0 +1,191 @@
+\section{Models of Related Schemes}
+\label{app:related-models}
+
+In the following subsections we reproduce models of related schemes in the
+literature. Then, we give concrete \fissue, \feval and \finsp functions that
+make \UAS mimic their functionality. Finally, we prove for each case that
+\UAS -- restricted with the corresponding functions -- indeed meets their
+security models, thus proving that \UAS is a generalization of all of them.
+
+\subsection{Group Signatures}
+\label{sapp:related-models-gs}
+
+We adopt the model in \cite{bsz05}, where security of group signatures is
+defined according to the games in \figref{fig:model-gs}.
+
+\subsection{Group Signatures with Message Dependent Opening}
+\label{sapp:related-models-gsmdo}
+
+\subsection{Ring Signatures}
+\label{sapp:related-models-rs}
+
+We adopt the model in \cite{bkm06}, where security of ring signatures is
+defined according to the games in \figref{fig:model-rs}. A ring signature
+scheme consists of three algorithms $(KeyGen,Sign,Verify)$. Roughly,
+$((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar)$ produces $n$
+signing key pairs, $\sig \gets Sign(\sk_i,R,\msg)$ creates a signature for
+anonymity set $R \subseteq \lbrace \pk_1, \dots, \pk_t \rbrace$, using secret
+key $\sk_i$, associated to some $\pk_i \in R$; and $1/0 \gets Verify(R,\sig,
+\msg)$ checks if \sig is a valid signature over \msg for ring $R$.
+
+\begin{figure}[ht!]
+  \centering
+  \scalebox{0.9}{      
+    \begin{minipage}[t]{0.55\textwidth}        
+      \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,rs}(1^\secpar)$}{%
+        ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
+        (i_0,i_1,R,\msg,\st) \gets \adv^{SIGN}(\pk_1,\dots,\pk_n) \\
+        \pcif % R \not\subseteq \lbrace [n] \rbrace \lor
+        \lbrace \pk_{i_0},\pk_{i_1} \rbrace \notin R \lor %\\
+        i_0 = i_1: \pcreturn \bot \\
+        \sig \gets Sign(\sk_{i_b},R,\msg)) \\
+        b^* \gets \adv(\sig,\st) \\
+        \pcreturn b^*
+      }        
+    \end{minipage}
+  }
+  \scalebox{0.9}{      
+    \begin{minipage}[t]{.5\textwidth}
+      \procedure[linenumbering]{$\Exp^{forge}_{\adv,rs}(1^\secpar)$}{%
+        ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
+        (R,\sig,\msg) \gets \adv^{SIGN,CORR}(\pk_1,\dots,\pk_n) \\
+        \pcif Verify(R,\sig,\msg) = 0: \pcreturn 0 \\
+        \pcreturn 1~\pcif R \subseteq [n] \setminus CU = \emptyset~\land \\
+        \pcind \adv~\textrm{never queried}~SIGN(\cdot,R,\msg) \\
+        \pcreturn 0
+      }       
+    \end{minipage}      
+  }
+  \caption{Security games for ring signatures \cite{bkm06}. The SIGN oracle
+    accepts a $(i,R,\msg)$ tuple, where $pk_i$ must be part of $R$, and
+    returns $\sig \gets Sign(\sk_i,R,\msg)$. The oracle $CORR$ accepts an
+    index $i$, and lets $\adv$ learn $\sk_i$. Corrupted user indexes are
+    added to list $CU$.}
+  \label{fig:model-rs}  
+\end{figure}
+
+Intuitively, a ring signature scheme $rs$ is anonymous if, for every p.p.t.
+\adv, $|\Pr[\Exp^{anon-1}_{\adv,rs}(1^\secpar)] = 1| -
+|\Pr[\Exp^{anon-1}_{\adv,rs}(1^\secpar)] = 0|$ is a negligible function of
+$1^\secpar$; and a ring signature scheme $rs$ is unforgeable if, for every
+p.p.t. \adv, the probability that $\Exp^{forge}_{\adv,rs}(1^\secpar)$ returns
+$1$ is also negligible in $1^\secpar$. For short, we say that a ring signature
+scheme meeting both anonymity and unforgeability as specified above, is a secure
+ring signature scheme.
+
+\subsubsection{\CUASRing Construction.} %
+We prove that, as specified in \secref{ssec:uas-ring}, our \CUASGen construction
+for \UAS, with alternative NIZK relationship $\NIZKRel_{\Sign-prv}$ for signing,
+issuance function $\fissue^{\sring}$, signature evaluation function
+$\feval^{\attrs}$, and inspection function $\finsp^0$, is a secure ring
+signature scheme. Thus, in this section, when we write \CUASGen, we refer to
+its specific variant built from the previous modifications.
+
+\begin{description}  
+\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in \CUASGen, but using
+  $\NIZKRel_{\Sign-prv}$ instead of $\NIZKRel_{\Sign}$.  
+\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.] As in \CUASGen, using
+  $\fissue^{\sring}$.  
+\item[$(\opk,\osk) \gets \OKeyGen(\parm,\finsp).$] As in \CUASGen, where every
+  opener that wants to be a valid opener in \CUASRing, needs to set \finsp to
+  $\finsp^0$.  
+\item[$\usk \gets \UKeyGen(\parm).$] Can only be run after \IKeyGen. Let 
+  $\usk \gets \isk$.
+\item[$\langle \cred,\bot,\utrans,\bot \rangle \gets
+  \langle \Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle.$]
+  The user picks a ring from an (publicly) available list of issuers (users),
+  i.e. $\sring \gets \lbrace \ipk_i \rbrace_{i \in [t]}$, for some $t$. Then,
+  runs the $\langle \Obtain,\Issue \rangle$ protocol as in \CUASGen, acting both
+  as user and as issuer, and using $\fissue^{\sring}$ as issuance function.
+  \attrs are the public keys of the users (issuers) to be included in the ring.
+\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval).$] As in
+  \CUASGen, using $\feval^{\attrs}$ as sign evaluation function, using
+  as credential for signing the credential used in the desired $\langle \Obtain,
+  \Issue \rangle$ protocol and, as \opk, any previously registered \opk (i.e.,
+  such that $\finsp=\finsp^0$).
+\item[$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval).$] As in \CUASGen.
+  Note that $\sipk = \sring$, and $\feval=\feval^{\attrs}$.
+\item[$\Open$ and $\Judge$.] As in \CUASGen. Note that $\finsp=\finsp^0$.
+\end{description}
+
+\todo{I guess we need to show that changing the NIZK for signing does not affect
+  security. This leads to ``What are the conditions that need to be checked/cannot
+  be altered in the default NIZK sign, that make \CUASGen secure?'' }
+
+\paragraph{Security of \CUASRing.} %
+We prove next that our \CUASRing construction is anonymous and unforgeable, if
+the underlying \CUASGen construction is secure.
+
+\begin{theorem}[Anonymity of \CUASRing]
+  If the base \CUASGen construction is anonymous according to
+  \defref{def:anonymity-uas}, then \CUASRing is an anonymous ring signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume $\adv$ is an adversary against ring signature anonymity for \CUASRing.
+  Then, we build \advB against anonymity of \CUASGen. Concretely, \advB first
+  generates $n$ keypairs by running its \IGEN (with $\fissue^{\sring}$) and
+  \HUGEN oracles, and runs \OGEN at least once (with $\finsp^0$). Then, invokes
+  $\adv$ passing as public keys the public keys of the $n$ generated issuers
+  (users in \CUASRing). $\adv$'s $SIGN(i,R,\msg)$ queries are processed as
+  follows. If user $i$ has not yet produced a credential for ring $R$, \advB
+  makes a call to its \OBTAIN oracle, using $R$ as attribute set. If such a
+  credential was already produced, then reuse it. Then, \advB uses the
+  corresponding user and credential identifiers as parameters to a query to its
+  own \SIGN oracle (specifying $\feval^{\attrs}$ as signature evaluation
+  function). Eventually, $\adv$ outputs two user indexes, a ring $R$, and
+  message \msg. If the checks at line 4 of \figref{fig:model-rs} pass, \advB
+  generates the challenge signature by calling its own \CHALb oracle, and passes
+  the result to $\adv$. Finally, \advB outputs whatever $\adv$ outputs.
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability of \CUASRing]
+  If the base \CUASGen construction is non-frameable according to
+  \defref{def:frame-uas}, then \CUASRing is an unforgeable ring signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume $\adv$ against unforgeability of \CUASRing wins the game. We build
+  \advB winning the non-frameability game of \CUASGen with the same probability.
+  %
+  \advB prepares the environment as the adversary \advB against anonymity,
+  and answers \adv's queries to the $SIGN$ oracle also as in the anonymity
+  proof. To answer \adv's queries to its $CORR$ oracle, \advB leverages the
+  \ICORR oracle in the non-frameability game for \UAS. Finally, \advB outputs
+  whatever $\adv$ outputs.
+
+  Note that, if $\adv$ wins its game, it means that the public keys of the
+  issuers in $R$ all belong to uncorrupted users. Since the signature is
+  accepted by $Verify$ at line 3 of the ring signature unforgeability game,
+  there exists some \uid with an \usk matching the check at line 6 in the
+  non-frameability game. Moreover, since $\adv$ never queried its $SIGN$
+  oracle, then by construction there cannot exist a matching entry in the
+  $\SIG[\uid]$ table. Thus, \advB wins the non-frameability game whenever
+  $\adv$ wins its unforgeability game. Since \CUASGen is non-frameable, then
+  this probability must be negligible.
+  %
+  \qed
+\end{proof}
+
+\subsection{Anonymous Credentials}
+\label{sapp:related-models-ac}
+
+We adopt the model in \cite{fhs19}, where security of anonymous credentials
+(with selective disclosure) is defined according to the games in
+\figref{fig:model-ac}.
+
+\subsection{Delegatable Anonymous Credentials}
+\label{sapp:related-models-dac}
+
+\subsection{Multimodal Private Signatures}
+\label{sapp:related-models-mps}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas"
+%%% End:
