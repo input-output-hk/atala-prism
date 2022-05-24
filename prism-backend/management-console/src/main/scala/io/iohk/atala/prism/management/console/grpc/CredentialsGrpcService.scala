@@ -68,7 +68,8 @@ class CredentialsGrpcService(
                 genericCredentialsResult.genericCredential,
                 genericCredentialsResult.connection
               )
-            )
+            ),
+            result.totalCount
           )
         }
     }
@@ -89,7 +90,8 @@ class CredentialsGrpcService(
                 genericCredentialsResult.genericCredential,
                 genericCredentialsResult.connection
               )
-            )
+            ),
+            result.totalCount
           )
         }
     }

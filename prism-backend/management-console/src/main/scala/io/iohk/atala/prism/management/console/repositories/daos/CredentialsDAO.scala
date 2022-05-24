@@ -10,6 +10,7 @@ import doobie.implicits.legacy.localdate._
 import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.management.console.models.GenericCredential.FilterBy
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.queries._
 import io.iohk.atala.prism.protos.console_models.CredentialStatus.{
@@ -171,46 +172,41 @@ object CredentialsDAO {
       .to[List]
   }
 
-  def getBy(
+  def getByWithFiltersFragment(
+      selectFragment: Fragment,
       issuedBy: ParticipantId,
-      query: GenericCredential.PaginatedQuery,
+      maybeFilters: Option[FilterBy],
       onlyContacts: Option[NonEmptyList[Contact.Id]] = None
-  ): doobie.ConnectionIO[List[GenericCredential]] = {
-    val orderBy = orderByFr(query.ordering, "credential_id") {
-      case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
-      case GenericCredential.SortBy.CreatedOn => "c.created_at"
-      case GenericCredential.SortBy.ExternalId => "external_id"
-      case GenericCredential.SortBy.CredentialStatus => "credential_status"
-    }
+  ): Fragment = {
 
     val whereCredentialType =
-      query.filters.flatMap(_.credentialType).map { credentialType =>
+      maybeFilters.flatMap(_.credentialType).map { credentialType =>
         fr"""c.credential_type_id = $credentialType"""
       }
 
     val whereCreatedBefore =
-      query.filters.flatMap(_.createdBefore).map { createdBefore =>
+      maybeFilters.flatMap(_.createdBefore).map { createdBefore =>
         fr"c.created_at::DATE <= $createdBefore"
       }
 
     val whereCreatedAfter =
-      query.filters.flatMap(_.createdAfter).map { createdAfter =>
+      maybeFilters.flatMap(_.createdAfter).map { createdAfter =>
         fr"c.created_at::DATE >= $createdAfter"
       }
 
     val whereContactExternalId =
-      query.filters.flatMap(_.contactExternalId).map { externalId =>
+      maybeFilters.flatMap(_.contactExternalId).map { externalId =>
         fr"contacts.external_id = $externalId"
       }
 
     val whereContactName =
-      query.filters.flatMap(_.contactName).map { name =>
+      maybeFilters.flatMap(_.contactName).map { name =>
         val nameWildCarded = s"%$name%"
         fr"contacts.name ILIKE $nameWildCarded"
       }
 
     val whereCredentialStatus =
-      query.filters.flatMap(_.credentialStatus).map {
+      maybeFilters.flatMap(_.credentialStatus).map {
         case CREDENTIAL_DRAFT => fr"PC.issuance_operation_hash is NULL"
         case CREDENTIAL_SIGNED =>
           fr"PC.issuance_operation_hash is NOT NULL AND PC.shared_at is NULL AND PC.revoked_on_operation_id is NULL"
@@ -225,12 +221,12 @@ object CredentialsDAO {
       }
 
     (fr"WITH" ++ withParticipantsPTS ++ withPublishedCredentialsPC() ++
-      selectGenericCredential ++ fr"""
-        |FROM draft_credentials c
-        |     JOIN PTS USING (issuer_id)
-        |     JOIN contacts ON (c.contact_id = contacts.contact_id)
-        |     LEFT JOIN PC USING (credential_id)
-        |${whereAndOpt(
+      selectFragment ++ fr"""
+                                     |FROM draft_credentials c
+                                     |     JOIN PTS USING (issuer_id)
+                                     |     JOIN contacts ON (c.contact_id = contacts.contact_id)
+                                     |     LEFT JOIN PC USING (credential_id)
+                                     |${whereAndOpt(
           Some(fr"c.issuer_id = $issuedBy"),
           whereCredentialType,
           whereCredentialStatus,
@@ -240,12 +236,40 @@ object CredentialsDAO {
           whereCreatedBefore,
           whereCreatedAfter
         )}
-        |$orderBy
-        |${limitFr(query.limit)}
-        |${offsetFr(query.offset)}
-        |""".stripMargin)
+        """.stripMargin)
+  }
+
+  def getBy(
+      issuedBy: ParticipantId,
+      query: GenericCredential.PaginatedQuery,
+      onlyContacts: Option[NonEmptyList[Contact.Id]] = None
+  ): doobie.ConnectionIO[List[GenericCredential]] = {
+
+    val orderBy = orderByFr(query.ordering, "credential_id") {
+      case GenericCredential.SortBy.CredentialType => "c.credential_type_id"
+      case GenericCredential.SortBy.CreatedOn => "c.created_at"
+      case GenericCredential.SortBy.ExternalId => "external_id"
+      case GenericCredential.SortBy.CredentialStatus => "credential_status"
+    }
+
+    (getByWithFiltersFragment(selectGenericCredential, issuedBy, query.filters, onlyContacts)
+      ++ fr"""
+            |$orderBy
+            |${limitFr(query.limit)}
+            |${offsetFr(query.offset)}
+          |""".stripMargin)
       .query[GenericCredential]
       .to[List]
+  }
+
+  def countBy(
+      issuedBy: ParticipantId,
+      maybeFilters: Option[FilterBy],
+      onlyContacts: Option[NonEmptyList[Contact.Id]] = None
+  ): doobie.ConnectionIO[Int] = {
+    getByWithFiltersFragment(fr"SELECT COUNT(*)", issuedBy, maybeFilters, onlyContacts)
+      .query[Int]
+      .unique
   }
 
   def getIssuedCredentialsBy(

@@ -104,7 +104,8 @@ class CredentialsStoreGrpcService(
         .getStoredCredentialsFor(participantId, query)
         .map { credentials =>
           console_api.GetStoredCredentialsForResponse(
-            credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto)
+            credentials = credentials.map(ProtoCodecs.receivedSignedCredentialToProto),
+            totalCount = credentials.size
           )
         }
         .run(traceId)

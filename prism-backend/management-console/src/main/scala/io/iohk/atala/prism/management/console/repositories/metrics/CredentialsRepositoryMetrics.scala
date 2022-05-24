@@ -23,6 +23,8 @@ final class CredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThr
     TimeMeasureUtil.createDBQueryTimer(repoName, "getByCredentialId")
   private lazy val getByQueryTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getByQuery")
+  private lazy val countByQueryTimer =
+    TimeMeasureUtil.createDBQueryTimer(repoName, "countByQuery")
   private lazy val getByMaybeLastSeenCredentialTimer =
     TimeMeasureUtil.createDBQueryTimer(repoName, "getByMaybeLastSeenCredential")
   private lazy val getByContactIdTimer =
@@ -60,6 +62,13 @@ final class CredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThr
       onlyContacts: Option[NonEmptyList[Contact.Id]]
   ): Mid[F, List[GenericCredential]] =
     _.measureOperationTime(getByQueryTimer)
+
+  override def countBy(
+      issuedBy: ParticipantId,
+      maybeFilters: Option[GenericCredential.FilterBy],
+      onlyContacts: Option[NonEmptyList[Contact.Id]]
+  ): Mid[F, Int] =
+    _.measureOperationTime(countByQueryTimer)
 
   override def getBy(
       issuedBy: ParticipantId,
@@ -109,4 +118,5 @@ final class CredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThr
       credentialId: GenericCredential.Id,
       operationId: AtalaOperationId
   ): Mid[F, Unit] = _.measureOperationTime(storeRevocationDataTimer)
+
 }

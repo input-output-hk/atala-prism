@@ -539,6 +539,119 @@ class CredentialsRepositorySpec extends AtalaWithPostgresSpec {
     }
   }
 
+  "countBy" should {
+
+    "return the correct credential count given filtered by credential type" in {
+      val issuerId = createParticipant("Issuer X")
+      val group =
+        createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val subject =
+        createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      createGenericCredential(issuerId, subject, tag = "A")
+      createGenericCredential(issuerId, subject, tag = "B")
+      createGenericCredential(issuerId, subject, tag = "C")
+      createGenericCredential(issuerId, subject, tag = "D")
+
+      val credentialType =
+        CredentialTypeDao
+          .findCredentialType(issuerId, "Credential type B")
+          .transact(database)
+          .unsafeRunSync()
+          .value
+
+      val filters = GenericCredential.FilterBy(
+        credentialType = Some(credentialType.id)
+      )
+
+      credentialsRepository
+        .countBy(issuerId, Some(filters))
+        .unsafeToFuture()
+        .futureValue mustBe 1
+    }
+
+    "return the correct credential count given filtered by contact name and externalId" in {
+      val issuerId = createParticipant("Issuer X")
+      val group =
+        createInstitutionGroup(issuerId, InstitutionGroup.Name("grp2"))
+      val contact1 =
+        createContact(issuerId, "IOHK Student1", Some(group.name))
+      createGenericCredential(issuerId, contact1.contactId, tag = "A1").credentialId
+      createGenericCredential(issuerId, contact1.contactId, tag = "B1").credentialId
+
+      val contact2 =
+        createContact(issuerId, "IOHK Student2", Some(group.name))
+      createGenericCredential(issuerId, contact2.contactId, tag = "C1").credentialId
+
+      def testContact(
+          name: Option[String],
+          externalId: Option[Contact.ExternalId] = None,
+          expected: Int
+      ) = {
+        credentialsRepository
+          .countBy(issuerId, Some(GenericCredential.FilterBy(contactName = name, contactExternalId = externalId)))
+          .unsafeToFuture()
+          .futureValue mustBe expected
+      }
+
+      testContact(name = Some(contact1.name), expected = 2)
+      testContact(name = Some(contact2.name), expected = 1)
+      testContact(
+        name = Some(contact1.name),
+        externalId = Some(contact1.externalId),
+        expected = 2
+      )
+      testContact(name = Some(contact1.name), externalId = Some(contact2.externalId), expected = 0)
+    }
+
+    "return credentials filtered by status" in {
+      val issuerId = createParticipant("Issuer X")
+      val group =
+        createInstitutionGroup(issuerId, InstitutionGroup.Name("grp1"))
+      val subject =
+        createContact(issuerId, "IOHK Student", Some(group.name)).contactId
+      val credential1 = createGenericCredential(issuerId, subject, tag = "A")
+      val credential2 = createGenericCredential(issuerId, subject, tag = "B")
+      val credential3 = createGenericCredential(issuerId, subject, tag = "C")
+      val credential4 = createGenericCredential(issuerId, subject, tag = "D")
+
+      publishCredential(issuerId, credential2)
+      publishCredential(issuerId, credential3)
+      publishCredential(issuerId, credential4)
+      markAsRevoked(credential4.credentialId)
+
+      credentialsRepository
+        .markAsShared(
+          issuerId,
+          NonEmptyList.of(credential3.credentialId)
+        )
+        .unsafeToFuture()
+        .futureValue
+
+      def query(status: CredentialStatus): GenericCredential.PaginatedQuery = PaginatedQueryConstraints(
+        limit = 2,
+        ordering = PaginatedQueryConstraints.ResultOrdering(
+          GenericCredential.SortBy.CreatedOn,
+          PaginatedQueryConstraints.ResultOrdering.Direction.Ascending
+        ),
+        filters = Some(GenericCredential.FilterBy(credentialStatus = Some(status)))
+      )
+
+      def testStatus(status: CredentialStatus, expected: List[GenericCredential.Id]) = {
+        credentialsRepository
+          .getBy(issuerId, query(status))
+          .map(_.map(_.credentialId))
+          .unsafeToFuture()
+          .futureValue mustBe
+          expected
+      }
+
+      testStatus(CREDENTIAL_DRAFT, List(credential1.credentialId))
+      testStatus(CREDENTIAL_SIGNED, List(credential2.credentialId))
+      testStatus(CREDENTIAL_SENT, List(credential3.credentialId))
+      testStatus(CREDENTIAL_REVOKED, List(credential4.credentialId))
+    }
+  }
+
   "storePublicationData" should {
     "insert credential data in db" in {
       val issuerId = createParticipant("Issuer X")
