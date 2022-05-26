@@ -39,7 +39,8 @@ trait CredentialsRepository[F[_]] {
 
   def getBy(
       issuedBy: ParticipantId,
-      query: GenericCredential.PaginatedQuery
+      query: GenericCredential.PaginatedQuery,
+      onlyContacts: Option[NonEmptyList[Contact.Id]] = None
   ): F[List[GenericCredential]]
 
   def getBy(
@@ -204,10 +205,11 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
 
   def getBy(
       issuedBy: ParticipantId,
-      query: GenericCredential.PaginatedQuery
+      query: GenericCredential.PaginatedQuery,
+      onlyContacts: Option[NonEmptyList[Contact.Id]] = None
   ): F[List[GenericCredential]] =
     CredentialsDAO
-      .getBy(issuedBy, query)
+      .getBy(issuedBy, query, onlyContacts)
       .logSQLErrorsV2(s"getting, issued id - $issuedBy")
       .transact(xa)
 

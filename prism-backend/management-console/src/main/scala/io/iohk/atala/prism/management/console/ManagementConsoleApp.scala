@@ -152,6 +152,7 @@ object ManagementConsoleApp extends IOApp {
       credentialIntegrationService <-
         CredentialsIntegrationService.makeResource(
           credentialsRepository,
+          contactsRepository,
           node,
           connector,
           managementConsoleLogs
