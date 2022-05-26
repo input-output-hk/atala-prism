@@ -354,7 +354,7 @@ object DataPreparation {
   }
 
   def markAsRevoked(
-    credentialId: GenericCredential.Id
+      credentialId: GenericCredential.Id
   )(implicit database: Transactor[IO]): Unit = {
     val operationId = 1.to(64).map(_ => "a").mkString("")
     sql"""
