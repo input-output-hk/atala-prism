@@ -6,7 +6,6 @@ import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import io.iohk.atala.prism.BuildInfo
-import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.auth.utils.DIDUtils
 import io.iohk.atala.prism.auth.{AuthAndMiddlewareSupportF, AuthenticatorF}
 import io.iohk.atala.prism.connector.errors._
@@ -37,7 +36,7 @@ import shapeless.:+:
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class ConnectorService(
+class ConnectorGrpcServiceImpl(
     connections: ConnectionsService[IOWithTraceIdContext],
     messages: MessagesService[
       fs2.Stream[IOWithTraceIdContext, *],
@@ -176,9 +175,7 @@ class ConnectorService(
         case Right(
               PublicKeyBasedAddConnectionRequest(_, publicKey, authHeader)
             ) =>
-          val payload = SignedRequestsHelper
-            .merge(authHeader.requestNonce, request.toByteArray)
-            .toArray
+          val payload = authHeader.requestNonce.mergeWith(request.toByteArray).toArray
           val resultEither: Either[AddConnectionFromTokenFullError, Unit] =
             for {
               _ <- Either.cond(
@@ -202,9 +199,7 @@ class ConnectorService(
             } yield ()
           Future.successful(resultEither).toFutureEither
         case Left(UnpublishedDidBasedAddConnectionRequest(_, authHeader)) =>
-          val payload = SignedRequestsHelper
-            .merge(authHeader.requestNonce, request.toByteArray)
-            .toArray
+          val payload = authHeader.requestNonce.mergeWith(request.toByteArray).toArray
           for {
             didData <-
               DIDUtils

@@ -12,7 +12,7 @@ import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
-class ConnectorServiceSpec extends ConnectorRpcSpecBase {
+class ConnectorGrpcServiceSpec extends ConnectorRpcSpecBase {
 
   val logoBytes: Array[Byte] = "none".getBytes()
 

@@ -1,9 +1,10 @@
-package io.iohk.atala.prism.connector
+package io.iohk.atala.prism.nonce
+
+import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPrivateKey
 
 import java.util.Base64
-
-import io.iohk.atala.prism.crypto.keys.ECPrivateKey
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 
 class RequestAuthenticator {
 
@@ -12,17 +13,17 @@ class RequestAuthenticator {
   def signConnectorRequest(
       request: Array[Byte],
       privateKey: ECPrivateKey,
-      requestNonce: RequestNonce = RequestNonce()
-  ): SignedConnectorRequest = {
-    val signature = EC.signBytes(requestNonce + request, privateKey)
-    SignedConnectorRequest(
+      requestNonce: RequestNonce = RequestNonce.random()
+  ): SignedNoncedRequest = {
+    val signature = EC.signBytes(requestNonce.mergeWith(request).toArray, privateKey)
+    SignedNoncedRequest(
       signature = signature.getData,
-      requestNonce = requestNonce.bytes
+      requestNonce = requestNonce.bytes.toArray
     )
   }
 }
 
-case class SignedConnectorRequest(
+case class SignedNoncedRequest(
     signature: Array[Byte],
     requestNonce: Array[Byte]
 ) {

@@ -12,7 +12,6 @@ import cats.syntax.traverse._
 import cats.{Comonad, Functor, Monad, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
 import io.iohk.atala.prism.management.console.errors
@@ -26,7 +25,7 @@ import io.iohk.atala.prism.management.console.models.GenericCredential.Paginated
 import io.iohk.atala.prism.management.console.models.PaginatedQueryConstraints.ResultOrdering
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.{ContactsRepository, CredentialsRepository}
-import io.iohk.atala.prism.models.ConnectionToken
+import io.iohk.atala.prism.models.{AtalaOperationId, ConnectionToken}
 import io.iohk.atala.prism.protos.connector_models.ContactConnection
 import io.iohk.atala.prism.protos.console_models.ContactConnectionStatus
 import io.iohk.atala.prism.protos.node_api.GetOperationInfoRequest

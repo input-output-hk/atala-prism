@@ -8,7 +8,6 @@ import com.google.protobuf.timestamp.Timestamp
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECKeyPair
@@ -18,7 +17,7 @@ import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{GenericCredential, InstitutionGroup}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix}
 import io.iohk.atala.prism.protos._
 import io.iohk.atala.prism.protos.common_models.OperationStatus.UNKNOWN_OPERATION
 import io.iohk.atala.prism.protos.connector_api.SendMessagesResponse

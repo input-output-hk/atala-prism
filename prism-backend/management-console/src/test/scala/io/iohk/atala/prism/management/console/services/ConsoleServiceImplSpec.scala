@@ -6,13 +6,13 @@ import com.google.protobuf.ByteString
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.DIDUtil
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.management.console.DataPreparation._
 import io.iohk.atala.prism.management.console.models.{InstitutionGroup, ParticipantLogo}
 import io.iohk.atala.prism.management.console.{DataPreparation, ManagementConsoleRpcSpecBase}
+import io.iohk.atala.prism.models.AtalaOperationId
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_models.{CreateDIDOutput, OperationOutput}
 import io.iohk.atala.prism.protos.{common_models, console_api, node_api}

@@ -19,28 +19,12 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.operations.ApplyOperationConfig
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  KeyValuesRepository,
-  MetricsCountersRepository,
-  ProtocolVersionRepository
-}
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceImpl,
-  InMemoryLedgerService,
-  NodeService,
-  ObjectManagementService,
-  StatisticsService,
-  SubmissionSchedulingService,
-  SubmissionService
-}
-import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.node.poc.Wallet
 import io.iohk.atala.prism.node.poc.endorsements.EndorsementsService.SignedKey
+import io.iohk.atala.prism.node.repositories._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.node.services._
+import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.endorsements_api.{
   EndorseInstitutionRequest,
   GetEndorsementsRequest,
@@ -147,13 +131,11 @@ class EndorsementsFlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach 
             new NodeGrpcServiceImpl(
               NodeService.unsafe(
                 didDataRepository,
-                atalaReferenceLedger,
                 objectManagementService,
                 credentialBatchesRepository,
                 publicKeysLimit,
                 endorsementsFlowPoCLogs
-              ),
-              StatisticsService.unsafe(atalaOperationsRepository, metricsCountersRepository, endorsementsFlowPoCLogs)
+              )
             ),
             executionContext
           )

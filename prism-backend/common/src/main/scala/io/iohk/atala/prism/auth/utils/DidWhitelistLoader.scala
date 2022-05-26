@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.connector
+package io.iohk.atala.prism.auth.utils
 
 import com.typesafe.config.Config
 import io.iohk.atala.prism.identity.{PrismDid => DID}
@@ -7,9 +7,9 @@ import scala.jdk.CollectionConverters.IteratorHasAsScala
 import scala.util.Try
 
 object DidWhitelistLoader {
-  def load(globalConfig: Config): Set[DID] = {
-    val whitelistDids = globalConfig
-      .getConfig("managementConsole")
+  def load(globalConfig: Config, paths: String*): Set[DID] = {
+    val whitelistDids = paths
+      .foldLeft(globalConfig)(_.getConfig(_))
       .getList("whitelistDids")
       .iterator()
       .asScala

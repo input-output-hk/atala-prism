@@ -1,9 +1,7 @@
-package io.iohk.atala.prism.management.console.clients
+package io.iohk.atala.prism.nonce
 
 import io.iohk.atala.prism.DIDUtil
-import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.auth.utils.DIDUtils
-import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.protos.connector_api
 import org.scalatest.OptionValues._
@@ -29,9 +27,7 @@ class ClientHelperSpec extends AnyWordSpec {
       val header = requestSigner(request)
 
       // verify signed request
-      val payload = SignedRequestsHelper
-        .merge(header.requestNonce, request.toByteArray)
-        .toArray
+      val payload = header.requestNonce.mergeWith(request.toByteArray).toArray
       val didData =
         DIDUtils.validateDid(header.did).value.futureValue.toOption.value
       val publicKey = DIDUtils

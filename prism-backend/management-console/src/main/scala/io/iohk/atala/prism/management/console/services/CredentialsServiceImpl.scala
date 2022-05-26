@@ -1,25 +1,24 @@
 package io.iohk.atala.prism.management.console.services
 
-import cats.{Comonad, Functor, Monad}
-import cats.implicits.toFunctorOps
 import cats.data.NonEmptyList
 import cats.effect.Resource
+import cats.implicits.toFunctorOps
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
+import cats.{Comonad, Functor, Monad, MonadThrow}
 import com.google.protobuf.ByteString
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.grpc.ProtoConverter
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.clients.ConnectorClient
+import io.iohk.atala.prism.management.console.errors
 import io.iohk.atala.prism.management.console.errors.{
   InternalServerError,
   ManagementConsoleError,
@@ -27,24 +26,23 @@ import io.iohk.atala.prism.management.console.errors.{
 }
 import io.iohk.atala.prism.management.console.grpc._
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService
-import io.iohk.atala.prism.management.console.models._
-import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
-import io.iohk.atala.prism.protos.node_api.{NodeServiceGrpc, ScheduleOperationsResponse}
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.node_api
-import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.atala.prism.management.console.integrations.CredentialsIntegrationService.{
   GenericCredentialWithConnection,
   GetGenericCredentialsResult
 }
-import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery
 import io.iohk.atala.prism.logging.GeneralLoggableInstances._
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.management.console.models.GenericCredential.PaginatedQuery
+import io.iohk.atala.prism.management.console.models._
+import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
+import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix}
+import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.protos.node_api.{NodeServiceGrpc, ScheduleOperationsResponse}
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import org.slf4j.{Logger, LoggerFactory}
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.logging._
-import cats.MonadThrow
 
 @derive(applyK)
 trait CredentialsService[F[_]] {

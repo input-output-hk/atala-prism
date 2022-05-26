@@ -6,24 +6,19 @@ import cats.{Applicative, Comonad, Functor, MonadThrow}
 import com.google.protobuf.ByteString
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.UnderlyingLedger
-import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
+import io.iohk.atala.prism.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.errors.NodeError.InvalidArgument
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion, Balance}
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
 import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
-import io.iohk.atala.prism.protos.node_api.GetWalletTransactionsRequest
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
-import io.iohk.atala.prism.protos.{node_api, node_models}
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
 import tofu.logging.{Logs, ServiceLogging}
@@ -70,12 +65,6 @@ trait NodeService[F[_]] {
     */
   def scheduleAtalaOperations(ops: node_models.SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]]
 
-  /** Retrieves a list of scheduled operations.
-    *
-    * @return
-    */
-  def getScheduledAtalaOperations: F[Either[NodeError, List[node_models.SignedAtalaOperation]]]
-
   /** Parses AtalaOperations from protobuf structures to Node internal data structures.
     *
     * @param ops
@@ -96,19 +85,10 @@ trait NodeService[F[_]] {
   def getLastSyncedTimestamp: F[Instant]
 
   def getCurrentProtocolVersion: F[ProtocolVersion]
-
-  def getWalletTransactions(
-      transactionType: node_api.GetWalletTransactionsRequest.TransactionState,
-      lastSeenTransactionId: Option[TransactionId],
-      limit: Int = 50
-  ): F[Either[NodeError, List[TransactionInfo]]]
-
-  def getWalletBalance: F[Either[CardanoWalletError, Balance]]
 }
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
-    underlyingLedger: UnderlyingLedger[F],
     objectManagement: ObjectManagementService[F],
     credentialBatchesRepository: CredentialBatchesRepository[F],
     didPublicKeysLimit: Int
@@ -203,10 +183,6 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   override def scheduleAtalaOperations(ops: SignedAtalaOperation*): F[List[Either[NodeError, AtalaOperationId]]] =
     objectManagement.scheduleAtalaOperations(ops: _*)
 
-  override def getScheduledAtalaOperations: F[Either[NodeError, List[SignedAtalaOperation]]] =
-    objectManagement.getScheduledAtalaObjects
-      .map(_.map(_.flatMap(obj => obj.getAtalaBlock.map(_.operations).getOrElse(Seq()))))
-
   override def getOperationInfo(atalaOperationIdBS: ByteString): F[Either[NodeError, OperationInfo]] =
     for {
       atalaOperationIdE <- Applicative[F].pure(
@@ -228,33 +204,12 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   override def getLastSyncedTimestamp: F[Instant] = objectManagement.getLastSyncedTimestamp
 
   override def getCurrentProtocolVersion: F[ProtocolVersion] = objectManagement.getCurrentProtocolVersion
-
-  override def getWalletTransactions(
-      transactionType: GetWalletTransactionsRequest.TransactionState,
-      lastSeenTransactionId: Option[TransactionId],
-      limit: Int
-  ): F[Either[NodeError, List[TransactionInfo]]] = {
-    transactionType match {
-      case GetWalletTransactionsRequest.TransactionState.Ongoing =>
-        objectManagement.getUnconfirmedTransactions(lastSeenTransactionId, limit)
-      case GetWalletTransactionsRequest.TransactionState.Confirmed =>
-        objectManagement.getConfirmedTransactions(lastSeenTransactionId, limit)
-      case _ =>
-        Either
-          .left[NodeError, List[TransactionInfo]](InvalidArgument("Unrecognized transaction type"): NodeError)
-          .pure[F]
-    }
-  }
-
-  override def getWalletBalance: F[Either[CardanoWalletError, Balance]] =
-    underlyingLedger.getWalletBalance
 }
 
 object NodeService {
 
   def make[I[_]: Functor, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
-      underlyingLedger: UnderlyingLedger[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
       didPublicKeysLimit: Int,
@@ -268,7 +223,6 @@ object NodeService {
       val mid: NodeService[Mid[F, *]] = logs
       mid attach new NodeServiceImpl[F](
         didDataRepository,
-        underlyingLedger,
         objectManagement,
         credentialBatchesRepository,
         didPublicKeysLimit
@@ -278,18 +232,16 @@ object NodeService {
 
   def resource[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
-      underlyingLedger: UnderlyingLedger[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
       didPublicKeysLimit: Int,
       logs: Logs[I, F]
   ): Resource[I, NodeService[F]] = Resource.eval(
-    make(didDataRepository, underlyingLedger, objectManagement, credentialBatchesRepository, didPublicKeysLimit, logs)
+    make(didDataRepository, objectManagement, credentialBatchesRepository, didPublicKeysLimit, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
-      underlyingLedger: UnderlyingLedger[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
       didPublicKeysLimit: Int,
@@ -297,7 +249,6 @@ object NodeService {
   ): NodeService[F] =
     make(
       didDataRepository,
-      underlyingLedger,
       objectManagement,
       credentialBatchesRepository,
       didPublicKeysLimit,

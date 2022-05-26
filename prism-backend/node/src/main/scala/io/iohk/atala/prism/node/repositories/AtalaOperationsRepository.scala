@@ -8,7 +8,6 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectsDAO, AtalaOperationsDAO}
@@ -23,6 +22,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import cats.effect.MonadCancelThrow
+import io.iohk.atala.prism.models.AtalaOperationId
 
 @derive(applyK)
 trait AtalaOperationsRepository[F[_]] {

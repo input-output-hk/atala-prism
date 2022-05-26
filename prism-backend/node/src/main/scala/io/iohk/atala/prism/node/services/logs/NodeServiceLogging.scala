@@ -6,14 +6,11 @@ import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{ProtocolVersion, Balance}
+import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.protos.node_api.GetWalletTransactionsRequest
 import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
@@ -98,48 +95,9 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       .flatTap(res => info"getting last synced timestamp - done: $res")
       .onError(errorCause"encountered an error while getting last synced timestamp" (_))
 
-  override def getScheduledAtalaOperations: Mid[F, Either[NodeError, List[SignedAtalaOperation]]] = { in =>
-    val description = s"getting scheduled Atala operations"
-    info"$description" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while $description: $err",
-          ops => info"$description - successfully done, number of operations ${ops.size}"
-        )
-      )
-      .onError(errorCause"encountered an error while $description" (_))
-  }
-
   override def getCurrentProtocolVersion: Mid[F, ProtocolVersion] = in =>
     info"getting current protocol version" *> in
       .flatTap(res => info"current protocol version - done: $res")
       .onError(errorCause"encountered an error while getting current protocol version" (_))
 
-  override def getWalletTransactions(
-      transactionType: GetWalletTransactionsRequest.TransactionState,
-      lastSeenTransactionId: Option[TransactionId],
-      limit: Int
-  ): Mid[F, Either[NodeError, List[TransactionInfo]]] = { in =>
-    val description = s"getting wallet transactions"
-    info"$description" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while $description: $err",
-          txs => info"$description - successfully done, number of transactions ${txs.size}"
-        )
-      )
-      .onError(errorCause"encountered an error while $description" (_))
-  }
-
-  override def getWalletBalance: Mid[F, Either[CardanoWalletError, Balance]] = { in =>
-    val description = s"getting wallet balance"
-    info"$description" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while $description: $err",
-          res => info"$description - done: $res"
-        )
-      )
-      .onError(errorCause"encountered an error while $description" (_))
-  }
 }

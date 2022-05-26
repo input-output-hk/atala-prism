@@ -1,21 +1,21 @@
 package io.iohk.atala.prism
 
 import cats.effect.IO
-import io.grpc.{CallCredentials, CallOptions, ManagedChannel, Metadata, Server, ServerServiceDefinition}
+import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor, SignedRequestsHelper}
+import io.iohk.atala.prism.auth.SignedRpcRequest
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import org.scalatest.BeforeAndAfterEach
-import scalapb.GeneratedMessage
-
-import _root_.java.util.concurrent.{Executor, TimeUnit}
-import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import org.scalatest.BeforeAndAfterEach
+import scalapb.GeneratedMessage
 import tofu.logging.Logs
+
+import _root_.java.util.concurrent.{Executor, TimeUnit}
 
 trait ApiTestHelper[STUB] {
   def apply[T](
@@ -40,9 +40,7 @@ trait ApiTestHelper[STUB] {
       keys: ECKeyPair,
       request: GeneratedMessage
   )(f: STUB => T): T = {
-    val payload = SignedRequestsHelper
-      .merge(auth.model.RequestNonce(requestNonce), request.toByteArray)
-      .toArray
+    val payload = auth.model.RequestNonce(requestNonce).mergeWith(request.toByteArray).toArray
     val signature = EC.signBytes(payload.array, keys.getPrivateKey)
     apply(requestNonce, signature, keys.getPublicKey, TraceId.generateYOLO)(f)
   }

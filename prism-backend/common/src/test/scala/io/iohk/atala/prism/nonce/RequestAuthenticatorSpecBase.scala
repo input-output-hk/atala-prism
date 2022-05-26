@@ -1,7 +1,7 @@
-package io.iohk.atala.prism.connector
+package io.iohk.atala.prism.nonce
 
-import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.signature.ECSignature
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 

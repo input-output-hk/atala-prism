@@ -1,16 +1,17 @@
 package io.iohk.atala.prism.metrics
 
+import cats.instances.future._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
-import cats.instances.future._
+import io.grpc.Status
 import kamon.Kamon
 import kamon.metric.{Counter, Gauge, Metric, Timer}
 import kamon.tag.TagSet
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Try}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Try}
 
 object RequestMeasureUtil {
 
@@ -50,6 +51,18 @@ object RequestMeasureUtil {
       .add(ERROR_CODE_TAG_NAME, errorCode.toString)
       .build()
     errorCounter.withTags(tags).increment()
+  }
+
+  def countAndThrowNodeError(serviceName: String)(
+      methodName: String,
+      asStatus: Status
+  ): Nothing = {
+    RequestMeasureUtil.increaseErrorCounter(
+      serviceName,
+      methodName,
+      asStatus.getCode.value()
+    )
+    throw asStatus.asRuntimeException()
   }
 
   private def handleFailedFutureMeasurement[V](

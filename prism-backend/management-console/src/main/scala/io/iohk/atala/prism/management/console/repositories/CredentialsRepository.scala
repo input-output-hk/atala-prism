@@ -1,32 +1,31 @@
 package io.iohk.atala.prism.management.console.repositories
 
-import cats.{Comonad, Functor, Monad}
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{EitherT, NonEmptyList}
+import cats.effect.{MonadCancelThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.functor._
-import cats.data.{EitherT, NonEmptyList}
-import cats.data.Validated.{Invalid, Valid}
-import cats.effect.Resource
-import derevo.tagless.applyK
+import cats.{Comonad, Functor, Monad}
 import derevo.derive
-import doobie.{ConnectionIO, FC}
-import doobie.util.transactor.Transactor
+import derevo.tagless.applyK
 import doobie.implicits._
-import io.iohk.atala.prism.connector.AtalaOperationId
+import doobie.util.transactor.Transactor
+import doobie.{ConnectionIO, FC}
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors._
+import io.iohk.atala.prism.management.console.models.GenericCredential.FilterBy
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.{ContactsDAO, CredentialTypeDao, CredentialsDAO}
 import io.iohk.atala.prism.management.console.repositories.logs.CredentialsRepositoryLogs
 import io.iohk.atala.prism.management.console.repositories.metrics.CredentialsRepositoryMetrics
 import io.iohk.atala.prism.management.console.validations.CredentialDataValidator
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.models.AtalaOperationId
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
-import cats.effect.MonadCancelThrow
-import io.iohk.atala.prism.management.console.models.GenericCredential.FilterBy
 
 @derive(applyK)
 trait CredentialsRepository[F[_]] {

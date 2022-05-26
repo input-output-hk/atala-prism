@@ -10,7 +10,6 @@ import derevo.tagless.applyK
 import derevo.derive
 import io.grpc.stub.MetadataUtils
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
-import io.iohk.atala.prism.connector.RequestAuthenticator
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
@@ -31,6 +30,7 @@ import tofu.syntax.logging._
 import tofu.syntax.monoid.TofuSemigroupOps
 import cats.MonadThrow
 import cats.effect.kernel.MonadCancel
+import io.iohk.atala.prism.nonce.{ClientHelper, RequestAuthenticator}
 
 @derive(applyK)
 trait ConnectorClient[F[_]] {

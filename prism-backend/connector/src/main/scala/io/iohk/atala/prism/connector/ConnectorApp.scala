@@ -7,6 +7,7 @@ import doobie.util.transactor.Transactor
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.atala.prism.auth.AuthenticatorF
 import io.iohk.atala.prism.auth.grpc._
+import io.iohk.atala.prism.auth.utils.DidWhitelistLoader
 import io.iohk.atala.prism.connector.repositories._
 import io.iohk.atala.prism.connector.services._
 import io.iohk.atala.prism.cviews.CredentialViewsService
@@ -84,7 +85,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
       // authenticatorF
       authenticatorF <- AuthenticatorF.resource(
         node,
-        new ConnectorAuthenticatorF(
+        new ConnectorAuthenticator(
           participantsRepository,
           requestNoncesRepository
         ),
@@ -108,12 +109,12 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
           node,
           connectorLogs
         )
-      contactConnectionService = new ContactConnectionService(
+      contactConnectionService = new ContactConnectionGrpcServiceImpl(
         connectionsService,
         authenticatorF,
         whitelistDid
       )
-      connectorService = new ConnectorService(
+      connectorService = new ConnectorGrpcServiceImpl(
         connectionsService,
         messagesService,
         registrationService,
@@ -202,7 +203,7 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
 
   private def loadWhitelistDid(config: Config): Set[PrismDid] = {
     logger.info("Loading DID whitelist")
-    val didWhitelist = DidWhitelistLoader.load(config)
+    val didWhitelist = DidWhitelistLoader.load(config, "managementConsole")
     if (didWhitelist.isEmpty) {
       logger.warn(
         s"DID whitelist is empty, which prevents integrating the console backend"
@@ -230,13 +231,13 @@ class ConnectorApp(implicit executionContext: ExecutionContext) { self =>
   }
 
   private def startServer(
-      connectorService: ConnectorService,
+      connectorService: ConnectorGrpcServiceImpl,
       credentialViewsService: CredentialViewsService,
       idService: IdServiceImpl,
       degreeService: DegreeServiceImpl,
       employmentService: EmploymentServiceImpl,
       insuranceService: InsuranceServiceImpl,
-      contactConnectionService: ContactConnectionService,
+      contactConnectionService: ContactConnectionGrpcServiceImpl,
       executionContext: ExecutionContext
   ): Resource[IO, Server] = Resource.make(IO {
     logger.info("Starting server")

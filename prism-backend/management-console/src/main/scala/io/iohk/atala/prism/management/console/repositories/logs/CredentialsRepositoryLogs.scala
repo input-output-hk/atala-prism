@@ -4,7 +4,6 @@ import cats.data.NonEmptyList
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
@@ -16,6 +15,7 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 import cats.MonadThrow
+import io.iohk.atala.prism.models.AtalaOperationId
 
 private[repositories] final class CredentialsRepositoryLogs[F[
     _

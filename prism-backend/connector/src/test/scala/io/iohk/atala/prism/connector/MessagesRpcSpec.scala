@@ -5,9 +5,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.stub.StreamObserver
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.MessageId
 import io.iohk.atala.prism.connector.repositories.daos.MessagesDAO
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
@@ -15,9 +13,9 @@ import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.models.ParticipantId
-import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.connector_models.MessageToSendByConnectionToken
-import io.iohk.atala.prism.protos.credential_models
+import io.iohk.atala.prism.protos.{connector_api, credential_models}
+import io.iohk.atala.prism.{DIDUtil, auth}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.MockitoSugar._
@@ -321,9 +319,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.signBytes(
-          SignedRequestsHelper
-            .merge(auth.model.RequestNonce(requestNonce), request.toByteArray)
-            .toArray,
+          auth.model.RequestNonce(requestNonce).mergeWith(request.toByteArray).toArray,
           keyPair.getPrivateKey
         )
       val issuerId =
