@@ -1,4 +1,4 @@
-\section{Models of Related Schemes}
+\section{\UAS-Based Instantiations of Related Schemes}
 \label{app:related-models}
 
 In the following subsections we reproduce models of related schemes in the
@@ -10,8 +10,183 @@ security models, thus proving that \UAS is a generalization of all of them.
 \subsection{Group Signatures}
 \label{sapp:related-models-gs}
 
-We adopt the model in \cite{bsz05}, where security of group signatures is
-defined according to the games in \figref{fig:model-gs}.
+We adopt the model in \cite{bsz05}. In this abstraction
+of group signatures, the opener returns an index uniquely identifying the group
+member that created a signature, along with a correctness proof. For ease of
+exposition, assume that, w.l.o.g., this index is just the public key that the
+group member chooses when joining the group\footnote{The user public key is
+  assumed to be accessible from a public table in \cite{bsz05}, so it is direct
+  to translate the public key into an index, if needed.}. A group signature
+scheme, according to \cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign,
+\Verify, \Open and \Judge algorithms, as well as an $\langle\Obtain,\Issue
+\rangle$ interactive protocol. Their description is very similar to that of
+\GSAC, so we refer to \cite{bsz05} for detailed descriptions. For ease of
+reference, we replicate the security games in \figref{fig:model-gs}.
+
+\begin{figure}[ht!]
+  \centering
+  \scalebox{0.9}{      
+    \begin{minipage}[t]{0.45\textwidth}        
+      \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,gs}(1^\secpar)$}{%
+        (\gpk,\isk,\osk) \gets KeyGen(1^\secpar) \\
+        d \gets \adv^{\mathcal{O}^{anon}}(\gpk,\isk) \\
+        \pcreturn d 
+      }
+      
+      \vspace*{5em}
+      
+      \procedure[linenumbering]{$\Exp^{frame}_{\adv,gs}(1^\secpar)$}{%
+        (\gpk,\isk,\osk) \gets KeyGen(1^\secpar) \\
+        (\msg,\sig,\upk,\tau) \gets \adv^{\mathcal{O}^{frame}}
+        (\gpk,\osk,\isk) \\
+        \pcif \Verify(\gpk,\msg,\sig) = 0: \pcreturn 0 \\
+        \pcreturn 1~\pcif \upk \in \HU \land \PRVUK[\upk] \neq \bot \land
+        \Judge(\gpk,\upk,\msg,\sig,\tau) = 1~\land \\
+        \pcind \adv~\textrm{did not query}~USK(\upk)~\textrm{or}~
+        GSig(\PRVUK[\upk],\msg) \\
+        \pcreturn 0
+      }       
+    \end{minipage}
+  }
+  \scalebox{0.9}{      
+    \begin{minipage}[t]{.55\textwidth}
+      \procedure[linenumbering]{$\Exp^{trace}_{\adv,gs}(1^\secpar)$}{%
+        (\gpk,\isk,\osk) \gets KeyGen(1^\secpar) \\
+        (\msg,\sig) \gets \adv^{\mathcal{O}^{trace}}(\gpk,\osk) \\
+        \pcif \Verify(\gpk,\msg,\sig) = 0: \pcreturn 0 \\
+        (\upk, \tau) \gets \Open(\gpk,\osk,\trans,\msg,\sig) \\
+        \pcif \upk \notin \HU \cup \CU \lor \Judge(\gpk,\upk,\msg,\sig,\tau)
+        = 0: \\ 
+        \pcind \pcreturn 1 \\
+        \pcreturn 0
+      }       
+    \end{minipage}      
+  }
+  \caption{Security games for group signatures \cite{bsz05}, only with minor    
+    ``harmless'' edits to compare easier with \CUASGS. Concretely, since we
+    output {\upk}s instead of indexes, $i=0$ in the traceability game now reads
+    $\upk \notin \HU \cup \CU$. For the oracles' definitions, check the
+    referenced paper.
+    $\mathcal{O}^{anon} \gets \lbrace Ch,Open,SndToU,WReg,USK,CrptU \rbrace$,
+    $\mathcal{O}^{trace} \gets \lbrace SndToI,AddU,RReg,USK,CrptU \rbrace$,
+    and $\mathcal{O}^{frame} \gets \lbrace SndToU,WReg,GSig,USK,CrptU \rbrace$.
+  }
+  \label{fig:model-gs}  
+\end{figure}
+
+\subsubsection{\CUASGS construction.} %
+We show that, as specified in \tabref{tab:uas-alt-funcs}, our \CUASGen
+construction for \UAS, restricted to $\fissue^1$ as issuance function,
+$\feval^0$ as signature evaluation function, and $\finsp^{\upk}$ as opening
+function, is a secure group signature scheme according to the \cite{bsz05}
+model. We first quickly define the algorithms, and then prove security.
+
+\begin{description}
+\item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs the \Setup algorithm
+  of \CUASGen, and one instance of \IKeyGen and \OKeyGen. Assigns the public
+  keys to \gpk.
+\item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \UKeyGen from \CUASGen, and
+  computes $\CCommit(\usk;0)$ as \upk.
+\item[$\langle \cred,\utrans \rangle \gets
+  \langle\Obtain(\usk,\ipk),\Issue(\isk,\upk)\rangle$.] Runs $\langle\Obtain,
+  \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$. Note that, to
+  constraint to only one credential per user, it suffices to require the user
+  to prove that the ``randomness'' it uses when committing to its private key
+  is actually $0$, and check whether the received commitment has been seen
+  before. For details, see the BBS+ instantiation of the underlying \SBCM
+  building block in \secref{sapp:sbcm}.
+\item[$\sig \gets \Sign(\gpk,\cred,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
+  runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen.
+  Simply returns \sig.
+\item[$1/0 \gets \Verify(\gpk,\sig,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
+  returns whatever $\Verify(\opk,\ipk,\sig,0,\msg,\feval^0)$ from \CUASGen
+  outputs.
+\item[$(\upk,\pi) \gets \Open(\gpk,\osk,\trans,\sig,\msg)$.] Parses \gpk as
+  $(\ipk,\opk)$, and returns whatever \CUASGen outputs in $\Open(\osk,\ipk,\sig,
+  0,\msg,\feval^0)$. Note that, internally, the latter call to \Open runs
+  $\finsp^{\upk}$, where $\upk = \CCommit(\usk;0)$, just as proved in $\langle
+  \Obtain,\Issue\rangle$.
+\item[$1/0 \gets \Judge(\gpk,\pi,\upk,\sig,\msg)$.] Parses \gpk as $(\ipk,
+  \opk)$, and returns whatever \CUASGen outputs in $\Judge(\opk,\upk,\pi,\sig,
+  0,\msg)$.
+\end{description}
+
+\paragraph{Security of \CUASGS.} %
+We prove that our \CUASGS construction is a secure group signature scheme,
+according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
+
+\begin{theorem}[Anonymity of \CUASGS]
+  If the base \CUASGen construction is anonymous according to
+  \defref{def:anonymity-uas}, then \CUASRing is an anonymous group signature
+  scheme.
+\end{theorem}
+
+\todo{Introducing $(f,g,h)-\CUASGen$ naming convention. Describe it elsewhere.}
+
+\begin{proof}
+  Assume an adversary \adv~ against anonymity in \CUASGS. This directly leads
+  to an adverary \advB against anonymity of the $(\fissue^1,\feval^0,
+  \finsp^{\upk})-\CUASGen$ instance.
+
+  Concretely, observe that calls to \adv's $Ch,Open,SndToU,WReg,USK,CrptU$
+  oracles can be directly simulated by calls to \advB's oracles $\CHALb,
+  \OPEN,\HUGEN,\WREG,\CUGEN$ oracles. Thus, if \adv~ guesses its bit $b$
+  with non-negligible probability, this directly leads to a non-negligible
+  probability of guessing \advB's challenge bit.
+  \qed
+\end{proof}
+
+\begin{theorem}[Traceability of \CUASGS]
+  If the base \CUASGen construction has unforgeable signing according to
+  \defref{def:sign-forge-uas}, then \CUASGS is a traceable group signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume an adversary \adv~ against traceability in \CUASGS. We build an
+  adversary \advB against sign unforgeability of the $(\fissue^1,\feval^0,
+  \finsp^{\upk})-\CUASGen$ instance.
+
+  \advB's simulation of \adv~ environment is as in the proof for anonymity
+  of \CUASGS. \advB simply outputs whatever \adv~ outputs in line 2 of its
+  traceability game. Note that, as \CUASGS is a specific instantiation of
+  \CUASGen, whenever \CUASGS accepts a signature, so does \CUASGen. Concretely,
+  assume that \adv~ wins the traceability game in \figref{fig:model-gs} with
+  $\upk \notin \HU \cup \CU$ at line 5. This implies that the check at line 11
+  of the sign unforgeability game (\figref{fig:exp-uas-unfor-sign}) for \CUASGen
+  outputs $0$ for all known {\uid}s. Similarly, if \adv~ wins the traceability
+  game with condition $\Judge(\dots)=0$ at line 5, then \advB wins its sign
+  unforgeability game with the corresponding check at line 6 in
+  \figref{fig:exp-uas-unfor-sign}.
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Non-frameability of \CUASGS]
+  If the base \CUASGen construction is non-frameable according to
+  \defref{def:frame-uas}, then \CUASGS is a traceable group signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume an adversary \adv~ against non-frameability in \CUASGS. We build an
+  adversary \advB against non-frameability of the $(\fissue^1,\feval^0,
+  \finsp^{\upk})-\CUASGen$ instance.
+
+  \advB's simulation of \adv~ environment is as in the proof for anonymity
+  of \CUASGS. \advB simply outputs whatever \adv~ outputs at line 2 of its
+  game. Observe that a winning condition for \adv~ directly implies a winning
+  condition for \advB. Concretely, if $\upk \in \HU \land \PRVUK[\upk] \neq
+  \bot$ in \adv's game, then $\exists \uid \in \HU~\suchthat~\UK[\uid]=\usk$
+  for \advB (line 6 of its game). Similarly, if \Judge returns $1$ in \adv's
+  game, \advB's \Judge also returns $1$ at line 4. Finally, if \adv~ does not
+  corrupt the owner of \upk, then $\uid \in \HU$ in \advB's game, and if \adv
+  does not query its $SIGN$ oracle, then there does not exist a matching entry
+  in $\SIG[\uid]$ for \advB either. Consequently, as stated, \advB wins its
+  non-frameability every time that \adv does.
+  \qed
+\end{proof}
+
 
 \subsection{Group Signatures with Message Dependent Opening}
 \label{sapp:related-models-gsmdo}
@@ -74,7 +249,7 @@ scheme meeting both anonymity and unforgeability as specified above, is a secure
 ring signature scheme.
 
 \subsubsection{\CUASRing Construction.} %
-We prove that, as specified in \secref{ssec:uas-ring}, our \CUASGen construction
+We show that, as specified in \secref{ssec:uas-ring}, our \CUASGen construction
 for \UAS, with alternative NIZK relationship $\NIZKRel_{\Sign-prv}$ for signing,
 issuance function $\fissue^{\sring}$, signature evaluation function
 $\feval^{\attrs}$, and inspection function $\finsp^0$, is a secure ring
@@ -113,7 +288,7 @@ its specific variant built from the previous modifications.
   be altered in the default NIZK sign, that make \CUASGen secure?'' }
 
 \paragraph{Security of \CUASRing.} %
-We prove next that our \CUASRing construction is anonymous and unforgeable, if
+We prove that our \CUASRing construction is anonymous and unforgeable, if
 the underlying \CUASGen construction is secure.
 
 \begin{theorem}[Anonymity of \CUASRing]
@@ -175,8 +350,128 @@ the underlying \CUASGen construction is secure.
 \label{sapp:related-models-ac}
 
 We adopt the model in \cite{fhs19}, where security of anonymous credentials
-(with selective disclosure) is defined according to the games in
-\figref{fig:model-ac}.
+(with selective disclosure). Therein, an anonymous credential scheme is
+defined via $OrgKeyGen$ and $UserKeyGen$ algorithms (roughly equivalent to
+\IKeyGen and \UKeyGen for \UAS), and $Obtain,Issue$ and $Show,Verify$
+interactive protocols. The issuance interactive protocol is equivalent to
+the issuance protocol in \UAS. Similarly, $Show,Verify$ is equivalent to
+the interactive extension of \Sign and \Verify in \UAS, which we show how
+to build in \secref{ssec:variants-gsac} (for \GSAC, but the case for \UAS is
+equivalent). The security definitions rely on $HU, CU, ObtIss, Obtain, Issue,
+Show$, and $LoR$ oracles, which are essentially equivalent to our \HUGEN,
+\CUGEN, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb oracles. We refer to
+\cite{fhs19} for the full details. For ease of reference, we summarize the
+security definitions in \cite{fig:model-ac}, with inocuous adaptations to
+make them more suitable for comparison with our definitions.
+
+\begin{figure}[ht!]
+  \centering
+  \scalebox{0.9}{      
+    \begin{minipage}[t]{0.4\textwidth}        
+      \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,ac}(1^\secpar)$}{%
+        b^* \gets \adv^{HU,CU,Obtain,Show,LoR} \\
+        \pcreturn b^*
+      }        
+    \end{minipage}
+  }
+  \scalebox{0.9}{      
+    \begin{minipage}[t]{.6\textwidth}
+      \procedure[linenumbering]{$\Exp^{forge}_{\adv,ac}(1^\secpar)$}{%
+        (\opk,\osk) \gets OrgKeyGen(1^\secpar) \\        
+        (D,\st) \gets \adv^{HU,CU,ObtIss,Issue,Show}(\opk) \\
+        (\cdot,b) \gets \langle \adv(\st),\Verify(\opk,D) \rangle \\
+        \pcif b = 1 \land \forall j: \OWNR[j] \in \CU
+        \implies D \not\subseteq \ATTR[j]: \\
+        \pcind \pcreturn 1 \\
+        \pcreturn 0
+      }       
+    \end{minipage}      
+  }
+  \caption{Security games for anonymous credentials with selective disclosure
+    \cite{fhs19}. \OWNR and \ATTR tables are essentially as in
+    \secref{ssec:model-uas}.}
+  \label{fig:model-ac}  
+\end{figure}
+
+\subsubsection{\CUASAC Construction.} %
+We show that, as specified in \tabref{tab:uas-alt-funcs}, our \CUASGen
+construction for \UAS, restricted to $\fissue^1$ as issuance function,
+$\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as opening
+function, is a secure anonymous credential scheme according to the \cite{fhs19}
+model. We first quickly define the algorithms, and then prove security. Note
+that, for better alignment with \UAS, we add a common setup process which is
+part of $OrgKeyGen$ in \cite{fhs19}. The change is inocuous functionality- and
+security-wise, though.
+
+\begin{description}
+\item[$\parm \gets \Setup(1^\secpar)$.] Runs \Setup from our \CUASGen
+  construction.
+\item[$(\opk,\osk) \gets OrgKeyGen(\parm)$.] Runs \IKeyGen from our
+  \CUASGen construction, setting $\fissue^1$ as issuance function.
+\item[$(\upk,\usk) \gets UserKeyGen(\opk)$.] Runs \UKeyGen from the
+  \CUASGen construction, and computes $\CCommit(\usk;0)$ as \upk.
+\item[$\langle \cred/\bot,\top/\bot \rangle \gets
+  \langle \Obtain(\usk,\opk,\attrs),\Issue(\osk,\upk,\attrs) \rangle$.]
+  Runs the $\langle \Obtain,\Issue \rangle$ protocol from \CUASGen, using
+  $\fissue^1$ as issuance function.
+\item[$1/0 \gets \langle Show(\opk,\attrs,\dattrs,\cred),
+  \Verify(\opk,\dattrs) \rangle$.]
+  Runs the interactive extension of \Sign and \Verify of the \CUASGen protocol,
+  using $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as
+  open function.
+\end{description}
+
+\paragraph{Security of \CUASAC.} %
+We prove that \CUASAC is an anonymous and unforgeable anonymous credential
+scheme, according to \cite{fhs19}, if the underlying \CUASGen construction
+is anonymous and has unforgeable signing. Note that issuance unforgeability
+of \CUASGen is not needed, as the model in \cite{fhs19} does not allow
+leveraging other credentials not any fixed custom issuance policy. Thus,
+signature unforgeability from \UAS is enough.
+
+\begin{theorem}[Anonymity of \CUASAC]
+  If the base \CUASGen construction is anonymous according to
+  \defref{def:anonymity-uas}, then \CUASAC is an anonymous AC scheme
+  according to \cite{fhs19}.
+\end{theorem}
+
+\begin{proof}
+  Given \adv~ against anonymity of \CUASAC as defined in \cite{fhs19}, we build
+  an adversary \advB against anonymity of \CUASGen as defined in
+  \defref{def:anonymity-uas}.
+
+  To simulate oracle calls by \adv, \advB simply redirects to its corresponding
+  oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR$, \advB redirects to
+  \HUGEN,\CUGEN,\OBTAIN,\SIGN,\CHALb, respectively. Note that ``translating''
+  the inputs from the former into inputs for the latter is trivial.
+  Obviously, if \adv~ wins in its anonymity game, then so does \advB with the
+  same probability.
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability of \CUASAC]
+  If the base \CUASGen construction has sign unforgeability according to
+  \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
+\end{theorem}
+
+\begin{proof}
+  Given \adv~ against unforgeability of \CUASAC as defined in \cite{fhs19}, we
+  build an adversary \advB against sign unforgeability of \CUASGen as defined in
+  \defref{def:sign-forge-uas}.
+
+  To simulate oracle calls by \adv, \advB acts as in the anonymity proof. Assume
+  that \adv~ wins its game. Note that, since $b=1$ in line 4 of the
+  unforgeability game of \figref{fig:model-ac}, then by construction, \Verify
+  also returns $1$ in the sign unforgeability game of \UAS. In addition, if
+  there is no corrupt user with a credential containing $D$, then this leads to
+  \advB winning at line 8 in \figref{fig:exp-uas-unfor-sign}, as no credential
+  owned by a corrupt user that can be extracted can make the $\feval^{\dattrs}$
+  function output $\yeval=D$. Thus, \advB wins with the same probability as
+  \adv~ does.  
+  %
+  \qed
+\end{proof}
 
 \subsection{Delegatable Anonymous Credentials}
 \label{sapp:related-models-dac}

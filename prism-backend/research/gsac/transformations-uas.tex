@@ -15,6 +15,9 @@ subsequent variations of \UAS. \jdv{The relationships seem quite
   \begin{tabular}{c | c | c | c | c | c}
     \bf Target scheme & \bf $\NIZKRel_{\Sign}$ variant & \bf \fissue variant & \bf \feval variant & \bf \finsp variant & \bf  Defined in \\
     \hline
+    GS & None & $\fissue^1$ & $\feval^0$ & $\finsp^{\upk}$ & Implied by \GSAC \\
+    AC\footnote{We show how to build ACs with selective disclosure, but ACs for
+    arbitrary claims are direct too.} & None & $\fissue^1$ & $\feval^{\dattrs}$ & $\finsp^0$ & Implied by \GSAC \\
     \GSAC & None & $\fissue^1$ & $\feval^{\dattrs}$ & $\finsp^{\upk}$
     & \secref{ssec:uas-gsac} \\
     \bf GS-MDO & None & $\fissue^1$ & $\feval^0$ & $\finsp^{\smsg}$
