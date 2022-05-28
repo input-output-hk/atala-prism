@@ -327,6 +327,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\OCORR(\oid)$}{%
           \pcif \oid \in \CO \lor \oid \notin \HO: \pcreturn \bot \\
+          \pcif \exists (\oid,\cdot,\cdot,\cdot,\cdot,
+          \cdot,\cdot,\cdot,\cdot) \in \CSIG: \pcreturn \bot \\
           \HO \gets \HO \setminus \lbrace \oid \rbrace \\
           \CO \gets \CO \cup \lbrace \oid \rbrace \\
           \pcreturn \osk \\

@@ -20,12 +20,13 @@ subsequent variations of \UAS. \jdv{The relationships seem quite
     arbitrary claims are direct too.} & None & $\fissue^1$ & $\feval^{\dattrs}$ & $\finsp^0$ & Implied by \GSAC \\
     \GSAC & None & $\fissue^1$ & $\feval^{\dattrs}$ & $\finsp^{\upk}$
     & \secref{ssec:uas-gsac} \\
-    \bf GS-MDO & None & $\fissue^1$ & $\feval^0$ & $\finsp^{\smsg}$
+    \bf GS-MDO\footnote{We achieve something similar to GS-MDO, but not the
+    exact same model as in \cite{ehk+19}} & None & $\fissue^1$ & $\feval^0$ & $\finsp^{\smsg}$
     & \secref{ssec:uas-gsmdo} \\
     \bf Ring sigs. & $\NIZKRel_{\Sign-prv}$ & $\fissue^{\sring}$ & $\feval^{\attrs}$ & $\finsp^0$ & \secref{ssec:uas-ring} \\
     \bf MPS\footnote{Building MPS from \UAS also requires a simple definitional change. See
     \secref{ssec:uas-mps}.} & $\NIZKRel_{\Sign-enc}$ & Any & $\feval^{enc}$ & Any & \secref{ssec:uas-mps} \\
-    \bf Delegatable creds & None & $\fissue^n$ & Any & Any & \secref{ssec:uas-delcred} \\
+    \bf Delegatable creds & None & $\fissue^n$ & $\feval^n$ & Any & \secref{ssec:uas-delcred} \\
   \end{tabular}
   \caption{How to build related schemes from \UAS.}
   \label{tab:uas-alt-funcs}
@@ -294,16 +295,25 @@ becomes unachievable.
 \label{ssec:uas-delcred}
 
 Building delegatable credentials is also straightforward, thanks to the \fissue
-function. For instance, take the simplification of level-based delegation, where
-the owner of a credential of level $n$ can only issue credentials of level
-$n+1$. Without loss of generality, assume that the credential level is encoded
-in the first attribute of the credential (after the \usk), which we denote with
-$a_1$. In this context, any owner of a credential of level $n$ can define an
-issuance function $\fissue^n$, as in \eref{eq:uas-delcred-func}.
+and \feval functions. For instance, take the simplification of level-based
+delegation, where the owner of a credential of level $n$ can only issue
+credentials of level $n+1$. Without loss of generality, assume that the
+credential level is encoded in the first attribute of the credential (after the
+\usk), which we denote with $a_1$. In this context, any owner of a credential of
+level $n$ can define an issuance function $\fissue^n$, as in
+\eref{eq:uas-delcred-func}. Similarly, we may just have the signing evaluation
+function reveal the level of each credential used for signing, along with any
+other desired attribute, as in $\feval^{\dattrs,n}$, in
+\eref{eq:uas-delcred-func}. Note that it is straightforward to create more
+complex functions in both cases which, for instance, also take into account
+roles, or hiding the level but ensuring that it meets whatever desired rules.
 
 \begin{align}
-  \fissue^n \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1;
-  \pcelse \pcreturn 0 \rbrace \label{eq:uas-delcred-func}
+  & \fissue^n(\usk,\scred,\attrs) \coloneqq \lbrace \pcif a_1 = n+1: \pcreturn 1;
+  \pcelse \pcreturn 0 \rbrace \nonumber \\
+  & \feval^{\dattrs,n}(\usk,\scred,\msg) \coloneqq \lbrace \pcreturn
+    \dattrs(\scred),a_1(\scred) \rbrace  
+  \label{eq:uas-delcred-func}
 \end{align}
 
 \jdv{\subsection{Functional Signatures}}
