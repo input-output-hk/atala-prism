@@ -69,6 +69,20 @@ private[repositories] final class CredentialsRepositoryLogs[F[
           )
         )
 
+  override def countBy(
+      issuedBy: ParticipantId,
+      maybeFilters: Option[GenericCredential.FilterBy],
+      onlyContacts: Option[NonEmptyList[Contact.Id]]
+  ): Mid[F, Int] =
+    in =>
+      info"getting credentials count by query" *> in
+        .flatTap(l => info"getting credentials count by query got $l")
+        .onError(
+          errorCause"encountered an error while getting credentials count by query" (
+            _
+          )
+        )
+
   override def getBy(
       issuedBy: ParticipantId,
       limit: Int,

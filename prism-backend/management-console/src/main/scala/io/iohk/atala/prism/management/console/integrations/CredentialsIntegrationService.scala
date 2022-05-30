@@ -99,7 +99,7 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
   ): F[Either[errors.ManagementConsoleError, GenericCredentialWithConnection]] =
     credentialsRepository
       .create(participantId, createGenericCredential)
-      .flatMap(_.traverse(getGenericCredentialWithConnection))
+      .flatMap(_.traverse(genericCredential => getGenericCredentialWithConnection(genericCredential, 1)))
 
   def getGenericCredentials(
       issuedBy: ParticipantId,
@@ -110,7 +110,8 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
     connectionStatusFilterOpt match {
       case None =>
         getAndAppendConnectionStatus(
-          credentialsRepository.getBy(issuedBy, query)
+          credentialsRepository.getBy(issuedBy, query),
+          credentialsRepository.countBy(issuedBy, query.filters)
         )
       case Some(connectionStatusFilter) =>
         for {
@@ -133,6 +134,15 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
               List.empty.pure
             else
               credentialsRepository.getBy(issuedBy, query, NonEmptyList.fromFoldable(filteredContacts.map(_.contactId)))
+          credentialsCount <-
+            if (filteredContacts.isEmpty)
+              0.pure
+            else
+              credentialsRepository.countBy(
+                issuedBy,
+                query.filters,
+                NonEmptyList.fromFoldable(filteredContacts.map(_.contactId))
+              )
         } yield GetGenericCredentialsResult(
           credentials
             .map { genericCredential =>
@@ -140,7 +150,8 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
                 genericCredential,
                 tokenToConnection(genericCredential.connectionToken)
               )
-            }
+            },
+          credentialsCount
         )
     }
   }
@@ -148,11 +159,14 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
   def getContactCredentials(
       issuedBy: ParticipantId,
       contactId: Contact.Id
-  ): F[GetGenericCredentialsResult] =
+  ): F[GetGenericCredentialsResult] = {
+    val genericCredentialSupplier = credentialsRepository
+      .getBy(issuedBy, contactId)
     getAndAppendConnectionStatus(
-      credentialsRepository
-        .getBy(issuedBy, contactId)
+      genericCredentialSupplier,
+      genericCredentialSupplier.map(credentials => credentials.size)
     )
+  }
 
   private def appendRevocationStatus(
       genericCredentials: List[GenericCredential]
@@ -170,10 +184,12 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
     }.sequence
 
   private def getAndAppendConnectionStatus(
-      genericCredentialSupplier: => F[List[GenericCredential]]
+      genericCredentialSupplier: => F[List[GenericCredential]],
+      genericCredentialCount: => F[Int]
   ): F[GetGenericCredentialsResult] =
     for {
       genericCredentials <- genericCredentialSupplier
+      genericCredentialCount <- genericCredentialCount
       genericCredentialsWithOperationStatus <- appendRevocationStatus(genericCredentials)
       connectionStatuses <- connector.getConnectionStatus(
         genericCredentialsWithOperationStatus.map(_.connectionToken)
@@ -194,7 +210,8 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
               )
             )
           )
-        }
+        },
+      genericCredentialCount
     )
 
   private def revokeCredsInNode(
@@ -213,9 +230,10 @@ private final class CredentialsIntegrationServiceImpl[F[_]: Monad](
   }
 
   private def getGenericCredentialWithConnection(
-      in: GenericCredential
+      in: GenericCredential,
+      count: Int
   ): F[GenericCredentialWithConnection] =
-    getAndAppendConnectionStatus(List(in).pure[F]).map(_.data.head)
+    getAndAppendConnectionStatus(List(in).pure[F], count.pure[F]).map(_.data.head)
 
 }
 
@@ -280,7 +298,8 @@ object CredentialsIntegrationService {
       connection: connector_models.ContactConnection
   )
   case class GetGenericCredentialsResult(
-      data: List[GenericCredentialWithConnection]
+      data: List[GenericCredentialWithConnection],
+      totalCount: Int
   )
 }
 

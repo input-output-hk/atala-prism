@@ -299,6 +299,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         val credential = response.credentials.head
         credential.individualId mustBe contactId.toString
         credential.encodedSignedCredential mustBe encodedSignedCredential
+        response.totalCount mustBe 1
       }
     }
 
@@ -339,6 +340,7 @@ class CredentialsStoreServiceImplSpec extends RpcSpecBase with DIDUtil {
         val credential = response.credentials.head
         credential.individualId mustBe contactId.toString
         credential.encodedSignedCredential mustBe encodedSignedCredential
+        response.totalCount mustBe 1
       }
     }
   }

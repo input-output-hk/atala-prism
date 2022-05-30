@@ -26,6 +26,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import cats.effect.MonadCancelThrow
+import io.iohk.atala.prism.management.console.models.GenericCredential.FilterBy
 
 @derive(applyK)
 trait CredentialsRepository[F[_]] {
@@ -42,6 +43,12 @@ trait CredentialsRepository[F[_]] {
       query: GenericCredential.PaginatedQuery,
       onlyContacts: Option[NonEmptyList[Contact.Id]] = None
   ): F[List[GenericCredential]]
+
+  def countBy(
+      issuedBy: ParticipantId,
+      maybeFilters: Option[FilterBy],
+      onlyContacts: Option[NonEmptyList[Contact.Id]] = None
+  ): F[Int]
 
   def getBy(
       issuedBy: ParticipantId,
@@ -210,6 +217,16 @@ private final class CredentialsRepositoryImpl[F[_]: MonadCancelThrow](
   ): F[List[GenericCredential]] =
     CredentialsDAO
       .getBy(issuedBy, query, onlyContacts)
+      .logSQLErrorsV2(s"getting, issued id - $issuedBy")
+      .transact(xa)
+
+  def countBy(
+      issuedBy: ParticipantId,
+      maybeFilters: Option[FilterBy],
+      onlyContacts: Option[NonEmptyList[Contact.Id]]
+  ): F[Int] =
+    CredentialsDAO
+      .countBy(issuedBy, maybeFilters, onlyContacts)
       .logSQLErrorsV2(s"getting, issued id - $issuedBy")
       .transact(xa)
 

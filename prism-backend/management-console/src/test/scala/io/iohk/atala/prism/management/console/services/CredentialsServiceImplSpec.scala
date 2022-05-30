@@ -122,6 +122,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
         response.credentials.size must be(1)
         response.credentials.head.revokedOnOperationId.toByteArray must be(mockRevocationOperationId.value.toArray)
         response.credentials.head.revokedOnOperationStatus must be(UNKNOWN_OPERATION)
+        response.totalCount must be(1)
       }
     }
 
@@ -322,7 +323,8 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
       def testContactStatus(
           status: ContactConnectionStatus,
           credentialStatus: CredentialStatus,
-          expected: Vector[GenericCredential.Id]
+          expected: Vector[GenericCredential.Id],
+          expectedCount: Int
       ) = {
         val request = console_api
           .GetGenericCredentialsRequest()
@@ -345,37 +347,128 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           }
           val response = serviceStub.getGenericCredentials(request)
           response.credentials.map(x => GenericCredential.Id.from(x.credentialId).get) must be(expected)
+          response.totalCount must be(expectedCount)
         }
       }
 
       testContactStatus(
         ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
         credentialStatus = CREDENTIAL_STATUS_MISSING,
-        Vector(originalCredential1, originalCredential2)
+        Vector(originalCredential1, originalCredential2),
+        2
       )
       testContactStatus(
         ContactConnectionStatus.STATUS_CONNECTION_MISSING,
         credentialStatus = CREDENTIAL_STATUS_MISSING,
-        Vector(originalCredential3)
+        Vector(originalCredential3),
+        1
       )
 
       testContactStatus(
         ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
         credentialStatus = CREDENTIAL_SIGNED,
-        Vector(originalCredential1)
+        Vector(originalCredential1),
+        1
       )
 
       testContactStatus(
         ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
         credentialStatus = CREDENTIAL_DRAFT,
-        Vector(originalCredential2)
+        Vector(originalCredential2),
+        1
       )
 
       testContactStatus(
         ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED,
         credentialStatus = CREDENTIAL_SENT,
-        Vector()
+        Vector(),
+        0
       )
+    }
+
+    "have total count even bigger than the number of credentials received given page limit is one" in {
+      val issuerName = "Issuer 1"
+      val keyPair = EC.generateKeyPair()
+      val publicKey = keyPair.getPublicKey
+      val did = generateDid(publicKey)
+      val issuerId = createParticipant(issuerName, did)
+
+      val connectionToken1 = "connectionToken1"
+      val connectionStatus1 = ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED
+      val contact1 = createContact(
+        issuerId,
+        "Contact 1",
+        None,
+        connectionToken = connectionToken1
+      )
+      val originalCredential1 =
+        DataPreparation.createGenericCredential(issuerId, contact1.contactId, tag = "XXX").credentialId
+      DataPreparation.createGenericCredential(issuerId, contact1.contactId, tag = "CCC").credentialId
+
+      val mockEncodedSignedCredential = "easdadgfkfñwlekrjfadf"
+
+      val issuanceOpHash = Sha256.compute("opHash".getBytes())
+      val mockCredentialBatchId =
+        CredentialBatchId.fromDigest(
+          Sha256.compute("SomeRandomHash".getBytes())
+        )
+
+      // we need to first store the batch data in the db
+      publishBatch(
+        mockCredentialBatchId,
+        issuanceOpHash,
+        AtalaOperationId.fromVectorUnsafe(issuanceOpHash.getValue.toVector)
+      )
+      val mockHash = Sha256.compute("".getBytes())
+      val mockMerkleProof =
+        new MerkleInclusionProof(mockHash, 1, List(mockHash).asJava)
+      publishCredential(
+        issuerId,
+        mockCredentialBatchId,
+        originalCredential1,
+        mockEncodedSignedCredential,
+        mockMerkleProof
+      )
+
+      val connectionToken2 = "connectionToken2"
+      val connectionStatus2 = ContactConnectionStatus.STATUS_CONNECTION_MISSING
+
+      val contactConnections = List(
+        connector_models.ContactConnection(
+          connectionStatus = connectionStatus1,
+          connectionToken = connectionToken1
+        ),
+        connector_models.ContactConnection(
+          connectionStatus = connectionStatus2,
+          connectionToken = connectionToken2
+        )
+      )
+
+      val request = console_api
+        .GetGenericCredentialsRequest()
+        .withLimit(1)
+        .withFilterBy(
+          console_api.GetGenericCredentialsRequest
+            .FilterBy()
+            .withContactConnectionStatus(ContactConnectionStatus.STATUS_CONNECTION_ACCEPTED)
+            .withCredentialStatus(CREDENTIAL_STATUS_MISSING)
+        )
+      val rpcRequest = SignedRpcRequest.generate(keyPair, did, request)
+
+      usingApiAsCredentials(rpcRequest) { serviceStub =>
+        connectorMock.getConnectionStatus(*).returns {
+          ReaderT.liftF(
+            IO.pure(
+              contactConnections
+            )
+          )
+        }
+        val response = serviceStub.getGenericCredentials(request)
+        response.credentials.map(x => GenericCredential.Id.from(x.credentialId).get) must be(
+          Vector(originalCredential1)
+        )
+        response.totalCount must be(2)
+      }
     }
   }
 
@@ -792,7 +885,7 @@ class CredentialsServiceImplSpec extends ManagementConsoleRpcSpecBase with DIDUt
           mockRevocationOperationId.value.toArray
         )
         response.genericCredentials.head.revokedOnOperationStatus must be(UNKNOWN_OPERATION)
-
+        response.totalCount must be(1)
       }
     }
   }
