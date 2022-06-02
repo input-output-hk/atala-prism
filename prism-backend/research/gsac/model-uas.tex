@@ -30,25 +30,24 @@ where for readability we assume that issuer public keys (\ipk) are extractable
 from credentials:
 
 \begin{description}
-\item[$\parm \gets \Setup(\secpar)$.] Given a security parameter \secpar,
+\item[$\Setup(\secpar) \rightarrow \parm$.] Given a security parameter \secpar,
   returns a global system parameter variable \parm. We assume that \parm are
   available to all the other functions, even if not explicitly listed in their
   input parameters.
-\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.] Given global system
+\item[$\IKeyGen(\parm,\fissue) \rightarrow (\ipk,\isk)$.] Given global system
   parameters \parm, and the function \fissue to be used to check that credential
   requestors meet the conditions to be issued a credential, an issuer runs
   \IKeyGen to generate its issuing key pair. 
-\item[$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.] Given global system
+\item[$\OKeyGen(\parm,\finsp) \rightarrow (\opk,\osk)$.] Given global system
   parameters \parm, and function \finsp, an opener runs \OKeyGen to generate
   its opening key pair. The function \finsp defines the type of utility that
   will be extractable from signatures.
-\item[$\usk \gets \UKeyGen(\parm)$.] Given global system parameters
+\item[$\UKeyGen(\parm) \rightarrow \usk$.] Given global system parameters
   \parm, returns a user's secret key.
-\item[$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle
+\item[$\langle
   \Obtain(\usk,\scred,\attrs),
   \Issue(\isk,\sipk,\attrs))
-  \rangle$.] %
+  \rangle \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.] %
   This interactive protocol lets a user with key \usk running the
   \Obtain process, receive a credential \cred from an issuer in the system, on
   attribute set $\attrs$. The user leverages a set of credentials \scred,
@@ -56,23 +55,26 @@ from credentials:
   The user outputs the produced credential \cred, while
   the issuer outputs the protocol transcript \utrans for the produced
   credential.
-\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.] %
+\item[$\Sign(\usk,\opk,\scred,\msg,\feval) \rightarrow (\sig,\yeval,\ceval)$.] %
   Upon receiving a user secret key \usk, opener public key \opk, a set of
   credentials \scred, a message \msg and evaluation
-  function \feval, returns signature \sig and value \yeval.
-\item[$1/0 \gets \Verify(\opk, \sipk,\sig,\yeval,\msg,\feval)$.]
-  Checks whether $(\sig,\yeval)$ is a valid signature
+  function \feval, returns signature \sig, a plaintext value \yeval,
+  and an encrypted value \ceval. For readability, we use \Sig to denote
+  the tuple $(\sig,\yeval,\ceval)$.
+\item[$\Verify(\opk, \sipk,\Sig,\msg,\feval) \rightarrow 1/0$.]
+  Checks whether $\Sig = (\sig,\yeval,\ceval)$ is a valid signature
   over message \msg, from a user with credentials issued by issuers with public
   keys in \sipk, for evaluation function \feval and opener key \opk.
-\item[$(\yinsp,\iproof)/\bot \gets \Open(\osk,\sipk,\sig,\yeval,\msg,\feval)$.]
+\item[$\Open(\osk,\sipk,\sig,\yeval,\msg,\feval) \rightarrow
+  (\yinsp,\iproof)/\bot$.]
   Executed by the opener with private key \osk. Receives a signature $(\sig,
   \yeval)$ over message \msg and evaluation function \feval, generated using
   credentials issued by the issuers with public keys in \sipk. If \sig is valid,
   the function outputs a value $\yinsp$.
-\item[$1/0 \gets \Judge(\opk,\sipk,\yinsp,\iproof,\sig,\yeval,\msg,\feval)$.] %
+\item[$\Judge(\opk,\sipk,\yinsp,\iproof,\Sig,\msg,\feval) \rightarrow 1/0$.] %
   Checks if \iproof is a valid opening correctness proof for the value \yinsp,
-  obtained by applying \Open to the the signature $(\sig,\yeval)$ over
-  message \msg, and for evaluation function \feval. 
+  obtained by applying \Open to the the signature $\Sig = (\sig,\yeval,\ceval)$
+  over message \msg, and for evaluation function \feval. 
 \end{description}
 
 \paragraph{Issuance, evaluation, and opening functions.} %
@@ -96,18 +98,22 @@ building specific well-known restrictions of \UAS in
   issued by other issuers. \fissue returns $1$ to accept a request, $0$ to
   reject it.
 \item[$\feval: (\usk,\scred,\msg)
-  \rightarrow \yeval$.] Signing evaluation functions, from a family of functions
-  \famfeval, can be set on a per-signature basis. They receive the user secret
-  key \usk, credentials \scred, and message to be signed \msg. \feval can be
-  used to control the information related to the signer that will be revealed
-  alongside a signature, and to modulate the behaviour of \finsp. Its outputs
-  \yeval must belong in a well defined set \rngfeval.
-\item[$\finsp: (\yeval,\usk,\scred,\msg) \rightarrow \yinsp$.]
+  \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
+  family of functions \famfeval, can be set on a per-signature basis. They
+  receive the user secret key \usk, credentials \scred, and message to be signed
+  \msg. \feval can be used to control the information related to the signer that
+  will be revealed alongside a signature, and to modulate the behaviour of
+  \finsp. Its outputs two values, $\yeval^0$ and $\yeval^1$, where the former
+  is revealed in plaintext along with the signature, and $\yeval^1$ is encrypted
+  and used to modulate the behaviour of \finsp. Both values must belong in a
+  well defined set \rngfeval. For readability, we write
+  $\Yeval = (\yeval^0,\yeval^1)$.
+\item[$\finsp: (\Yeval,\usk,\scred,\msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
   functions define what utility value, derived from the user's secret key,
   credentials, and signed message, should be extractable by an opener.
   Note that \finsp also receives as input a value in the range of the \feval
-  function, \rngfeval. This allows opening logic to depend on the value
+  function, $\rngfeval^2$. This allows opening logic to depend on the values
   produced by the evaluation function. The output of \finsp is a value
   \yinsp, which must belong in a well defined set \rngfinsp.
 \end{description}
@@ -139,8 +145,8 @@ functions are as follows:
   in the request. It clearly needs an honest issuer as, otherwise, the
   transcripts won't be available. Consequently, we only use it to define the
   properties that require an honest issuer.
-\item[$\ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \rightarrow (\usk,
-  \scred,\attrs_{\scred},\yinsp)$.] Receives a signature pair $(\sig,\yeval)$,
+\item[$\ExtractSign(\oid,\siid,\Sig,\msg,\feval) \rightarrow (\usk,
+  \scred,\attrs_{\scred},\yinsp)$.] Receives a signature \Sig,
   as well as the opener identifier \oid, and the identifiers of all issuers of
   the credentials used to produce the signature over \msg, and for \feval. It
   outputs the user secret key and credentials (with their attributes) used to
@@ -223,7 +229,7 @@ identifiers. All tables/sets are initialized as empty tables/sets.
 \item[Tables for signatures]:
   \begin{description}
   \item[\SIG.] Maintains signatures generated via the \SIGN oracle, on behalf
-    of honest users. Entries of this table are $(\oid,\scid,\sig,\yeval,\msg,
+    of honest users. Entries of this table are $(\oid,\scid,\sig,\Yeval,\msg,
     \feval)$, where \oid is the opener chosen for the signature, \scid is the
     set of credentials used for signing, \feval is the signing evaluation
     function, and \sig and \msg are the produced signature and signed message.
@@ -393,19 +399,19 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \oid \in \CO: \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\          
-          \pcif \yeval = \feval(\UK[\cuid_0],\CRED[\cscid_0],\msg) \neq \\
-          \pcind \feval(\UK[\cuid_1],\CRED[\cscid_1],\msg):
-          \pcreturn \bot \\
+          (\yeval,\cdot) \gets \feval(\UK[\cuid_0],\CRED[\cscid_0],\msg) \\
+          ({\yeval}',\cdot) \gets \feval(\UK[\cuid_1],\CRED[\cscid_1],\msg) \\
+          \pcif \yeval \neq {\yeval}': \pcreturn \bot \\
           \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
-          (\yeval,\csig_b) \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
+          \cSig_b \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
           \hspace*{71pt}\CRED[\cscid_b],\msg,\feval) \\
-          (\yeval,\csig_{1-b}) \gets \Sign(\UK[\cuid_{1-b}],\PUBOK[\oid], \\
+          \cSig_{1-b} \gets \Sign(\UK[\cuid_{1-b}],\PUBOK[\oid], \\
           \hspace*{80pt}\CRED[\cscid_{1-b}],\msg,\feval) \\          
-          \CSIG[\csig_b] \gets 
-          \lbrace (\oid,\cuid_b,\cscid_b,\msg,\feval,\yeval,\\
-          \hspace*{74pt}\cuid_{1-b},\csig_{1-b},\cscid_{1-b})
+          \CSIG[\cSig_b] \gets 
+          \lbrace (\oid,\cuid_b,\cscid_b,\msg,\feval,\\
+          \hspace*{74pt}\cuid_{1-b},\cSig_{1-b},\cscid_{1-b})
           \rbrace \\
-          \pcreturn (\csig_b,\yeval)
+          \pcreturn \cSig_b
         }        
         
       \end{minipage}
@@ -433,25 +439,25 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\SIGN(\oid,\uid,\scid,\msg,\feval)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
-          (\sig,\yeval) \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,
-          \feval) \\
+          \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,\feval) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
-          \lbrace (\oid,\scid,\sig,\yeval,\msg,\feval) \rbrace \\
-          \pcreturn (\sig,\yeval) \\
+          \lbrace (\oid,\scid,\Sig,\msg,\feval) \rbrace \\
+          \pcreturn \Sig \\
         }                
 
-        \procedure{$\OPEN(\oid,\sig,\yeval,\msg)$}{%
-          \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\sig,\yeval,\msg,\feval)
+        \procedure{$\OPEN(\oid,\Sig,\msg)$}{%
+          \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\Sig,\msg,\feval)
           \in \SIG[\uid] \\
+%          \textrm{Parse}~\Sig~\textrm{as}~(\sig,\yeval,\ceval) \\
           (\yinsp,\iproof) \gets
-          \Open(\PRVOK[\oid],\PUBIK[\scid],\sig,\yeval,\msg,\feval) \\
-          \pcif \CSIG[\sig] \neq \bot: \\
-          \pcind \textrm{Parse $\CSIG[\sig]$ as $(\oid,\cuid_b,\scid_b,\msg,
-            \feval,\yeval$} \\
-          \hspace*{83pt}\cuid_{1-b},\csig_{1-b},\scid_{1-b}) \\
+          \Open(\PRVOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) \\
+          \pcif \CSIG[\Sig] \neq \bot: \\
+          \pcind \textrm{Parse $\CSIG[\Sig]$ as $(\oid,\cuid_b,\scid_b,\msg,
+            \feval$} \\
+          \hspace*{83pt}\cuid_{1-b},\cSig_{1-b},\scid_{1-b}) \\
           \pcind (\yinsp',\iproof') \gets
           \Open(\PRVOK[\oid],\IK[\siid],\\
-          \hspace*{107pt} \sig_{1-b},\msg,\feval) \\
+          \hspace*{107pt} \cSig_{1-b},\msg,\feval) \\
           \pcind \pcif \yinsp' \neq \yinsp: \pcreturn \bot \\
           \pcreturn (\yinsp,\iproof)
         }
@@ -490,16 +496,19 @@ credentials, user key, and message.
     \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
     \pcif \feval \notin \famfeval: \pcreturn 0 \\
     \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
-    (\sig,\yeval) \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
-    \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\sig,\msg,\feval) = 0: \pcreturn 1 \\
+    (\Sig = (\sig,\yeval,\ceval)) \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,
+    \feval) \\
+    \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) = 0: \pcreturn 1 \\
     \pcfor \cid \in \scid \pcdo: \\
     \pcind \textrm{Let}~\scred^{\cid}~\textrm{be the credentials used to obtain}
     ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,\fissue^{\cid}),\cdot)\\
     \pcind \pcif \fissue^{\cid}(\UK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
-    \pcif \feval(\UK[\uid],\CRED[\scid],\msg) \neq \yeval: \pcreturn 1 \\
-    (\yinsp,\iproof) \gets \Open(\PRVOK[\gid],\PUBIK[\scid],\sig,\msg,\feval) \\
-    \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\y,\iproof,\sig,\yeval,\msg,\feval)
-    = 0 \lor \yinsp \neq \finsp^\gid(\yeval,\UK[\uid],\CRED[\scid],\msg)): \\
+    (\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\scid],\msg) \\
+    \pcif \yeval^0 \neq \yeval: \pcreturn 1 \\
+    (\yinsp,\iproof) \gets \Open(\PRVOK[\gid],\PUBIK[\scid],\Sig,\msg,\feval) \\
+    \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
+    = 0~\lor \\
+    \pcind \yinsp \neq \finsp^\gid(\yeval,\yeval^1,\UK[\uid],\CRED[\scid],\msg)): \\
     \pcind \pcreturn 1 \\
     \pcreturn 0
   }  
@@ -511,6 +520,51 @@ credentials, user key, and message.
 \label{sssec:security}
 
 \paragraph{Anonymity.} %
+Informally, anonymity must capture two requirements: (1) interactive credential
+issuance protocols do not leak any information about the user requesting them;
+and (2), signatures do not leak any information about the signer.
+
+\todo{XXX}
+We follow a simulation-based approach to define anonymity in \UAS. 
+
+simulation-based, definition of the
+anonymity property. In the simulation-based approach, we require the adversary
+to guess the bit $b$ defining whether it is interacting with the real world,
+where it gets signatures by real users, or with a simulation, where all
+signatures are simulated and do not contain information about the signer.
+This alternative formulation is given in \figref{fig:exp-uas-simanon}, where
+$\Osimanon = (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,
+\OO\rbrace\CORR,\WREG)$.
+
+\begin{figure}[htp!]
+
+  \centering
+  \procedure[linenumbering]{$\ExpSimAnonb(1^\secpar)$}{%
+    \pcif b = 0: \\
+    \parm \gets \Setup(1^\secpar) \\    
+    \pcind b^* \gets \adv^{\Osimanon,\OBTAIN,\SIGN,\OPEN}(\parm) \\
+    \pcelse: \\
+    \parm \gets \SIMSETUP(1^\secpar) \\
+    \pcind b^* \gets \adv^{\Osimanon,\SIMOBTAIN,\SIMSIGN,\SIMOPEN}(\parm) \\    
+    \pcreturn b^*
+  }
+  
+  \caption{Simulation-based anonymity experiment for \UAS schemes.}
+  \label{fig:exp-uas-simanon}
+\end{figure}
+
+\begin{definition}{(Simulatable Anonymity of \UAS)}
+  \label{def:sim-anonymity-uas}  
+  We define the advantage \AdvSimAnon of $\adv$ against \ExpSimAnonb as
+  $\AdvSimAnon=|\Pr\lbrack\ExpSimAnono(1^\secpar)=1\rbrack-
+  \Pr\lbrack\ExpSimAnonz(1^\secpar)=1\rbrack|$.
+  %
+  An \UAS scheme satisfies simulatable anonymity if there exists simulators
+  \SIMSETUP, \SIMOBTAIN, \SIMSIGN and \SIMOPEN such that, for any p.p.t.
+  adversary $\adv$, \AdvSimAnon is a negligible function of $1^\secpar$.
+\end{definition}
+
+\iffalse
 In addition to the considerations made for \GSAC (see \secref{ssec:model-gsac}),
 in our notion of anonymity for \UAS,
 in order to prevent trivial wins by the adversary, we have to restrict that the
@@ -571,6 +625,7 @@ output of \feval. We opt not to require that, though, as it directly allows
 our model to cover interesting use cases -- such as restricting to selective
 disclosure, or privacy-preserving variants of functional signatures \jdv{check
   the latter}, although we show how to do that in \secref{sec:transformations}.
+\fi
 
 \paragraph{Unforgeability.} In anonymous credentials, unforgeability requires
 that no adversary can succeed in a credential presentation for attributes that
@@ -670,18 +725,20 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 \begin{figure}[htp!]
     \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
-      (\oid,\siid,\sig,\yeval,\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
-      \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\yeval,\msg,\feval) \in
+      (\oid,\siid,\Sig=(\sig,\yeval,\ceval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
+      \pcif \exists \uid~\st~(\cdot,\cdot,\Sig,\msg,\feval) \in
       \SIG[\uid]: \pcreturn 0 \\
       \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\yeval,\msg,\feval) = 0:
       \pcreturn 0 \\
-      (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\sig,\yeval,\msg) \\
+      (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg,\feval)
       = 0: \pcreturn 1 \\
-      (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets \ExtractSign(\oid,\siid,\sig,
-      \yeval,\msg,\feval) \\
-      \pcif \feval(\usk,\scred,\msg) \neq \yeval: \pcreturn 1 \\
-      \pcif \finsp(\yeval,\usk,\scred,\msg) \neq \yinsp \lor \yinsp \neq \yinsp':
+      (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets \ExtractSign(\oid,\siid,\Sig,
+      \msg,\feval) \\
+      (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
+      \pcif \yeval \neq \yeval^0: \pcreturn 1 \\
+      \pcif \finsp(\yeval^0,\yeval^1,,\usk,\scred,\msg) \neq \yinsp
+      \lor \yinsp \neq \yinsp':
       \pcreturn 1 \\
       \pcif \exists \cred \in \scred~\st~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
       \pcreturn 1 \\
@@ -778,18 +835,18 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \begin{figure}[htp!]
   \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
-    (\oid,\siid,\sig,\yeval,\msg,\feval,\yinsp,\iproof) \gets
+    (\oid,\siid,\Sig,\msg,\feval,\yinsp,\iproof) \gets
     \adv^{\Oframe}(\parm) \\
 %    \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\yeval,\msg,\feval) \in \SIG[\uid]:
 %    \pcreturn 0 \\
-    \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\yeval,\msg,\feval) = 0:
+    \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
     \pcreturn 0 \\
-    \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg) = 0:
+    \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets
-    \ExtractSign(\oid,\siid,\sig,\yeval,\msg,\feval) \\
+    \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
     \pcif \exists \uid \in \HU~\st~\UK[\uid] = \usk~\land \\
-    \pcind (\nexists (\cdot,\cdot,\sig,\yeval,\msg,\feval) \in \SIG[\uid]
+    \pcind (\nexists (\cdot,\cdot,\Sig,\msg,\feval) \in \SIG[\uid]
     \lor \yinsp \neq \yinsp'): \pcreturn 1 \\
     \pcreturn 0
   }
