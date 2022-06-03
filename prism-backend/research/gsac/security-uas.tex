@@ -65,12 +65,12 @@ functions that are needed for some of the properties to be meaningful, in
   correctness of the NIZK for $\NIZKRel_{\Issue}$, so no $\fissue^\cid$ check
   returns $0$ at line 9. Similarly, as $\feval \in \famfeval$ is checked at
   line 3, and due to correctness of the NIZK for $\NIZKRel_{\Sign}$, the
-  output of \feval matches \yeval at line $10$, which is furthermore computed
-  over $\usk=\UK[\uid]$ due to correctness of the commitment scheme. Finally,
-  correctness of the NIZKs for $\NIZKRel_{\Sign}$ and $\NIZKRel_{\Open}$, and
-  correctness of the encryption scheme, ensure that \Judge accepts the proof
-  produced by \Open, and \yinsp is the correct value for the chosen
-  $\finsp^{\oid}$.
+  output of \feval matches $\yeval^0$ at line $11$, which must have been
+  computed over $\usk=\UK[\uid]$, as in line $10$, due to correctness of the
+  commitment scheme. Finally, correctness of the NIZKs for $\NIZKRel_{\Sign}$
+  and $\NIZKRel_{\Open}$, and correctness of the encryption scheme, ensure that
+  \Judge accepts the proof produced by \Open, and \yinsp is the correct value
+  for the chosen $\finsp^{\oid}$.
 \end{proof}
 
 \begin{theorem}[Anonymity of \CUASGen]
@@ -81,6 +81,64 @@ functions that are needed for some of the properties to be meaningful, in
 \end{theorem}
 
 \begin{proof}[\thmref{thm:anonymity-uas}; Anonymity of \CUASGen]
+  First, we define \SimSetup, \SIMOBTAIN, \SIMSIGN and \SIMOPEN as in
+  \figref{fig:anon-sim}.
+
+  \begin{figure}[ht!]
+  \begin{minipage}[t]{\textwidth}
+    \procedure{$\SimSetup(\secpar,\AttrSpace)$}{%
+      \textrm{Parse}~\secpar~\textrm{as}~(\cdot,\secpar_{\NIZK},\cdot,\cdot) \\
+      (\NIZKcrs_{\Issue},\NIZKtrap_{\Issue})
+      \gets \NIZKSimSetup^{\NIZKRel_{\Issue}}(\secpar_{\NIZK}) \\
+      (\NIZKcrs_{\Sign},\NIZKtrap_{\Sign})
+      \gets \NIZKSimSetup^{\NIZKRel_{\Sign}}(\secpar_{\NIZK}) \\
+      (\NIZKcrs_{\Open},\NIZKtrap_{\Open})
+      \gets \NIZKSimSetup^{\NIZKRel_{\Open}}(\secpar_{\NIZK}) \\
+      \textrm{Compute}~\Cparm,\SBCMparm,\Sparm,\Eparm~\textrm{as in}~\Setup \\
+      \pcreturn ((\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},
+      \NIZKcrs_{\Sign},\NIZKcrs_{\Open},\AttrSpace),
+      (\NIZKtrap_{\Issue},\NIZKtrap_{\Sign},\NIZKtrap_{\Open})) \\
+    }
+
+    \begin{minipage}[t]{\textwidth}
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure{$\SIMOBTAIN(\cid,\uid,\iid,\attrs,\scid)$}{%
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \iid \notin \CI: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \sipk_{\scred} \gets \PUBIK[\scid] \\
+          \langle \cred, \cdot \rangle \gets
+          \langle SimObt(\attrs,\PUBIK[\iid],\sipk_{\scred}),\adv \rangle \\
+          \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
+          \pcreturn \top \\      
+        }
+        \end{minipage}
+        \begin{minipage}[t]{0.5\textwidth}
+          \procedure{$SimObt(\attrs,\sipk_{\scred})$}{%
+            \textrm{Runs \SBCM}
+            \textrm{Runs like \Obtain, replacing calls to
+            $\NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
+            (\Ccom,\attrs,\sipk_{\scred}),
+            (\usk,\scred,\attrs_{\scred},r))$ with calls to
+            $\NIZKSim^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},\NIZKtrap_{\Issue},
+            (\Ccom,\attrs,\sipk_{\scred}))$}
+        }
+        \end{minipage}
+      \end{minipage}
+    \procedure{$\SIMSIGN(\oid,\uid,\scid,\msg,\feval)$}{%
+      \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
+    }
+
+    \procedure{$\SIMOPEN(\oid,\Sig,\msg)$}{%
+      \pcreturn 0
+    }
+  \end{minipage}
+  \label{fig:sim-anon}
+  \caption{Definition of \SimSetup, \SIMOBTAIN, \SIMSIGN, and \SIMOPEN for
+    anonymity in \CUASGen.}
+\end{figure}
+  
+  \iffalse
   In this proof, we restrict to the case in which the adversary can only make
   one query to the challenge oracle. Note however that the generalization to
   polynomially many queries given in \cite{bsz05} applies here too (with the
@@ -130,6 +188,7 @@ functions that are needed for some of the properties to be meaningful, in
   |\Pr\lbrack G_2^1(1^\secpar)=1\rbrack-\Pr\lbrack
   G_2^0(1^\secpar)=1\rbrack|$. Since $G_2^1=G_2^0$, it follows that
   \AdvAnon is negligible.
+  \fi
   %
   \qed
 \end{proof}

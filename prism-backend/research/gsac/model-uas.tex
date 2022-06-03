@@ -45,7 +45,7 @@ from credentials:
 \item[$\UKeyGen(\parm) \rightarrow \usk$.] Given global system parameters
   \parm, returns a user's secret key.
 \item[$\langle
-  \Obtain(\usk,\scred,\attrs),
+  \Obtain(\usk,\ipk,\scred,\attrs),
   \Issue(\isk,\sipk,\attrs))
   \rangle \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.] %
   This interactive protocol lets a user with key \usk running the
@@ -390,7 +390,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           %\pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs),\adv \rangle \\
+          \langle \Obtain(\UK[\uid],\PUBIK[\iid],\CRED[\scid],\attrs),\adv \rangle \\
           \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
           \pcreturn \top \\
         }
@@ -508,7 +508,7 @@ credentials, user key, and message.
     (\yinsp,\iproof) \gets \Open(\PRVOK[\gid],\PUBIK[\scid],\Sig,\msg,\feval) \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
     = 0~\lor \\
-    \pcind \yinsp \neq \finsp^\gid(\yeval,\yeval^1,\UK[\uid],\CRED[\scid],\msg)): \\
+    \pcind \yinsp \neq \finsp^\gid((\yeval,\yeval^1),\UK[\uid],\CRED[\scid],\msg)): \\
     \pcind \pcreturn 1 \\
     \pcreturn 0
   }  
@@ -522,39 +522,39 @@ credentials, user key, and message.
 \paragraph{Anonymity.} %
 Informally, anonymity must capture two requirements: (1) interactive credential
 issuance protocols do not leak any information about the user requesting them;
-and (2), signatures do not leak any information about the signer.
-
-\todo{XXX}
-We follow a simulation-based approach to define anonymity in \UAS. 
-
-simulation-based, definition of the
-anonymity property. In the simulation-based approach, we require the adversary
-to guess the bit $b$ defining whether it is interacting with the real world,
-where it gets signatures by real users, or with a simulation, where all
-signatures are simulated and do not contain information about the signer.
-This alternative formulation is given in \figref{fig:exp-uas-simanon}, where
-$\Osimanon = (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,
-\OO\rbrace\CORR,\WREG)$.
+and (2) signatures do not leak any information about the signer. In both cases,
+any leakage must be limited to whatever the user decides to reveal, for
+instance, through arbitrary predicates on the attributes of the credentials used
+for issuance and signing. We follow a simulation-based approach to capture this.
+Basically, the adversary is challenged to distinguish between real and ideal
+executions. In both worlds, the adversary can generate and corrupt honest users,
+issuers, and openers. Then, in the real world, the adversary has access to
+oracles that allow requesting credentials on behalf of honest users, create
+signatures by honest users, and open signatures by honest users. In the ideal
+world, these three oracles are replaced by simulated counterparts, which produce
+outputs independent of the users' secrets. This formulation is given in
+\figref{fig:exp-uas-simanon}, where $\Osimanon = (\lbrace\HU,\CU\rbrace\GEN,
+\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG)$.
 
 \begin{figure}[htp!]
 
   \centering
   \procedure[linenumbering]{$\ExpSimAnonb(1^\secpar)$}{%
     \pcif b = 0: \\
-    \parm \gets \Setup(1^\secpar) \\    
+    \pcind \parm \gets \Setup(1^\secpar) \\    
     \pcind b^* \gets \adv^{\Osimanon,\OBTAIN,\SIGN,\OPEN}(\parm) \\
     \pcelse: \\
-    \parm \gets \SIMSETUP(1^\secpar) \\
+    \pcind (\parm,\NIZKtrap) \gets \SIMSETUP(1^\secpar) \\
     \pcind b^* \gets \adv^{\Osimanon,\SIMOBTAIN,\SIMSIGN,\SIMOPEN}(\parm) \\    
     \pcreturn b^*
   }
   
   \caption{Simulation-based anonymity experiment for \UAS schemes.}
-  \label{fig:exp-uas-simanon}
+  \label{fig:exp-uas-anonb}
 \end{figure}
 
-\begin{definition}{(Simulatable Anonymity of \UAS)}
-  \label{def:sim-anonymity-uas}  
+\begin{definition}{(Anonymity of \UAS)}
+  \label{def:anonymity-uas}  
   We define the advantage \AdvSimAnon of $\adv$ against \ExpSimAnonb as
   $\AdvSimAnon=|\Pr\lbrack\ExpSimAnono(1^\secpar)=1\rbrack-
   \Pr\lbrack\ExpSimAnonz(1^\secpar)=1\rbrack|$.
@@ -728,16 +728,16 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       (\oid,\siid,\Sig=(\sig,\yeval,\ceval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
       \pcif \exists \uid~\st~(\cdot,\cdot,\Sig,\msg,\feval) \in
       \SIG[\uid]: \pcreturn 0 \\
-      \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\sig,\yeval,\msg,\feval) = 0:
+      \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
       \pcreturn 0 \\
       (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
-      \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\sig,\yeval,\msg,\feval)
+      \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg,\feval)
       = 0: \pcreturn 1 \\
       (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets \ExtractSign(\oid,\siid,\Sig,
       \msg,\feval) \\
       (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
       \pcif \yeval \neq \yeval^0: \pcreturn 1 \\
-      \pcif \finsp(\yeval^0,\yeval^1,,\usk,\scred,\msg) \neq \yinsp
+      \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp
       \lor \yinsp \neq \yinsp':
       \pcreturn 1 \\
       \pcif \exists \cred \in \scred~\st~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
@@ -833,9 +833,9 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$.
 
 \begin{figure}[htp!]
-  \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
+  \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$ \todo{Updated win conditions here. Update proof.}}{%
     \parm \gets \Setup(1^\secpar) \\
-    (\oid,\siid,\Sig,\msg,\feval,\yinsp,\iproof) \gets
+    (\oid,\siid,\Sig=(\sig,\yeval,\ceval),\msg,\feval,\yinsp,\iproof) \gets
     \adv^{\Oframe}(\parm) \\
 %    \pcif \exists \uid~\st~(\cdot,\cdot,\sig,\yeval,\msg,\feval) \in \SIG[\uid]:
 %    \pcreturn 0 \\
@@ -845,9 +845,12 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\yinsp',r) \gets
     \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
-    \pcif \exists \uid \in \HU~\st~\UK[\uid] = \usk~\land \\
-    \pcind (\nexists (\cdot,\cdot,\Sig,\msg,\feval) \in \SIG[\uid]
-    \lor \yinsp \neq \yinsp'): \pcreturn 1 \\
+    (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)~\pccomment{\todo{New}} \\
+    \pcif \nexists \uid \in \HU~\st~\UK[\uid] = \usk: \pcreturn 0 \\
+    \pcif \nexists (\cdot,\cdot,\Sig,\msg,\feval) \in \SIG[\uid]: \pcreturn 1 \\
+    \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp \lor
+    \yinsp \neq \yinsp': \pcreturn 1~\pccomment{\todo{1st or part is new}} \\
+    \pcif \yeval \neq \yeval^0: \pcreturn 1~\pccomment{\todo{New}} \\
     \pcreturn 0
   }
   \caption{Experiment for non-frameability on \UAS schemes.}

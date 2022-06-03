@@ -21,11 +21,12 @@ construction. Namely:
   verifiers define them. Governs via \feval and \finsp what utility
   information is directly revealed by signatures, or extracted by openers.
   It is defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\scred,
-  \attrs_{\scred},\yinsp,r),(\msg,\feval,\yeval,\Ec,\sipk_{\scred},\Eek): \Ec =
-  \EEnc(\Eek,\yinsp;r) \land \yeval = \feval(\usk,\scred,\msg) \land
-  \yinsp = \finsp(\yeval,\usk,\scred,\msg) \land \forall \cred \in \scred,
-  \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$, with
-  $\attrs_{\scred}$ and $\sipk_{\scred}$ as in $\NIZKRel_{\Issue}$. In a
+  \attrs_{\scred},\yeval^1,\yinsp,r,r'),(\msg,\feval,\yeval^0,\ceval,\cinsp,
+  \sipk_{\scred},\Eek): \ceval = \EEnc(\Eek,\yeval^1;r) \land \cinsp= \EEnc
+  (\Eek,\yinsp;r') \land (\yeval^0,\yeval^1) = \feval(\usk,\scred,\msg) \land
+  \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \land \forall \cred \in
+  \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$,
+  with $\attrs_{\scred}$ and $\sipk_{\scred}$ as in $\NIZKRel_{\Issue}$. In a
   nutshell, this relation ensures that signatures will produce the correct
   signature evaluation and opening values, and that any credential used to
   create the signature is bound to the same \usk key.
@@ -71,9 +72,10 @@ Each user, prior to requesting credentials, generates his secret key by parsing
 $\usk \getr \AttrSpace$.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle\Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle$.} %
-The protocol is run between an issuer, and a user with secret key \usk and
-credentials \scred, where each $\cred \in \scred$ is issued by an issuer with
+  \langle\Obtain(\usk,\ipk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle$.} %
+The protocol is run between an issuer with key pair $(\ipk,\isk)$, and a user
+with secret key \usk and credentials \scred, where each $\cred \in \scred$ is
+issued by an issuer with
 public key $\ipk_{\cred}$ (which we assume that the user can easily retrieve,
 e.g., from secure storage, given \cred), and attests attributes
 $\attrs_{\cred}$. The user requests a signature on a commitment to the user key,
@@ -106,47 +108,50 @@ the issuer is its transcript which is a $(\Ccom,\attrs,\sipk,\cred,\pi)$ tuple.
 \end{itemize}
 \fi
 
-\paragraph{$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
+\paragraph{$\Sig \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
 In the signing algorithm, we make use of relation $\NIZKRel_{\Sign}$.
 % 
 From this, in order to produce a valid signature, the user first evaluates
-$\yeval \gets \feval (\usk,\scred,\msg)$, and decides whether or not to continue
-with the signing process -- this may depend, e.g., on the opening policy of
-\opk, as the output of \feval may influence whether the user will be
-de-anonymizable or not, depending on the \finsp function in \opk.
+$(\yeval^0,\yeval^1) \gets \feval (\usk,\scred,\msg)$, and decides whether or
+not to continue with the signing process -- this may depend, e.g., on the
+opening policy of \opk, as the output of \feval may influence whether the user
+will be de-anonymizable or not, depending on the \finsp function in \opk.
 %
 Then, the user parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
 $\Verify(\Svk,\sig_{\finsp},\finsp) = 1$ (note that this step may be cached), to
-compute $\yinsp \gets \finsp(\yeval,\usk,\scred,\msg)$, and encrypt it with
-\Eek by running $\Ec \gets \EEnc(\Eek,\yeval;r)$ for some fresh randomness $r$.
-Finally, the user computes
+compute $\yinsp \gets \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg)$, and
+separately encrypts both $\yeval^1$ and \yinsp with \Eek by running
+$\ceval \gets \EEnc(\Eek,\yeval^1;r)$ and $\cinsp \gets \EEnc(\Eek,\yeval^1;
+r')$ for some fresh randomness $r,r'$. Finally, the user computes
 $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,\scred,
-\attrs_{\scred},\yinsp,r),(\msg,\feval,\yeval,\Ec,\sipk_{\scred},\Eek))$ and
-outputs $(\sig = (\NIZKproof,\Ec),\yeval)$.
+\attrs_{\scred},\yeval^1,\yinsp,r),(\msg,\feval,\yeval^0,\ceval,\cinsp,
+\sipk_{\scred},\Eek))$ and outputs $(\sig = (\NIZKproof,\cinsp),\yeval,
+\ceval)$.
 
-\paragraph{$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval)$.} %
+\paragraph{$1/0 \gets \Verify(\opk,\sipk,\Sig,\msg,\feval)$.} %
 The ``cryptographic'' side of the verification essentially consists on checking
-the NIZK proof. That is, parse \sig as $(\NIZKproof,\Ec)$ and check whether
-$\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,\Ec,\sipk,\opk)) = 1$. In
-addition, the verifier may further check whether \yeval meets its needs.
+the NIZK proof. That is, parse \Sig as $(\sig = (\NIZKproof,\cinsp),\yeval,
+\ceval)$ and check whether $\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,
+\ceval,\cinsp,\sipk,\opk)) = 1$. In addition, the verifier may further check
+whether \yeval meets its needs.
 
 \paragraph{$(\yinsp,\NIZKproof)/\bot \gets
-  \Open(\osk,\sipk,\sig,\yeval,\msg,\feval)$.} %
+  \Open(\osk,\sipk,\Sig,\msg,\feval)$.} %
 Here we leverage relation $\NIZKRel_{\Open}$.
 %
 To open a signature, the opener first verifies the signature by running $\Verify
-(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the verification succeeds, it parses
-\sig as $(\NIZKproof,\Ec)$, decrypts \Ec by running $\yeval \gets \EDec(\osk,
-\Ec)$, and computes $\NIZKproof_{\Open} \gets \NIZKProve^{\NIZKRel_{\Open}}
-(\NIZKcrs_{\Open},\osk,(\Ec,\yinsp))$. It returns $(\yinsp,
-\NIZKproof_{\Open})$.
+(\opk,\sipk, \Sig,\msg,\feval)$. If verification succeeds, it parses
+\Sig as $(\sig=(\NIZKproof,\cinsp),\yeval,\ceval)$, decrypts \Ec by running $\yinsp
+\gets \EDec(\osk,\cinsp)$, and computes $\NIZKproof_{\Open} \gets
+\NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs_{\Open},\osk,(\cinsp,\yinsp))$. It
+returns $(\yinsp,\NIZKproof_{\Open})$.
 
 \paragraph{$1/0 \gets \Judge(\opk,\yinsp,\NIZKproof,\sig,\yeval,\msg)$.} %
 To assess the validity of an opening proof, first check the signature
 by running $\Verify(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the check succeeds,
-parse \sig as $((\cdot,\Ec),\cdot)$ and verify \NIZKproof with $\NIZKVerify
-(\NIZKcrs_{\Open},\NIZKproof,(\Ec,\yinsp))$. Accept it the NIZK verification
-passes, and reject otherwise.
+parse \sig as $((\cdot,\cinsp),\cdot)$ and verify \NIZKproof with $\NIZKVerify
+(\NIZKcrs_{\Open},\NIZKproof,(\cinsp,\yinsp))$. Accept it the NIZK
+verification passes, and reject otherwise.
 
 %\input{security-uas.tex}
 

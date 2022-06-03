@@ -485,6 +485,15 @@ parameter.
   \caption{Games for \SBCM schemes.}
 \end{figure}
 
+\paragraph{Augmenting with NIZKs.} %
+\todo{This is quite informal. Perhaps expand...} 
+In the previous \SBCM scheme, it is straightforward to require that the party
+running \SBCMCom proves some arbitrary claim over the messages to be signed
+(both those in committed or plaintext form). This can be done by having this
+party add a NIZK over the corresponding NP statement. We will be using this
+extension, and use $\SBCM^{\NIZKRel}$ to denote such an \SBCM with proofs for
+claims in \NIZKRel.
+
 Finally, in addition, we require that the produced signatures must be compatible
 with (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary)
 claims over the signed (committed) messages.
