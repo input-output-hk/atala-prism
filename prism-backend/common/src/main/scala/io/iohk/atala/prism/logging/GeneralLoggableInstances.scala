@@ -17,8 +17,11 @@ object GeneralLoggableInstances {
       r.addString("grpc_status", a.toString, i)
     }
 
-    override def logShow(a: Status): String =
-      s"code = ${a.getCode}, description = ${a.getDescription}, cause = ${a.getCause.getMessage}"
+    override def logShow(a: Status): String = {
+      val description = Option(a.getDescription).map(v => s", description = $v").getOrElse("")
+      val cause = Option(a.getCause).map(v => s", cause = ${v.getMessage}").getOrElse("")
+      s"code = ${a.getCode}${description}${cause}"
+    }
   }
 
   implicit val didLoggable: DictLoggable[DID] = new DictLoggable[DID] {
