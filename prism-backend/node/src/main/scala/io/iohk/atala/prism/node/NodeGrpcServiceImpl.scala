@@ -232,6 +232,12 @@ class NodeGrpcServiceImpl(
         common_models.OperationStatus.PENDING_SUBMISSION
       case (AtalaOperationStatus.RECEIVED, Some(_)) =>
         common_models.OperationStatus.AWAIT_CONFIRMATION
+      case (AtalaOperationStatus.APPLIED, None) => // See ATL-642
+        logger.warn(
+          "The operation seems to be in a transition state " +
+            "(Database is eventually consistent but should not take more than a few milliseconds)"
+        )
+        common_models.OperationStatus.AWAIT_CONFIRMATION // This is the previous (consistent) state
       case (AtalaOperationStatus.APPLIED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_APPLIED
       case (AtalaOperationStatus.REJECTED, Some(InLedger)) =>
