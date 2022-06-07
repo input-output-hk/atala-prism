@@ -13,12 +13,17 @@ correctness and security of \GSAC, and defer the full proofs to
   satisfies correctness as defined in \defref{def:correctness-gsac}.
 \end{theorem}
 
-\begin{theorem}[Anonymity of \GSACGen]
-  \label{thm:anonymity-gsac}
+\begin{theorem}[Issuance anonymity of \GSACGen]
+  \label{thm:iss-anonymity-gsac}
+  \todo{XXX}
+\end{theorem}
+
+\begin{theorem}[Signature anonymity of \GSACGen]
+  \label{thm:sig-anonymity-gsac}
   If the underlying $\NIZK^{\NIZKRel_{\Sign}}$ scheme is zero-knowledge and
   simulation-extractable, and the encryption system is IND-CCA secure,
   our \GSACGen construction satisfies anonymity as defined in
-  \defref{def:anonymity-gsac}.
+  \defref{def:sig-anonymity-gsac}.
 \end{theorem}
 
 \begin{theorem}[Traceability of \GSACGen]

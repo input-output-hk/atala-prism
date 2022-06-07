@@ -151,7 +151,7 @@
   number of queries given in \cite{bsz05} applies here, with the corresponding
   security loss.
 
-  We begin with game $G_0=\ExpGSACAnonb$. From it, we build $G_1$, where we
+  We begin with game $G_0=\ExpGSACSigAnonb$. From it, we build $G_1$, where we
   simply replace the \NIZKSetup functions for $\NIZKRel_{\Sign}$ and
   $\NIZKRel_{\Open}$ within the \Setup algorithm. $G_1$ is indistinguishable
   from $G_0$ due to the zero-knowledge property of the NIZK systems.
@@ -168,7 +168,7 @@
   Now, observe that in $G_2$, the challenge signature received by the adversary
   is completely independent from the challenge bit $b$. Moreover, as argued,
   $G_2$ is indistinguishable from $G_0$, where the adversary plays the original
-  \ExpGSACAnonb game. Thus, our generic construction of \GSAC satisfies
+  \ExpGSACSigAnonb game. Thus, our generic construction of \GSAC satisfies
   anonymity, except with negligible probability.
   %
   \qed
@@ -327,17 +327,19 @@
 Next, we sketch proofs of security for the case of \GSAC with interactive
 presentations like in the case of anonymous credentials.
 
-\paragraph{Anonymity.} To see why the interactive variant is anonymous, assume
-an adversary $\adv$ against anonymity in that case. We build \advB against the
-non-interactive \ExpGSACAnonb as follows. \advB initializes everything as in the
-\ExpGSACAnonb game. When $\adv$ initiates a call to its interactive \SIGN (resp.
-\CHALb) oracle, \advB picks a random number, and sends it to the adversary,
-along with the response of its own (non-interactive) \SIGN (resp. \CHALb)
-oracle where, to the message passed as parameter to its oracle, concatenates the
-produced random number. After such simulation, \advB just outputs whatever
-$\adv$ outputs. Clearly, the simulation is perfect and, if $\adv$ wins with
-non-negligible probability in the interactive case, then so does \advB in the
-non-interactive case.
+\paragraph{Issuance Anonymity.} \todo{XXX}
+
+\paragraph{Signature Anonymity.} To see why the interactive variant is
+anonymous, assume an adversary $\adv$ against anonymity in that case. We build
+\advB against the non-interactive \ExpGSACSigAnonb as follows. \advB initializes
+everything as in the \ExpGSACSigAnonb game. When $\adv$ initiates a call to its
+interactive \SIGN (resp. \CHALb) oracle, \advB picks a random number, and sends
+it to the adversary, along with the response of its own (non-interactive) \SIGN
+(resp. \CHALb) oracle where, to the message passed as parameter to its oracle,
+concatenates the produced random number. After such simulation, \advB just
+outputs whatever $\adv$ outputs. Clearly, the simulation is perfect and, if
+$\adv$ wins with non-negligible probability in the interactive case, then so
+does \advB in the non-interactive case.
 
 \paragraph{Traceability.} The simulation described for the anonymity case (i.e.,
 \advB choosing the random numbers, and concatenating them to the message to be

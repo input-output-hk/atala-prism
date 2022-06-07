@@ -235,26 +235,47 @@ different credentials, but belonging to the same user. The formal
 specification of the anonymity game is given in \figref{fig:exp-gsac-anonb}.
 
 \begin{figure}[htp!]
-  \procedure[linenumbering]{$\ExpGSACAnonb(1^\secpar)$}{%
-     \parm \gets \Setup(1^\secpar) \\
-     (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
-     \gpk \gets (\ipk,\opk) \\
-     b^* \gets
-     \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN,\CHALb}(\gpk,\isk,\status) \\
-     \pcreturn b^*
+  \procedure[linenumbering]{$\ExpGSACSigAnonb(1^\secpar)$}{%
+    \parm \gets \Setup(1^\secpar) \\
+    (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+    \gpk \gets (\ipk,\opk) \\
+    b^* \gets
+    \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN,\OBTCHALb}(\gpk,\isk,\status) \\
+    \pcreturn b^*
   }
-  \caption{Anonymity experiment for \GSAC schemes.}
+  
+  \vspace*{0.5em}
+  
+  \procedure[linenumbering]{$\ExpGSACSigAnonb(1^\secpar)$}{%
+    \parm \gets \Setup(1^\secpar) \\
+    (\ipk,\isk) \gets \IKeyGen(\parm);~(\opk,\osk) \gets \OKeyGen(\parm);~ 
+    \gpk \gets (\ipk,\opk) \\
+    b^* \gets
+    \adv^{\HUGEN,\CUGEN,\WREG,\OBTAIN,\SIGN,\OPEN,\CHALb}(\gpk,\isk,\status) \\
+    \pcreturn b^*
+  }
+  \caption{Issuance and signature anonymity experiments for \GSAC schemes.}
   \label{fig:exp-gsac-anonb}
 \end{figure}
-
-\begin{definition}{(Anonymity of \GSAC)}
-  \label{def:anonymity-gsac}
-  We define the advantage \AdvGSACAnon of $\adv$ against \ExpGSACAnonb as
-  $\AdvGSACAnon=|\Pr\lbrack\ExpGSACAnono(1^\secpar)=1\rbrack-
-  \Pr\lbrack\ExpGSACAnonz(1^\secpar)=1\rbrack|$.
+ 
+\begin{definition}{(Issuance anonymity of \GSAC)}
+  \label{def:iss-anonymity-gsac}
+  We define the advantage \AdvGSACIssAnon of $\adv$ against \ExpGSACIssAnonb as
+  $\AdvGSACIssAnon=|\Pr\lbrack\ExpGSACIssAnono(1^\secpar)=1\rbrack-
+  \Pr\lbrack\ExpGSACIssAnonz(1^\secpar)=1\rbrack|$.
   %
-  A \GSAC scheme satisfies anonymity if, for any p.p.t. adversary $\adv$,
-  \AdvAnon is a negligible function of $1^\secpar$.
+  A \GSAC scheme satisfies issuance anonymity if, for any p.p.t. adversary
+  $\adv$, \AdvGSACIssAnon is a negligible function of $1^\secpar$.
+\end{definition}
+
+\begin{definition}{(Signature anonymity of \GSAC)}
+  \label{def:sig-anonymity-gsac}
+  We define the advantage \AdvGSACSigAnon of $\adv$ against \ExpGSACSigAnonb as
+  $\AdvGSACSigAnon=|\Pr\lbrack\ExpGSACSigAnono(1^\secpar)=1\rbrack-
+  \Pr\lbrack\ExpGSACSigAnonz(1^\secpar)=1\rbrack|$.
+  %
+  A \GSAC scheme satisfies signature anonymity if, for any p.p.t. adversary
+  $\adv$, \AdvGSACSigAnon is a negligible function of $1^\secpar$.
 \end{definition}
 
 \paragraph{Traceability.} %

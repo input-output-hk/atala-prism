@@ -22,11 +22,12 @@ construction. Namely:
   information is directly revealed by signatures, or extracted by openers.
   It is defined as $\NIZKRel_{\Sign} = \lbrace (\usk,\scred,
   \attrs_{\scred},\yeval^1,\yinsp,r,r'),(\msg,\feval,\yeval^0,\ceval,\cinsp,
-  \sipk_{\scred},\Eek): \ceval = \EEnc(\Eek,\yeval^1;r) \land \cinsp= \EEnc
-  (\Eek,\yinsp;r') \land (\yeval^0,\yeval^1) = \feval(\usk,\scred,\msg) \land
-  \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \land \forall \cred \in
-  \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1) \rbrace$,
-  with $\attrs_{\scred}$ and $\sipk_{\scred}$ as in $\NIZKRel_{\Issue}$. In a
+  \sipk_{\scred},\Eek,\widetilde{\Eek}): \ceval = \EEnc(\widetilde{\Eek},\yeval^1;r)
+  \land \cinsp= \EEnc (\Eek,\yinsp;r') \land (\yeval^0,\yeval^1) = \feval(\usk,
+  \scred,\msg) \land \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \land
+  \forall \cred \in \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred})
+  = 1) \rbrace$, with $\attrs_{\scred}$ and $\sipk_{\scred}$ as in
+  $\NIZKRel_{\Issue}$. In a
   nutshell, this relation ensures that signatures will produce the correct
   signature evaluation and opening values, and that any credential used to
   create the signature is bound to the same \usk key.
@@ -117,16 +118,17 @@ not to continue with the signing process -- this may depend, e.g., on the
 opening policy of \opk, as the output of \feval may influence whether the user
 will be de-anonymizable or not, depending on the \finsp function in \opk.
 %
-Then, the user parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
-$\Verify(\Svk,\sig_{\finsp},\finsp) = 1$ (note that this step may be cached), to
-compute $\yinsp \gets \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg)$, and
-separately encrypts both $\yeval^1$ and \yinsp with \Eek by running
-$\ceval \gets \EEnc(\Eek,\yeval^1;r)$ and $\cinsp \gets \EEnc(\Eek,\yeval^1;
-r')$ for some fresh randomness $r,r'$. Finally, the user computes
-$\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,\scred,
-\attrs_{\scred},\yeval^1,\yinsp,r),(\msg,\feval,\yeval^0,\ceval,\cinsp,
-\sipk_{\scred},\Eek))$ and outputs $(\sig = (\NIZKproof,\cinsp),\yeval,
-\ceval)$.
+The user also computes a random encryption key pair with $(\widetilde{\Eek},
+\widetilde{\Edk}) \gets \EKeyGen(\Eparm)$. Then, the user parses \opk as $(\Svk,\Eek,
+\finsp,\sig_{\finsp})$ and checks that $\Verify(\Svk,\sig_{\finsp},\finsp) = 1$
+(note that this step may be cached), to compute $\yinsp \gets \finsp((\yeval^0,
+\yeval^1),\usk,\scred,\msg)$, and separately encrypts both $\yeval^1$ and
+\yinsp by running $\ceval \gets \EEnc(\widetilde{\Eek},\yeval^1;r)$ and $\cinsp \gets
+\EEnc(\Eek,\yinsp; r')$ for some fresh randomness $r,r'$. Finally, the user
+computes $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,
+\scred, \attrs_{\scred},\yeval^1,\yinsp,r,r'),(\msg,\feval,\yeval^0,\ceval,\cinsp,
+\sipk_{\scred},\Eek,\widetilde{\Eek}))$ and outputs $(\sig = (\NIZKproof,\ceval,
+\cinsp),\yeval^0)$.
 
 \paragraph{$1/0 \gets \Verify(\opk,\sipk,\Sig,\msg,\feval)$.} %
 The ``cryptographic'' side of the verification essentially consists on checking
@@ -146,11 +148,11 @@ To open a signature, the opener first verifies the signature by running $\Verify
 \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs_{\Open},\osk,(\cinsp,\yinsp))$. It
 returns $(\yinsp,\NIZKproof_{\Open})$.
 
-\paragraph{$1/0 \gets \Judge(\opk,\yinsp,\NIZKproof,\sig,\yeval,\msg)$.} %
+\paragraph{$1/0 \gets \Judge(\opk,\yinsp,\NIZKproof,\Sig,\msg)$.} %
 To assess the validity of an opening proof, first check the signature
-by running $\Verify(\opk,\sipk, \sig,\yeval,\msg,\feval)$. If the check succeeds,
-parse \sig as $((\cdot,\cinsp),\cdot)$ and verify \NIZKproof with $\NIZKVerify
-(\NIZKcrs_{\Open},\NIZKproof,(\cinsp,\yinsp))$. Accept it the NIZK
+by running $\Verify(\opk,\sipk,\Sig,\msg,\feval)$. If the check succeeds,
+parse \Sig as $((\cdot,\cinsp),\cdot,\cdot)$ and verify \NIZKproof with
+$\NIZKVerify(\NIZKcrs_{\Open},\NIZKproof,(\cinsp,\yinsp))$. Accept it the NIZK
 verification passes, and reject otherwise.
 
 %\input{security-uas.tex}
