@@ -117,49 +117,6 @@ jobs:
           files: "prism-backend/target/test-reports/**/TEST-*.xml"
           check_run_annotations_branch: "*"
 
-  publish-github-packages:
-    strategy:
-      matrix:
-        image: ["node", "connector", "management-console", "vault"]
-    name: Publish Github Packages
-    needs: build-prism-backend
-    runs-on: ubuntu-20.04
-    if: |
-      github.ref == 'refs/heads/master' ||
-      github.ref_type == 'tag'
-    defaults:
-      run:
-        working-directory: prism-backend
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup Scala
-        uses: olafurpg/setup-scala@v10
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-
-      - name: Coursier cache
-        uses: coursier/cache-action@v6
-
-      - name: Download SBT remote cache
-        uses: actions/download-artifact@v2
-        with:
-          name: sbt-backend-remote-cache
-          path: /tmp
-
-      - name: Pull remote cache from local file
-        run: sbt pullRemoteCache
-
-      - name: Setup Github Container registry credentials
-        run: docker login ghcr.io -u atala-dev -p ${{ secrets.ATALA_GITHUB_TOKEN }}
-
-      - name: Build and publish Docker images
-        run: |
-          GITHUB=1 sbt "${{ matrix.image }}/dockerBuildAndPush"
-
   deploy-ecr-images:
     strategy:
       matrix:
@@ -227,6 +184,9 @@ jobs:
           echo "Image tag set to $TAG"
           echo "::set-output name=tag::$tag"
 
+      - name: Setup Github Container registry credentials
+        run: docker login ghcr.io -u atala-dev -p ${{ secrets.ATALA_GITHUB_TOKEN }}
+
       - name: Build and publish Docker image
         if: |
           matrix.image == 'node' ||
@@ -237,6 +197,7 @@ jobs:
           cd prism-backend
           export TAG="${{ steps.set-tag.outputs.tag }}"
           sbt "${{ matrix.image }}/dockerBuildAndPush"
+          GITHUB=1 sbt "${{ matrix.image }}/dockerBuildAndPush"
       - name: Build and push prism-lb-envoy
         if: matrix.image == 'prism-lb-envoy'
         run: |
