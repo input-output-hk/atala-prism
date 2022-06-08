@@ -353,62 +353,63 @@ functions that are needed for some of the properties to be meaningful, in
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
-  If the underlying scheme for $\NIZK^{\Issue}$ is zero-knowledge, the scheme
-  for $\NIZK^{\Sign}$ is zero-knowledge, sound and simulation-extractable, the
-  scheme for $\NIZK^{\Open}$ is zero-knowledge and sound, and the commitment
-  scheme is hiding, then our \CUASGen construction satisfies non-frameability as
-  defined in \defref{def:frame-uas}, except with negligible probability.
+  If the underlying scheme for $\NIZK^{\Issue}$ is zero-knowledge, the schemes
+  for $\NIZK^{\Sign}$ are zero-knowledge and simulation-extractable, and the
+  commitment scheme is hiding, then our \CUASGen construction satisfies
+  non-frameability as defined in \defref{def:frame-uas}, except with negligible
+  probability.
 \end{theorem}
 
 \begin{proof}[\thmref{thm:frame-uas}; Non-frameability of \CUASGen]
-  First, note that the adversary wins if it produces a signature that traces to
-  an honest user (which, in our case, is tested by checking whether the
-  extracted \usk belongs ot an honest user); and, in addition, either (1) the
-  signature was not produced via a call to the \SIGN oracle, or (2) the opening
-  value output by the adversary and accepted by \Judge, does not match the
-  extracted one (i.e., the one used as witness to $\NIZKRel^{\Sign}$). Note that
-  the probability of (2) is negligible due to soundness of $\NIZK^{\Sign}$ and
-  $\NIZK^{\Open}$, given that \Verify and \Judge accept the signature and
-  opening proof.
-  
-  Next we prove that, given an adversary $\adv$ against non-frameability of
-  \CUASGen, under condition (1) above, we can build an adversary \advB that
-  breaks the hiding property of the underlying commitment scheme, with
-  non-negligible probability.
+  We prove that, given an adversary $\adv$ against non-frameability of
+  \CUASGen, we can build an adversary \advB that breaks the hiding property of
+  the underlying commitment scheme, with non-negligible probability.
 
   We start from $G_0=\ExpNonframe$. $\adv$ makes queries to the oracles in
-  \Oframe.
-
-  For $G_1$, within \Setup, we replace the \Setup algorithms for the three
-  NIZKs (\Issue, \Sign and \Open) with their corresponding \SimSetup
+  \Oframe. For $G_1$, within \Setup, we replace the \Setup algorithms for the
+  three NIZKs (\Issue, \Sign and \Open) with their corresponding \SimSetup
   variants. Consequently, the corresponding queries to \Prove are also
   simulated via the simulator. By the zero-knowledge property of the NIZK
-  systems, $G_1$ is indistinguishable from $G_0$.
-  
-  We build adversary \advB against hiding of commitments from $G_1$ against
-  non-frameability. In the hiding game (see \figref{fig:com-games}), \advB first
-  picks two messages $\msg_0$ and $\msg_1$, and then receives a commitment \Ccom
-  of $\msg_b$. Let \advB pick both $\msg_0$ and $\msg_1$ from \AttrSpace. Then,
-  \advB initializes $G_1$ for $\adv$ against non-frameability, and randomly
-  picks a number $u \getr [1,q]$, where $q$ can be as large as \advB wants, but
-  will be the maximum number of honest users to let $\adv$ add to the game.
-  Then, when $\adv$ asks to create the $u$-th user, \advB ignores the call to
-  \UKeyGen. For every call that $\adv$ makes to the \OBTAIN oracle associated to
-  the $u$-th user, \advB uses the commitment \Ccom received as challenge in its
-  game against the hiding property of commmitments, and uses it as commitment to
-  the $u$-th user's \usk. \advB then simulates all the NIZK proofs associated to
-  the $u$-th user, in calls to \OBTAIN, \SIGN and \INSPECT. Again, due to the
-  zero-knowledge property of the associated NIZK systems, the outputs of the
-  modified oracles are indistinguishable from the original outputs (as \Ccom
-  is a valid commitment of a user secret key). Eventually, $\adv$ outputs a
-  $(\sig,\yeval,\msg,\feval,\yinsp,\iproof)$ tuple that is accepted by \Verify
-  and \Judge. Due to simulation extractability of $NIZK^{\Sign}$, \ExtractSign
-  must be able to produce a $(\usk,\scred,\attrs_{\scred},\yinsp')$ tuple. Since
-  $\adv$ wins the non-frameability game, with probability $1/q$,
-  the \usk value belongs to the $u$-th honest user, so it must be equal to
-  either $\msg_0$ or $\msg_1$; \advB responds accordingly to its challenge in
-  the game for the hiding property of the commmitment scheme. By assumption,
-  \advB wins with non-negligible probability.
+  systems, $G_1$ is indistinguishable from $G_0$. In the sequel, we build on
+  top of $G_1$, depending on whether or not a matching \Sig is found in \SIG,
+  in line 7.
+
+  \paragraph{(a) A matching \Sig exists in \SIG.} %
+  If we can find a matching \Sig in \SIG, for some \uid, then \adv~does not win
+  at line 7 of the game. Given that the signature is accepted by \Verify at line
+  3, and after simulation extractability of $\NIZK^{\Sign}$, $\yeval =
+  \yeval^0$, and $\tyeval^1 = \yeval^1$. Similarly, since the $(\yinsp,\iproof)$
+  pair output by \adv~is accepted by \Judge, simulation extractability of
+  $\NIZK^{\Sign}$ and $\NIZK^{\Open}$ implies that both checks at line 9 pass.
+  Hence, the probability that the adversary wins at either lines 8 or 9 is $0$,
+  after simulation extractability of $\NIZK^{\Sign}$ and $\NIZK^{\Open}$.
+
+  \paragraph{(b) No matching \Sig exists in \SIG.} %
+  This means that \adv~creates an \UAS forgery. We leverage such an adversary
+  against $G_1$ to break the hiding property of the underlying commitment
+  scheme (see \appref{sapp:commitments}). For each new honest user \uid creation
+  request by \adv~(via \HUGEN),
+  \advB leverages its own $COM$ oracle to embed its challenges in the commitment
+  scheme into credentials of the \UAS non-frameability game. More precisely, in
+  calls to \HUGEN by \adv, \advB does not call \UKeyGen and instead picks two
+  random messages, $\msg_0^{\uid},\msg_1^{\uid}$, both from \AttrSpace. Whenever
+  a query to \OBTAIN is made by \adv~on behalf of \uid, \advB makes a call to
+  its $COM$ oracle, to get a commitment \Ccom for $\usk^{\uid}=\msg_b^{\uid}$
+  (for \advB's challenge bit $b$). Then,  \advB uses \Ccom in its \SBCMCom part
+  of the underlying \SBCM interactive signing protocol, and simulates the
+  corresponding $\NIZK^{\Issue}$ proof. Due to the zero-knowledge property, the
+  produced output is indistinguishable to that of the real execution. Similarly,
+  \advB can simulate the calls to the \SIGN and \OPEN oracles due to
+  simulation extractability of $\NIZK^{\Sign}$ and $\NIZK^{\Open}$.
+  %
+  Eventually, $\adv$ outputs a $(\oid,\siid,\Sig,\msg,\feval,\yinsp,\iproof)$
+  tuple that is accepted by \Verify and \Judge. Due to simulation extractability
+  of $NIZK^{\Sign}$, \ExtractSign must be able to produce a $(\usk,\scred,
+  \attrs_{\scred}, \tyeval^1,\yinsp')$ tuple. As, by assumption (line 6),  there
+  exists an \uid matching that \usk, all \advB has to do is find the
+  \uid for which \usk was used as either $\msg_0$ or $\msg_1$ in its hiding
+  game. Thus, \advB wins its hiding game with the same probability than \adv~
+  has to win the non-frameability game.
   %
   \qed
 \end{proof}

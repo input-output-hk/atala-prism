@@ -881,7 +881,7 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
 \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,\WREG,\OBTAIN,\SIGN$.
 
 \begin{figure}[htp!]
-  \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$ \todo{Updated win conditions here. Update proof.}}{%
+  \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
     \parm \gets \Setup(1^\secpar) \\
     (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval,\yinsp,\iproof) \gets
     \adv^{\Oframe}(\parm) \\
@@ -891,15 +891,15 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     \pcreturn 0 \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
     \pcreturn 0 \\
-    (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp',r) \gets
+    (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
     \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
 %    (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)~\pccomment{\todo{New}} \\
     \pcif \nexists \uid \in \HU~\st~\UK[\uid] = \usk: \pcreturn 0 \\
     \pcif \nexists (\cdot,\cdot,\Sig,(\yeval^0,\yeval^1),\msg,\feval)
     \in \SIG[\uid]: \pcreturn 1 \\
-    \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp \lor
-    \tyeval^1 \neq \yeval^1 \lor \yinsp \neq \yinsp': \pcreturn 1~\pccomment{\todo{1st or part is new}} \\
-    \pcif \yeval \neq \yeval^0: \pcreturn 1~\pccomment{\todo{New}} \\
+    \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
+    \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp
+    \lor \yinsp \neq \yinsp': \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Experiment for non-frameability on \UAS schemes.}

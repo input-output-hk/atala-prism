@@ -128,10 +128,13 @@ and (usually) hiding:
   \begin{minipage}[t]{0.5\textwidth}
     \procedure{$\ExpComHideb(\secpar)$}{%
       \Cparm \gets \CSetup(\secpar) \\
-      (\msg_0,\msg_1,st) \gets \adv(\Cparm) \\
-      r \getr \mathcal{R} \\
-      \Ccom \gets \CCommit(\Cparm,\msg_b,r) \\
-      b' \gets \adv(st,\Ccom) \\
+      b' \gets \adv^{COM(\Cparm,\cdot,\cdot)},~\textrm{where}: \\
+      \pcind COM(\Cparm,\msg_0,\msg_1): \\
+      \pcind \pcind r \getr \mathcal{R};~\pcreturn \CCommit(\Cparm,\msg_b,r) \\
+      % (\msg_0,\msg_1,st) \gets \adv(\Cparm) \\
+      % r \getr \mathcal{R} \\
+      % \Ccom \gets \CCommit(\Cparm,\msg_b,r) \\
+%      b' \gets \adv(st,\Ccom) \\
       \pcreturn b'
     }
   \end{minipage}
