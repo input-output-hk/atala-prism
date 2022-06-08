@@ -9,43 +9,25 @@ import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, Lovelace}
+import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Pending, Scheduled}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.atala.prism.node.repositories.{
-  AtalaOperationsRepository,
-  CredentialBatchesRepository,
-  DIDDataRepository,
-  MetricsCountersRepository
-}
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceSpec,
-  NodeService,
-  ObjectManagementService,
-  StatisticsService
-}
+import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
-  AnyOperationType,
-  CreateDidOperationOperationType,
-  IssueCredentialBatchOperationType
-}
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
-import io.iohk.atala.prism.protos.{common_models, node_api, node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models.OperationOutput
+import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
@@ -67,17 +49,11 @@ class NodeServiceSpec
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
-  private val underlyingLedger =
-    mock[UnderlyingLedger[IOWithTraceIdContext]]
   private val objectManagementService =
     mock[ObjectManagementService[IOWithTraceIdContext]]
   private val credentialBatchesRepository =
     mock[CredentialBatchesRepository[IOWithTraceIdContext]]
 
-  private val metricsCountersRepository = mock[MetricsCountersRepository[IOWithTraceIdContext]]
-
-  private val atalaOperationsRepository =
-    mock[AtalaOperationsRepository[IOWithTraceIdContext]]
   private val publicKeysLimit = 4
 
   def fake[T](a: T): ReaderT[IO, TraceId, T] =
@@ -99,13 +75,11 @@ class NodeServiceSpec
             new NodeGrpcServiceImpl(
               NodeService.unsafe(
                 didDataRepository,
-                underlyingLedger,
                 objectManagementService,
                 credentialBatchesRepository,
                 publicKeysLimit,
                 logs
-              ),
-              StatisticsService.unsafe(atalaOperationsRepository, metricsCountersRepository, logs)
+              )
             ),
             executionContext
           )
@@ -506,20 +480,6 @@ class NodeServiceSpec
     nodeNetworkProtocolInfo.currentNetworkProtocolVersion.map(_.minorVersion) mustBe Some(
       currentNetworkProtocolMinorVersion
     )
-  }
-
-  "NodeService.getWalletBalance" should {
-    "return wallet balance" in {
-      val walletBalance = Balance(Lovelace(2))
-
-      doReturn(
-        fake[Either[CardanoWalletError, Balance]](Right[CardanoWalletError, Balance](walletBalance))
-      ).when(underlyingLedger).getWalletBalance
-
-      val getWalletBalanceResponse = service.getWalletBalance(GetWalletBalanceRequest())
-
-      getWalletBalanceResponse.balance mustBe ByteString.copyFrom(walletBalance.available.toByteArray)
-    }
   }
 
   "NodeService.getLastSyncedBlockTimestamp" should {
@@ -1062,75 +1022,6 @@ class NodeServiceSpec
 
       verify(objectManagementService).scheduleAtalaOperations(revokeOperation)
       verifyNoMoreInteractions(objectManagementService)
-    }
-  }
-
-  "NodeService.getScheduledAtalaOperations" should {
-    "return scheduled operations in correct order" in {
-
-      def sign(op: node_models.AtalaOperation): SignedAtalaOperation =
-        BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
-
-      def toAtalaObject(ops: List[node_models.AtalaOperation]): node_internal.AtalaObject = {
-        val block = node_internal.AtalaBlock(ops.map(sign))
-        node_internal.AtalaObject(
-          blockOperationCount = ops.size,
-          blockByteLength = block.toByteArray.length,
-          blockContent = Some(block)
-        )
-      }
-
-      def toOperation(op: node_models.AtalaOperation) =
-        operations
-          .parseOperationWithMockedLedger(sign(op))
-          .toOption
-          .value
-
-      val ops1 = List[node_models.AtalaOperation](
-        CreateDIDOperationSpec.exampleOperation,
-        UpdateDIDOperationSpec.exampleAddAndRemoveOperation
-      )
-
-      val ops2 = List[node_models.AtalaOperation](
-        UpdateDIDOperationSpec.exampleRemoveOperation,
-        IssueCredentialBatchOperationSpec.exampleOperation,
-        CreateDIDOperationSpec.exampleOperationWithCompressedKeys
-      )
-
-      val allOps: List[node_models.AtalaOperation] =
-        List(
-          CreateDIDOperationSpec.exampleOperation,
-          UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
-          UpdateDIDOperationSpec.exampleRemoveOperation,
-          IssueCredentialBatchOperationSpec.exampleOperation,
-          CreateDIDOperationSpec.exampleOperationWithCompressedKeys
-        )
-      val opsCreation: List[node_models.AtalaOperation] =
-        List(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.exampleOperationWithCompressedKeys)
-
-      val opsIssuance: List[node_models.AtalaOperation] = List(IssueCredentialBatchOperationSpec.exampleOperation)
-
-      val obj1 = toAtalaObject(ops1)
-      val obj2 = toAtalaObject(ops2)
-
-      val dummyObjects = List(
-        AtalaObjectInfo(AtalaObjectId.of(obj1), obj1.toByteArray, ops1.map(toOperation), Pending, None),
-        AtalaObjectInfo(AtalaObjectId.of(obj2), obj2.toByteArray, ops2.map(toOperation), Scheduled, None)
-      )
-
-      doReturn(fake[Either[NodeError, List[AtalaObjectInfo]]](Right(dummyObjects)))
-        .when(objectManagementService)
-        .getScheduledAtalaObjects
-
-      val responseAny = service.getScheduledOperations(GetScheduledOperationsRequest(AnyOperationType))
-      val responseCreation =
-        service.getScheduledOperations(GetScheduledOperationsRequest(CreateDidOperationOperationType))
-      val responseIssuance =
-        service.getScheduledOperations(GetScheduledOperationsRequest(IssueCredentialBatchOperationType))
-
-      responseAny.scheduledOperations.map(_.operation.get) must be(allOps)
-      responseCreation.scheduledOperations.map(_.operation.get) must be(opsCreation)
-      responseIssuance.scheduledOperations.map(_.operation.get) must be(opsIssuance)
     }
   }
 }

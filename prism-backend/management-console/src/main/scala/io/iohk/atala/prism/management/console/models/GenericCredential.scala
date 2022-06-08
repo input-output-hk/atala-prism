@@ -8,10 +8,9 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleInclusionProof, Sha256Digest}
-import io.iohk.atala.prism.models.{ConnectionToken, UUIDValue}
+import io.iohk.atala.prism.models.{AtalaOperationId, ConnectionToken, UUIDValue}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.protos.console_models.{ContactConnectionStatus, CredentialStatus}
 import tofu.logging.derivation.loggable

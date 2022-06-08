@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.management.console.repositories.metrics
 
 import cats.data.NonEmptyList
-import io.iohk.atala.prism.connector.AtalaOperationId
+import cats.effect.MonadCancelThrow
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.errors.ManagementConsoleError
@@ -10,8 +10,8 @@ import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.CredentialsRepository
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.models.AtalaOperationId
 import tofu.higherKind.Mid
-import cats.effect.MonadCancelThrow
 
 final class CredentialsRepositoryMetrics[F[_]: TimeMeasureMetric: MonadCancelThrow]
     extends CredentialsRepository[Mid[F, *]] {

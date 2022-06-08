@@ -7,7 +7,6 @@ import com.google.protobuf.ByteString
 import io.circe.Json
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.auth.model.RequestNonce
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleInclusionProof, Sha256Digest}
 import io.iohk.atala.prism.crypto.signature.ECSignature
@@ -23,7 +22,7 @@ import io.iohk.atala.prism.management.console.repositories.CredentialIssuancesRe
   GetCredentialIssuance
 }
 import io.iohk.atala.prism.management.console.validations.JsonValidator
-import io.iohk.atala.prism.models.ConnectionToken
+import io.iohk.atala.prism.models.{AtalaOperationId, ConnectionToken}
 import io.iohk.atala.prism.protos.common_models.SortByDirection
 import io.iohk.atala.prism.protos.connector_api.SendMessagesRequest
 import io.iohk.atala.prism.protos.console_api._

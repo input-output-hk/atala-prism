@@ -4,7 +4,6 @@ import cats.data.NonEmptyList
 import doobie._
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}

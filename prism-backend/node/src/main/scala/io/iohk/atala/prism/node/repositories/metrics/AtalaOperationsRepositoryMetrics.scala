@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.node.errors.NodeError
@@ -9,6 +8,7 @@ import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.higherKind.Mid
 import cats.effect.MonadCancelThrow
+import io.iohk.atala.prism.models.AtalaOperationId
 
 private[repositories] final class AtalaOperationsRepositoryMetrics[F[
     _

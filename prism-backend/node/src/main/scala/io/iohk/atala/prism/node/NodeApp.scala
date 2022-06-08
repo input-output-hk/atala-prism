@@ -6,7 +6,10 @@ import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.prism.auth.grpc.{TraceExposeInterceptor, TraceReadInterceptor}
+import io.iohk.atala.prism.auth.WhitelistedAuthenticatorF
+import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticatorInterceptor, TraceExposeInterceptor, TraceReadInterceptor}
+import io.iohk.atala.prism.auth.utils.DidWhitelistLoader
+import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.metrics.UptimeReporter
@@ -49,6 +52,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def start(): Resource[IO, (SubmissionSchedulingService, Server)] = {
     for {
       globalConfig <- loadConfig()
+      nodeExplorerDids = loadNodeExplorerDids(globalConfig)
       _ <- startMetrics(globalConfig)
       databaseConfig = TransactorFactory.transactorConfig(globalConfig)
       _ = applyDatabaseMigrations(databaseConfig)
@@ -124,15 +128,23 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       metricsCountersRepository <- MetricsCountersRepository.resource(liftedTransactor, logs)
       nodeService <- NodeService.resource(
         didDataRepository,
-        ledger,
         objectManagementService,
         credentialBatchesRepository,
         didPublicKeysLimit,
         logs
       )
       nodeStatisticsService <- StatisticsService.resource(atalaOperationsRepository, metricsCountersRepository, logs)
-      nodeGrpcService = new NodeGrpcServiceImpl(nodeService, nodeStatisticsService)
-      server <- startServer(nodeGrpcService)
+      nodeExplorerService <- NodeExplorerService.resource(ledger, objectManagementService, logs)
+      requestNoncesRepo <- RequestNoncesRepository.resource(liftedTransactor, logs)
+      authenticator <- WhitelistedAuthenticatorF.resource(new NodeExplorerAuthenticator(requestNoncesRepo), logs)
+      nodeExplorerGrpcService = new NodeExplorerGrpcServiceImpl(
+        authenticator,
+        nodeExplorerService,
+        nodeStatisticsService,
+        nodeExplorerDids
+      )
+      nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
+      server <- startServer(nodeGrpcService, nodeExplorerGrpcService)
     } yield (submissionSchedulingService, server)
   }
 
@@ -145,6 +157,21 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def loadConfig(): Resource[IO, Config] = Resource.pure[IO, Config] {
     logger.info("Loading config")
     ConfigFactory.load()
+  }
+
+  private def loadNodeExplorerDids(config: Config): Set[PrismDid] = {
+    logger.info("Loading DID whitelist")
+    val didWhitelist = DidWhitelistLoader.load(config, "nodeExplorer")
+    if (didWhitelist.isEmpty) {
+      logger.warn(
+        s"DID whitelist is empty, which makes explorer methods inaccessible"
+      )
+    } else {
+      logger.info(
+        s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}"
+      )
+    }
+    didWhitelist
   }
 
   private def initializeCardano(
@@ -221,7 +248,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         InMemoryLedgerService.resource(onAtalaObject, logs)
     }
 
-  private def startServer(nodeService: NodeGrpcServiceImpl): Resource[IO, Server] =
+  private def startServer(
+      nodeService: NodeGrpcServiceImpl,
+      nodeExplorerService: NodeExplorerGrpcServiceImpl
+  ): Resource[IO, Server] =
     Resource.make[IO, Server](IO {
       logger.info("Starting server")
       import io.grpc.protobuf.services.ProtoReflectionService
@@ -229,7 +259,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         .forPort(NodeApp.port)
         .intercept(new TraceExposeInterceptor)
         .intercept(new TraceReadInterceptor)
+        .intercept(new GrpcAuthenticatorInterceptor)
         .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
+        .addService(NodeExplorerServiceGrpc.bindService(nodeExplorerService, executionContext))
         .addService(
           _root_.grpc.health.v1.health.HealthGrpc
             .bindService(new HealthService, executionContext)

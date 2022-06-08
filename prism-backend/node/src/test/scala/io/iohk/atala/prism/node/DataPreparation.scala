@@ -6,7 +6,6 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
 import io.iohk.atala.prism.logging.TraceId

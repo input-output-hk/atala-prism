@@ -3,15 +3,14 @@ package io.iohk.atala.prism.daos
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
-import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
+import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.{Ledger, TransactionId, UUIDValue}
+import io.iohk.atala.prism.models.{AtalaOperationId, Ledger, TransactionId, UUIDValue}
 
 import java.util.UUID
-import io.iohk.atala.prism.credentials.CredentialBatchId
 
 trait BaseDAO {
   implicit val uuidMeta: Meta[UUID] = doobie.postgres.implicits.UuidType

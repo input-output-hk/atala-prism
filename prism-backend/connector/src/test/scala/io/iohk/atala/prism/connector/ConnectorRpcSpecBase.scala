@@ -21,7 +21,7 @@ import io.iohk.atala.prism.connector.services.{
 }
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.ParticipantId
+import io.iohk.atala.prism.models.{AtalaOperationId, ParticipantId}
 import io.iohk.atala.prism.protos.connector_api
 import io.iohk.atala.prism.utils.IOUtils._
 import io.iohk.atala.prism.{ApiTestHelper, DIDUtil, RpcSpecBase}
@@ -68,7 +68,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
     mock[io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator = AuthenticatorF.unsafe(
     nodeMock,
-    new ConnectorAuthenticatorF(
+    new ConnectorAuthenticator(
       participantsRepository,
       requestNoncesRepository
     ),
@@ -82,7 +82,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase with DIDUtil {
   val streamQueuesRef = Ref.unsafe[IO, Map[ParticipantId, Queue[IO, Option[Message]]]](Map.empty)
   lazy val messageNotificationService =
     MessageNotificationService(database, new TransactorForStreaming(database), streamQueuesRef)
-  lazy val connectorService = new ConnectorService(
+  lazy val connectorService = new ConnectorGrpcServiceImpl(
     connectionsService,
     messagesService,
     registrationService,

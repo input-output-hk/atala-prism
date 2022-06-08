@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.connector.services
+package io.iohk.atala.prism.connector
 
 import cats.effect.unsafe.IORuntime
 import cats.syntax.either._
@@ -7,6 +7,7 @@ import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
 import io.iohk.atala.prism.connector.errors.{ConnectorError, ConnectorErrorSupport}
 import io.iohk.atala.prism.connector.grpc.ProtoCodecs
 import io.iohk.atala.prism.connector.model.TokenString
+import io.iohk.atala.prism.connector.services.ConnectionsService
 import io.iohk.atala.prism.errors.LoggingContext
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
@@ -24,7 +25,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ContactConnectionService(
+class ContactConnectionGrpcServiceImpl(
     connectionsService: ConnectionsService[IOWithTraceIdContext],
     authenticator: AuthenticatorF[ParticipantId, IOWithTraceIdContext],
     didWhitelist: Set[DID]

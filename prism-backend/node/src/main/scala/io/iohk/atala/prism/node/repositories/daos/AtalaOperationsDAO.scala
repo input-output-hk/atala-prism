@@ -6,7 +6,7 @@ import doobie.Fragments.in
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.util.update.Update
-import io.iohk.atala.prism.connector.AtalaOperationId
+import io.iohk.atala.prism.models.AtalaOperationId
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaOperationInfo, AtalaOperationStatus}
 
 object AtalaOperationsDAO {

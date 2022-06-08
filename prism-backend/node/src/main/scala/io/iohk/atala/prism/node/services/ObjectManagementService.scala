@@ -13,8 +13,7 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.connector.AtalaOperationId
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
+import io.iohk.atala.prism.models.{AtalaOperationId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.{InvalidArgument, UnsupportedProtocolVersion}

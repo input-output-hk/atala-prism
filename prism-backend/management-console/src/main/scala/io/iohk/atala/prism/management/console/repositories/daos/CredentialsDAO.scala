@@ -7,12 +7,12 @@ import doobie.implicits._
 import doobie.util.fragments._
 import doobie.implicits.legacy.instant._
 import doobie.implicits.legacy.localdate._
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.management.console.models.GenericCredential.FilterBy
 import io.iohk.atala.prism.management.console.models._
 import io.iohk.atala.prism.management.console.repositories.daos.queries._
+import io.iohk.atala.prism.models.AtalaOperationId
 import io.iohk.atala.prism.protos.console_models.CredentialStatus.{
   CREDENTIAL_DRAFT,
   CREDENTIAL_REVOKED,

@@ -1,33 +1,30 @@
 package io.iohk.atala.prism.connector.services
 
-import cats.{Applicative, Comonad, Functor}
-import cats.effect.Resource
+import cats.effect.{MonadCancelThrow, Resource}
 import cats.syntax.comonad._
 import cats.syntax.either._
-import cats.syntax.functor._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
 import cats.syntax.option._
 import cats.syntax.traverse._
+import cats.{Applicative, Comonad, Functor, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.connector.AtalaOperationId
 import io.iohk.atala.prism.connector.errors.{InvalidRequest, co}
 import io.iohk.atala.prism.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.atala.prism.connector.repositories.ParticipantsRepository
-import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.connector.services.RegistrationService.{RegisterParticipantError, RegistrationResult}
 import io.iohk.atala.prism.connector.services.logs.RegistrationServiceLogs
-import io.iohk.atala.prism.models.{DidSuffix, ParticipantId}
+import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix, ParticipantId}
+import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, NodeServiceGrpc}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.node_api
+import io.iohk.atala.prism.utils.GrpcUtils
 import shapeless.{:+:, CNil}
 import tofu.Execute
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
-import cats.MonadThrow
-import cats.effect.MonadCancelThrow
-import io.iohk.atala.prism.utils.GrpcUtils
 
 @derive(applyK)
 trait RegistrationService[F[_]] {

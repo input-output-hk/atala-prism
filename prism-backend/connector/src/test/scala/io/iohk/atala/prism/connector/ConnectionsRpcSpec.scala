@@ -5,15 +5,13 @@ import cats.syntax.option._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.atala.prism.{DIDUtil, auth}
 import io.iohk.atala.prism.auth.SignedRpcRequest
-import io.iohk.atala.prism.auth.grpc.SignedRequestsHelper
 import io.iohk.atala.prism.connector.model.ParticipantType.Holder
 import io.iohk.atala.prism.connector.model._
 import io.iohk.atala.prism.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.logging.TraceId
 import io.iohk.atala.prism.protos.connector_api.GetConnectionTokenInfoRequest
@@ -21,6 +19,7 @@ import io.iohk.atala.prism.protos.node_api.GetDidDocumentRequest
 import io.iohk.atala.prism.protos.node_models.{KeyUsage, LedgerData}
 import io.iohk.atala.prism.protos.{connector_api, connector_models, node_api, node_models}
 import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.{DIDUtil, auth}
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.Assertion
@@ -408,9 +407,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         EC.signBytes(
-          SignedRequestsHelper
-            .merge(auth.model.RequestNonce(requestNonce), request.toByteArray)
-            .toArray,
+          auth.model.RequestNonce(requestNonce).mergeWith(request.toByteArray).toArray,
           keys.getPrivateKey
         )
 
