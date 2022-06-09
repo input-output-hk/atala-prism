@@ -399,12 +399,14 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         }
 
         \procedure{$\SIGN(\oid,\uid,\scid,\msg,\feval)$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \uid \notin \HU \cup \lbrace \bot \rbrace: \pcreturn \bot \\
+          \pcif \uid = \bot \land \exists \cid' \in \scid~\suchthat~
+          \cid' \notin \CCRED: \\
+          \pcind \pcreturn \bot \\
+          \pcif \uid = \bot: \uid \gets \OWNR[\scid] \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
-          \pcif \exists \cid \in \scid~\suchthat~\cid \in \CRED~\land \\
-          \pcind \exists \cid' \in \scid~\suchthat~\cid' \in \CCRED: \pcreturn \bot \\
           \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,\feval) \\
-          \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\cscid],\msg) \\
+          \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\scid],\msg) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\Sig,\Yeval,\msg,\feval) \rbrace \\
           \pcreturn \Sig \\
@@ -438,8 +440,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\OBTAIN(\cid,\uid,\iid,\attrs,\scid)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\suchthat~\cid' \in \CRED~\land \\
-          \pcind \exists \cid'' \in \scid~\suchthat~\cid'' \in \CCRED: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\suchthat~\cid' \in \CCRED: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot: \pcreturn \bot \\
           %\pcif \exists \cid' \in \scid~\st~\CRED[\cid'] = \bot: \pcreturn \bot \\
           \langle \cred, \cdot \rangle \gets
@@ -448,20 +449,20 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\OBTCHALb(\cid,\iid,\cuid_{0,1},\cscid_{0,1},\attrs)$}{%
+        \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1})$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
           \pcif \pcfor d \in \bin,~ \exists \cid' \in \cscid_d~\suchthat~\cid'
-          \in \CRED~\land \\
-          \pcind \exists \cid'' \in \cscid_d~\suchthat~\cid'' \in \CCRED:
-          \pcreturn \bot \\
+          \in \CRED: \\
+          \pcind \pcreturn \bot \\
+          \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
           \textrm{Parse}~\PUBIK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
           \pcif \fissue(\UK[\cuid_0],\cscid_0,\attrs) \neq
           \fissue(\UK[\cuid_1],\cscid_1,\attrs) \\
           \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\UK[\cuid_b],\PUBIK[\iid],\CRED[\scid_b],\attrs),\adv \rangle \\
-          \CCRED[\cid] \gets (\cuid_b, \cred, \iid, \attrs, \scid_b, \siid) \\
+          \langle \Obtain(\UK[\cuid_b],\PUBIK[\iid],\CRED[\cscid_b],\attrs),\adv \rangle \\
+          \CCRED[\cid] \gets (\cuid_b, \cred, \iid, \attrs, \cscid_b, \siid) \\
           \pcreturn \top \\
         }
 
@@ -588,21 +589,56 @@ outputs independent of the users' secrets. This formulation is given in
   adversary $\adv$, \AdvSimAnon is a negligible function of $1^\secpar$.
 \end{definition}
 \fi
+We need to ensure that no information is leaked about users requesting a
+credential, nor about signers. The latter is typically captured in group
+signatures by letting the adversary request challenge signatures, produced
+by a challenge user picked randomly out of two users chosen by the adversary,
+and requiring the adversary to guess which one was used. In what is frequently
+called CCA-like anonymity, the adversary is given access to the opener,
+except for challenge signatures. We follow this approach in what we call
+signature anonymity. We need however to restrict that challenge signatures
+produce the same \yeval value, to prevent trivail wins by the adversary. On
+the other hand, since it is possible that both challenge signatures produce
+the same \yinsp value, we can model a stronger CCA-like variant, in which the
+adversary is allowed to open challenge signatures for the cases in which the
+\yinsp value is the same for both challenge users.
 
-In addition to the considerations made for \GSAC (see \secref{ssec:model-gsac}),
-in our notion of anonymity for \UAS,
-in order to prevent trivial wins by the adversary, we have to restrict that the
-signing evaluation function outputs the same value for both user-credentials
-pairs. Very interestingly, since our opening functionality does not
-(necessarily) output the identity of the signer, \uline{we can even allow the
-  adversary to open challenge signatures, as long as they produce the same
-  output}. Other than this, the overall approach is similar: as
-in group signatures and anonymous credentials, the adversary asks for challenge
-signatures from either one of two honest users and credential sets -- bit $b$,
-unkown to the adversary, defining which one is used. Note that the adversary
-also has to pick a signature valuation function \feval, as well as an opener
-(passed as arguments to the \SIGN and \CHALb oracles). The formal specification
-of the anonymity game is given in \figref{fig:exp-uas-anonb}, where
+In addition to signature anonymity, we need to take into account that, as in
+some anonymous credential schemes, a single user may have multiple credentials.
+Moreover, these credentials can be obtained from different issuers, or from the
+same issuer but for different attributes. Thus, it seems logical to require that
+the adversary cannot determine whether any two credential requests originate
+from the same signer, or not. To model this, we define the issuance anonymity
+game. Intuitively, we let the adversary obtain challenge credentials on behalf
+of two honest challenge users, but without knowing to which concrete challenge
+user we actually issue the produced credentials. To prevent trivial wins, we
+have to make additional restrictions. Namely, the two sets of challenge user and
+supporting credentials for requesting the challenge credential need to satisfy
+the same issuance policy, and these supporting credentials cannot include
+credentials that have been obtained via the conventional \OBTAIN oracle.
+The adversary is then allowed to interact with all the other oracles (except the
+one producing challenge signatures, which is not needed), with the only further
+constraint that any call to the \SIGN oracle that leverages challenge
+credentials cannot specify the user identifier (the oracle ``knows'' which one
+out of the two challenge users it needs to use). As usual, after interacting in
+an arbitrary way with the oracles, the adversary needs to guess the bit $b$
+defining which challenge user was employed to produce the challenge credentials.
+
+% In addition to the considerations made for \GSAC (see \secref{ssec:model-gsac}),
+% in our notion of anonymity for \UAS,
+% in order to prevent trivial wins by the adversary, we have to restrict that the
+% signing evaluation function outputs the same value for both user-credentials
+% pairs. Very interestingly, since our opening functionality does not
+% (necessarily) output the identity of the signer, \uline{we can even allow the
+%   adversary to open challenge signatures, as long as they produce the same
+%   output}. Other than this, the overall approach is similar: as
+% in group signatures and anonymous credentials, the adversary asks for challenge
+% signatures from either one of two honest users and credential sets -- bit $b$,
+% unkown to the adversary, defining which one is used. Note that the adversary
+% also has to pick a signature valuation function \feval, as well as an opener
+% (passed as arguments to the \SIGN and \CHALb oracles).
+The formal specification of the anonymity games is given in
+\figref{fig:exp-uas-anonb}, where
 $\OIssAnon \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,
 \OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\OBTCHALb)$, and $\OSigAnon
 \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace
@@ -760,7 +796,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \IK[\iid]~\textrm{as}~((\ipk,\fissue),\cdot) \\
       (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trans[\cid]) \\
       \pcif \fissue(\usk,\scred,\ATTR[\cid]) = 0 \lor
-      \exists \cred \in \scred~\st~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0: \\
+      \exists \cred \in \scred~\suchthat~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0: \\
       \pcind \pcreturn 1 \\
 %      \pcif \nexists \uid~\st~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1 \\
       \pcreturn 0
@@ -773,7 +809,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
     \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
-      \pcif \exists \uid~\st~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
+      \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
       \SIG[\uid]: \pcreturn 0 \\
       \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
       \pcreturn 0 \\
@@ -788,9 +824,9 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp'
       \lor \yinsp \neq \yinsp':
       \pcreturn 1 \\
-      \pcif \exists \cred \in \scred~\st~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
+      \pcif \exists \cred \in \scred~\suchthat~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
       \pcreturn 1 \\
-      \pcif \nexists \uid~\st~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1 \\
+      \pcif \nexists \uid~\suchthat~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1 \\
       \pcreturn 0
     }
   \caption{Experiment for unforgeability of signatures in \UAS schemes.}
@@ -894,7 +930,7 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
     \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
 %    (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)~\pccomment{\todo{New}} \\
-    \pcif \nexists \uid \in \HU~\st~\UK[\uid] = \usk: \pcreturn 0 \\
+    \pcif \nexists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \pcreturn 0 \\
     \pcif \nexists (\cdot,\cdot,\Sig,(\yeval^0,\yeval^1),\msg,\feval)
     \in \SIG[\uid]: \pcreturn 1 \\
     \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
