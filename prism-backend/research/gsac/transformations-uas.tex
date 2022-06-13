@@ -135,13 +135,13 @@ signature evaluation function $\feval^{\attrs}$, and opening function
 $\finsp^0$. All of them are specified in \esref{eq:uas-ring-funcs}.
 
 \begin{align}
-  & \NIZKRel_{\Sign-prv} \coloneqq \lbrace (\usk,\scred,\attrs_{\scred},\yinsp,r,
-    \sipk_{\scred}),(\msg,\feval,\yeval,\Ec,\Eek): \nonumber \\
+  & \NIZKRel_{\Sign-prv} \coloneqq \lbrace (\usk,\cred,\yinsp,r,
+    \ipk),(\msg,\feval,\yeval,\Ec,\Eek,\sring): \nonumber \\
   & \hspace*{6.405em}\Ec = \EEnc(\Eek,\yinsp;r) \land \nonumber \\
-  & \hspace*{6.40em}\forall \cred \in \scred,\SBCMVerify(\ipk_{\cred},\cred,\usk,
-    \attrs_{\cred}) = 1) \land \nonumber \\
-  & \hspace*{6.40em}\yeval = \feval(\usk,\scred,\msg) \land
-    \yinsp = \finsp(\yeval,\usk,\scred,\msg)
+  & \hspace*{6.40em}\exists \ipk \in \sring~\suchthat~\SBCMVerify(\ipk,\cred,\usk,
+    \sring) = 1) \land \nonumber \\
+  & \hspace*{6.40em}\yeval = \feval(\usk,\cred,\msg) \land
+    \yinsp = \finsp(\yeval,\usk,\cred,\msg)
      \rbrace \nonumber \\
   & \fissue^{\sring}(\usk,\scred,\attrs) \coloneqq \lbrace \pcif \attrs
     \subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse

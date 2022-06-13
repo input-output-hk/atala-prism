@@ -100,21 +100,21 @@ functions that are needed for some of the properties to be meaningful, in
   More concretely, on the one hand, let $G_1^0$ to be $G_1$, conditioned on
   $b=0$. Concretely, the proofs sent by the challenge user $\cuid_0$ to the
   adversarial issuer are of
-  the form $\pi^*_0 =\NIZKProve^{\NIZKRel_{\Issue}}(\crs_{\Issue},(\UK[\cuid_0],
-  \CCRED[\cscid_0],\ATTR[\cscid_0],r),(\CCom,\attrs,\PUBIK[\cscid_0]))$. The
+  the form $\pi^*_0 =\NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},(\UK[\cuid_0],
+  \CCRED[\cscid_0],\ATTR[\cscid_0],r),(\Ccom,\attrs,\PUBIK[\cscid_0]))$. The
   NIZK proofs included in the signatures produced by $\cuid_0$ are defined
   correspondingly, but for $\NIZK^{\NIZKRel_{\Sign}}$. From $G_1^0$, we define
   $G_2^0$, but instead of using \NIZKProve, we use \NIZKSim (for both \Issue
   and \Sign). That is, the proofs for credential requests are generated as
-  $\pi^s_0 =\NIZKSim^{\NIZKRel_{\Issue}}(\crs_{\Issue},\tau,(\CCom,\attrs,
+  $\pi^s_0 =\NIZKSim^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},\tau,(\Ccom,\attrs,
   \PUBIK[\cscid_0]))$. By zero-knowledge of the NIZK systems for \Issue and
   \Sign, $G_2^0$ is indistinguishable from $G_1^0$.
 
   On the other hand, following the same process for $G_1^1$ and $G_2^1$.
   Concretely, for the case of the proofs at issuance time, they are of the
-  shape $\pi^s_1 =\NIZKSim^{\NIZKRel_{\Issue}}(\crs_{\Issue},\tau,(\CCom,\attrs,
+  shape $\pi^s_1 =\NIZKSim^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},\tau,(\Ccom,\attrs,
   \PUBIK[\cscid_1]))$. Note first that $\PUBIK[\cscid_1] = \PUBIK[\cscid_0]$,
-  by definition of the \OBTCHAL oracle. Hence, the produced proofs are exactly
+  by definition of the \OBTCHALb oracle. Hence, the produced proofs are exactly
   the same independently on the value of the bit $b$.
 
   Thus, $\AdvIssAnon=|\Pr\lbrack

@@ -500,7 +500,8 @@ the underlying \CUASGen construction is secure.
 
 We adopt the model in \cite{fhs19}, where security of anonymous credentials
 (with selective disclosure). Therein, an anonymous credential scheme is
-defined via $OrgKeyGen$ and $UserKeyGen$ algorithms (roughly equivalent to
+defined via $OrgKeyGen$ (which we rename to $IssKeyGen$, and $UserKeyGen$
+algorithms (roughly equivalent to
 \IKeyGen and \UKeyGen for \UAS), and $Obtain,Issue$ and $Show,Verify$
 interactive protocols. The issuance interactive protocol is equivalent to
 the issuance protocol in \UAS. Similarly, $Show,Verify$ is equivalent to
@@ -516,17 +517,19 @@ make them more suitable for comparison with our definitions.
 \begin{figure}[ht!]
   \centering
   \scalebox{0.9}{      
-    \begin{minipage}[t]{0.4\textwidth}        
+    \begin{minipage}[t]{0.5\textwidth}        
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,ac}(1^\secpar)$}{%
-        b^* \gets \adv^{HU,CU,Obtain,Show,LoR} \\
+        \parm \gets \Setup(1^\secpar) \\
+        b^* \gets \adv^{HU,CU,Obtain,Show,LoR}(\parm) \\
         \pcreturn b^*
       }        
     \end{minipage}
   }
   \scalebox{0.9}{      
-    \begin{minipage}[t]{.6\textwidth}
+    \begin{minipage}[t]{.5\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,ac}(1^\secpar)$}{%
-        (\opk,\osk) \gets OrgKeyGen(1^\secpar) \\        
+        \parm \gets \Setup(1^\secpar) \\
+        (\opk,\osk) \gets IssKeyGen(\parm) \\        
         (D,\st) \gets \adv^{HU,CU,ObtIss,Issue,Show}(\opk) \\
         (\cdot,b) \gets \langle \adv(\st),\Verify(\opk,D) \rangle \\
         \pcif b = 1 \land \forall j: \OWNR[j] \in \CU
@@ -554,18 +557,18 @@ security-wise, though.
 
 \begin{description}
 \item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar)$
-    and $(\opk',\osk') \gets \OKeyGen(\parm',\finsp^0)$ from our \CUASGen
+    and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our \CUASGen
     construction. Returns $\parm \gets (\parm',\opk')$.
-\item[$(\opk,\osk) \gets OrgKeyGen(\parm)$.] Runs \IKeyGen from our
+\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] Runs \IKeyGen from our
   \CUASGen construction, setting $\fissue^1$ as issuance function.
-\item[$(\upk,\usk) \gets UserKeyGen(\opk)$.] Runs \UKeyGen from the
+\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \UKeyGen from the
   \CUASGen construction, and computes $\CCommit(\usk;0)$ as \upk.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
-  \langle \Obtain(\usk,\opk,\attrs),\Issue(\osk,\upk,\attrs) \rangle$.]
+  \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
   Runs the $\langle \Obtain,\Issue \rangle$ protocol from \CUASGen, using
   $\fissue^1$ as issuance function.
-\item[$1/0 \gets \langle Show(\opk,\attrs,\dattrs,\cred),
-  \Verify(\opk,\dattrs) \rangle$.]
+\item[$1/0 \gets \langle Show(\ipk,\attrs,\dattrs,\cred),
+  \Verify(\ipk,\dattrs) \rangle$.]
   Runs the interactive extension of \Sign and \Verify of the \CUASGen protocol,
   using $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as
   open function, with $\opk'$ from \parm as opener public key.
@@ -611,13 +614,13 @@ signature unforgeability from \UAS is enough.
   \defref{def:sign-forge-uas}.
 
   To simulate oracle calls by \adv, \advB acts as in the anonymity proof. Assume
-  that \adv~ wins its game. Note that, since $b=1$ in line 4 of the
+  that \adv~ wins its game. Note that, since $b=1$ in line 5 of the
   unforgeability game of \figref{fig:model-ac}, then by construction, \Verify
   also returns $1$ in the sign unforgeability game of \UAS. In addition, if
   there is no corrupt user with a credential containing $D$, then this leads to
-  \advB winning at line 8 in \figref{fig:exp-uas-unfor-sign}, as no credential
+  \advB winning at line 9 in \figref{fig:exp-uas-unfor-sign}, as no credential
   owned by a corrupt user that can be extracted can make the $\feval^{\dattrs}$
-  function output $\yeval=D$. Thus, \advB wins with the same probability as
+  function output $\yeval^0=D$. Thus, \advB wins with the same probability as
   \adv~ does.  
   %
   \qed
@@ -626,9 +629,12 @@ signature unforgeability from \UAS is enough.
 \subsection{Delegatable Anonymous Credentials}
 \label{sapp:related-models-dac}
 
+\todo{Rewrite when the full rewriting of the paper is done. For now, just
+  adapting the construction.}
 We give a simple definition for delegatable anonymous credentials extending
-the anonymous credential model in \cite{fhs19}. Next, we briefly describe a
-construction based on $(\fissue^n,\feval^{n,\dattrs},\finsp^0)$-\CUASGen, and
+the anonymous credential model in \cite{fhs19}, but drawing inspiration from
+\cite{bcc+09}. Next, we briefly describe a construction based on $(\fissue^n,
+\feval^{n,\dattrs},\finsp^0)$-\CUASGen, and
 show that it satisfies our basic notion of delegatable anonymous credentials.
 Roughly, a delegatable anonymous credential scheme is an anononymous credential
 scheme in which every issuer of level $n$ can only issue credentials of level
@@ -641,9 +647,17 @@ level is correct, or $0$ otherwise.
 \begin{figure}[ht!]
   \centering
   \scalebox{0.9}{      
-    \begin{minipage}[t]{0.4\textwidth}        
-      \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,dac}(1^\secpar)$}{%
-        b^* \gets \adv^{HU,CU,obtain,Show,LoR} \\
+    \begin{minipage}[t]{0.4\textwidth}
+      \procedure[linenumbering]{$\Exp^{iss-anon-b}_{\adv,dac}(1^\secpar)$}{%
+        \parm \gets \Setup(1^\secpar) \\
+        b^* \gets \adv^{\mathcal{O}_{iss-anon}}(\parm) \\
+        \pcreturn b^*
+      }
+      \vspace*{0.5em}
+
+      \procedure[linenumbering]{$\Exp^{sig-anon-b}_{\adv,dac}(1^\secpar)$}{%
+        \parm \gets \Setup(1^\secpar) \\
+        b^* \gets \adv^{\mathcal{O}_{iss-anon}}(\parm) \\
         \pcreturn b^*
       }        
     \end{minipage}
@@ -652,7 +666,7 @@ level is correct, or $0$ otherwise.
     \begin{minipage}[t]{.6\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,dac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\        
-        (D,n+1,\st) \gets \adv^{HU,CU,ObtIss,Issue,Show}(\opk) \\
+        (D,n+1,\st) \gets \adv^{\mathcal{O}_{forge}}(\parm,\opk) \\
         (\cdot,b) \gets \langle \adv(\st),\Verify(\opk,
         D \cup \lbrace n+1 \rbrace)\rangle \\
         \pcif b = 0: \pcreturn 0 \\
@@ -664,13 +678,115 @@ level is correct, or $0$ otherwise.
     \end{minipage}      
   }
   \caption{Security games for delegatable anonymous credentials with selective
-    disclosure based on \cite{fhs19}. \OWNR and \ATTR tables are essentially as
-    in \secref{ssec:model-uas}. $level(\opk,n)$ is a helper function that
-    returns the $1$ if the level of \opk is $n$, or $0$ otherwise.}
+    disclosure based on \cite{fhs19}. $\mathcal{O}_{iss-anon} \gets \lbrace HU,
+    CU,Obtain,Issue,Show,IssLoR\rbrace$, $\mathcal{O}_{sig-anon} \gets \lbrace
+    HU,CU,Obtain,Issue,Show,SigLoR\rbrace$. $\mathcal{O}_{forge} \gets \lbrace
+    HU,CU,ObtIss,Issue,Show \rbrace$. $IssLor$ is equivalent to \OBTCHALb in
+    \UAS, whereas $SigLor$ is equivalent to \CHALb. Also, \OWNR and \ATTR
+    tables are essentially as in \secref{ssec:model-uas}.
+    $level(\opk,n)$ is a helper function that returns the $1$ if the level of
+    \opk is $n$, or $0$ otherwise.}
   \label{fig:model-dac}  
 \end{figure}
 
 \subsubsection{\CUASDAC Construction.} %
+In a nutshell, we distinguish between top-level issuers, and users who delegate
+their credentials, thus acting as lower-level issuers. Top-level issuers are
+exactly as issuers in \CUASGen. Lower-level issuers need to make public an
+issuance public key that reveals the attributes they are willing to delegate,
+and their credential level. The issuance function has to prove that the
+requestor is asking
+for a credential that: (1) increments the credential level exactly by one, and
+(2) the requested attributes are a subset of those that the low-level issuer
+can delegate. Note that both conditions apply recursively. To prevent
+mix-and-match attacks, in each (lower-level) credential we include as attributes
+a ``serial number'' of the immediately upper level credential, and another one
+for the credential being issued (\todo{see figure}). For a credential of
+level $n$, the evaluation function must output a chain of proofs of knowledge of
+a sequence of credentials of levels $n$ up to $1$, with matching serial number
+pairs.
+
+More concretely, we define issuance functions for low-level issuers to have
+the following structure:
+
+\begin{align}
+  & \fissue^{n,r_n,\attrs}(\usk,\scred,\attrs') \coloneqq \lbrace
+    \pcif \attrs'_1 = n+1 \land \attrs'_2 = r_n \land
+    \attrs'_{[4..t]} \subseteq \attrs: \pcreturn 1; \pcelse \pcreturn 0
+    \rbrace \nonumber \\
+  &  \feval^{n,\dattrs}(\usk,\cred,\msg) \coloneqq \lbrace \textrm{Parse \cred
+    as }(\cred',\Sig,r); \pi \gets K(\cred') \rbrace
+\end{align}
+\todo{XXXX}
+
+Where $n$ is its depth in the delegation chain, $\attrs'_3$ must be some serial
+number chosen by the issuer for the new credential, and $r_n$ is a random number
+serving as serial number for the issuer's credential (chosen by its parent
+issuer), and \attrs is the attribute set that it can delegate. Note that this
+issuance funcion expects the first attribute of the requested credential to
+encode the credential depth, the second attribute to encode the serial number
+of the issuer's credential, and the third attribute to encode the random
+number (chosen uniformly by the issuer) that will serve as identifier of the
+produced credential. All other attributes only need to meet the condition of
+being contained in the attributes \attrs of the issuer's credential. 
+
+\begin{description}
+\item[$\parm \gets \Setup(1^\secpar)$.] As in \CUASAC.
+\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] If the issuer is a top-level
+  issuer, $IssKeyGen$ simply runs \IKeyGen in \CUASAC. If it is a lower-level
+  issuer (say, of level $n>1$), this is in fact a user, who has already run
+  $UserKeyGen$ below (and thus, \IKeyGen), and owns a credential  over
+  attributes \attrs, issued by some higher-level issuer. Thus, instead of
+  running \SBCMKeyGen, sets $\isk \gets \usk$, and its issuance function to
+  $\fissue^{n,r_n,\attrs}$. % The
+  % lower-level issuer also runs $(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,r,
+  % \feval^{\dattrs})$, where $\feval^{\dattrs}$ is as defined as in
+  % \appref{sapp:related-models-ac}, and thus reveals the attributes that the
+  % low-level issuer can delegate. That is, by definition of $\feval^{\dattrs}$,
+  % given the \attrs defined in $\fissue^{n,r_n,\attrs}$, $\yeval = \attrs$ (also,
+  % note that the issuer's credential may contain other non-delegatable
+  % attributes).
+  Finally, the lower-level issuer sets $\ipk \gets (\ipk,n,r_n,\attrs,
+  \fissue^{n,r_n,\attrs})$.
+\item[$(\upk,\usk) \gets UserKeyGen(\opk)$.] All users in this scheme are
+  also issuers. Thus, a new user runs first \IKeyGen as in \CUASGen. Then, sets
+  $\usk \gets \isk$.
+\item[$\langle \cred/\bot,\top/\bot \rangle \gets
+  \langle \Obtain(\usk,\opk,\attrs),\Issue(\osk,\upk,\attrs) \rangle$.]
+  We assume that the set \attrs of attributes to be included in the credential
+  are of the form $(n+1,r_n,r_{n+1},\attrs')$, where $n+1$ is the level of the
+  credential to be issued, $r_n$ is the identifier of the issuer's credential
+  (or some special fixed value if it is a top level credential), $r_{n+1}$ is
+  a serial number for the new credential, chosen by the issuer, and $\attrs'$
+  is the attributes being requested by the user. Both issuer and user agree on
+  these values beforehand. If the issuer is top-level, this protocol runs as in
+  \CUASAC, for \attrs as above. Else, if the issuer is not top-level (say, it
+  has level $n>1$), the protocol in \CUASAC is augmented as follows:
+
+  \begin{itemize}
+  \item \uline{User}: $r \gets \bin^l$ (for some appropriate $l$).
+  \item \uline{User,Issuer}: Run $\langle\Obtain,\Issue\rangle$ as in \CUASGen,
+    for \attrs as specified above.
+  \item \uline{Issuer}: $\Sig=(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,r,
+    \feval^{n,\dattrs})$. Where \cred is the issuer's $n$-th level credential,
+    and $\feval^{n,\dattrs}$ is as in \appref{sapp:related-models-ac}, plus
+    revealing the credential level (encoded in \cred's first attribute).
+  \item \uline{User}: Accept if $\Verify(\opk,\ipk,\Sig,r,\feval^{n,\dattrs})=
+    1$, and return $(\cred,\ipk,\Sig,r)$ as $(n+1)$-level credential, where
+    \cred is the credential produced in the interactive protocol at step 2.
+    Otherwise, reject.
+  \end{itemize}
+
+  Note that, basically, the issuer proves that it owns a credential of level $n$
+  over the attributes it is delegating.
+
+\item[$1/0 \gets \langle Show(\opk,\attrs,\dattrs,\cred),
+  \Verify(\opk,\dattrs) \rangle$.]
+  As in \CUASAC, but using $\feval^{n,\dattrs}$ as signature evaluation
+  function.
+\end{description}
+
+\iffalse
 We adopt the simplification that the level of an issuer is encoded in its public
 key, and anybody can check the issuer's level via some publicly accessible
 mechanism. This can be ensured, e.g., by having each issuer post its
@@ -709,6 +825,7 @@ Given $level$, the security proofs are as for \CUASAC, with the addition that,
 in the unforgeability game, an adversary winning because of $level(\opk,n) = 0$
 can be directly used to break the sign unforgeability property of the underlying
 \CUASGen scheme.
+\fi
 
 \subsection{Multimodal Private Signatures}
 \label{sapp:related-models-mps}
