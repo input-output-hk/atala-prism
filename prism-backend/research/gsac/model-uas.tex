@@ -48,18 +48,18 @@ from credentials:
   \Obtain(\usk,\ipk,\scred,\attrs),
   \Issue(\isk,\sipk,\attrs))
   \rangle \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.] %
-  This interactive protocol lets a user with key \usk running the
-  \Obtain process, receive a credential \cred from an issuer in the system, on
-  attribute set $\attrs$. The user leverages a set of credentials \scred,
-  each with a matching issuer key in \sipk.
-  The user outputs the produced credential \cred, while
-  the issuer outputs the protocol transcript \utrans for the produced
-  credential.
+  This interactive protocol lets a user with key \usk running the \Obtain
+  process, receive a credential \cred from an issuer in the system, on attribute
+  set $\attrs$. The user leverages a set of credentials \scred, each with a
+  matching issuer key in \sipk (ommitted in \Obtain for readability). The user
+  outputs the produced credential \cred, while the issuer outputs the protocol
+  transcript \utrans for the produced credential.
 \item[$\Sign(\usk,\opk,\scred,\msg,\feval) \rightarrow (\sig,\yeval)$.] %
   Upon receiving a user secret key \usk, opener public key \opk, a set of
-  credentials \scred, a message \msg and evaluation
-  function \feval, returns signature \sig, and a plaintext value \yeval. For
-  readability, we use \Sig to denote the tuple $(\sig,\yeval)$.
+  credentials \scred, a message \msg and evaluation function \feval, returns
+  signature \sig, and a plaintext value \yeval. For readability, we assume
+  that, for each $\cred \in \scred$, we can get the corresponding issuer public
+  key \ipk; also, we use use \Sig to denote the tuple $(\sig,\yeval)$.
 \item[$\Verify(\opk, \sipk,\Sig,\msg,\feval) \rightarrow 1/0$.]
   Checks whether $\Sig = (\sig,\yeval)$ is a valid signature
   over message \msg, from a user with credentials issued by issuers with public
