@@ -46,20 +46,20 @@ private[grpc] object GrpcAuthenticationContext {
   val SignatureKeys: GrpcMetadataContextKeys[Array[Byte]] =
     GrpcMetadataContextKeys("signature")
   val PublicKeyKeys: GrpcMetadataContextKeys[Array[Byte]] =
-    GrpcMetadataContextKeys("publicKey")
+    GrpcMetadataContextKeys("public-key")
 
   // DID authentication
   val DidKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys("did")
   val DidKeyIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
-    "didKeyId"
+    "did-key-id"
   )
   val DidSignatureKeys: GrpcMetadataContextKeys[Array[Byte]] =
-    GrpcMetadataContextKeys("didSignature")
+    GrpcMetadataContextKeys("did-signature")
 
   // used to prevent request replay attacks, this is a byte array to not worry about custom encoding
   // on different languages, like a string.
   val RequestNonceKeys: GrpcMetadataContextKeys[Array[Byte]] =
-    GrpcMetadataContextKeys("requestNonce")
+    GrpcMetadataContextKeys("request-nonce")
 
   // tracing
   val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
