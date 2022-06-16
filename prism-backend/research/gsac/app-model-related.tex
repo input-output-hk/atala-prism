@@ -569,7 +569,7 @@ security-wise, though.
   \Verify(\ipk,\dattrs) \rangle$.]
   Runs the interactive extension of \Sign and \Verify of the \CUASGen protocol,
   using $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as
-  open function, with $\opk'$ from \parm as opener public key.
+  open function, with \opk from \parm as opener public key.
 \end{description}
 
 \paragraph{Security of \CUASAC.} %
@@ -581,15 +581,16 @@ leveraging other credentials not any fixed custom issuance policy. Thus,
 signature unforgeability from \UAS is enough.
 
 \begin{theorem}[Anonymity of \CUASAC]
-  If the base \CUASGen construction is anonymous according to
-  \defref{def:anonymity-uas}, then \CUASAC is an anonymous AC scheme
+  \label{thm:anon-cuasac}
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASAC is an anonymous AC scheme
   according to \cite{fhs19}.
 \end{theorem}
 
 \begin{proof}
   Given \adv~ against anonymity of \CUASAC as defined in \cite{fhs19}, we build
   an adversary \advB against anonymity of \CUASGen as defined in
-  \defref{def:anonymity-uas}.
+  \defref{def:sign-anonymity-uas}.
 
   To simulate oracle calls by \adv, \advB simply redirects to its corresponding
   oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR$, \advB redirects to
@@ -602,6 +603,7 @@ signature unforgeability from \UAS is enough.
 \end{proof}
 
 \begin{theorem}[Unforgeability of \CUASAC]
+  \label{thm:forge-cuasac}
   If the base \CUASGen construction has sign unforgeability according to
   \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
 \end{theorem}
@@ -627,19 +629,20 @@ signature unforgeability from \UAS is enough.
 \subsection{Delegatable Anonymous Credentials}
 \label{sapp:related-models-dac}
 
-To showcase the feasibility of building delegatable anonymous credentials (DAC)
-from \UAS, we give a simple definition for a DAC scheme, extending
-\cite{fhs19} and inspired by \cite{bcc+09}. Note however that, unlike the
-latter, our simple scheme built from \CUASGen does not ensure privacy of the
-delegation chain -- but it does, however, ensure that a (not top-level) issuer
-can only delegate attributes contained in a credential it owns. Also, for
-simplicity, we restrict to the case of using one credential per
-signature/interactive credential presentation, and assume that all parties use
-the same opener and \finsp function.
+We give a simple definition for a Delegatable Anonymous Credentials (DAC)
+scheme, extending \cite{fhs19} and inspired by \cite{bcc+09}. Unlike the latter,
+our simple scheme built from \CUASGen does not ensure privacy of the delegation
+chain -- which could be achieved by making \feval output projective proofs like
+in \cite{bcc+09}, but since our goal is to showcase the feasibility of building
+DAC from \UAS, we leave that out for brevity. Our simple scheme does, however,
+ensure that a (not top-level) issuer can only delegate attributes contained in a
+credential it owns. Also, for simplicity, we restrict to the case of using one
+credential per signature/interactive credential presentation, and assume that
+all parties use the same opener and \finsp function.
 %
 The functionality is thus defined as in \appref{sapp:related-models-ac}, i.e.,
-we have $Setup$, $IssKeyGen$ and $UserKeyGen$ algorithms, and $Obtain,Issue$ and
-$Show,Verify$ interactive protocols.
+we have $Setup$, $IssKeyGen$ and $UserKeyGen$ algorithms, and $\langle Obtain,
+Issue \rangle$ and $\langle Show,Verify \rangle$ interactive protocols.
 %
 In the modelling for this setting, since there are multiple issuers, in addition
 to the oracles in \appref{sapp:related-models-ac}, we use $HI$ and $CI$ oracles,
@@ -654,29 +657,12 @@ be used successfully to authenticate a level-$(i+1)$ credential up to the
 level-$n$ credential, and that the attributes revealed in the level-$n$
 authentication are contained in all the credentials up the chain.
 
-
-% \todo{Rewrite when the full rewriting of the paper is done. For now, just
-%   adapting the construction.}
-% We give a simple definition for delegatable anonymous credentials extending
-% the anonymous credential model in \cite{fhs19}, but drawing inspiration from
-% \cite{bcc+09}. Next, we briefly describe a construction based on $(\fissue^n,
-% \feval^{n,\dattrs},\finsp^0)$-\CUASGen, and
-% show that it satisfies our basic notion of delegatable anonymous credentials.
-% Roughly, a delegatable anonymous credential scheme is an anononymous credential
-% scheme in which every issuer of level $n$ can only issue credentials of level
-% $n+1$. For simplicity, we restrict to the case of using only one credential per
-% signature, but the generalization is trivial. Note that, in addition to the
-% algorithms in \secref{sapp:related-models-ac}, we add a helper function $level$
-% which, given an issuer's public key and its alleged level, returns $1$ if the
-% level is correct, or $0$ otherwise.
-
 \begin{figure}[ht!]
   \centering
   \scalebox{0.9}{      
     \begin{minipage}[t]{0.4\textwidth}
       \procedure[linenumbering]{$\Exp^{iss-anon-b}_{\adv,dac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
-        %(\opk,\osk) \gets \OKeyGen(\parm) \\
         b^* \gets \adv^{\mathcal{O}_{iss-anon}}(\parm) \\
         \pcreturn b^*
       }
@@ -684,8 +670,7 @@ authentication are contained in all the credentials up the chain.
 
       \procedure[linenumbering]{$\Exp^{sig-anon-b}_{\adv,dac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
-%        (\opk,\osk) \gets \OKeyGen(\parm) \\        
-        b^* \gets \adv^{\mathcal{O}_{iss-anon}}(\parm) \\
+        b^* \gets \adv^{\mathcal{O}_{sig-anon}}(\parm) \\
         \pcreturn b^*
       }        
     \end{minipage}
@@ -704,27 +689,24 @@ authentication are contained in all the credentials up the chain.
           \Verify(\cdot,\cdot)\rangle$} \\        
         (ipk_0, \lbrace (\ipk_i,\cred_i) \rbrace_{i \in [1,n]})
         \gets ExtractChain(\utrans) \\ 
-        % D \cup \lbrace n+1 \rbrace)\rangle \\        
         \pcif \exists i \in [1,n]~\suchthat~
-        \langle Show(\ipk_{i-1},\attrs(\cred_{i}),(i,D'),\cred_{i}), \\
-        \hspace*{8em}Verify(\ipk_{i-1},(i,D')) \rangle
-        = \langle \cdot,0\rangle \\%~\lor % \\
-        % \pcind \attrs(\cred_i) \not\subseteq \attrs(\cred_{i-1}):
+        \iid = \ISR[\ipk_{i-1}] \notin \CI~\land \\
+        \pcind D' \not\subseteq \ATTR[\iid]) \land
+        D' \subseteq \ATTR[\ISR[\ipk_i]]: \\
         \pcind \pcreturn 1 \\
-%        \pcif(\forall j: \OWNR[j] \in \CU \implies D \cup \lbrace n+1 \rbrace
-%        \not\subseteq \ATTR[j])~\lor\\
-%        \pcind level(\opk,n) = 0: \pcreturn 1 \\
         \pcreturn 0
       }       
     \end{minipage}      
   }
   \caption{Security games for delegatable anonymous credentials with selective
     disclosure based on \cite{fhs19}. $\mathcal{O}_{iss-anon} \gets \lbrace HU,
-    CU,HI,CI,Obtain,Issue,Show,IssLoR\rbrace$, $\mathcal{O}_{sig-anon} \gets
-    \lbrace HU,CU,HI,CI,Obtain,Issue,Show,SigLoR\rbrace$. $\mathcal{O}_{forge}
-    \gets \lbrace HU,CU,HI,CI,ObtIss,Issue,Show \rbrace$. $IssLor$ is equivalent
-    to \OBTCHALb in \UAS, whereas $SigLor$ is equivalent to \CHALb. Also, \OWNR
-    and \ATTR tables are essentially as in \secref{ssec:model-uas}. With $D =
+    CU,HI,CI,Obtain,Issue,Obtiss,Show,IssLoR\rbrace$, $\mathcal{O}_{sig-anon}
+    \gets \lbrace HU,CU,HI,CI,Obtain,Issue,ObtIss,Show,SigLoR\rbrace$.
+    $\mathcal{O}_{forge} \gets \lbrace HU,CU,HI,CI,Obtain,ObtIss,Issue,Show
+    \rbrace$. $IssLor$ is equivalent to \OBTCHALb in \UAS, whereas $SigLor$ is
+    equivalent to \CHALb. Also, \OWNR and \ATTR tables are essentially as in
+    \secref{ssec:model-uas}. $\ISR[\ipk]$, in this case, returns the identifier
+    of the issuer with public key \ipk. With $D =
     (n,D')$ we mean that the first attribute in the revealed set $D$ is $n$,
     which denotes the level of the credential used for authentication.}
   \label{fig:model-dac}  
@@ -745,7 +727,7 @@ list:
 \item An \UAS signature proving knowledge of a credential of level $n$, and over
   the attributes that this level-$n$ issuer is delegating.
 \item The \ipk of the parent issuer.
-\item Their $\fissue^{n,\dattrs}$ function.
+\item The $\fissue^{n,\dattrs}$ function they will require for delegating.
 \item An $\feval^{n,\dattrs}$ function used to produce the signature at item 2.
 \end{enumerate}
 
@@ -757,10 +739,10 @@ $n+1$, and that all requested attributes are a subset of the attribute set
 \dattrs being delegated by the level-$n$ issuer. In addition, signature
 evaluation functions $\feval^{n,\dattrs}$, also shown in \esref{eq:funcs-dac},
 must reveal the level of the credential used to produce the \UAS signature at
-item 2, and reveal a set of attributes \dattrs that the level-$n$ issuer
+item 2, as well as the set of attributes \dattrs that the level-$n$ issuer
 delegates. Verifiers can then trivially check if the set of revealed attributes
 are contained within the attributes delegatable by the parent issuer%
-\footnote{Of course, additional checks may be added in both functions, this is
+\footnote{Additional checks may be added in both functions, but this is
   the bare minimum.}. \figref{fig:XXX} depicts a sample of the delegation chain
 that this structure creates.
  
@@ -808,9 +790,94 @@ From this high-level description, we define the algorithms of \CUASDAC:
   $\langle\Obtain,\Issue\rangle$ as in \CUASGen, using the \fissue function
   required by the issuer.
 \item[$1/0 \gets \langle Show(\opk,\attrs,\dattrs,\cred),
-  \Verify(\opk,\dattrs) \rangle$.] As in \CUASGen. Concretely, arbitrary
-  \feval functions can be used -- not necessarily $\feval^{n,\dattrs}$.
+  \Verify(\opk,\dattrs) \rangle$.] As in the interactive variant of \CUASGen.  
 \end{description}
+
+\paragraph{Security of \CUASDAC.} %
+We prove that \CUASDAC is an anonymous and unforgeable DAC scheme, according to
+the model in \figref{fig:model-dac}, if the underlying \CUASGen construction has
+anonymous issuance and signing, and has unforgeable issuance and signing. 
+
+\begin{theorem}[Issuance anonymity of \CUASDAC]
+  If the base \CUASGen construction has issuance anonymity according to
+  \defref{def:issue-anonymity-uas}, then \CUASDAC also has issuance anonymity.
+\end{theorem}
+
+\begin{proof}
+  Given \adv~ against issuance anonymity of \CUASDAC as defined in
+  $\Exp^{iss-anon-b}_{\adv,dac}(1^\secpar)$, we build an adversary \advB against
+  issuance anonymity of \CUASGen as defined in \defref{def:issue-anonymity-uas}.
+
+  To simulate oracle calls by \adv, \advB simply redirects to its corresponding
+  oracle, i.e.: for calls to $HU,CU,HI,CI,Obtain,Show,IssLoR$, \advB redirects
+  to \HUGEN,\CUGEN,\IGEN,\ICORR,\OBTAIN,\SIGN,\OBTCHALb, respectively. Note that
+  ``translating'' the inputs from the former into inputs for the latter is
+  trivial. Obviously, if \adv~ wins in its issuance anonymity game, then so does
+  \advB with the  same probability.
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Signature anonymity of \CUASDAC]
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASDAC also has signature anonymity.
+\end{theorem}
+
+\begin{proof}
+  This is the same as in \thmref{thm:anon-cuasac}.
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability of \CUASAC]
+  If the base \CUASGen construction has issuance and signature unforgeability
+  according to \defref{def:issue-forge-uas} and \defref{def:sign-forge-uas}, and
+  non-frameability according to \defref{def:frame-uas}, then \CUASAC is an
+  unforgeable AC scheme.
+\end{theorem}
+
+\begin{proof}
+  First, we define the $ExtractChain(\utrans)$ function for our construction.
+  Note that \utrans is a tuple $(r,\Sig)$\footnote{This follows for the approach
+    to transform non-interactive signature and verification in \UAS to interactive
+    presentations, as described in \secref{ssec:variants-gsac}.}, where $r$ is a
+  fresh random number produced by the environment (acting as honest verifier),
+  and \Sig is a \CUASGen signature over $r$. Thus, $ExtractChain$ leverages
+  \ExtractSign from \CUASGen (see \secref{ssec:security-uas}) to get the
+  credential and associated \ipk used to produce \Sig. Note that, for this
+  \ipk, $\ipk = \ipk_{n-1}$ in $\Exp^{forge}_{\adv,dac}$. In \CUASDAC, we can
+  leverage $\ipk_{n-1}$ to fetch from the public list a signature $\Sig_{n-1}$
+  generated by the issuer owner of $\ipk_{n-1}$. Again, we apply \ExtractSign
+  from \CUASGen, to get the credential one layer up in the chain.
+  $ExtractChain$ repeats this step, until reaching the top level credential,
+  issued by $\ipk_0$.
+
+  For the proof, we first replace within $Setup$ the $\NIZKSetup$ algorithms for
+  issuance and signing with their corresponding $\NIZKSetup$. Due to their
+  zero-knowledge property, the resulting game is indistinguishable. Also, note
+  that $ExtractChain$ succeeds to extract the corresponding credential chain,
+  due to simulation extractability of the NIZKs. 
+
+  From the previous, the same reasoning as in \thmref{thm:forge-cuasac} applies
+  to an adversary \adv~winning at line 5 of $\Exp^{forge}_{\adv,dac}$. Next,
+  suppose that, from \utrans obtained at line 6, $ExtractChain$ outputs a
+  delegation chain that makes \adv~win at line 10. This means that an
+  uncorrupted issuer at position $i-1$ of the chain did not own a credential
+  containing $D'$, but the issuer at position $i$ does. Then, either of the
+  following must happen:
+
+  \begin{itemize}
+  \item The credential of the issuer at position $i$ is a forgery, meaning that
+    it is a valid signature by the issuer at position $i-1$, who did not produce
+    it. This can be used to break signature non-frameability of \CUASGen.
+  \item The credential of the issuer at position $i$ is not a forgery, meaning
+    that it is a valid signature by the issuer at position $i-1$, who produced
+    it. But this contradicts the conditions required by $\fissue^{n,\dattrs}$,
+    and therefore breaks issuance unforgeability of \CUASGen.
+  \end{itemize}
+  %
+  \qed
+\end{proof}
 
 \iffalse
 We adopt the simplification that the level of an issuer is encoded in its public

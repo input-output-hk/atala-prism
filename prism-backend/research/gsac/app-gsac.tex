@@ -331,7 +331,8 @@ presentations like in the case of anonymous credentials.
 
 \paragraph{Signature Anonymity.} To see why the interactive variant is
 anonymous, assume an adversary $\adv$ against anonymity in that case. We build
-\advB against the non-interactive \ExpGSACSigAnonb as follows. \advB initializes
+\advB against the non-interactive \ExpGSACSigAnonb from \adv~ as follows. \advB
+initializes
 everything as in the \ExpGSACSigAnonb game. When $\adv$ initiates a call to its
 interactive \SIGN (resp. \CHALb) oracle, \advB picks a random number, and sends
 it to the adversary, along with the response of its own (non-interactive) \SIGN
