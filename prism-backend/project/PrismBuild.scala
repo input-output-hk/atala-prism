@@ -1,17 +1,17 @@
 import Dependencies._
-import com.typesafe.sbt.GitVersioning
 import com.typesafe.sbt.GitPlugin.autoImport._
+import com.typesafe.sbt.GitVersioning
 import play.twirl.sbt.SbtTwirl
-import sbt.Keys.{libraryDependencySchemes, _}
+import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtdocker.DockerPlugin
 import sbtdocker.DockerPlugin.autoImport._
-import scoverage.ScoverageKeys._
 import sbtghpackages.GitHubPackagesPlugin.autoImport._
 import sbtprotoc.ProtocPlugin.autoImport.PB
+import scoverage.ScoverageKeys._
 
 object PrismBuild {
 
@@ -123,19 +123,26 @@ object PrismBuild {
         )
       )
 
-  private def generateImageName(name: String, version: String): ImageName =
-    if (sys.env.get("GITHUB").contains("1"))
+  private def generateImageNames(name: String, version: String): Seq[ImageName] = {
+    Seq(
       ImageName(
         namespace = Some("ghcr.io/input-output-hk"),
         repository = "prism-" + name,
         tag = sys.env.get("TAG").orElse(Some(version))
-      )
-    else
+      ),
       ImageName(
         namespace = Some("895947072537.dkr.ecr.us-east-2.amazonaws.com"),
         repository = name,
         tag = sys.env.get("TAG").orElse(Some(version))
       )
+    ) ++ Some(
+      ImageName(
+        namespace = Some("ghcr.io/input-output-hk"),
+        repository = "prism-" + name,
+        tag = Some("latest")
+      )
+    ).filter(_ => sys.env.getOrElse("PUBLISH_LATEST_TAG", "false") == "true")
+  }
 
   def commonServerProject(name: String): Project =
     commonProject(Project(name, file(name)))
@@ -157,7 +164,7 @@ object PrismBuild {
             )
           }
         },
-        docker / imageNames := Seq(generateImageName(name, version.value)),
+        docker / imageNames := generateImageNames(name, version.value),
         libraryDependencies ++= circeDependencies ++ enumeratumDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
           sttpDependencies ++

@@ -196,8 +196,10 @@ jobs:
         run: |
           cd prism-backend
           export TAG="${{ steps.set-tag.outputs.tag }}"
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            export PUBLISH_LATEST_TAG=true
+          fi
           sbt "${{ matrix.image }}/dockerBuildAndPush"
-          GITHUB=1 sbt "${{ matrix.image }}/dockerBuildAndPush"
       - name: Build and push prism-lb-envoy
         if: matrix.image == 'prism-lb-envoy'
         run: |
