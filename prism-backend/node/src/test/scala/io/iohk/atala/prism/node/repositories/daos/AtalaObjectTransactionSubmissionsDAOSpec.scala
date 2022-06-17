@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.Ledger.InMemory
 import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.{InLedger, Pending}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,
   AtalaObjectStatus,
@@ -361,7 +361,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
 
   private def insertTransactionSubmissions(
       objectIds: List[AtalaObjectId],
-      statuses: List[AtalaObjectTransactionSubmissionStatus] = List(InLedger, InLedger, InLedger)
+      statuses: List[AtalaObjectTransactionSubmissionStatus] = List(Pending, InLedger, InLedger)
   ): List[TransactionInfo] = {
     val txIds = (1 to objectIds.size)
       .map(idx => TransactionId.from(Sha256.compute(s"transactionId${idx + 1}".getBytes).getValue).value)

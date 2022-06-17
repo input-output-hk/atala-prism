@@ -97,7 +97,7 @@ object AtalaObjectTransactionSubmissionsDAO {
              |SELECT tx.transaction_id, tx.ledger
              |FROM atala_object_tx_submissions AS tx
              |  INNER JOIN atala_objects AS obj ON tx.atala_object_id = obj.atala_object_id
-             |WHERE tx.status = 'IN_LEDGER' AND obj.atala_object_status = 'PENDING'
+             |WHERE (tx.status = 'PENDING' OR tx.status = 'IN_LEDGER') AND obj.atala_object_status = 'PENDING'
              |ORDER BY tx.submission_timestamp DESC
        """.stripMargin
       case Some(lastSeenId) =>
@@ -111,7 +111,7 @@ object AtalaObjectTransactionSubmissionsDAO {
              |FROM atala_object_tx_submissions AS tx
              |  INNER JOIN atala_objects AS obj ON tx.atala_object_id = obj.atala_object_id
              |  CROSS JOIN CTE
-             |WHERE tx.status = 'IN_LEDGER' AND obj.atala_object_status = 'PENDING' AND
+             |WHERE (tx.status = 'PENDING' OR tx.status = 'IN_LEDGER') AND obj.atala_object_status = 'PENDING' AND
              |       (tx.submission_timestamp < last_seen_time OR
                         tx.submission_timestamp = last_seen_time AND tx.transaction_id < $lastSeenId)
              |ORDER BY tx.submission_timestamp DESC, tx.transaction_id DESC
