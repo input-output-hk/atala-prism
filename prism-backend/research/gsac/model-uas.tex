@@ -407,6 +407,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
           \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,\feval) \\
           \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\scid],\msg) \\
+          \pcif \Yeval \notin \rngfeval: \pcreturn \bot \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\Sig,\Yeval,\msg,\feval) \rbrace \\
           \pcreturn \Sig \\
@@ -475,6 +476,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \TYeval = (\tyeval^0,\tyeval^1) \gets
           \feval(\UK[\cuid_1],\CRED[\cscid_1],\msg) \\
           \pcif \yeval^0 \neq \tyeval^0: \pcreturn \bot \\
+          \pcif \Yeval \notin \rngfeval \lor \TYeval \notin \rngfeval:
+          \pcreturn \bot \\
           \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
           \cSig_b \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
           \hspace*{71pt}\CRED[\cscid_b],\msg,\feval) \\
@@ -818,13 +821,15 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       = 0: \pcreturn 1 \\
       (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp',r) \gets \ExtractSign(\oid,\siid,\Sig,
       \msg,\feval) \\
-      (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
-      \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
+      \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
+      \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1
+      \lor \Yeval \notin \rngfeval:
       \pcreturn 1 \\
       \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp'
       \lor \yinsp \neq \yinsp':
       \pcreturn 1 \\
-      \pcif \exists \cred \in \scred~\suchthat~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
+      \pcif \exists \cred \in \scred~\suchthat~
+      \IdentifyCred(\usk,\attrs_{\cred},\cred) = 0:
       \pcreturn 1 \\
       \pcif \nexists \uid~\suchthat~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1 \\
       \pcreturn 0
@@ -929,13 +934,16 @@ adversary has access to the oracles in $\Oframe \gets \lbrace\HU,\CU\rbrace\GEN,
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
     \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
-%    (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)~\pccomment{\todo{New}} \\
+    % (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)~\pccomment{\todo{New}} \\
+    \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)
+    \pccomment{\todo{Added this line -- check line refs.}} \\
+    \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1
+    \lor \Yeval \notin \rngfeval: \pcreturn 1 \\
+    \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
+    \lor \yinsp \neq \yinsp': \pcreturn 1 \\    
     \pcif \nexists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \pcreturn 0 \\
-    \pcif \nexists (\cdot,\cdot,\Sig,(\yeval^0,\yeval^1),\msg,\feval)
+    \pcif \nexists (\cdot,\cdot,\Sig,\Yeval,\msg,\feval)
     \in \SIG[\uid]: \pcreturn 1 \\
-    \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
-    \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp
-    \lor \yinsp \neq \yinsp': \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Experiment for non-frameability on \UAS schemes.}
