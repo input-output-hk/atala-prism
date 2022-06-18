@@ -1,0 +1,60 @@
+\section{Introduction}
+\label{sec:introduction}
+
+% [4 pages max]
+
+%% Brief description of main precedents (simple words)
+Privacy-preserving digital signature and authentication systems have been a
+prolific field of study in the last few decades. Anonymous credentials
+\cite{chau85} and group signatures \cite{ch91} are among the most relevant ones.
+\todo{Other closely related schemes?}
+While there are many variants, the high-level idea is common: after obtaining a
+credential, users can authenticate anonymously and indistinguishably from other
+users with similar credentials. 
+
+%% Usefulness of main precedents / motivation
+The usefulness of these systems stems from the combination, within a single
+primitive, of seemingly contradictory concepts: anonymity, authentication, and
+utility.
+
+Anonymous credentials focus on utility at authentication time. For
+instance, encoding multiple attributes within a credential and allowing to
+selectively disclose a subset of them (or arbitrary predicates) at
+authentication time. The real world applications of such systems is direct,
+e.g., to prove ``Over 18''-type of claims. Indeed, anonymous credentials are
+making their own way to become a foundational block of ``anoncreds''%
+\footnote{\url{https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/002-anoncreds/README.html}. Last access, June 18th, 2022.},
+the privacy-preserving cousin of W3C's Verifiable Credentials%
+\footnote{\url{https://www.w3.org/TR/vc-data-model/}. Last access, June 18th,
+  2022.}.
+
+Group signatures enhance utility after authentication, by allowing partial
+reidentification, like linking of signatures, or even full deanonymization.
+While direct applications of group signatures seem hard to find, Direct
+Anonymous Attestation (DAA) \cite{bcc04,bl07,cdl16b} has been deployed to
+millions of computing devices into what's called TPM (Trusted Privacy Module)%
+\footnote{\url{https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/}. Last access, June 18th, 2022.}.
+Indeed, DAA is a very close relative of group signatures, where the signer is
+divided into two components (trusted and partially trusted), and treats signing
+and verification as an interactive protocol.
+
+%% Previous works summary w/ refs directly related contribs of UAS
+%% (or, tech approaches of main precedents)
+
+
+%% Main drawbacks of precedents
+
+%% Our results; TLDR (simple words)
+
+%% Our results; Tech nuances
+
+%% Our techniques
+
+%%% E.g., describe how we compatibilize both with AC sel disc., ring sigs, and MPS
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas-paper"
+%%% End:
