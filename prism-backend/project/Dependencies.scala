@@ -2,7 +2,6 @@ import sbt.Keys.libraryDependencySchemes
 import sbt._
 
 object versions {
-  val bouncycastle = "1.70"
   val catsScalatest = "3.1.1"
   val chimney = "0.6.1"
   val circe = "0.14.1"
@@ -31,17 +30,12 @@ object versions {
   val tofuDerevo = "0.13.0"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
-  val http4s = "0.21.7"
   val fs2 = "3.2.5"
   val prismSdk = "v1.3.3-snapshot-1654671951-8fa92eb"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 
 object Dependencies {
-  val bouncyBcpkix =
-    "org.bouncycastle" % "bcpkix-jdk15on" % versions.bouncycastle
-  val bouncyBcprov =
-    "org.bouncycastle" % "bcprov-jdk15on" % versions.bouncycastle
   val chimney = "io.scalaland" %% "chimney" % versions.chimney
   val circeCore = "io.circe" %% "circe-core" % versions.circe
   val circeGeneric = "io.circe" %% "circe-generic" % versions.circe
@@ -83,12 +77,6 @@ object Dependencies {
     "tf.tofu" %% "derevo-cats-tagless" % versions.tofuDerevo
   val twirlApi = "com.typesafe.play" %% "twirl-api" % versions.twirl
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
-  val http4sCirce = "org.http4s" %% "http4s-circe" % versions.http4s
-  val http4sDsl = "org.http4s" %% "http4s-dsl" % versions.http4s
-  val http4sBlazeServer =
-    "org.http4s" %% "http4s-blaze-server" % versions.http4s
-  val http4sBlazeClient =
-    "org.http4s" %% "http4s-blaze-client" % versions.http4s
   val fs2 = "co.fs2" %% "fs2-io" % versions.fs2
 
   // SDK dependencies
@@ -131,7 +119,6 @@ object Dependencies {
   val scalatestplus =
     "org.scalatestplus" %% "scalacheck-1-15" % versions.scalatestplus % Test
 
-  val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val circeDependencies =
     Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies =
@@ -148,8 +135,6 @@ object Dependencies {
   val scalatestDependencies =
     Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val sttpDependencies = Seq(sttpCore, sttpCE2)
-  val http4sDependencies =
-    Seq(http4sCirce, http4sDsl, http4sBlazeServer, http4sBlazeClient)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
   val prismDependencies =
     Seq(prismCredentials, prismProtos, prismApi, vaultProtos)
