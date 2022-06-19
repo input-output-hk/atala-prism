@@ -112,7 +112,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
     UpdateDIDOperation
 
   "UpdateDIDOperation.parse" should {
-    "parse valid CreateDid AtalaOperation" in {
+    "parse valid UpdateDID AtalaOperation" in {
       val result = UpdateDIDOperation
         .parse(signedExampleOperation, dummyLedgerData)
         .toOption
@@ -306,7 +306,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       )
     }
 
-    "return error when issuer is missing in the DB" in {
+    "return error when DID is missing in the DB" in {
       val parsedOperation = UpdateDIDOperation
         .parse(signedExampleOperation, dummyLedgerData)
         .toOption
@@ -374,6 +374,89 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .value
 
       result mustBe a[StateError.EntityExists]
+    }
+
+    "return error when the last master key is revoked" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val revokeTheMaster = node_models.AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.UpdateDid(
+          value = node_models.UpdateDIDOperation(
+            previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue),
+            id = createDidOperation.id.getValue,
+            actions = Seq(
+              node_models.UpdateDIDAction(
+                node_models.UpdateDIDAction.Action.RemoveKey(
+                  node_models.RemoveKeyAction(
+                    keyId = "master"
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(revokeTheMaster, dummyLedgerData)
+        .toOption
+        .value
+
+      val result = parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+        .left
+        .value
+
+      result mustBe a[StateError.InvalidMasterKeyRevocation]
+    }
+
+    "update DID when master key is being replaced" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val replaceTheMaster = node_models.AtalaOperation(
+        operation = node_models.AtalaOperation.Operation.UpdateDid(
+          value = node_models.UpdateDIDOperation(
+            previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue),
+            id = createDidOperation.id.getValue,
+            actions = Seq(
+              exampleAddKeyAction,
+              node_models.UpdateDIDAction(
+                node_models.UpdateDIDAction.Action.RemoveKey(
+                  node_models.RemoveKeyAction(
+                    keyId = "master"
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(replaceTheMaster, dummyLedgerData)
+        .toOption
+        .value
+
+      val result = parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      result mustBe Right(())
     }
 
   }
