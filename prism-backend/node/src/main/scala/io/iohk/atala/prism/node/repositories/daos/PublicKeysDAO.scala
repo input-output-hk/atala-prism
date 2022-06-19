@@ -7,8 +7,8 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.DIDPublicKey
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.utils.syntax._
 
 import java.time.Instant
@@ -71,6 +71,23 @@ object PublicKeysDAO {
          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE did_suffix = $didSuffix AND key_id = $keyId
+         |""".stripMargin.update.run.map(_ > 0)
+  }
+
+  def revokeAllKeys(
+      didSuffix: DidSuffix,
+      ledgerData: LedgerData
+  ): ConnectionIO[Boolean] = {
+    val revokedOn = ledgerData.timestampInfo
+    sql"""
+         |UPDATE public_keys
+         |SET revoked_on = ${Instant.ofEpochMilli(
+        revokedOn.getAtalaBlockTimestamp
+      )},
+         |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
+         |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+         |    revoked_on_transaction_id = ${ledgerData.transactionId}
+         |WHERE did_suffix = $didSuffix AND revoked_on is NULL
          |""".stripMargin.update.run.map(_ > 0)
   }
 }

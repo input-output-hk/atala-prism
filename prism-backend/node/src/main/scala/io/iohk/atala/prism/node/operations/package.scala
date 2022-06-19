@@ -303,6 +303,8 @@ package object operations {
         RevokeCredentialsOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
         ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.DeactivateDid =>
+        DeactivateDIDOperation.parse(signedOperation, ledgerData)
       case empty @ node_models.AtalaOperation.Operation.Empty =>
         Left(
           InvalidValue(
