@@ -1,0 +1,33 @@
+\begin{tikzpicture}
+
+  \node (uas) at (0.00,2.25) { \bf \UAS };
+  
+  \node (gs) at (6.00,4.50) { GS \cite{bsz05} (\secref{xxx})};
+  \node (gsmdo) at (7.35,3.75) { GS-MDO (based on \cite{seh+12}; \secref{xxx}) };
+  \node (mps) at (6.20,3.00) { MPS \needcite (\secref{xxx}) };
+  \node (ac) at (6.00,2.25) { AC \cite{fhs19} (\secref{xxx}) };
+  \node (rac) at (7.15,1.50) { RAC (based on \cite{fhs19,cks10}; \secref{xxx}) };
+  \node (dac) at (7.15,0.75) { DAC (based on \cite{fhs19,bcc+09}; \secref{xxx}) };
+  \node (rs) at (6.00,0.00) { RS \cite{bkm06} (\secref{xxx}) };
+
+  \draw[->] (uas) -- (1.00,2.25) -- (1.00,4.50) -- node[midway,above]
+  {$(\fissue^1,\feval^0,\finsp^{\upk})$-\CUASGen} (gs);
+  \draw[->] (uas) -- (1.00,2.25) -- (1.00,3.75) -- node[midway,above]
+  {$(\fissue^1,\feval^0,\finsp^{\smsg})$-\CUASGen} (gsmdo);
+  \draw[->] (uas) -- (1.00,2.25) -- (1.00,3.00) -- node[midway,above]
+  {$(\fissue^1,\feval^0,\finsp^{\ast})$-\CUASGen} (mps);
+  \draw[->] (uas) -- (1.00,2.25) -- node[midway,above]
+  {$(\fissue^1,\feval^{\dattrs},\finsp^0)$-\CUASGen} (ac);
+  \draw[->] (uas) -- (1.00,2.25) -- (1.00,1.50) -- node[midway,above]
+  {$(\fissue^1,\feval^{\dattrs,F,V,L},\finsp^{F})$-\CUASGen} (rac);
+  \draw[->] (uas) -- (1.00,2.25) -- (1.00,0.75) -- node[midway,above]
+  {$(\fissue^{n,\dattrs},\feval^{n,\dattrs},\finsp^0)$-$\CUASGen^{\ast}$} (dac);
+  \draw[->] (uas) -- (1.00,2.25) -- (1.00,0.00) -- node[midway,above]
+  {$(\fissue^{\sring},\feval^{\attrs},\finsp^0)$-$\CUASGen^{\ast}$} (rs);
+    
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
