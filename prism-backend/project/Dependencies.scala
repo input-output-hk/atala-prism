@@ -2,6 +2,7 @@ import sbt.Keys.libraryDependencySchemes
 import sbt._
 
 object versions {
+  val bouncycastle = "1.70"
   val catsScalatest = "3.1.1"
   val chimney = "0.6.1"
   val circe = "0.14.1"
@@ -36,6 +37,10 @@ object versions {
 }
 
 object Dependencies {
+  val bouncyBcpkix =
+    "org.bouncycastle" % "bcpkix-jdk15on" % versions.bouncycastle
+  val bouncyBcprov =
+    "org.bouncycastle" % "bcprov-jdk15on" % versions.bouncycastle
   val chimney = "io.scalaland" %% "chimney" % versions.chimney
   val circeCore = "io.circe" %% "circe-core" % versions.circe
   val circeGeneric = "io.circe" %% "circe-generic" % versions.circe
@@ -119,6 +124,7 @@ object Dependencies {
   val scalatestplus =
     "org.scalatestplus" %% "scalacheck-1-15" % versions.scalatestplus % Test
 
+  val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val circeDependencies =
     Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies =
