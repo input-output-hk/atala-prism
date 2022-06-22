@@ -9,15 +9,19 @@ we prove secure according to our model.
 
 The main contribution of this section is giving a simple syntax and model that
 still allow spanning a wide variety of related schemes. We combine aspects of GS
-and AC schemes -- and, therefore, rely heavily on previous works --,
-generalizing whenever possible. Like in ACs, there are multiple issuers, and
-each user can get one or more credentials from any of them. We incorporate
-openers, as in GSs, but there is no tight relationship between issuer
-and opener. Signing and verification are non-interactive processes like in GS
-schemes, but we show how to convert to an interactive one like in ACs. Finally,
-we incorporate functions that allow tweaking the behaviour at issuance,
-signature generation, and verification times; while signatures contain all the
-necessary information to check that all computations are performed correctly.
+and AC schemes, generalizing whenever possible. Like in ACs, there are multiple
+issuers, and each user can get one or more credentials from any of them; and,
+also, use more than one credential simultaneously to produce a signature. We
+incorporate openers, as in GSs, but there is no tight relationship between
+issuer and opener. As a consequence, signers (potentially along with verifiers)
+may choose, on a per-signature basis, the policies governing the utility
+information extractable from a signature. Signing and verification are
+non-interactive processes like in GS schemes, but we show how to convert to an
+interactive one as in ACs. Finally, we incorporate functions that allow
+tweaking the conditions checked at credential issuance and signature generation
+times, including the information that an opener will be able to extract from a
+signature. This flexibilizes the scheme even beyond the loose relationship
+between issuer and opener.
 
 \subsection{Syntax}
 \label{ssec:syntax-uas}
@@ -73,54 +77,45 @@ An \UAS scheme is composed by the following algorithms:
 \end{description}
 
 \paragraph{Issuance, evaluation, and opening functions.} %
-We emphasize that, both in our syntax definition, as well as on the following
-modelling, we make use of three different and abstract functions: \fissue,
-\feval and \finsp. The three functions are introduced to allow customized
-governance of the resulting instantiation of an \UAS scheme. They will be
-defined by different parties, but in all cases, they are run by users (maybe,
-on user-private data). Also, in all cases, the user has to prove correctness of
-their computation. We introduce them next, and give concrete examples for
-building specific well-known restrictions of \UAS in
-\secref{sec:transformations}.
+We introduce three functions in our syntax and model. Through them,
+it is possible to modulate the behaviour of the resulting instantiation, by
+controling the conditions upon which a new credential can be issued, or the
+information revealed at signing time, or after signing. In all cases, it is
+the user who computes them, and has to prove correctness of such computation.
+We give concrete examples in \secref{sec:relationships}, and define them next:
 
 \begin{description}
 \item[$\fissue: (\usk,\scred,\attrs)
-  \rightarrow 0/1$.] Chosen by issuers within a family of functions \famfissue,
-  the issuance function defines what customized conditions an issuer requires
-  in order to issue credentials, when receiving a request from user with secret
-  key \usk, for attributes \attrs. \fissue may run checks on a (possibly empty)
-  set of additional credentials \scred, all bound to \usk, and possibly
-  issued by other issuers. \fissue returns $1$ to accept a request, $0$ to
+  \rightarrow 0/1$.] Chosen by each issuer within a family of functions
+  \famfissue, the issuance function defines the customized conditions required
+  by the issuer to grant a credential over attributes \attrs, when requested by
+  a user with secret key \usk, potentially leveraging a set of previously
+  obtained credentials \scred. \fissue returns $1$ to accept a request, $0$ to
   reject it.
 \item[$\feval: (\usk,\scred,\msg)
   \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
   family of functions \famfeval, can be set on a per-signature basis. They
   receive the user secret key \usk, credentials \scred, and message to be signed
-  \msg. \feval can be used to control the information related to the signer that
-  will be revealed alongside a signature, and to modulate the behaviour of
-  \finsp. Its outputs two values, $\yeval^0$ and $\yeval^1$, where the former
-  is revealed in plaintext along with the signature, and $\yeval^1$ is encrypted
-  and used to modulate the behaviour of \finsp. Both values must belong in a
-  well defined set \rngfeval. For readability, we write
-  $\Yeval = (\yeval^0,\yeval^1)$.
+  \msg. \feval outputs two values, $\yeval^0$ and $\yeval^1$, where the former
+  is revealed in plaintext along with the signature, and $\yeval^1$ is
+  encrypted. Both can be used to modulate the bevahiour of \finsp, and must
+  belong in a well defined set \rngfeval. For readability, we write $\Yeval =
+  (\yeval^0,\yeval^1)$.
 \item[$\finsp: (\Yeval,\usk,\scred,\msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
   functions define what utility value, derived from the user's secret key,
-  credentials, and signed message, should be extractable by an opener.
-  Note that \finsp also receives as input a value in the range of the \feval
-  function, $\rngfeval^2$. This allows opening logic to depend on the values
-  produced by the evaluation function. The output of \finsp is a value
-  \yinsp, which must belong in a well defined set \rngfinsp.
+  credentials, and signed message, should be extractable by an opener. Its
+  behaviour can be modulated by \Yeval, and its output a value \yinsp, which
+  must belong in a well defined set \rngfinsp.
 \end{description}
 
-We emphasize that, even though \finsp and \feval seem redundant, they are not.
-To see this, observe that \finsp is defined by openers, and will be fixed in
-all signatures that can be opened by the opener who defined it. On the other
-hand, \feval can be defined by (e.g.) verifiers on a per-signature basis, even
-if the signatures use the same \finsp. Thus, \feval can be programmed to contain
-the conditions set by (e.g.) verifiers for signatures they receive; whereas
-\finsp can be programmed to extract specific utility values when needed, which
-may depend on the checks required by the verifier a signature was intended to.
+\feval and \finsp may seem redundant. However, observe that the former is chosen
+on a per-signature basis, and probably after negotiation between signer and
+verifier. As such, it governs the information revealed at signing time. On the
+other hand, \finsp governs the information that may be revealed after signing.
+Moreover, it is defined by openers, and even though signers and verifiers
+may negotiate to use any opener for a given signature, it is not possible for
+an opener to change the chosen function.
 
 To summarize the previous, we depict in \figref{fig:uas-signature} the structure
 of an \UAS signature, including its main components and how they enable the
@@ -133,96 +128,86 @@ previously stated generalization claims.
   \label{fig:uas-signature}
 \end{figure}
 
-\subsection{Model for \UAS Schemes}
+\subsection{Security Model}
 \label{ssec:model-uas}
 
-We now define our model for Universal Anonymous Signatures. Property-wise, we
-maintain anonymity, non-frameability, and include two extra unforgeability
-properties: unforgeability of issuance, which ensures that issuance policies
-are not circumvented; and unforgeability of signatures, guaranteeing that
-signature evaluation policies are respected, as well as soundness of opening.
-
-From a functional perspective, we require that each issuer and opener fix
-the issuance predicate \fissue and opener function \finsp when generating
-their public keys. On the other hand, signature evaluation functions \feval can
-be defined at signing time. This is in line with the usual practice in anonymous
-credentials, that let
-users prove arbitrary claims on their credentials, as long as they are met by
-the contained attributes. In practice, most probably, the signature evaluation
-policy to be
-employed in each signature will be defined by the verifier (or jointly between
-user and verifier), including the specification of which opener will be
-able to post-process signatures\footnote{See, for instance, the concept of
-  presentation exchanges, or requests, in the context of Verifiable Credentials:
-  \url{https://identity.foundation/presentation-exchange/} (last access, May
-  5th, 2022).}. Beyond these general policies, which already give much
-flexibility, the syntax for \UAS supports multiple issuers and openers, and
-lets users leverage multiple credentials to request issuance of new ones, and
-to produce signatures.
+We define the security expected from an \UAS scheme using a game-based approach.
+An \UAS scheme must ensure privacy at credential issuance, meaning that two
+runs of the credential issuance protocol should not leak any information beyond
+necessary about the user requesting the credential. Note that this is now
+crucial for privacy since, as AC schemes, \UAS allows multiple credentials per
+user -- thus, knowing what credential a user requests can lead to user
+profiling. It must also ensure signature privacy, meaning that no information
+can be learned, from a signature, by third parties beyond what the user agrees
+to reveal, and what may be extractable by the chosen opener.
+Issuance unforgeability requires that \UAS schemes ensure that the claims used
+to support a credential request cannot be falsified (issuance unforgeability).
+Similarly, signature unforgeability requires that no adversary should be able to
+falsify the correctness proofs for the claims included in the signatures. In
+both cases (issuance and signature unforgeability), we introduce the notion of
+traceability in GS, requiring that all credentials involved in the corresponding
+process have to be associated to a known user. Finally, \UAS schemes inherit the
+useful non-frameability property of GS schemes which, even in the worst-case
+scenario of having a corrupt issuer. In this case, although we cannot ensure
+anything regarding correctness of the claims, we can ensure that no honest user
+can be framed with having created a signature that s/he did not create --
+although the concept may get a bit blurred, as there is no traditional opening.
+%
+We describe next the global variables and oracles that we use in our modelling.
 
 \paragraph{Global Variables.} %
-The environment manages several global variables in the games posed to the
-adversary. Users are referred to with user identifiers, \uid; for credentials,
-we use \cid; for issuers, \iid; and for openers, \oid. In all cases, we use bold
-font to denote sets: e.g., \scid and \siid denote sets of credential and issuer
+Users are referred to with user identifiers, \uid; for credentials, we use \cid;
+for issuers, \iid; and for openers, \oid. In all cases, we use bold font to
+denote sets: e.g., \scid and \siid denote sets of credential and issuer
 identifiers. All tables/sets are initialized as empty tables/sets.
 
 \begin{description}
-\item[Sets for parties]:
-  \begin{description}
-  \item[\HU and \CU.] Keep track of honest (\HU) and corrupted (\CU) users;
-    i.e., they are sets of {\uid}s.
-  \item[\HI and \CI.] Keep track of honest (\HI) and corrupted (\CI) issuers;
-    i.e., they are sets of {\iid}s.
-  \item[\HO and \CO.] Keep track of honest (\HO) and corrupted (\CO) openers;
-    i.e., they are sets of {\oid}s.
-  \end{description}
-\item[Tables for keys]:
-  \begin{description}
-  \item[\UK.] \UK maintains user keys $\usk$. To refer to the key of a specific
-    user, we use $\UK[\uid]$. 
-  \item[\IK, \PUBIK and \PRVIK.] \IK maintains issuer key pairs, where
-    $\IK[\iid]$ refers to the key pair of the issuer with identifier \iid. We
-    use \PUBIK to refer to the public component, which also includes the \fissue
-    function; and \PRVIK refers to the private component of the key pair.
-  \item[\OK, \PUBOK, \PRVOK.] Same as \IK, but for opener key pairs. Instead
-    of \fissue, \OK includes the \finsp function.
-  \end{description}
-\item[Tables for credentials-related data]:
-  \begin{description}
-  \item[\CRED.] Stores information related to credentials obtained by users in
-    the system. Thus, it is indexable by \cid. More specifically, it stores
-    tuples of the form $(\uid,\cred,\iid,\attrs,\scid)$, where \uid is the
-    identity of the owner of the credential, \cred (when available) is the
-    credential itself, \iid is the identifier of the credential issuer, \attrs
-    are the attributes included in \cred, and \scid are the identifiers of the
-    credentials (if any) that \uid used to request \cred. For notational
-    convenience, we may use $\CRED[\scid]$ to refer to $\CRED[\cid]$ for all
-    $\cid \in \scid$. Also, when clear from context, we sometimes use
-    $\CRED[\cid]$ (resp. $\CRED[\scid]$ to mean \cred (resp. \scred) in
-    $\CRED[\cid] = (\cdot,\cred,\cdot,\cdot,\cdot)$ (resp. $\CRED[\scid]$).
-  \item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
-    ``\uid such that $\CRED[\cid] = (\uid, \cdot, \cdot, \cdot, \cdot)$''.
-  \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
-    ``\attrs such that $\CRED[\cid] = (\cdot, \cdot, \cdot, \attrs, \cdot)$''.
-  \item[\ISR.] For notational convenience, when we write $\ISR[\cid]$ we mean
-    ``\iid such that $\CRED[\cid] = (\cdot, \iid, \cdot, \cdot, \cdot)$''.
-  \end{description}
-\item[Tables for signatures]:
-  \begin{description}
-  \item[\SIG.] Maintains signatures generated via the \SIGN oracle, on behalf
-    of honest users. Entries of this table are $(\oid,\scid,\sig,\Yeval,\msg,
-    \feval)$, where \oid is the opener chosen for the signature, \scid is the
-    set of credentials used for signing, \feval is the signing evaluation
-    function, and \sig and \msg are the produced signature and signed message.
-  \item[\CSIG.] Maintains challenge signatures output to the adversary; i.e.,
-    the table is indexable by challenge signatures \csig.
-    Each entry contains also $\cuid_b$ and $\scid_b$ the challenge user and
-    credential identifiers set used to produce \csig; as well as the
-    corresponding challenge user and credential set indexed by the complementary
-    $1-b$; the signed message \msg and signing evaluation function \feval, the
-    result of \feval, \yeval, and the opener identifier \oid.
-  \end{description}
+\item[$\mathsf{H}\lbrace\mathsf{U},\mathsf{I},\mathsf{O} \rbrace$.] Keep
+  track of honest users/issuers/openers. They are sets of
+  {\uid}s/{\iid}s/{\oid}s.
+\item[$\mathsf{C}\lbrace\mathsf{U},\mathsf{I},\mathsf{O} \rbrace$.] Keep
+  track of corrupt users/issuers/openers. They are sets of
+  {\uid}s/{\iid}s/{\oid}s.    
+\item[\UK.] \UK maintains user keys $\usk$. To refer to the key of a specific
+  user, we use $\UK[\uid]$. 
+\item[\IK, \PUBIK and \PRVIK.] \IK maintains issuer key pairs, where
+  $\IK[\iid]$ refers to the key pair of the issuer with identifier \iid. We
+  use \PUBIK to refer to the public component, which also includes the \fissue
+  function; and \PRVIK refers to the private component of the key pair.
+\item[\OK, \PUBOK, \PRVOK.] Same as \IK, but for opener key pairs. Instead
+  of \fissue, \OK includes the \finsp function.
+\item[\CRED.] Stores information related to credentials obtained by users in
+  the system. Thus, it is indexable by \cid. More specifically, it stores
+  tuples of the form $(\uid,\cred,\iid,\attrs,\scid,\siid)$, where \uid is the
+  identity of the owner of the credential, \cred (when available) is the
+  credential itself, \iid is the identifier of the credential issuer, \attrs
+  are the attributes included in \cred, \scid are the identifiers of the
+  credentials (if any) that \uid used to request \cred, and \siid the issuers
+  of those credentials. For notational
+  convenience, we may use $\CRED[\scid]$ to refer to $\CRED[\cid]$ for all
+  $\cid \in \scid$. Also, when clear from context, we sometimes use
+  $\CRED[\cid]$ (resp. $\CRED[\scid]$ to mean \cred (resp. \scred) in
+  $\CRED[\cid] = (\cdot,\cred,\cdot,\cdot,\cdot)$ (resp. $\CRED[\scid]$).
+\item[\CCRED.] Like \CRED, but keeps track of challenge credentials in the
+  issuance anonymity game.
+\item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
+  ``\uid such that $\CRED[\cid] = (\uid, \cdot, \cdot, \cdot, \cdot)$''.
+\item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
+  ``\attrs such that $\CRED[\cid] = (\cdot, \cdot, \cdot, \attrs, \cdot)$''.
+\item[\ISR.] For notational convenience, when we write $\ISR[\cid]$ we mean
+  ``\iid such that $\CRED[\cid] = (\cdot, \iid, \cdot, \cdot, \cdot)$''.
+\item[\SIG.] Maintains signatures generated via the \SIGN oracle. Entries of
+  this table are $(\oid,\scid,\sig,\Yeval,\msg,\feval)$ tuples, where \oid is
+  the opener, \scid is the set of credentials used for
+  signing, \feval is the signing evaluation function, and \sig and \msg are the
+  produced signature and signed message.
+\item[\CSIG.] Maintains challenge signatures output to the adversary in the
+  signature anonymity game, and is indexable by challenge signatures \csig.
+  Each entry contains also $\cuid_b$ and $\cscid_b$, respectively the challenge
+  user  and credential identifiers set used to produce \csig; as well as the
+  corresponding challenge user and credential set indexed by the complementary
+  $1-b$; the signed message \msg and signing evaluation function \feval, the
+  result of \feval, \Yeval, and the opener identifier \oid.
 \end{description}
 
 \paragraph{Oracles.} %
@@ -248,19 +233,21 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 \item[\WREG.] Sets a transcript table entry to the given value.
 \item[\OBTISS.] Lets the adversary add a new honestly generated credential to
   the game, on behalf of an honest user.
-\item[\OBTAIN.] Enables the adversary to play the role of a dishonest issuer
-  in games that support it, by letting it interact with honest users who want to
-  receive credentials.
+\item[\OBTAIN.] Enables the adversary to play the role of a dishonest issuer, by
+  letting it interact with honest users who want to receive credentials.
 \item[\ISSUE.] Allows the adversary to play the role of dishonest users,
   requesting an honest issuer to produce credentials for them.
 \item[\SIGN.] Lets the adversary get signatures from credentials belonging
   to honest users.
 \item[\OPEN.] Given an honestly produced signature, outputs the result of the
   opening function, along with a correctness proof.
+\item[\OBTCHALb.] Upon receiving a target credential identifier, two challenge
+  users and credential sets, an honest issuer identifier, and a set of
+  attributes, issues a credential for the challenge user and credential set
+  defined by the bit $b$. 
 \item[\CHALb.] Upon receiving two challenge users and credential sets, a common
   singing evaluation function and a message, returns a signature produced by one
-  of these two user and credential sets, defined by the bit $b$, which is
-  established in the anonymity game.
+  of these two user and credential sets, defined by the bit $b$.
 \end{description}
 
 {%\setlength\intextsep{\sep}
@@ -477,8 +464,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 }
 
 \paragraph{Helper functions \ExtractIssue, \ExtractSign, \IdentifyCred, and
-  \IdentifyUK.} In our modelling, we assume the existence of fhese four
-functions. They are not
+  \IdentifyUK.} We assume the existence of these four functions. They are not
 functions available in the actual scheme, but rather to the challenger in the
 experiments we use to formalize security of \UAS schemes. Similar techniques
 have been used before to prove security in privacy-preserving schemes with some
@@ -490,16 +476,14 @@ functions are as follows:
 \begin{description}
 \item[$\ExtractIssue(\utrans) \rightarrow (\usk,\attrs_{\scred},\scred)$.]
   Receives an $\langle \Obtain, \Issue \rangle$ transcript, and returns the
-  credentials (if any) and their attributes that were involved
-  in the request. It clearly needs an honest issuer as, otherwise, the
-  transcripts won't be available. Consequently, we only use it to define the
-  properties that require an honest issuer.
+  credentials (if any) and their attributes involved in the request. It 
+  needs an honest issuer as, otherwise, the transcripts won't be available.
 \item[$\ExtractSign(\oid,\siid,\Sig,\msg,\feval) \rightarrow (\usk,
   \scred,\attrs_{\scred},\yeval^1,\yinsp)$.] Receives a signature \Sig,
   as well as the opener identifier \oid, and the identifiers of all issuers of
-  the credentials used to produce the signature over \msg, and for \feval. It
-  outputs the user secret key and credentials (with their attributes) used to
-  generate the signature, and the value returned by the opening fuction.
+  the credentials used to produce the signature over \msg, and for \feval.
+  It outputs the user secret key and credentials (with their attributes) used to
+  generate the signature, and the $\yeval^1$ and \yinsp values.
 \item[$\IdentifyCred(\usk,\attrs_{\cred},\cred)$.] Returns $1$ if \cred has been
   issued over attributes $\attrs_{\cred}$ and for a user with secret key \usk.
   Otherwise, it returns $0$. In order to be meaningful, this requires that,
@@ -509,23 +493,23 @@ functions are as follows:
   This is trivial for honest users, for which there must be a one-to-one
   relationship between {\uid}s and {\usk}s. For corrupt users, \IdentifyUK has
   to iterate through the $\langle\Obtain,\Issue\rangle$ transcripts associated
-  to \uid, extract the used secret key, and check if there is a match. Note that
-  this does not guarantee that there will be only one \usk per corrupt \uid,
-  though. Also, when used for corrupt users, this can only be used when the
-  issuer is honest, as transcripts are needed. 
+  to \uid, extract the used secret key, and check if there is a match. In the
+  latter case, there is no guarantee of getting a one-to-one relationship
+  between \usk and \uid. Also, when used for corrupt users, this can only be
+  used when the issuer is honest, as transcripts are needed. 
 \end{description}
 
-Note that, for all the helper functions, in the case of credentials, transcripts,
-and signatures by honest users, it is enough to have access to the corresponding
-state information (described below) maintained by the challenger in our
-experiments. For credentials and join transcripts of corrupt users, or
-dishonestly produced signatures, we do need to perform actual extraction.
-Certainly, the challenger
-needs special knowledge/power such as decryption trapdoors, the ability to
-rewind the game, or program random oracles. The approach needs thus to depend on
-the concrete construction. \jdv{Although, for the case of \ExtractIssue and
-  \IdentifyUK, online extractability (or alternative requirements, such as
-  non-parallel or logarithmic number of joins) is necessary.}
+% Note that, for all the helper functions, in the case of credentials, transcripts,
+% and signatures by honest users, it is enough to have access to the corresponding
+% state information (described below) maintained by the challenger in our
+% experiments. For credentials and join transcripts of corrupt users, or
+% dishonestly produced signatures, we do need to perform actual extraction.
+% Certainly, the challenger
+% needs special knowledge/power such as decryption trapdoors, the ability to
+% rewind the game, or program random oracles. The approach needs thus to depend on
+% the concrete construction. \jdv{Although, for the case of \ExtractIssue and
+%   \IdentifyUK, online extractability (or alternative requirements, such as
+%   non-parallel or logarithmic number of joins) is necessary.}
 
 \paragraph{Correctness.} %
 Correctness of \UAS schemes is formalized through the experiment in
@@ -533,9 +517,9 @@ Correctness of \UAS schemes is formalized through the experiment in
 and valid function \feval, produced honestly leveraging credential set \scid,
 owned by user \uid, is accepted by \Verify. Moreover, all the credentials in
 \scid meet the conditions set by the corresponding \fissue defined by the issuer
-which issued each credential. Similarly, the output \yeval of \feval matches the
+which issued each credential. Similarly, the output of \feval matches the
 value produced by \Sign alongside with \sig; and the value produced by \Open
-is accepted by \Judge, and matches the output of applying \finsp on \yeval, the
+is accepted by \Judge, and matches the output of applying \finsp on \Yeval, the
 credentials, user key, and message.
 
 \begin{definition}{(Correctness of \UAS)}
@@ -816,6 +800,9 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \pcif \fissue(\usk,\scred,\ATTR[\cid]) = 0 \lor
       \exists \cred \in \scred~\suchthat~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0: \\
       \pcind \pcreturn 1 \\
+      \pcif \scred \neq \emptyset \land
+      \nexists \uid~\suchthat~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1~
+      \pccomment{\todo{New! Update proofs.}} \\
       \pcreturn 0
     }
   \caption{Experiment for unforgeability of credential issuance in \UAS schemes.}
