@@ -103,6 +103,7 @@ object PrismBuild {
         libraryDependencies ++=
           doobieDependencies ++
             dockerDependencies ++
+            bouncyDependencies ++
             grpcDependencies ++
             mockitoDependencies ++
             kamonDependencies ++
