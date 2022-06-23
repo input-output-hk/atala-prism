@@ -96,9 +96,9 @@ package object operations {
       override def name: String = "invalid-signature"
     }
 
-    // Error signifying that the update operation is attempting to revoke the key signing the operation
-    final case class InvalidRevocation() extends StateError {
-      override def name: String = "invalid-revocation"
+    // Error signifying that the update operation is attempting to revoke the last master key in the DID
+    final case class InvalidMasterKeyRevocation() extends StateError {
+      override def name: String = "invalid-master-key-revocation"
     }
 
     // Error signifying that the key used has been revoked already
@@ -303,6 +303,8 @@ package object operations {
         RevokeCredentialsOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
         ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.DeactivateDid =>
+        DeactivateDIDOperation.parse(signedOperation, ledgerData)
       case empty @ node_models.AtalaOperation.Operation.Empty =>
         Left(
           InvalidValue(

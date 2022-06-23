@@ -28,7 +28,7 @@ package object protocolVersion {
         case (
               ProtocolVersion1_0,
               _: CreateDIDOperation | _: UpdateDIDOperation | _: IssueCredentialBatchOperation |
-              _: RevokeCredentialsOperation | _: ProtocolVersionUpdateOperation
+              _: RevokeCredentialsOperation | _: ProtocolVersionUpdateOperation | _: DeactivateDIDOperation
             ) =>
           true
         case _ => false

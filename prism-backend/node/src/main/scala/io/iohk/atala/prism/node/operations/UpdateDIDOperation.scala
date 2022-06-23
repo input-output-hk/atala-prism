@@ -124,6 +124,17 @@ case class UpdateDIDOperation(
         StateError.EntityMissing("DID Suffix", didSuffix.getValue)
       )
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
+      _ <- EitherT[ConnectionIO, StateError, Unit](
+        PublicKeysDAO
+          .findAll(didSuffix)
+          .map { keyList =>
+            Either.cond(
+              keyList.exists(key => key.keyUsage == KeyUsage.MasterKey && key.revokedOn.isEmpty),
+              (),
+              StateError.InvalidMasterKeyRevocation()
+            )
+          }
+      )
     } yield ()
   }
 }
