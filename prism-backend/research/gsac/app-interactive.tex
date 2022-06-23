@@ -1,0 +1,61 @@
+\section{\CUASGen with Interactive Sign and Verify}
+\label{app:interactive-uas}
+
+\todo{The following was written for \GSAC. It should apply for \UAS, but check
+  and adapt.}
+\todo{Markulf's comment on non-transferability and non-deniability of each
+  option.}
+
+In group signatures, the signing and verification process is non-interactive.
+That is, a group member produces a signature and eventually sends it to the
+verifier, who can check it without further interaction. Nevertheless, in
+anonymous credentials, this process is typically interactive, and consists of
+at least one round-trip. This can be useful, for instance, when some notion of
+freshness is necessary.
+
+The approach to turn our non-interactive singing-verification into an
+interactive protocol that ensures freshness is evident: prior to signing the
+message, we require that the honest verifier sends to the user a number picked
+uniformly at random from an appropriate domain, which must be concatenated to
+the signed message. If there is no need to actually sign a message, then the
+message is set to an empty string, and the user only signs the random number.
+%
+Syntactically, instead of having non-interactive $\sig \gets \Sign(\gpk,\usk,
+\cred,\dattrs,\msg)$ and $1/0 \gets \Verify(\gpk,\sig,\dattrs,\msg)$ algorithms,
+we have a $1/0 \gets \langle \Sign(\gpk,\usk,\cred,\dattrs),\Verify(\gpk,
+\dattrs) \rangle$ interactive protocol.
+%
+We sketch next a proof for why does this result in a secure \GSAC scheme with
+interactive signing and verification.
+
+\paragraph{Issuance Anonymity.} \todo{XXX}
+
+\paragraph{Signature Anonymity.} To see why the interactive variant is
+anonymous, assume an adversary $\adv$ against anonymity in that case. We build
+\advB against the non-interactive \ExpGSACSigAnonb from \adv~ as follows. \advB
+initializes
+everything as in the \ExpGSACSigAnonb game. When $\adv$ initiates a call to its
+interactive \SIGN (resp. \CHALb) oracle, \advB picks a random number, and sends
+it to the adversary, along with the response of its own (non-interactive) \SIGN
+(resp. \CHALb) oracle where, to the message passed as parameter to its oracle,
+concatenates the produced random number. After such simulation, \advB just
+outputs whatever $\adv$ outputs. Clearly, the simulation is perfect and, if
+$\adv$ wins with non-negligible probability in the interactive case, then so
+does \advB in the non-interactive case.
+
+\paragraph{Traceability.} The simulation described for the anonymity case (i.e.,
+\advB choosing the random numbers, and concatenating them to the message to be
+signed) applies here too. Thus, an adversary against traceability in the
+interactive case, can be used to build an adversary that breaks traceability in
+the non-interactive counterpart.
+
+\paragraph{Non-frameability.} The simulation described for the anonymity case
+(i.e., \advB choosing the random numbers, and concatenating them to the message
+to be signed) applies here too. Thus, an adversary against non-frameability in
+the interactive case, can be used to build an adversary that breaks
+non-frameability in the non-interactive counterpart. 
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas-paper"
+%%% End:

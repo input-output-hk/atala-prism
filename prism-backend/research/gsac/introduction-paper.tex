@@ -172,7 +172,7 @@ only if 18+ years old''.
 The high-level idea for our generic construction is simple. Credentials are
 signatures over blocks of messages (some signed in committed form), where each
 message can be a different attribute, and a user who wants to simultaneously
-leverage multiple credentials needs to bound all of them to the same key. We add
+leverage multiple credentials needs to bind all of them to the same key. We add
 three generic functions: \fissue, leveraged by users to
 prove claims over attributes in other credentials, in order to get a new one;
 \feval, proving correctness of the utility revealed at signing time; and \finsp,
@@ -186,7 +186,9 @@ summarised in \figref{fig:proof-blocks-uas}.
 
 \begin{figure}[ht!]
   \centering
-  \input{figures/proof-blocks-uas.tex}
+  \scalebox{0.9}{
+    \input{figures/proof-blocks-uas.tex}
+  }
   \caption{Summary of statements proved per operation in \UAS.
     $K(x)$ means proving knowledge of $x$; $E(y)$ means proving correct
     encryption of $y$; $D(z)$ means proving correct decryption of (an encryption
@@ -225,7 +227,9 @@ achievable.
 
 \begin{figure}[ht!]
   \centering
-  \input{figures/relations.tex}
+  \scalebox{0.9}{
+    \input{figures/relations.tex}
+  }
   \caption{Summary of schemes that can be instantiated as restrictions of our
     generic construction, \CUASGen, and proved secure under our \UAS model.
     $\CUASGen^{\ast}$ denotes that minor changes to the basic construction
