@@ -6,7 +6,67 @@
 In the following, to showcase the generality of \UAS and \CUASGen, we reproduce
 models of related schemes in the literature -- some of them slightly adapted.
 Then, we give concrete $(\fissue,\feval,\finsp)$-\CUASGen restrictions and prove
-that they securely instantiate the models for the presented schemes. 
+that they securely instantiate the models for the presented schemes, if the
+corresponding \CUASGen restriction is a secure \UAS construction. Concretely,
+we rely on the functions described in \figref{fig:func-restrictions}.
+
+\begin{figure}[ht!]
+
+  \scalebox{0.95}{
+    \begin{minipage}[t]{\textwidth}
+      \textbf{Issuance functions:}
+      \begin{align}
+        & \fissue^1(\usk,\scred,\attrs) \coloneqq 1 \nonumber \\
+        & \fissue^{\sring}(\usk,\scred,\attrs) \coloneqq \pcif \attrs
+          \subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
+          \pcreturn 0 \nonumber \\
+        & \fissue^{n,\dattrs}(\usk,\cred,\attrs) \coloneqq
+          \pcif \attrs_1(\cred) = n+1 \land \dattrs \subseteq \attrs: \pcreturn 1;
+          \pcelse \pcreturn 0 \nonumber
+      \end{align}
+      
+      \textbf{Signature evaluation functions:}
+      \begin{align}
+        & \feval^0(\usk,\scred,\msg) \coloneqq \pcreturn (0,\ast) \nonumber \\
+        & \feval^{\dattrs}(\usk,\cred,\msg) \coloneqq \pcreturn
+          (\dattrs(\cred),\ast) \nonumber \\
+        & \feval^{\attrs}(\usk,\cred,\msg) \coloneqq \pcif \CCommit(\usk;0) \in
+          \attrs: \pcreturn (\attrs(\cred),\ast);
+          \pcelse \pcreturn (\bot,\bot) \nonumber \\
+        & \feval^{n,\dattrs}(\usk,\cred,\msg) \coloneqq
+          \pcreturn \pcreturn((\attrs_1(\cred),\dattrs(\cred)),\ast) \nonumber
+      \end{align}
+    \end{minipage}
+  }
+  \vspace*{1em}
+  
+  \scalebox{0.95}{
+    \begin{minipage}[t]{0.5\textwidth}
+      \textbf{Open functions:}
+      \begin{align}
+        & \finsp^0(\yeval,\usk,\cred,\msg) \coloneqq 0 \nonumber \\        
+        & \finsp^{\upk}(\yeval,\usk,\scred,\msg) \coloneqq \CCommit(\usk;0) \nonumber
+      \end{align}
+    \end{minipage}
+    \hspace*{5em}
+    % \begin{minipage}[t]{0.47\textwidth}
+    %   \begin{framed}
+    %     $\attrs(\cred)$ returns all attributes in \cred \\
+    %     $\dattrs(\cred)$ returns $\dattrs \subseteq \attrs(\cred)$ \\
+    %     $\attrs_i(\cred)$ returns $i$-th attribute in \cred \\
+    %     $\ast$ means the output is ignored \\
+    %     $\bot$ means the function fails
+    %   \end{framed}
+    % \end{minipage}
+  }
+  \caption{Functions for the \CUASGen restrictions described next.
+    $\attrs(\cred)$ returns all attributes in \cred. $\dattrs(\cred)$ returns
+    $\dattrs \subseteq \attrs(\cred)$. $\attrs_i(\cred)$ returns $i$-th
+    attribute in \cred. $\ast$ means the output is ignored (in these examples,
+    we use this to mean that $\yeval^1$ is unused. $\bot$ means the function
+    fails.}
+  \label{fig:func-restrictions}
+\end{figure}
 
 \subsection{Group Signatures}
 \label{ssec:related-models-gs}
@@ -20,8 +80,8 @@ group member chooses when joining the group\footnote{The user public key is
   to translate the public key into an index, if needed.}. A group signature
 scheme, according to \cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign,
 \Verify, \Open and \Judge algorithms, as well as an $\langle\Obtain,\Issue
-\rangle$ interactive protocol. Their description is very similar to that of
-\GSAC, so we refer to \cite{bsz05} for detailed descriptions. For ease of
+\rangle$ interactive protocol. Their intuition is similar to that of
+\UAS, so we refer to \cite{bsz05} for detailed descriptions. For ease of
 reference, we replicate the security games in \figref{fig:model-gs}.
 
 \begin{figure}[ht!]
@@ -76,11 +136,9 @@ reference, we replicate the security games in \figref{fig:model-gs}.
 \end{figure}
 
 \subsubsection{\CUASGS construction.} %
-We show that, as specified in \tabref{tab:uas-alt-funcs}, our \CUASGen
-construction for \UAS, restricted to $\fissue^1$ as issuance function,
-$\feval^0$ as signature evaluation function, and $\finsp^{\upk}$ as opening
-function, is a secure group signature scheme according to the \cite{bsz05}
-model. We first quickly define the algorithms, and then prove security.
+We show that the $(\fissue^1,\feval^0,\finsp^{\upk})$-\CUASGen restriction, is
+a secure group signature scheme according to \cite{bsz05}. We first quickly
+define the algorithms, and then prove security.
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs the \Setup algorithm
@@ -94,8 +152,7 @@ model. We first quickly define the algorithms, and then prove security.
   constraint to only one credential per user, it suffices to require the user
   to prove that the ``randomness'' it uses when committing to its private key
   is actually $0$, and check whether the received commitment has been seen
-  before. For details, see the BBS+ instantiation of the underlying \SBCM
-  building block in \secref{sapp:sbcm}.
+  before.
 \item[$\sig \gets \Sign(\gpk,\cred,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
   runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen.
   Simply returns \sig.
@@ -104,7 +161,7 @@ model. We first quickly define the algorithms, and then prove security.
   outputs.
 \item[$(\upk,\pi) \gets \Open(\gpk,\osk,\trans,\sig,\msg)$.] Parses \gpk as
   $(\ipk,\opk)$, and returns whatever \CUASGen outputs in $\Open(\osk,\ipk,\sig,
-  0,\msg,\feval^0)$. Note that, internally, the latter call to \Open runs
+  0,\msg,\feval^0)$. Internally, the call to \Open runs
   $\finsp^{\upk}$, where $\upk = \CCommit(\usk;0)$, just as proved in $\langle
   \Obtain,\Issue\rangle$.
 \item[$1/0 \gets \Judge(\gpk,\pi,\upk,\sig,\msg)$.] Parses \gpk as $(\ipk,
@@ -113,27 +170,14 @@ model. We first quickly define the algorithms, and then prove security.
 \end{description}
 
 \paragraph{Security of \CUASGS.} %
-We prove that our \CUASGS construction is a secure group signature scheme,
-according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
+We state next the theorems for the security of \CUASGS. The proofs are available
+in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASGS]
-  If the base \CUASGen construction is anonymous according to
-  \defref{def:anonymity-uas}, then \CUASRing is an anonymous group signature
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASGS is an anonymous group signature
   scheme.
 \end{theorem}
-
-\begin{proof}
-  Assume an adversary \adv~ against anonymity in \CUASGS. This directly leads
-  to an adverary \advB against anonymity of the $(\fissue^1,\feval^0,
-  \finsp^{\upk})-\CUASGen$ instance.
-
-  Concretely, observe that calls to \adv's $Ch,Open,SndToU,WReg,USK,CrptU$
-  oracles can be directly simulated by calls to \advB's oracles $\CHALb,
-  \OPEN,\HUGEN,\WREG,\CUGEN$ oracles. Thus, if \adv~ guesses its bit $b$
-  with non-negligible probability, this directly leads to a non-negligible
-  probability of guessing \advB's challenge bit.
-  \qed
-\end{proof}
 
 \begin{theorem}[Traceability of \CUASGS]
   If the base \CUASGen construction has unforgeable signing according to
@@ -141,50 +185,11 @@ according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
   scheme.
 \end{theorem}
 
-\begin{proof}
-  Assume an adversary \adv~ against traceability in \CUASGS. We build an
-  adversary \advB against sign unforgeability of the $(\fissue^1,\feval^0,
-  \finsp^{\upk})-\CUASGen$ instance.
-
-  \advB's simulation of \adv~ environment is as in the proof for anonymity
-  of \CUASGS. \advB simply outputs whatever \adv~ outputs in line 2 of its
-  traceability game. Note that, as \CUASGS is a specific instantiation of
-  \CUASGen, whenever \CUASGS accepts a signature, so does \CUASGen. Concretely,
-  assume that \adv~ wins the traceability game in \figref{fig:model-gs} with
-  $\upk \notin \HU \cup \CU$ at line 5. This implies that the check at line 11
-  of the sign unforgeability game (\figref{fig:exp-uas-unfor-sign}) for \CUASGen
-  outputs $0$ for all known {\uid}s. Similarly, if \adv~ wins the traceability
-  game with condition $\Judge(\dots)=0$ at line 5, then \advB wins its sign
-  unforgeability game with the corresponding check at line 6 in
-  \figref{fig:exp-uas-unfor-sign}.
-  %
-  \qed
-\end{proof}
-
 \begin{theorem}[Non-frameability of \CUASGS]
   If the base \CUASGen construction is non-frameable according to
   \defref{def:frame-uas}, then \CUASGS is a non-frameable group signature
   scheme.
 \end{theorem}
-
-\begin{proof}
-  Assume an adversary \adv~ against non-frameability in \CUASGS. We build an
-  adversary \advB against non-frameability of the $(\fissue^1,\feval^0,
-  \finsp^{\upk})-\CUASGen$ instance.
-
-  \advB's simulation of \adv~ environment is as in the proof for anonymity
-  of \CUASGS. \advB simply outputs whatever \adv~ outputs at line 2 of its
-  game. Observe that a winning condition for \adv~ directly implies a winning
-  condition for \advB. Concretely, if $\upk \in \HU \land \PRVUK[\upk] \neq
-  \bot$ in \adv's game, then $\exists \uid \in \HU~\suchthat~\UK[\uid]=\usk$
-  for \advB (line 6 of its game). Similarly, if \Judge returns $1$ in \adv's
-  game, \advB's \Judge also returns $1$ at line 4. Finally, if \adv~ does not
-  corrupt the owner of \upk, then $\uid \in \HU$ in \advB's game, and if \adv
-  does not query its $SIGN$ oracle, then there does not exist a matching entry
-  in $\SIG[\uid]$ for \advB either. Consequently, as stated, \advB wins its
-  non-frameability every time that \adv does.
-  \qed
-\end{proof}
 
 \subsection{Ring Signatures}
 \label{ssec:related-models-rs}
@@ -196,7 +201,8 @@ $((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar)$ produces $n$
 signing key pairs, $\sig \gets Sign(\sk_i,R,\msg)$ creates a signature for
 anonymity set $R \subseteq \lbrace \pk_1, \dots, \pk_t \rbrace$, using secret
 key $\sk_i$, associated to some $\pk_i \in R$; and $1/0 \gets Verify(R,\sig,
-\msg)$ checks if \sig is a valid signature over \msg for ring $R$.
+\msg)$ checks if \sig is a valid signature over \msg for ring $R$. We refer
+to \cite{bkm06} for details on the syntax and definitions.
 
 \begin{figure}[ht!]
   \centering
@@ -227,90 +233,75 @@ key $\sk_i$, associated to some $\pk_i \in R$; and $1/0 \gets Verify(R,\sig,
     \end{minipage}      
   }
   \caption{Security games for ring signatures \cite{bkm06}. The SIGN oracle
-    accepts a $(i,R,\msg)$ tuple, where $pk_i$ must be part of $R$, and
+    accepts a $(i,R,\msg)$ tuple, with $pk_i \in R$, and
     returns $\sig \gets Sign(\sk_i,R,\msg)$. The oracle $CORR$ accepts an
-    index $i$, and lets $\adv$ learn $\sk_i$. Corrupted user indexes are
-    added to list $CU$.}
+    index $i$, and leaks $\sk_i$ to $\adv$. Corrupted user indexes are
+    added to $CU$.}
   \label{fig:model-rs}  
 \end{figure}
 
-Intuitively, a ring signature scheme $rs$ is anonymous if, for every p.p.t.
-\adv, $|\Pr[\Exp^{anon-1}_{\adv,rs}(1^\secpar)] = 1| -
-|\Pr[\Exp^{anon-1}_{\adv,rs}(1^\secpar)] = 0|$ is a negligible function of
-$1^\secpar$; and a ring signature scheme $rs$ is unforgeable if, for every
-p.p.t. \adv, the probability that $\Exp^{forge}_{\adv,rs}(1^\secpar)$ returns
-$1$ is also negligible in $1^\secpar$. For short, we say that a ring signature
-scheme meeting both anonymity and unforgeability as specified above, is a secure
-ring signature scheme.
 
 \subsubsection{\CUASRing Construction.} %
-We show that, as specified in \secref{ssec:uas-ring}, our \CUASGen construction
-for \UAS, with alternative NIZK relationship $\NIZKRel_{\Sign-prv}$ for signing,
-issuance function $\fissue^{\sring}$, signature evaluation function
-$\feval^{\attrs}$, and inspection function $\finsp^0$, is a secure ring
-signature scheme. Thus, in this section, when we write \CUASGen, we refer to
-its specific variant built from the previous modifications.
+We first define in \eref{eq:sign-prv} an alternative NP relation for signing,
+$\NIZKRel_{\Sign}^{prv}$, which we use to replace $\NIZKRel_{\Sign}$ in \CUASGen.
+It is essentially the same, except that the issuer public key is kept private,
+and we add an extra check for proving that the issuer public key is one of the
+keys in the ring. We refer to the resulting \CUASGen construction as
+$\CUASGen^{\Sign-prv}$. Since, in the following syntax, we limit to one
+credential per signature, it is easy to see that the modified relation for
+signing does not affect security.
+
+\begin{align}
+  & \NIZKRel_{\Sign}^{prv} \coloneqq \lbrace (\usk,\cred,\yeval^1,\yinsp,r,r',
+    \ipk),(\msg,\feval,\yeval^0,\ceval,\cinsp,\Eek,\widetilde{\Eek},\sring): \nonumber \\
+  & \hspace*{6.405em}\ceval = \EEnc(\widetilde{\Eek},\yeval^1;r) \land
+    \cinsp = \EEnc(\Eek,\yinsp;r') \land \nonumber \\
+  & \hspace*{6.40em}(\yeval^0,\yeval^1) = \feval(\usk,\cred,\msg) \land
+    \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\cred,\msg) \nonumber \\
+  & \hspace*{6.40em}\exists \ipk \in \sring~\suchthat~\SBCMVerify(\ipk,\cred,\usk,
+    \sring) = 1) \rbrace \label{eq:sign-prv}
+\end{align}
+
+From it, we show that the $(\fissue^{\sring},\feval^{\attrs},\finsp^0)$-
+$\CUASGen^{\Sign-prv}$ restriction, is a secure ring signature scheme. We
+restrict to one credential per signature.
 
 \begin{description}  
-\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in \CUASGen, but using
-  $\NIZKRel_{\Sign-prv}$ instead of $\NIZKRel_{\Sign}$.  
-\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.] As in \CUASGen, using
-  $\fissue^{\sring}$.  
-\item[$(\opk,\osk) \gets \OKeyGen(\parm,\finsp).$] As in \CUASGen, where every
-  opener that wants to be a valid opener in \CUASRing, needs to set \finsp to
-  $\finsp^0$.  
+\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in $\CUASGen^{\Sign-prv}$.  
+\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.] As in
+  $\CUASGen^{\Sign-prv}$, using $\fissue^{\sring}$.  
+\item[$(\opk,\osk) \gets \OKeyGen(\parm,\finsp).$] As in $\CUASGen^{\Sign-prv}$,
+  restricting \finsp to be $\finsp^0$.  
 \item[$\usk \gets \UKeyGen(\parm).$] Can only be run after \IKeyGen. Let 
-  $\usk \gets \isk$.
+  $\usk \gets \isk$. Note that this does not affect security, as long as
+  $\isk \getr \AttrSpace$.
 \item[$\langle \cred,\bot,\utrans,\bot \rangle \gets
   \langle \Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle.$]
-  The user picks a ring from an (publicly) available list of issuers (users),
-  i.e. $\sring \gets \lbrace \ipk_i \rbrace_{i \in [t]}$, for some $t$. Then,
-  runs the $\langle \Obtain,\Issue \rangle$ protocol as in \CUASGen, acting both
-  as user and as issuer, and using $\fissue^{\sring}$ as issuance function.
-  \attrs are the public keys of the users (issuers) to be included in the ring.
-\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\scred,\msg,\feval).$] As in
-  \CUASGen, using $\feval^{\attrs}$ as sign evaluation function, using
-  as credential for signing the credential obtained in the desired $\langle
-  \Obtain,\Issue \rangle$ session and, as \opk, any previously registered \opk
-  (i.e., such that $\finsp=\finsp^0$).
-\item[$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval).$] As in \CUASGen.
-  Note that $\sipk = \sring$, and $\feval=\feval^{\attrs}$.
-\item[$\Open$ and $\Judge$.] As in \CUASGen. Note that $\finsp=\finsp^0$.
+  The user picks a set of public keys from a publicly available list of issuers
+  (users), i.e. $\sring \gets \lbrace \ipk_i \rbrace_{i \in [t]}$, for some $t$.
+  Then, runs the $\langle \Obtain,\Issue \rangle$ protocol as in
+  $\CUASGen^{\Sign-prv}$, acting both as user and as issuer, using
+  $\fissue^{\sring}$ as issuance function, and $\attrs \gets \sring$.
+\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,\msg,\feval).$] As in
+  $\CUASGen^{\Sign-prv}$, using $\feval^{\attrs}$ as sign evaluation function,
+  using as credential for signing the credential obtained in the desired
+  $\langle \Obtain,\Issue \rangle$ session and, as \opk, any previously
+  registered \opk (i.e., such that $\finsp=\finsp^0$).
+\item[$1/0 \gets \Verify(\opk,\sring,\sig,\yeval,\msg,\feval).$] As in
+  $\CUASGen^{\Sign-prv}$. Note that $\feval=\feval^{\attrs}$.
+\item[$\Open$ and $\Judge$.] As in $\CUASGen^{\Sign-prv}$. Note that
+  $\finsp=\finsp^0$.
 \end{description}
 
-\todo{I guess we need to show that changing the NIZK for signing does not affect
-  security. This leads to ``What are the conditions that need to be checked/cannot
-  be altered in the default NIZK sign, that make \CUASGen secure?'' }
-
 \paragraph{Security of \CUASRing.} %
-We prove that our \CUASRing construction is anonymous and unforgeable, if
-the underlying \CUASGen construction is secure.
+We state next the theorems for the security of \CUASRing. The proofs are
+available in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASRing]
-  If the base \CUASGen construction is anonymous according to
-  \defref{def:anonymity-uas}, then \CUASRing is an anonymous ring signature
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASRing is an anonymous ring signature
   scheme.
 \end{theorem}
-
-\begin{proof}
-  Assume $\adv$ is an adversary against ring signature anonymity for \CUASRing.
-  Then, we build \advB against anonymity of \CUASGen. Concretely, \advB first
-  generates $n$ keypairs by running its \IGEN (with $\fissue^{\sring}$) and
-  \HUGEN oracles, and runs \OGEN at least once (with $\finsp^0$). Then, invokes
-  $\adv$ passing as public keys the public keys of the $n$ generated issuers
-  (users in \CUASRing). $\adv$'s $SIGN(i,R,\msg)$ queries are processed as
-  follows. If user $i$ has not yet produced a credential for ring $R$, \advB
-  makes a call to its \OBTAIN oracle, using $R$ as attribute set. If such a
-  credential was already produced, then reuse it. Then, \advB uses the
-  corresponding user and credential identifiers as parameters to a query to its
-  own \SIGN oracle (specifying $\feval^{\attrs}$ as signature evaluation
-  function). Eventually, $\adv$ outputs two user indexes, a ring $R$, and
-  message \msg. If the checks at line 4 of \figref{fig:model-rs} pass, \advB
-  generates the challenge signature by calling its own \CHALb oracle, and passes
-  the result to $\adv$. Finally, \advB outputs whatever $\adv$ outputs.
-  %
-  \qed
-\end{proof}
 
 \begin{theorem}[Unforgeability of \CUASRing]
   If the base \CUASGen construction is non-frameable according to
@@ -318,47 +309,23 @@ the underlying \CUASGen construction is secure.
   scheme.
 \end{theorem}
 
-\begin{proof}
-  Assume $\adv$ against unforgeability of \CUASRing wins the game. We build
-  \advB winning the non-frameability game of \CUASGen with the same probability.
-  %
-  \advB prepares the environment as the adversary \advB against anonymity,
-  and answers \adv's queries to the $SIGN$ oracle also as in the anonymity
-  proof. To answer \adv's queries to its $CORR$ oracle, \advB leverages the
-  \ICORR oracle in the non-frameability game for \UAS. Finally, \advB outputs
-  whatever $\adv$ outputs.
-
-  Note that, if $\adv$ wins its game, it means that the public keys of the
-  issuers in $R$ all belong to uncorrupted users. Since the signature is
-  accepted by $Verify$ at line 3 of the ring signature unforgeability game,
-  there exists some \uid with an \usk matching the check at line 6 in the
-  non-frameability game. Moreover, since $\adv$ never queried its $SIGN$
-  oracle, then by construction there cannot exist a matching entry in the
-  $\SIG[\uid]$ table. Thus, \advB wins the non-frameability game whenever
-  $\adv$ wins its unforgeability game. Since \CUASGen is non-frameable, then
-  this probability must be negligible.
-  %
-  \qed
-\end{proof}
-
 \subsection{Anonymous Credentials}
 \label{ssec:related-models-ac}
 
-We adopt the model in \cite{fhs19}, where security of anonymous credentials
-(with selective disclosure). Therein, an anonymous credential scheme is
-defined via $OrgKeyGen$ (which we rename to $IssKeyGen$, and $UserKeyGen$
+We adopt the model in \cite{fhs19}, for anonymous credentials with selective
+disclosure. Therein, an anonymous credential scheme is
+defined via $OrgKeyGen$ (which we rename to $IssKeyGen$), and $UserKeyGen$
 algorithms (roughly equivalent to
 \IKeyGen and \UKeyGen for \UAS), and $Obtain,Issue$ and $Show,Verify$
 interactive protocols. The issuance interactive protocol is equivalent to
 the issuance protocol in \UAS. Similarly, $Show,Verify$ is equivalent to
 the interactive extension of \Sign and \Verify in \UAS, which we show how
-to build in \secref{ssec:variants-gsac} (for \GSAC, but the case for \UAS is
-equivalent). The security definitions rely on $HU, CU, ObtIss, Obtain, Issue,
-Show$, and $LoR$ oracles, which are essentially equivalent to our \HUGEN,
-\CUGEN, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb oracles. We refer to
-\cite{fhs19} for the full details. For ease of reference, we summarize the
-security definitions in \cite{fig:model-ac}, with inocuous adaptations to
-make them more suitable for comparison with our definitions.
+to build in \appref{app:interactive-uas}. The security definitions rely on
+$HU, CU, ObtIss, Obtain, Issue,Show$, and $LoR$ oracles, which are essentially
+equivalent to our \HUGEN, \CUGEN, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb
+oracles. We refer to \cite{fhs19} for the full details. For ease of reference,
+we summarize the security definitions in \figref{fig:model-ac}, with inocuous
+adaptations to make them more suitable for comparison with our definitions.
 
 \begin{figure}[ht!]
   \centering
@@ -395,19 +362,16 @@ make them more suitable for comparison with our definitions.
 \end{figure}
 
 \subsubsection{\CUASAC Construction.} %
-We show that, as specified in \tabref{tab:uas-alt-funcs}, our \CUASGen
-construction for \UAS, restricted to $\fissue^1$ as issuance function,
-$\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as opening
-function, is a secure anonymous credential scheme according to the \cite{fhs19}
-model. We first quickly define the algorithms, and then prove security. Note
-that, for better alignment with \UAS, we add a common setup process which is
-part of $IssKeyGen$ in \cite{fhs19}. The change is inocuous functionality- and
-security-wise, though.
+We show that a $(\fissue^1,\feval^{\dattrs},\finsp^0)$-\CUASGen restriction, is
+a secure anonymous credential scheme according to the model in \cite{fhs19}. We
+first quickly define the algorithms, and then prove security. For better
+alignment with \UAS, we add a common setup process which is part of $IssKeyGen$
+in \cite{fhs19}. The change is inocuous functionality- and security-wise.
 
 \begin{description}
-\item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar)$
-    and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our \CUASGen
-    construction. Returns $\parm \gets (\parm',\opk)$.
+\item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar,
+  \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
+  \CUASGen construction. Returns $\parm \gets (\parm',\opk)$.
 \item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] Runs \IKeyGen from our
   \CUASGen construction, setting $\fissue^1$ as issuance function.
 \item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \UKeyGen from the
@@ -425,14 +389,8 @@ security-wise, though.
 \end{description}
 
 \paragraph{Security of \CUASAC.} %
-We prove that \CUASAC is an anonymous and unforgeable anonymous credential
-scheme, according to \cite{fhs19}, if the underlying \CUASGen construction
-is anonymous and has unforgeable signing. Note that issuance unforgeability
-of \CUASGen is not needed, as the model in \cite{fhs19} does not allow
-leveraging other credentials not any fixed custom issuance policy. Thus,
-signature unforgeability from \UAS is enough. Note that AC schemes modelled
-as in \cite{fhs19} do not have issuance anonymity, as the user public key
-is passed to the issuer.
+We state next the theorems for the security of \CUASAC. The proofs are
+available in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASAC]
   \label{thm:anon-cuasac}
@@ -441,44 +399,11 @@ is passed to the issuer.
   according to \cite{fhs19}.
 \end{theorem}
 
-\begin{proof}
-  Given \adv~ against anonymity of \CUASAC as defined in \cite{fhs19}, we build
-  an adversary \advB against anonymity of \CUASGen as defined in
-  \defref{def:sign-anonymity-uas}.
-
-  To simulate oracle calls by \adv, \advB simply redirects to its corresponding
-  oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR$, \advB redirects to
-  \HUGEN,\CUGEN,\OBTAIN,\SIGN,\CHALb, respectively. Note that ``translating''
-  the inputs from the former into inputs for the latter is trivial.
-  Obviously, if \adv~ wins in its anonymity game, then so does \advB with the
-  same probability.
-  % 
-  \qed
-\end{proof}
-
 \begin{theorem}[Unforgeability of \CUASAC]
   \label{thm:forge-cuasac}
-  If the base \CUASGen construction has sign unforgeability according to
+  If the base \CUASGen construction has signature unforgeability according to
   \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
 \end{theorem}
-
-\begin{proof}
-  Given \adv~ against unforgeability of \CUASAC as defined in \cite{fhs19}, we
-  build an adversary \advB against sign unforgeability of \CUASGen as defined in
-  \defref{def:sign-forge-uas}.
-
-  To simulate oracle calls by \adv, \advB acts as in the anonymity proof. Assume
-  that \adv~ wins its game. Note that, since $b=1$ in line 5 of the
-  unforgeability game of \figref{fig:model-ac}, then by construction, \Verify
-  also returns $1$ in the sign unforgeability game of \UAS. In addition, if
-  there is no corrupt user with a credential containing $D$, then this leads to
-  \advB winning at line 9 in \figref{fig:exp-uas-unfor-sign}, as no credential
-  owned by a corrupt user that can be extracted can make the $\feval^{\dattrs}$
-  function output $\yeval^0=D$. Thus, \advB wins with the same probability as
-  \adv~ does.  
-  %
-  \qed
-\end{proof}
 
 \subsection{Delegatable Anonymous Credentials}
 \label{ssec:related-models-dac}
@@ -494,22 +419,23 @@ credential it owns. Also, for simplicity, we restrict to the case of using one
 credential per signature/interactive credential presentation, and assume that
 all parties use the same opener and \finsp function.
 %
-The functionality is thus defined as in \appref{sapp:related-models-ac}, i.e.,
+The functionality is thus defined as in \secref{ssec:related-models-ac}, i.e.,
 we have $Setup$, $IssKeyGen$ and $UserKeyGen$ algorithms, and $\langle Obtain,
 Issue \rangle$ and $\langle Show,Verify \rangle$ interactive protocols.
 %
-In the modelling for this setting, since there are multiple issuers, in addition
-to the oracles in \appref{sapp:related-models-ac}, we use $HI$ and $CI$ oracles,
+In the model for this setting, since there are multiple issuers, in addition
+to the oracles in \secref{ssec:related-models-ac}, we use $HI$ and $CI$ oracles,
 equivalent to \IGEN and \ICORR in our \UAS model, which allow adding honest
 issuers, and corrupt existing ones, respectively. The issuance and sign
-anonymity properties are as before. For unforgeability, we still require
-that no adversary can authenticate using a set of attributes that have not been
-issued to a corrupt user. In addition, we require that for any possible
-successful authentication protocol using a level-$n$ credential, we can extract
-a chain of credentials of length $n$ such that each level-$i$ credential can
-be used successfully to authenticate a level-$(i+1)$ credential up to the
-level-$n$ credential, and that the attributes revealed in the level-$n$
-authentication are contained in all the credentials up the chain.
+anonymity properties are direct, constraining the adversary to output challenge
+credentials and signatures with the same delegation chain. For unforgeability,
+we still require that no adversary can authenticate using a set of attributes
+that have not been issued to a corrupt user. In addition, we require that for
+any successful authentication using a level-$n$ credential, we
+can extract a chain of credentials of length $n$ such that each level-$i$
+credential can be used successfully to authenticate a level-$(i+1)$ credential
+down to the level-$n$ credential, and the attributes revealed in the
+level-$n$ authentication are contained in all the credentials up the chain.
 
 \begin{figure}[ht!]
   \centering
@@ -570,13 +496,14 @@ authentication are contained in all the credentials up the chain.
 \end{figure}
 
 \subsubsection{\CUASDAC Construction.} %
-In a delegatable AC (DAC) scheme, all users are (or may be) also issuers. We
-only distinguish between top-level issuers, who have level $n=0$, and
-lower-level issuers, who have level $n>0$. In our \CUASDAC scheme, we assume
-that the first attribute (after the user's secret key) encodes the level of
-the credential. That is, $\attrs_1=n$, for a credential of level $n$. In
-addition, all users (i.e., with $n>0$) who want to delegate have to publicly
-list:
+We next give a construction of a delegatable AC (DAC) scheme, based on a
+$(\fissue^{n,\dattrs},\feval^{n,\dattrs},\finsp^0)$-\CUASGen restriction.
+In a DAC scheme, all users are (or may be) also issuers. We only distinguish
+between top-level issuers, who have level $n=0$, and lower-level issuers, who
+have level $n>0$. In our \CUASDAC scheme, we assume that the first attribute
+(after the user's secret key) encodes the level of the credential. That is,
+$\attrs_1=n$, for a credential of level $n$. In addition, all users (i.e., with
+$n>0$) who want to delegate have to publicly list:
 
 \begin{enumerate}
 \item The level $n$ of the credential they delegate.
@@ -590,11 +517,11 @@ list:
 
 We assume that, from an \ipk, it is possible to find the corresponding issuer
 (e.g., using the previously mentioned public list). The mentioned
-$\fissue^{n,\dattrs}$ functions must follow the pattern in \esref{eq:funcs-dac}.
+$\fissue^{n,\dattrs}$ functions must follow the pattern in \figref{fig:func-restrictions}.
 Namely, the issuance function checks that the first requested attribute equals
 $n+1$, and that all requested attributes are a subset of the attribute set
 \dattrs being delegated by the level-$n$ issuer. In addition, signature
-evaluation functions $\feval^{n,\dattrs}$, also shown in \esref{eq:funcs-dac},
+evaluation functions $\feval^{n,\dattrs}$, also shown in \figref{fig:func-restrictions},
 must reveal the level of the credential used to produce the \UAS signature at
 item 2, as well as the set of attributes \dattrs that the level-$n$ issuer
 delegates. Verifiers can then trivially check if the set of revealed attributes
@@ -602,23 +529,14 @@ are contained within the attributes delegatable by the parent issuer%
 \footnote{Additional checks may be added in both functions, but this is
   the bare minimum.}. \figref{fig:XXX} depicts a sample of the delegation chain
 that this structure creates.
- 
-\begin{align}
-  & \fissue^{n,\dattrs}(\usk,\cred,\attrs) \coloneqq \lbrace
-    \pcif \attrs_1 = n+1 \land \attrs \subseteq \dattrs: \pcreturn 1; \pcelse \pcreturn 0
-    \rbrace \nonumber \\
-  & \feval^{n,\dattrs}(\usk,\cred,\msg) \coloneqq \lbrace
-    \pcreturn (\attrs_1(\cred),\dattrs(\cred)) \rbrace
-  \label{eq:funcs-dac}
-\end{align}
-
+%
 From this high-level description, we define the algorithms of \CUASDAC:
 
 \begin{description}
-\item[$\parm \gets \Setup(1^\secpar)$.]  Runs $\parm' \gets \Setup(1^\secpar)$
-    and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our \CUASGen
-    construction. Returns $\parm \gets (\parm',\opk)$. Note that $\finsp^0$ can
-    be replaced by any desired opening function.
+\item[$\parm \gets \Setup(1^\secpar)$.]  Runs $\parm' \gets \Setup(1^\secpar,
+  \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
+  \CUASGen construction. Returns $\parm \gets (\parm',\opk)$. Note that
+  $\finsp^0$ can be replaced by any desired opening function.
 \item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] If $n=0$, simply run \IKeyGen as
   in \CUASAC. If $n>0$, note that this is a user who wants to delegate a
   previously obtained credential \cred. Thus, it has already run $UserKeyGen$
@@ -630,13 +548,14 @@ From this high-level description, we define the algorithms of \CUASDAC:
   publishes $(n,\ipk,\Sig,\ipk^{n-1},\fissue^{n,\dattrs},\feval^{n,\dattrs})$,
   where $\ipk^{n-1}$ is the public key of the parent issuer,
   $\fissue^{n,\dattrs}$ is an issuance function as described in
-  \esref{eq:funcs-dac}, and $\feval^{n,\dattrs}$ is also as in
-  \esref{eq:funcs-dac}, revealing the attributes that the issuer is willing to
-  delegate..
+  \figref{fig:func-restrictions}, and $\feval^{n,\dattrs}$ is also as in
+  \figref{fig:func-restrictions}, revealing the attributes that the issuer is
+  willing to delegate.
 \item[$(\upk,\usk) \gets UserKeyGen(\opk)$.] All users in this scheme are
   also issuers. Thus, a new user runs first \IKeyGen as in \CUASGen. Then, sets
   $\usk \gets \isk$ and stores \ipk, which may be needed to delegate obtained
-  credentials.
+  credentials. Note that this does not affect security, as long as
+  $\isk \getr \AttrSpace$.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
   If $n>0$, the user first finds the corresponding $(n,\ipk,\Sig,\ipk^{n-1},
@@ -652,40 +571,18 @@ From this high-level description, we define the algorithms of \CUASDAC:
 \end{description}
 
 \paragraph{Security of \CUASDAC.} %
-We prove that \CUASDAC is an anonymous and unforgeable DAC scheme, according to
-the model in \figref{fig:model-dac}, if the underlying \CUASGen construction has
-anonymous issuance and signing, and has unforgeable issuance and signing. 
+We state next the theorems for the security of \CUASDAC. The proofs are
+available in \appref{app:related-proofs}.
 
 \begin{theorem}[Issuance anonymity of \CUASDAC]
   If the base \CUASGen construction has issuance anonymity according to
   \defref{def:issue-anonymity-uas}, then \CUASDAC also has issuance anonymity.
 \end{theorem}
 
-\begin{proof}
-  Given \adv~ against issuance anonymity of \CUASDAC as defined in
-  $\Exp^{iss-anon-b}_{\adv,dac}(1^\secpar)$, we build an adversary \advB against
-  issuance anonymity of \CUASGen as defined in \defref{def:issue-anonymity-uas}.
-
-  To simulate oracle calls by \adv, \advB simply redirects to its corresponding
-  oracle, i.e.: for calls to $HU,CU,HI,CI,Obtain,Show,IssLoR$, \advB redirects
-  to \HUGEN,\CUGEN,\IGEN,\ICORR,\OBTAIN,\SIGN,\OBTCHALb, respectively. Note that
-  ``translating'' the inputs from the former into inputs for the latter is
-  trivial. Obviously, if \adv~ wins in its issuance anonymity game, then so does
-  \advB with the  same probability.
-  % 
-  \qed
-\end{proof}
-
 \begin{theorem}[Signature anonymity of \CUASDAC]
   If the base \CUASGen construction has signature anonymity according to
   \defref{def:sign-anonymity-uas}, then \CUASDAC also has signature anonymity.
 \end{theorem}
-
-\begin{proof}
-  This is the same as in \thmref{thm:anon-cuasac}.
-  % 
-  \qed
-\end{proof}
 
 \begin{theorem}[Unforgeability of \CUASAC]
   If the base \CUASGen construction has issuance and signature unforgeability
@@ -694,58 +591,19 @@ anonymous issuance and signing, and has unforgeable issuance and signing.
   unforgeable AC scheme.
 \end{theorem}
 
-\begin{proof}
-  First, we define the $ExtractChain(\utrans)$ function for our construction.
-  Note that \utrans is a tuple $(r,\Sig)$\footnote{This follows for the approach
-    to transform non-interactive signature and verification in \UAS to interactive
-    presentations, as described in \secref{ssec:variants-gsac}.}, where $r$ is a
-  fresh random number produced by the environment (acting as honest verifier),
-  and \Sig is a \CUASGen signature over $r$. Thus, $ExtractChain$ leverages
-  \ExtractSign from \CUASGen (see \secref{ssec:security-uas}) to get the
-  credential and associated \ipk used to produce \Sig. Note that, for this
-  \ipk, $\ipk = \ipk_{n-1}$ in $\Exp^{forge}_{\adv,dac}$. In \CUASDAC, we can
-  leverage $\ipk_{n-1}$ to fetch from the public list a signature $\Sig_{n-1}$
-  generated by the issuer owner of $\ipk_{n-1}$. Again, we apply \ExtractSign
-  from \CUASGen, to get the credential one layer up in the chain.
-  $ExtractChain$ repeats this step, until reaching the top level credential,
-  issued by $\ipk_0$.
-
-  For the proof, we first replace within $Setup$ the $\NIZKSetup$ algorithms for
-  issuance and signing with their corresponding $\NIZKSetup$. Due to their
-  zero-knowledge property, the resulting game is indistinguishable. Also, note
-  that $ExtractChain$ succeeds to extract the corresponding credential chain,
-  due to simulation extractability of the NIZKs. 
-
-  From the previous, the same reasoning as in \thmref{thm:forge-cuasac} applies
-  to an adversary \adv~winning at line 5 of $\Exp^{forge}_{\adv,dac}$. Next,
-  suppose that, from \utrans obtained at line 6, $ExtractChain$ outputs a
-  delegation chain that makes \adv~win at line 10. This means that an
-  uncorrupted issuer at position $i-1$ of the chain did not own a credential
-  containing $D'$, but the issuer at position $i$ does. Then, either of the
-  following must happen:
-
-  \begin{itemize}
-  \item The credential of the issuer at position $i$ is a forgery, meaning that
-    it is a valid signature by the issuer at position $i-1$, who did not produce
-    it. This can be used to break signature non-frameability of \CUASGen.
-  \item The credential of the issuer at position $i$ is not a forgery, meaning
-    that it is a valid signature by the issuer at position $i-1$, who produced
-    it. But this contradicts the conditions required by $\fissue^{n,\dattrs}$,
-    and therefore breaks issuance unforgeability of \CUASGen.
-  \end{itemize}
-  %
-  \qed
-\end{proof}
-
 \subsection{Multimodal Private Signatures}
 \label{ssec:related-models-mps}
 
 Multimodal Private Signatures (or, rather, a close relative, see next) are
-directly implementable with a restriction of \UAS. Concretely, by restricting to
-a system with one issuer and one opener, one credential per user, one attribute
-per credential (the user secret key), $\fissue^1$ issuance functions, and
-\feval functions that only use the $\yeval^1$ output -- which we denote with
-$\feval^{\yeval^1}$.
+directly implementable as a $(\fissue^1,\feval^{\yeval^1},
+\finsp^{\ast})$-\CUASGen restriction, where $\feval^{\yeval^1}$ is any signature
+evaluation function that ignores the $\yeval^0$ output, and $\finsp^{\ast}$ is
+any open function. Concretely, by restricting to a system with one issuer and
+one opener, one credential per user, one attribute per credential (the user
+secret key)% , $\fissue^1$ issuance functions, and
+% \feval functions that only use the $\yeval^1$ output -- which we denote with
+% $\feval^{\yeval^1}$
+.
 
 There are some differences, though. On the one hand, our signature anonymity
 property is somehow in the middle of MPS's privacy-1 and privacy-2 variants.
@@ -780,8 +638,7 @@ necessary than ever. Finally, our \feval function is a generalization of $F$ in
 MPS, as it allows two outputs: one will be returned in the clear along with the
 signature, and the other will be encrypted. Still both computations are proved
 correct. Making part of the output unencrypted allows implementing very useful
-variants such as anonymous credentials with selective disclosure -- as shown
-before.
+variants such as anonymous credentials, as shown before.
 
 For the model of MPS schemes, we refer to the original paper \needcite.
 
@@ -798,12 +655,8 @@ other third party. The equivalent in \UAS is the $\yeval^1$ value, which is
 encrypted with a single-use key pair, and is an input of \yinsp.
 
 \paragraph{Security of \CUASMPS.} %
-As stated, we restrict to privacy-1 of MPS. Unforgeability-1 in MPS is
-equivalent to sign unforgeability in \UAS. Unforgeability-2 in MPS is
-equivalent to non-frameability in \UAS. Finally note that, in UAS, we do not
-explicitly model extractability, but rather make it an inherent requirement in
-the unforgeability and non-frameability definitions. Thus, our \CUASMPS
-construction also ensures MPS-extractability.
+We state next the theorems for the security of \CUASMPS. The proofs are
+available in \appref{app:related-proofs}.
 
 \begin{theorem}[Privacy-1 of \CUASMPS]
   If the base \CUASGen construction has signature anonymity according to
@@ -811,43 +664,10 @@ construction also ensures MPS-extractability.
   according to \needcite.
 \end{theorem}
 
-\begin{proof}
-  The proof is direct, by observing that the models are equivalent.
-  
-  First, note that, in MPS the adversary is required to output a function $F$,
-  challenge message, and a pair of user secret keys and witnesses (in \UAS, the
-  witnesses are the credentials). This is precisely what \CHALb requires as
-  input in our \UAS modelling.
-
-  Next, in MPS, validity of the output of $F$ is checked. In MPS, this
-  translates to checking that $F$ does not ouptut $0$. In UAS, this is checked
-  in the \SIGN and \CHALb oracles, which abort if the output produced by \feval
-  does not belong in \rngfeval -- a well defined set of acceptable outputs by
-  the chosen \feval.
-
-  The MPS adversary is then allowed to make more oracle queries, and outputs a
-  response bit. Just as in \UAS. Thus, if \CUASMPS satisfies signature
-  anonymity, it is also an MPS scheme satisfying privacy-1.  
-  % 
-  \qed
-\end{proof}
-
 \begin{theorem}[Extractability of \CUASMPS]
   If the base \CUASGen construction has signature unforgeability according to
   \defref{def:sign-forge-uas}, then it is an extractable MPS scheme.
 \end{theorem}
-
-\begin{proof}
-  The proof is direct, as the conditions checked in the extractability
-  experiment in MPS are also checked in the signature unforgeability experiment
-  for \UAS.
-
-  Concretely, \Verify must accept the signature, and the ouptut of \feval and
-  \finsp, computed with the values extracted by \ExtractSign, must respectively
-  match those output by the adversary (for \feval), and computed honestly by the
-  signature unforgeability (for \finsp).  
-  \qed
-\end{proof}
 
 \begin{theorem}[Unforgeability-1 of \CUASMPS]
   If the base \CUASGen construction has signature unforgeability according to
@@ -855,39 +675,11 @@ construction also ensures MPS-extractability.
   defined in \needcite.
 \end{theorem}
 
-\begin{proof}
-  For an MPS scheme to satisfy type-1 unforgeability, it has to be extractable.
-  This is directly satisfied by signature unforgeability in \UAS.
-  %
-  Next, the adversary wins in the unforgeability-1 MPS experiment if it manages
-  to produce a signature that has not been produced via a call to their \SIGN
-  oracle, nor it can be associated to an corrupt user. Indeed, if that happens,
-  then such adversary can be used to build an adversary winning the signature
-  unforgeability game against \CUASMPS, through winning condition at line 12 --
-  as \IdentifyUK does not return 1 for any known \uid. Thus, if \CUASMPS has
-  signature unforgeability, it also satisfies unforgeability-1 of MPS schemes.
-  %
-  \qed
-\end{proof}
-
 \begin{theorem}[Unforgeability-2 of \CUASMPS]
   If the base \CUASGen construction has non-frameability according to
   \defref{def:frame-uas}, then \CUASMPS satisfies unforgeability-2 as
   defined in \needcite.
 \end{theorem}
-
-\begin{proof}
-  For an MPS scheme to have type-2 unforgeability, it has to be extractable.
-  This is directly satisfied by non-frameability in UAS (a similar reasoning
-  as for signature unforgeability and extractability applies here).
-  %
-  Next, in MPS, the adversary wins if the produced signature has not been
-  output by the \SIGN oracle, but Extract outputs the identifier of an honest
-  user. This is the same check done in lines 9 and 10 of the non-frameability
-  game in \UAS. Therefore, if \CUASMPS satisfies non-frameability as defined in
-  \defref{def:frame-uas}, it also satisfies type-2 unforgeability in MPS.
-  \qed
-\end{proof}
 
 %%% Local Variables:
 %%% mode: latex
