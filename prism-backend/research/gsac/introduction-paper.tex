@@ -6,11 +6,11 @@
 %% Brief description of main precedents (simple words)
 \paragraph{Anonymous authentication and signatures.} %
 Privacy-preserving digital signature and authentication systems have been a
-prolific field of study in the last few decades. Anonymous credentials
-\cite{chau85} and group signatures \cite{ch91} are among the most relevant ones.
-While there are many variants, the high-level idea is common: after obtaining a
-credential, users can authenticate anonymously and indistinguishably from other
-users with similar credentials. 
+prolific field of study in the last few decades. Anonymous credentials (AC)
+\cite{chau85} and group signatures (GS) \cite{ch91} are among the most relevant
+schemes. While there are many variants, the high-level idea is common: after
+obtaining a credential, users can authenticate anonymously and indistinguishably
+from other users with similar credentials. 
 
 %% Usefulness of main precedents / motivation
 Their usefulness stems from the combination, within a single primitive, of
@@ -18,24 +18,24 @@ seemingly contradictory concepts: anonymity, authentication, and utility; where
 utility can appear in the shape of information revealed at signature/authentication
 time, or after (in the latter case, typically called accountability).
 
-\paragraph{Utility at authentication-time and after authentication-time.} %
-Anonymous credentials (AC) focus on utility at authentication time. For
-instance, encoding multiple attributes within a credential and allowing to
-selectively disclose a subset of them, or even arbitrary predicates.
-The real world applications of such systems are direct,
-e.g., to prove ``Over 18''-type of claims. Indeed, the scientific research
-behind anonymous credentials is making its own way to become a foundational
-block of the technology some call ``anoncreds''%
+\paragraph{Utility at authentication time and after authentication time.} %
+AC schemes focus on utility at authentication time. For instance, encoding
+multiple attributes within a credential and allowing to selectively disclose a
+subset of them, or even arbitrary predicates. The real world applications of
+such systems are direct, e.g., to prove ``Over 18''-type of claims. Indeed, the
+scientific research behind anonymous credentials is making its own way to become
+a foundational block of the technology some call ``anoncreds''%
 \footnote{\url{https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/002-anoncreds/README.html}. Last access, June 18th, 2022.},
 the privacy-preserving cousin of W3C's Verifiable Credentials%
 \footnote{\url{https://www.w3.org/TR/vc-data-model/}. Last access, June 18th,
   2022.}.
 
-Group signatures (GS) enhance utility after authentication, by allowing partial
-reidentification like linking of signatures, or even full deanonymization.
+GS schemes enhance utility after authentication, by allowing partial
+re-identification like linking of signatures, or even full deanonymization.
 While actual applications of group signatures seem hard to find in the real
-world, Direct Anonymous Attestation (DAA) \cite{bcc04,bl07,cdl16b} has been deployed to
-millions of computing devices into what's called TPM (Trusted Privacy Module)%
+world, Direct Anonymous Attestation (DAA) \cite{bcc04,bl07,cdl16b} has been
+deployed to millions of computing devices into what's called TPM (Trusted
+Privacy Module)%
 \footnote{\url{https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/}. Last access, June 18th, 2022.}.
 Indeed, DAA is a very close relative of group signatures, where the signer is
 divided into two components (trusted and partially trusted), and signing
@@ -46,13 +46,14 @@ and verification are turned into an interactive protocol.
 \paragraph{Evolution of AC and GS.} %
 As the previous shows, AC and GS systems have followed separate paths, although
 there are some exceptions. Functionality-wise, Attribute-Based Group Signatures
-(ABGS) introduce attributes into the credentials issued to group members, who
-can later use them to prove pre-fixed claims \cite{emo09,aa14}. Hidden-identity
+introduce attributes into the credentials issued to group members, who can later
+use them to prove pre-fixed claims \cite{emo09,aa14}. Hidden identity-based
 signatures also add attributes into the credentials, with the aim of preventing
 the opener (the trusted party who can deanonymize signers) from having to rely
-on the issuer in order to perform the opening \cite{ks07}. Some AC schemes have
-also tried to incorporate some sort of utility after authentication, like AC
-schemes with revocation \cite{cks10}, or with ``watchlists'' \needcite.
+on the issuer in order to return meaningful identifying information when opening
+a signature \cite{ks07}. Some AC schemes have also tried to incorporate some
+sort of utility after authentication, like AC schemes with revocation
+\cite{cks10}, or with ``watchlists'' \needcite.
 
 This separation does not hold in the approaches to build them, though. The
 probably most fruitful way to design and instantiate AC systems
@@ -64,84 +65,94 @@ used to design and instantiate GS schemes \cite{gl19,dl21}, as well as  PS16
 signatures \cite{ps16,cdl+20}. Both are CL-like signature schemes, and thus
 can be (and have been) used to design AC schemes \needcite.
 
-Also, both AC and GS branches have experienced praiseworthy efforts towards
-generalization. In the AC domain, malleable signatures are used as core building
+Also, both AC and GS branches have experienced remarkable efforts towards
+generalisation. In the AC domain, malleable signatures are used as core building
 block in \cite{cklm14}, to allow building both conventional AC and Delegatable
 AC systems, depending on the transformation supported by the malleable
-signatures. In GS, very recently, BiAS \cite{lnpy21} and MPS \needcite
-flexibilize the tradeoff between anonymity and accountability.
+signatures. In GS, very recently, BiAS \cite{lnpy21} and MPS \needcite~
+flexibilize the trade-off between anonymity and accountability.
 
 %% Main drawbacks of precedents
 \paragraph{Limitations of GS and AC.} %
-However, even the generalization efforts that have independently taken place in
+However, even the generalisation efforts that have independently taken place in
 GS and AC, are quickly seen to have limited applicability in the real world.
 On the GS side, even though MPS achieves a nice balance on when a signature is
 deanonymizable and what information can be extracted from it, upon closer look,
-this information is somehow meaningless. To understand it, consider how does the
-generic construction work. Roughly, the signer encrypts the output of an
-arbitrary function of its ``identity'', and proves correctness of this
-computation. Yet, the concept of ``identity'' is not defined at all (it is a
-value within some undefined domain). Thus, it seems hard to associate any real
-world meaning to a function of something that is not clearly defined. In any
-case, proving membership to a group may be enough in some use cases, but
-definitely not as a general tool -- that is, GS  offer minimal utility at
-signing time.
+this information is somehow meaningless. Namely, the notion of identity is not
+well defined and, thus, it is not possible to claim whether the value output by
+their generalised open function makes sense or even if it is legitimate. Also,
+just being able to prove membership at signing time is typically not enough, and
+one needs to prove more general claims. That is precisely what AC schemes do,
+and AC schemes also have a well defined notion of identity via the credential
+attributes. Precisely, it is this defined concept of identity what enables AC
+schemes to state when some information revealed at authentication time is a
+forgery or not. On the other hand, the notion of accountability  is barely
+present in AC schemes. For instance, non-frameability is not even considered
+-- and it is non-frameability what ensures when a user cannot be held
+accountable.
 %
-On the other hand, ACs have a well defined concept of identity (the attributes
-encoded within a credential), yet their utility-after-authentication
-capabilities are 
-minimal -- something on which their GS counterpart has done decades of research.
-A somehow indirect proof of this is that the AC line of work does not even
-consider what security we can get in the presence of malicious issuers, which
-is precisely captured in the non-frameability properties of GS.
+In any case, perhaps the most impractical limitation of all is that too many
+models exist in both fields. Although similar, each model focuses on slightly
+different utility variants, making them hardly comparable. And, of course, AC
+focus only on utility at authentication (signing) time, while GS focus on
+utility after signing (authentication) time. To the best of our knowledge, no
+model exists that combines both, in a general enough manner. In practice, this
+forces system designers to decide which one they do not want to lose -- or,
+which one they will lose.
+
 
 \subsection{Our Contribution} 
 %% Our results; TLDR (simple words)
 
 \paragraph{General model for anonymous signatures.} %
 Acknowledging that the strengths of AC are the weaknesses of GS, and vice versa,
-we come up with a unified model. In a nutshell, we give a sytnax and model for
+we come up with a unified model. In a nutshell, we give a syntax and model for
 anonymous signatures -- which can be turned into an interactive authentication
-system -- with attribute-enabled credentials, and generalized utility
-both at authentication/signature-time, and after. We also generalize the
-credential issuance process, subsuming an even larger set of previously
-known schemes. Given its generalization power, we refer to schemes meeting this
-model as Universal Anonymous Signatures.
+system -- with attribute-enabled credentials, and generalised utility both at
+authentication/signature-time, and after. Concretely, we propose a scheme
+through which it is possible to model revealing arbitrary claims at signing time
+(as in AC), enable conditional release of utility information after signing time
+(as in MPS) and, more importantly, come up with the combination of the previous
+that is more suitable for each scenario. We also generalise the credential
+issuance process, subsuming an even larger set of previously known schemes.
+Given its generalisation power, we refer to schemes meeting this model as
+Universal Anonymous Signatures.
 
 \paragraph{Generic construction, and connections with previous schemes.} %
 We give a generic construction based on well-known building blocks, and prove
-its security in the proposed model. To prove its universality, we show how
-restrictions of our generic construction directly imply the direct ancestors of
-UAS: group signatures and anonymous credentials. This includes not only their
-vanilla versions, but also relevant variants, such as MPS \needcite, (a modified
-version of) group signatures with message-dependent opening \cite{seh+12}, or
-anonymous credentials with revocation \cite{cks10}. We also show how minimal
-variations in our generic construction -- and leveraging the generalization of
-the issuance protocol -- allow us to build ring signatures \cite{rst06} or
+its security. To prove its universality, we show how restrictions of our generic
+construction directly imply the direct ancestors of UAS: group signatures and
+anonymous credentials. This includes not only their vanilla versions, but also
+relevant variants, such as MPS \needcite, (a modified version of) group
+signatures with message-dependent opening \cite{seh+12}, or anonymous
+credentials with revocation \cite{cks10}. We also show how minimal variations in
+our generic construction allow us to build ring signatures \cite{rst06} or
 delegatable anonymous credentials \cite{bcc+09}. The most interesting part being
 that, while we prove implications with other previously known schemes, our
-generalization approach allows to merge features of them: e.g., one can easily
+generalisation approach allows to merge features of them: e.g., one can easily
 model and instantiate GSs with with no revocation at all, ACs with full
-de-anonymization, or anything in between.
+de-anonymization, or anything in between -- like being able to deanonymize only
+if certain conditions are met.
 
 %% Our results; Tech nuances
 \paragraph{Modelling challenges.} %
-Combining features of GS and AC into a unified model unavoidably brings
-complexity. For instance, we allow proving arbitrary claims over previously
-obtained credentials at issuance time, in order to inform the issuance
-decission. Thus, it is necessary to
-include unforgeability assurances already at that point -- something not
-considered in previous works. Also, in order to meet the general practice in AC,
-the model for \UAS includes multiple issuers, requiring careful bookkeeping to
-prevent trivial wins. Interestingly, this generalization also paves the way to
+Combining and extending features of GS and AC into a unified model unavoidably
+brings complexity. For instance, we allow proving arbitrary claims over
+previously obtained credentials at issuance time, in order to inform the
+issuance decision. Thus, it is necessary to model unforgeability guarantees
+already at that point -- something not considered in previous works. Also, in
+order to meet the general practice in AC, the model for \UAS includes multiple
+issuers, requiring careful bookkeeping to prevent trivial wins. Interestingly,
+combining this generalisation with the GS world also paves the way to
 include multiple openers, each with its own opening functionality -- also
 requiring careful bookkeeping. While powerful from a practical point of view,
 this introduces similar limitations privacy-wise as in functional encryption
-schemes \needcite -- e.g., privacy cannot be ensured if some chosen opening
-function produces different outputs for different users. However, on this
-occasion, it is the signer (perhaps jointly with the verifier) who decides the
+schemes \cite{bsw11} -- e.g., revealing too granular information at signing or
+opening time makes privacy go away. However, on this occasion, it is the signer
+(perhaps jointly with the verifier) who decides the signing and
 opening policy. Thus, the user is in full control of how deanonymizable its
-signatures will be. This flexibility on the opening values also leads to the
+signatures will be, and knows it at signature generation time. This flexibility
+on the opening values also leads to the
 need of using extraction-based techniques for the modelling, since we cannot
 expect that opening outputs the real identity of the signer. This comes as no
 surprise, though, as it was already observed in GS schemes with non-conventional
@@ -153,7 +164,7 @@ something that was also observed in \cite{cl06} for producing signatures out of
 knowledge of witnesses for concrete NP statements.
 
 A crucial aspect to cater for all possible variants that we aim to subsume, is
-the incorporation of ``placeholders'' enabling customization. We introduce abstract
+the incorporation of ``placeholders'' enabling customisation. We introduce abstract
 functions whose computation needs to be proven correct by the user. Depending on
 the choice of these functions, one can instantiate a different related scheme,
 which is anyway secure according to our \UAS model. And
@@ -166,18 +177,37 @@ can modulate the information to be revealed after signing-time, with the
 information revealed at signing-time, allowing policies such as ``deanonymize
 only if 18+ years old''.
 
+\paragraph{Sample real-world use cases.} %
+By enabling customization at issuance, signing and opening times, the
+possibilities are large. As an example, consider a social network that requires
+under-age users to get permission from one parent. This can be defined via a
+delegatable credential scheme, checking that the delegation chain of the user
+requesting to join is valid via a policy at issuance time. Later, in order to
+make some post in the system advertising something to be sold in a local
+second-hand page in the social network, the user may need to reveal, at signing
+time, being a citizen of the local area (e.g. city). This can be done via an
+appropriate policy at signing time. If after the product is sold, it proves
+to be defective, the social network may directly output the email of the user
+if s/he is over-age, or the email of the adult in charge if s/he is under-age.
+And that could be achieved via a policy for utility after signing time (at
+opening time). Finally, if, in the same social network, some other
+issuer-user-verifier situation comes up that requires a different set of utility
+choices, just the appropriate functions would need to be changed -- and, given
+that our model allows multiple issuers and openers, both could coexist.
+
 %% Our techniques
 %%% E.g., describe how we compatibilize both with AC sel disc., ring sigs, and MPS
-\paragraph{Our approach.} %
-The high-level idea for our generic construction is simple. Credentials are
-signatures over blocks of messages (some signed in committed form), where each
-message can be a different attribute, and a user who wants to simultaneously
-leverage multiple credentials needs to bind all of them to the same key. We add
-three generic functions: \fissue, leveraged by users to
-prove claims over attributes in other credentials, in order to get a new one;
-\feval, proving correctness of the utility revealed at signing time; and \finsp,
-proving correctness of the utility extractable after signing. The latter is, in
-addition, fed and modulated with the output of \feval. The output of \feval is
+\paragraph{Our construction approach.} %
+The high-level idea for our generic construction \CUASGen is simple. Credentials
+are signatures over blocks of messages (some signed in committed form), where
+each message can be a different attribute, and a user who wants to
+simultaneously leverage multiple credentials needs to bind all of them to the
+same key. We add three generic functions: \fissue, leveraged by users at
+credential issuance time to prove claims over attributes in other credentials,
+in order to get a new one; \feval, proving correctness of the utility revealed
+at signing time; and \finsp, proving correctness of the utility information
+extractable after signing. The latter is, in addition, fed and modulated with
+the output of \feval. The output of \feval is
 actually double: one part is shared in the clear along with the signature, and
 the other is encrypted, so that it can be used to tweak -- in a privacy-enhanced
 manner -- the behaviour of \finsp. The output of \finsp is encrypted with an
@@ -192,37 +222,32 @@ summarised in \figref{fig:proof-blocks-uas}.
   \caption{Summary of statements proved per operation in \UAS.
     $K(x)$ means proving knowledge of $x$; $E(y)$ means proving correct
     encryption of $y$; $D(z)$ means proving correct decryption of (an encryption
-    of) $z$. Solid boxes span configurable statements that control issuance;
-    dashed boxes span configurable statements that control utility at signing
-    time; dotted boxes span configurable statements that control utility after
-    signing time (accountability). Unboxed statements are fixed, and are thus
-    common to all \UAS restrictions. $\usk \coloneqq$ user secret key; $\scred
-    \coloneqq$ set of credentials.}
+    of) $z$. $\usk \coloneqq$ user secret key; $\scred \coloneqq$ set of
+    credentials.}
   \label{fig:proof-blocks-uas}
 \end{figure}
 
-From this generic construction, \CUASGen, one can already build known (and more
+From \CUASGen, one can already build known (and more
 functionality-limited) schemes from what we call \emph{restrictions} of
 \CUASGen simply by giving concrete definitions of \fissue, \feval, and \finsp.
 Yet, the model remains the same, and we prove that if such restrictions of
 \CUASGen are secure in the \UAS model, they lead to secure constructions for
 the related primitives (GS variants, AC variants, etc). To define our generic
 construction, we also specify concrete NP relations for the underlying NIZK
-proofs for issuing, signing, and opening. Again with (unavoidable) minor variations
-of these NP relations -- concretely to the one used for signing -- we show how
-our \CUASGen variant can securely build ring signatures. That is, we prove that,
-by simply tweaking a function, and treating all users as issuers, group
-signatures an ring signatures are in essence the same thing.
+proofs for issuing, signing, and opening. These NP relations must not be
+considered as immutable, though. Actually, we show how, by making a minor
+variation into the one used for signing, a \CUASGen restriction can securely
+build ring signatures.
 
 We emphasize that, while -- already before \UAS -- it may have not seemed hard
 to build either of these primitives from another, the core of our contribution
 is that, with \UAS, one just needs to give concrete definitions of three
-functions. Security of the final primitive then automatically follows from the
-fact that it is a secure instantiation of an \UAS scheme. We believe that this
-is a powerful notion, that may finally allow research lines (AC and GS) that
-have followed different paths to benefit from the findings of each other.
-\figref{fig:relations} graphically summarizes the relations we prove between
-\UAS and other schemes -- although, of course, many more are probably
+functions (or little more). Security of the final primitive then essentially
+follows from the fact that it is a secure instantiation of an \UAS scheme. We
+believe that this is a powerful notion, that may finally allow research lines
+(AC and GS) that have followed different paths to benefit from the findings of
+each other. \figref{fig:relations} graphically summarises the relations we prove
+between \UAS and other schemes -- although, of course, many more are probably
 achievable.
 
 \begin{figure}[ht!]
@@ -240,9 +265,10 @@ achievable.
   \label{fig:relations}
 \end{figure}
 
+\paragraph{Outline.} %
 We give some preliminaries in \secref{sec:preliminaries}. Then proceed with our
 \UAS syntax, model, and construction, in \secref{sec:formal-uas}, and show
-relationships with other primitives in \secref{sec:relationships}.. We conclude
+relationships with other primitives in \secref{sec:relationships}. We conclude
 in \secref{sec:conclusion}. Deferred proofs and additional information appear
 in the appendices.
 

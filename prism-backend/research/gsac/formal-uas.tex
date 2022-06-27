@@ -4,7 +4,7 @@
 % [11 pages max]
 
 Next we formalize our notion of Universal Anonymous Signatures
-(\UAS). We define its syntax, model, and give a generic construction which
+(\UAS). We define its syntax, model, and give a generic construction, which
 we prove secure according to our model. 
 
 The main contribution of this section is giving a simple syntax and model that
@@ -102,13 +102,13 @@ We give concrete examples in \secref{sec:relationships}, and define them next:
 \item[$\finsp: (\Yeval,\usk,\scred,\msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
   functions define what utility value, derived from the user's secret key,
-  credentials, and signed message, should be extractable by an opener. Its
-  behaviour can be modulated by \Yeval, and its output a value \yinsp, which
-  must belong in a well defined set \rngfinsp.
+  credentials used for signing, and signed message, should be extractable by an
+  opener. Its behaviour can be modulated by \Yeval, and it outputs a value
+  \yinsp, which must belong in a well defined set \rngfinsp.
 \end{description}
 
 \feval and \finsp may seem redundant. However, observe that the former is chosen
-on a per-signature basis, and probably after negotiation between signer and
+on a per-signature basis, probably after negotiation between signer and
 verifier. As such, it governs the information revealed at signing time. On the
 other hand, \finsp governs the information that may be revealed after signing.
 Moreover, it is defined by openers, and even though signers and verifiers
@@ -117,23 +117,23 @@ an opener to change the chosen function.
 
 \begin{definition}{(\CUASGen restrictions)}
   \label{def:uas-restrictions}
-  Let \CUASGen be a generic construction of an \UAS scheme, secure according to
+  Let \CUASGen be a construction of an \UAS scheme, secure according to
   the model defined in \secref{ssec:model-uas}, and three functions $\fissue^a$,
   $\feval^b$, $\finsp^c$ compatible with the previous definitions. We say that
   \CUASGen, instantiated with $\fissue^a$, $\feval^b$, and $\finsp^c$, is a
   $(\fissue^a,\feval^b,\finsp^c)$-restriction of \CUASGen.
 \end{definition}
 
-To summarize the previous, we depict in \figref{fig:uas-signature} the structure
-of an \UAS signature, including its main components and how they enable the
-previously stated generalization claims.
+% To summarize the previous, we depict in \figref{fig:uas-signature} the structure
+% of an \UAS signature, including its main components and how they enable the
+% previously stated generalization claims.
 
-\begin{figure}[ht!]
-  \centering
-  %\input{figures/uas-signature.tex}
-  \caption{Structure of an \UAS signature.}
-  \label{fig:uas-signature}
-\end{figure}
+% \begin{figure}[ht!]
+%   \centering
+%   %\input{figures/uas-signature.tex}
+%   \caption{Structure of an \UAS signature.}
+%   \label{fig:uas-signature}
+% \end{figure}
 
 \subsection{Security Model}
 \label{ssec:model-uas}
@@ -143,20 +143,18 @@ An \UAS scheme must ensure privacy at credential issuance, meaning that two
 runs of the credential issuance protocol should not leak any information beyond
 necessary about the user requesting the credential. Note that this is now
 crucial for privacy since, as AC schemes, \UAS allows multiple credentials per
-user -- thus, knowing what credential a user requests can lead to user
+user -- thus, knowing what user is requesting which credential can lead to user
 profiling. It must also ensure signature privacy, meaning that no information
-can be learned, from a signature, by third parties beyond what the user agrees
-to reveal, and what may be extractable by the chosen opener.
-Issuance unforgeability requires that \UAS schemes ensure that the claims used
-to support a credential request cannot be falsified (issuance unforgeability).
-Similarly, signature unforgeability requires that no adversary should be able to
-falsify the correctness proofs for the claims included in the signatures. In
-both cases (issuance and signature unforgeability), we introduce the notion of
-traceability in GS, requiring that all credentials involved in the corresponding
-process have to be associated to a known user. Finally, \UAS schemes inherit the
-useful non-frameability property of GS schemes which, even in the worst-case
-scenario of having a corrupt issuer. In this case, although we cannot ensure
-anything regarding correctness of the claims, we can ensure that no honest user
+can be learned by third parties from a signature, beyond what the user chooses
+to reveal, and what may be extractable by the chosen opener. Issuance
+unforgeability requires that \UAS schemes ensure that the claims used to support
+a credential request cannot be falsified (issuance unforgeability). Similarly,
+signature unforgeability requires that no adversary should be able to falsify
+the correctness proofs for the claims included in the signatures. In both cases
+(issuance and signature unforgeability), we require all credentials involved in
+the corresponding process to be associated to a known user. Finally, \UAS
+schemes inherit the useful non-frameability property of GS schemes where even
+the issuer is corrupt. In this case, we can ensure that no honest user
 can be framed with having created a signature that s/he did not create --
 although the concept may get a bit blurred, as there is no traditional opening.
 %
@@ -350,6 +348,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\OBTISS(\cid,\uid,\iid,\attrs,\scid)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \HI: \pcreturn \bot \\
+          \pcif \exists \cid' \in \scid~\suchthat~\cid' \in \CCRED: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot: \pcreturn \bot \\
           \langle \cred, \utrans \rangle \gets
           \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs), \\
@@ -372,12 +371,11 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\          
         }
 
-        \procedure{$\SIGN(\oid,\uid,\scid,\msg,\feval)$}{%
-          \pcif \uid \notin \HU \cup \lbrace \bot \rbrace: \pcreturn \bot \\
-          \pcif \uid = \bot \land \exists \cid' \in \scid~\suchthat~
-          \cid' \notin \CCRED: \\
+        \procedure{$\SIGN(\uid,\oid,\scid,\msg,\feval)$}{%
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \exists \cid,\cid' \in \scid~\suchthat~\cid \in \CRED \land
+          \cid' \in \CCRED: \\
           \pcind \pcreturn \bot \\
-          \pcif \uid = \bot: \uid \gets \OWNR[\scid] \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
           \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,\feval) \\
           \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\scid],\msg) \\
@@ -438,8 +436,10 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\CHALb(\oid,\cuid_{0,1},\cscid_{0,1},\msg,\feval)$}{%
-          \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
+        \procedure{$\CHALb(\oid,\cscid_{0,1},\msg,\feval)$}{%
+          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \pcfor d \in \bin~ \exists \cid,\cid' \in \scid_d~\suchthat \\
+          \pcind \cid \in \CRED \land \cid' \in \CCRED: \pcreturn \bot \\
           \pcif \oid \in \CO: \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\          
           \Yeval = (\yeval^0,\yeval^1) \gets \feval(\UK[\cuid_0],\CRED[\cscid_0],
@@ -580,8 +580,7 @@ when querying the oracle for obtaining a challenge credential out of two
 possible user-credential set pairs, the issuance protocol must either succeed or
 fail for both; also, the adversary can open signatures produced with credential
 sets containing challenge credentials $\cred_b$, only if the output of \Open is
-the same as with the complementary $\cred_{1-b}$ 
-\todo{this is not done in the oracles. Fix.} (note that any other signature
+the same as with the complementary $\cred_{1-b}$ (note that any other signature
 can be open).
 Intuitively, if the adversary cannot distinguish arbitrary runs with all oracles
 (provided the previous constraint) when he gets challenge credentials $\cred_b$
@@ -716,9 +715,6 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       \pcif \fissue(\usk,\scred,\ATTR[\cid]) = 0 \lor
       \exists \cred \in \scred~\suchthat~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0: \\
       \pcind \pcreturn 1 \\
-      \pcif \scred \neq \emptyset \land
-      \nexists \uid~\suchthat~\IdentifyUK(\uid,\usk) = 1: \pcreturn 1~
-      \pccomment{\todo{New! Update proofs.}} \\
       \pcreturn 0
     }
   \caption{Experiment for unforgeability of credential issuance in \UAS schemes.}
@@ -830,8 +826,7 @@ adversary has access to the oracles in $\Oframe \gets
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
     \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
-    \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg)
-    \pccomment{\todo{Added this line -- check line refs.}} \\
+    \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
     \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1
     \lor \Yeval \notin \rngfeval: \pcreturn 1 \\
     \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
