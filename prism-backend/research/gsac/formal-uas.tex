@@ -436,8 +436,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\CHALb(\oid,\cscid_{0,1},\msg,\feval)$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
+        \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1},\msg,\feval)$}{%
+          \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \pcfor d \in \bin~ \exists \cid,\cid' \in \scid_d~\suchthat \\
           \pcind \cid \in \CRED \land \cid' \in \CCRED: \pcreturn \bot \\
           \pcif \oid \in \CO: \pcreturn \bot \\
