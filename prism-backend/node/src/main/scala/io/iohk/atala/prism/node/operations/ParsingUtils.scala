@@ -56,6 +56,20 @@ object ParsingUtils {
     }
   }
 
+  private def validateECCurvePoint(
+      ecDataPath: io.iohk.atala.prism.node.operations.path.Path
+  )(key: ECPublicKey): Either[ValidationError, ECPublicKey] = key match {
+    case key if EC.isSecp256k1(key.getCurvePoint()) => Right(key)
+    case _ =>
+      Left(
+        ValidationError.InvalidValue(
+          ecDataPath,
+          "",
+          s"Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
+        )
+      )
+  }
+
   def parseECKey(
       ecData: ValueAtPath[node_models.ECKeyData]
   ): Either[ValidationError, ECPublicKey] = {
@@ -79,7 +93,7 @@ object ParsingUtils {
             s"Unable to initialize the key: ${ex.getMessage}"
           )
         )
-    }
+    }.flatMap { validateECCurvePoint(ecData.path) _ }
   }
 
   def parseCompressedECKey(
@@ -98,7 +112,7 @@ object ParsingUtils {
             s"Unable to initialize the key: ${ex.getMessage}"
           )
         )
-    }
+    }.flatMap { validateECCurvePoint(ecData.path) _ }
   }
 
   def parseKeyId(id: ValueAtPath[String]): Either[ValidationError, String] = {
