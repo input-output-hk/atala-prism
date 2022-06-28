@@ -6,9 +6,10 @@ import cats.instances.list._
 import cats.instances.either._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.crypto.util.BigIntegerOpsKt
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
@@ -59,18 +60,8 @@ object ParsingUtils {
   private def validateECCurvePoint(
       ecData: ValueAtPath[node_models.ECKeyData]
   ): Boolean = {
-    val x =
-      (com.ionspin.kotlin.bignum.integer.BigInteger.Companion: com.ionspin.kotlin.bignum.integer.BigInteger.Companion)
-        .fromByteArray(
-          ecData(_.x.toByteArray),
-          com.ionspin.kotlin.bignum.integer.Sign.POSITIVE
-        )
-    val y =
-      (com.ionspin.kotlin.bignum.integer.BigInteger.Companion: com.ionspin.kotlin.bignum.integer.BigInteger.Companion)
-        .fromByteArray(
-          ecData(_.y.toByteArray),
-          com.ionspin.kotlin.bignum.integer.Sign.POSITIVE
-        )
+    val x = BigIntegerOpsKt.toKotlinBigInteger(ecData(_.x.toByteArray))
+    val y = BigIntegerOpsKt.toKotlinBigInteger(ecData(_.y.toByteArray))
     EC.isSecp256k1(new io.iohk.atala.prism.crypto.keys.ECPoint(x, y)) // The underline libraries (JVM) also check this
   }
 
