@@ -57,17 +57,21 @@ object ParsingUtils {
   }
 
   private def validateECCurvePoint(
-      ecDataPath: io.iohk.atala.prism.node.operations.path.Path
-  )(key: ECPublicKey): Either[ValidationError, ECPublicKey] = key match {
-    case key if EC.isSecp256k1(key.getCurvePoint()) => Right(key)
-    case _ =>
-      Left(
-        ValidationError.InvalidValue(
-          ecDataPath,
-          "",
-          s"Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
+      ecData: ValueAtPath[node_models.ECKeyData]
+  ): Boolean = {
+    val x =
+      (com.ionspin.kotlin.bignum.integer.BigInteger.Companion: com.ionspin.kotlin.bignum.integer.BigInteger.Companion)
+        .fromByteArray(
+          ecData(_.x.toByteArray),
+          com.ionspin.kotlin.bignum.integer.Sign.POSITIVE
         )
-      )
+    val y =
+      (com.ionspin.kotlin.bignum.integer.BigInteger.Companion: com.ionspin.kotlin.bignum.integer.BigInteger.Companion)
+        .fromByteArray(
+          ecData(_.y.toByteArray),
+          com.ionspin.kotlin.bignum.integer.Sign.POSITIVE
+        )
+    EC.isSecp256k1(new io.iohk.atala.prism.crypto.keys.ECPoint(x, y)) // The underline libraries (JVM) also check this
   }
 
   def parseECKey(
@@ -79,6 +83,14 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "x").missing())
     } else if (ecData(_.y.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "y").missing())
+    } else if (!validateECCurvePoint(ecData)) {
+      Left(
+        ValidationError.InvalidValue(
+          ecData.path,
+          "",
+          s"Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
+        )
+      )
     } else {
       Try(
         EC.toPublicKeyFromByteCoordinates(
@@ -93,7 +105,7 @@ object ParsingUtils {
             s"Unable to initialize the key: ${ex.getMessage}"
           )
         )
-    }.flatMap { validateECCurvePoint(ecData.path) _ }
+    }
   }
 
   def parseCompressedECKey(
@@ -112,7 +124,17 @@ object ParsingUtils {
             s"Unable to initialize the key: ${ex.getMessage}"
           )
         )
-    }.flatMap { validateECCurvePoint(ecData.path) _ }
+    }.flatMap { // Depending on the environment JVM/JS and underlying libraries, this maybe be check by EC.toPublicKeyFromCompressed
+      case key if EC.isSecp256k1(key.getCurvePoint()) => Right(key)
+      case key =>
+        Left(
+          ValidationError.InvalidValue(
+            ecData.path,
+            key.getCurvePoint().toString(),
+            s"Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
+          )
+        )
+    }
   }
 
   def parseKeyId(id: ValueAtPath[String]): Either[ValidationError, String] = {
