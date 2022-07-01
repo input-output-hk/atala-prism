@@ -48,8 +48,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
       ) { case Left(ValidationError.InvalidValue(path, value, explanation)) =>
         path.path mustBe Vector()
         value mustBe ""
-        explanation mustBe "Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
-      // explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve" // This was the results (from JVM!) before ATL-974.
+        explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve" // This was the results (from JVM!) before ATL-974.
       }
     }
   }

@@ -32,7 +32,8 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
   val fs2 = "3.2.5"
-  val prismSdk = "v1.3.3-snapshot-1655980215-eca1fb8"
+  // val prismSdk = "v1.3.3-snapshot-1656597943-4532e23"
+  val prismSdk = "v1.3.3-snapshot-1656679330-7685c95"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 

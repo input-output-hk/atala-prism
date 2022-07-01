@@ -6,10 +6,9 @@ import cats.instances.list._
 import cats.instances.either._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.util.BigIntegerOpsKt
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
@@ -57,14 +56,6 @@ object ParsingUtils {
     }
   }
 
-  private def validateECCurvePoint(
-      ecData: ValueAtPath[node_models.ECKeyData]
-  ): Boolean = {
-    val x = BigIntegerOpsKt.toKotlinBigInteger(ecData(_.x.toByteArray))
-    val y = BigIntegerOpsKt.toKotlinBigInteger(ecData(_.y.toByteArray))
-    EC.isSecp256k1(new io.iohk.atala.prism.crypto.keys.ECPoint(x, y)) // The underline libraries (JVM) also check this
-  }
-
   def parseECKey(
       ecData: ValueAtPath[node_models.ECKeyData]
   ): Either[ValidationError, ECPublicKey] = {
@@ -74,14 +65,6 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "x").missing())
     } else if (ecData(_.y.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "y").missing())
-    } else if (!validateECCurvePoint(ecData)) {
-      Left(
-        ValidationError.InvalidValue(
-          ecData.path,
-          "",
-          s"Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
-        )
-      )
     } else {
       Try(
         EC.toPublicKeyFromByteCoordinates(
@@ -113,16 +96,6 @@ object ParsingUtils {
             ecData.path,
             "",
             s"Unable to initialize the key: ${ex.getMessage}"
-          )
-        )
-    }.flatMap { // Depending on the environment JVM/JS and underlying libraries, this maybe be check by EC.toPublicKeyFromCompressed
-      case key if EC.isSecp256k1(key.getCurvePoint()) => Right(key)
-      case key =>
-        Left(
-          ValidationError.InvalidValue(
-            ecData.path,
-            key.getCurvePoint().toString(),
-            s"Unable to initialize the key: Is not a valid point on the Secp256k1 curve"
           )
         )
     }
