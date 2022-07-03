@@ -470,34 +470,43 @@ oracles, which are formally defined in \figref{fig:oracles1} and
   \end{figure*}
 }
 
-\paragraph{Helper functions \ExtractIssue, \ExtractSign, \IdentifyCred, and
-  \IdentifyUK.} We assume the existence of these four functions. They are not
-functions available in the actual scheme, but rather to the challenger in the
-experiments we use to formalize security of \UAS schemes. Similar techniques
-have been used before to prove security in privacy-preserving schemes with some
-sort of accountability, but that do not offer conventional opening as vanilla
-group signatures. For instance, see related works on DAA \cite{bfg+11,cdl16} and
-group signature variants \cite{dl21,fgl21,gl19,lnpy21}. More concretely, these
-functions are as follows:
+\paragraph{Helper functions \SimSetup, \ExtractIssue, \ExtractSign,
+  \IdentifyCred, and \IdentifyUK.} We assume the existence of these helper
+functions. They are not functions available in the actual scheme, but rather to
+the challenger in the experiments we use to formalize security of \UAS schemes.
+Consequently, while we introduce them here and specify some conditions they need
+to meet, their full definition is dependent on the construction. We fully define
+them for our generic construction \CUASGen in \appref{app:uas-proofs}. Similar
+techniques have been used before to prove security in privacy-preserving schemes
+with some sort of accountability, but that do not offer conventional opening as
+vanilla group signatures. For instance, see related works on DAA
+\cite{bfg+11,cdl16} and group signature variants \cite{dl21,fgl21,gl19,lnpy21}.
+More concretely, these functions are as follows:
 
 \begin{description}
-\item[$\ExtractIssue(\utrans) \rightarrow (\usk,\attrs_{\scred},\scred)$.]
-  Receives an $\langle \Obtain, \Issue \rangle$ transcript, and returns the
-  credentials (if any) and their attributes involved in the request. It 
-  needs an honest issuer as, otherwise, the transcripts won't be available.
-\item[$\ExtractSign(\oid,\siid,\Sig,\msg,\feval) \rightarrow (\usk,
-  \scred,\attrs_{\scred},\yeval^1,\yinsp)$.] Receives a signature \Sig,
+\item[$\SimSetup(1^\secpar) \rightarrow (\parm,\trap)$.] Given a security
+  parameter, outputs global (simulated) parameters \parm whose distribution is
+  indistinguishable to that produced by the \Setup algorithm, as well as a
+  trapdoor \trap.
+\item[$\ExtractIssue(\trap,\utrans) \rightarrow (\usk,\attrs_{\scred},\scred)$.]
+  Receives trapdoor \trap and an $\langle \Obtain, \Issue \rangle$ transcript,
+  and returns the credentials (if any) and their attributes involved in the
+  request. It needs an honest issuer as, otherwise, the transcripts won't be
+  available. 
+\item[$\ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \rightarrow (\usk,
+  \scred,\attrs_{\scred},\yeval^1,\yinsp)$.] Receives a trapdoor \trap, a
+  signature \Sig,
   as well as the opener identifier \oid, and the identifiers of all issuers of
   the credentials used to produce the signature over \msg, and for \feval.
   It outputs the user secret key and credentials (with their attributes) used to
   generate the signature, and the $\yeval^1$ and \yinsp values.
-\item[$\IdentifyCred(\usk,\attrs_{\cred},\cred)$.] Returns $1$ if \cred has been
+\item[$\IdentifyCred(\trap,\usk,\attrs_{\cred},\cred)$.] Returns $1$ if \cred has been
   issued over attributes $\attrs_{\cred}$ and for a user with secret key \usk.
   Otherwise, it returns $0$. In order to be meaningful, this requires that,
   for every $(\attrs_{\cred},\cred)$ pair, there is at most one \usk that makes
   \IdentifyCred return $1$.
-\item[$\IdentifyUK(\uid,\usk)$.] Returns $1$ is \usk is {\uid}'s secret key.
-  This is trivial for honest users, for which there must be a one-to-one
+\item[$\IdentifyUK(\trap,\uid,\usk)$.] Returns $1$ is \usk is {\uid}'s secret
+  key. This is trivial for honest users, for which there must be a one-to-one
   relationship between {\uid}s and {\usk}s. For corrupt users, \IdentifyUK has
   to iterate through the $\langle\Obtain,\Issue\rangle$ transcripts associated
   to \uid, extract the used secret key, and check if there is a match. In the
@@ -612,7 +621,7 @@ $\OIssAnon \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II
   \scalebox{0.9}{
     \begin{minipage}[t]{0.5\textwidth}
       \procedure[linenumbering]{$\ExpIssAnonb(1^\secpar)$}{%
-        \parm \gets \Setup(1^\secpar) \\
+        (\parm,\trap) \gets \SimSetup(1^\secpar) \\
         b^* \gets \adv^{\OIssAnon} (\parm) \\
         \pcreturn b^*
       }
@@ -620,7 +629,7 @@ $\OIssAnon \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II
     
     \begin{minipage}[t]{0.5\textwidth}
       \procedure[linenumbering]{$\ExpSigAnonb(1^\secpar)$}{%
-        \parm \gets \Setup(1^\secpar) \\
+        (\parm,\trap) \gets \SimSetup(1^\secpar) \\
         b^* \gets \adv^{\OSigAnon} (\parm) \\
         \pcreturn b^*
       }
@@ -706,12 +715,12 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 
 \begin{figure}[htp!]
     \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
-      \parm \gets \Setup(1^\secpar) \\
+      (\parm,\trap) \gets \SimSetup(1^\secpar) \\
       \cid \gets \adv^{\Oforgeissue}(\parm) \\
       \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \pcreturn 0 \\
       \textrm{Parse}~\CRED[\cid]~\textrm{as}~(\cdot,\cdot,\iid,\cdot,\cdot);~
       \IK[\iid]~\textrm{as}~((\ipk,\fissue),\cdot) \\
-      (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trans[\cid]) \\
+      (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trap,\trans[\cid]) \\
       \pcif \fissue(\usk,\scred,\ATTR[\cid]) = 0 \lor
       \exists \cred \in \scred~\suchthat~\IdentifyCred(\usk,\attrs_{\cred},\cred) = 0: \\
       \pcind \pcreturn 1 \\
@@ -723,7 +732,7 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
 
 \begin{figure}[htp!]
     \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
-      \parm \gets \Setup(1^\secpar) \\
+      (\parm,\trap) \gets \Setup(1^\secpar) \\
       (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
       \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
       \SIG[\uid]: \pcreturn 0 \\
@@ -732,8 +741,8 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
       (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg,\feval)
       = 0: \pcreturn 1 \\
-      (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp',r) \gets \ExtractSign(\oid,\siid,\Sig,
-      \msg,\feval) \\
+      (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp',r) \gets
+      \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
       \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
       \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1
       \lor \Yeval \notin \rngfeval:
@@ -817,7 +826,7 @@ adversary has access to the oracles in $\Oframe \gets
 
 \begin{figure}[htp!]
   \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
-    \parm \gets \Setup(1^\secpar) \\
+    (\parm,\trap) \gets \SimSetup(1^\secpar) \\
     (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval,\yinsp,\iproof) \gets
     \adv^{\Oframe}(\parm) \\
     \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
@@ -825,7 +834,7 @@ adversary has access to the oracles in $\Oframe \gets
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
     \pcreturn 0 \\
     (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
-    \ExtractSign(\oid,\siid,\Sig,\msg,\feval) \\
+    \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
     \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
     \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1
     \lor \Yeval \notin \rngfeval: \pcreturn 1 \\

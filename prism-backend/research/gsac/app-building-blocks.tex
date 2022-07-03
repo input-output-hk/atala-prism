@@ -182,7 +182,7 @@ NIZK system is a tuple $(\NIZKSetup,\NIZKProve,\NIZKVerify)$, defined as follows
 Any zero-knowledge proof of knowledge must meet completeness, soundness and
 zero-knowledge,properties. We further need an extra property, called
 \emph{simulation-extractability} \cite{cl06}, which amplifies the security
-requirements of simulation soundness.
+requirements of (simulation-) soundness.
 %
 To define more formally the properties we need, we have to define three extra
 algorithms:
@@ -200,9 +200,9 @@ algorithms:
 
 When we want to make explicit the NP relation \NIZKRel to which the previous
 algorithms refer to, we use $\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel$, 
-$\NIZKVerify^\NIZKRel$, etc., and omit the \NIZK prefix and subindex when clear
-from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\SimSetup,\Sim,
-\Extract)$ needs to meet the following properties:
+$\NIZKVerify^\NIZKRel$, etc., and omit the \NIZK prefix and superindex when
+clear from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\SimSetup,
+\Sim,\Extract)$ needs to meet the following properties:
 
 \paragraph{Completeness.} %
 Ensures that, for any $(\NIZKx,\NIZKw) \in \NIZKRel$, any honest prover will be
