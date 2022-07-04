@@ -1,0 +1,379 @@
+\section{Proofs for Relationships with Other Schemes}
+\label{app:related-proofs}
+
+\subsection{Security of \CUASGS}
+
+We prove that our \CUASGS construction is a secure group signature scheme,
+according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
+
+\begin{theorem}[Anonymity of \CUASGS]
+  If the base \CUASGen construction is anonymous according to
+  \defref{def:anonymity-uas}, then \CUASRing is an anonymous group signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume an adversary \adv~ against anonymity in \CUASGS. This directly leads
+  to an adverary \advB against anonymity of the $(\fissue^1,\feval^0,
+  \finsp^{\upk})-\CUASGen$ instance.
+
+  Concretely, observe that calls to \adv's $Ch,Open,SndToU,WReg,USK,CrptU$
+  oracles can be directly simulated by calls to \advB's oracles $\CHALb,
+  \OPEN,\HUGEN,\WREG,\CUGEN$ oracles. Thus, if \adv~ guesses its bit $b$
+  with non-negligible probability, this directly leads to a non-negligible
+  probability of guessing \advB's challenge bit.
+  \qed
+\end{proof}
+
+\begin{theorem}[Traceability of \CUASGS]
+  If the base \CUASGen construction has unforgeable signing according to
+  \defref{def:sign-forge-uas}, then \CUASGS is a traceable group signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume an adversary \adv~ against traceability in \CUASGS. We build an
+  adversary \advB against sign unforgeability of the $(\fissue^1,\feval^0,
+  \finsp^{\upk})-\CUASGen$ instance.
+
+  \advB's simulation of \adv~ environment is as in the proof for anonymity
+  of \CUASGS. \advB simply outputs whatever \adv~ outputs in line 2 of its
+  traceability game. Note that, as \CUASGS is a specific instantiation of
+  \CUASGen, whenever \CUASGS accepts a signature, so does \CUASGen. Concretely,
+  assume that \adv~ wins the traceability game in \figref{fig:model-gs} with
+  $\upk \notin \HU \cup \CU$ at line 5. This implies that the check at line 11
+  of the sign unforgeability game (\figref{fig:exp-uas-unfor-sign}) for \CUASGen
+  outputs $0$ for all known {\uid}s. Similarly, if \adv~ wins the traceability
+  game with condition $\Judge(\dots)=0$ at line 5, then \advB wins its sign
+  unforgeability game with the corresponding check at line 6 in
+  \figref{fig:exp-uas-unfor-sign}.
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Non-frameability of \CUASGS]
+  If the base \CUASGen construction is non-frameable according to
+  \defref{def:frame-uas}, then \CUASGS is a non-frameable group signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume an adversary \adv~ against non-frameability in \CUASGS. We build an
+  adversary \advB against non-frameability of the $(\fissue^1,\feval^0,
+  \finsp^{\upk})-\CUASGen$ instance.
+
+  \advB's simulation of \adv~ environment is as in the proof for anonymity
+  of \CUASGS. \advB simply outputs whatever \adv~ outputs at line 2 of its
+  game. Observe that a winning condition for \adv~ directly implies a winning
+  condition for \advB. Concretely, if $\upk \in \HU \land \PRVUK[\upk] \neq
+  \bot$ in \adv's game, then $\exists \uid \in \HU~\suchthat~\UK[\uid]=\usk$
+  for \advB (line 6 of its game). Similarly, if \Judge returns $1$ in \adv's
+  game, \advB's \Judge also returns $1$ at line 4. Finally, if \adv~ does not
+  corrupt the owner of \upk, then $\uid \in \HU$ in \advB's game, and if \adv
+  does not query its $SIGN$ oracle, then there does not exist a matching entry
+  in $\SIG[\uid]$ for \advB either. Consequently, as stated, \advB wins its
+  non-frameability every time that \adv does.
+  \qed
+\end{proof}
+
+\subsection{Security of \CUASRing}
+
+We prove that our \CUASRing construction is anonymous and unforgeable, if
+the underlying \CUASGen construction is secure.
+
+\begin{theorem}[Anonymity of \CUASRing]
+  If the base \CUASGen construction is anonymous according to
+  \defref{def:anonymity-uas}, then \CUASRing is an anonymous ring signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume $\adv$ is an adversary against ring signature anonymity for \CUASRing.
+  Then, we build \advB against anonymity of \CUASGen. Concretely, \advB first
+  generates $n$ keypairs by running its \IGEN (with $\fissue^{\sring}$) and
+  \HUGEN oracles, and runs \OGEN at least once (with $\finsp^0$). Then, invokes
+  $\adv$ passing as public keys the public keys of the $n$ generated issuers
+  (users in \CUASRing). $\adv$'s $SIGN(i,R,\msg)$ queries are processed as
+  follows. If user $i$ has not yet produced a credential for ring $R$, \advB
+  makes a call to its \OBTAIN oracle, using $R$ as attribute set. If such a
+  credential was already produced, then reuse it. Then, \advB uses the
+  corresponding user and credential identifiers as parameters to a query to its
+  own \SIGN oracle (specifying $\feval^{\attrs}$ as signature evaluation
+  function). Eventually, $\adv$ outputs two user indexes, a ring $R$, and
+  message \msg. If the checks at line 4 of \figref{fig:model-rs} pass, \advB
+  generates the challenge signature by calling its own \CHALb oracle, and passes
+  the result to $\adv$. Finally, \advB outputs whatever $\adv$ outputs.
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability of \CUASRing]
+  If the base \CUASGen construction is non-frameable according to
+  \defref{def:frame-uas}, then \CUASRing is an unforgeable ring signature
+  scheme.
+\end{theorem}
+
+\begin{proof}
+  Assume $\adv$ against unforgeability of \CUASRing wins the game. We build
+  \advB winning the non-frameability game of \CUASGen with the same probability.
+  %
+  \advB prepares the environment as the adversary \advB against anonymity,
+  and answers \adv's queries to the $SIGN$ oracle also as in the anonymity
+  proof. To answer \adv's queries to its $CORR$ oracle, \advB leverages the
+  \ICORR oracle in the non-frameability game for \UAS. Finally, \advB outputs
+  whatever $\adv$ outputs.
+
+  Note that, if $\adv$ wins its game, it means that the public keys of the
+  issuers in $R$ all belong to uncorrupted users. Since the signature is
+  accepted by $Verify$ at line 3 of the ring signature unforgeability game,
+  there exists some \uid with an \usk matching the check at line 6 in the
+  non-frameability game. Moreover, since $\adv$ never queried its $SIGN$
+  oracle, then by construction there cannot exist a matching entry in the
+  $\SIG[\uid]$ table. Thus, \advB wins the non-frameability game whenever
+  $\adv$ wins its unforgeability game. Since \CUASGen is non-frameable, then
+  this probability must be negligible.
+  %
+  \qed
+\end{proof}
+
+\subsection{Security of \CUASAC}
+
+We prove that \CUASAC is an anonymous and unforgeable anonymous credential
+scheme, according to \cite{fhs19}, if the underlying \CUASGen construction
+is anonymous and has unforgeable signing. Note that issuance unforgeability
+of \CUASGen is not needed, as the model in \cite{fhs19} does not allow
+leveraging other credentials not any fixed custom issuance policy. Thus,
+signature unforgeability from \UAS is enough. Note that AC schemes modelled
+as in \cite{fhs19} do not have issuance anonymity, as the user public key
+is passed to the issuer.
+
+\begin{theorem}[Anonymity of \CUASAC]
+  \label{thm:anon-cuasac}
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASAC is an anonymous AC scheme
+  according to \cite{fhs19}.
+\end{theorem}
+
+\begin{proof}
+  Given \adv~ against anonymity of \CUASAC as defined in \cite{fhs19}, we build
+  an adversary \advB against anonymity of \CUASGen as defined in
+  \defref{def:sign-anonymity-uas}.
+
+  To simulate oracle calls by \adv, \advB simply redirects to its corresponding
+  oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR$, \advB redirects to
+  \HUGEN,\CUGEN,\OBTAIN,\SIGN,\CHALb, respectively. Note that ``translating''
+  the inputs from the former into inputs for the latter is trivial.
+  Obviously, if \adv~ wins in its anonymity game, then so does \advB with the
+  same probability.
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability of \CUASAC]
+  \label{thm:forge-cuasac}
+  If the base \CUASGen construction has sign unforgeability according to
+  \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
+\end{theorem}
+
+\begin{proof}
+  Given \adv~ against unforgeability of \CUASAC as defined in \cite{fhs19}, we
+  build an adversary \advB against sign unforgeability of \CUASGen as defined in
+  \defref{def:sign-forge-uas}.
+
+  To simulate oracle calls by \adv, \advB acts as in the anonymity proof. Assume
+  that \adv~ wins its game. Note that, since $b=1$ in line 5 of the
+  unforgeability game of \figref{fig:model-ac}, then by construction, \Verify
+  also returns $1$ in the sign unforgeability game of \UAS. In addition, if
+  there is no corrupt user with a credential containing $D$, then this leads to
+  \advB winning at line 9 in \figref{fig:exp-uas-unfor-sign}, as no credential
+  owned by a corrupt user that can be extracted can make the $\feval^{\dattrs}$
+  function output $\yeval^0=D$. Thus, \advB wins with the same probability as
+  \adv~ does.  
+  %
+  \qed
+\end{proof}
+
+\subsection{Security of \CUASDAC} 
+
+We prove that \CUASDAC is an anonymous and unforgeable DAC scheme, according to
+the model in \figref{fig:model-dac}, if the underlying \CUASGen construction has
+anonymous issuance and signing, and has unforgeable issuance and signing. 
+
+\begin{theorem}[Issuance anonymity of \CUASDAC]
+  If the base \CUASGen construction has issuance anonymity according to
+  \defref{def:issue-anonymity-uas}, then \CUASDAC also has issuance anonymity.
+\end{theorem}
+
+\begin{proof}
+  Given \adv~ against issuance anonymity of \CUASDAC as defined in
+  $\Exp^{iss-anon-b}_{\adv,dac}(1^\secpar)$, we build an adversary \advB against
+  issuance anonymity of \CUASGen as defined in \defref{def:issue-anonymity-uas}.
+
+  To simulate oracle calls by \adv, \advB simply redirects to its corresponding
+  oracle, i.e.: for calls to $HU,CU,HI,CI,Obtain,Show,IssLoR$, \advB redirects
+  to \HUGEN,\CUGEN,\IGEN,\ICORR,\OBTAIN,\SIGN,\OBTCHALb, respectively. Note that
+  ``translating'' the inputs from the former into inputs for the latter is
+  trivial. Obviously, if \adv~ wins in its issuance anonymity game, then so does
+  \advB with the  same probability.
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Signature anonymity of \CUASDAC]
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASDAC also has signature anonymity.
+\end{theorem}
+
+\begin{proof}
+  This is the same as in \thmref{thm:anon-cuasac}.
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability of \CUASAC]
+  If the base \CUASGen construction has issuance and signature unforgeability
+  according to \defref{def:issue-forge-uas} and \defref{def:sign-forge-uas}, and
+  non-frameability according to \defref{def:frame-uas}, then \CUASAC is an
+  unforgeable AC scheme.
+\end{theorem}
+
+\begin{proof}
+  First, we define the $ExtractChain(\utrans)$ function for our construction.
+  Note that \utrans is a tuple $(r,\Sig)$\footnote{This follows for the approach
+    to transform non-interactive signature and verification in \UAS to interactive
+    presentations, as described in \secref{ssec:variants-gsac}.}, where $r$ is a
+  fresh random number produced by the environment (acting as honest verifier),
+  and \Sig is a \CUASGen signature over $r$. Thus, $ExtractChain$ leverages
+  \ExtractSign from \CUASGen (see \secref{ssec:security-uas}) to get the
+  credential and associated \ipk used to produce \Sig. Note that, for this
+  \ipk, $\ipk = \ipk_{n-1}$ in $\Exp^{forge}_{\adv,dac}$. In \CUASDAC, we can
+  leverage $\ipk_{n-1}$ to fetch from the public list a signature $\Sig_{n-1}$
+  generated by the issuer owner of $\ipk_{n-1}$. Again, we apply \ExtractSign
+  from \CUASGen, to get the credential one layer up in the chain.
+  $ExtractChain$ repeats this step, until reaching the top level credential,
+  issued by $\ipk_0$.
+
+  For the proof, we first replace within $Setup$ the $\NIZKSetup$ algorithms for
+  issuance and signing with their corresponding $\NIZKSetup$. Due to their
+  zero-knowledge property, the resulting game is indistinguishable. Also, note
+  that $ExtractChain$ succeeds to extract the corresponding credential chain,
+  due to simulation extractability of the NIZKs. 
+
+  From the previous, the same reasoning as in \thmref{thm:forge-cuasac} applies
+  to an adversary \adv~winning at line 5 of $\Exp^{forge}_{\adv,dac}$. Next,
+  suppose that, from \utrans obtained at line 6, $ExtractChain$ outputs a
+  delegation chain that makes \adv~win at line 10. This means that an
+  uncorrupted issuer at position $i-1$ of the chain did not own a credential
+  containing $D'$, but the issuer at position $i$ does. Then, either of the
+  following must happen:
+
+  \begin{itemize}
+  \item The credential of the issuer at position $i$ is a forgery, meaning that
+    it is a valid signature by the issuer at position $i-1$, who did not produce
+    it. This can be used to break signature non-frameability of \CUASGen.
+  \item The credential of the issuer at position $i$ is not a forgery, meaning
+    that it is a valid signature by the issuer at position $i-1$, who produced
+    it. But this contradicts the conditions required by $\fissue^{n,\dattrs}$,
+    and therefore breaks issuance unforgeability of \CUASGen.
+  \end{itemize}
+  %
+  \qed
+\end{proof}
+
+\subsection{Security of \CUASMPS}
+
+As stated, we restrict to privacy-1 of MPS. Unforgeability-1 in MPS is
+equivalent to sign unforgeability in \UAS. Unforgeability-2 in MPS is
+equivalent to non-frameability in \UAS. Finally note that, in UAS, we do not
+explicitly model extractability, but rather make it an inherent requirement in
+the unforgeability and non-frameability definitions. Thus, our \CUASMPS
+construction also ensures MPS-extractability.
+
+\begin{theorem}[Privacy-1 of \CUASMPS]
+  If the base \CUASGen construction has signature anonymity according to
+  \defref{def:sign-anonymity-uas}, then \CUASMPS satisfies privacy-1
+  according to \needcite.
+\end{theorem}
+
+\begin{proof}
+  The proof is direct, by observing that the models are equivalent.
+  
+  First, note that, in MPS the adversary is required to output a function $F$,
+  challenge message, and a pair of user secret keys and witnesses (in \UAS, the
+  witnesses are the credentials). This is precisely what \CHALb requires as
+  input in our \UAS modelling.
+
+  Next, in MPS, validity of the output of $F$ is checked. In MPS, this
+  translates to checking that $F$ does not ouptut $0$. In UAS, this is checked
+  in the \SIGN and \CHALb oracles, which abort if the output produced by \feval
+  does not belong in \rngfeval -- a well defined set of acceptable outputs by
+  the chosen \feval.
+
+  The MPS adversary is then allowed to make more oracle queries, and outputs a
+  response bit. Just as in \UAS. Thus, if \CUASMPS satisfies signature
+  anonymity, it is also an MPS scheme satisfying privacy-1.  
+  % 
+  \qed
+\end{proof}
+
+\begin{theorem}[Extractability of \CUASMPS]
+  If the base \CUASGen construction has signature unforgeability according to
+  \defref{def:sign-forge-uas}, then it is an extractable MPS scheme.
+\end{theorem}
+
+\begin{proof}
+  The proof is direct, as the conditions checked in the extractability
+  experiment in MPS are also checked in the signature unforgeability experiment
+  for \UAS.
+
+  Concretely, \Verify must accept the signature, and the ouptut of \feval and
+  \finsp, computed with the values extracted by \ExtractSign, must respectively
+  match those output by the adversary (for \feval), and computed honestly by the
+  signature unforgeability (for \finsp).  
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability-1 of \CUASMPS]
+  If the base \CUASGen construction has signature unforgeability according to
+  \defref{def:sign-forge-uas}, then \CUASMPS satisfies unforgeability-1 as
+  defined in \needcite.
+\end{theorem}
+
+\begin{proof}
+  For an MPS scheme to satisfy type-1 unforgeability, it has to be extractable.
+  This is directly satisfied by signature unforgeability in \UAS.
+  %
+  Next, the adversary wins in the unforgeability-1 MPS experiment if it manages
+  to produce a signature that has not been produced via a call to their \SIGN
+  oracle, nor it can be associated to an corrupt user. Indeed, if that happens,
+  then such adversary can be used to build an adversary winning the signature
+  unforgeability game against \CUASMPS, through winning condition at line 12 --
+  as \IdentifyUK does not return 1 for any known \uid. Thus, if \CUASMPS has
+  signature unforgeability, it also satisfies unforgeability-1 of MPS schemes.
+  %
+  \qed
+\end{proof}
+
+\begin{theorem}[Unforgeability-2 of \CUASMPS]
+  If the base \CUASGen construction has non-frameability according to
+  \defref{def:frame-uas}, then \CUASMPS satisfies unforgeability-2 as
+  defined in \needcite.
+\end{theorem}
+
+\begin{proof}
+  For an MPS scheme to have type-2 unforgeability, it has to be extractable.
+  This is directly satisfied by non-frameability in UAS (a similar reasoning
+  as for signature unforgeability and extractability applies here).
+  %
+  Next, in MPS, the adversary wins if the produced signature has not been
+  output by the \SIGN oracle, but Extract outputs the identifier of an honest
+  user. This is the same check done in lines 9 and 10 of the non-frameability
+  game in \UAS. Therefore, if \CUASMPS satisfies non-frameability as defined in
+  \defref{def:frame-uas}, it also satisfies type-2 unforgeability in MPS.
+  \qed
+\end{proof}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas-paper"
+%%% End:
