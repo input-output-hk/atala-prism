@@ -1079,9 +1079,9 @@ the proofs to \appref{app:uas-proofs}.
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
-  If the underlying scheme for $\NIZK^{\Issue}$ is zero-knowledge, the schemes
-  for $\NIZK^{\Sign}$ are zero-knowledge and simulation-extractable, and the
-  commitment scheme is hiding, then our \CUASGen construction satisfies
+  If the underlying scheme for $\NIZK^{\Sign}$ is zero-knowledge and simulation
+  extractable, the scheme for $\NIZK^{\Open}$ is simulation-extractable, and
+  \SBCM scheme is blind, then our \CUASGen construction satisfies
   non-frameability as defined in \defref{def:frame-uas}, except with negligible
   probability.
 \end{theorem}
