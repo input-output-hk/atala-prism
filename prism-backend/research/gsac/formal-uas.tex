@@ -833,6 +833,8 @@ adversary has access to the oracles in $\Oframe \gets
     \pcreturn 0 \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
     \pcreturn 0 \\
+    \pcif \exists (\cdot,\cdot,\Sig,\Yeval,\msg,\feval)
+    \in \SIG[\uid]: \pcreturn 0 \\    
     (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
     \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
     \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
@@ -840,9 +842,7 @@ adversary has access to the oracles in $\Oframe \gets
     \lor \Yeval \notin \rngfeval: \pcreturn 1 \\
     \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
     \lor \yinsp \neq \yinsp': \pcreturn 1 \\    
-    \pcif \nexists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \pcreturn 0 \\
-    \pcif \nexists (\cdot,\cdot,\Sig,\Yeval,\msg,\feval)
-    \in \SIG[\uid]: \pcreturn 1 \\
+    \pcif \exists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \pcreturn 1 \\
     \pcreturn 0
   }
   \caption{Experiment for non-frameability on \UAS schemes.}
