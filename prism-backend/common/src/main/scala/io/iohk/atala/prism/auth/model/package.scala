@@ -14,4 +14,6 @@ package object model {
       RequestNonce(bytes = UUID.randomUUID().toString.getBytes().toVector)
     }
   }
+
+  case class AuthToken(token: String) extends AnyVal
 }
