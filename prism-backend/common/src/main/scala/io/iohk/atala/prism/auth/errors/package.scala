@@ -65,13 +65,4 @@ package object errors {
       )
     }
   }
-
-// Auth Token Errors
-  final case class InvalidToken(reason: String) extends AuthError {
-    def toStatus: Status = Status.PERMISSION_DENIED.withDescription(reason)
-  }
-
-  final case class AuthTokenMissing(reason: String) extends AuthError {
-    def toStatus: Status = Status.FAILED_PRECONDITION.withDescription(reason)
-  }
 }
