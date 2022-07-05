@@ -5,7 +5,8 @@ import io.grpc.ServerCall.Listener
 import io.grpc._
 import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationContext.AuthTokenKeys
 import org.mockito.ArgumentMatchers.{any, eq => mockEq}
-import org.mockito.Mockito.{mock, times, verify, when}
+import org.mockito.ArgumentMatchers.argThat
+import org.mockito.Mockito.{mock, never, times, verify, when}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -51,7 +52,7 @@ class AuthorizationInterceptorSpec extends AnyWordSpec with Matchers {
 
     }
 
-    "intercept fail Unauthenticated when supplied prism auth token doesnt matched and authEnable is true" in {
+    "intercept fail Unauthenticated when supplied prism auth token doesn't matched and authEnable is true" in {
       val configOveride = """api {
                             |    authTokens = [
                             |    "YYVvJ11AlVhLYv7OBO9sY9AOz8D5FoWo"
@@ -75,6 +76,15 @@ class AuthorizationInterceptorSpec extends AnyWordSpec with Matchers {
       listener.onComplete()
       listener.onCancel()
       verify(next, times(0)).startCall(mockEq(serverCall), mockEq(headers))
+      verify(serverCall, times(1)).close(
+        argThat[Status](s =>
+          (s.getCode eq Status.UNAUTHENTICATED.getCode) && s.getDescription.equals(
+            "The 'prism-auth-token' is missing from headers / The provided `prism-auth-token` is invalid"
+          )
+        ),
+        any(classOf[Metadata])
+      )
+      verify(next, never()).startCall(any(classOf[ServerCall[Int, Int]]), any(classOf[Metadata]))
 
     }
   }
