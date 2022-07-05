@@ -4,8 +4,9 @@ import java.util.Base64
 import io.grpc.{Context, Metadata}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.auth.model.RequestNonce
+import io.iohk.atala.prism.auth.model.{AuthToken, RequestNonce}
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.logging.TraceId
 
@@ -65,6 +66,26 @@ private[grpc] object GrpcAuthenticationContext {
   val TraceIdKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
     "trace-id"
   )
+
+  // Prism auth Token
+  val AuthTokenKeys: GrpcMetadataContextKeys[String] = GrpcMetadataContextKeys(
+    "prism-auth-token"
+  )
+
+  def getAuthTokenFromContext(ctx: Context): Option[AuthToken] =
+    ctx.getOpt(AuthTokenKeys).map(AuthToken)
+
+  def getAuthTokenFromMetadata(headers: Metadata): Option[AuthToken] =
+    headers.getOpt(AuthTokenKeys).map(AuthToken)
+
+  def getAuthTokenContext(headers: Metadata): Option[Context] = {
+    val authToken = headers.getOpt(AuthTokenKeys)
+    authToken.map {
+      Context
+        .current()
+        .withValue(AuthTokenKeys.context, _)
+    }
+  }
 
   def getTraceIdFromContext(ctx: Context): TraceId =
     ctx.getOpt(TraceIdKeys).map(TraceId(_)).getOrElse(TraceId.generateYOLO)
