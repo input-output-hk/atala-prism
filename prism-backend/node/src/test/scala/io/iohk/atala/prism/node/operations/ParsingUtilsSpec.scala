@@ -48,7 +48,8 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
       ) { case Left(ValidationError.InvalidValue(path, value, explanation)) =>
         path.path mustBe Vector()
         value mustBe ""
-        explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve" // This was the results (from JVM!) before ATL-974.
+        explanation mustBe "Unable to initialize the key: ECPoint corresponding to a public key doesn't belong to Secp256k1 curve"
+      // explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve" // Error before ATL-974
       }
     }
   }
