@@ -7,7 +7,12 @@ import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.auth.WhitelistedAuthenticatorF
-import io.iohk.atala.prism.auth.grpc.{GrpcAuthenticatorInterceptor, TraceExposeInterceptor, TraceReadInterceptor}
+import io.iohk.atala.prism.auth.grpc.{
+  AuthorizationInterceptor,
+  GrpcAuthenticatorInterceptor,
+  TraceExposeInterceptor,
+  TraceReadInterceptor
+}
 import io.iohk.atala.prism.auth.utils.DidWhitelistLoader
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.logging.TraceId
@@ -144,7 +149,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         nodeExplorerDids
       )
       nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
-      server <- startServer(nodeGrpcService, nodeExplorerGrpcService)
+      server <- startServer(nodeGrpcService, nodeExplorerGrpcService, globalConfig)
     } yield (submissionSchedulingService, server)
   }
 
@@ -250,7 +255,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def startServer(
       nodeService: NodeGrpcServiceImpl,
-      nodeExplorerService: NodeExplorerGrpcServiceImpl
+      nodeExplorerService: NodeExplorerGrpcServiceImpl,
+      globalConfig: Config
   ): Resource[IO, Server] =
     Resource.make[IO, Server](IO {
       logger.info("Starting server")
@@ -259,6 +265,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         .forPort(NodeApp.port)
         .intercept(new TraceExposeInterceptor)
         .intercept(new TraceReadInterceptor)
+        .intercept(new AuthorizationInterceptor(globalConfig))
         .intercept(new GrpcAuthenticatorInterceptor)
         .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
         .addService(NodeExplorerServiceGrpc.bindService(nodeExplorerService, executionContext))

@@ -6,6 +6,7 @@ import io.iohk.atala.prism.models.TransactionInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperation,
+  DeactivateDIDOperation,
   IssueCredentialBatchOperation,
   ProtocolVersionUpdateOperation,
   RevokeCredentialsOperation,
@@ -65,6 +66,12 @@ package object models {
         OperationOutput(
           OperationOutput.Result.ProtocolVersionUpdateOutput(
             node_models.ProtocolVersionUpdateOutput()
+          )
+        )
+      case DeactivateDIDOperation(_, _, _, _) =>
+        OperationOutput(
+          OperationOutput.Result.DeactivateDidOutput(
+            node_models.DeactivateDIDOutput()
           )
         )
       case other =>
