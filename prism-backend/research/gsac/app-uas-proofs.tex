@@ -2,7 +2,7 @@
 \label{app:uas-proofs}
 
 First, we define the \SimSetup, \ExtractIssue, \ExtractSign, \IdentifyCred and
-\IdentifyUK functions that are needed for some of the properties to be
+\IdentifySig functions that are needed for some of the properties to be
 meaningful, in \figref{fig:helper-funcs}.
 
 \begin{figure}[ht!]
@@ -55,22 +55,35 @@ meaningful, in \figref{fig:helper-funcs}.
         \pcreturn (\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
       }
       
-      \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred)$}{%
-        \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
-      }
+      % \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred)$}{%
+      %   \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
+      % }
 
-      \procedure{$\IdentifyUK(\parm,\trap,\uid,\usk)$}{%
+      \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred,\ipk)$}{%
+        \pcreturn \SBCMVerify(\ipk,\cred,\usk,\attrs_{\cred}) \\
+      }      
+
+      \procedure{$\IdentifySig(\parm,\trap,\usk,\scred,\Sig)$}{%
         \pcif \uid \in \HU: \pcreturn \usk = \UK[\uid] \\
         \pcfor \cid~\suchthat~\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot) \\
         \pcind (\usk',\cdot,\cdot,\cdot) \gets \ExtractIssue(\parm,\trap,\trans[\cid]) \\
         \pcind \pcif \usk = \usk': \pcreturn 1 \\
         \pcreturn 0
       }
+
+      % \procedure{$\IdentifySig(\parm,\trap,\uid,\usk)$}{%
+      %   \pcif \uid \in \HU: \pcreturn \usk = \UK[\uid] \\
+      %   \pcfor \cid~\suchthat~\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot) \\
+      %   \pcind (\usk',\cdot,\cdot,\cdot) \gets \ExtractIssue(\parm,\trap,\trans[\cid]) \\
+      %   \pcind \pcif \usk = \usk': \pcreturn 1 \\
+      %   \pcreturn 0
+      % }
+      
     \end{minipage}
   }
   \label{fig:helper-funcs}
   \caption{Definition of helper functions \ExtractIssue, \ExtractSign,
-    \IdentifyCred, and \IdentifyUK, for \CUASGen.}
+    \IdentifyCred, and \IdentifySig, for \CUASGen.}
 \end{figure}
 
 \subsection{Correctness}
@@ -150,13 +163,8 @@ meaningful, in \figref{fig:helper-funcs}.
   corresponding security loss). Thus, proving security for one query to the
   challenge oracle is enough.
 
-  We start from $G_0=\ExpSigAnonb$, and define game $G_1$ to be exactly the same
-  as $G_0$, except that, within the $\Setup$ algorithm, we replace
-  $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. By zero-knowledgeness,
-  $G_1$ is indistinguishable from $G_0$.
-  
-  From $G_1$, we consider $G^0_1$, which we define to be $G_1$, for $b=0$
-  (i.e., \ExpSigAnonz, using $\NIZKSimSetup^{\Sign}$). The challenge sent to the
+  We start from $G_0=\ExpSigAnonb$.  %
+  From $G_0$, we consider $G^0_0 = \ExpSigAnonz$. The challenge sent to the
   adversary is $(\csig_0,\yeval) \gets \Sign(\PRVUK[\cuid_0],\PUBOK[\oid],
   \CRED[\scid_0],\msg,\feval)$, where $\csig_0 = (\pi_0,\Ec_{\yinsp})$, with
   $\pi_0 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\msg,\feval,\yeval,
@@ -164,26 +172,26 @@ meaningful, in \figref{fig:helper-funcs}.
   \CRED[\scid_0],\attrs_{\scid_0},\yeval^1,\yinsp,r,r'))$, $\ceval = \EEnc
   (\widetilde{\Eek},\yeval^1;r)$, and $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$.
   % 
-  Further, we build $G_2^0$ from $G_1^0$ by simulating the proof $\pi_0$. That
-  is, in $G_2^0$, $\csig_0 = (\pi_0^s,\ceval,\cinsp)$, where $\pi^s_0 =
+  Further, we build $G_1^0$ from $G_0^0$ by simulating the proof $\pi_0$. That
+  is, in $G_1^0$, $\csig_0 = (\pi_0^s,\ceval,\cinsp)$, where $\pi^s_0 =
   \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
   \ceval,\cinsp,\PUBIK[\scid_0],\PUBOK[\oid]))$. By zero-knowledgeness
-  of $\NIZK^{\Sign}$, $G_2^0$ is indistinguishable from $G_1^0$.
+  of $\NIZK^{\Sign}$, $G_1^0$ is indistinguishable from $G_0^0$.
 
-  Similarly, we consider $G_1^1$ and $G_2^1$. That is, $G_1^1$ is $G_1$
-  for $b=1$, where the challenge
+  Similarly, we consider $G_0^1$ and $G_1^1$. That is, $G_0^1 = \ExpSigAnono$,
+  where the challenge
   sent to the adversary is $(\csig_1,\yeval) \gets \Sign(\PRVUK[\cuid_1],
   \PUBOK[\oid],\CRED[\scid_1],\msg,\feval)$, where $\csig_1 = (\pi_1,\ceval,
   \cinsp)$, with $\pi_1 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},
   (\msg,\feval,\yeval,\ceval,\cinsp,\PUBIK[\scid_1],\widetilde{\Eek},
   \PUBOK[\oid]),(\PRVUK[\cuid_1],\CRED[\scid_1],\attrs_{\scid_1},\yeval^1,
   \yinsp,r,r'))$, $\ceval = \EEnc(\widetilde{\Eek},\yeval^1;r)$, and
-  $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$. As before, $G_2^1$ is built from
-  $G_1^1$, simulating $\pi_1$. That is, in $G_2^1$, $\csig_1 = (\pi_1^s,\ceval,
+  $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$. As before, build $G_1^1$ from
+  $G_0^1$, simulating $\pi_1$. That is, in $G_1^1$, $\csig_1 = (\pi_1^s,\ceval,
   \cinsp)$, where $\pi^s_1 = \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},
   \NIZKtrap,(\msg,\feval,\yeval,\ceval,\cinsp,\PUBIK[\scid_1],\widetilde{\Eek},
-  \PUBOK[\oid]))$. Again, by zero-knowledge of $\NIZK^{\Sign}$, $G_2^1$ is
-  indistinguishable from $G_1^1$. Note also that $G_2^1$ and $G_2^0$ are
+  \PUBOK[\oid]))$. Again, by zero-knowledge of $\NIZK^{\Sign}$, $G_1^1$ is
+  indistinguishable from $G_0^1$. Note also that $G_1^1$ and $G_1^0$ are
   indistinguishable, due to the IND-CCA property of the encryption scheme
   (so, the \ceval values in $\csig_0$ and $\csig_1$ are indistinguishable),
   in the  challenge oracle used in the anonymity game, we restrict to
@@ -191,13 +199,11 @@ meaningful, in \figref{fig:helper-funcs}.
   the same \yinsp value (and, otherwise, \adv~is not allowed to open it).
 
   Finally, consider the definition of $\AdvSigAnon=|\Pr\lbrack
-  \ExpSigAnono(1^\secpar)=1\rbrack-\Pr\lbrack\ExpSigAnonz(1^\secpar)=1\rbrack|$. As
-  argued, $G_1$ is indistinguishable from $\ExpSigAnonb$, thus
-  $\AdvSigAnon \approx |\Pr\lbrack G_1^1(1^\secpar)=1\rbrack-\Pr\lbrack
-  G_1^0(1^\secpar)=1\rbrack| \approx
-  |\Pr\lbrack G_2^1(1^\secpar)=1\rbrack-\Pr\lbrack
-  G_2^0(1^\secpar)=1\rbrack|$. Since $G_2^1=G_2^0$, it follows that
-  \AdvSigAnon is negligible.
+  \ExpSigAnono(1^\secpar)=1\rbrack-\Pr\lbrack\ExpSigAnonz(1^\secpar)=1\rbrack|
+  = |\Pr\lbrack G_0^1(1^\secpar)=1\rbrack-\Pr\lbrack
+  G_0^0(1^\secpar)=1\rbrack| \approx
+  |\Pr\lbrack G_1^1(1^\secpar)=1\rbrack-\Pr\lbrack
+  G_1^0(1^\secpar)=1\rbrack|$, which is negligible.
   % 
   \qed
 \end{proof}
@@ -289,7 +295,7 @@ meaningful, in \figref{fig:helper-funcs}.
 
   \paragraph{(e) \usk must belong to a known user.} %
   The only remaining option for $\adv$ to win is via winning condition at line
-  12, meaning that \IdentifyUK fails to find an honest or corrupt users with
+  12, meaning that \IdentifySig fails to find an honest or corrupt users with
   a \usk matching the one used to request the credentials used to produce the
   signature output by \adv. However, at line 12, we already know that all
   credentials are valid signatures by the issuer and that, also, all are bound
@@ -316,8 +322,8 @@ meaningful, in \figref{fig:helper-funcs}.
   line 3, and after simulation extractability of $\NIZK^{\Sign}$, $\yeval =
   \yeval^0$, and $\tyeval^1 = \yeval^1$. Similarly, since the $(\yinsp,\iproof)$
   pair output by \adv~is accepted by \Judge, simulation extractability of
-  $\NIZK^{\Sign}$ and $\NIZK^{\Open}$ implies that both checks at lines 8 and 9
-  pass. Hence, the probability that the adversary wins at either lines 8 or 9 is
+  $\NIZK^{\Sign}$ and $\NIZK^{\Open}$ implies that both checks at lines 7 and 8
+  pass. Hence, the probability that the adversary wins at either lines 7 or 8 is
   negligible, after simulation extractability of $\NIZK^{\Sign}$ and
   $\NIZK^{\Open}$.
 
