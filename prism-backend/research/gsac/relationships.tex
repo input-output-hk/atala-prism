@@ -12,40 +12,45 @@ we rely on the functions described in \figref{fig:func-restrictions}.
 
 \begin{figure}[ht!]
 
-  \scalebox{0.95}{
+  \scalebox{0.9}{
     \begin{minipage}[t]{\textwidth}
       \textbf{Issuance functions:}
       \begin{align}
-        & \fissue^1(\usk,\scred,\attrs) \coloneqq 1 \nonumber \\
-        & \fissue^{\sring}(\usk,\scred,\attrs) \coloneqq \pcif \attrs
-          \subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1; \pcelse
-          \pcreturn 0 \nonumber \\
-        & \fissue^{n,\dattrs}(\usk,\cred,\attrs) \coloneqq
-          \pcif \attrs_1(\cred) = n+1 \land \dattrs \subseteq \attrs: \pcreturn 1;
+        & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
+        & \fissue^{\sring}(\usk,\attrs,\cdot) \coloneqq \pcif \attrs
+          \subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1;
+          \pcelse \pcreturn 0 \nonumber \\
+        & \fissue^{l,\dattrs}(\usk,\attrs,(\cid,\cattrs)) \coloneqq
+          \pcif \attrs_1 = l+1 \land \attrs \subseteq
+          \lbrace \cattrs_i \rbrace_{i\in\dattrs}: \pcreturn 1;
           \pcelse \pcreturn 0 \nonumber
       \end{align}
       
       \textbf{Signature evaluation functions:}
       \begin{align}
-        & \feval^0(\usk,\scred,\msg) \coloneqq \pcreturn (0,\ast) \nonumber \\
-        & \feval^{\dattrs}(\usk,\cred,\msg) \coloneqq \pcreturn
-          (\dattrs(\cred),\ast) \nonumber \\
-        & \feval^{\attrs}(\usk,\cred,\msg) \coloneqq \pcif \CCommit(\usk;0) \in
-          \attrs: \pcreturn (\attrs(\cred),\ast);
-          \pcelse \pcreturn (\bot,\bot) \nonumber \\
-        & \feval^{n,\dattrs}(\usk,\cred,\msg) \coloneqq
-          \pcreturn \pcreturn((\attrs_1(\cred),\dattrs(\cred)),\ast) \nonumber
+        & \feval^0(\cdot,\cdot,\cdot) \coloneqq \pcreturn (0,\ast) \nonumber \\
+        & \feval^{\dattrs}(\cdot,(\cid,\attrs),\cdot)
+          \coloneqq \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},\ast)
+          \nonumber \\
+        & \feval^{\sring}(\usk,(\cid,\attrs),\cdot)
+          \coloneqq \pcif \CCommit(\usk;0) \in \attrs:
+          \pcreturn (\attrs,\ast);
+          \pcelse \pcreturn \bot \nonumber \\
+        & \feval^{l,\dattrs}(\cdot,(\cid,\attrs),\cdot) \coloneqq
+          \pcreturn((\attrs_1,\lbrace\attrs_i\rbrace_{i\in\dattrs}),\ast)
+          \nonumber
       \end{align}
     \end{minipage}
   }
   \vspace*{1em}
   
-  \scalebox{0.95}{
+  \scalebox{0.9}{
     \begin{minipage}[t]{0.5\textwidth}
       \textbf{Open functions:}
       \begin{align}
-        & \finsp^0(\yeval,\usk,\cred,\msg) \coloneqq 0 \nonumber \\        
-        & \finsp^{\upk}(\yeval,\usk,\scred,\msg) \coloneqq \CCommit(\usk;0) \nonumber
+        & \finsp^0(\cdot,\cdot,\cdot,\cdot) \coloneqq 0 \nonumber \\
+        & \finsp^{\upk}(\cdot,\usk,\cdot,\cdot) \coloneqq \CCommit(\usk;0)
+          \nonumber
       \end{align}
     \end{minipage}
     \hspace*{5em}
@@ -60,11 +65,14 @@ we rely on the functions described in \figref{fig:func-restrictions}.
     % \end{minipage}
   }
   \caption{Functions for the \CUASGen restrictions described next.
-    $\attrs(\cred)$ returns all attributes in \cred. $\dattrs(\cred)$ returns
-    $\dattrs \subseteq \attrs(\cred)$. $\attrs_i(\cred)$ returns $i$-th
-    attribute in \cred. $\ast$ means the output is ignored (in these examples,
-    we use this to mean that $\yeval^1$ is unused. $\bot$ means the function
-    fails.}
+    For readability, we use ``$\cdot$'' to denote input arguments that are
+    ignored; and ``$\ast$'' to denote output values that can be set to anything
+    (but should be ignored). $\bot$ means the function fails.}
+    % $\attrs(\cred)$ returns all attributes in \cred. $\dattrs(\cred)$ returns
+    % $\dattrs \subseteq \attrs(\cred)$. $\attrs_i(\cred)$ returns $i$-th
+    % attribute in \cred. $\ast$ means the output is ignored (in these examples,
+    % we use this to mean that $\yeval^1$ is unused. $\bot$ means the function
+    % fails.}
   \label{fig:func-restrictions}
 \end{figure}
 
@@ -283,7 +291,7 @@ restrict to one credential per signature.
   $\CUASGen^{\Sign-prv}$, acting both as user and as issuer, using
   $\fissue^{\sring}$ as issuance function, and $\attrs \gets \sring$.
 \item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,\msg,\feval).$] As in
-  $\CUASGen^{\Sign-prv}$, using $\feval^{\attrs}$ as sign evaluation function,
+  $\CUASGen^{\Sign-prv}$, using $\feval^{\sring}$ as sign evaluation function,
   using as credential for signing the credential obtained in the desired
   $\langle \Obtain,\Issue \rangle$ session and, as \opk, any previously
   registered \opk (i.e., such that $\finsp=\finsp^0$).

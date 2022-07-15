@@ -21,6 +21,21 @@ generation times, including the information that an opener will be able to
 extract from a signature. This flexibilizes the scheme even beyond the loose
 relationship between issuer and opener.
 
+\paragraph{Users and credentials.} %
+We model a scheme in which every single user may have multiple credentials.
+Moreover, previously obtained credentials can be leveraged simultaneously to
+obtain a new one. In this setting, a perhaps too strict assumption we make is
+that, once a user gets compromised, all of the credentials owned by that user
+are compromised too. While there may be real world situations for which this is
+too aggressive, it is certainly a worst-case scenario, and greatly simplifies
+the modelling.
+%
+Somehow related, we model a scheme in which users generate their secret keys in
+a standalone way, and then leverage their keys to request credentials.
+Therefore, if one ``user'' generates (e.g.) two keys, and then uses each of
+these keys to request multiple credentials, then from the point of view of our
+modelling, we see this \emph{cryptographically} as two different users. 
+
 \subsection{Syntax}
 \label{ssec:syntax-uas}
 
@@ -42,22 +57,25 @@ An \UAS scheme is composed by the following algorithms:
 \item[$\UKeyGen(\parm) \rightarrow \usk$.] Given \parm, returns a user's secret
   key.
 \item[$\langle
-  \Obtain(\usk,\ipk,\scred,\attrs),
-  \Issue(\isk,\sipk,\attrs))
-  \rangle \rightarrow \langle \cred/\bot,\utrans/\bot \rangle$.] %
+  \Obtain(\usk,\ipk,\sCred,\attrs),
+  \Issue(\isk,\sipk,\attrs))  
+  \rangle \rightarrow \langle \Cred/\bot,\utrans/\bot
+  \rangle$.] %
   This interactive protocol lets a user with key \usk running the \Obtain
-  process, receive a credential \cred from an issuer in the system, on attribute
-  set $\attrs$. The user leverages a set of credentials \scred, each with a
-  matching issuer key in \sipk (ommitted in \Obtain for readability). The user
-  outputs the produced credential \cred, while the issuer outputs the protocol
-  transcript \utrans for the produced credential.
-\item[$\Sign(\usk,\opk,\scred,\msg,\feval) \rightarrow (\sig,\yeval)$.] %
+  process, receive a credential $\Cred=(\cid,\attrs,\cred,\ipk)$ from an
+  issuer in the system, where \cid is a unique identifier for the credential,
+  \ipk is the issuer's public key and \cred is the actual credential, on
+  attribute set \attrs. The user may leverage a set of previously obtained
+  credentials $\sCred=\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)
+  \rbrace_{i\in[n]}$, from which we may omit the $\ipk_i$s for readability. The
+  user outputs the produced credential \Cred, while the issuer outputs the
+  corresponding protocol transcript \utrans.
+\item[$\Sign(\usk,\opk,\sCred,\msg,\feval) \rightarrow (\sig,\yeval)$.] %
   Upon receiving a user secret key \usk, opener public key \opk, a set of
-  credentials \scred, a message \msg and evaluation function \feval, returns
-  signature \sig, and a plaintext value \yeval. For readability, we assume
-  that, for each $\cred \in \scred$, we can get the corresponding issuer public
-  key \ipk; also, we use use \Sig to denote the tuple $(\sig,\yeval)$.
-\item[$\Verify(\opk, \sipk,\Sig,\msg,\feval) \rightarrow 1/0$.]
+  credentials \sCred, a message \msg and evaluation function \feval, returns
+  signature \sig, and a plaintext value \yeval. We use use \Sig to denote the
+  tuple $(\sig,\yeval)$.
+\item[$\Verify(\opk,\sipk,\Sig,\msg,\feval) \rightarrow 1/0$.]
   Checks whether $\Sig = (\sig,\yeval)$ is a valid signature
   over message \msg, from a user with credentials issued by issuers with public
   keys in \sipk, for evaluation function \feval and opener key \opk.
@@ -83,38 +101,52 @@ the user who computes them, and has to prove correctness of such computation.
 We give concrete examples in \secref{sec:relationships}, and define them next:
 
 \begin{description}
-\item[$\fissue: (\usk,\attrs,\attrs_{\scred}) \rightarrow 0/1$.] Chosen
+\item[$\fissue: (\usk,\attrs,\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]})
+  \rightarrow 0/1$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
   defines the customized conditions required by the issuer to grant a credential
   over attributes \attrs, when requested by a user with secret key \usk,
-  potentially leveraging a set of previously obtained credentials with
-  attributes $\attrs_\scred$. \fissue returns $1$ to accept a request, $0$ to
-  reject it.
-\item[$\feval: (\usk,\attrs_{\scred},\msg)
+  leveraging a set of $n$ previously obtained credentials with identifiers and
+  attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where $n$
+  may be $0$ if no previously obtained credential is used). \fissue returns $1$
+  to accept a request, $0$ to reject it.
+\item[$\feval: (\usk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
   \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
   family of functions \famfeval, can be set on a per-signature basis. They
-  receive the user secret key \usk, a set $\attrs_{\scred}$ of attributes in the
-  credential used for signing, and message to be signed
-  \msg. \feval outputs two values, $\yeval^0$ and $\yeval^1$, where the former
-  is revealed in plaintext along with the signature, and $\yeval^1$ is
-  encrypted. Both can be used to modulate the bevahiour of \finsp, and must
-  belong in a well defined set \rngfeval. For readability, we write $\Yeval =
-  (\yeval^0,\yeval^1)$.
-\item[$\finsp: (\Yeval,\usk,\attrs_{\scred},\msg) \rightarrow \yinsp$.]
+  receive the user secret key \usk, a set of credentials with identifiers and
+  attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where
+  $n \ge 1$), and the message to be signed \msg. \feval outputs two values,
+  $\yeval^0$ and $\yeval^1$, which can be used to modulate the bevahiour of
+  \finsp, and must belong in a well defined set \rngfeval. For readability, we
+  write $\Yeval = (\yeval^0,\yeval^1)$.
+\item[$\finsp: (\Yeval,\usk,\lbrace \cid_i,\cattrs_i\rbrace_{i \in [n]},\msg)
+  \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
-  functions define what utility value, derived from the user's secret key,
-  credentials used for signing, and signed message, should be extractable by an
-  opener. Its behaviour can be modulated by \Yeval, and it outputs a value
-  \yinsp, which must belong in a well defined set \rngfinsp.
+  functions define what utility value (derived from the user's secret key,
+  credentials' identifiers and attributes used for signing, and signed message)
+  should be extractable by an opener. Its behaviour can be modulated by \Yeval,
+  and it outputs a value \yinsp, which must belong in a well defined set
+  \rngfinsp.
 \end{description}
 
-\feval and \finsp may seem redundant. However, observe that the former is chosen
-on a per-signature basis, probably after negotiation between signer and
-verifier. As such, it governs the information revealed at signing time. On the
-other hand, \finsp governs the information that may be revealed after signing.
-Moreover, it is defined by openers, and even though signers and verifiers
+\feval and \finsp may seem redundant. However, the former is chosen on a
+per-signature basis, probably after negotiation between signer and verifier, and
+governs the information revealed at signing time. On the other hand, \finsp
+governs the information that may be revealed after signing, and is defined by
+openers when they set up their key pair. Thus even though signers and verifiers
 may negotiate to use any opener for a given signature, it is not possible for
-an opener to change the chosen function.
+an opener to change the chosen function. In the sequel, we restrict to
+\UAS-acceptable functions, which we will also use to give \CUASGen restrictions.
+Both concepts are defined next.
+
+\begin{definition}{(\UAS-acceptable functions)}
+  \label{def:uas-acc-func}
+  We say that a \fissue (similarly, \feval or \finsp) function chosen from some
+  family \famfissue (similarly, \famfeval or \famfinsp) is \UAS-acceptable if it
+  is one-way with respect to \usk. That is, given the output of \fissue
+  (similarly, \feval or \finsp), it is at least computationally unfeasible to
+  recover the \usk value used to produce it.
+\end{definition}
 
 \begin{definition}{(\CUASGen restrictions)}
   \label{def:uas-restrictions}
@@ -163,9 +195,9 @@ We describe next the global variables and oracles that we use in our modelling.
 
 \paragraph{Global Variables.} %
 Users are referred to with user identifiers, \uid; for credentials, we use \cid;
-for issuers, \iid; and for openers, \oid. In all cases, we use bold font to
-denote sets: e.g., \scid and \siid denote sets of credential and issuer
-identifiers. All tables/sets are initialized as empty tables/sets.
+for issuers, \iid; and for openers, \oid. % In all cases, we use bold font to
+% denote sets: e.g., \scid and \siid denote sets of credential and issuer
+% identifiers. All tables/sets are initialized as empty tables/sets.
 
 \begin{description}
 \item[$\mathsf{H}\lbrace\mathsf{U},\mathsf{I},\mathsf{O} \rbrace$.] Keep
@@ -184,27 +216,31 @@ identifiers. All tables/sets are initialized as empty tables/sets.
   of \fissue, \OK includes the \finsp function.
 \item[\CRED.] Stores information related to credentials obtained by users in
   the system. Thus, it is indexable by \cid. More specifically, it stores
-  tuples of the form $(\uid,\cred,\iid,\attrs,\scid,\siid)$, where \uid is the
-  identity of the owner of the credential, \cred (when available) is the
-  credential itself, \iid is the identifier of the credential issuer, \attrs
-  are the attributes included in \cred, \scid are the identifiers of the
-  credentials (if any) that \uid used to request \cred, and \siid the issuers
-  of those credentials. For notational
-  convenience, we may use $\CRED[\scid]$ to refer to $\CRED[\cid]$ for all
-  $\cid \in \scid$. Also, when clear from context, we sometimes use
-  $\CRED[\cid]$ (resp. $\CRED[\scid]$ to mean \cred (resp. \scred) in
-  $\CRED[\cid] = (\cdot,\cred,\cdot,\cdot,\cdot)$ (resp. $\CRED[\scid]$).
+  tuples of the form $(\uid,\cred,\iid,\attrs,n,\lbrace (\cid_i,\iid_i)
+  \rbrace_{i \in [n]})$, where \uid is the identifier of the owner of the
+  credential, \cred (when available) is the credential itself, \iid is the
+  identifier of the credential issuer, \attrs are the attributes included in
+  \cred, $n$ is the number of credentials used to support this request, and
+  $(\cid_i,\iid_i)$ for $i \in [n]$ are the corresponding credential and issuer
+  identifiers. For notational convenience, we may use $\CRED[\scid]$
+  to refer to $\CRED[\cid]$ for all {\cid}s in a set \scid. Also, when clear
+  from context, we sometimes use $\CRED[\cid]$ (resp. $\CRED[\scid]$ to
+  mean \cred (resp. \scred) in $\CRED[\cid] = (\cdot,\cred,\cdot,\cdot,
+  \cdot,\cdot)$ (resp. $\CRED[\scid]$).
 \item[\CCRED.] Like \CRED, but keeps track of challenge credentials in the
   issuance anonymity game.
 \item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
-  ``\uid such that $\CRED[\cid] = (\uid, \cdot, \cdot, \cdot, \cdot)$''.
+  ``\uid such that $\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot)$''. We
+  may also use \OWNR over a set of {\cid}s (\scid). In that case, our convention
+  is that $\OWNR[\scid]$ returns $\bot$ if not all passed {\cid}s belong to the
+  same \uid.
 \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
-  ``\attrs such that $\CRED[\cid] = (\cdot, \cdot, \cdot, \attrs, \cdot)$''.
+  ``\attrs such that $\CRED[\cid] = (\cdot,\cdot,\cdot,\attrs,\cdot,\cdot)$''.
 \item[\ISR.] For notational convenience, when we write $\ISR[\cid]$ we mean
-  ``\iid such that $\CRED[\cid] = (\cdot, \iid, \cdot, \cdot, \cdot)$''.
+  ``\iid such that $\CRED[\cid] = (\cdot,\cdot,\iid,\cdot,\cdot,\cdot)$''.
 \item[\SIG.] Maintains signatures generated via the \SIGN oracle. Entries of
   this table are $(\oid,\scid,\sig,\Yeval,\msg,\feval)$ tuples, where \oid is
-  the opener, \scid is the set of credentials used for
+  the opener, \scid is the set of identifiers of the credentials used for
   signing, \feval is the signing evaluation function, and \sig and \msg are the
   produced signature and signed message.
 \item[\CSIG.] Maintains challenge signatures output to the adversary in the
@@ -346,40 +382,47 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
       \begin{minipage}[t]{0.55\textwidth}
 
-        \procedure{$\OBTISS(\cid,\uid,\iid,\attrs,\scid)$}{%
+        \procedure{$\OBTISS(\cid,\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
+          \rbrace_{i \in [n]})$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \HI: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\suchthat~\cid' \in \CCRED: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cred, \utrans \rangle \gets
-          \langle \Obtain(\UK[\uid],\CRED[\scid],\attrs), \\
-          \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\scid],\attrs)
+          \pcif \exists i \in [n]~\suchthat~\cid_i \in \CCRED: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot:
+          \pcreturn \bot \\
+          \langle \Cred, \utrans \rangle \gets
+          \langle \Obtain(\UK[\uid],\CRED[\lbrace \cid_i\rbrace_{[n]}],\attrs), \\
+          \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\lbrace \cid_i\rbrace_{[n]}],\attrs)
           \rangle \\
           \trans[\cid] \gets \utrans \\
-          \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
+          \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, n,
+          \lbrace(\cid_i,\iid_i)\rbrace_{i\in[n]}) \\
           \pcreturn \top \\
         }
 
-        \procedure{$\ISSUE(\cid,\uid,\iid,\attrs,\siid)$}{%
+        \procedure{$\ISSUE(\cid,\uid,\iid,\attrs,\siid=\lbrace \iid_i
+          \rbrace_{i\in[n]})$}{%
           \pcif \uid \notin \CU: \pcreturn \bot \\          
           \pcif \iid \notin \HI: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot: \pcreturn \bot \\
+          \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot:
+          \pcreturn \bot \\
           \langle \cdot, \utrans \rangle \gets
           \langle \adv, 
           \Issue(\PRVIK[\iid],\siid,\attrs) \rangle \\
           \trans[\cid] \gets \utrans \\
-          \CRED[\cid] \gets (\uid, \cdot, \iid, \attrs, \cdot, \siid) \\
+          \CRED[\cid] \gets (\uid,\cdot,\iid,\attrs,n,\lbrace(\cdot,\iid_i)
+          \rbrace_{i\in[n]}) \\
           \pcreturn \top \\          
         }
 
-        \procedure{$\SIGN(\uid,\oid,\scid,\msg,\feval)$}{%
+        \procedure{$\SIGN(\uid,\oid,\scid=\lbrace\cid_i\rbrace_{i\in[n]},\msg,
+          \feval)$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \exists \cid,\cid' \in \scid~\suchthat~\cid \in \CRED \land
-          \cid' \in \CCRED: \\
+          \pcif \exists i \neq j \in [n]~\suchthat~\cid_i \in \CRED \land
+          \cid_j \in \CCRED: \\
           \pcind \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
-          \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\CRED[\scid],\msg,\feval) \\
-          \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\scid],\msg) \\
+          \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
+          \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\scid,\msg) \\
           \pcif \Yeval \notin \rngfeval: \pcreturn \bot \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\Sig,\Yeval,\msg,\feval) \rbrace \\
@@ -397,7 +440,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \hspace*{83pt}\cuid_{1-b},\cSig_{1-b},\scid_{1-b},
           \TYeval) \\
           \pcind (\tyinsp,\tiproof) \gets
-          \Open(\PRVOK[\oid],\IK[\siid],\\
+          \Open(\PRVOK[\oid],\IK[\ISR[\scid]],\\
           \hspace*{107pt} \cSig_{1-b},\msg,\feval) \\
           \pcind \pcif \tyinsp \neq \yinsp: \pcreturn \bot \\
           \pcreturn (\yinsp,\iproof)
@@ -409,18 +452,22 @@ oracles, which are formally defined in \figref{fig:oracles1} and
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\OBTAIN(\cid,\uid,\iid,\attrs,\scid)$}{%
+        \procedure{$\OBTAIN(\cid,\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
+          \rbrace_{i\in[n]})$}{%
           \pcif \uid \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
-          \pcif \exists \cid' \in \scid~\suchthat~\cid' \in \CCRED: \pcreturn \bot \\
+          \pcif \exists i \in [n]~\suchthat~\cid_i \in \CCRED: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot: \pcreturn \bot \\
-          \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\UK[\uid],\PUBIK[\iid],\CRED[\scid],\attrs),\adv \rangle \\
-          \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, \scid, \siid) \\
+          \langle \Cred, \cdot \rangle \gets
+          \langle \Obtain(\UK[\uid],\PUBIK[\iid],\lbrace \cid_i\rbrace_{[n]},
+          \attrs),\adv \rangle \\
+          \CRED[\cid] \gets (\uid,\cred,\iid,\attrs,n,\lbrace(\cid_i,\iid_i)
+          \rbrace_{i\in[n]}) \\
           \pcreturn \top \\
         }
 
         \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1})$}{%
+          \textrm{\todo{\scid notation}} \\
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
@@ -431,30 +478,31 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \textrm{Parse}~\PUBIK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
           \pcif \fissue(\UK[\cuid_0],\cscid_0,\attrs) \neq
           \fissue(\UK[\cuid_1],\cscid_1,\attrs) \\
-          \langle \cred, \cdot \rangle \gets
-          \langle \Obtain(\UK[\cuid_b],\PUBIK[\iid],\CRED[\cscid_b],\attrs),\adv \rangle \\
-          \CCRED[\cid] \gets (\cuid_b, \cred, \iid, \attrs, \cscid_b, \siid) \\
+          \langle \Cred, \cdot \rangle \gets
+          \langle \Obtain(\UK[\cuid_b],\PUBIK[\iid],\cscid_b,\attrs),\adv \rangle \\
+          \CCRED[\ccid_b] \gets (\cuid_b,\cred,\iid,\attrs,\cscid_b,\siid) \\
           \pcreturn \top \\
         }
 
         \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1},\msg,\feval)$}{%
+          \textrm{\todo{\scid notation}} \\                    
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \pcfor d \in \bin~ \exists \cid,\cid' \in \scid_d~\suchthat \\
           \pcind \cid \in \CRED \land \cid' \in \CCRED: \pcreturn \bot \\
           \pcif \oid \in \CO: \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\          
-          \Yeval = (\yeval^0,\yeval^1) \gets \feval(\UK[\cuid_0],\CRED[\cscid_0],
+          \Yeval = (\yeval^0,\yeval^1) \gets \feval(\UK[\cuid_0],\cscid_0,
           \msg) \\
           \TYeval = (\tyeval^0,\tyeval^1) \gets
-          \feval(\UK[\cuid_1],\CRED[\cscid_1],\msg) \\
+          \feval(\UK[\cuid_1],\cscid_1,\msg) \\
           \pcif \yeval^0 \neq \tyeval^0: \pcreturn \bot \\
           \pcif \Yeval \notin \rngfeval \lor \TYeval \notin \rngfeval:
           \pcreturn \bot \\
           \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
           \cSig_b \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
-          \hspace*{71pt}\CRED[\cscid_b],\msg,\feval) \\
+          \hspace*{71pt}\cscid_b,\msg,\feval) \\
           \cSig_{1-b} \gets \Sign(\UK[\cuid_{1-b}],\PUBOK[\oid], \\
-          \hspace*{80pt}\CRED[\cscid_{1-b}],\msg,\feval) \\          
+          \hspace*{80pt}\cscid_{1-b},\msg,\feval) \\          
           \CSIG[\cSig_b] \gets 
           \lbrace (\oid,\cuid_b,\cscid_b,\Yeval,\msg,\feval,\\
           \hspace*{74pt}\cuid_{1-b},\cSig_{1-b},\cscid_{1-b},\TYeval)\rbrace \\
@@ -471,62 +519,65 @@ oracles, which are formally defined in \figref{fig:oracles1} and
   \end{figure*}
 }
 
-\paragraph{Helper functions \SimSetup, \ExtractIssue, \ExtractSign,
-  \IdentifyCred, and \IdentifySig.} We assume the existence of these helper
-functions. They are not functions available in the actual scheme, but rather to
-the challenger in the experiments we use to formalize security of \UAS schemes.
-Consequently, while we introduce them here and specify some conditions they need
-to meet, their full definition is dependent on the construction. We fully define
-them for our generic construction \CUASGen in \appref{app:uas-proofs}. Similar
-techniques have been used before to prove security in privacy-preserving schemes
-with some sort of accountability, but that do not offer conventional opening as
-vanilla group signatures. For instance, see related works on DAA
-\cite{bfg+11,cdl16} and group signature variants \cite{dl21,fgl21,gl19,lnpy21}.
-More concretely, these functions are as follows:
+\paragraph{Helper functions \SimSetup, \ExtractIssue, and \ExtractSign.}
+%, \IdentifyCred, and \IdentifySig.}
+We assume the existence of these helper functions. They are not functions
+available in the actual scheme, but rather to the challenger in the experiments
+we use to formalize security of \UAS schemes.
+% Consequently, while we introduce them here and specify some conditions they need
+% to meet, their definition is dependent on the construction.
+\todo{Better describe this when finished making changes.}
+% We fully define
+% them for our generic construction \CUASGen in \appref{app:uas-proofs}. Similar
+% techniques have been used before to prove security in privacy-preserving schemes
+% with some sort of accountability, but that do not offer conventional opening as
+% vanilla group signatures. For instance, see related works on DAA
+% \cite{bfg+11,cdl16} and group signature variants \cite{dl21,fgl21,gl19,lnpy21}.
+% More concretely, these functions are as follows:
 
 \begin{description}
 \item[$\SimSetup(1^\secpar) \rightarrow (\parm,\trap)$.] Given a security
   parameter, outputs global (simulated) parameters \parm whose distribution is
   indistinguishable to that produced by the \Setup algorithm, as well as a
   trapdoor \trap.
-\item[$\ExtractIssue(\trap,\utrans) \rightarrow (\usk,\attrs_{\scred},\scred)$.]
+\item[$\ExtractIssue(\trap,\utrans) \rightarrow (\usk,\sCred=
+  \lbrace(\cid_i,\attrs_i,\cred_i) \rbrace_{i \in [n]})$.]
   Receives trapdoor \trap and an $\langle \Obtain, \Issue \rangle$ transcript,
-  and returns the credentials (if any) and their attributes involved in the
-  request. It needs an honest issuer as, otherwise, the transcripts won't be
-  available. 
-\item[$\ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \rightarrow (\usk,
-  \scred,\attrs_{\scred},\yeval^1,\yinsp)$.] Receives a trapdoor \trap, a
-  signature \Sig,
-  as well as the opener identifier \oid, and the identifiers of all issuers of
-  the credentials used to produce the signature over \msg, and for \feval.
-  It outputs the user secret key and credentials (with their attributes) used to
+  and returns the credential set \sCred, if any, involved in the request. It
+  needs an honest issuer as, otherwise, the transcripts won't be available. 
+\item[$\ExtractSign(\trap,\oid,\lbrace \iid_i \rbrace_{i \in [n]},\Sig,\msg,
+  \feval) \rightarrow (\usk,\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
+  \rbrace_{i \in [n]},\yeval^1,\yinsp)$.] Receives a trapdoor \trap, a signature
+  \Sig, as well as the opener identifier \oid, and the identifiers of all
+  issuers of the credentials used to produce the signature over \msg, and for
+  \feval. It outputs the user secret key and credential set \sCred used to
   generate the signature, and the $\yeval^1$ and \yinsp values.
-\item[$\IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk)$.] Returns $1$ if
-  \cred has been issued over attributes $\attrs_{\cred}$ and for a user with
-  secret key \usk, by honest issuer with public key \ipk. Otherwise, it returns
-  $0$.
+% \item[$\IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk)$.] Returns $1$ if
+%   \cred has been issued over attributes $\attrs_{\cred}$ and for a user with
+%   secret key \usk, by honest issuer with public key \ipk. Otherwise, it returns
+%   $0$.
 
-  The \IdentifyCred function defined by \UAS constructions must satisfy that
-  for any \cred obtained as the result of an $\langle \Obtain,\Issue \rangle$
-  interaction with an honest issuer, there exists \emph{exactly one} set of
-  $(\usk,\attrs_{\cred})$ such that \IdentifyCred equals $1$.
-  %In order to be meaningful, this requires that,
-  %for every $(\attrs_{\cred},\cred)$ pair, there is at most one \usk that makes
-  \IdentifyCred return $1$.
-\item[$\IdentifySig(\trap,\usk,\scred,\Sig)$.] Returns $1$ is $(\usk,\scred)$
-  are the secret key and credential set used to produce \Sig, otherwise, returns
-  $0$.
+%   The \IdentifyCred function defined by \UAS constructions must satisfy that
+%   for any \cred obtained as the result of an $\langle \Obtain,\Issue \rangle$
+%   interaction with an honest issuer, there exists \emph{exactly one} set of
+%   $(\usk,\attrs_{\cred})$ such that \IdentifyCred equals $1$.
+%   %In order to be meaningful, this requires that,
+%   %for every $(\attrs_{\cred},\cred)$ pair, there is at most one \usk that makes
+%   \IdentifyCred return $1$.
+% \item[$\IdentifySig(\trap,\usk,\scred,\Sig)$.] Returns $1$ is $(\usk,\scred)$
+%   are the secret key and credential set used to produce \Sig, otherwise, returns
+%   $0$.
 
-  The \IdentifySig function defined by \UAS constructions must satisfy that, for
-  signatures accepted by \Verify, there must exist \emph{exactly one} $(\usk,
-  \scred)$ combination that makes \IdentifySig return $1$.
-  % . This is trivial for honest users, for which there must be a one-to-one
-  % relationship between {\uid}s and {\usk}s. For corrupt users, \IdentifyUK has
-  % to iterate through the $\langle\Obtain,\Issue\rangle$ transcripts associated
-  % to \uid, extract the used secret key, and check if there is a match. In the
-  % latter case, there is no guarantee of getting a one-to-one relationship
-  % between \usk and \uid. Also, when used for corrupt users, this can only be
-  % used when the issuer is honest, as transcripts are needed. 
+%   The \IdentifySig function defined by \UAS constructions must satisfy that, for
+%   signatures accepted by \Verify, there must exist \emph{exactly one} $(\usk,
+%   \scred)$ combination that makes \IdentifySig return $1$.
+%   % . This is trivial for honest users, for which there must be a one-to-one
+%   % relationship between {\uid}s and {\usk}s. For corrupt users, \IdentifyUK has
+%   % to iterate through the $\langle\Obtain,\Issue\rangle$ transcripts associated
+%   % to \uid, extract the used secret key, and check if there is a match. In the
+%   % latter case, there is no guarantee of getting a one-to-one relationship
+%   % between \usk and \uid. Also, when used for corrupt users, this can only be
+%   % used when the issuer is honest, as transcripts are needed. 
 \end{description}
 
 % Note that, for all the helper functions, in the case of credentials, transcripts,
@@ -560,6 +611,7 @@ credentials, user key, and message.
 
 \begin{figure}[htp!]
   \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
+    \textrm{\todo{This needs updating}} \\
     \parm \gets \Setup(1^\secpar) \\
     (\uid,\oid,\scid,\msg,\feval)
     \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
@@ -572,12 +624,12 @@ credentials, user key, and message.
     \pcind \textrm{Let}~\scred^{\cid}~\textrm{be the credentials used to obtain}
     ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,\fissue^{\cid}),\cdot)\\
     \pcind \pcif \fissue^{\cid}(\UK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
-    (\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\CRED[\scid],\msg) \\
+    (\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\scid,\msg) \\
     \pcif \yeval^0 \neq \yeval: \pcreturn 1 \\
     (\yinsp,\iproof) \gets \Open(\PRVOK[\gid],\PUBIK[\scid],\Sig,\msg,\feval) \\
     \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
     = 0~\lor \\
-    \pcind \yinsp \neq \finsp^\gid((\yeval,\yeval^1),\UK[\uid],\CRED[\scid],\msg)): \\
+    \pcind \yinsp \neq \finsp^\gid((\yeval,\yeval^1),\UK[\uid],\scid,\msg)): \\
     \pcind \pcreturn 1 \\
     \pcreturn 0
   }  
@@ -589,11 +641,10 @@ credentials, user key, and message.
 \label{sssec:security}
 
 Security of an \UAS scheme is defined in terms of anonymity, unforgeability and
-non-frameability. In addition, we make use of some helper functions:
-\ExtractIssue and \ExtractSign, which let us recover the witnesses used to
-produce a credential or a signautre; and \IdentifyCred, and \IdentifySig, which
-associate credentials and signatures to user identifiers \uid. Both types of
-functions have been used before. For instance, the extraction type are used in
+non-frameability. In addition, we define two auxiliary properties for defining
+the expected behaviour of the \ExtractIssue and \ExtractSign functions.
+\todo{The following may need to be moved elsewhere and/or re-written.}
+For instance, the extraction type are used in
 \cite{lnpy21,nps22}, and functions of the identify type are used in
 \cite{bfg+11,cdl16,gl19,dl21,fgl21}. Indeed, it seems hard to avoid resorting to
 these techniques when there is no traditional notion of opening. Since, mostly
@@ -601,149 +652,180 @@ the unforgeability and non-frameability properties build on the extractability
 and identifiability ones, we define them first. Then, we proceed with the usual
 notions.
 
-\paragraph{Extractability.} %
-We require that the witnesses used to produce each credential and signature can
-be extracted from the corresponding \utrans and signature, respectively.
-Furthermore, in order for our generalized notion of utility to be sound, it
-is required that, whenever a credential is issued by an honest issuer, \fissue
-accepts the extracted witnesses; and whenever a signature is accepted by
-\Verify, the extracted witnesses match the expected outputs by \feval and
-\finsp. We capture this in the \ExpExtractIssue and \ExpExtractSign games, which
-are crucial in the unforgeability and non-frameability requirements.
+% \todo{Maybe do some drawing of the cred tree.}
 
-In the extractability variant for credentials, \ExpExtractIssue, the adversary
-wins if it manages to get a credential from an honest user, such that the
-issuance predicate \fissue rejects the extracted witnesses.
-%
-In the variant for signatures, \ExpExtractSign, the adversary wins if the
-witnesses extracted from a signature accepted by \Verify make \feval and \finsp
-output inconsistent values.
-%
-The oracles available in \ExpExtractIssue is, $\OExt \gets (\lbrace\HU,\CU
-\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN)$. Note that,
-honest issuers are required, as we rely on the availability of $\langle \Obtain,
-\Issue \rangle$ transcripts to assist on the extraction. On the other hand,
-for \ExpExtractSign, as we extract directly from signatures, honest issuers are
-not a requirement, so the adversary is given access to $\ICORR$ too.
+% In the following, we use some custom notation to refer to the tree-like
+% relationships that may be built between credentials and, more concretely, their
+% related data (like {\usk}s, {\cid}s, and attribute sets {\attrs}s) when a user
+% leverages previously obtained credentials in order to obtain new ones. To
+% facilitate the explanation, we refer to \figref{fig:cred-tree}. In a nutshell,
+% we use $tree_{\cid}$ to refer to the whole tree of {\cid}s that have been used
+% to produce the credential with identifier \cid -- and, similarly, $tree_{\usk}$
+% for {\usk}s, and $tree_{\attrs}$ for attribute sets. 
 
-\begin{figure*}[htp!]
-  \centering
-  \scalebox{0.9}{
-    \begin{minipage}[t]{0.6\textwidth}
-      \procedure[linenumbering]{$\ExpExtractIssue(1^\secpar)$}{%
-        (\parm, \trap) \gets  \SimSetup(1^\secpar) \\
-        \cid \gets \adv^{\OExt}(\parm) \\
-        (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trap,\trans[\cid]) \\
-        \pcif \fissue(\usk,\scred,\ATTR[\cid]) = 0: \pcreturn 1 \\
-        \pcreturn 0
-      }
-    \end{minipage}
-    \vspace*{0.5em}
+% \begin{figure}[htp!]
+%   \centering
+%   \includegraphics[width=0.5\textwidth]{figures/cred-tree.png}
+%   \caption{Credential trees, and their corresponding notation.
+%     We use $Tree_x$, where $x \in \lbrace \usk,\cid,\attrs \rbrace$ to
+%     denote the whole tree of {\usk}s, {\cid}s, and {\attrs}s. \\
+%     \todo{Move to Tikz.}}
+%   \label{fig:cred-tree}
+% \end{figure}
+
+% \paragraph{Extractability.} %
+% We require that the witnesses used to produce each credential and signature can
+% be extracted from the corresponding \utrans and signature, respectively.
+% Furthermore, in order for our generalized notion of utility to be sound, it
+% is required that, whenever a credential is issued by an honest issuer, \fissue
+% accepts the extracted witnesses; and whenever a signature is accepted by
+% \Verify, the extracted witnesses match the expected outputs by \feval and
+% \finsp. We capture this in the \ExpExtractIssue and \ExpExtractSign games, which
+% are crucial in the unforgeability and non-frameability requirements.
+
+% In the extractability variant for credentials, \ExpExtractIssue, the adversary
+% wins if it manages to get a credential produced by an honest issuer, such that
+% the issuance predicate \fissue rejects the extracted witnesses, or if some of
+% the involved credentials is associated to a different \usk.
+% %
+% In the variant for signatures, \ExpExtractSign, the adversary wins if the
+% witnesses extracted from a signature accepted by \Verify make \feval and \finsp
+% output inconsistent values.
+% %
+% The oracles available in \ExpExtractIssue is, $\OExt \gets (\lbrace\HU,\CU
+% \rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN)$. Note that,
+% for \ExpExtractIssue, honest issuers are required, as we rely on the
+% availability of $\langle \Obtain,\Issue \rangle$ transcripts to assist on the
+% extraction. On the other hand, for \ExpExtractSign, as we extract directly from
+% signatures, honest issuers are not a requirement, so the adversary is given
+% access to $\ICORR$ too.
+
+% \begin{figure*}[htp!]
+%   \centering
+%   \scalebox{0.9}{
+%     \begin{minipage}[t]{0.6\textwidth}
+%       \procedure[linenumbering]{$\ExpExtractIssue(1^\secpar)$}{%
+%         (\parm, \trap) \gets  \SimSetup(1^\secpar) \\
+%         \cid \gets \adv^{\OExt}(\parm) \\
+%         (\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]}) \gets
+%         \ExtractIssue(\trap,\trans[\cid]) \\
+%         \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
+%         \trans[\cid_i]) \\
+%         \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
+%         \pcif \fissue(\usk,\ATTR[\cid],\lbrace \cid_i \rbrace_{i \in [n]},
+%         \lbrace\attrs_i\rbrace_{i \in [n]}) = 0: \\
+%         \pcind \pcreturn 1 \\
+%         \pcreturn 0
+%       }
+%     \end{minipage}
+%     \vspace*{0.5em}
     
-    \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\ExpExtractSign(1^\secpar)$}{%
-        (\parm, \trap) \gets \SimSetup(1^\secpar) \\
-	(\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets
-        \adv^{\OExt,\ICORR}(\parm) \\
-	\pcif \Verify(\oid,\siid,\Sig,\msg,\feval) = 0: \pcreturn 0 \\
-	(\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \gets        
-        \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
-        (\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
-        \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
-        \pcreturn 1 \\
-        \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp:
-        \pcreturn 1 \\
-	\pcreturn 0
-      }
-    \end{minipage}
-  }
-  \caption{Extractability experiments for \UAS schemes.}
-  \label{fig:exp-uas-extract}
-\end{figure*}
+%     \begin{minipage}[t]{0.5\textwidth}
+%       \procedure[linenumbering]{$\ExpExtractSign(1^\secpar)$}{%
+%         (\parm, \trap) \gets \SimSetup(1^\secpar) \\
+% 	(\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets
+%         \adv^{\OExt,\ICORR}(\parm) \\
+% 	\pcif \Verify(\oid,\siid,\Sig,\msg,\feval) = 0: \pcreturn 0 \\
+% 	(\usk,\lbrace (\cid_i,\attrs_{\cid_i},\cdot) \rbrace_{i\in[n]},
+%         \yeval^1,\yinsp) \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+%         (\yeval^0,\yeval^1) \gets \feval(\usk,\lbrace\cid_i\rbrace_{i \in [n]},
+%         \lbrace\attrs_i\rbrace_{i \in [n]}, \msg) \\
+%         \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
+%         \pcreturn 1 \\
+%         \pcif \finsp((\yeval^0,\yeval^1),\usk,\lbrace\cid_i\rbrace_{i \in [n]},
+%         \lbrace\attrs_i\rbrace_{i \in [n]},\msg) \neq \yinsp:
+%         \pcreturn 1 \\
+% 	\pcreturn 0
+%       }
+%     \end{minipage}
+%   }
+%   \caption{Extractability experiments for \UAS schemes.}
+%   \label{fig:exp-uas-extract}
+% \end{figure*}
 
-\paragraph{Identifiability.} %
-On their own, the extractability properties only ensure that credentials and
-signatures have been produced by leveraging knowledge of some witnesses.
-However, they do not establish any relationship between those witnesses and
-users. While the actual technicalities of doing so is dependent on the
-construction, we can, modelling-wise, enforce constraints that associate
-user identifiers ({\uid}s, tracked by the game environment) with potential
-witnesses. Namely, we require that it must be possible to associate any
-credential (obtained from an honest issuer), or any signature accepted by
-\Verify, with exactly one user identifier.
+% \paragraph{Identifiability.} %
+% On their own, the extractability properties only ensure that credentials and
+% signatures have been produced by leveraging knowledge of some witnesses.
+% However, they do not establish any relationship between those witnesses and
+% users. While the actual technicalities of doing so is dependent on the
+% construction, we can, modelling-wise, enforce constraints that associate
+% user identifiers ({\uid}s, tracked by the game environment) with potential
+% witnesses. Namely, we require that it must be possible to associate any
+% credential (obtained from an honest issuer), or any signature accepted by
+% \Verify, with exactly one user identifier.
 
-As for extractability, we define two variants. For credentials, in
-\ExpIdentifyCred we require the adversary to output the identifier of a
-credential obtained from an honest issuer. The adversary wins if, given the
-witnesses extracted from the corresponding transcript, the \IdentifyCred helper
-function outputs a set \suid of user identifiers with cardinality different than
-$1$.
-%
-Similarly, for signatures, the adversary wins if it is able to produce a
-signature from which the extracted witnesses, when passed to \IdentifySig,
-output a set \suid of user identifiers with cardinality different than $1$.
-%
-The oracles are as in the extractability experiments. Namely, in the
-\ExpIdentifyCred game, the adversary has access to $\OId \gets (\lbrace\HU,\CU
-\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN)$, while in
-\ExpIdentifySign it also has access to \ICORR. The same reasoning applies.
+% As for extractability, we define two variants. For credentials, in
+% \ExpIdentifyCred we require the adversary to output the identifier of a
+% credential obtained from an honest issuer. The adversary wins if, given the
+% witnesses extracted from the corresponding transcript, the \IdentifyCred helper
+% function outputs a set \suid of user identifiers with cardinality different than
+% $1$.
+% %
+% Similarly, for signatures, the adversary wins if it is able to produce a
+% signature from which the extracted witnesses, when passed to \IdentifySig,
+% output a set \suid of user identifiers with cardinality different than $1$.
+% %
+% The oracles are as in the extractability experiments. Namely, in the
+% \ExpIdentifyCred game, the adversary has access to $\OId \gets (\lbrace\HU,\CU
+% \rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN)$, while in
+% \ExpIdentifySign it also has access to \ICORR. The same reasoning applies.
 
-\begin{figure*}[htp!]
-  \centering
-  \scalebox{0.9}{
-    \begin{minipage}[t]{0.6\textwidth}
-      \procedure[linenumbering]{$\ExpIdentifyCred(1^\secpar)$}{%
-        (\parm, \trap) \gets  \SimSetup(1^\secpar) \\
-        \cid \gets \adv^{\OId}(\parm) \\
-        (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trap,\trans[\cid]) \\
-        \pcfor \cred \in \scred: \\
-        \pcind \suid \gets \IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) \\
-        \pcind \pcif |\suid| \neq 1: \pcreturn 1 \\
-        \pcind \pcif \suid~\textrm{differs from previous iterations}: \\
-        \pcind \pcind \pcreturn 1 \\
-        \pcreturn 0
-      }
-    \end{minipage}
-    \vspace*{0.5em}
+% \begin{figure*}[htp!]
+%   \centering
+%   \scalebox{0.9}{
+%     \begin{minipage}[t]{0.6\textwidth}
+%       \procedure[linenumbering]{$\ExpIdentifyCred(1^\secpar)$}{%
+%         (\parm, \trap) \gets  \SimSetup(1^\secpar) \\
+%         \cid \gets \adv^{\OId}(\parm) \\
+%         (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trap,\trans[\cid]) \\
+%         \pcfor \cred \in \scred: \\
+%         \pcind \suid \gets \IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) \\
+%         \pcind \pcif |\suid| \neq 1: \pcreturn 1 \\
+%         \pcind \pcif \suid~\textrm{differs from previous iterations}: \\
+%         \pcind \pcind \pcreturn 1 \\
+%         \pcreturn 0
+%       }
+%     \end{minipage}
+%     \vspace*{0.5em}
     
-    \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\ExpIdentifySign(1^\secpar)$}{%
-        (\parm, \trap) \gets \SimSetup(1^\secpar) \\
-	(\oid,\siid,\Sig,\msg,\feval) \gets \adv^{\OId,\ICORR}(\parm) \\
-	\pcif \Verify(\oid,\siid,\Sig,\msg,\feval) = 0: \pcreturn 0 \\
-	(\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \gets
-        \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
-	\suid \gets \IdentifySig(\trap,\usk,\scred,\Sig) \\
-	\pcif |\suid| \neq 1: \pcreturn 1 \\
-	\pcreturn 0
-      }
-    \end{minipage}
-  }
-  \caption{Identifiability experiments for \UAS schemes.}
-  \label{fig:exp-uas-identify}
-\end{figure*}
+%     \begin{minipage}[t]{0.5\textwidth}
+%       \procedure[linenumbering]{$\ExpIdentifySign(1^\secpar)$}{%
+%         (\parm, \trap) \gets \SimSetup(1^\secpar) \\
+% 	(\oid,\siid,\Sig,\msg,\feval) \gets \adv^{\OId,\ICORR}(\parm) \\
+% 	\pcif \Verify(\oid,\siid,\Sig,\msg,\feval) = 0: \pcreturn 0 \\
+% 	(\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \gets
+%         \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+% 	\suid \gets \IdentifySig(\trap,\usk,\scred,\Sig) \\
+% 	\pcif |\suid| \neq 1: \pcreturn 1 \\
+% 	\pcreturn 0
+%       }
+%     \end{minipage}
+%   }
+%   \caption{Identifiability experiments for \UAS schemes.}
+%   \label{fig:exp-uas-identify}
+% \end{figure*}
 
-\begin{definition}{(Identifiable credentials in \UAS)}
-  \label{def:identify-cred-uas}  
-  We define the advantage \AdvIdCred of $\adv$ against \ExpIdentifyCred as
-  $\AdvIdCred=|\Pr\lbrack\ExpIdentifyCred(1^\secpar)=1\rbrack-
-  \Pr\lbrack\ExpIdentifyCred(1^\secpar)=1\rbrack|$.
-  %
-  An \UAS scheme \emph{with extractable issuance} satisfies identifiable
-  credentials if, for any p.p.t. adversary $\adv$, \AdvIdCred is a negligible
-  function of $1^\secpar$.
-\end{definition}
+% \begin{definition}{(Identifiable credentials in \UAS)}
+%   \label{def:identify-cred-uas}  
+%   We define the advantage \AdvIdCred of $\adv$ against \ExpIdentifyCred as
+%   $\AdvIdCred=|\Pr\lbrack\ExpIdentifyCred(1^\secpar)=1\rbrack-
+%   \Pr\lbrack\ExpIdentifyCred(1^\secpar)=1\rbrack|$.
+%   %
+%   An \UAS scheme \emph{with extractable issuance} satisfies identifiable
+%   credentials if, for any p.p.t. adversary $\adv$, \AdvIdCred is a negligible
+%   function of $1^\secpar$.
+% \end{definition}
 
-\begin{definition}{(Identifiable signatures in \UAS)}
-  \label{def:identify-sig-uas}  
-  We define the advantage \AdvIdSign of $\adv$ against \ExpIdentifySign as
-  $\AdvIdSign=|\Pr\lbrack\ExpIdentifySign(1^\secpar)=1\rbrack-
-  \Pr\lbrack\ExpIdentifySign(1^\secpar)=1\rbrack|$.
-  %
-  An \UAS scheme \emph{with extractable signatures} satisfies identifiable
-  signature if, for any p.p.t. adversary $\adv$, \AdvIdSign is a negligible
-  function of $1^\secpar$.
-\end{definition}
+% \begin{definition}{(Identifiable signatures in \UAS)}
+%   \label{def:identify-sig-uas}  
+%   We define the advantage \AdvIdSign of $\adv$ against \ExpIdentifySign as
+%   $\AdvIdSign=|\Pr\lbrack\ExpIdentifySign(1^\secpar)=1\rbrack-
+%   \Pr\lbrack\ExpIdentifySign(1^\secpar)=1\rbrack|$.
+%   %
+%   An \UAS scheme \emph{with extractable signatures} satisfies identifiable
+%   signature if, for any p.p.t. adversary $\adv$, \AdvIdSign is a negligible
+%   function of $1^\secpar$.
+% \end{definition}
 
 \paragraph{Anonymity.} %
 Users may see their privacy compromised through their interactions with issuers
@@ -879,73 +961,106 @@ belong to the requesting user; or (2) all credentials used to support the
 request are bound to the same secret key, but that secret key does not belong
 to any known user. The issuance unforgeability notion formalizes this.
 
-For both \ExpForgeIssue (in \figref{fig:exp-uas-unfor-issue}) and \ExpForgeSign
-(in \figref{fig:exp-uas-unfor-sign}), the adversary is given access to the
-oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
-\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$.
+For both \ExpForgeIssue and \ExpForgeSign (in \figref{fig:exp-uas-unfor}), the
+adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
+\lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$.
 
 \begin{figure}[htp!]
-    \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
-      (\parm,\trap) \gets \SimSetup(1^\secpar) \\
-      \cid \gets \adv^{\Oforgeissue}(\parm) \\
-      \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \pcreturn 0 \\
-      \textrm{Parse}~\CRED[\cid]~\textrm{as}~(\cdot,\cdot,\iid,\cdot,\cdot);~
-      \IK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-      (\usk,\scred,\attrs_{\scred}) \gets \ExtractIssue(\trap,\trans[\cid]) \\
-      \pccomment{\ExpIdentifyCred enforces the same \uid is
-        returned for all \scred} \\
-      \uid \gets \IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) \\
-      \pcif \uid \notin \HU \cup \CU: 
-      %\pcif % \fissue(\usk,\scred,\ATTR[\cid]) = 0 \lor
-%      \exists \cred \in \scred~\suchthat~\IdentifyCred(\trap,\usk,
-%      \attrs_{\cred},\cred,\ipk_{\cred}) = 0: \\
-      \pcreturn 1 \\
-      \pcreturn 0
-    }
-  \caption{Experiment for unforgeability of credential issuance in \UAS schemes.}
-  \label{fig:exp-uas-unfor-issue}
+  \centering
+  \scalebox{0.9}{
+    \begin{minipage}[t]{0.57\textwidth}
+      \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
+        (\parm,\trap) \gets \SimSetup(1^\secpar) \\
+        \cid \gets \adv^{\Oforgeissue}(\parm) \\
+        \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \\
+        \pcind \pcreturn 0 \\
+        % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
+        (\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]}) \\
+        \hspace*{5em}\gets \ExtractIssue(\trap,\trans[\cid]) \\
+        % \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
+        % \trans[\cid_i]) \\
+        % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
+        \pcif \fissue(\usk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
+        \rbrace_{i\in[n]}) = 0: \\
+        \pcind \pcreturn 1 \\
+        \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
+        \pcreturn 0
+      }
+    \end{minipage}
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
+        (\parm,\trap) \gets \Setup(1^\secpar) \\
+        (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
+        \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
+        \SIG[\uid]: \pcreturn 0 \\
+        \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
+        \pcreturn 0 \\
+        (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
+        \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg,\feval)
+        = 0: \pcreturn 1 \\
+        % (\usk,\sCred,\tyeval^1,\yinsp') \gets
+        % \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+        % \pcif \yinsp \neq \yinsp': \pcreturn 1 \\
+        % \pcreturn 0
+	(\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
+        \yeval^1,\yinsp') \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+        (\yeval^0,\yeval^1) \gets \feval(\usk,\lbrace(\cid_i,\attrs_i)
+        \rbrace_{i\in[n]}, \msg) \\
+        \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
+        \pcreturn 1 \\
+        \pcif \finsp((\yeval^0,\yeval^1),\usk,\lbrace(\cid_i,\attrs_i)
+        \rbrace_{i\in[n]},\msg)
+        \neq \yinsp \lor \yinsp \neq \yinsp':
+        \pcreturn 1 \\
+        \pcif \OWNR[\scid] \notin \HU \cup \CU: \pcreturn 1 \\
+        \pcreturn 0        
+      }      
+    \end{minipage}
+  }
+  \caption{Experiments for credential issuance and signature unforgeability in
+    \UAS schemes.}
+  \label{fig:exp-uas-unfor}
 \end{figure}    
 
-\begin{figure}[htp!]
-    \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
-      (\parm,\trap) \gets \Setup(1^\secpar) \\
-      (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
-      \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
-      \SIG[\uid]: \pcreturn 0 \\
-      \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
-      \pcreturn 0 \\
-      (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
-      \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg,\feval)
-      = 0: \pcreturn 1 \\
-      (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
-      \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
-      % \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
-      % \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
-      % \pcreturn 1 \\
-      % \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp:
-      % \pcreturn 1 \\
-      \uid \gets \IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) \\
-      \uid' \gets \IdentifySig(\trap,\usk,\scred,\Sig) \\
-      \pcif \uid \neq \uid' \lor \uid \notin \HU \cup \CU: \pcreturn 1 \\
-      %\pcif \exists \cred \in \scred~\suchthat~
-%      \IdentifyCred(\tau,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) = 0:
-      % \pcreturn 1 \\
-      % \pcif \nexists \uid~\suchthat~\IdentifySig(\trap,\usk,\scred,\Sig) = 1:
-      % \pcreturn 1 \pccomment{\todo{\uid-\usk}} \\
-      \pcreturn 0
-    }
-  \caption{Experiment for unforgeability of signatures in \UAS schemes.}
-  \label{fig:exp-uas-unfor-sign}
-\end{figure}
+% \begin{figure}[htp!]
+%     \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
+%       (\parm,\trap) \gets \Setup(1^\secpar) \\
+%       (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
+%       \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
+%       \SIG[\uid]: \pcreturn 0 \\
+%       \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
+%       \pcreturn 0 \\
+%       (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
+%       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg,\feval)
+%       = 0: \pcreturn 1 \\
+%       (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
+%       \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+%       % \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
+%       % \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
+%       % \pcreturn 1 \\
+%       % \pcif \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \neq \yinsp:
+%       % \pcreturn 1 \\
+%       \uid \gets \IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) \\
+%       \uid' \gets \IdentifySig(\trap,\usk,\scred,\Sig) \\
+%       \pcif \uid \neq \uid' \lor \uid \notin \HU \cup \CU: \pcreturn 1 \\
+%       %\pcif \exists \cred \in \scred~\suchthat~
+% %      \IdentifyCred(\tau,\usk,\attrs_{\cred},\cred,\ipk_{\cred}) = 0:
+%       % \pcreturn 1 \\
+%       % \pcif \nexists \uid~\suchthat~\IdentifySig(\trap,\usk,\scred,\Sig) = 1:
+%       % \pcreturn 1 \pccomment{\todo{\uid-\usk}} \\
+%       \pcreturn 0
+%     }
+%   \caption{Experiment for unforgeability of signatures in \UAS schemes.}
+%   \label{fig:exp-uas-unfor-sign}
+% \end{figure}
 
 \begin{definition}{(Unforgeable issuance of \UAS)}
   \label{def:issue-forge-uas}  
   We define the advantage \AdvForgeIssue of $\adv$ against \ExpForgeIssue as
   $\AdvForgeIssue=\Pr\lbrack\ExpForgeIssue(1^\secpar)=1\rbrack$.
   %
-  A \UAS scheme \emph{with identifiable credentials} has unforgeable issuance
-  if, for any p.p.t. adversary $\adv$, \AdvForgeIssue is a negligible function
-  of $1^\secpar$.
+  A \UAS scheme has unforgeable issuance if, for any p.p.t. adversary $\adv$,
+  \AdvForgeIssue is a negligible function of $1^\secpar$.
 \end{definition}
 
 \begin{definition}{(Unforgeable signing of \UAS)}
@@ -953,9 +1068,8 @@ oracle set $\Oforgeissue = \Oforgesign \gets \lbrace\HU,\CU\rbrace\GEN,\IGEN,
   We define the advantage \AdvForgeSign of $\adv$ against \ExpForgeSign as
   $\AdvForgeSign=\Pr\lbrack\ExpForgeSign(1^\secpar)=1\rbrack$.
   %
-  A \UAS scheme \emph{with identifiable signatures} has unforgeable signing if,
-  for any p.p.t. adversary $\adv$, \AdvForgeSign is a negligible function of
-  $1^\secpar$.
+  A \UAS scheme has unforgeable signing if, for any p.p.t. adversary $\adv$,
+  \AdvForgeSign is a negligible function of $1^\secpar$.
 \end{definition}
 
 For short, we say that an \UAS scheme that has both unforgeable issuance and
@@ -1004,27 +1118,36 @@ adversary has access to the oracles in $\Oframe \gets
 \lbrace\HU,\CU\rbrace\GEN, \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,
 \WREG,\OBTAIN,\SIGN$.
 
-\begin{figure}[htp!]
+\begin{figure}[htp!]  
   \centering
-  \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
-    (\parm,\trap) \gets \SimSetup(1^\secpar) \\
-    (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval,\yinsp,\iproof) \gets
-    \adv^{\Oframe}(\parm) \\
-    \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
-    \pcreturn 0 \\
-    \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
-    \pcreturn 0 \\
-    (\usk,\scred,\attrs_{\scred},\tyeval^1,\yinsp') \gets
-    \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
-    % \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
-    % \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
-    % \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
-    % \lor \yinsp \neq \yinsp': \pcreturn 1 \\
-    \pcif \yinsp \neq \yinsp': \pcreturn 1 \\
-    \pcif \exists \uid \in \HU~\suchthat~\UK[\uid] = \usk \land
-    (\cdot,\cdot,\Sig,\Yeval,\msg,\feval) \notin \SIG[\uid]: \\
-    \pcind \pcreturn 1 \\
-    \pcreturn 0
+  \scalebox{0.9}{
+    \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
+      (\parm,\trap) \gets \SimSetup(1^\secpar) \\
+      (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval,\yinsp,\iproof) \gets
+      \adv^{\Oframe}(\parm) \\
+      \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
+      \pcreturn 0 \\
+      \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
+      \pcreturn 0 \\
+      (\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},\tyeval^1,\yinsp') \gets
+      \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+      % \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
+      % \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
+      % \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
+      % \lor \yinsp \neq \yinsp': \pcreturn 1 \\
+      \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\lbrace (\cid_i,
+      \attrs_i)\rbrace_i{i\in[n]}, \msg) \\
+      \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
+      \pcreturn 1 \\
+      \pcif \finsp((\yeval^0,\yeval^1),\usk,\lbrace(\cid_i,\attrs_i)
+      \rbrace_{i\in[n]},\msg)
+      \neq \yinsp \lor \yinsp \neq \yinsp': \\
+      \pcind \pcreturn 1 \\
+      \pcif \OWNR[\scid] \in \HU \land
+      (\cdot,\cdot,\Sig,\Yeval,\msg,\feval) \notin \SIG[\OWNR[\scid]]: \\
+      \pcind \pcreturn 1 \\
+      \pcreturn 0
+    }
   }
   \caption{Experiment for non-frameability on \UAS schemes.}
   \label{fig:exp-uas-frame}
@@ -1075,43 +1198,38 @@ issuers, to the AC domain.
 
 In this section, we give a generic construction of an \UAS scheme, based on
 generic building blocks. We use three different NP relations in our generic
-construction. Namely:
+construction. Namely: $\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$, and
+$\NIZKRel_{\Open}$, described next and specified in CS notation \needcite
+in \figref{fig:nizkrels}.
 
 \begin{description}
-\item[$\NIZKRel_{\Issue}$:] For NIZK proofs at issuance time. It is defined as
-  $\NIZKRel_{\Issue} = \lbrace
-  (\usk,\scred,\attrs_{\scred},r), (\Ccom,\attrs,\sipk_{\scred}): \Ccom =
-  \CCommit(usk;r) \land \forall \cred \in \scred,\SBCMVerify(\ipk_{\cred},\cred,
-  \usk,\attrs_{\cred}) = 1 \land \fissue(\usk,\scred,\attrs) = 1 \rbrace$,
-  where for readability we write $\attrs_{\scred}$ as abbreviation for $\lbrace
-  \attrs_{\cred} \rbrace_{\cred \in \scred}$, and similarly for $\sipk_{\scred}$.
-  The relation requires that the owner commits to, and proves knowledge of,
-  \usk. It also requires that any additional credential supporting the request
-  be a valid credential (signed by some other issuer) and bound to \usk.
-  Finally, the policy defined by \fissue needs to be satisfied.
-\item[$\NIZKRel_{\Sign}$:] For NIZK proofs at signing time. It is defined as
-  $\NIZKRel_{\Sign} = \lbrace (\usk,\scred,
-  \attrs_{\scred},\yeval^1,\yinsp,r,r'),(\msg,\feval,\yeval^0,\ceval,\cinsp,
-  \sipk_{\scred},\Eek,\widetilde{\Eek}): \ceval = \EEnc(\widetilde{\Eek},\yeval^1;r)
-  \land \cinsp= \EEnc (\Eek,\yinsp;r') \land (\yeval^0,\yeval^1) = \feval(\usk,
-  \scred,\msg) \land \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\scred,\msg) \land
-  \forall \cred \in \scred, \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred})
-  = 1) \rbrace$, with $\attrs_{\scred}$ and $\sipk_{\scred}$ as in
-  $\NIZKRel_{\Issue}$. This relation ensures that signatures will produce the
-  correct signature evaluation and opening values, and that any credential used
-  to create the signature is bound to the same \usk key.
+\item[$\NIZKRel_{\Issue}$:] For NIZK proofs at issuance time. Requires that the
+  owner commits to, and proves knowledge of, \usk. It also requires that any
+  additional credential supporting the request be a valid credential (signed by
+  some issuer) and bound to \usk. Finally, it also enforces the
+  corresponding \fissue policy.
+\item[$\NIZKRel_{\Sign}$:] For NIZK proofs at signing time. Ensures that
+  signatures ``encode'' the correct signature evaluation and opening values, and
+  that any credential used to create the signature is bound to the same \usk.
 \item[$\NIZKRel_{\Open}$:] For NIZK proofs at opening time. Ensures that the
-  utility information extracted by the \Open algorithm is correct. It is defined
-  as $\NIZKRel_{\Open} =
-  \lbrace (\osk),(\Ec,\yinsp): \yinsp = \EDec(\osk,\Ec) \rbrace$.
+  utility information extracted by the \Open algorithm is correct.
 \end{description}
+
+\begin{figure}[ht!]
+  \centering
+  \scalebox{0.9}{
+    \input{figures/nizk.tex}
+  }
+  \caption{CS specification of the NP relations used in \CUASGen.}
+  \label{fig:nizkrels}
+\end{figure}
 
 Note that, besides the extensibility introduced via \fissue, \feval and
 \finsp, some aspects of the previous functions could be modified (e.g., one
 could require issuer public keys to be kept private). However, the previous
 relations seem generic enough for a wide variety of applications.
 %
-From the previous relations, we define the functionality as follows:
+From them, we build \CUASGen as follows.
 
 \paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
 The setup process essentially generates the public parameters for all the
@@ -1147,48 +1265,53 @@ Each user, prior to requesting credentials, generates his secret key by parsing
 $\usk \getr \AttrSpace$.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle\Obtain(\usk,\ipk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle$.} %
+  \langle\Obtain(\usk,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
+  \attrs),\Issue(\isk,\lbrace \ipk_i \rbrace_{i\in[n]},\attrs)\rangle$.} %
 The protocol is run between an issuer with key pair $(\ipk,\isk)$, and a user
-with secret key \usk and credentials \scred, where each $\cred \in \scred$ is
-issued by an issuer with public key $\ipk_{\cred} \in \sipk$ (which we assume
-that the user can easily retrieve,
-e.g., from secure storage, given \cred), and attests attributes
-$\attrs_{\cred}$. The user requests a signature on a commitment to the user key,
+with secret key \usk and credentials $\lbrace \cred_i \rbrace_{i\in[n]}$, where
+each $\cred_i$ is issued the corresponding issuer with public key $\ipk_i$, and
+attests attributes $\cattrs_i$. The user requests a signature on a commitment to
+the user key,
 as well as on the attributes in \attrs. In addition, the user proves that the
 issuance function \fissue established by the issuer is satisfied by the
-credentials in $\scred$
-and its user secret key. For this, we use relation $\NIZKRel_{\Issue}$, as
-defined above. The interactive protocol for a user to obtain a credential from
-an issuer of the system is then simply an execution of the interactive signing
-protocol of an \SBCM scheme, where the user runs $\SBCMCom(\ipk,\usk,\attrs)$,
-and the issuer runs $\SBCMSign(\isk,\attrs)$; in both cases, using
+$\cred_i$ credentials and its user secret key. For this, we use relation
+$\NIZKRel_{\Issue}$, as defined above. The interactive protocol for a user to
+obtain a credential from an issuer of the system is then simply an execution of
+the interactive signing
+protocol of an \SBCM scheme, where the user runs $\SBCMCom(\ipk,\usk,\lbrace,
+\cid, \attrs \rbrace)$, and the issuer runs $\SBCMSign(\isk,\lbrace \cid, \attrs
+\rbrace)$, for some commonly agreed and fresh \cid, and using
 $\NIZKRel_{\Issue}$ as \NIZK relation. The credential \cred produced by the user
 is the result of the interactive signing protocol, and the \utrans entry for
-the issuer is its transcript, which is a $(\Ccom,\attrs,\sipk,\cred,\pi)$ tuple.
+the issuer is its transcript, which is a $(\Ccom,\lbrace \cid, \attrs\rbrace,
+\lbrace \ipk_i\rbrace_{i\in[n]},\cred,\pi)$ tuple.
 
-\paragraph{$\Sig \gets \Sign(\usk,\opk,\scred,\msg,\feval)$.} %
+\paragraph{$\Sig \gets \Sign(\usk,\opk,
+  \sCred=(\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)\rbrace_{i\in[n]}),
+  \msg,\feval)$.} %
 In the signing algorithm, we make use of relation $\NIZKRel_{\Sign}$.
 % 
-The user first evaluates $(\yeval^0,\yeval^1) \gets \feval (\usk,\scred,\msg)$,
-and computes a random encryption key pair with $(\widetilde{\Eek},
-\widetilde{\Edk}) \gets \EKeyGen(\Eparm)$. Then, the user parses \opk as $(\Svk,\Eek,
-\finsp,\sig_{\finsp})$ and checks that $\Verify(\Svk,\sig_{\finsp},\finsp) = 1$
+The user first evaluates $\Yeval = (\yeval^0,\yeval^1) \gets \feval (\usk,
+\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$.
+Then, parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
+$\Verify(\Svk,\sig_{\finsp},\finsp) = 1$
 (this step may be cached), to compute $\yinsp \gets \finsp((\yeval^0,
-\yeval^1),\usk,\scred,\msg)$, and separately encrypts both $\yeval^1$ and
-\yinsp by running $\ceval \gets \EEnc(\widetilde{\Eek},\yeval^1;r)$ and $\cinsp \gets
-\EEnc(\Eek,\yinsp; r')$ for some fresh randomness $r,r'$. Finally, the user
+\yeval^1),\usk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$, and encrypts
+\yinsp by running $\cinsp \gets \EEnc(\Eek,\yinsp; r)$ for some fresh randomness
+$r$. Finally, the user
 computes $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,
-\scred, \attrs_{\scred},\yeval^1,\yinsp,r,r'),(\msg,\feval,\yeval^0,\ceval,\cinsp,
-\sipk_{\scred},\Eek,\widetilde{\Eek}))$ and outputs $(\sig = (\NIZKproof,\ceval,
-\cinsp),\yeval^0)$. Note that, depending on the value of \Yeval and \yinsp, the
-user may decide to abort the signing if the resulting values are too
-privacy-threatening.
+\lbrace(\cid_i,\cattrs_i,\cred_i)\rbrace_{i\in[n]},\yeval^1,\yinsp,r),(\msg,
+\feval,\yeval^0,\cinsp,\lbrace \ipk_i\rbrace_{i\in[n]},\Eek))$ and outputs
+$(\sig = (\NIZKproof,\cinsp),\yeval^0)$. Note that, depending on the value of
+\Yeval and \yinsp, the user may decide to abort
+the signing if the resulting values are too privacy-threatening.
 
-\paragraph{$1/0 \gets \Verify(\opk,\sipk,\Sig,\msg,\feval)$.} %
+\paragraph{$1/0 \gets \Verify(\opk,\sipk=\lbrace\ipk_i\rbrace_{i\in[n]},
+  \Sig,\msg,\feval)$.} %
 The ``cryptographic'' side of the verification consists on checking
-the NIZK proof. That is, parse \Sig as $(\sig = (\NIZKproof,\cinsp),\yeval,
-\ceval)$ and check whether $\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,
-\ceval,\cinsp,\sipk,\opk)) = 1$. In addition, the verifier may further check
+the NIZK proof. That is, parse \Sig as $(\sig = (\NIZKproof,\cinsp),\yeval)$ and
+check whether $\NIZKVerify(\NIZKcrs,\NIZKproof,(\msg,\feval,\yeval,
+\cinsp,\sipk,\opk)) = 1$. In addition, the verifier may further check
 whether \yeval meets its needs.
 
 \paragraph{$(\yinsp,\NIZKproof)/\bot \gets
@@ -1197,7 +1320,7 @@ Here we leverage relation $\NIZKRel_{\Open}$.
 %
 To open a signature, the opener first verifies the signature by running $\Verify
 (\opk,\sipk, \Sig,\msg,\feval)$. If verification succeeds, it parses
-\Sig as $(\sig=(\NIZKproof,\cinsp),\yeval,\ceval)$, decrypts \Ec by running $\yinsp
+\Sig as $(\sig=(\NIZKproof,\cinsp),\yeval)$, decrypts \Ec by running $\yinsp
 \gets \EDec(\osk,\cinsp)$, and computes $\NIZKproof_{\Open} \gets
 \NIZKProve^{\NIZKRel_{\Open}}(\NIZKcrs_{\Open},\osk,(\cinsp,\yinsp))$. It
 returns $(\yinsp,\NIZKproof_{\Open})$.
@@ -1205,7 +1328,7 @@ returns $(\yinsp,\NIZKproof_{\Open})$.
 \paragraph{$1/0 \gets \Judge(\opk,\yinsp,\NIZKproof,\Sig,\msg)$.} %
 To assess the validity of an opening proof, first check the signature
 by running $\Verify(\opk,\sipk,\Sig,\msg,\feval)$. If the check succeeds,
-parse \Sig as $((\cdot,\cinsp),\cdot,\cdot)$ and verify \NIZKproof with
+parse \Sig as $((\cdot,\cinsp),\cdot)$ and verify \NIZKproof with
 $\NIZKVerify(\NIZKcrs_{\Open},\NIZKproof,(\cinsp,\yinsp))$. Accept it the NIZK
 verification passes, and reject otherwise.
 

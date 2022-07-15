@@ -31,11 +31,17 @@ meaningful, in \figref{fig:helper-funcs}.
           \utrans as $(\Ccom,\sipk,\cred,\NIZKproof)$} \\
         \pcif \NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
         \NIZKproof,(\Ccom,\attrs,\sipk)): \pcreturn \bot \\
-        (\usk,\scred,\attrs_{\scred}) \gets
+        (\usk,\credid,\scred,\attrs_{\scred}) \gets
         \NIZKExtract^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
         \trap_{\Issue},
         (\Ccom,\attrs,\sipk),\NIZKproof) \\
-        \pcreturn (\usk,\attrs,\scred,\attrs_{\scred}) \\
+        \textrm{Let \credid be}~\suchthat~\trans[\credid] = \utrans;
+        \uid \gets \OWNR[\credid] \\        
+        \pcif \uid \in \HU \land \UK[\uid] \neq \usk: \pcreturn \bot \\
+        \pcelse: \\
+        \pcind \pcif \UK[\uid] = \bot: \UK[\uid] \gets \usk \\
+        \pcind \pcelse \pcif \UK[\uid] \neq \usk: \pcreturn 0 \\
+        \pcreturn (\uid,\usk,\credid,\scred,\attrs_{\scred}) \\
       }
       
       \procedure{$\ExtractSign(\parm,\trap,\oid,\siid,\sig,\yeval,\msg,\feval)$}{%
@@ -47,37 +53,43 @@ meaningful, in \figref{fig:helper-funcs}.
           \PUBIK[\siid]$} \\
         \pcif \NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKproof,
         (\msg,\feval,\yeval,\Ec,\sipk,\opk)): \pcreturn \bot \\
-        (\usk,\scred,\attrs_{\scred},\yinsp,r) \gets
+        (\usk,\scredid,\scred,\attrs_{\scred},\yinsp,r) \gets
         \NIZKExtract^{\NIZKRel_{\Sign}}(\NIZKcrs^{\NIZKRel_{\Sign}},
         \NIZKtrap_{\Sign},
         (\msg,\feval,\yeval^0,\ceval,\cinsp,\sipk,\opk,\widetilde{\Eek}),
         \NIZKproof) \\
+        \pcif \exists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \\
+        \pcreturn (\uid,\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
+        \pcelse \textrm{\todo{Need to add \cid as explicit attribute to the
+            credentials (chosen by issuer) so that can bookkeep.}} \\
+        \pcelse \textrm{\todo{then adapt the rest}} \\
+        \pcind \pcelse \pcif \UK[\uid] \neq \usk: \pcreturn 0 \\
         \pcreturn (\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
       }
       
-      % \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred)$}{%
-      %   \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
-      % }
+      % % \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred)$}{%
+      % %   \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
+      % % }
 
-      \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred,\ipk)$}{%
-        \pcreturn \SBCMVerify(\ipk,\cred,\usk,\attrs_{\cred}) \\
-      }      
+      % \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred,\ipk)$}{%
+      %   \pcreturn \SBCMVerify(\ipk,\cred,\usk,\attrs_{\cred}) \\
+      % }      
 
-      \procedure{$\IdentifySig(\parm,\trap,\usk,\scred,\Sig)$}{%
-        \pcif \uid \in \HU: \pcreturn \usk = \UK[\uid] \\
-        \pcfor \cid~\suchthat~\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot) \\
-        \pcind (\usk',\cdot,\cdot,\cdot) \gets \ExtractIssue(\parm,\trap,\trans[\cid]) \\
-        \pcind \pcif \usk = \usk': \pcreturn 1 \\
-        \pcreturn 0
-      }
-
-      % \procedure{$\IdentifySig(\parm,\trap,\uid,\usk)$}{%
+      % \procedure{$\IdentifySig(\parm,\trap,\usk,\scred,\Sig)$}{%
       %   \pcif \uid \in \HU: \pcreturn \usk = \UK[\uid] \\
       %   \pcfor \cid~\suchthat~\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot) \\
       %   \pcind (\usk',\cdot,\cdot,\cdot) \gets \ExtractIssue(\parm,\trap,\trans[\cid]) \\
       %   \pcind \pcif \usk = \usk': \pcreturn 1 \\
       %   \pcreturn 0
       % }
+
+      % % \procedure{$\IdentifySig(\parm,\trap,\uid,\usk)$}{%
+      % %   \pcif \uid \in \HU: \pcreturn \usk = \UK[\uid] \\
+      % %   \pcfor \cid~\suchthat~\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot) \\
+      % %   \pcind (\usk',\cdot,\cdot,\cdot) \gets \ExtractIssue(\parm,\trap,\trans[\cid]) \\
+      % %   \pcind \pcif \usk = \usk': \pcreturn 1 \\
+      % %   \pcreturn 0
+      % % }
       
     \end{minipage}
   }

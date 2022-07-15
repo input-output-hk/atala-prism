@@ -1,0 +1,53 @@
+\begin{tikzpicture}
+
+  %% Issue
+  \node (issue) at (-7.50,8.875) { $\NIZKRel_{\Issue} = $ };
+  \node (issue2) at (-3.00,9.50) {
+    $(\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r),
+    (\Ccom,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]}):$
+  };
+  \node[align=center] (issue3) at (-3.00,8.625) {
+    $\Ccom = \CCommit(usk;r)~\land$ \\
+    $\fissue(\usk,\lbrace(\cid_i,\cattrs_i\rbrace_{i\in[n]}) = 1~\land$ \\
+    $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,\cattrs_i) = 1$
+  };
+  \draw [thick,decorate,decoration={brace}] (-6.625,8.00) -- (-6.625,9.75);
+  \draw [thick,decorate,decoration={brace}] (0.575,9.75) -- (0.575,8.00);
+
+  %% Sign
+  \node (sign) at (-6.00,6.625) { $\NIZKRel_{\Sign} = $ };
+  \node (sign2) at (0.00,7.50) {
+    $(\usk,\lbrace(\cid_i\attrs_i,\cred_i)\rbrace_{i\in[n]},\yeval^1,\yinsp,r),
+    (\msg,\feval,\yeval^0,\cinsp,\lbrace\ipk_i\rbrace,\Eek):$
+  };
+  \node[align=center] (sign3) at (0.00,6.35) {
+    $\Ccom = \CCommit(usk;r) \land \cinsp = \EEnc (\Eek,\yinsp;r)~\land$ \\
+    $(\yeval^0,\yeval^1) =
+    \feval(\usk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\ 
+    $\yinsp = \finsp((\yeval^0,\yeval^1),\usk,
+    \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\
+    $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$
+  };
+  \draw [thick,decorate,decoration={brace}] (-5.00,5.50) -- (-5.00,7.75);
+  \draw [thick,decorate,decoration={brace}] (5.00,7.75) -- (5.00,5.50);
+
+  %% Open
+  \node (issue) at (1.75,8.875) { $\NIZKRel_{\Open} = $ };
+  \node (issue2) at (4.25,9.125) {
+    $(\osk),(\Ec,\yinsp):$
+  };
+  \node (issue3) at (4.25,8.625) {
+    $\yinsp = \EDec(\osk,\Ec)$
+  };  
+  \draw [thick,decorate,decoration={brace}] (2.75,8.375) -- (2.75,9.375);
+  \draw [thick,decorate,decoration={brace}] (5.75,9.375) -- (5.75,8.375);
+
+  % \NIZKRel_{\Open} =
+  % \lbrace (\osk),(\Ec,\yinsp):  \rbrace
+
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../uas-paper"
+%%% End:
