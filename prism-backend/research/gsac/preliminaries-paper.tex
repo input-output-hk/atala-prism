@@ -43,7 +43,7 @@ receives a block of messages. In both cases, we require hiding and binding
 We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
 model. Informally, a NIZK scheme over an NP relation \NIZKRel is defined as a
 tuple ($\NIZKSetupRel$,$\NIZKProveRel$,$\NIZKVerify^\NIZKRel$).
-Algorithm $\NIZKcrs \gets \NIZKSetupRel(\NIZKsecpar)$ produces the common
+Algorithm $\NIZKcrs \gets \NIZKSetupRel(\secpar)$ produces the common
 reference string \NIZKcrs. $\NIZKproof/\bot \gets \NIZKProveRel(\NIZKcrs,
 \NIZKx,\NIZKw)$ creates a NIZK proof of knowledge of witness \NIZKw for \NIZKx
 such that $(\NIZKw,\NIZKx) \in \NIZKRel$. $1/0 \gets \NIZKVerifyRel
@@ -64,13 +64,15 @@ For this purpose, we define such schemes as a tuple (\SBCMSetup,\SBCMKeyGen,
 \SBCMCom,\SBCMSign,\SBCMVerify). Algorithm $\parm \gets \SBCMSetup(\secpar)$
 produces the public parameters for the scheme. %
 $(\vk,\sk) \gets \SBCMKeyGen(\parm)$ produces a verification-signing
-key pair. $\sig/\bot \gets\langle \SBCMCom(\vk,\overline{\smsg},\smsg),
-  \SBCMSign(\sk,\smsg) \rangle$ is an interactive protocol between a user, who
-runs \SBCMCom and has a set of messages $\overline{\smsg}$ to be block-committed,
-and a signer, who owns signing key \sk; both also receive common input a
-block of messages \smsg. The output of the protocol is a signature over
+key pair. $\sig/\bot \gets\langle \SBCMCom^{\NIZKRel}(\vk,\overline{\smsg},
+\smsg,(x,w)),\SBCMSign^\NIZKRel(\sk,\smsg,x) \rangle$ is an interactive protocol
+between a user, who runs \SBCMCom and has a set of messages $\overline{\smsg}$
+to be block-committed, and a signer, who owns signing key \sk; both also receive
+common input a block of messages \smsg. In addition, the user knows a pair
+$(x,w) \in \NIZKRel$, and proves (in zero-knowledge) knowledge of $w$ to the
+signer. The output of the protocol is a signature over
 $\overline{\smsg} \cup \smsg$. Algorithm $1/0 \gets \SBCMVerify(\vk,
-\sig,\overline{\smsg},\smsg)$ verifies a signature \sig over message set
+\sig,\overline{\smsg},\smsg)$ verifies a signature \sig over message vector
 $\overline{\smsg} \cup \smsg$. In addition, the
 produced signatures must be compatible with (efficient) NIZK proofs of knowledge
 of a signature, and of (arbitrary) claims over the signed (committed) messages.

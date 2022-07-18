@@ -492,11 +492,22 @@ parameter.
 \todo{This is quite informal. Perhaps expand...} 
 In the previous \SBCM scheme, it is straightforward to require that the party
 running \SBCMCom proves some arbitrary claim over the messages to be signed
-(both those in committed or plaintext form). This can be done by having this
-party add a NIZK over the corresponding NP statement, which has later to be
-verified by the party running \SBCMSign. We will be using this extension, and
-use $\SBCM^{\NIZKRel}$ to denote such an \SBCM with proofs for claims in
+(both those in committed or plaintext form), as well as over possibly extra
+auxiliary data. This can be done by having this party add a NIZK over the
+corresponding NP statement, which has later to be verified by the party running
+\SBCMSign.
+%
+We use this extension in our \CUASGen construction, and thus extend the previous
+syntax for interactive signing  as follows, to account for an extra NIZK
+relation \NIZKRel proving that a pair of statement $x$ and witness $w$ belong
 \NIZKRel.
+
+\begin{description}
+\item[$\SBCMsig/\bot \gets \langle \SBCMCom^{\NIZKRel}(\SBCMvk,\overline{\smsg},
+  \smsg,(x,w)),\SBCMSign^{\NIZKRel}(\SBCMsk,\smsg,x) \rangle$.] As before, but
+  the party running \SBCMCom, who owns witness $w$ for $x$ in \NIZKRel, proves
+  in zero-knowledge to the party running \SBCMSign that $(x,w) \in \NIZKRel$.
+\end{description}
 
 Finally, in addition, we require that the produced signatures must be compatible
 with (efficient) NIZK proofs of knowledge of a signature, and of (arbitrary)
@@ -555,6 +566,12 @@ and $\SBCMvk \gets (\NIZKcrs,\gen{g}_2^{\SBCMsk})$.
   \gen{g}_2)$: return $0$. Else, return $(A,x,s)$.
 \end{itemize}
 
+Note that, if needed, it is straightforward to augment the proof \NIZKproof
+produced by the user in the first step with an extended proof that also proves
+that $(x,w) \in \NIZKRel$, for some other relation \NIZKRel, thus implementing
+the augmented interface $\langle\SBCMCom^\NIZKRel,\SBCMSign^\NIZKRel\rangle$ as
+described earlier.
+
 \paragraph{$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\overline{\smsg},\smsg)$.} %
 To verify a signature \SBCMsig, for message set $\overline{\smsg}$ that was
 signed as a block commitment, and message set \smsg, signed as plaintext, parse
@@ -607,5 +624,5 @@ game of the commitment scheme.
 
 %%% Local Variables:
 %%% mode: latex
-%%% TeX-master: "uas"
+%%% TeX-master: "uas-paper"
 %%% End:

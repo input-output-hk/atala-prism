@@ -54,8 +54,8 @@ An \UAS scheme is composed by the following algorithms:
   function \finsp, an opener runs \OKeyGen to generate its opening key pair.
   The function \finsp defines the type of utility that will be extractable from
   signatures.
-\item[$\UKeyGen(\parm) \rightarrow \usk$.] Given \parm, returns a user's secret
-  key.
+\item[$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.] Given \parm, returns a user's
+  key pair.
 \item[$\langle
   \Obtain(\usk,\ipk,\sCred,\attrs),
   \Issue(\isk,\sipk,\attrs))  
@@ -101,26 +101,26 @@ the user who computes them, and has to prove correctness of such computation.
 We give concrete examples in \secref{sec:relationships}, and define them next:
 
 \begin{description}
-\item[$\fissue: (\usk,\attrs,\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]})
-  \rightarrow 0/1$.] Chosen
+\item[$\fissue: ((\upk,\usk),\attrs,\lbrace (\cid_i,\cattrs_i)
+  \rbrace_{i \in [n]}) \rightarrow 0/1$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
   defines the customized conditions required by the issuer to grant a credential
-  over attributes \attrs, when requested by a user with secret key \usk,
+  over attributes \attrs, when requested by a user with key pair $(\upk,\usk)$,
   leveraging a set of $n$ previously obtained credentials with identifiers and
   attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where $n$
   may be $0$ if no previously obtained credential is used). \fissue returns $1$
   to accept a request, $0$ to reject it.
-\item[$\feval: (\usk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
+\item[$\feval: ((\upk,\usk),\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
   \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
   family of functions \famfeval, can be set on a per-signature basis. They
-  receive the user secret key \usk, a set of credentials with identifiers and
-  attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where
-  $n \ge 1$), and the message to be signed \msg. \feval outputs two values,
-  $\yeval^0$ and $\yeval^1$, which can be used to modulate the bevahiour of
-  \finsp, and must belong in a well defined set \rngfeval. For readability, we
-  write $\Yeval = (\yeval^0,\yeval^1)$.
-\item[$\finsp: (\Yeval,\usk,\lbrace \cid_i,\cattrs_i\rbrace_{i \in [n]},\msg)
-  \rightarrow \yinsp$.]
+  receive the user key pair $(\upk,\usk)$, a set of credentials with identifiers
+  and attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$
+  (where $n \ge 1$), and the message to be signed \msg. \feval outputs two
+  values, $\yeval^0$ and $\yeval^1$, which can be used to modulate the bevahiour
+  of \finsp, and must belong in a well defined set \rngfeval. For readability,
+  we write $\Yeval = (\yeval^0,\yeval^1)$.
+\item[$\finsp: (\Yeval,(\upk,\usk),\lbrace \cid_i,\cattrs_i\rbrace_{i \in [n]},
+  \msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
   functions define what utility value (derived from the user's secret key,
   credentials' identifiers and attributes used for signing, and signed message)
@@ -143,9 +143,9 @@ Both concepts are defined next.
   \label{def:uas-acc-func}
   We say that a \fissue (similarly, \feval or \finsp) function chosen from some
   family \famfissue (similarly, \famfeval or \famfinsp) is \UAS-acceptable if it
-  is one-way with respect to \usk. That is, given the output of \fissue
+  is one-way with respect to $(\upk,\usk)$. That is, given the output of \fissue
   (similarly, \feval or \finsp), it is at least computationally unfeasible to
-  recover the \usk value used to produce it.
+  recover the $(\upk,\usk)$ value used to produce it.
 \end{definition}
 
 \begin{definition}{(\CUASGen restrictions)}
@@ -185,7 +185,7 @@ a credential request cannot be falsified (issuance unforgeability). Similarly,
 signature unforgeability requires that no adversary should be able to falsify
 the correctness proofs for the claims included in the signatures. In both cases
 (issuance and signature unforgeability), we require all credentials involved in
-the corresponding process to be associated to a known user. Finally, \UAS
+the corresponding process to be associated to a known user key. Finally, \UAS
 schemes inherit the useful non-frameability property of GS schemes where even
 the issuer is corrupt. In this case, we can ensure that no honest user
 can be framed with having created a signature that s/he did not create --
@@ -195,9 +195,12 @@ We describe next the global variables and oracles that we use in our modelling.
 
 \paragraph{Global Variables.} %
 Users are referred to with user identifiers, \uid; for credentials, we use \cid;
-for issuers, \iid; and for openers, \oid. % In all cases, we use bold font to
-% denote sets: e.g., \scid and \siid denote sets of credential and issuer
-% identifiers. All tables/sets are initialized as empty tables/sets.
+for issuers, \iid; and for openers, \oid.  In all cases, we use bold font to
+denote sets: e.g., \scid and \siid denote sets of credential and issuer
+identifiers. All tables/sets are initialized as empty tables/sets. For
+notational convenience, we often use these identifiers instead of the
+corresponding user/issuer/opener keys.
+
 
 \begin{description}
 \item[$\mathsf{H}\lbrace\mathsf{U},\mathsf{I},\mathsf{O} \rbrace$.] Keep
@@ -206,8 +209,9 @@ for issuers, \iid; and for openers, \oid. % In all cases, we use bold font to
 \item[$\mathsf{C}\lbrace\mathsf{U},\mathsf{I},\mathsf{O} \rbrace$.] Keep
   track of corrupt users/issuers/openers. They are sets of
   {\uid}s/{\iid}s/{\oid}s.    
-\item[\UK.] \UK maintains user keys $\usk$. To refer to the key of a specific
-  user, we use $\UK[\uid]$. 
+\item[\UK, \PUBUK and \PRVUK.] \UK maintains user key pairs $(\upk,\usk)$. To
+  refer to the key of a specific user, we use $\UK[\uid]$. \PUBUK indexes the
+  public keys, and \PRVUK the private keys.
 \item[\IK, \PUBIK and \PRVIK.] \IK maintains issuer key pairs, where
   $\IK[\iid]$ refers to the key pair of the issuer with identifier \iid. We
   use \PUBIK to refer to the public component, which also includes the \fissue
@@ -317,8 +321,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\HUGEN(\uid)$}{%
           \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
-          \usk \gets \UKeyGen(\parm) \\
-          \UK[\uid] \gets \usk;
+          (\upk,\usk) \gets \UKeyGen(\parm) \\
+          \UK[\uid] \gets (\upk,\usk);
           \HU \gets \HU \cup \lbrace  \uid \rbrace \\
           \pcreturn \top \\
         }
@@ -390,8 +394,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot:
           \pcreturn \bot \\
           \langle \Cred, \utrans \rangle \gets
-          \langle \Obtain(\UK[\uid],\CRED[\lbrace \cid_i\rbrace_{[n]}],\attrs), \\
-          \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\lbrace \cid_i\rbrace_{[n]}],\attrs)
+          \langle \Obtain(\UK[\uid],\CRED[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs), \\
+          \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs)
           \rangle \\
           \trans[\cid] \gets \utrans \\
           \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, n,
@@ -466,15 +470,16 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1})$}{%
-          \textrm{\todo{\scid notation}} \\
+        \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1}=
+          \lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]})$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \pcif \exists i\in[n]~\suchthat~
+          \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \pcreturn \bot \\
           \pcif \pcfor d \in \bin,~ \exists \cid' \in \cscid_d~\suchthat~\cid'
           \in \CRED: \\
           \pcind \pcreturn \bot \\
-          \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
           \textrm{Parse}~\PUBIK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
           \pcif \fissue(\UK[\cuid_0],\cscid_0,\attrs) \neq
           \fissue(\UK[\cuid_1],\cscid_1,\attrs) \\
@@ -484,21 +489,19 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1},\msg,\feval)$}{%
-          \textrm{\todo{\scid notation}} \\                    
+        \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1}=
+          \lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]},\msg,\feval)$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
-          \pcif \pcfor d \in \bin~ \exists \cid,\cid' \in \scid_d~\suchthat \\
-          \pcind \cid \in \CRED \land \cid' \in \CCRED: \pcreturn \bot \\
-          \pcif \oid \in \CO: \pcreturn \bot \\
-          \pcif \feval \notin \famfeval: \pcreturn \bot \\          
+          \pcif \exists i\in[n]~\suchthat~
+          \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \pcreturn \bot \\
+          \pcif \feval \notin \famfeval: \pcreturn \bot \\
           \Yeval = (\yeval^0,\yeval^1) \gets \feval(\UK[\cuid_0],\cscid_0,
           \msg) \\
           \TYeval = (\tyeval^0,\tyeval^1) \gets
           \feval(\UK[\cuid_1],\cscid_1,\msg) \\
           \pcif \yeval^0 \neq \tyeval^0: \pcreturn \bot \\
           \pcif \Yeval \notin \rngfeval \lor \TYeval \notin \rngfeval:
-          \pcreturn \bot \\
-          \pcif \PUBIK[\cscid_0] \neq \PUBIK[\cscid_1]: \pcreturn \bot \\
+          \pcreturn \bot \\          
           \cSig_b \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
           \hspace*{71pt}\cscid_b,\msg,\feval) \\
           \cSig_{1-b} \gets \Sign(\UK[\cuid_{1-b}],\PUBOK[\oid], \\
@@ -540,13 +543,13 @@ we use to formalize security of \UAS schemes.
   parameter, outputs global (simulated) parameters \parm whose distribution is
   indistinguishable to that produced by the \Setup algorithm, as well as a
   trapdoor \trap.
-\item[$\ExtractIssue(\trap,\utrans) \rightarrow (\usk,\sCred=
+\item[$\ExtractIssue(\trap,\utrans) \rightarrow ((\upk,\usk),\sCred=
   \lbrace(\cid_i,\attrs_i,\cred_i) \rbrace_{i \in [n]})$.]
   Receives trapdoor \trap and an $\langle \Obtain, \Issue \rangle$ transcript,
   and returns the credential set \sCred, if any, involved in the request. It
   needs an honest issuer as, otherwise, the transcripts won't be available. 
 \item[$\ExtractSign(\trap,\oid,\lbrace \iid_i \rbrace_{i \in [n]},\Sig,\msg,
-  \feval) \rightarrow (\usk,\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
+  \feval) \rightarrow ((\upk,\usk),\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
   \rbrace_{i \in [n]},\yeval^1,\yinsp)$.] Receives a trapdoor \trap, a signature
   \Sig, as well as the opener identifier \oid, and the identifiers of all
   issuers of the credentials used to produce the signature over \msg, and for
@@ -641,16 +644,18 @@ credentials, user key, and message.
 \label{sssec:security}
 
 Security of an \UAS scheme is defined in terms of anonymity, unforgeability and
-non-frameability. In addition, we define two auxiliary properties for defining
-the expected behaviour of the \ExtractIssue and \ExtractSign functions.
-\todo{The following may need to be moved elsewhere and/or re-written.}
-For instance, the extraction type are used in
-\cite{lnpy21,nps22}, and functions of the identify type are used in
-\cite{bfg+11,cdl16,gl19,dl21,fgl21}. Indeed, it seems hard to avoid resorting to
-these techniques when there is no traditional notion of opening. Since, mostly
-the unforgeability and non-frameability properties build on the extractability
-and identifiability ones, we define them first. Then, we proceed with the usual
-notions.
+non-frameability. We now introduce and formally define the corresponding
+properties.
+% In addition, we define two auxiliary properties for defining
+% the expected behaviour of the \ExtractIssue and \ExtractSign functions.
+% \todo{The following may need to be moved elsewhere and/or re-written.}
+% For instance, the extraction type are used in
+% \cite{lnpy21,nps22}, and functions of the identify type are used in
+% \cite{bfg+11,cdl16,gl19,dl21,fgl21}. Indeed, it seems hard to avoid resorting to
+% these techniques when there is no traditional notion of opening. Since, mostly
+% the unforgeability and non-frameability properties build on the extractability
+% and identifiability ones, we define them first. Then, we proceed with the usual
+% notions.
 
 % \todo{Maybe do some drawing of the cred tree.}
 
@@ -975,12 +980,12 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \\
         \pcind \pcreturn 0 \\
         % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
-        (\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]}) \\
+        ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]}) \\
         \hspace*{5em}\gets \ExtractIssue(\trap,\trans[\cid]) \\
         % \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
         % \trans[\cid_i]) \\
         % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
-        \pcif \fissue(\usk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
+        \pcif \fissue((\upk,\usk),\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
         \rbrace_{i\in[n]}) = 0: \\
         \pcind \pcreturn 1 \\
         \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
@@ -1002,13 +1007,13 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         % \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
         % \pcif \yinsp \neq \yinsp': \pcreturn 1 \\
         % \pcreturn 0
-	(\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
+	((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
         \yeval^1,\yinsp') \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
-        (\yeval^0,\yeval^1) \gets \feval(\usk,\lbrace(\cid_i,\attrs_i)
+        (\yeval^0,\yeval^1) \gets \feval((\upk,\usk),\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]}, \msg) \\
         \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
         \pcreturn 1 \\
-        \pcif \finsp((\yeval^0,\yeval^1),\usk,\lbrace(\cid_i,\attrs_i)
+        \pcif \finsp((\yeval^0,\yeval^1),(\upk,\usk),\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]},\msg)
         \neq \yinsp \lor \yinsp \neq \yinsp':
         \pcreturn 1 \\
@@ -1129,17 +1134,17 @@ adversary has access to the oracles in $\Oframe \gets
       \pcreturn 0 \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
       \pcreturn 0 \\
-      (\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},\tyeval^1,\yinsp') \gets
+      ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},\tyeval^1,\yinsp') \gets
       \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
       % \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
       % \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
       % \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
       % \lor \yinsp \neq \yinsp': \pcreturn 1 \\
-      \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\lbrace (\cid_i,
+      \Yeval=(\yeval^0,\yeval^1) \gets \feval((\upk,\usk),\lbrace (\cid_i,
       \attrs_i)\rbrace_i{i\in[n]}, \msg) \\
       \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
       \pcreturn 1 \\
-      \pcif \finsp((\yeval^0,\yeval^1),\usk,\lbrace(\cid_i,\attrs_i)
+      \pcif \finsp((\yeval^0,\yeval^1),(\upk,\usk),\lbrace(\cid_i,\attrs_i)
       \rbrace_{i\in[n]},\msg)
       \neq \yinsp \lor \yinsp \neq \yinsp': \\
       \pcind \pcreturn 1 \\
@@ -1220,71 +1225,63 @@ in \figref{fig:nizkrels}.
   \scalebox{0.9}{
     \input{figures/nizk.tex}
   }
-  \caption{CS specification of the NP relations used in \CUASGen.}
+  \caption{CS specification of the NP relations used in \CUASGen.
+  \todo{Is $\C = \CCommit(\usk;r)$ needed now that \upk is added?}}
   \label{fig:nizkrels}
 \end{figure}
 
-Note that, besides the extensibility introduced via \fissue, \feval and
-\finsp, some aspects of the previous functions could be modified (e.g., one
-could require issuer public keys to be kept private). However, the previous
-relations seem generic enough for a wide variety of applications.
-%
 From them, we build \CUASGen as follows.
 
 \paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
 The setup process essentially generates the public parameters for all the
-building blocks. It parses \secpar as $(\Csecpar,\NIZKsecpar,\SBCMsecpar,
-\Esecpar)$. Then, run $\Cparm \gets
-\CSetup(\Csecpar)$, $\SBCMparm \gets  \SBCMSetup(\SBCMsecpar)$, $\Sparm \gets
-\SSetup(\Ssecpar)$, $\Eparm \gets \ESetup(\Esecpar)$, $\NIZKcrs_{\Issue} \gets
-\NIZKSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar)$, $\NIZKcrs_{\Sign} \gets
-\NIZKSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar)$, and $\NIZKcrs_{\Open} \gets
-\NIZKSetup^{\NIZKRel_{\Open}}(\NIZKsecpar)$. Return $(\Cparm,\SBCMparm,
-\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},\NIZKcrs_{\Open},
-\AttrSpace)$. Many of these parameter setup algorithms can
-actually be run by separate entities. For simplicity of exposition, we bundle
-them together here.
+building blocks. It runs $\Cparm \gets \CSetup(\secpar)$, $\SBCMparm \gets
+\SBCMSetup(\secpar)$, $\Sparm \gets \SSetup(\secpar)$, $\Eparm \gets
+\ESetup(\secpar)$, $\NIZKcrs_{\Issue} \gets \NIZKSetup^{\NIZKRel_{\Issue}}
+(\secpar)$, $\NIZKcrs_{\Sign} \gets \NIZKSetup^{\NIZKRel_{\Sign}}(\secpar)$, and
+$\NIZKcrs_{\Open} \gets \NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$. Return $
+(\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},
+\NIZKcrs_{\Open},\AttrSpace)$. % Many of these parameter setup algorithms can
+% actually be run by separate entities. For simplicity of exposition, we bundle
+% them together here.
 
 \paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
 Each issuer first parses \parm as $(\cdot,\SBCMparm,
 \Sparm,\cdot,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets
 \SKeyGen(\Sparm)$, $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$,
-$\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$, $\ipk \gets (\Svk,\fissue,
-\sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
+$\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$, $\ipk \gets (\SBCMparm,\Svk,
+\fissue,\sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
 
 \paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
 Each opener first parses \parm as $(\cdot,\cdot,
 \cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets \SKeyGen
 (\Sparm)$, $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$, $\sig_{\finsp} \gets \SSign
-(\Ssk,\finsp)$, $\opk \gets (\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk \gets
-(\Ssk,\Edk)$.
+(\Ssk,\finsp)$, $\opk \gets (\Sparm,\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk
+\gets (\Ssk,\Edk)$.
 
 \paragraph{$\usk \gets \UKeyGen(\parm)$.} %
-Each user, prior to requesting credentials, generates his secret key by parsing
-\parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\AttrSpace)$, and picking randomly
-$\usk \getr \AttrSpace$.
+Each user, prior to requesting credentials, generates his secret key by picking
+randomly $\usk \getr \AttrSpace$. Set $\upk \gets \CCommit(\usk;0)$.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle\Obtain(\usk,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
   \attrs),\Issue(\isk,\lbrace \ipk_i \rbrace_{i\in[n]},\attrs)\rangle$.} %
 The protocol is run between an issuer with key pair $(\ipk,\isk)$, and a user
 with secret key \usk and credentials $\lbrace \cred_i \rbrace_{i\in[n]}$, where
-each $\cred_i$ is issued the corresponding issuer with public key $\ipk_i$, and
+each $\cred_i$ is issued by an issuer with public key $\ipk_i$, and
 attests attributes $\cattrs_i$. The user requests a signature on a commitment to
-the user key,
-as well as on the attributes in \attrs. In addition, the user proves that the
-issuance function \fissue established by the issuer is satisfied by the
-$\cred_i$ credentials and its user secret key. For this, we use relation
-$\NIZKRel_{\Issue}$, as defined above. The interactive protocol for a user to
-obtain a credential from an issuer of the system is then simply an execution of
-the interactive signing
-protocol of an \SBCM scheme, where the user runs $\SBCMCom(\ipk,\usk,\lbrace,
-\cid, \attrs \rbrace)$, and the issuer runs $\SBCMSign(\isk,\lbrace \cid, \attrs
-\rbrace)$, for some commonly agreed and fresh \cid, and using
-$\NIZKRel_{\Issue}$ as \NIZK relation. The credential \cred produced by the user
-is the result of the interactive signing protocol, and the \utrans entry for
-the issuer is its transcript, which is a $(\Ccom,\lbrace \cid, \attrs\rbrace,
-\lbrace \ipk_i\rbrace_{i\in[n]},\cred,\pi)$ tuple.
+the user key, as well as on the attributes in \attrs. In addition, the user
+proves that the issuance function \fissue established by the issuer is satisfied
+by the $\cred_i$ credentials and its user secret key. This is achieved through
+an execution of an \SBCM interactive signing protocol with $\NIZKRel_{\Issue}$
+as NP relation -- which contains the verification that \fissue returns $1$,
+among other checks as described earlier. Concretely, the user runs
+$\SBCMCom^{\NIZKRel_{\Issue}}(\ipk,\usk,(\cid,\attrs),\lbrace (\cid_i,\cattrs_i,
+\cred_i)\rbrace_{i\in[n]},\lbrace \ipk_i \rbrace_{i\in[n]})$, and the issuer
+runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
+\rbrace_{i\in[n]})$, for some commonly agreed and fresh \cid. The credential
+\cred produced by the user is the result of the interactive signing protocol,
+and the \utrans entry for the issuer is its transcript, which is a $(\Ccom,
+\lbrace \cid,\attrs\rbrace,\lbrace \ipk_i \rbrace_{i\in[n]},\cred,\pi)$ tuple.
 
 \paragraph{$\Sig \gets \Sign(\usk,\opk,
   \sCred=(\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)\rbrace_{i\in[n]}),
@@ -1389,6 +1386,35 @@ the proofs to \appref{app:uas-proofs}.
   non-frameability as defined in \defref{def:frame-uas}, except with negligible
   probability.
 \end{theorem}
+
+\subsection{\CUASGen variants}
+\label{ssec:variants}
+
+In previous subsections, we have described a main construction for \CUASGen,
+where generalization is achieved by allowing system designers to specify
+concrete \fissue, \feval and \finsp functions depending on their needs. Note
+however that alternative constructions are possible, that are close to \CUASGen,
+but differ in key aspects while still meeting the \UAS model. We briefly
+describe them next, as we leverage them to build related schemes. Security
+proofs are deferred to \appref{app:uas-variants-proofs}
+
+\paragraph{$\CUASGen^{prv-iss}$: Tweaking $\NIZKRel_{\Sign}$ for issuer
+  privacy.} %
+In \CUASGen, it is required that the identity of the issuer of each credential
+used to produce a signature is revealed. This seems reasonable for usual
+situations since, intuitively, it would seem hard for a verifier to accept a
+signature produced with a credential without knowing if the issuer is
+trustworthy. However, there may also be cases in which relaxations are
+acceptable. For instance, it may be enough to know that the issuer belongs to
+some set of well-known issuers. From a more theoretical point of view, this is
+also interesting, as it allows to mimic ring signatures from \UAS constructions.
+\todo{XXX}
+
+\paragraph{$\CUASGen^{usr-iss}$: Collapsing issuers and users.} %
+On occasions, it may be useful to not make a distinction between issuers and
+users. For instance, for credential delegation, or in decentralized identity
+systems. In both cases, users may end up acting as issuers themselves.
+\todo{XXX}
 
 %%% Local Variables:
 %%% mode: latex

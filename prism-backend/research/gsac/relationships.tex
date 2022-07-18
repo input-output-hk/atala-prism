@@ -17,10 +17,10 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Issuance functions:}
       \begin{align}
         & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{\sring}(\usk,\attrs,\cdot) \coloneqq \pcif \attrs
-          \subseteq \sring \cup \lbrace \CCommit(\usk;0) \rbrace: \pcreturn 1;
+        & \fissue^{\sring}((\upk,\cdot),\attrs,\cdot) \coloneqq \pcif \attrs
+          \subseteq \sring \land \upk \in \sring: \pcreturn 1;
           \pcelse \pcreturn 0 \nonumber \\
-        & \fissue^{l,\dattrs}(\usk,\attrs,(\cid,\cattrs)) \coloneqq
+        & \fissue^{l,\dattrs}(\cdot,\attrs,(\cid,\cattrs)) \coloneqq
           \pcif \attrs_1 = l+1 \land \attrs \subseteq
           \lbrace \cattrs_i \rbrace_{i\in\dattrs}: \pcreturn 1;
           \pcelse \pcreturn 0 \nonumber
@@ -32,8 +32,8 @@ we rely on the functions described in \figref{fig:func-restrictions}.
         & \feval^{\dattrs}(\cdot,(\cid,\attrs),\cdot)
           \coloneqq \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},\ast)
           \nonumber \\
-        & \feval^{\sring}(\usk,(\cid,\attrs),\cdot)
-          \coloneqq \pcif \CCommit(\usk;0) \in \attrs:
+        & \feval^{\sring}((\upk,\cdot),(\cid,\attrs),\cdot)
+          \coloneqq \pcif \upk \in \attrs:
           \pcreturn (\attrs,\ast);
           \pcelse \pcreturn \bot \nonumber \\
         & \feval^{l,\dattrs}(\cdot,(\cid,\attrs),\cdot) \coloneqq
@@ -49,7 +49,8 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Open functions:}
       \begin{align}
         & \finsp^0(\cdot,\cdot,\cdot,\cdot) \coloneqq 0 \nonumber \\
-        & \finsp^{\upk}(\cdot,\usk,\cdot,\cdot) \coloneqq \CCommit(\usk;0)
+        & \finsp^{\upk}(\cdot,(\upk,\cdot),\cdot,\cdot) \coloneqq
+          \pcreturn \upk % \CCommit(\usk;0)
           \nonumber
       \end{align}
     \end{minipage}
