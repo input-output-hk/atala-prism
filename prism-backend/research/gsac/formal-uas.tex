@@ -434,7 +434,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         }        
 
         \procedure{$\OPEN(\oid,\Sig,\msg)$}{%
-          \textrm{Let}~\uid~\textrm{be s.t.}~(\oid,\scid,\Sig,\Yeval,\msg,\feval)
+          \textrm{Let}~\uid~\textrm{be s.t.}~(\cdot,\scid,\Sig,\Yeval,\cdot,
+          \feval)
           \in \SIG[\uid] \\
           (\yinsp,\iproof) \gets
           \Open(\PRVOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) \\
@@ -444,7 +445,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \hspace*{83pt}\cuid_{1-b},\cSig_{1-b},\scid_{1-b},
           \TYeval) \\
           \pcind (\tyinsp,\tiproof) \gets
-          \Open(\PRVOK[\oid],\IK[\ISR[\scid]],\\
+          \Open(\PRVOK[\oid],\PUBIK[\scid],\\
           \hspace*{107pt} \cSig_{1-b},\msg,\feval) \\
           \pcind \pcif \tyinsp \neq \yinsp: \pcreturn \bot \\
           \pcreturn (\yinsp,\iproof)
@@ -470,8 +471,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1}=
-          \lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]})$}{%
+        \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1}=$\\
+          \hspace*{5.25em}$\lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]})$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
@@ -489,11 +490,13 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1}=
-          \lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]},\msg,\feval)$}{%
+        \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1}=$\\
+          \hspace*{5em}$\lbrace (\ccid_{0,i},\ccid_{1,i})
+          \rbrace_{i\in[n]},\msg,\feval)$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \exists i\in[n]~\suchthat~
-          \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \pcreturn \bot \\
+          \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \\
+          \pcind \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
           \Yeval = (\yeval^0,\yeval^1) \gets \feval(\UK[\cuid_0],\cscid_0,
           \msg) \\
@@ -517,7 +520,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
     }
 
     \caption{Detailed oracles available in our model (2/2). Oracles for
-      obtaining credentials, signatures, and processing them.}
+      obtaining credentials, signatures, and processing them.
+    \markulf{No concurrent issuing. \adv~is stateful.}}
     \label{fig:oracles2}
   \end{figure*}
 }
@@ -591,7 +595,7 @@ we use to formalize security of \UAS schemes.
 % Certainly, the challenger
 % needs special knowledge/power such as decryption trapdoors, the ability to
 % rewind the game, or program random oracles. The approach needs thus to depend on
-% the concrete construction. \jdv{Although, for the case of \ExtractIssue and
+% the concrete construction. \jesus{Although, for the case of \ExtractIssue and
 %   \IdentifyUK, online extractability (or alternative requirements, such as
 %   non-parallel or logarithmic number of joins) is necessary.}
 
@@ -613,29 +617,37 @@ credentials, user key, and message.
 \end{definition}
 
 \begin{figure}[htp!]
-  \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
-    \textrm{\todo{This needs updating}} \\
-    \parm \gets \Setup(1^\secpar) \\
-    (\uid,\oid,\scid,\msg,\feval)
-    \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
-    \pcif \feval \notin \famfeval: \pcreturn 0 \\
-    \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
-    (\Sig = (\sig,\yeval)) \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,
-    \feval) \\
-    \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) = 0: \pcreturn 1 \\
-    \pcfor \cid \in \scid \pcdo: \\
-    \pcind \textrm{Let}~\scred^{\cid}~\textrm{be the credentials used to obtain}
-    ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,\fissue^{\cid}),\cdot)\\
-    \pcind \pcif \fissue^{\cid}(\UK[\uid],\scred^{\cid},\ATTR[\cid]) = 0: \pcreturn 1 \\
-    (\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\scid,\msg) \\
-    \pcif \yeval^0 \neq \yeval: \pcreturn 1 \\
-    (\yinsp,\iproof) \gets \Open(\PRVOK[\gid],\PUBIK[\scid],\Sig,\msg,\feval) \\
-    \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
-    = 0~\lor \\
-    \pcind \yinsp \neq \finsp^\gid((\yeval,\yeval^1),\UK[\uid],\scid,\msg)): \\
-    \pcind \pcreturn 1 \\
-    \pcreturn 0
-  }  
+  \centering
+  \scalebox{0.9}{
+    \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
+      \parm \gets \Setup(1^\secpar) \\
+      (\uid,\oid,\scid,\msg,\feval)
+      \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
+      \pcif \feval \notin \famfeval: \pcreturn 0 \\
+      \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
+      (\Sig = (\sig,\yeval)) \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,
+      \feval) \\
+      \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) = 0: \pcreturn 1 \\
+      \pcfor \cid \in \scid \pcdo: \\
+      \pcind \textrm{Parse}~\CRED[\cid]~\textrm{as}~
+      (\cdot,\cdot,\cdot,\attrs,n,\lbrace(\cid_i,\cdot)\rbrace_{i\in[n]}));
+%      \pcind \textrm{Let}~\scid^{\cid}~\textrm{be the {\cid}s used to obtain}
+%      ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,
+%      \fissue^{\cid}),\cdot)\\
+      \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot)\\
+      \pcind \pcif \fissue(\UK[\uid],\attrs,
+      (\lbrace(\cid_i,\ATTR[\cid_i])\rbrace_{i\in[n]})) = 0: \pcreturn 1 \\
+      (\yeval^0,\yeval^1) \gets \feval(\UK[\uid],(\scid,\ATTR[\scid]),\msg) \\
+      \pcif \yeval^0 \neq \yeval: \pcreturn 1 \\
+      (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) \\
+      \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
+      = 0~\lor \\
+      \pcind \yinsp \neq \finsp^\oid((\yeval,\yeval^1),
+      \UK[\uid],(\scid,\ATTR[\scid]),\msg)): \\
+      \pcind \pcreturn 1 \\
+      \pcreturn 0
+    }
+  }
   \caption{Correctness experiment for \UAS schemes.}
   \label{fig:exp-uas-corr}
 \end{figure}
@@ -973,26 +985,28 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
 \begin{figure}[htp!]
   \centering
   \scalebox{0.9}{
-    \begin{minipage}[t]{0.57\textwidth}
+    \begin{minipage}[t]{\textwidth}
       \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
         \cid \gets \adv^{\Oforgeissue}(\parm) \\
-        \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \\
-        \pcind \pcreturn 0 \\
+        \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot:
+        \pcreturn 0 \\
         % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
-        ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]}) \\
-        \hspace*{5em}\gets \ExtractIssue(\trap,\trans[\cid]) \\
+        ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]})
+        \gets \ExtractIssue(\trap,\trans[\cid]) \\
         % \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
         % \trans[\cid_i]) \\
         % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
         \pcif \fissue((\upk,\usk),\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
-        \rbrace_{i\in[n]}) = 0: \\
-        \pcind \pcreturn 1 \\
+        \rbrace_{i\in[n]}) = 0:
+        \pcreturn 1 \\
         \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
         \pcreturn 0
       }
-    \end{minipage}
-    \begin{minipage}[t]{0.5\textwidth}
+      \vspace*{0.5em}
+      
+    % \end{minipage}    
+    % \begin{minipage}[t]{\textwidth}
       \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
         (\parm,\trap) \gets \Setup(1^\secpar) \\
         (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
@@ -1017,7 +1031,9 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         \rbrace_{i\in[n]},\msg)
         \neq \yinsp \lor \yinsp \neq \yinsp':
         \pcreturn 1 \\
-        \pcif \OWNR[\scid] \notin \HU \cup \CU: \pcreturn 1 \\
+%        \textrm{Let~}\scid \gets \lbrace \cid_i \rbrace_{i\in[n]};
+        \pcif \OWNR[\lbrace \cid_i \rbrace_{i\in[n]}] \notin \HU \cup \CU:
+        \pcreturn 1 \\
         \pcreturn 0        
       }      
     \end{minipage}
@@ -1148,6 +1164,7 @@ adversary has access to the oracles in $\Oframe \gets
       \rbrace_{i\in[n]},\msg)
       \neq \yinsp \lor \yinsp \neq \yinsp': \\
       \pcind \pcreturn 1 \\
+      \textrm{Let~}\scid \gets \lbrace \cid_i \rbrace_{i\in[n]};
       \pcif \OWNR[\scid] \in \HU \land
       (\cdot,\cdot,\Sig,\Yeval,\msg,\feval) \notin \SIG[\OWNR[\scid]]: \\
       \pcind \pcreturn 1 \\
@@ -1232,7 +1249,7 @@ in \figref{fig:nizkrels}.
 
 From them, we build \CUASGen as follows.
 
-\paragraph{$\parm \gets \Setup(\secpar,\AttrSpace)$.} %
+\paragraph{$\parm \gets \Setup(\secpar)$.} %
 The setup process essentially generates the public parameters for all the
 building blocks. It runs $\Cparm \gets \CSetup(\secpar)$, $\SBCMparm \gets
 \SBCMSetup(\secpar)$, $\Sparm \gets \SSetup(\secpar)$, $\Eparm \gets
@@ -1240,7 +1257,7 @@ building blocks. It runs $\Cparm \gets \CSetup(\secpar)$, $\SBCMparm \gets
 (\secpar)$, $\NIZKcrs_{\Sign} \gets \NIZKSetup^{\NIZKRel_{\Sign}}(\secpar)$, and
 $\NIZKcrs_{\Open} \gets \NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$. Return $
 (\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},
-\NIZKcrs_{\Open},\AttrSpace)$. % Many of these parameter setup algorithms can
+\NIZKcrs_{\Open})$. % Many of these parameter setup algorithms can
 % actually be run by separate entities. For simplicity of exposition, we bundle
 % them together here.
 
@@ -1387,6 +1404,9 @@ the proofs to \appref{app:uas-proofs}.
   probability.
 \end{theorem}
 
+\markulf{Put proofs here for XXXX?}\jesus{I can't parse XXXX.}
+
+
 \subsection{\CUASGen variants}
 \label{ssec:variants}
 
@@ -1395,26 +1415,46 @@ where generalization is achieved by allowing system designers to specify
 concrete \fissue, \feval and \finsp functions depending on their needs. Note
 however that alternative constructions are possible, that are close to \CUASGen,
 but differ in key aspects while still meeting the \UAS model. We briefly
-describe them next, as we leverage them to build related schemes. Security
-proofs are deferred to \appref{app:uas-variants-proofs}
-
-\paragraph{$\CUASGen^{prv-iss}$: Tweaking $\NIZKRel_{\Sign}$ for issuer
-  privacy.} %
-In \CUASGen, it is required that the identity of the issuer of each credential
-used to produce a signature is revealed. This seems reasonable for usual
-situations since, intuitively, it would seem hard for a verifier to accept a
-signature produced with a credential without knowing if the issuer is
-trustworthy. However, there may also be cases in which relaxations are
-acceptable. For instance, it may be enough to know that the issuer belongs to
-some set of well-known issuers. From a more theoretical point of view, this is
-also interesting, as it allows to mimic ring signatures from \UAS constructions.
-\todo{XXX}
+describe them next, as we leverage them to build related schemes. \todo{Security
+proofs are deferred to \appref{app:uas-variants-proofs}.}
 
 \paragraph{$\CUASGen^{usr-iss}$: Collapsing issuers and users.} %
 On occasions, it may be useful to not make a distinction between issuers and
 users. For instance, for credential delegation, or in decentralized identity
-systems. In both cases, users may end up acting as issuers themselves.
-\todo{XXX}
+systems. In both cases, users may end up acting as issuers themselves. The
+algorithms are as in \CUASGen, except that there is no \UKeyGen -- or, rather,
+the steps run by \UKeyGen are exactly the same as in \IKeyGen. Concretely,
+$\usk \gets \isk$ and $\upk \gets \ipk$, where \isk and \ipk are generated
+as in \IKeyGen.
+
+\paragraph{$\CUASGen^{hide-iss}$: $\NIZKRel_{\Sign}$ with issuer hiding.} %
+In \CUASGen and $\CUASGen^{usr-iss}$, it is required that the identity of the
+issuer of each credential involved in a signature is revealed. This seems
+reasonable for usual situations since, intuitively, it seems hard that a
+verifier accepts a signature produced with a credential without knowing if the
+credential's issuer is trustworthy. However, there may be cases in which
+relaxations are acceptable. For instance, it may be enough to know that the
+issuer belongs to some set of well-known issuers. We merge this with the
+previous extension that collapses issuers and users. Although it would also be
+possible to apply the modification to \CUASGen independently, from a theoretical
+point of view, the combined extension interesting, as it allows to mimic ring
+signatures. 
+
+We show the modified NIZK relation for signing in \figref{fig:nizk-ring}. For
+notational simplicity, we restrict to just one credential per signature.
+%
+Modelling-wise, no changes are needed. Perhaps notably, in this case, the
+anonymity property is still required to enforce that both challenge signatures
+are associated to the same set of (potential) issuers -- otherwise, it is
+trivial to distinguish signatures.
+
+\begin{figure}[ht!]
+  \scalebox{0.9}{
+    \input{figures/nizk-ring.tex}
+  }
+  \caption{$\NIZKRel^{hide-iss}_{\Sign}$ relation for $\CUASGen^{hide-iss}$.}
+  \label{fig:nizk-ring}
+\end{figure}
 
 %%% Local Variables:
 %%% mode: latex

@@ -17,13 +17,14 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Issuance functions:}
       \begin{align}
         & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{\sring}((\upk,\cdot),\attrs,\cdot) \coloneqq \pcif \attrs
-          \subseteq \sring \land \upk \in \sring: \pcreturn 1;
-          \pcelse \pcreturn 0 \nonumber \\
+        & \fissue^{single,L}((\upk,\cdot),\cdot,\cdot) \coloneqq
+          \pcreturn \upk \notin L
+          \nonumber \\
+        & \fissue^{\sring}((\upk,\cdot),\attrs,\cdot) \coloneqq
+          \pcreturn (\attrs \subseteq \sring \land \upk \in \sring) \nonumber \\
         & \fissue^{l,\dattrs}(\cdot,\attrs,(\cid,\cattrs)) \coloneqq
-          \pcif \attrs_1 = l+1 \land \attrs \subseteq
-          \lbrace \cattrs_i \rbrace_{i\in\dattrs}: \pcreturn 1;
-          \pcelse \pcreturn 0 \nonumber
+          \pcreturn (\attrs_1 = l+1 \land \attrs \subseteq
+          \lbrace \cattrs_i \rbrace_{i\in\dattrs}) \nonumber
       \end{align}
       
       \textbf{Signature evaluation functions:}
@@ -45,7 +46,7 @@ we rely on the functions described in \figref{fig:func-restrictions}.
   \vspace*{1em}
   
   \scalebox{0.9}{
-    \begin{minipage}[t]{0.5\textwidth}
+    \begin{minipage}[t]{\textwidth}
       \textbf{Open functions:}
       \begin{align}
         & \finsp^0(\cdot,\cdot,\cdot,\cdot) \coloneqq 0 \nonumber \\
@@ -84,8 +85,8 @@ We adopt the model in \cite{bsz05}. In this abstraction
 of group signatures, the opener returns an index uniquely identifying the group
 member that created a signature, along with a correctness proof. For ease of
 exposition, assume that, w.l.o.g., this index is just the public key that the
-group member chooses when joining the group\footnote{The user public key is
-  assumed to be accessible from a public table in \cite{bsz05}, so it is direct
+group member chooses\markulf{can he choose an existing public key?} when joining the group\footnote{The user public key is
+  assumed to be accessible from a public table in \cite{bsz05}, so it is easy
   to translate the public key into an index, if needed.}. A group signature
 scheme, according to \cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign,
 \Verify, \Open and \Judge algorithms, as well as an $\langle\Obtain,\Issue
@@ -145,34 +146,31 @@ reference, we replicate the security games in \figref{fig:model-gs}.
 \end{figure}
 
 \subsubsection{\CUASGS construction.} %
-We show that the $(\fissue^1,\feval^0,\finsp^{\upk})$-\CUASGen restriction, is
-a secure group signature scheme according to \cite{bsz05}. We first quickly
-define the algorithms, and then prove security.
+We show that the $(\fissue^{single,L},\feval^0,\finsp^{\upk})$-\CUASGen
+restriction, is a secure group signature scheme according to \cite{bsz05}.
+Observe that the $\fissue^{single,L}$ function is further parameterized with
+a list $L$ maintained by the issuer and must be fetched by users prior to
+joining. It restricts that any user can have at most one credential (associated
+to a same user key pair). We first quickly define the algorithms, and then
+prove security.
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs the \Setup algorithm
   of \CUASGen, and one instance of \IKeyGen and \OKeyGen. Assigns the public
   keys to \gpk.
-\item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \UKeyGen from \CUASGen, and
-  computes $\CCommit(\usk;0)$ as \upk.
+\item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \UKeyGen from \CUASGen.
 \item[$\langle \cred,\utrans \rangle \gets
   \langle\Obtain(\usk,\ipk),\Issue(\isk,\upk)\rangle$.] Runs $\langle\Obtain,
-  \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$. Note that, to
-  constraint to only one credential per user, it suffices to require the user
-  to prove that the ``randomness'' it uses when committing to its private key
-  is actually $0$, and check whether the received commitment has been seen
-  before.
+  \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$.
 \item[$\sig \gets \Sign(\gpk,\cred,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
-  runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen.
-  Simply returns \sig.
+  runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen --
+  note that $0$ is the constant output of $\feval^0$.
 \item[$1/0 \gets \Verify(\gpk,\sig,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
   returns whatever $\Verify(\opk,\ipk,\sig,0,\msg,\feval^0)$ from \CUASGen
   outputs.
 \item[$(\upk,\pi) \gets \Open(\gpk,\osk,\trans,\sig,\msg)$.] Parses \gpk as
   $(\ipk,\opk)$, and returns whatever \CUASGen outputs in $\Open(\osk,\ipk,\sig,
-  0,\msg,\feval^0)$. Internally, the call to \Open runs
-  $\finsp^{\upk}$, where $\upk = \CCommit(\usk;0)$, just as proved in $\langle
-  \Obtain,\Issue\rangle$.
+  0,\msg,\feval^0)$. Internally, the call to \Open runs $\finsp^{\upk}$.
 \item[$1/0 \gets \Judge(\gpk,\pi,\upk,\sig,\msg)$.] Parses \gpk as $(\ipk,
   \opk)$, and returns whatever \CUASGen outputs in $\Judge(\opk,\upk,\pi,\sig,
   0,\msg)$.
@@ -191,7 +189,7 @@ in \appref{app:related-proofs}.
 \begin{theorem}[Traceability of \CUASGS]
   If the base \CUASGen construction has unforgeable signing according to
   \defref{def:sign-forge-uas}, then \CUASGS is a traceable group signature
-  scheme.
+  scheme.\markulf{Hiding of $Com(\usk;0)$?}
 \end{theorem}
 
 \begin{theorem}[Non-frameability of \CUASGS]
@@ -220,10 +218,10 @@ to \cite{bkm06} for details on the syntax and definitions.
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,rs}(1^\secpar)$}{%
         ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
         (i_0,i_1,R,\msg,\st) \gets \adv^{SIGN}(\pk_1,\dots,\pk_n) \\
-        \pcif % R \not\subseteq \lbrace [n] \rbrace \lor
-        \lbrace \pk_{i_0},\pk_{i_1} \rbrace \notin R \lor %\\
-        i_0 = i_1: \pcreturn \bot \\
-        \sig \gets Sign(\sk_{i_b},R,\msg)) \\
+        \pcif R \not\subseteq \lbrace \pk_i \rbrace_{i\in[n]} \lor
+        \lbrace \pk_{i_0},\pk_{i_1} \rbrace \not\subseteq R~\lor \\ %\\
+        \pcind i_0 = i_1: \pcreturn \bot \\
+        \sig \gets Sign(\sk_{i_b},R,\msg) \\
         b^* \gets \adv(\sig,\st) \\
         \pcreturn b^*
       }        
@@ -235,71 +233,66 @@ to \cite{bkm06} for details on the syntax and definitions.
         ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
         (R,\sig,\msg) \gets \adv^{SIGN,CORR}(\pk_1,\dots,\pk_n) \\
         \pcif Verify(R,\sig,\msg) = 0: \pcreturn 0 \\
-        \pcreturn 1~\pcif R \subseteq [n] \setminus CU = \emptyset~\land \\
-        \pcind \adv~\textrm{never queried}~SIGN(\cdot,R,\msg) \\
-        \pcreturn 0
+        \pcreturn (R \subseteq \lbrace \pk_i \rbrace_{i\in[n]} \setminus
+        CU~\land \\
+        \pcind \adv~\textrm{never queried}~SIGN(\cdot,R,\msg))
       }       
     \end{minipage}      
   }
-  \caption{Security games for ring signatures \cite{bkm06}. The SIGN oracle
-    accepts a $(i,R,\msg)$ tuple, with $pk_i \in R$, and
-    returns $\sig \gets Sign(\sk_i,R,\msg)$. The oracle $CORR$ accepts an
-    index $i$, and leaks $\sk_i$ to $\adv$. Corrupted user indexes are
-    added to $CU$.}
+  \caption{Security games for ring signatures \cite{bkm06}. The $SIGN$ oracle
+    accepts $(i,R,\msg)$ tuples, with $pk_i \in R$, adds the tuple to a list of
+    queries, and returns $\sig \gets Sign(\sk_i,R,\msg)$. $CORR$
+    accepts an index $i$, and leaks $\sk_i$ to $\adv$. Corrupted users are added
+    to $CU$.}
   \label{fig:model-rs}  
 \end{figure}
 
 
 \subsubsection{\CUASRing Construction.} %
-We first define in \eref{eq:sign-prv} an alternative NP relation for signing,
-$\NIZKRel_{\Sign}^{prv}$, which we use to replace $\NIZKRel_{\Sign}$ in \CUASGen.
-It is essentially the same, except that the issuer public key is kept private,
-and we add an extra check for proving that the issuer public key is one of the
-keys in the ring. We refer to the resulting \CUASGen construction as
-$\CUASGen^{\Sign-prv}$. Since, in the following syntax, we limit to one
-credential per signature, it is easy to see that the modified relation for
-signing does not affect security.
+Building a ring signature scheme according to the model in \figref{fig:model-rs}
+is essentially a $(\fissue^{\sring},\feval^{\sring},\finsp^0)$-restriction of
+our $\CUASGen^{hide-iss}$ construction. Concretely, for any desired ring, the
+signer (who is also the issuer) simply must set $\sipk=\sring$. The construction
+is as follows:
 
-\begin{align}
-  & \NIZKRel_{\Sign}^{prv} \coloneqq \lbrace (\usk,\cred,\yeval^1,\yinsp,r,r',
-    \ipk),(\msg,\feval,\yeval^0,\ceval,\cinsp,\Eek,\widetilde{\Eek},\sring): \nonumber \\
-  & \hspace*{6.405em}\ceval = \EEnc(\widetilde{\Eek},\yeval^1;r) \land
-    \cinsp = \EEnc(\Eek,\yinsp;r') \land \nonumber \\
-  & \hspace*{6.40em}(\yeval^0,\yeval^1) = \feval(\usk,\cred,\msg) \land
-    \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\cred,\msg) \nonumber \\
-  & \hspace*{6.40em}\exists \ipk \in \sring~\suchthat~\SBCMVerify(\ipk,\cred,\usk,
-    \sring) = 1) \rbrace \label{eq:sign-prv}
-\end{align}
+% \begin{align}
+%   & \NIZKRel_{\Sign}^{prv} \coloneqq \lbrace (\usk,\cred,\yeval^1,\yinsp,r,r',
+%     \ipk),(\msg,\feval,\yeval^0,\ceval,\cinsp,\Eek,\widetilde{\Eek},\sring): \nonumber \\
+%   & \hspace*{6.405em}\ceval = \EEnc(\widetilde{\Eek},\yeval^1;r) \land
+%     \cinsp = \EEnc(\Eek,\yinsp;r') \land \nonumber \\
+%   & \hspace*{6.40em}(\yeval^0,\yeval^1) = \feval(\usk,\cred,\msg) \land
+%     \yinsp = \finsp((\yeval^0,\yeval^1),\usk,\cred,\msg) \nonumber \\
+%   & \hspace*{6.40em}\exists \ipk \in \sring~\suchthat~\SBCMVerify(\ipk,\cred,\usk,
+%     \sring) = 1) \rbrace \label{eq:sign-prv}
+% \end{align}
 
-From it, we show that the $(\fissue^{\sring},\feval^{\attrs},\finsp^0)$-
-$\CUASGen^{\Sign-prv}$ restriction, is a secure ring signature scheme. We
-restrict to one credential per signature.
+% From it, we show that the $(\fissue^{\sring},\feval^{\attrs},\finsp^0)$-
+% $\CUASGen^{\Sign-prv}$ restriction, is a secure ring signature scheme. We
+% restrict to one credential per signature.
 
-\begin{description}  
-\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in $\CUASGen^{\Sign-prv}$.  
-\item[$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.] As in
-  $\CUASGen^{\Sign-prv}$, using $\fissue^{\sring}$.  
-\item[$(\opk,\osk) \gets \OKeyGen(\parm,\finsp).$] As in $\CUASGen^{\Sign-prv}$,
-  restricting \finsp to be $\finsp^0$.  
-\item[$\usk \gets \UKeyGen(\parm).$] Can only be run after \IKeyGen. Let 
-  $\usk \gets \isk$. Note that this does not affect security, as long as
-  $\isk \getr \AttrSpace$.
+\begin{description}
+%\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in $\CUASGen^{hide-iss}$.
+\item[$((\pk_1,\sk_1),...,(\pk_n,\sk_n)) \gets KeyGen(\secpar)$.] Runs
+  $\parm \gets \Setup(\secpar)$ from $\CUASGen^{hide-iss}$, as well as $n$
+  instances of $(\ipk_i,\isk_i) \gets \IKeyGen(\parm,\fissue^{\sring})$, and
+  $(\opk,\osk) \gets \OKeyGen(\parm,\finsp^0)$.
+  \jesus{This syntax restricts to fixing the rings at setup time. But the
+    RS syntax in \cite{bkm06} is also somehow static already, in that it does
+    not allow adding users on the fly. Is it ok?}
 \item[$\langle \cred,\bot,\utrans,\bot \rangle \gets
   \langle \Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle.$]
-  The user picks a set of public keys from a publicly available list of issuers
-  (users), i.e. $\sring \gets \lbrace \ipk_i \rbrace_{i \in [t]}$, for some $t$.
-  Then, runs the $\langle \Obtain,\Issue \rangle$ protocol as in
-  $\CUASGen^{\Sign-prv}$, acting both as user and as issuer, using
-  $\fissue^{\sring}$ as issuance function, and $\attrs \gets \sring$.
+  A user, with $\usk=\isk_i$ and $\upk=\ipk_i$ for some $i \in [n]$, self-issues
+  to itself a credential for the ring \sring chosen at setup time. Then, runs
+  the $\langle \Obtain,\Issue \rangle$ protocol as in $\CUASGen^{hide-iss}$,
+  acting both as user and as issuer, using $\fissue^{\sring}$ as issuance
+  function, and $\attrs \gets \sring$.
 \item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,\msg,\feval).$] As in
-  $\CUASGen^{\Sign-prv}$, using $\feval^{\sring}$ as sign evaluation function,
-  using as credential for signing the credential obtained in the desired
-  $\langle \Obtain,\Issue \rangle$ session and, as \opk, any previously
-  registered \opk (i.e., such that $\finsp=\finsp^0$).
-\item[$1/0 \gets \Verify(\opk,\sring,\sig,\yeval,\msg,\feval).$] As in
-  $\CUASGen^{\Sign-prv}$. Note that $\feval=\feval^{\attrs}$.
-\item[$\Open$ and $\Judge$.] As in $\CUASGen^{\Sign-prv}$. Note that
-  $\finsp=\finsp^0$.
+  $\CUASGen^{hide-iss}$, using $\feval^{\sring}$ as sign evaluation function,
+  using as signing credential the self-issued credential.
+\item[$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval).$] As in
+  $\CUASGen^{hide-iss}$. Note that $\sipk=\sring$, and $\feval=\feval^{\sring}$.
+% \item[$\Open$ and $\Judge$.] As in $\CUASGen^{\Sign-prv}$. Note that
+%   $\finsp=\finsp^0$.
 \end{description}
 
 \paragraph{Security of \CUASRing.} %
@@ -326,23 +319,25 @@ disclosure. Therein, an anonymous credential scheme is
 defined via $OrgKeyGen$ (which we rename to $IssKeyGen$), and $UserKeyGen$
 algorithms (roughly equivalent to
 \IKeyGen and \UKeyGen for \UAS), and $Obtain,Issue$ and $Show,Verify$
-interactive protocols. The issuance interactive protocol is equivalent to
-the issuance protocol in \UAS. Similarly, $Show,Verify$ is equivalent to
+interactive protocols. The issuance interactive protocol corresponds to
+the issuance protocol in \UAS. Similarly, $Show,Verify$ corresponds to
 the interactive extension of \Sign and \Verify in \UAS, which we show how
 to build in \appref{app:interactive-uas}. The security definitions rely on
 $HU, CU, ObtIss, Obtain, Issue,Show$, and $LoR$ oracles, which are essentially
 equivalent to our \HUGEN, \CUGEN, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb
 oracles. We refer to \cite{fhs19} for the full details. For ease of reference,
-we summarize the security definitions in \figref{fig:model-ac}, with inocuous
-adaptations to make them more suitable for comparison with our definitions.
+we summarize the security definitions in \figref{fig:model-ac}.% , with inocuous
+% adaptations to make them more suitable for comparison with our definitions --
+% namely, we explicitly add a common setup process which is part of $IssKeyGen$
+% in \cite{fhs19}.
 
 \begin{figure}[ht!]
   \centering
   \scalebox{0.9}{      
     \begin{minipage}[t]{0.5\textwidth}        
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,ac}(1^\secpar)$}{%
-        \parm \gets \Setup(1^\secpar) \\
-        (\ipk,\isk) \gets IssKeyGen(\parm) \\        
+ %       \parm \gets \Setup(1^\secpar) \\
+        (\ipk,\isk) \gets IssKeyGen(1^\secpar) \\        
         b^* \gets \adv^{HU,CU,Obtain,Show,LoR}(\isk) \\
         \pcreturn b^*
       }        
@@ -351,40 +346,41 @@ adaptations to make them more suitable for comparison with our definitions.
   \scalebox{0.9}{      
     \begin{minipage}[t]{.5\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,ac}(1^\secpar)$}{%
-        \parm \gets \Setup(1^\secpar) \\
-        (\ipk,\isk) \gets IssKeyGen(\parm) \\        
+%        \parm \gets \Setup(1^\secpar) \\
+        (\ipk,\isk) \gets IssKeyGen(1^\secpar) \\        
         (D,\st) \gets \adv^{HU,CU,ObtIss,Issue,Show}(\ipk) \\
         \langle \cdot,(b,\utrans) \rangle
         \gets \langle \adv(\st),\Verify(\ipk,D) \rangle \\
-        \pcif b = 1 \land \nexists j~\suchthat~(\OWNR[j] \in \CU
-        \land D \subseteq \ATTR[j]): \\% \forall j, \OWNR[j] \in \CU
+        \pcreturn (b = 1 \land \nexists j~\suchthat \\
+        \pcind (\OWNR[j] \in \CU
+        \land D \subseteq \ATTR[j])) % \forall j, \OWNR[j] \in \CU
         % \implies D \not\subseteq \ATTR[j]: \\
-        \pcind \pcreturn 1 \\
-        \pcreturn 0
+        %\pcind \pcreturn 1 \\
+        %\pcreturn 0
       }       
     \end{minipage}      
   }
   \caption{Security games for anonymous credentials with selective disclosure
-    \cite{fhs19}. \OWNR and \ATTR tables are essentially as in
-    \secref{ssec:model-uas}.}
+    \cite{fhs19}. \OWNR and \ATTR tables are essentially as in \UAS. \adv~wins
+    the unforgeability game if it authenticates successfully while revealing
+    attributes not contained in adversarially controlled credentials.}
   \label{fig:model-ac}  
 \end{figure}
 
 \subsubsection{\CUASAC Construction.} %
 We show that a $(\fissue^1,\feval^{\dattrs},\finsp^0)$-\CUASGen restriction, is
 a secure anonymous credential scheme according to the model in \cite{fhs19}. We
-first quickly define the algorithms, and then prove security. For better
-alignment with \UAS, we add a common setup process which is part of $IssKeyGen$
-in \cite{fhs19}. The change is inocuous functionality- and security-wise.
+first quickly define the algorithms, and then prove security.
 
 \begin{description}
-\item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar,
-  \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
-  \CUASGen construction. Returns $\parm \gets (\parm',\opk)$.
-\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] Runs \IKeyGen from our
-  \CUASGen construction, setting $\fissue^1$ as issuance function.
-\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \UKeyGen from the
-  \CUASGen construction, and computes $\CCommit(\usk;0)$ as \upk.
+% \item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar,
+%   \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
+%   \CUASGen construction. Returns $\parm \gets (\parm',\opk)$.
+\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] $\parm' \gets
+  \Setup(1^\secpar)$ and $(\opk,\osk) \gets \OKeyGen(\parm',
+  \finsp^0)$ from \CUASGen, and sets $\parm \gets (\parm',\opk)$. Then,
+  runs \IKeyGen, also from \CUASGen, setting $\fissue^1$ as issuance function.
+\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \UKeyGen from \CUASGen.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
   Runs the $\langle \Obtain,\Issue \rangle$ protocol from \CUASGen, using
@@ -412,6 +408,7 @@ available in \appref{app:related-proofs}.
   \label{thm:forge-cuasac}
   If the base \CUASGen construction has signature unforgeability according to
   \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
+  \markulf{Hiding of $pk_U$?}
 \end{theorem}
 
 \subsection{Delegatable Anonymous Credentials}
@@ -419,18 +416,19 @@ available in \appref{app:related-proofs}.
 
 We give a simple definition for a Delegatable Anonymous Credentials (DAC)
 scheme, extending \cite{fhs19} and inspired by \cite{bcc+09}. Unlike the latter,
-our simple scheme built from \CUASGen does not ensure privacy of the delegation
-chain -- which could be achieved by making \feval output projective proofs like
-in \cite{bcc+09}, but since our goal is to showcase the feasibility of building
-DAC from \UAS, we leave that out for brevity. Our simple scheme does, however,
-ensure that a (not top-level) issuer can only delegate attributes contained in a
-credential it owns. Also, for simplicity, we restrict to the case of using one
-credential per signature/interactive credential presentation, and assume that
-all parties use the same opener and \finsp function.
+our simple scheme built from $\CUASGen^{usr-iss}$ does not ensure privacy of the
+delegation chain -- which could be achieved by making \feval output projective
+proofs like in \cite{bcc+09}, but since our goal is to showcase the feasibility
+of building DAC from \UAS, we leave that out for brevity. Our simple scheme
+does, however, ensure that a (not top-level) issuer can only delegate attributes
+contained in a credential it owns. Also, for simplicity, we restrict to the case
+of using one credential per signature/interactive credential presentation, and
+assume that all parties use the same opener and \finsp function.
 %
-The functionality is thus defined as in \secref{ssec:related-models-ac}, i.e.,
-we have $Setup$, $IssKeyGen$ and $UserKeyGen$ algorithms, and $\langle Obtain,
-Issue \rangle$ and $\langle Show,Verify \rangle$ interactive protocols.
+The functionality is thus defined almost as in \secref{ssec:related-models-ac},
+i.e., we have $Setup$, $IssKeyGen$ algorithms, and $\langle Obtain,Issue\rangle$
+and $\langle Show,Verify \rangle$ interactive protocols; but we do not have
+$UserKeyGen$, as this collapses with $IssKeyGen$.
 %
 In the model for this setting, since there are multiple issuers, in addition
 to the oracles in \secref{ssec:related-models-ac}, we use $HI$ and $CI$ oracles,
@@ -440,11 +438,11 @@ anonymity properties are direct, constraining the adversary to output challenge
 credentials and signatures with the same delegation chain. For unforgeability,
 we still require that no adversary can authenticate using a set of attributes
 that have not been issued to a corrupt user. In addition, we require that for
-any successful authentication using a level-$n$ credential, we
-can extract a chain of credentials of length $n$ such that each level-$i$
+any successful authentication using a level-$l$ credential, we
+can extract a chain of credentials of length $l$ such that each level-$i$
 credential can be used successfully to authenticate a level-$(i+1)$ credential
-down to the level-$n$ credential, and the attributes revealed in the
-level-$n$ authentication are contained in all the credentials up the chain.
+down to the level-$l$ credential, and the attributes revealed in the
+level-$l$ authentication are contained in all the credentials up the chain.
 
 \begin{figure}[ht!]
   \centering
@@ -472,16 +470,16 @@ level-$n$ authentication are contained in all the credentials up the chain.
     \begin{minipage}[t]{.55\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,dac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
-        (D=(n,D'),\ipk_n,\st) \gets
+        (D=(l,D'),\ipk_l,\st) \gets
         \adv^{\mathcal{O}_{forge}}(\parm) \\
         \langle\cdot,(b,\utrans)\rangle \gets
-        \langle \adv(\st),\Verify(\ipk_n,D)\rangle \\
+        \langle \adv(\st),\Verify(\ipk_l,D)\rangle \\
         \pcif b = 0: \pcreturn 0 \\
         \pcif \nexists j~\suchthat~(\OWNR[j] \in \CU
         \land D \subseteq \ATTR[j]): \pcreturn 1 \\        
-        (ipk_0, \lbrace (\ipk_i,\cred_i) \rbrace_{i \in [1,n]})
+        (ipk_0, \lbrace (\ipk_i,\cred_i) \rbrace_{i \in [1,l]})
         \gets ExtractChain(\utrans) \\ 
-        \pcif \exists i \in [1,n]~\suchthat~
+        \pcif \exists i \in [1,l]~\suchthat~
         \iid = \ISR[\ipk_{i-1}] \notin \CI~\land \\
         \pcind D' \not\subseteq \ATTR[\iid]) \land
         D' \subseteq \ATTR[\ISR[\ipk_i]]: \\
@@ -491,92 +489,89 @@ level-$n$ authentication are contained in all the credentials up the chain.
     \end{minipage}      
   }
   \caption{Security games for delegatable anonymous credentials with selective
-    disclosure based on \cite{fhs19}. $\mathcal{O}_{iss-anon} \gets \lbrace HU,
-    CU,HI,CI,Obtain,Issue,ObtIss,Show,IssLoR\rbrace$, $\mathcal{O}_{sig-anon}
-    \gets \lbrace HU,CU,HI,CI,Obtain,Issue,ObtIss,Show,SigLoR\rbrace$.
-    $\mathcal{O}_{forge} \gets \lbrace HU,CU,HI,CI,Obtain,ObtIss,Issue,Show
-    \rbrace$. $IssLor$ is equivalent to \OBTCHALb in \UAS, whereas $SigLor$ is
-    equivalent to \CHALb. Also, \OWNR and \ATTR tables are essentially as in
-    \secref{ssec:model-uas}. $\ISR[\ipk]$, in this case, returns the identifier
-    of the issuer with public key \ipk. With $D =
-    (n,D')$ we mean that the first attribute in the revealed set $D$ is $n$,
-    which denotes the level of the credential used for authentication.}
+    disclosure based on \cite{fhs19}. $\mathcal{O}_{iss-anon} \gets \lbrace HI,
+    CI,Obtain,Issue,ObtIss,Show,IssLoR\rbrace$, $\mathcal{O}_{sig-anon} \gets
+    \lbrace HI,CI,Obtain,Issue,ObtIss,Show,SigLoR\rbrace$. $\mathcal{O}_{forge}
+    \gets \lbrace HI,CI,Obtain,ObtIss,Issue,Show\rbrace$. $IssLor$ corresponds
+    to \OBTCHALb in \UAS, whereas $SigLor$ corresponds to \CHALb. Also, \OWNR
+    and \ATTR tables are essentially as in \secref{ssec:model-uas}.
+    $\ISR[\ipk]$, in this case, returns the identifier of the issuer with public
+    key \ipk. With $D = (l,D')$ we mean that the first attribute in the revealed
+    set $D$ is $l$, which denotes the level of the credential used for
+    authentication.}
   \label{fig:model-dac}  
 \end{figure}
 
 \subsubsection{\CUASDAC Construction.} %
-We next give a construction of a delegatable AC (DAC) scheme, based on a
-$(\fissue^{n,\dattrs},\feval^{n,\dattrs},\finsp^0)$-\CUASGen restriction.
-In a DAC scheme, all users are (or may be) also issuers. We only distinguish
-between top-level issuers, who have level $n=0$, and lower-level issuers, who
-have level $n>0$. In our \CUASDAC scheme, we assume that the first attribute
-(after the user's secret key) encodes the level of the credential. That is,
-$\attrs_1=n$, for a credential of level $n$. In addition, all users (i.e., with
-$n>0$) who want to delegate have to publicly list:
+We next give a construction of a delegatable AC (DAC) scheme, in the shape of
+a $(\fissue^{l,\dattrs},\feval^{l,\dattrs},\finsp^0)$-$\CUASGen^{usr-iss}$
+restriction. In a DAC scheme, all users are (or may be) also issuers. We only
+distinguish between top-level issuers, who have level $l=0$, and lower-level
+issuers, who have level $l>0$. In our \CUASDAC scheme, we assume that the first
+attribute (after the user's secret key) encodes the level of the credential.
+That is, $\attrs_1=l$, for a credential of level $l$. In addition, all users
+(i.e., with $l>0$) who want to delegate have to publicly list:
 
 \begin{enumerate}
-\item The level $n$ of the credential they delegate.
+\item The level $l$ of the credential they delegate.
 \item Their public key \ipk.
-\item An \UAS signature proving knowledge of a credential of level $n$, and over
-  the attributes that this level-$n$ issuer is delegating.
+\item An \UAS signature proving knowledge of a credential of level $l$, and over
+  the attributes that this level-$l$ issuer is delegating.
 \item The \ipk of the parent issuer.
-\item The $\fissue^{n,\dattrs}$ function they will require for delegating.
-\item An $\feval^{n,\dattrs}$ function used to produce the signature at item 2.
+\item The $\fissue^{l,\dattrs}$ function they will require for delegating.
+\item An $\feval^{l,\dattrs}$ function used to produce the signature at item 3.
 \end{enumerate}
 
 We assume that, from an \ipk, it is possible to find the corresponding issuer
 (e.g., using the previously mentioned public list). The mentioned
-$\fissue^{n,\dattrs}$ functions must follow the pattern in \figref{fig:func-restrictions}.
+$\fissue^{l,\dattrs}$ functions must follow the pattern in \figref{fig:func-restrictions}.
 Namely, the issuance function checks that the first requested attribute equals
-$n+1$, and that all requested attributes are a subset of the attribute set
-\dattrs being delegated by the level-$n$ issuer. In addition, signature
-evaluation functions $\feval^{n,\dattrs}$, also shown in \figref{fig:func-restrictions},
+$l+1$, and that all requested attributes are a subset of the attribute set
+\dattrs being delegated by the level-$l$ issuer. In addition, signature
+evaluation functions $\feval^{l,\dattrs}$, also shown in \figref{fig:func-restrictions},
 must reveal the level of the credential used to produce the \UAS signature at
-item 2, as well as the set of attributes \dattrs that the level-$n$ issuer
+item 2, as well as the set of attributes \dattrs that the level-$l$ issuer
 delegates. Verifiers can then trivially check if the set of revealed attributes
 are contained within the attributes delegatable by the parent issuer%
 \footnote{Additional checks may be added in both functions, but this is
-  the bare minimum.}. \figref{fig:XXX} depicts a sample of the delegation chain
-that this structure creates.
+  the bare minimum.}.
 %
 From this high-level description, we define the algorithms of \CUASDAC:
 
 \begin{description}
-\item[$\parm \gets \Setup(1^\secpar)$.]  Runs $\parm' \gets \Setup(1^\secpar,
-  \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
-  \CUASGen construction. Returns $\parm \gets (\parm',\opk)$. Note that
-  $\finsp^0$ can be replaced by any desired opening function.
-\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] If $n=0$, simply run \IKeyGen as
-  in \CUASAC. If $n>0$, note that this is a user who wants to delegate a
-  previously obtained credential \cred. Thus, it has already run $UserKeyGen$
-  below, which internally also runs \IKeyGen as in \CUASGen and sets $\usk \gets
-  \isk$. In addition, the level-$n$ issuer picks a random message $r$ and
-  computes $\Sig = (\sig,\yeval) \gets \Sign(\usk,\opk,\cred,r,
-  \feval^{n,\dattrs})$, for the \dattrs set it wants to reveal -- which must
+\item[$\parm \gets \Setup(1^\secpar)$.]  Runs $\parm' \gets \Setup(1^\secpar)$
+  and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
+  $\CUASGen^{usr-iss}$ construction. Returns $\parm \gets (\parm',\opk)$. Note
+  that $\finsp^0$ can be replaced by any desired opening function.
+\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] If $l=0$, simply run \IKeyGen as
+  in $\CUASGen^{usr-iss}$. If $l>0$, this level-$l$ issuer picks a random
+  message $r$ and computes $\Sig = (\sig,\yeval) \gets \Sign(\usk,\opk,\cred,r,
+  \feval^{l,\dattrs})$, for the \dattrs set it wants to reveal -- which must
   include the attributes to delegate, and the credential level. It then
-  publishes $(n,\ipk,\Sig,\ipk^{n-1},\fissue^{n,\dattrs},\feval^{n,\dattrs})$,
-  where $\ipk^{n-1}$ is the public key of the parent issuer,
-  $\fissue^{n,\dattrs}$ is an issuance function as described in
-  \figref{fig:func-restrictions}, and $\feval^{n,\dattrs}$ is also as in
+  publishes $(l,\ipk,\Sig,\ipk^{l-1},\fissue^{l,\dattrs},\feval^{l,\dattrs})$,
+  where $\ipk^{l-1}$ is the public key of the parent issuer,
+  $\fissue^{l,\dattrs}$ is an issuance function as described in
+  \figref{fig:func-restrictions}, and $\feval^{l,\dattrs}$ is also as in
   \figref{fig:func-restrictions}, revealing the attributes that the issuer is
   willing to delegate.
-\item[$(\upk,\usk) \gets UserKeyGen(\opk)$.] All users in this scheme are
-  also issuers. Thus, a new user runs first \IKeyGen as in \CUASGen. Then, sets
-  $\usk \gets \isk$ and stores \ipk, which may be needed to delegate obtained
-  credentials. Note that this does not affect security, as long as
-  $\isk \getr \AttrSpace$.
+% \item[$(\upk,\usk) \gets UserKeyGen(\opk)$.] All users in this scheme are
+%   also issuers. Thus, a new user runs first \IKeyGen as in \CUASGen. Then, sets
+%   $\usk \gets \isk$ and stores \ipk, which may be needed to delegate obtained
+%   credentials. Note that this does not affect security, as long as
+%   $\isk \getr \AttrSpace$.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
-  If $n>0$, the user first finds the corresponding $(n,\ipk,\Sig,\ipk^{n-1},
-  \fissue^{n,\dattrs},\feval^{n,\dattrs})$ tuple, and checks \Sig running
-  \Verify as in \CUASGen (with the retrieved $\feval^{n,\dattrs}$). Then,
-  user and level-$n$ issuer run $\langle\Obtain,\Issue\rangle$ as in \CUASGen,
-  using $\fissue^{n,\dattrs}$ as issuance function. If $n=0$, then both run
-  $\langle\Obtain,\Issue\rangle$ as in \CUASGen, using the \fissue function
-  required by the issuer.
+  If $l>0$, the user first finds the corresponding $(l,\ipk,\Sig,\ipk^{n-1},
+  \fissue^{l,\dattrs},\feval^{l,\dattrs})$ tuple, and checks \Sig running
+  \Verify as in $\CUASGen^{usr-iss}$ (with the retrieved $\feval^{l,\dattrs}$).
+  Then, user and level-$l$ issuer run $\langle\Obtain,\Issue\rangle$ as in
+  $\CUASGen^{usr-iss}$, using $\fissue^{l,\dattrs}$ as issuance function. If
+  $l=0$, then both run $\langle\Obtain,\Issue\rangle$ as in
+  $\CUASGen^{usr-iss}$, using the \fissue function required by the issuer.
 \item[$\langle 1/0,(1,\utrans)/(0,\utrans)\rangle
   \gets \langle Show(\opk,\attrs,\dattrs,\cred),
-  \Verify(\opk,\dattrs) \rangle$.] As in the interactive variant of \CUASGen.  
+  \Verify(\opk,\dattrs) \rangle$.] As in the interactive variant of
+  $\CUASGen^{usr-iss}$.  
 \end{description}
 
 \paragraph{Security of \CUASDAC.} %

@@ -1,0 +1,27 @@
+\begin{tikzpicture}
+
+  \node (sign) at (-6.50,6.625) { $\NIZKRel^{hide-iss}_{\Sign} = $ };
+  \node (sign2) at (0.00,7.50) {
+    $(\upk,\usk,(\cid,\attrs,\cred)\rbrace,\yeval^1,\yinsp,r),
+    (\msg,\feval,\yeval^0,\cinsp,\sipk=\lbrace\ipk_i
+    \rbrace_{i\in[n]},\Eek):$
+  };
+  \node[align=center] (sign3) at (0.00,6.35) {
+%    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r) \land
+    $\cinsp = \EEnc (\Eek,\yinsp;r)~\land$ \\
+    $(\yeval^0,\yeval^1) =
+    \feval((\upk,\usk),\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\ 
+    $\yinsp = \finsp((\yeval^0,\yeval^1),(\upk,\usk),
+    \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\
+    $\exists i\in[n]~\suchthat~%\ipk_i=\upk \land
+    \SBCMVerify(\ipk_i,\cred,\usk,\attrs) = 1$
+  };
+  \draw [thick,decorate,decoration={brace}] (-5.50,5.50) -- (-5.50,7.75);
+  \draw [thick,decorate,decoration={brace}] (5.50,7.75) -- (5.50,5.50);
+
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../uas-paper"
+%%% End:
