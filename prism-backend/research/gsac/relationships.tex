@@ -17,14 +17,14 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Issuance functions:}
       \begin{align}
         & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{single,L}((\upk,\cdot),\cdot,\cdot) \coloneqq
+        & \fissue^{single,L}(\upk,\cdot,\cdot) \coloneqq
           \pcreturn \upk \notin L
           \nonumber \\
-        & \fissue^{\sring}((\upk,\cdot),\attrs,\cdot) \coloneqq
-          \pcreturn (\attrs \subseteq \sring \land \upk \in \sring) \nonumber \\
+        & \fissue^{\sring}(\upk,\attrs,\cdot) \coloneqq
+          \pcreturn (\attrs = \sring \land \upk \in \attrs) \nonumber \\
         & \fissue^{l,\dattrs}(\cdot,\attrs,(\cid,\cattrs)) \coloneqq
           \pcreturn (\attrs_1 = l+1 \land \attrs \subseteq
-          \lbrace \cattrs_i \rbrace_{i\in\dattrs}) \nonumber
+          \cup_{i\in\dattrs} \cattrs_i) \nonumber
       \end{align}
       
       \textbf{Signature evaluation functions:}
@@ -33,9 +33,10 @@ we rely on the functions described in \figref{fig:func-restrictions}.
         & \feval^{\dattrs}(\cdot,(\cid,\attrs),\cdot)
           \coloneqq \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},\ast)
           \nonumber \\
-        & \feval^{\sring}((\upk,\cdot),(\cid,\attrs),\cdot)
-          \coloneqq \pcif \upk \in \attrs:
-          \pcreturn (\attrs,\ast);
+        & \feval^{\sring,\dattrs}(\upk,(\cid,\attrs),\cdot)
+          \coloneqq \pcif \upk \in \lbrace \attrs_i \rbrace_{i\in\dattrs}
+          \subseteq \sring:
+          \pcreturn (\lbrace \attrs_i \rbrace_{i\in\dattrs},\ast);
           \pcelse \pcreturn \bot \nonumber \\
         & \feval^{l,\dattrs}(\cdot,(\cid,\attrs),\cdot) \coloneqq
           \pcreturn((\attrs_1,\lbrace\attrs_i\rbrace_{i\in\dattrs}),\ast)
@@ -50,7 +51,7 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Open functions:}
       \begin{align}
         & \finsp^0(\cdot,\cdot,\cdot,\cdot) \coloneqq 0 \nonumber \\
-        & \finsp^{\upk}(\cdot,(\upk,\cdot),\cdot,\cdot) \coloneqq
+        & \finsp^{\upk}(\cdot,\upk,\cdot,\cdot) \coloneqq
           \pcreturn \upk % \CCommit(\usk;0)
           \nonumber
       \end{align}
@@ -250,10 +251,8 @@ to \cite{bkm06} for details on the syntax and definitions.
 
 \subsubsection{\CUASRing Construction.} %
 Building a ring signature scheme according to the model in \figref{fig:model-rs}
-is essentially a $(\fissue^{\sring},\feval^{\sring},\finsp^0)$-restriction of
-our $\CUASGen^{hide-iss}$ construction. Concretely, for any desired ring, the
-signer (who is also the issuer) simply must set $\sipk=\sring$. The construction
-is as follows:
+is essentially a $(\fissue^{\sring},\feval^{\sring,\dattrs},\finsp^0)$-restriction
+of our $\CUASGen^{hide-iss}$ construction. The construction is as follows:
 
 % \begin{align}
 %   & \NIZKRel_{\Sign}^{prv} \coloneqq \lbrace (\usk,\cred,\yeval^1,\yinsp,r,r',
@@ -274,26 +273,27 @@ is as follows:
 %\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in $\CUASGen^{hide-iss}$.
 \item[$((\pk_1,\sk_1),...,(\pk_n,\sk_n)) \gets KeyGen(\secpar)$.] Runs
   $\parm \gets \Setup(\secpar)$ from $\CUASGen^{hide-iss}$, as well as $n$
-  instances of $(\ipk_i,\isk_i) \gets \IKeyGen(\parm,\fissue^{\sring})$, and
-  $(\opk,\osk) \gets \OKeyGen(\parm,\finsp^0)$.
-  \jesus{This syntax restricts to fixing the rings at setup time. But the
-    RS syntax in \cite{bkm06} is also somehow static already, in that it does
-    not allow adding users on the fly. Is it ok?}
+  instances of $(\ipk_i,\isk_i) \gets \IKeyGen(\parm,\fissue^{\sring})$, where
+  $\sring = \lbrace \ipk_i \rbrace_{i\in[n]}$, and $(\opk,\osk) \gets
+  \OKeyGen(\parm,\finsp^0)$. 
 \item[$\langle \cred,\bot,\utrans,\bot \rangle \gets
-  \langle \Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk,\attrs)\rangle.$]
-  A user, with $\usk=\isk_i$ and $\upk=\ipk_i$ for some $i \in [n]$, self-issues
-  to itself a credential for the ring \sring chosen at setup time. Then, runs
-  the $\langle \Obtain,\Issue \rangle$ protocol as in $\CUASGen^{hide-iss}$,
-  acting both as user and as issuer, using $\fissue^{\sring}$ as issuance
-  function, and $\attrs \gets \sring$.
+  \langle \Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk=\attrs,\attrs)\rangle.$]
+  A user, with $\usk=\isk_i$ and $\upk=\ipk_i$ for some $i \in [n]$, acts both
+  as user and issuer to self-issue a credential for an attribute set \attrs such
+  that $\attrs \subseteq \sring$, where \sring is the set of public keys used to
+  define $\fissue^{\sring}$.
 \item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,\msg,\feval).$] As in
-  $\CUASGen^{hide-iss}$, using $\feval^{\sring}$ as sign evaluation function,
-  using as signing credential the self-issued credential.
+  $\CUASGen^{hide-iss}$, using $\feval^{\sring,\dattrs}$ as evaluation
+  function, using as signing credential the self-issued credential. Note that
+  $\dattrs \subseteq \attrs = \sring$ defines the subring to use for the
+  produced signature.
 \item[$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval).$] As in
-  $\CUASGen^{hide-iss}$. Note that $\sipk=\sring$, and $\feval=\feval^{\sring}$.
-% \item[$\Open$ and $\Judge$.] As in $\CUASGen^{\Sign-prv}$. Note that
-%   $\finsp=\finsp^0$.
+  $\CUASGen^{hide-iss}$, making $\sipk=\yeval=\lbrace \ipk_i
+  \rbrace_{i\in\dattrs}$.
 \end{description}
+
+%Note that by using, e.g., $\finsp^{\upk}$, we essentially get a ring signature
+%scheme with linkability via an opener.
 
 \paragraph{Security of \CUASRing.} %
 We state next the theorems for the security of \CUASRing. The proofs are

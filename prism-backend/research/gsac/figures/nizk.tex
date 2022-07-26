@@ -4,33 +4,33 @@
   \node (issue) at (-7.65,8.875) { $\NIZKRel_{\Issue} = $ };
   \node (issue2) at (-3.00,9.50) {
     $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r),
-    (\Ccom,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]}):$
+    (\Ccom,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]},\yissue):$
   };
   \node[align=center] (issue3) at (-3.00,8.625) {
     $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r)~\land$ \\
-    $\fissue((\upk,\usk),\lbrace(\cid_i,\cattrs_i\rbrace_{i\in[n]}) = 1~\land$ \\
+    $\fissue((\upk,\usk),\lbrace(\cid_i,\cattrs_i\rbrace_{i\in[n]}) = \yissue~
+    \land$ \\
     $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,\cattrs_i) = 1$
   };
   \draw [thick,decorate,decoration={brace}] (-6.875,8.00) -- (-6.875,9.75);
   \draw [thick,decorate,decoration={brace}] (0.875,9.75) -- (0.875,8.00);
 
   %% Sign
-  \node (sign) at (-6.65,6.625) { $\NIZKRel_{\Sign} = $ };
+  \node (sign) at (-6.40,6.625) { $\NIZKRel_{\Sign} = $ };
   \node (sign2) at (0.00,7.50) {
     $(\upk,\usk,\lbrace(\cid_i\attrs_i,\cred_i)\rbrace_{i\in[n]},\yeval^1,
     \yinsp,r), (\msg,\feval,\yeval^0,\cinsp,\lbrace\ipk_i\rbrace,\Eek):$
   };
   \node[align=center] (sign3) at (0.00,6.35) {
-    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r) \land
-    \cinsp = \EEnc (\Eek,\yinsp;r)~\land$ \\
+    $\upk = \CCommit(\usk;0) \land \cinsp = \EEnc (\Eek,\yinsp;r)~\land$ \\
     $(\yeval^0,\yeval^1) =
     \feval((\upk,\usk),\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\ 
     $\yinsp = \finsp((\yeval^0,\yeval^1),(\upk,\usk),
     \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\
     $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$
   };
-  \draw [thick,decorate,decoration={brace}] (-5.75,5.50) -- (-5.75,7.75);
-  \draw [thick,decorate,decoration={brace}] (5.75,7.75) -- (5.75,5.50);
+  \draw [thick,decorate,decoration={brace}] (-5.50,5.50) -- (-5.50,7.75);
+  \draw [thick,decorate,decoration={brace}] (5.50,7.75) -- (5.50,5.50);
 
   %% Open
   \node (issue) at (1.95,8.875) { $\NIZKRel_{\Open} = $ };

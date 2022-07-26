@@ -2,7 +2,7 @@
 
   \node (sign) at (-6.50,6.625) { $\NIZKRel^{hide-iss}_{\Sign} = $ };
   \node (sign2) at (0.00,7.50) {
-    $(\upk,\usk,(\cid,\attrs,\cred)\rbrace,\yeval^1,\yinsp,r),
+    $(\upk,\usk,(\cid,\attrs,\cred),\yeval^1,\yinsp,r),
     (\msg,\feval,\yeval^0,\cinsp,\sipk=\lbrace\ipk_i
     \rbrace_{i\in[n]},\Eek):$
   };
@@ -10,9 +10,9 @@
 %    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r) \land
     $\cinsp = \EEnc (\Eek,\yinsp;r)~\land$ \\
     $(\yeval^0,\yeval^1) =
-    \feval((\upk,\usk),\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\ 
+    \feval((\upk,\usk),(\cid,\attrs),\msg)~\land$ \\ 
     $\yinsp = \finsp((\yeval^0,\yeval^1),(\upk,\usk),
-    \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\
+    (\cid,\attrs),\msg)~\land$ \\
     $\exists i\in[n]~\suchthat~%\ipk_i=\upk \land
     \SBCMVerify(\ipk_i,\cred,\usk,\attrs) = 1$
   };

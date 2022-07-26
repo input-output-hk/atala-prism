@@ -57,19 +57,23 @@ An \UAS scheme is composed by the following algorithms:
 \item[$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.] Given \parm, returns a user's
   key pair.
 \item[$\langle
-  \Obtain(\usk,\ipk,\sCred,\attrs),
-  \Issue(\isk,\sipk,\attrs))  
-  \rangle \rightarrow \langle \Cred/\bot,\utrans/\bot
+  \Obtain(\usk,\cidu,\ipk,\sCred,\attrs),
+  \Issue(\isk,\cidi,\sipk,\attrs))  
+  \rangle \rightarrow \langle \Cred/\bot,R/\bot
   \rangle$.] %
   This interactive protocol lets a user with key \usk running the \Obtain
-  process, receive a credential $\Cred=(\cid,\attrs,\cred,\ipk)$ from an
-  issuer in the system, where \cid is a unique identifier for the credential,
-  \ipk is the issuer's public key and \cred is the actual credential, on
-  attribute set \attrs. The user may leverage a set of previously obtained
-  credentials $\sCred=\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)
-  \rbrace_{i\in[n]}$, from which we may omit the $\ipk_i$s for readability. The
-  user outputs the produced credential \Cred, while the issuer outputs the
-  corresponding protocol transcript \utrans.
+  process, receive a credential $\Cred=(\cid,\attrs,\cred,\ipk)$
+  from an issuer in the system. $\cid=(\cidi,\cidu)$ is a unique identifier for
+  the credential, where issuer and user randomly pick \cidi and \cidu,
+  respectively (to ease notation, whenever we write just \cid, we mean $(\cidi,
+  \cidu)$). \ipk is the issuer's public key and \cred is the actual credential,
+  on attribute set \attrs. The user may leverage a set of previously obtained
+  credentials $\sCred=\lbrace (\cid_i=(\cidi_i,\cidu_i),\cattrs_i,\cred_i,
+  \ipk_i)\rbrace_{i\in[n]}$, from which we may omit the $\ipk_i$s for
+  readability. The user outputs the produced credential \Cred, while the issuer
+  outputs $R \gets (\yissue,\utrans)$, for some value $\yissue$ output by
+  the \fissue defined by the issuer, and $\utrans$ being the transcript of
+  the communication.
 \item[$\Sign(\usk,\opk,\sCred,\msg,\feval) \rightarrow (\sig,\yeval)$.] %
   Upon receiving a user secret key \usk, opener public key \opk, a set of
   credentials \sCred, a message \msg and evaluation function \feval, returns
@@ -101,25 +105,26 @@ the user who computes them, and has to prove correctness of such computation.
 We give concrete examples in \secref{sec:relationships}, and define them next:
 
 \begin{description}
-\item[$\fissue: ((\upk,\usk),\attrs,\lbrace (\cid_i,\cattrs_i)
-  \rbrace_{i \in [n]}) \rightarrow 0/1$.] Chosen
+\item[$\fissue: (\upk,\attrs,\lbrace (\cid_i,\cattrs_i)
+  \rbrace_{i \in [n]}) \rightarrow \yissue$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
   defines the customized conditions required by the issuer to grant a credential
-  over attributes \attrs, when requested by a user with key pair $(\upk,\usk)$,
+  over attributes \attrs, when requested by a user with public key \upk,
   leveraging a set of $n$ previously obtained credentials with identifiers and
-  attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where $n$
-  may be $0$ if no previously obtained credential is used). \fissue returns $1$
-  to accept a request, $0$ to reject it.
-\item[$\feval: ((\upk,\usk),\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
+  attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where
+  $n$ may be $0$ if no previously obtained credential is used). \fissue returns
+  a value $\yissue \in \rngfissue \cup \lbrace 0 \rbrace$, where we adopt the
+  convention that $\yissue = 0$ means that the issuance request is denied.
+\item[$\feval: (\upk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
   \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
   family of functions \famfeval, can be set on a per-signature basis. They
-  receive the user key pair $(\upk,\usk)$, a set of credentials with identifiers
+  receive the user public key \upk, a set of credentials with identifiers
   and attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$
   (where $n \ge 1$), and the message to be signed \msg. \feval outputs two
   values, $\yeval^0$ and $\yeval^1$, which can be used to modulate the bevahiour
   of \finsp, and must belong in a well defined set \rngfeval. For readability,
   we write $\Yeval = (\yeval^0,\yeval^1)$.
-\item[$\finsp: (\Yeval,(\upk,\usk),\lbrace \cid_i,\cattrs_i\rbrace_{i \in [n]},
+\item[$\finsp: (\Yeval,\upk,\lbrace \cid_i,\cattrs_i\rbrace_{i \in [n]},
   \msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
   functions define what utility value (derived from the user's secret key,
@@ -139,14 +144,14 @@ an opener to change the chosen function. In the sequel, we restrict to
 \UAS-acceptable functions, which we will also use to give \CUASGen restrictions.
 Both concepts are defined next.
 
-\begin{definition}{(\UAS-acceptable functions)}
-  \label{def:uas-acc-func}
-  We say that a \fissue (similarly, \feval or \finsp) function chosen from some
-  family \famfissue (similarly, \famfeval or \famfinsp) is \UAS-acceptable if it
-  is one-way with respect to $(\upk,\usk)$. That is, given the output of \fissue
-  (similarly, \feval or \finsp), it is at least computationally unfeasible to
-  recover the $(\upk,\usk)$ value used to produce it.
-\end{definition}
+% \begin{definition}{(\UAS-acceptable functions)}
+%   \label{def:uas-acc-func}
+%   We say that a \fissue (similarly, \feval or \finsp) function chosen from some
+%   family \famfissue (similarly, \famfeval or \famfinsp) is \UAS-acceptable if it
+%   is one-way with respect to $(\upk,\usk)$. That is, given the output of \fissue
+%   (similarly, \feval or \finsp), it is at least computationally unfeasible to
+%   recover the $(\upk,\usk)$ value used to produce it.
+% \end{definition}
 
 \begin{definition}{(\CUASGen restrictions)}
   \label{def:uas-restrictions}
@@ -237,7 +242,9 @@ corresponding user/issuer/opener keys.
   ``\uid such that $\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot)$''. We
   may also use \OWNR over a set of {\cid}s (\scid). In that case, our convention
   is that $\OWNR[\scid]$ returns $\bot$ if not all passed {\cid}s belong to the
-  same \uid.
+  same \uid. Since $\bot$ is not a valid \uid, all conditions checking
+  membership of the output of \OWNR to a list of users equal false if \OWNR
+  returns $\bot$.
 \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
   ``\attrs such that $\CRED[\cid] = (\cdot,\cdot,\cdot,\attrs,\cdot,\cdot)$''.
 \item[\ISR.] For notational convenience, when we write $\ISR[\cid]$ we mean
@@ -386,48 +393,46 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
       \begin{minipage}[t]{0.55\textwidth}
 
-        \procedure{$\OBTISS(\cid,\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
-          \rbrace_{i \in [n]})$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \iid \notin \HI: \pcreturn \bot \\
+        \procedure{$\OBTISS(\cid=(\cidi,\cidu),\uid,\iid,\attrs,$\\
+          \hspace*{4.25em}$\lbrace (\cid_i,\iid_i) \rbrace_{i \in [n]})$}{%
+          \pcif \uid \notin \HU \lor \iid \notin \HI: \pcreturn \bot \\
           \pcif \exists i \in [n]~\suchthat~\cid_i \in \CCRED: \pcreturn \bot \\
           \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot:
           \pcreturn \bot \\
-          \langle \Cred, \utrans \rangle \gets
-          \langle \Obtain(\UK[\uid],\CRED[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs), \\
-          \hspace*{60pt} \Issue(\PRVIK[\iid],\ISR[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs)
+          \langle \Cred, R \rangle \gets
+          \langle \Obtain(\UK[\uid],\cidu,\CRED[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs), \\
+          \hspace*{50pt} \Issue(\PRVIK[\iid],\cidi,\ISR[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs)
           \rangle \\
-          \trans[\cid] \gets \utrans \\
+          \trans[\cid] \gets R \\
           \CRED[\cid] \gets (\uid, \cred, \iid, \attrs, n,
           \lbrace(\cid_i,\iid_i)\rbrace_{i\in[n]}) \\
           \pcreturn \top \\
         }
 
-        \procedure{$\ISSUE(\cid,\uid,\iid,\attrs,\siid=\lbrace \iid_i
-          \rbrace_{i\in[n]})$}{%
-          \pcif \uid \notin \CU: \pcreturn \bot \\          
-          \pcif \iid \notin \HI: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot:
-          \pcreturn \bot \\
-          \langle \cdot, \utrans \rangle \gets
+        \procedure{$\ISSUE(\cidi,\uid,\iid,\attrs,\siid=
+          \lbrace \iid_i\rbrace_{i\in[n]})$}{%
+          \pcif \uid \notin \CU \lor \iid \notin \HI: \pcreturn \bot \\
+          \pcif \CRED[(\cidi,\cdot)] \neq \bot \lor \CCRED[(\cidi,\cdot)]
+          \neq \bot: \\
+          \pcind \pcreturn \bot \\
+          \langle \cdot, R \rangle \gets
           \langle \adv, 
-          \Issue(\PRVIK[\iid],\siid,\attrs) \rangle \\
-          \trans[\cid] \gets \utrans \\
-          \CRED[\cid] \gets (\uid,\cdot,\iid,\attrs,n,\lbrace(\cdot,\iid_i)
+          \Issue(\PRVIK[\iid],\cidi,\siid,\attrs) \rangle \\
+          \trans[(\cidi,\cdot)] \gets R \\
+          \CRED[(\cidi,\cdot)] \gets (\uid,\cdot,\iid,\attrs,n,\lbrace(\cdot,
+          \iid_i)
           \rbrace_{i\in[n]}) \\
           \pcreturn \top \\          
         }
 
         \procedure{$\SIGN(\uid,\oid,\scid=\lbrace\cid_i\rbrace_{i\in[n]},\msg,
           \feval)$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
+          \pcif \uid \notin \HU \lor \feval \notin \famfeval: \pcreturn \bot \\
           \pcif \exists i \neq j \in [n]~\suchthat~\cid_i \in \CRED \land
           \cid_j \in \CCRED: \\
           \pcind \pcreturn \bot \\
-          \pcif \feval \notin \famfeval: \pcreturn \bot \\
           \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
           \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\scid,\msg) \\
-          \pcif \Yeval \notin \rngfeval: \pcreturn \bot \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\Sig,\Yeval,\msg,\feval) \rbrace \\
           \pcreturn \Sig \\
@@ -457,36 +462,38 @@ oracles, which are formally defined in \figref{fig:oracles1} and
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\OBTAIN(\cid,\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
+        \procedure{$\OBTAIN(\cidu,\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
           \rbrace_{i\in[n]})$}{%
-          \pcif \uid \notin \HU: \pcreturn \bot \\
-          \pcif \iid \notin \CI: \pcreturn \bot \\
+          \pcif \uid \notin \HU \lor \iid \notin \CI: \pcreturn \bot \\
           \pcif \exists i \in [n]~\suchthat~\cid_i \in \CCRED: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot \lor \CCRED[\cid] \neq \bot: \pcreturn \bot \\
+          \pcif \CRED[(\cdot,\cidu)] \neq \bot \lor \CCRED[(\cidu,\cdot)] \neq
+          \bot: \\
+          \pcind \pcreturn \bot \\
           \langle \Cred, \cdot \rangle \gets
-          \langle \Obtain(\UK[\uid],\PUBIK[\iid],\lbrace \cid_i\rbrace_{[n]},
+          \langle \Obtain(\UK[\uid],\cidu,\PUBIK[\iid],\lbrace \cid_i\rbrace_{[n]},
           \attrs),\adv \rangle \\
-          \CRED[\cid] \gets (\uid,\cred,\iid,\attrs,n,\lbrace(\cid_i,\iid_i)
-          \rbrace_{i\in[n]}) \\
+          \CRED[(\cdot,\cidu)] \gets (\uid,\cred,\iid,\attrs,n,\lbrace(\cid_i,
+          \iid_i) \rbrace_{i\in[n]}) \\
           \pcreturn \top \\
         }
 
-        \procedure{$\OBTCHALb(\cid,\cuid_{0,1},\iid,\attrs,\cscid_{0,1}=$\\
+        \procedure{$\OBTCHALb(\cidu,\cuid_{0,1},\iid,\attrs,\cscid_{0,1}=$\\
           \hspace*{5.25em}$\lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]})$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
-          \pcif \CRED[\cid] \neq \bot: \pcreturn \bot \\
+          \pcif \CRED[(\cdot,\cidu)] \neq \bot: \pcreturn \bot \\
           \pcif \exists i\in[n]~\suchthat~
           \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \pcreturn \bot \\
           \pcif \pcfor d \in \bin,~ \exists \cid' \in \cscid_d~\suchthat~\cid'
           \in \CRED: \\
           \pcind \pcreturn \bot \\
           \textrm{Parse}~\PUBIK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-          \pcif \fissue(\UK[\cuid_0],\cscid_0,\attrs) \neq
-          \fissue(\UK[\cuid_1],\cscid_1,\attrs) \\
+          \pcif 0(\fissue(\PUBUK[\cuid_0],\cscid_0,\attrs)) \neq \\
+          \pcind 0(\fissue(\PUBUK[\cuid_1],\cscid_1,\attrs)): \pcreturn \bot \\
           \langle \Cred, \cdot \rangle \gets
-          \langle \Obtain(\UK[\cuid_b],\PUBIK[\iid],\cscid_b,\attrs),\adv \rangle \\
-          \CCRED[\ccid_b] \gets (\cuid_b,\cred,\iid,\attrs,\cscid_b,\siid) \\
+          \langle \Obtain(\PRVUK[\cuid_b],\cidu,\PUBIK[\iid],\cscid_b,\attrs),
+          \adv \rangle \\
+          \CCRED[(\cdot,\cidu)] \gets (\cuid_b,\cred,\iid,\attrs,\cscid_b,\siid) \\
           \pcreturn \top \\
         }
 
@@ -498,17 +505,14 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \\
           \pcind \pcreturn \bot \\
           \pcif \feval \notin \famfeval: \pcreturn \bot \\
-          \Yeval = (\yeval^0,\yeval^1) \gets \feval(\UK[\cuid_0],\cscid_0,
+          \Yeval = (\yeval^0,\yeval^1) \gets \feval(\PUBUK[\cuid_0],\cscid_0,
           \msg) \\
           \TYeval = (\tyeval^0,\tyeval^1) \gets
-          \feval(\UK[\cuid_1],\cscid_1,\msg) \\
-          \pcif \yeval^0 \neq \tyeval^0: \pcreturn \bot \\
-          \pcif \Yeval \notin \rngfeval \lor \TYeval \notin \rngfeval:
-          \pcreturn \bot \\          
-          \cSig_b \gets \Sign(\UK[\cuid_b],\PUBOK[\oid], \\
-          \hspace*{71pt}\cscid_b,\msg,\feval) \\
-          \cSig_{1-b} \gets \Sign(\UK[\cuid_{1-b}],\PUBOK[\oid], \\
-          \hspace*{80pt}\cscid_{1-b},\msg,\feval) \\          
+          \feval(\PUBUK[\cuid_1],\cscid_1,\msg) \\
+          \pcif \yeval^0 \neq \tyeval^0: \pcreturn \bot \\   
+          \cSig_b \gets \Sign(\PRVUK[\cuid_b],\PUBOK[\oid],\cscid_b,\msg,
+          \feval) \\
+          \cSig_{1-b} \gets \Sign(\PRVUK[\cuid_{1-b}],\PUBOK[\oid],\cscid_{1-b},\msg,\feval) \\          
           \CSIG[\cSig_b] \gets 
           \lbrace (\oid,\cuid_b,\cscid_b,\Yeval,\msg,\feval,\\
           \hspace*{74pt}\cuid_{1-b},\cSig_{1-b},\cscid_{1-b},\TYeval)\rbrace \\
@@ -625,25 +629,27 @@ credentials, user key, and message.
       \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
       \pcif \feval \notin \famfeval: \pcreturn 0 \\
       \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
-      (\Sig = (\sig,\yeval)) \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,
+      (\Sig = (\sig,\yeval)) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,
       \feval) \\
       \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) = 0: \pcreturn 1 \\
       \pcfor \cid \in \scid \pcdo: \\
       \pcind \textrm{Parse}~\CRED[\cid]~\textrm{as}~
-      (\cdot,\cdot,\cdot,\attrs,n,\lbrace(\cid_i,\cdot)\rbrace_{i\in[n]}));
+      (\cdot,\cdot,\cdot,\attrs,n,\lbrace(\cid_i,\cdot)\rbrace_{i\in[n]})) \\
 %      \pcind \textrm{Let}~\scid^{\cid}~\textrm{be the {\cid}s used to obtain}
 %      ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,
 %      \fissue^{\cid}),\cdot)\\
+      \pcind \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
       \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot)\\
-      \pcind \pcif \fissue(\UK[\uid],\attrs,
-      (\lbrace(\cid_i,\ATTR[\cid_i])\rbrace_{i\in[n]})) = 0: \pcreturn 1 \\
-      (\yeval^0,\yeval^1) \gets \feval(\UK[\uid],(\scid,\ATTR[\scid]),\msg) \\
+      \pcind \pcif \fissue(\PUBUK[\uid],\attrs,
+      (\lbrace(\cid_i,\ATTR[\cid_i])\rbrace_{i\in[n]})) \neq \yissue:
+      \pcreturn 1 \\
+      (\yeval^0,\yeval^1) \gets \feval(\PUBUK[\uid],(\scid,\ATTR[\scid]),\msg) \\
       \pcif \yeval^0 \neq \yeval: \pcreturn 1 \\
       (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
       = 0~\lor \\
       \pcind \yinsp \neq \finsp^\oid((\yeval,\yeval^1),
-      \UK[\uid],(\scid,\ATTR[\scid]),\msg)): \\
+      \PUBUK[\uid],(\scid,\ATTR[\scid]),\msg)): \\
       \pcind \pcreturn 1 \\
       \pcreturn 0
     }
@@ -991,14 +997,15 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         \cid \gets \adv^{\Oforgeissue}(\parm) \\
         \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot:
         \pcreturn 0 \\
+        \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans) \\
         % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
         ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]})
-        \gets \ExtractIssue(\trap,\trans[\cid]) \\
+        \gets \ExtractIssue(\trap,\utrans) \\
         % \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
         % \trans[\cid_i]) \\
         % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
-        \pcif \fissue((\upk,\usk),\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
-        \rbrace_{i\in[n]}) = 0:
+        \pcif \fissue(\upk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
+        \rbrace_{i\in[n]}) = \yissue:
         \pcreturn 1 \\
         \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
         \pcreturn 0
@@ -1023,11 +1030,11 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         % \pcreturn 0
 	((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
         \yeval^1,\yinsp') \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
-        (\yeval^0,\yeval^1) \gets \feval((\upk,\usk),\lbrace(\cid_i,\attrs_i)
+        (\yeval^0,\yeval^1) \gets \feval(\upk,\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]}, \msg) \\
         \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
         \pcreturn 1 \\
-        \pcif \finsp((\yeval^0,\yeval^1),(\upk,\usk),\lbrace(\cid_i,\attrs_i)
+        \pcif \finsp((\yeval^0,\yeval^1),\upk,\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]},\msg)
         \neq \yinsp \lor \yinsp \neq \yinsp':
         \pcreturn 1 \\
@@ -1156,11 +1163,11 @@ adversary has access to the oracles in $\Oframe \gets
       % \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
       % \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
       % \lor \yinsp \neq \yinsp': \pcreturn 1 \\
-      \Yeval=(\yeval^0,\yeval^1) \gets \feval((\upk,\usk),\lbrace (\cid_i,
+      \Yeval=(\yeval^0,\yeval^1) \gets \feval(\upk,\lbrace (\cid_i,
       \attrs_i)\rbrace_i{i\in[n]}, \msg) \\
       \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
       \pcreturn 1 \\
-      \pcif \finsp((\yeval^0,\yeval^1),(\upk,\usk),\lbrace(\cid_i,\attrs_i)
+      \pcif \finsp((\yeval^0,\yeval^1),\upk,\lbrace(\cid_i,\attrs_i)
       \rbrace_{i\in[n]},\msg)
       \neq \yinsp \lor \yinsp \neq \yinsp': \\
       \pcind \pcreturn 1 \\
@@ -1243,7 +1250,7 @@ in \figref{fig:nizkrels}.
     \input{figures/nizk.tex}
   }
   \caption{CS specification of the NP relations used in \CUASGen.
-  \todo{Is $\C = \CCommit(\usk;r)$ needed now that \upk is added?}}
+  \todo{Is $\C = \CCommit(\usk;r)$ at Issue needed now that \upk is added?}}
   \label{fig:nizkrels}
 \end{figure}
 
@@ -1275,30 +1282,33 @@ Each opener first parses \parm as $(\cdot,\cdot,
 (\Ssk,\finsp)$, $\opk \gets (\Sparm,\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk
 \gets (\Ssk,\Edk)$.
 
-\paragraph{$\usk \gets \UKeyGen(\parm)$.} %
+\paragraph{$(\upk,\usk) \gets \UKeyGen(\parm)$.} %
 Each user, prior to requesting credentials, generates his secret key by picking
 randomly $\usk \getr \AttrSpace$. Set $\upk \gets \CCommit(\usk;0)$.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle\Obtain(\usk,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
-  \attrs),\Issue(\isk,\lbrace \ipk_i \rbrace_{i\in[n]},\attrs)\rangle$.} %
+  \langle\Obtain(\usk,\cidu,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
+  \attrs),\Issue(\isk,\cidi,\lbrace \ipk_i \rbrace_{i\in[n]},\attrs)\rangle$.} %
 The protocol is run between an issuer with key pair $(\ipk,\isk)$, and a user
 with secret key \usk and credentials $\lbrace \cred_i \rbrace_{i\in[n]}$, where
 each $\cred_i$ is issued by an issuer with public key $\ipk_i$, and
 attests attributes $\cattrs_i$. The user requests a signature on a commitment to
-the user key, as well as on the attributes in \attrs. In addition, the user
-proves that the issuance function \fissue established by the issuer is satisfied
-by the $\cred_i$ credentials and its user secret key. This is achieved through
-an execution of an \SBCM interactive signing protocol with $\NIZKRel_{\Issue}$
-as NP relation -- which contains the verification that \fissue returns $1$,
-among other checks as described earlier. Concretely, the user runs
-$\SBCMCom^{\NIZKRel_{\Issue}}(\ipk,\usk,(\cid,\attrs),\lbrace (\cid_i,\cattrs_i,
-\cred_i)\rbrace_{i\in[n]},\lbrace \ipk_i \rbrace_{i\in[n]})$, and the issuer
-runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
-\rbrace_{i\in[n]})$, for some commonly agreed and fresh \cid. The credential
-\cred produced by the user is the result of the interactive signing protocol,
-and the \utrans entry for the issuer is its transcript, which is a $(\Ccom,
-\lbrace \cid,\attrs\rbrace,\lbrace \ipk_i \rbrace_{i\in[n]},\cred,\pi)$ tuple.
+the user key, as well as on $\cid=(\cidi,\cidu)$ and the attributes in \attrs.
+In addition, the user proves correct computation of the \fissue function set by
+the issuer based on the $\cred_i$ credentials and its user key pair.
+This is essentially achieved through an execution of an \SBCM interactive
+signing protocol with $\NIZKRel_{\Issue}$ as NP relation. Since \fissue is
+evaluated by the user, but depends on the \cidi value chosen by the issuer, the
+issuer first needs to send \cidi to the user.
+Then both issuer and user interact to produce the \SBCM signature, where the
+user runs $\SBCMCom^{\NIZKRel_{\Issue}}(\ipk,\usk,(\cid,\attrs),\lbrace (\cid_i,
+\cattrs_i,\cred_i)\rbrace_{i\in[n]},\lbrace \ipk_i \rbrace_{i\in[n]})$, and the
+issuer runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
+\rbrace_{i\in[n]})$. The credential \cred produced by the user is the result of
+the interactive signing protocol, whereas the issuer produces $(\yissue,
+\utrans)$, where \yissue is the output of \fissue, and \utrans is the
+communication transcript, which is a $(\Ccom,(\cid,\attrs),\lbrace
+\ipk_i \rbrace_{i\in[n]},\cred,\pi)$ tuple.
 
 \paragraph{$\Sig \gets \Sign(\usk,\opk,
   \sCred=(\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)\rbrace_{i\in[n]}),
