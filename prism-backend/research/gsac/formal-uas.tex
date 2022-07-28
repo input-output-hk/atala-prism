@@ -34,7 +34,9 @@ Somehow related, we model a scheme in which users generate their secret keys in
 a standalone way, and then leverage their keys to request credentials.
 Therefore, if one ``user'' generates (e.g.) two keys, and then uses each of
 these keys to request multiple credentials, then from the point of view of our
-modelling, we see this \emph{cryptographically} as two different users. 
+modelling, we see this \emph{cryptographically} as two different users.
+
+\todo{Clarify that, for us, issuers and users are essentially the same thing.}
 
 \subsection{Syntax}
 \label{ssec:syntax-uas}
@@ -46,16 +48,19 @@ An \UAS scheme is composed by the following algorithms:
   returns a global system parameter variable \parm. We assume that \parm are
   available to all the other functions, even if not explicitly listed in their
   input parameters.
-\item[$\IKeyGen(\parm,\fissue) \rightarrow (\ipk,\isk)$.] Given \parm, and the
-  function \fissue for checking that credential requestors meet the conditions
-  to be issued a credential, an issuer runs \IKeyGen to generate its issuing key
-  pair. 
+\item[$\KeyGen(\parm) \rightarrow (\upk,\usk)$.] Given \parm, a user runs
+  \KeyGen to generate its user key pair. 
 \item[$\OKeyGen(\parm,\finsp) \rightarrow (\opk,\osk)$.] Given \parm, and the
   function \finsp, an opener runs \OKeyGen to generate its opening key pair.
   The function \finsp defines the type of utility that will be extractable from
   signatures.
-\item[$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.] Given \parm, returns a user's
-  key pair.
+\item[$\ISet((\upk,\usk),\fissue) \rightarrow \ipk$.] Given a user key
+  pair, and an issuance function \fissue for checking that credential requestors
+  meet some conditions to be issued a credential, an existing user runs \ISet to
+  extend the user public key, enabling this user to issue credentials meeting
+  \fissue.
+%\item[$\UKeyGen(\parm) \rightarrow (\upk,\usk)$.] Given \parm, returns a user's
+%  key pair.
 \item[$\langle
   \Obtain(\usk,\cidu,\ipk,\sCred,\attrs),
   \Issue(\isk,\cidi,\sipk,\attrs))  
@@ -199,6 +204,7 @@ although the concept may get a bit blurred, as there is no traditional opening.
 We describe next the global variables and oracles that we use in our modelling.
 
 \paragraph{Global Variables.} %
+\todo{Clarify that {\iid}s are just {\uid}s.}
 Users are referred to with user identifiers, \uid; for credentials, we use \cid;
 for issuers, \iid; and for openers, \oid.  In all cases, we use bold font to
 denote sets: e.g., \scid and \siid denote sets of credential and issuer
@@ -269,19 +275,25 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 \figref{fig:oracles2}. 
 
 \begin{description}
-\item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
-  the associated issuance function.
+% \item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
+%   the associated issuance function.
+\item[\UGEN.] Adds a new user to the game, generating its keypair.  
 \item[\OGEN.] Adds a new opener to the game, generating its key pair and
   setting the associated evaluation and inspection functions.
-\item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
-  key to the adversary.
+% \item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
+%   key to the adversary.
+\item[\ISET.] ``Upgrades'' an user to become an issuer, specifying its
+  associated issuance function.
+\item[\UCORR.] Corrupts an existing (and honest) user, by giving its secret
+  key to the adversary. If the user was also an issuer, it becomes a corrupt
+  issuer too.
 \item[\OCORR.] Corrupts an existing (and honest) opener, by giving its secret
-  key to the adversary.  
-\item[\HUGEN.] Adds a new honest user to the game, by honestly generating
-  the user's key pair.
-\item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
-  user already exists and is honest, corrupts it, leaking its key and
-  credentials.
+  key to the adversary.
+% \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
+%   the user's key pair.
+% \item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
+%   user already exists and is honest, corrupts it, leaking its key and
+%   credentials.
 \item[\RREG.] Reads the given transcript table entry.
 \item[\WREG.] Sets a transcript table entry to the given value.
 \item[\OBTISS.] Lets the adversary add a new honestly generated credential to
@@ -310,39 +322,48 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
       \begin{minipage}[t]{0.55\textwidth}
 
-        \procedure{$\IGEN(\iid,\fissue)$}{%
-          \pcif \iid \in \HI \lor \iid \in \CI: \pcreturn \bot \\
-          \pcif \fissue \notin \famfissue: \pcreturn \bot \\
-          (\ipk,\isk) \gets \IKeyGen(\parm) \\
-          \IK[\iid] \gets ((\ipk,\fissue),\isk) \\
-          \HI \gets \HI \cup \lbrace \iid \rbrace \\
-          \pcreturn \ipk \\
-        }
+        % \procedure{$\IGEN(\iid,\fissue)$}{%
+        %   \pcif \iid \in \HI \lor \iid \in \CI: \pcreturn \bot \\
+        %   \pcif \fissue \notin \famfissue: \pcreturn \bot \\
+        %   (\ipk,\isk) \gets \IKeyGen(\parm) \\
+        %   \IK[\iid] \gets ((\ipk,\fissue),\isk) \\
+        %   \HI \gets \HI \cup \lbrace \iid \rbrace \\
+        %   \pcreturn \ipk \\
+        % }
 
-        \procedure{$\ICORR(\iid)$}{%
-          \pcif \iid \in \CI \lor \iid \notin \HI: \pcreturn \bot \\
-          \HI \gets \HI \setminus \lbrace \iid \rbrace \\
-          \CI \gets \CI \cup \lbrace \iid \rbrace \\
-          \pcreturn \isk \\
-        }        
+        % \procedure{$\ICORR(\iid)$}{%
+        %   \pcif \iid \in \CI \lor \iid \notin \HI: \pcreturn \bot \\
+        %   \HI \gets \HI \setminus \lbrace \iid \rbrace \\
+        %   \CI \gets \CI \cup \lbrace \iid \rbrace \\
+        %   \pcreturn \isk \\
+        % }        
 
-        \procedure{$\HUGEN(\uid)$}{%
+        % \procedure{$\HUGEN(\uid)$}{%
+        %   \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
+        %   (\upk,\usk) \gets \UKeyGen(\parm) \\
+        %   \UK[\uid] \gets (\upk,\usk);
+        %   \HU \gets \HU \cup \lbrace  \uid \rbrace \\
+        %   \pcreturn \top \\
+        % }
+
+        \procedure{$\UGEN(\uid)$}{%
           \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
-          (\upk,\usk) \gets \UKeyGen(\parm) \\
-          \UK[\uid] \gets (\upk,\usk);
-          \HU \gets \HU \cup \lbrace  \uid \rbrace \\
-          \pcreturn \top \\
+          (\upk,\usk) \gets \KeyGen(\parm) \\
+          \UK[\uid] \gets (\upk,\usk) \\
+          \HU \gets \HU \cup \lbrace \uid \rbrace \\
+          \pcreturn \upk \\
         }
 
-        \procedure{$\RREG(i)$}{%
-          \pcreturn \trans[i]
+        \procedure{$\ISET(\uid,\fissue)$}{%
+          \pcif \uid \notin \HU \cup \CU: \pcreturn \bot \\
+          \pcif \uid \in \HI \cup \CI: \pcreturn \bot \\
+          \pcif \fissue \notin \famfissue: \pcreturn \bot \\
+          \ipk \gets \ISet(\UK[\uid],\fissue) \\
+          \IK[\uid] \gets ((\ipk,\fissue),\PRVUK[\uid]) \\
+          \pcif \uid \in \HU: \HI \gets \HI \cup \lbrace \uid \rbrace \\
+          \pcif \uid \in \CU: \CI \gets \CI \cup \lbrace \uid \rbrace \\
+          \pcreturn \ipk \\
         }        
-        
-      \end{minipage}
-    }
-    \scalebox{0.9}{
-      
-      \begin{minipage}[t]{.5\textwidth}
 
         \procedure{$\OGEN(\oid,\finsp)$}{%
           \pcif \oid \in \HO \lor \oid \in \CO: \pcreturn \bot \\
@@ -350,7 +371,28 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           (\opk,\osk) \gets \OKeyGen(\parm) \\
           \OK[\oid] \gets ((\opk,\finsp),\osk) \\
           \HO \gets \HO \cup \lbrace \oid \rbrace \\
-          \pcreturn \opk \\
+          \pcreturn \opk
+        }
+        
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      
+      \begin{minipage}[t]{.5\textwidth}
+
+        \procedure{$\UCORR(\uid)$}{%
+          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
+          \pcif \uid \in \HI \cup \CI: \pcreturn \bot \\
+          \HU \gets \HU \setminus \lbrace \uid \rbrace \\
+          \CU \gets \CU \cup \lbrace \uid \rbrace \\
+          \pcreturn (\PRVUK[\uid],\CRED[\uid]) \\
+        }
+
+        \procedure{$\ICORR(\uid)$}{%
+          \pcif \uid \notin \HI: \pcreturn \bot \\
+          \HI \gets \HI \setminus \lbrace \uid \rbrace \\
+          \CI \gets \CI \cup \lbrace \uid \rbrace \\
+          \pcreturn(\PRVUK[\uid],\CRED[\uid]) \\
         }
 
         \procedure{$\OCORR(\oid)$}{%
@@ -360,17 +402,21 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \HO \gets \HO \setminus \lbrace \oid \rbrace \\
           \CO \gets \CO \cup \lbrace \oid \rbrace \\
           \pcreturn \osk \\
-        }        
-        
-        \procedure{$\CUGEN(\uid)$}{%          
-          \pcif \uid \in \CU: \pcreturn \bot \\
-          \CU \gets \CU \cup \lbrace \uid \rbrace \\          
-          \pcif \uid \in \HU: \\
-          \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
-          \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
-          \pcelse: \UK[\uid] = \bot \\          
-          \pcreturn \top \\
         }
+        
+        % \procedure{$\CUGEN(\uid)$}{%          
+        %   \pcif \uid \in \CU: \pcreturn \bot \\
+        %   \CU \gets \CU \cup \lbrace \uid \rbrace \\          
+        %   \pcif \uid \in \HU: \\
+        %   \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
+        %   \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
+        %   \pcelse: \UK[\uid] = \bot \\          
+        %   \pcreturn \top \\
+        % }
+
+        \procedure{$\RREG(i)$}{%
+          \pcreturn \trans[i] \\
+        }                
 
         \procedure{$\WREG(i,\rho)$}{%
           \trans[i] \gets \rho
@@ -556,13 +602,15 @@ we use to formalize security of \UAS schemes.
   Receives trapdoor \trap and an $\langle \Obtain, \Issue \rangle$ transcript,
   and returns the credential set \sCred, if any, involved in the request. It
   needs an honest issuer as, otherwise, the transcripts won't be available. 
-\item[$\ExtractSign(\trap,\oid,\lbrace \iid_i \rbrace_{i \in [n]},\Sig,\msg,
+\item[$\ExtractSign(\trap,\opk,\lbrace \ipk_i \rbrace_{i \in [n]},\Sig,\msg,
   \feval) \rightarrow ((\upk,\usk),\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
   \rbrace_{i \in [n]},\yeval^1,\yinsp)$.] Receives a trapdoor \trap, a signature
   \Sig, as well as the opener identifier \oid, and the identifiers of all
   issuers of the credentials used to produce the signature over \msg, and for
   \feval. It outputs the user secret key and credential set \sCred used to
-  generate the signature, and the $\yeval^1$ and \yinsp values.
+  generate the signature, and the $\yeval^1$ and \yinsp values. For notational
+  convenience, we overload this function and use \oid and \iid instead of the
+  actual opener and issuers' key pairs.
 % \item[$\IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk)$.] Returns $1$ if
 %   \cred has been issued over attributes $\attrs_{\cred}$ and for a user with
 %   secret key \usk, by honest issuer with public key \ipk. Otherwise, it returns
@@ -626,7 +674,7 @@ credentials, user key, and message.
     \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\uid,\oid,\scid,\msg,\feval)
-      \gets \adv^{\IGEN,\OGEN,\HUGEN,\OBTISS,\RREG}(\parm) \\
+      \gets \adv^{\UGEN,\OGEN,\ISET,\OBTISS,\RREG}(\parm) \\
       \pcif \feval \notin \famfeval: \pcreturn 0 \\
       \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
       (\Sig = (\sig,\yeval)) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,
@@ -639,7 +687,7 @@ credentials, user key, and message.
 %      ~\cid;~\textrm{Parse}~\PUBIK[\ISR[\cid]]~\textrm{as}~((\cdot,
 %      \fissue^{\cid}),\cdot)\\
       \pcind \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
-      \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot)\\
+      \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
       \pcind \pcif \fissue(\PUBUK[\uid],\attrs,
       (\lbrace(\cid_i,\ATTR[\cid_i])\rbrace_{i\in[n]})) \neq \yissue:
       \pcreturn 1 \\
@@ -887,9 +935,9 @@ challenge signature can be open.
 
 The formal specification of the anonymity games is given in
 \figref{fig:exp-uas-anonb}, where
-$\OIssAnon \gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,
-\OO\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\OBTCHALb)$, and $\OSigAnon
-\gets (\lbrace\HU,\CU\rbrace\GEN,\lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace
+$\OIssAnon \gets (\lbrace\OO,\UU\rbrace\GEN,\ISET,\ISET,\lbrace\II,
+\OO,\UU\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\OBTCHALb)$, and $\OSigAnon
+\gets (\lbrace\OO,\UU\rbrace\GEN,\ISET,\ISET,\lbrace\II,\OO,\UU\rbrace
 \CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\CHALb)$.
 
 \begin{figure*}[htp!]
@@ -986,7 +1034,8 @@ to any known user. The issuance unforgeability notion formalizes this.
 
 For both \ExpForgeIssue and \ExpForgeSign (in \figref{fig:exp-uas-unfor}), the
 adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
-\lbrace\HU,\CU\rbrace\GEN,\IGEN,\OGEN,\OCORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$.
+\lbrace\OO,\UU\rbrace\GEN,\ISET,\lbrace\OO,\UU\rbrace\CORR,\OBTISS,\ISSUE,\RREG,
+\SIGN,\OPEN$.
 
 \begin{figure}[htp!]
   \centering
@@ -997,7 +1046,8 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         \cid \gets \adv^{\Oforgeissue}(\parm) \\
         \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot:
         \pcreturn 0 \\
-        \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans) \\
+        \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
+        \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
         % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
         ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]})
         \gets \ExtractIssue(\trap,\utrans) \\
@@ -1143,7 +1193,7 @@ or \yinsp values do not match what they should be based on the extracted data;
 or if the signature can be associated to the secret key of an honest user who
 did not produce it (i.e., no matching call to \SIGN exists). In the game, the
 adversary has access to the oracles in $\Oframe \gets
-\lbrace\HU,\CU\rbrace\GEN, \lbrace\II,\OO\rbrace\GEN,\lbrace\II,\OO\rbrace\CORR,
+\lbrace\OO,\UU\rbrace\GEN,\ISET,\lbrace\II,\OO,\UU\rbrace\CORR,
 \WREG,\OBTAIN,\SIGN$.
 
 \begin{figure}[htp!]  
@@ -1255,6 +1305,7 @@ in \figref{fig:nizkrels}.
 \end{figure}
 
 From them, we build \CUASGen as follows.
+\todo{Check if \SSetup etc is still needed...}
 
 \paragraph{$\parm \gets \Setup(\secpar)$.} %
 The setup process essentially generates the public parameters for all the
@@ -1268,12 +1319,18 @@ $\NIZKcrs_{\Open} \gets \NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$. Return $
 % actually be run by separate entities. For simplicity of exposition, we bundle
 % them together here.
 
-\paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
-Each issuer first parses \parm as $(\cdot,\SBCMparm,
-\Sparm,\cdot,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets
-\SKeyGen(\Sparm)$, $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$,
-$\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$, $\ipk \gets (\SBCMparm,\Svk,
-\fissue,\sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
+% \paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
+% Each issuer first parses \parm as $(\cdot,\SBCMparm,
+% \Sparm,\cdot,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets
+% \SKeyGen(\Sparm)$, $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$,
+% $\sig_{\fissue} \gets \SSign(\Ssk,\fissue)$, $\ipk \gets (\SBCMparm,\Svk,
+% \fissue,\sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
+
+\paragraph{$(\upk,\usk) \gets \KeyGen(\parm)$.} %
+Each user first parses \parm as $(\cdot,\SBCMparm,
+\cdot,\cdot,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\SBCMvk,\SBCMsk) \gets
+\SBCMKeyGen(\SBCMparm)$, $\upk \gets (\parm,\SBCMvk)$, $\usk \gets \SBCMsk$,
+and returns $(\upk,\usk)$.
 
 \paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
 Each opener first parses \parm as $(\cdot,\cdot,
@@ -1282,9 +1339,9 @@ Each opener first parses \parm as $(\cdot,\cdot,
 (\Ssk,\finsp)$, $\opk \gets (\Sparm,\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk
 \gets (\Ssk,\Edk)$.
 
-\paragraph{$(\upk,\usk) \gets \UKeyGen(\parm)$.} %
-Each user, prior to requesting credentials, generates his secret key by picking
-randomly $\usk \getr \AttrSpace$. Set $\upk \gets \CCommit(\usk;0)$.
+\paragraph{$\ipk \gets \ISet((\upk,\usk),\fissue)$.} %
+A user willing to become an issuer just sets $\ipk \gets (\upk,\fissue)$, and
+returns \ipk.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
   \langle\Obtain(\usk,\cidu,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
@@ -1321,8 +1378,8 @@ Then, parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
 $\Verify(\Svk,\sig_{\finsp},\finsp) = 1$
 (this step may be cached), to compute $\yinsp \gets \finsp((\yeval^0,
 \yeval^1),\usk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$, and encrypts
-\yinsp by running $\cinsp \gets \EEnc(\Eek,\yinsp; r)$ for some fresh randomness
-$r$. Finally, the user
+\yinsp by running $\cinsp \gets \EEnc(\Eek,\yinsp; r')$ for some fresh
+randomness $r'$. Finally, the user
 computes $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,
 \lbrace(\cid_i,\cattrs_i,\cred_i)\rbrace_{i\in[n]},\yeval^1,\yinsp,r),(\msg,
 \feval,\yeval^0,\cinsp,\lbrace \ipk_i\rbrace_{i\in[n]},\Eek))$ and outputs
@@ -1423,19 +1480,19 @@ the proofs to \appref{app:uas-proofs}.
 In previous subsections, we have described a main construction for \CUASGen,
 where generalization is achieved by allowing system designers to specify
 concrete \fissue, \feval and \finsp functions depending on their needs. Note
-however that alternative constructions are possible, that are close to \CUASGen,
-but differ in key aspects while still meeting the \UAS model. We briefly
-describe them next, as we leverage them to build related schemes. \todo{Security
-proofs are deferred to \appref{app:uas-variants-proofs}.}
+however that alternative constructions are of course possible that, while
+still be close to \CUASGen, may differ in key aspects while still meeting the
+\UAS model. We briefly one such variant next, that we leverage to build related
+schemes. \todo{Security proofs are deferred to \appref{app:uas-variants-proofs}.}
 
-\paragraph{$\CUASGen^{usr-iss}$: Collapsing issuers and users.} %
-On occasions, it may be useful to not make a distinction between issuers and
-users. For instance, for credential delegation, or in decentralized identity
-systems. In both cases, users may end up acting as issuers themselves. The
-algorithms are as in \CUASGen, except that there is no \UKeyGen -- or, rather,
-the steps run by \UKeyGen are exactly the same as in \IKeyGen. Concretely,
-$\usk \gets \isk$ and $\upk \gets \ipk$, where \isk and \ipk are generated
-as in \IKeyGen.
+% \paragraph{$\CUASGen^{usr-iss}$: Collapsing issuers and users.} %
+% On occasions, it may be useful to not make a distinction between issuers and
+% users. For instance, for credential delegation, or in decentralized identity
+% systems. In both cases, users may end up acting as issuers themselves. The
+% algorithms are as in \CUASGen, except that there is no \UKeyGen -- or, rather,
+% the steps run by \UKeyGen are exactly the same as in \IKeyGen. Concretely,
+% $\usk \gets \isk$ and $\upk \gets \ipk$, where \isk and \ipk are generated
+% as in \IKeyGen.
 
 \paragraph{$\CUASGen^{hide-iss}$: $\NIZKRel_{\Sign}$ with issuer hiding.} %
 In \CUASGen and $\CUASGen^{usr-iss}$, it is required that the identity of the

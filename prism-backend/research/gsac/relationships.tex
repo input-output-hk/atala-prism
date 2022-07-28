@@ -17,8 +17,8 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Issuance functions:}
       \begin{align}
         & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{single,L}(\upk,\cdot,\cdot) \coloneqq
-          \pcreturn \upk \notin L
+        & \fissue^{single,F,I,L}(\upk,\cdot,\cdot) \coloneqq
+          \pcif F(I||\upk) \in L~\pcreturn 0;~\pcelse \pcreturn F(I||\upk)
           \nonumber \\
         & \fissue^{\sring}(\upk,\attrs,\cdot) \coloneqq
           \pcreturn (\attrs = \sring \land \upk \in \attrs) \nonumber \\
@@ -149,7 +149,7 @@ reference, we replicate the security games in \figref{fig:model-gs}.
 \subsubsection{\CUASGS construction.} %
 We show that the $(\fissue^{single,L},\feval^0,\finsp^{\upk})$-\CUASGen
 restriction, is a secure group signature scheme according to \cite{bsz05}.
-Observe that the $\fissue^{single,L}$ function is further parameterized with
+Observe that the $\fissue^{single,F,I,L}$ function is further parameterized with
 a list $L$ maintained by the issuer and must be fetched by users prior to
 joining. It restricts that any user can have at most one credential (associated
 to a same user key pair). We first quickly define the algorithms, and then
@@ -157,15 +157,16 @@ prove security.
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs the \Setup algorithm
-  of \CUASGen, and one instance of \IKeyGen and \OKeyGen. Assigns the public
-  keys to \gpk.
-\item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \UKeyGen from \CUASGen.
+  of \CUASGen, and one instance of \KeyGen and \ISet with
+  $\fissue^{single,F,I,L}$ (both for the same user, who will be the only issuer
+  in the GS scheme) and \OKeyGen. Assigns the public keys to \gpk.
+\item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \KeyGen from \CUASGen.
 \item[$\langle \cred,\utrans \rangle \gets
   \langle\Obtain(\usk,\ipk),\Issue(\isk,\upk)\rangle$.] Runs $\langle\Obtain,
   \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$.
 \item[$\sig \gets \Sign(\gpk,\cred,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
-  runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen --
-  note that $0$ is the constant output of $\feval^0$.
+  runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen,
+  where $\yeval = 0$ is the constant output of $\feval^0$.
 \item[$1/0 \gets \Verify(\gpk,\sig,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
   returns whatever $\Verify(\opk,\ipk,\sig,0,\msg,\feval^0)$ from \CUASGen
   outputs.
@@ -252,7 +253,12 @@ to \cite{bkm06} for details on the syntax and definitions.
 \subsubsection{\CUASRing Construction.} %
 Building a ring signature scheme according to the model in \figref{fig:model-rs}
 is essentially a $(\fissue^{\sring},\feval^{\sring,\dattrs},\finsp^0)$-restriction
-of our $\CUASGen^{hide-iss}$ construction. The construction is as follows:
+of our $\CUASGen^{hide-iss}$ construction. In a nutshell, we let users self-issue
+credentials where the attributes are (a subset of encodings of) the public keys
+of the users in the system -- including their own public key. Then, a ring
+signature is just a $\CUASGen^{hide-iss}$ signature that reveals a subset of
+the attributes -- i.e., a subset of the keys of the users in the system. In more
+detail, the construction is as follows:
 
 % \begin{align}
 %   & \NIZKRel_{\Sign}^{prv} \coloneqq \lbrace (\usk,\cred,\yeval^1,\yinsp,r,r',
@@ -272,24 +278,24 @@ of our $\CUASGen^{hide-iss}$ construction. The construction is as follows:
 \begin{description}
 %\item[$\parm \gets \Setup(\secpar,\AttrSpace)$.] As in $\CUASGen^{hide-iss}$.
 \item[$((\pk_1,\sk_1),...,(\pk_n,\sk_n)) \gets KeyGen(\secpar)$.] Runs
-  $\parm \gets \Setup(\secpar)$ from $\CUASGen^{hide-iss}$, as well as $n$
-  instances of $(\ipk_i,\isk_i) \gets \IKeyGen(\parm,\fissue^{\sring})$, where
-  $\sring = \lbrace \ipk_i \rbrace_{i\in[n]}$, and $(\opk,\osk) \gets
-  \OKeyGen(\parm,\finsp^0)$. 
-\item[$\langle \cred,\bot,\utrans,\bot \rangle \gets
-  \langle \Obtain(\usk,\scred,\attrs),\Issue(\isk,\sipk=\attrs,\attrs)\rangle.$]
-  A user, with $\usk=\isk_i$ and $\upk=\ipk_i$ for some $i \in [n]$, acts both
-  as user and issuer to self-issue a credential for an attribute set \attrs such
-  that $\attrs \subseteq \sring$, where \sring is the set of public keys used to
-  define $\fissue^{\sring}$.
-\item[$(\sig,\yeval) \gets \Sign(\usk,\opk,\cred,\msg,\feval).$] As in
-  $\CUASGen^{hide-iss}$, using $\feval^{\sring,\dattrs}$ as evaluation
-  function, using as signing credential the self-issued credential. Note that
-  $\dattrs \subseteq \attrs = \sring$ defines the subring to use for the
-  produced signature.
-\item[$1/0 \gets \Verify(\opk,\sipk,\sig,\yeval,\msg,\feval).$] As in
-  $\CUASGen^{hide-iss}$, making $\sipk=\yeval=\lbrace \ipk_i
-  \rbrace_{i\in\dattrs}$.
+  $\parm \gets \Setup(\secpar)$ from $\CUASGen^{hide-iss}$. Then, for each of
+  the $i \in [n]$ users to generate, run $(\upk_i,\usk_i) \gets \KeyGen(\parm)$,
+  and $\ipk_i \gets \ISet((\upk_i,\usk_i),\fissue^{\sring})$, where $\sring =
+  \lbrace \upk_i \rbrace_{i\in[n]}$. Run also $(\opk,\osk) \gets \OKeyGen(\parm,
+  \finsp^0)$. Set $\pk_i \gets (\ipk_i,\opk)$ and $\sk_i \gets \usk_i$, for
+  $i\in[n]$.
+\item[$\Sig \gets \Sign(\sk_i,R,\msg).$]
+  The signing user, with $\sk_i=\usk$ and $\pk_i=(\ipk_i,\opk)$ for some $i \in
+  [n]$, where $\pk_i \in R$, first acts both as user and issuer to self-issue a
+  credential \Cred over an attribute set \attrs such that $\attrs \subseteq
+  \sring$. The user picks some \dattrs such that $\dattrs \subseteq [|\attrs|]$,
+  and computes the ring signature by running $\Sig = (\sig,\yeval) \gets
+  \Sign(\usk,\opk,\Cred,\msg,\feval^{\sring,\dattrs})$ from
+  $\CUASGen^{hide-iss}$. Note that \dattrs defines the public keys within
+  $\attrs \subseteq \sring$ to be revealed through \yeval.
+\item[$1/0 \gets Verify(R,\Sig,\msg)$.] Parses \Sig as $(\sig,\yeval)$ and
+  runs $\Verify(\opk,\yeval=\lbrace \ipk_i\rbrace_{i\in\dattrs},\sig,\yeval,
+  \msg,\feval^{\sring,\dattrs})$ as in $\CUASGen^{hide-iss}$.
 \end{description}
 
 %Note that by using, e.g., $\finsp^{\upk}$, we essentially get a ring signature
