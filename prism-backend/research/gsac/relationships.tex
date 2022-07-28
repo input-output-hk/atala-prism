@@ -560,7 +560,7 @@ available in \appref{app:related-proofs}.
 \label{ssec:related-models-mps}
 
 Multimodal Private Signatures (or, rather, a close relative, see next) are
-directly implementable as a $(\fissue^1,\feval^{\yeval^1},
+directly implementable as a $(\fissue^{single,F,I,L},\feval^{\yeval^1},
 \finsp^{\ast})$-\CUASGen restriction, where $\feval^{\yeval^1}$ is any signature
 evaluation function that ignores the $\yeval^0$ output, and $\finsp^{\ast}$ is
 any open function. Concretely, by restricting to a system with one issuer and
@@ -607,16 +607,18 @@ variants such as anonymous credentials, as shown before.
 For the model of MPS schemes, we refer to the original paper \needcite.
 
 \subsubsection{\CUASMPS construction.} %
-As mentioned, any $(\fissue^1,\feval^{\yeval^1},\finsp^\ast)$-restriction of
-\CUASGen with only one issuer and opener, one credential per user, and one
-attribute per credential (the user secret key), implements an MPS scheme where
-$F=\feval^{\yeval^1}$ and $G=\finsp^\ast$. The restriction to one credential per
-user, and one attribute per credential, can be done as in
-\appref{sapp:related-models-gs}. Finally, note that, in MPS, $G$ is further
-parameterized with a value $j$, which essentially is the result of applying $F$
-to the message and signer identity, and is not leaked to the opener nor any
-other third party. The equivalent in \UAS is the $\yeval^1$ value, which is
-encrypted with a single-use key pair, and is an input of \yinsp.
+As mentioned, any $(\fissue^{single,F,I,L},\feval^{\yeval^1},
+\finsp^\ast)$-restriction of \CUASGen with only one issuer and opener, one
+credential per user, and one attribute per credential (the user secret key),
+implements an MPS scheme where $F=\feval^{\yeval^1}$ and $G=\finsp^\ast$.
+With these functions, the construction is essentially as in
+\secref{ssec:related-models-gs}.
+%
+Finally, note that, in MPS, $G$ is further parameterized with a value $j$, which
+essentially is the result of applying $F$ to the message and signer identity,
+and is not leaked to the opener nor any other third party. The equivalent in
+\UAS is the $\yeval^1$ value, which is encrypted with a single-use key pair, and
+is an input of \yinsp.
 
 \paragraph{Security of \CUASMPS.} %
 We state next the theorems for the security of \CUASMPS. The proofs are
