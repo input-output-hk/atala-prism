@@ -491,11 +491,16 @@ parameter.
 \paragraph{Augmenting with NIZKs.} %
 \todo{This is quite informal. Perhaps expand...} 
 In the previous \SBCM scheme, it is straightforward to require that the party
-running \SBCMCom proves some arbitrary claim over the messages to be signed
-(both those in committed or plaintext form), as well as over possibly extra
-auxiliary data. This can be done by having this party add a NIZK over the
-corresponding NP statement, which has later to be verified by the party running
-\SBCMSign.
+running \SBCMCom proves, in zero knowledge, some arbitrary claim over the
+messages to be signed (both those in committed or plaintext form), as well as
+over possibly extra auxiliary data. This can be done by having this party add a
+NIZK over the corresponding NP statement, which has later to be verified by the
+party running \SBCMSign.
+%
+Clearly, if the base \SBCM scheme satisfies blindness, then extending it with a
+zero-knowledge NIZK proof over the (blindly) signed messages, still maintains
+blindness (the adversary cannot distinguish which committed messages set is
+signed, in the blindness game).
 %
 We use this extension in our \CUASGen construction, and thus extend the previous
 syntax for interactive signing  as follows, to account for an extra NIZK
@@ -618,8 +623,8 @@ manner. That is, once $\adv$ outputs its two sets of messages to be signed in
 committed form (i.e., $\overline{\smsg}_0$ and $\overline{\smsg}_1$, it feeds
 them directly to its environment in \ExpComHideb; \advB awaits for the response
 (a commitment of $\overline{\smsg}_b$), and forwards it to $\adv$. Finally,
-\advB outputs whatever $\adv$ outputs. Clearly, if $\adv$ wins the blindness
-game for \SBCM with non-negligible probability, so does \advB agains the hiding
+\advB outputs whatever $\adv$ outputs. If $\adv$ wins the blindness
+game for \SBCM with non-negligible probability, so does \advB against the hiding
 game of the commitment scheme.
 
 %%% Local Variables:

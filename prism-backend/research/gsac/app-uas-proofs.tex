@@ -1,11 +1,44 @@
 \section{Correctness and Security Proofs for \CUASGen}
 \label{app:uas-proofs}
 
-First, we define the \SimSetup, \ExtractIssue, \ExtractSign, \IdentifyCred and
-\IdentifySig functions that are needed for some of the properties to be
-meaningful, in \figref{fig:helper-funcs}.
+\todo{Do we only need this for \fissue function?}
+First, we formally define now what do we mean with \UAS-acceptable \fissue,
+complementing the informal \defref{def:uas-acc-func}. 
 
 \begin{figure}[ht!]
+  \centering  
+  \scalebox{0.9}{
+    \procedure{$\Exp^{\UAS-acc-b}_\adv(1^\secpar)$}{%
+      \parm \gets \Setup(1^\secpar) \\
+      \pcfor d\in\bin: \\
+      \pcind (\upk_d,\usk_d) \gets \KeyGen(\parm) \\
+      \pcind (\st,\attrs, \lbrace (\cidi_d,\cidu_d,\cattrs_{d,i}) \rbrace_{i\in[n]})
+      \gets \adv(\st,\upk_0,\upk_1) \\
+      \yissue^* \gets \fissue(\upk_b,
+      \lbrace (\cidi_b,\cattrs_{b,i}) \rbrace_{i\in[n]},
+      \attrs) \\
+      b^* \gets \adv(\st,\yissue*) \\
+      \pcreturn b=b^*
+    }
+  }
+  \label{fig:uas-acceptable}
+  \caption{Formal definition of \UAS-acceptable \fissue functions.}
+\end{figure}
+
+
+Next, we define the \SimSetup, \ExtractIssue, \ExtractSign functions. \SimSetup
+(formally defined in \figref{fig:helper-funcs}).essentially replaces the
+\Setup algorithm of each NIZK with the corresponding \NIZKSimSetup algorithm,
+and returns the generated parameters along with the
+trapdoors. \ExtractIssue and \ExtractSign simply run the \Extract functions
+of the corresponding \NIZK scheme, leveraging the trapdoor produced during
+\SimSetup. Note that, due to the zero-knowledge and simulation extractability
+properties (respectively) of the underlying NIZKs, the result of \SimSetup
+is indistinguishable from that of \Setup, and the extracted values match those
+used as witnesses in the proofs.
+
+\begin{figure}[ht!]
+  \centering  
   \scalebox{0.9}{
     \begin{minipage}[t]{\textwidth}
       \procedure{$\SimSetup(1^\secpar)$}{%
@@ -21,51 +54,51 @@ meaningful, in \figref{fig:helper-funcs}.
         \NIZKSimSetup^{\NIZKRel_{\Open}}(\NIZKsecpar) \\
         \pcreturn ((\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},
         \NIZKcrs_{\Sign},\NIZKcrs_{\Open},\AttrSpace), \\
-        \pcind (\trap_{\Issue},\trap_{\Sign},\trap_{\Open})) \\
+        \pcind (\trap_{\Issue},\trap_{\Sign},\trap_{\Open}))
       }
       
-      \procedure{$\ExtractIssue(\parm,\trap,\utrans)$}{%
-        \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Issue},\cdot,
-          \cdot,\cdot)$} \\
-        \textrm{Parse \trap as $(\trap_{\Issue},\cdot,\cdot)$, and
-          \utrans as $(\Ccom,\sipk,\cred,\NIZKproof)$} \\
-        \pcif \NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
-        \NIZKproof,(\Ccom,\attrs,\sipk)): \pcreturn \bot \\
-        (\usk,\credid,\scred,\attrs_{\scred}) \gets
-        \NIZKExtract^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
-        \trap_{\Issue},
-        (\Ccom,\attrs,\sipk),\NIZKproof) \\
-        \textrm{Let \credid be}~\suchthat~\trans[\credid] = \utrans;
-        \uid \gets \OWNR[\credid] \\        
-        \pcif \uid \in \HU \land \UK[\uid] \neq \usk: \pcreturn \bot \\
-        \pcelse: \\
-        \pcind \pcif \UK[\uid] = \bot: \UK[\uid] \gets \usk \\
-        \pcind \pcelse \pcif \UK[\uid] \neq \usk: \pcreturn 0 \\
-        \pcreturn (\uid,\usk,\credid,\scred,\attrs_{\scred}) \\
-      }
+      % \procedure{$\ExtractIssue(\parm,\trap,\utrans)$}{%
+      %   \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Issue},\cdot,
+      %     \cdot,\cdot)$} \\
+      %   \textrm{Parse \trap as $(\trap_{\Issue},\cdot,\cdot)$, and
+      %     \utrans as $(\Ccom,\sipk,\cred,\NIZKproof)$} \\
+      %   \pcif \NIZKVerify^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
+      %   \NIZKproof,(\Ccom,\attrs,\sipk)): \pcreturn \bot \\
+      %   (\usk,\credid,\scred,\attrs_{\scred}) \gets
+      %   \NIZKExtract^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},
+      %   \trap_{\Issue},
+      %   (\Ccom,\attrs,\sipk),\NIZKproof) \\
+      %   \textrm{Let \credid be}~\suchthat~\trans[\credid] = \utrans;
+      %   \uid \gets \OWNR[\credid] \\        
+      %   \pcif \uid \in \HU \land \UK[\uid] \neq \usk: \pcreturn \bot \\
+      %   \pcelse: \\
+      %   \pcind \pcif \UK[\uid] = \bot: \UK[\uid] \gets \usk \\
+      %   \pcind \pcelse \pcif \UK[\uid] \neq \usk: \pcreturn 0 \\
+      %   \pcreturn (\uid,\usk,\credid,\scred,\attrs_{\scred}) \\
+      % }
       
-      \procedure{$\ExtractSign(\parm,\trap,\oid,\siid,\sig,\yeval,\msg,\feval)$}{%
-        \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Sign},
-          \cdot)$} \\
-        \textrm{Parse \trap as $(\cdot,\trap_{\Sign},\cdot)$, and
-          \sig as $(\NIZKproof,\ceval,\cinsp)$} \\
-        \textrm{Parse $\PUBOK[\oid]$ as $(\opk,\cdot)$ and let $\sipk \gets
-          \PUBIK[\siid]$} \\
-        \pcif \NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKproof,
-        (\msg,\feval,\yeval,\Ec,\sipk,\opk)): \pcreturn \bot \\
-        (\usk,\scredid,\scred,\attrs_{\scred},\yinsp,r) \gets
-        \NIZKExtract^{\NIZKRel_{\Sign}}(\NIZKcrs^{\NIZKRel_{\Sign}},
-        \NIZKtrap_{\Sign},
-        (\msg,\feval,\yeval^0,\ceval,\cinsp,\sipk,\opk,\widetilde{\Eek}),
-        \NIZKproof) \\
-        \pcif \exists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \\
-        \pcreturn (\uid,\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
-        \pcelse \textrm{\todo{Need to add \cid as explicit attribute to the
-            credentials (chosen by issuer) so that can bookkeep.}} \\
-        \pcelse \textrm{\todo{then adapt the rest}} \\
-        \pcind \pcelse \pcif \UK[\uid] \neq \usk: \pcreturn 0 \\
-        \pcreturn (\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
-      }
+      % \procedure{$\ExtractSign(\parm,\trap,\oid,\siid,\sig,\yeval,\msg,\feval)$}{%
+      %   \textrm{Parse \parm as $(\cdot,\cdot,\cdot,\cdot,\cdot,\NIZKcrs_{\Sign},
+      %     \cdot)$} \\
+      %   \textrm{Parse \trap as $(\cdot,\trap_{\Sign},\cdot)$, and
+      %     \sig as $(\NIZKproof,\ceval,\cinsp)$} \\
+      %   \textrm{Parse $\PUBOK[\oid]$ as $(\opk,\cdot)$ and let $\sipk \gets
+      %     \PUBIK[\siid]$} \\
+      %   \pcif \NIZKVerify^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKproof,
+      %   (\msg,\feval,\yeval,\Ec,\sipk,\opk)): \pcreturn \bot \\
+      %   (\usk,\scredid,\scred,\attrs_{\scred},\yinsp,r) \gets
+      %   \NIZKExtract^{\NIZKRel_{\Sign}}(\NIZKcrs^{\NIZKRel_{\Sign}},
+      %   \NIZKtrap_{\Sign},
+      %   (\msg,\feval,\yeval^0,\ceval,\cinsp,\sipk,\opk,\widetilde{\Eek}),
+      %   \NIZKproof) \\
+      %   \pcif \exists \uid \in \HU~\suchthat~\UK[\uid] = \usk: \\
+      %   \pcreturn (\uid,\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
+      %   \pcelse \textrm{\todo{Need to add \cid as explicit attribute to the
+      %       credentials (chosen by issuer) so that can bookkeep.}} \\
+      %   \pcelse \textrm{\todo{then adapt the rest}} \\
+      %   \pcind \pcelse \pcif \UK[\uid] \neq \usk: \pcreturn 0 \\
+      %   \pcreturn (\usk,\scred,\attrs_{\scred},\yeval^1,\yinsp) \\
+      % }
       
       % % \procedure{$\IdentifyCred(\parm,\trap,\usk,\attrs_{\cred},\cred)$}{%
       % %   \pcreturn \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) \\
@@ -94,8 +127,7 @@ meaningful, in \figref{fig:helper-funcs}.
     \end{minipage}
   }
   \label{fig:helper-funcs}
-  \caption{Definition of helper functions \ExtractIssue, \ExtractSign,
-    \IdentifyCred, and \IdentifySig, for \CUASGen.}
+  \caption{Definition of helper function \SimSetup, for \CUASGen.}
 \end{figure}
 
 \subsection{Correctness}
@@ -119,50 +151,26 @@ meaningful, in \figref{fig:helper-funcs}.
 \subsection{Issuance Anonymity}
 
 \begin{proof}[\thmref{thm:issue-anonymity-uas}; Issuance anonymity of \CUASGen]
-  We prove the special case in which the adversary makes only one query to the
-  \OBTCHALb oracle. The generalization to polynomially many queries follows from
-  a standard hybrid argument.
+  % We prove the special case in which the adversary makes only one query to the
+  % \OBTCHALb oracle. The generalization to polynomially many queries follows from
+  % a standard hybrid argument.
 
-  Let $G_0=\ExpIssAnonb(1^\secpar)$. We define $G_1$ by replacing the calls to
-  \NIZKSetup in $G_0$, for the $\NIZK^{\Issue}$ and $\NIZK^{\Sign}$ systems by
-  calls to their corresponding \NIZKSimSetup. By zero-knowledgeness of the
-  NIZKs, both games are indistinguishable.
+  First, observe that, excluding the \yissue value output revealed to the issuer
+  during the interactive issuance protocol, \CUASGen essentially runs an
+  interactive signing protocol of an \SBCM scheme, augmented with a
+  zero-knowledge NIZK for $\NIZKRel_{\Issue}$. As stated in \appref{sapp:sbcm},
+  blindness of the (non-augmented) \SBCM scheme, and the zero-knowledge property
+  of the NIZK for $\NIZKRel_{\Issue}$, ensure that the challenge credentials are
+  indistinguishable between thesmselves. Concretely, we can replace the NIZK
+  proofs sent by the user by simulated proofs.
 
-  Next, we simulate the NIZK proofs produced by \Obtain within the \OBTCHALb
-  oracle and, consequently, the NIZK proofs produced by \Sign in \SIGN for
-  signatures from the challenge user and credentials. Then, we show that the
-  adversary cannot distinguish executions for $b=0$ from executions for $b=1$,
-  except with negligible probabability.
-  
-  More concretely, on the one hand, let $G_1^0$ to be $G_1$, conditioned on
-  $b=0$. Concretely, the proofs sent by the challenge user $\cuid_0$ to the
-  adversarial issuer are of
-  the form $\pi^*_0 =\NIZKProve^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},(\UK[\cuid_0],
-  \CCRED[\cscid_0],\ATTR[\cscid_0],r),(\Ccom,\attrs,\PUBIK[\cscid_0]))$. The
-  NIZK proofs included in the signatures produced by $\cuid_0$ are defined
-  correspondingly, but for $\NIZK^{\NIZKRel_{\Sign}}$. From $G_1^0$, we define
-  $G_2^0$, but instead of using \NIZKProve, we use \NIZKSim (for both \Issue
-  and \Sign). That is, the proofs for credential requests are generated as
-  $\pi^s_0 =\NIZKSim^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},\tau,(\Ccom,\attrs,
-  \PUBIK[\cscid_0]))$. By zero-knowledge of the NIZK systems for \Issue and
-  \Sign, $G_2^0$ is indistinguishable from $G_1^0$.
-
-  On the other hand, following the same process for $G_1^1$ and $G_2^1$.
-  Concretely, for the case of the proofs at issuance time, they are of the
-  shape $\pi^s_1 =\NIZKSim^{\NIZKRel_{\Issue}}(\NIZKcrs_{\Issue},\tau,(\Ccom,\attrs,
-  \PUBIK[\cscid_1]))$. Note first that $\PUBIK[\cscid_1] = \PUBIK[\cscid_0]$,
-  by definition of the \OBTCHALb oracle. Hence, the produced proofs are exactly
-  the same independently on the value of the bit $b$.
-
-  Thus, $\AdvIssAnon=|\Pr\lbrack
-  \ExpIssAnono(1^\secpar)=1\rbrack-\Pr\lbrack\ExpIssAnonz(1^\secpar)=1\rbrack|$.
-  As argued, $G_1$ is indistinguishable from $\ExpIssAnonb$, so
-  $\AdvIssAnon \approx |\Pr\lbrack G_1^1(1^\secpar)=1\rbrack-\Pr\lbrack
-  G_1^0(1^\secpar)=1\rbrack| \approx
-  |\Pr\lbrack G_2^1(1^\secpar)=1\rbrack-\Pr\lbrack
-  G_2^0(1^\secpar)=1\rbrack|$. Since $G_2^1=G_2^0$, it follows that
-  \AdvIssAnon is negligible.
-  
+  Finally, note that, to avoid trivial wins by the adversary, the issuance
+  anonymity game requires that \fissue either rejects (returns $\yissue=0$) for
+  both challenge users, or it accepts for both (returns $\yissue \neq 0$).
+  Moreover, in the latter case, since we require that \fissue functions are
+  \UAS-acceptable functions, the resulting \yissue value is hiding with respect
+  to the input arguments. Thus, adding \yissue does not allow the adversary to
+  distinguish credential issuance protocols.  
 \end{proof}
 
 \subsection{Signature Anonymity}

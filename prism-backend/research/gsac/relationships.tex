@@ -17,8 +17,7 @@ we rely on the functions described in \figref{fig:func-restrictions}.
       \textbf{Issuance functions:}
       \begin{align}
         & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{single,F,I,L}(\upk,\cdot,\cdot) \coloneqq
-          \pcif F(I,\upk) \in L~\pcreturn 0;~\pcelse \pcreturn F(I,\upk)
+        & \fissue^{single,F,I}(\upk,\cdot,\cdot) \coloneqq \pcreturn F(I,\upk)
           \nonumber \\
         & \fissue^{\sring}(\upk,\attrs,\cdot) \coloneqq
           \pcreturn (\attrs = \sring \land \upk \in \attrs) \nonumber
@@ -153,9 +152,11 @@ reference, we replicate the security games in \figref{fig:model-gs}.
 \end{figure}
 
 \subsubsection{\CUASGS construction.} %
-We show that the $(\fissue^{single,F,IL},\feval^0,\finsp^{\upk})$-\CUASGen
+\todo{Clarify how $\fissue^{single,F,I}$ works! This is also common with other
+  constructions...}
+We show that the $(\fissue^{single,F,I},\feval^0,\finsp^{\upk})$-\CUASGen
 restriction, is a secure group signature scheme according to \cite{bsz05}.
-Observe that the $\fissue^{single,F,I,L}$ function is further parameterized with
+Observe that the $\fissue^{single,F,I}$ function is further parameterized with
 a list $L$ maintained by the issuer and must be fetched by users prior to
 joining. It restricts that any user can have at most one credential (associated
 to a same user key pair). We first quickly define the algorithms, and then
@@ -163,7 +164,7 @@ prove security.
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs \Setup from \CUASGen,
-  and one instance of \KeyGen and \ISet with $\fissue^{single,F,I,L}$ (both for
+  and one instance of \KeyGen and \ISet with $\fissue^{single,F,I}$ (both for
   the same user, who will be the only issuer in the GS scheme) and \OKeyGen.
   Assigns the public keys to \gpk.
 \item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \KeyGen from \CUASGen.
@@ -509,6 +510,10 @@ it sets $\yeval^0 \gets \dattrs(\cred)$ and $\yeval^1 \gets V$; $\yeval^1$ is
 then used by $\finsp^F$ to compute $\yinsp \gets (F(\yeval^1,\cidi),
 F(\yeval^1,\cidu))$. Thus, if the verifier $V$ wants to revoke a credential, all
 it has to do is ask the opener to decrypt $\yinsp$, via $RetrieveCredHandle$.
+Note that, in the $\feval^{\dattrs,F,V,L}$ function, $L$ is a sort of variable.
+However, each verifier $V$ may just update its own list with some reasonable
+frequency (e.g., daily), and use a pre-compiled version of
+$\feval^{\dattrs,F,V,L}$ in which $L$ is actually a constant.
 %
 In more detail, the algorithms are as follows:
 
@@ -560,7 +565,7 @@ available in \appref{app:related-proofs}.
 \label{ssec:related-models-mps}
 
 Multimodal Private Signatures (or, rather, a close relative, see next) are
-directly implementable as a $(\fissue^{single,F,I,L},\feval^{\yeval^1},
+directly implementable as a $(\fissue^{single,F,I},\feval^{\yeval^1},
 \finsp^{\ast})$-\CUASGen restriction, where $\feval^{\yeval^1}$ is any signature
 evaluation function that ignores the $\yeval^0$ output, and $\finsp^{\ast}$ is
 any open function. Concretely, by restricting to a system with one issuer and
@@ -607,7 +612,7 @@ variants such as anonymous credentials, as shown before.
 For the model of MPS schemes, we refer to the original paper \needcite.
 
 \subsubsection{\CUASMPS construction.} %
-As mentioned, any $(\fissue^{single,F,I,L},\feval^{\yeval^1},
+As mentioned, any $(\fissue^{single,F,I},\feval^{\yeval^1},
 \finsp^\ast)$-restriction of \CUASGen with only one issuer and opener, one
 credential per user, and one attribute per credential (the user secret key),
 implements an MPS scheme where $F=\feval^{\yeval^1}$ and $G=\finsp^\ast$.

@@ -110,8 +110,8 @@ the user who computes them, and has to prove correctness of such computation.
 We give concrete examples in \secref{sec:relationships}, and define them next:
 
 \begin{description}
-\item[$\fissue: (\upk,\attrs,\lbrace (\cid_i,\cattrs_i)
-  \rbrace_{i \in [n]}) \rightarrow \yissue$.] Chosen
+\item[$\fissue: (\upk,\lbrace (\cid_i,\cattrs_i)\rbrace_{i \in [n]},\attrs)
+  \rightarrow \yissue$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
   defines the customized conditions required by the issuer to grant a credential
   over attributes \attrs, when requested by a user with public key \upk,
@@ -126,8 +126,9 @@ We give concrete examples in \secref{sec:relationships}, and define them next:
   receive the user public key \upk, a set of credentials with identifiers
   and attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$
   (where $n \ge 1$), and the message to be signed \msg. \feval outputs two
-  values, $\yeval^0$ and $\yeval^1$, which can be used to modulate the bevahiour
-  of \finsp, and must belong in a well defined set \rngfeval. For readability,
+  values, $\yeval^0$ and $\yeval^1$. $\yeval^0$ is output directly alongside the
+  signature,  both can in addition be used to modulate the behaviour of
+  \finsp, and must belong in a well defined set \rngfeval. For readability,
   we write $\Yeval = (\yeval^0,\yeval^1)$.
 \item[$\finsp: (\Yeval,\upk,\lbrace \cid_i,\cattrs_i\rbrace_{i \in [n]},
   \msg) \rightarrow \yinsp$.]
@@ -146,17 +147,29 @@ governs the information that may be revealed after signing, and is defined by
 openers when they set up their key pair. Thus even though signers and verifiers
 may negotiate to use any opener for a given signature, it is not possible for
 an opener to change the chosen function. In the sequel, we restrict to
-\UAS-acceptable functions, which we will also use to give \CUASGen restrictions.
-Both concepts are defined next.
+\UAS-acceptable functions, defined as follows:
 
-% \begin{definition}{(\UAS-acceptable functions)}
-%   \label{def:uas-acc-func}
-%   We say that a \fissue (similarly, \feval or \finsp) function chosen from some
-%   family \famfissue (similarly, \famfeval or \famfinsp) is \UAS-acceptable if it
-%   is one-way with respect to $(\upk,\usk)$. That is, given the output of \fissue
-%   (similarly, \feval or \finsp), it is at least computationally unfeasible to
-%   recover the $(\upk,\usk)$ value used to produce it.
-% \end{definition}
+\begin{definition}{(\UAS-acceptable functions)}
+  \label{def:uas-acc-func}
+  We say that a \fissue function chosen from some family \famfissue is
+  \UAS-acceptable if its outputs are hiding with respect to its \upk and
+  $\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}$ inputs.
+  %
+  Similarly, a \feval function chosen from some family \famfeval is
+  \UAS-acceptable if the $\yeval^1$ component of its output is hiding with
+  respect to its \upk and $\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}$ inputs.
+\end{definition}
+
+That is, at a high level we require that \fissue and \feval functions do not
+reveal anything about the signer. \todo{Since the concept is quite intuitive, we
+  defer the formal definition to \appref{app:XXX}}. We give in
+\secref{ssec:generic-construction-uas}
+a generic \CUASGen construction that assumes \UAS-acceptable functions. Next, we
+define the concept of \CUASGen restrictions. Briefly, these are special cases of
+our generic construction that target a concrete variant of the utility-privacy
+tradeoff by defining concrete \fissue, \feval and \finsp functions. Security of
+\CUASGen implies security of its restrictions, as long as the chosen functions
+are \CUASGen-acceptable.
 
 \begin{definition}{(\CUASGen restrictions)}
   \label{def:uas-restrictions}
@@ -166,17 +179,6 @@ Both concepts are defined next.
   \CUASGen, instantiated with $\fissue^a$, $\feval^b$, and $\finsp^c$, is a
   $(\fissue^a,\feval^b,\finsp^c)$-restriction of \CUASGen.
 \end{definition}
-
-% To summarize the previous, we depict in \figref{fig:uas-signature} the structure
-% of an \UAS signature, including its main components and how they enable the
-% previously stated generalization claims.
-
-% \begin{figure}[ht!]
-%   \centering
-%   %\input{figures/uas-signature.tex}
-%   \caption{Structure of an \UAS signature.}
-%   \label{fig:uas-signature}
-% \end{figure}
 
 \subsection{Security Model}
 \label{ssec:model-uas}
@@ -478,7 +480,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \cid_j \in \CCRED: \\
           \pcind \pcreturn \bot \\
           \Sig \gets \Sign(\UK[\uid],\PUBOK[\oid],\scid,\msg,\feval) \\
-          \Yeval=(\yeval^0,\yeval^1) \gets \feval(\UK[\uid],\scid,\msg) \\
+          \Yeval=(\yeval^0,\yeval^1) \gets \feval(\PUBUK[\uid],\scid,\msg) \\
           \SIG[\uid] \gets \SIG[\uid] \cup
           \lbrace (\oid,\scid,\Sig,\Yeval,\msg,\feval) \rbrace \\
           \pcreturn \Sig \\
@@ -527,7 +529,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \hspace*{5.25em}$\lbrace (\ccid_{0,i},\ccid_{1,i}) \rbrace_{i\in[n]})$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
-          \pcif \CRED[(\cdot,\cidu)] \neq \bot: \pcreturn \bot \\
+          \pcif \CRED[(\cdot,\cidu)] \neq \bot \lor
+          \CCRED[(\cdot,\cidu)] \neq \bot: \pcreturn \bot \\
           \pcif \exists i\in[n]~\suchthat~
           \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \pcreturn \bot \\
           \pcif \pcfor d \in \bin,~ \exists \cid' \in \cscid_d~\suchthat~\cid'
@@ -1282,14 +1285,13 @@ $\NIZKRel_{\Open}$, described next and specified in CS notation \needcite
 in \figref{fig:nizkrels}.
 
 \begin{description}
-\item[$\NIZKRel_{\Issue}$:] For NIZK proofs at issuance time. Requires that the
-  owner commits to, and proves knowledge of, \usk. It also requires that any
+\item[$\NIZKRel_{\Issue}$:] For NIZK proofs at issuance time. Requires users to
+  prove knowledge of \usk and the related \upk. It also requires that any
   additional credential supporting the request be a valid credential (signed by
-  some issuer) and bound to \usk. Finally, it also enforces the
-  corresponding \fissue policy.
+  some issuer) and bound to \upk, and enforces the corresponding \fissue policy.
 \item[$\NIZKRel_{\Sign}$:] For NIZK proofs at signing time. Ensures that
   signatures ``encode'' the correct signature evaluation and opening values, and
-  that any credential used to create the signature is bound to the same \usk.
+  that any credential used to create the signature is bound to the same \upk.
 \item[$\NIZKRel_{\Open}$:] For NIZK proofs at opening time. Ensures that the
   utility information extracted by the \Open algorithm is correct.
 \end{description}
@@ -1299,25 +1301,20 @@ in \figref{fig:nizkrels}.
   \scalebox{0.9}{
     \input{figures/nizk.tex}
   }
-  \caption{CS specification of the NP relations used in \CUASGen.
-  \todo{Is $\C = \CCommit(\usk;r)$ at Issue needed now that \upk is added?}}
+  \caption{CS specification of the NP relations used in \CUASGen.}
   \label{fig:nizkrels}
 \end{figure}
 
 From them, we build \CUASGen as follows.
-\todo{Check if \SSetup etc is still needed...}
 
 \paragraph{$\parm \gets \Setup(\secpar)$.} %
 The setup process essentially generates the public parameters for all the
 building blocks. It runs $\Cparm \gets \CSetup(\secpar)$, $\SBCMparm \gets
-\SBCMSetup(\secpar)$, $\Sparm \gets \SSetup(\secpar)$, $\Eparm \gets
-\ESetup(\secpar)$, $\NIZKcrs_{\Issue} \gets \NIZKSetup^{\NIZKRel_{\Issue}}
-(\secpar)$, $\NIZKcrs_{\Sign} \gets \NIZKSetup^{\NIZKRel_{\Sign}}(\secpar)$, and
-$\NIZKcrs_{\Open} \gets \NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$. Return $
-(\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},
-\NIZKcrs_{\Open})$. % Many of these parameter setup algorithms can
-% actually be run by separate entities. For simplicity of exposition, we bundle
-% them together here.
+\SBCMSetup(\secpar)$, $\Eparm \gets \ESetup(\secpar)$, $\NIZKcrs_{\Issue} \gets
+\NIZKSetup^{\NIZKRel_{\Issue}}(\secpar)$, $\NIZKcrs_{\Sign} \gets
+\NIZKSetup^{\NIZKRel_{\Sign}}(\secpar)$, and $\NIZKcrs_{\Open} \gets
+\NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$. Return $(\Cparm,\SBCMparm,\Eparm,
+\NIZKcrs_{\Issue},\NIZKcrs_{\Sign},\NIZKcrs_{\Open})$.
 
 % \paragraph{$(\ipk,\isk) \gets \IKeyGen(\parm,\fissue)$.} %
 % Each issuer first parses \parm as $(\cdot,\SBCMparm,
@@ -1327,17 +1324,14 @@ $\NIZKcrs_{\Open} \gets \NIZKSetup^{\NIZKRel_{\Open}}(\secpar)$. Return $
 % \fissue,\sig_{\fissue})$, $\isk \gets \Ssk$ and return $(\ipk,\isk)$.
 
 \paragraph{$(\upk,\usk) \gets \KeyGen(\parm)$.} %
-Each user first parses \parm as $(\cdot,\SBCMparm,
-\cdot,\cdot,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\SBCMvk,\SBCMsk) \gets
-\SBCMKeyGen(\SBCMparm)$, $\upk \gets (\parm,\SBCMvk)$, $\usk \gets \SBCMsk$,
-and returns $(\upk,\usk)$.
+Each user first parses \parm as $(\cdot,\SBCMparm,\cdot,\cdot,\cdot,\cdot)$.
+Then, runs $(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$, $\upk \gets (\parm,
+\SBCMvk)$, $\usk \gets \SBCMsk$, and returns $(\upk,\usk)$.
 
 \paragraph{$(\opk,\osk) \gets \OKeyGen(\parm,\finsp)$.} %
-Each opener first parses \parm as $(\cdot,\cdot,
-\cdot,\Eparm,\cdot,\cdot,\cdot,\cdot)$. Then, runs $(\Svk,\Ssk) \gets \SKeyGen
-(\Sparm)$, $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$, $\sig_{\finsp} \gets \SSign
-(\Ssk,\finsp)$, $\opk \gets (\Sparm,\Svk,\Eek,\finsp,\sig_{\finsp})$, and $\osk
-\gets (\Ssk,\Edk)$.
+Each opener parses \parm as $(\cdot,\cdot,\Eparm,\cdot,\cdot,\cdot)$.
+Then, runs $(\Eek,\Edk) \gets \EKeyGen(\Eparm)$, and sets, $\opk \gets (\Eek,
+\finsp)$, and $\osk \gets \Edk$.
 
 \paragraph{$\ipk \gets \ISet((\upk,\usk),\fissue)$.} %
 A user willing to become an issuer just sets $\ipk \gets (\upk,\fissue)$, and
@@ -1352,32 +1346,30 @@ each $\cred_i$ is issued by an issuer with public key $\ipk_i$, and
 attests attributes $\cattrs_i$. The user requests a signature on a commitment to
 the user key, as well as on $\cid=(\cidi,\cidu)$ and the attributes in \attrs.
 In addition, the user proves correct computation of the \fissue function set by
-the issuer based on the $\cred_i$ credentials and its user key pair.
+the issuer based on the $\cred_i$ credentials and its user public key.
 This is essentially achieved through an execution of an \SBCM interactive
 signing protocol with $\NIZKRel_{\Issue}$ as NP relation. Since \fissue is
 evaluated by the user, but depends on the \cidi value chosen by the issuer, the
-issuer first needs to send \cidi to the user.
-Then both issuer and user interact to produce the \SBCM signature, where the
+issuer first needs to send \cidi.
+Then both interact to produce the \SBCM signature, where the
 user runs $\SBCMCom^{\NIZKRel_{\Issue}}(\ipk,\usk,(\cid,\attrs),\lbrace (\cid_i,
 \cattrs_i,\cred_i)\rbrace_{i\in[n]},\lbrace \ipk_i \rbrace_{i\in[n]})$, and the
 issuer runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
 \rbrace_{i\in[n]})$. The credential \cred produced by the user is the result of
 the interactive signing protocol, whereas the issuer produces $(\yissue,
 \utrans)$, where \yissue is the output of \fissue, and \utrans is the
-communication transcript, which is a $(\Ccom,(\cid,\attrs),\lbrace
-\ipk_i \rbrace_{i\in[n]},\cred,\pi)$ tuple.
+communication transcript of the signing protocol.% , which is a $(\Ccom,(\cid,\attrs),\lbrace
+% \ipk_i \rbrace_{i\in[n]},\cred,\pi)$ tuple (see \appref{sapp:sbcm} for details).
 
 \paragraph{$\Sig \gets \Sign(\usk,\opk,
   \sCred=(\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)\rbrace_{i\in[n]}),
   \msg,\feval)$.} %
 In the signing algorithm, we make use of relation $\NIZKRel_{\Sign}$.
 % 
-The user first evaluates $\Yeval = (\yeval^0,\yeval^1) \gets \feval (\usk,
-\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$.
-Then, parses \opk as $(\Svk,\Eek,\finsp,\sig_{\finsp})$ and checks that
-$\Verify(\Svk,\sig_{\finsp},\finsp) = 1$
-(this step may be cached), to compute $\yinsp \gets \finsp((\yeval^0,
-\yeval^1),\usk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$, and encrypts
+The user first evaluates $\Yeval = (\yeval^0,\yeval^1) \gets \feval (\upk,
+\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$. Then, parses \opk as $(\Eek,
+\finsp)$, computes $\yinsp \gets \finsp((\yeval^0,\yeval^1),\upk,
+\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$, and encrypts
 \yinsp by running $\cinsp \gets \EEnc(\Eek,\yinsp; r')$ for some fresh
 randomness $r'$. Finally, the user
 computes $\NIZKproof \gets \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\usk,
@@ -1434,9 +1426,10 @@ the proofs to \appref{app:uas-proofs}.
 
 \begin{theorem}[Issuance anonymity of \CUASGen]
   \label{thm:issue-anonymity-uas}
-  If the NIZK systems used for $\NIZKRel_{\Issue}$ and $\NIZKRel_{\Sign}$ are
-  zero-knowledge, our \CUASGen construction satisfies issuance anonymity as
-  defined in \defref{def:issue-anonymity-uas}.
+  If the \SBCM scheme is blinding, the NIZK system used for $\NIZKRel_{\Issue}$ 
+  is zero-knowledge, and \fissue is a \CUASGen-acceptable function, our \CUASGen
+  construction satisfies issuance anonymity as defined in
+  \defref{def:issue-anonymity-uas}.
 \end{theorem}
 
 \begin{theorem}[Signature anonymity of \CUASGen]
