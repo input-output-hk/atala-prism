@@ -26,17 +26,19 @@ adversaries $\adv$, $\Pr[\ExpEUF(\Ssecpar) = 1]$ is a negligible function of the
 security parameter.
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{\textwidth}
-    \centering
-    \procedure{$\ExpEUF(\Ssecpar)$}{%
-      \Sparm \gets \SSetup(\Ssecpar) \\
-      (\Svk,\Ssk) \gets \SKeyGen(\Sparm) \\
-      (\Ssig,\msg) \gets \adv^{\SSign(\Ssk,\cdot)}(\Svk) \\
-      \pcif \SVerify(\Svk,\Ssig,\msg) = 0: \pcreturn 0 \\
-      \pcif \msg~\textrm{was not queried to \SSign}: \pcreturn 1 \\
-      \pcreturn 0
-    }
-  \end{minipage}
+  \scalebox{0.9}{  
+    \begin{minipage}[t]{\textwidth}
+      \centering
+      \procedure{$\ExpEUF(\Ssecpar)$}{%
+        \Sparm \gets \SSetup(\Ssecpar) \\
+        (\Svk,\Ssk) \gets \SKeyGen(\Sparm) \\
+        (\Ssig,\msg) \gets \adv^{\SSign(\Ssk,\cdot)}(\Svk) \\
+        \pcif \SVerify(\Svk,\Ssig,\msg) = 0: \pcreturn 0 \\
+        \pcif \msg~\textrm{was not queried to \SSign}: \pcreturn 1 \\
+        \pcreturn 0
+      }
+    \end{minipage}
+  }
   \label{fig:euf-game}
   \caption{Existential Unforgeability Game.}
 \end{figure}
@@ -67,20 +69,22 @@ a negligible function of \Esecpar, for any p.p.t. adversary \adv, where
 \ExpINDCCAiib is as defined in \figref{fig:indcca2-game}.
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{\textwidth}
-    \centering      
-    \procedure{$\ExpINDCCAiib(\Esecpar)$}{%
-      \Eparm \gets \ESetup(\Esecpar) \\
-      (\Eek,\Edk) \gets \EKeyGen(\Eparm) \\
-      b^* \gets \adv^{\ELR(b,\cdot,\cdot),\EDEC(\Edk,\cdot)}(\Eek),
-      ~\textrm{where:} \\
-      \pcind \ELR(b,\msg_0,\msg_1)~\textrm{returns}~\EEnc(\Eek,\msg_b),
-      ~\textrm{and} \\
-      \pcind \EDEC(\Edk,\Ec)~\textrm{returns}~\EDec(\Edk,\Ec) \\
-      \pcif \EDEC~\textrm{has been called with an output of \ELR, abort} \\
-      \pcreturn b^*
-    }
-  \end{minipage}
+  \scalebox{0.9}{  
+    \begin{minipage}[t]{\textwidth}
+      \centering      
+      \procedure{$\ExpINDCCAiib(\Esecpar)$}{%
+        \Eparm \gets \ESetup(\Esecpar) \\
+        (\Eek,\Edk) \gets \EKeyGen(\Eparm) \\
+        b^* \gets \adv^{\ELR(b,\cdot,\cdot),\EDEC(\Edk,\cdot)}(\Eek),
+        ~\textrm{where:} \\
+        \pcind \ELR(b,\msg_0,\msg_1)~\textrm{returns}~\EEnc(\Eek,\msg_b),
+        ~\textrm{and} \\
+        \pcind \EDEC(\Edk,\Ec)~\textrm{returns}~\EDec(\Edk,\Ec) \\
+        \pcif \EDEC~\textrm{has been called with an output of \ELR, abort} \\
+        \pcreturn b^*
+      }
+    \end{minipage}
+  }
   \label{fig:indcca2-game}
   \caption{IND-CCA2 Game.}
 \end{figure}
@@ -115,29 +119,31 @@ and (usually) hiding:
 \end{description}
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpComBind(\Csecpar)$}{%
-      \Cparm \gets \CSetup(\Csecpar) \\
-      (\msg_0,r_0,\msg_1,r_1) \gets \adv(\Cparm) \\
-      \Ccom_0 \gets \CCommit(\Cparm,\msg_0,r_0) \\
-      \Ccom_1 \gets \CCommit(\Cparm,\msg_1,r_1) \\
-      \pcif \msg_0 \neq \msg_1 \land \Ccom_0 = \Ccom_1: \pcreturn 1 \\
-      \pcreturn 0
-    }
-  \end{minipage}
-  \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpComHideb(\secpar)$}{%
-      \Cparm \gets \CSetup(\secpar) \\
-      b' \gets \adv^{COM(\Cparm,\cdot,\cdot)},~\textrm{where}: \\
-      \pcind COM(\Cparm,\msg_0,\msg_1): \\
-      \pcind \pcind r \getr \mathcal{R};~\pcreturn \CCommit(\Cparm,\msg_b,r) \\
-      % (\msg_0,\msg_1,st) \gets \adv(\Cparm) \\
-      % r \getr \mathcal{R} \\
-      % \Ccom \gets \CCommit(\Cparm,\msg_b,r) \\
-%      b' \gets \adv(st,\Ccom) \\
-      \pcreturn b'
-    }
-  \end{minipage}
+  \scalebox{0.9}{
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure{$\ExpComBind(\Csecpar)$}{%
+        \Cparm \gets \CSetup(\Csecpar) \\
+        (\msg_0,r_0,\msg_1,r_1) \gets \adv(\Cparm) \\
+        \Ccom_0 \gets \CCommit(\Cparm,\msg_0,r_0) \\
+        \Ccom_1 \gets \CCommit(\Cparm,\msg_1,r_1) \\
+        \pcif \msg_0 \neq \msg_1 \land \Ccom_0 = \Ccom_1: \pcreturn 1 \\
+        \pcreturn 0
+      }
+    \end{minipage}
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure{$\ExpComHideb(\secpar)$}{%
+        \Cparm \gets \CSetup(\secpar) \\
+        b' \gets \adv^{COM(\Cparm,\cdot,\cdot)},~\textrm{where}: \\
+        \pcind COM(\Cparm,\msg_0,\msg_1): \\
+        \pcind \pcind r \getr \mathcal{R};~\pcreturn \CCommit(\Cparm,\msg_b,r) \\
+        % (\msg_0,\msg_1,st) \gets \adv(\Cparm) \\
+        % r \getr \mathcal{R} \\
+        % \Ccom \gets \CCommit(\Cparm,\msg_b,r) \\
+        % b' \gets \adv(st,\Ccom) \\
+        \pcreturn b'
+      }
+    \end{minipage}
+  }
   \label{fig:com-games}
   \caption{Games for commitment schemes.}
 \end{figure}
@@ -247,55 +253,57 @@ $\Pr[\ExpNIZKSimExt(\NIZKsecpar)] = 1$ is a negligible function of \secpar,
 where \ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpNIZKComp(\NIZKsecpar)$}{%
-      \NIZKcrs \gets \Setup(\NIZKsecpar) \\
-      (\NIZKx,\NIZKw) \gets \adv(\NIZKcrs) \\
-      \pcif (\NIZKx,\NIZKw) \notin \NIZKRel: \pcreturn 0 \\
-      \NIZKproof \gets \Prove(\NIZKcrs,\NIZKx,\NIZKw) \\
-      b \gets \Verify(\NIZKcrs,\NIZKproof,\NIZKx) \\
-      \pcreturn b \\
-    }
-    \procedure{$\ExpNIZKSimExt(\NIZKsecpar)$}{%
-      (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\NIZKsecpar) \\
-      (\NIZKx,\NIZKproof) \gets \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}
-      (\NIZKcrs) \\
-      \pcind \textrm{Where}~\Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
-      \pcind \pcind
-      \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw) \in \NIZKRel \\
-      \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel \\
-      \NIZKw' \gets \Extract(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKproof) \\
-      \pcif \Verify(\NIZKcrs,\NIZKproof,\NIZKx) = 1 \land
-      (\NIZKx,\NIZKw') \notin \NIZKRel~\land \\
-      \pcind \NIZKx~\textrm{was not queried to $\Sim$ via $\Sim'$}: \\
-      \pcind \pcreturn 1 \\
-      \pcreturn 0
-    }    
-  \end{minipage}
-  \begin{minipage}[t]{0.5\textwidth}
-    \procedure{$\ExpNIZKSound(\NIZKsecpar)$}{%
-      \NIZKcrs \gets \Setup(\NIZKsecpar) \\
-      (\NIZKproof,\NIZKx) \gets \adv(\NIZKcrs) \\
-      \pcif \NIZKx \notin \NIZKLang \land
-      \Verify(\NIZKcrs,\NIZKproof,\NIZKx): \\
-      \pcind \pcreturn 0 \\
-      \pcreturn 1 \\
-    }
-    
-    \procedure{$\ExpNIZKZKb(\NIZKsecpar)$}{%
-      \pcif b = 0: \\
-      \pcind \NIZKcrs \gets \Setup(\NIZKsecpar) \\
-      \pcind \pcreturn \adv^{\Prove(\NIZKcrs,\cdot,\cdot)}(\NIZKcrs) \\
-      \pcif b = 1: \\
-      \pcind (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\secpar) \\
-      \pcind \pcreturn \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}(\NIZKcrs),~
-      \textrm{where} \\
-      \pcind \Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
-      \pcind \pcind \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw)
-      \in \NIZKRel \\
-      \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel
-    }    
-  \end{minipage}
+  \scalebox{0.9}{
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure{$\ExpNIZKComp(\NIZKsecpar)$}{%
+        \NIZKcrs \gets \Setup(\NIZKsecpar) \\
+        (\NIZKx,\NIZKw) \gets \adv(\NIZKcrs) \\
+        \pcif (\NIZKx,\NIZKw) \notin \NIZKRel: \pcreturn 0 \\
+        \NIZKproof \gets \Prove(\NIZKcrs,\NIZKx,\NIZKw) \\
+        b \gets \Verify(\NIZKcrs,\NIZKproof,\NIZKx) \\
+        \pcreturn b \\
+      }
+      \procedure{$\ExpNIZKSimExt(\NIZKsecpar)$}{%
+        (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\NIZKsecpar) \\
+        (\NIZKx,\NIZKproof) \gets \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}
+        (\NIZKcrs) \\
+        \pcind \textrm{Where}~\Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
+        \pcind \pcind
+        \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw) \in \NIZKRel \\
+        \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel \\
+        \NIZKw' \gets \Extract(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKproof) \\
+        \pcif \Verify(\NIZKcrs,\NIZKproof,\NIZKx) = 1 \land
+        (\NIZKx,\NIZKw') \notin \NIZKRel~\land \\
+        \pcind \NIZKx~\textrm{was not queried to $\Sim$ via $\Sim'$}: \\
+        \pcind \pcreturn 1 \\
+        \pcreturn 0
+      }    
+    \end{minipage}
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure{$\ExpNIZKSound(\NIZKsecpar)$}{%
+        \NIZKcrs \gets \Setup(\NIZKsecpar) \\
+        (\NIZKproof,\NIZKx) \gets \adv(\NIZKcrs) \\
+        \pcif \NIZKx \notin \NIZKLang \land
+        \Verify(\NIZKcrs,\NIZKproof,\NIZKx): \\
+        \pcind \pcreturn 0 \\
+        \pcreturn 1 \\
+      }
+      
+      \procedure{$\ExpNIZKZKb(\NIZKsecpar)$}{%
+        \pcif b = 0: \\
+        \pcind \NIZKcrs \gets \Setup(\NIZKsecpar) \\
+        \pcind \pcreturn \adv^{\Prove(\NIZKcrs,\cdot,\cdot)}(\NIZKcrs) \\
+        \pcif b = 1: \\
+        \pcind (\NIZKcrs,\NIZKtrap) \gets \SimSetup(\secpar) \\
+        \pcind \pcreturn \adv^{\Sim'(\NIZKcrs,\NIZKtrap,\cdot,\cdot)}(\NIZKcrs),~
+        \textrm{where} \\
+        \pcind \Sim'(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKw)~\textrm{returns} \\
+        \pcind \pcind \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw)
+        \in \NIZKRel \\
+        \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel
+      }    
+    \end{minipage}
+  }
   \label{fig:nizk-games}
   \caption{Games for Simulation-Extractable NIZK schemes.}
 \end{figure}
@@ -349,17 +357,19 @@ is unforgeable if, for all p.p.t. adversaries $\adv$, $\Pr[\ExpSBMEUF
 function of the security parameter. 
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{\textwidth}
-    \centering    
-    \procedure{$\ExpSBMEUF(\SBMsecpar)$}{%
-      \SBMparm \gets \SBMSetup(\SBMsecpar) \\
-      (\SBMvk,\SBMsk) \gets \SBMKeyGen(\SBMparm) \\
-      (\SBMsig,\smsg) \gets \adv^{\SSign(\SBMsk,\cdot)}(\SBMvk) \\
-      \pcif \SBMVerify(\SBMvk,\SBMsig,\smsg) = 0: \pcreturn 0 \\
-      \pcif \smsg~\textrm{was not queried to \SBMSign}: \pcreturn 1 \\
-      \pcreturn 0
-    }
-  \end{minipage}
+  \scalebox{0.9}{
+    \begin{minipage}[t]{\textwidth}
+      \centering    
+      \procedure{$\ExpSBMEUF(\SBMsecpar)$}{%
+        \SBMparm \gets \SBMSetup(\SBMsecpar) \\
+        (\SBMvk,\SBMsk) \gets \SBMKeyGen(\SBMparm) \\
+        (\SBMsig,\smsg) \gets \adv^{\SSign(\SBMsk,\cdot)}(\SBMvk) \\
+        \pcif \SBMVerify(\SBMvk,\SBMsig,\smsg) = 0: \pcreturn 0 \\
+        \pcif \smsg~\textrm{was not queried to \SBMSign}: \pcreturn 1 \\
+        \pcreturn 0
+      }
+    \end{minipage}
+  }
   \label{fig:sbm-games}
   \caption{Unforgeability game for \SBM schemes.}
 \end{figure}
@@ -451,41 +461,43 @@ adversaries $\adv$, $|\Pr[\ExpSBCMBlindo(\SBCMsecpar) = 1] -
 parameter.
 
 \begin{figure}[ht!]
-  \begin{minipage}[t]{\textwidth}
-    \centering
-    
-    \procedure[linenumbering]{$\ExpSBCMOMF(\SBCMsecpar)$}{%
-      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
-      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
-      ((\sig_1,\overline{\smsg}_1, \smsg_1),\dots,
-      (\sig_{n+1},\overline{\smsg}_{n+1},\smsg_{n+1})) \gets
-      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
-      \pcif \exists i \in [n+1]~\st~\SBCMVerify(\SBCMvk,\sig_i,
-      \overline{\smsg}_i,\smsg_i) = 0: \pcreturn 0 \\
-      \pcif \exists i \neq j \in [n+1]~\st~\smsg_i = \smsg_j \land
-      \overline{\smsg}_i = \overline{\smsg}_j: \pcreturn 0 \\
-      \pcif \langle \cdot, \SBCMSign(\SBCMsk,\cdot)\rangle~
-      \textrm{was called more than $n$ times}: \pcreturn 0 \\
-      \pcreturn 1
-    }
+  \scalebox{0.9}{
+    \begin{minipage}[t]{\textwidth}
+      \centering
+      
+      \procedure[linenumbering]{$\ExpSBCMOMF(\SBCMsecpar)$}{%
+        \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
+        (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
+        ((\sig_1,\overline{\smsg}_1, \smsg_1),\dots,
+        (\sig_{n+1},\overline{\smsg}_{n+1},\smsg_{n+1})) \gets
+        \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
+        \pcif \exists i \in [n+1]~\st~\SBCMVerify(\SBCMvk,\sig_i,
+        \overline{\smsg}_i,\smsg_i) = 0: \pcreturn 0 \\
+        \pcif \exists i \neq j \in [n+1]~\st~\smsg_i = \smsg_j \land
+        \overline{\smsg}_i = \overline{\smsg}_j: \pcreturn 0 \\
+        \pcif \langle \cdot, \SBCMSign(\SBCMsk,\cdot)\rangle~
+        \textrm{was called more than $n$ times}: \pcreturn 0 \\
+        \pcreturn 1
+      }
 
-    \vspace*{0.5em}
-    
-    \procedure[linenumbering]{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
-      \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
-      (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
-      (\overline{\smsg}_0,\overline{\smsg}_1,\smsg) \gets
-      \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk) \\
-      \csig \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg}_b,\smsg),
-      \SBCMSign(\SBCMsk,\smsg) \rangle \\
-      b^* \gets \adv^{\langle \cdot, \SBCMSign(\SBCMsk,\cdot) \rangle}(\SBCMvk,
-      \csig) \\
-      \pcif b = b^*: \pcreturn 1 \\
-      \pcreturn 0
-    }
-  \end{minipage}
+      \vspace*{0.5em}
+      
+      \procedure[linenumbering]{$\ExpSBCMBlindb(\SBCMsecpar)$}{%
+        \SBCMparm \gets \SBCMSetup(\SBCMsecpar) \\
+        (\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm) \\
+        % (\st,\overline{\smsg}_0,\overline{\smsg}_1,\smsg) \gets
+        % \adv(\SBCMvk,\SBCMsk) \\
+        b^* \gets %\langle \SBCMCom(\SBCMvk,\overline{\smsg}_b,\smsg),
+        \adv^{\langle COM(\SBCMvk,\overline{\smsg}_{\bin},\smsg),\cdot\rangle}(\SBCMsk) \\
+        \pcreturn b = b^*
+      }
+    \end{minipage}
+  }
   \label{fig:sbcm-games}
-  \caption{Games for \SBCM schemes.}
+  \caption{Games for \SBCM schemes. The $COM$ oracle in \ExpSBCMBlindb receives
+    $\overline{\smsg}_0$ and $\overline{\smsg}_1$, and runs a $\langle
+    \SBCMCom(\SBCMvk,\overline{\smsg}_b,\smsg),\cdot\rangle$ protocol with the
+    adversary acting as signer.}
 \end{figure}
 
 \paragraph{Augmenting with NIZKs.} %
@@ -497,9 +509,9 @@ over possibly extra auxiliary data. This can be done by having this party add a
 NIZK over the corresponding NP statement, which has later to be verified by the
 party running \SBCMSign.
 %
-Clearly, if the base \SBCM scheme satisfies blindness, then extending it with a
+If the base \SBCM scheme satisfies blindness, then extending it with a
 zero-knowledge NIZK proof over the (blindly) signed messages, still maintains
-blindness (the adversary cannot distinguish which committed messages set is
+blindness (the adversary cannot distinguish which committed message set is
 signed, in the blindness game).
 %
 We use this extension in our \CUASGen construction, and thus extend the previous

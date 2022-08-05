@@ -1,6 +1,10 @@
 \section{Formalizing \UAS}
 \label{sec:formal-uas}
 
+\jesus{Adding a \uid into \HU or \CU within an oracle that is executed by end
+  users in the real world is a bit weird if not clarified. Some arguments may
+  be possible.}
+
 % [11 pages max]
 
 Next we formalize our notion of Universal Anonymous Signatures
@@ -149,15 +153,15 @@ may negotiate to use any opener for a given signature, it is not possible for
 an opener to change the chosen function. In the sequel, we restrict to
 \UAS-acceptable functions, defined as follows:
 
-\begin{definition}{(\UAS-acceptable functions)}
+\begin{definition}{(\UAS-acceptable \fissue functions)}
   \label{def:uas-acc-func}
   We say that a \fissue function chosen from some family \famfissue is
-  \UAS-acceptable if its outputs are hiding with respect to its \upk and
-  $\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}$ inputs.
-  %
-  Similarly, a \feval function chosen from some family \famfeval is
-  \UAS-acceptable if the $\yeval^1$ component of its output is hiding with
-  respect to its \upk and $\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}$ inputs.
+  \UAS-acceptable if, conditioned on it returning a non-zero value, the
+  value it produces is indistinguishable from random.
+  % %
+  % Similarly, a \feval function chosen from some family \famfeval is
+  % \UAS-acceptable if the $\yeval^1$ component of its output is hiding with
+  % respect to its \upk and $\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}$ inputs.
 \end{definition}
 
 That is, at a high level we require that \fissue and \feval functions do not
@@ -473,8 +477,9 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\          
         }
 
-        \procedure{$\SIGN(\uid,\oid,\scid=\lbrace\cid_i\rbrace_{i\in[n]},\msg,
+        \procedure{$\SIGN(\oid,\scid=\lbrace\cid_i\rbrace_{i\in[n]},\msg,
           \feval)$}{%
+          \uid \gets \OWNR[\scid] \\
           \pcif \uid \notin \HU \lor \feval \notin \famfeval: \pcreturn \bot \\
           \pcif \exists i \neq j \in [n]~\suchthat~\cid_i \in \CRED \land
           \cid_j \in \CCRED: \\
@@ -546,9 +551,10 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcreturn \top \\
         }
 
-        \procedure{$\CHALb(\cuid_{0,1},\oid,\cscid_{0,1}=$\\
-          \hspace*{5em}$\lbrace (\ccid_{0,i},\ccid_{1,i})
+        \procedure{$\CHALb(\oid,\cscid_{0,1}=
+          \lbrace (\ccid_{0,i},\ccid_{1,i})
           \rbrace_{i\in[n]},\msg,\feval)$}{%
+          \pcfor d\in\bin: \cuid_d \gets \OWNR[\cscid_d] \\
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \exists i\in[n]~\suchthat~
           \PUBIK[\cscid_{0,i}] \neq \PUBIK[\cscid_{1,i}]: \\
@@ -1058,9 +1064,11 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         % \trans[\cid_i]) \\
         % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
         \pcif \fissue(\upk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
-        \rbrace_{i\in[n]}) = \yissue:
+        \rbrace_{i\in[n]}) \neq \yissue:
         \pcreturn 1 \\
-        \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
+        \pcif \nexists \uid~\suchthat~\PUBUK[\uid]=\upk \land
+        \uid \in \HU \cup \CU: \pcreturn 1 \\
+%        \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
         \pcreturn 0
       }
       \vspace*{0.5em}
@@ -1296,6 +1304,8 @@ in \figref{fig:nizkrels}.
   utility information extracted by the \Open algorithm is correct.
 \end{description}
 
+\todo{Need to make the $\cid_i$s explicity in the \SBCMVerify clauses of
+  $\NIZK^{\Issue}$ and $\NIZK^{\Sign}$.}
 \begin{figure}[ht!]
   \centering
   \scalebox{0.9}{
@@ -1355,7 +1365,10 @@ Then both interact to produce the \SBCM signature, where the
 user runs $\SBCMCom^{\NIZKRel_{\Issue}}(\ipk,\usk,(\cid,\attrs),\lbrace (\cid_i,
 \cattrs_i,\cred_i)\rbrace_{i\in[n]},\lbrace \ipk_i \rbrace_{i\in[n]})$, and the
 issuer runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
-\rbrace_{i\in[n]})$. The credential \cred produced by the user is the result of
+\rbrace_{i\in[n]})$. Observe that, within this protocol, the user sends a NIZK
+proof $\NIZKproof_{\Issue}$ ensuring that it knows a valid witness $(\upk,\usk,
+\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r)$ for the relation
+$\NIZKRel_{\Issue}$. The credential \cred produced by the user is the result of
 the interactive signing protocol, whereas the issuer produces $(\yissue,
 \utrans)$, where \yissue is the output of \fissue, and \utrans is the
 communication transcript of the signing protocol.% , which is a $(\Ccom,(\cid,\attrs),\lbrace
@@ -1427,7 +1440,7 @@ the proofs to \appref{app:uas-proofs}.
 \begin{theorem}[Issuance anonymity of \CUASGen]
   \label{thm:issue-anonymity-uas}
   If the \SBCM scheme is blinding, the NIZK system used for $\NIZKRel_{\Issue}$ 
-  is zero-knowledge, and \fissue is a \CUASGen-acceptable function, our \CUASGen
+  is zero-knowledge, and \fissue is a \UAS-acceptable function, our \CUASGen
   construction satisfies issuance anonymity as defined in
   \defref{def:issue-anonymity-uas}.
 \end{theorem}

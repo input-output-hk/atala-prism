@@ -10,13 +10,13 @@ complementing the informal \defref{def:uas-acc-func}.
   \scalebox{0.9}{
     \procedure{$\Exp^{\UAS-acc-b}_\adv(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
-      \pcfor d\in\bin: \\
-      \pcind (\upk_d,\usk_d) \gets \KeyGen(\parm) \\
-      \pcind (\st,\attrs, \lbrace (\cidi_d,\cidu_d,\cattrs_{d,i}) \rbrace_{i\in[n]})
-      \gets \adv(\st,\upk_0,\upk_1) \\
-      \yissue^* \gets \fissue(\upk_b,
-      \lbrace (\cidi_b,\cattrs_{b,i}) \rbrace_{i\in[n]},
-      \attrs) \\
+      (\upk,\usk) \gets \KeyGen(\parm) \\
+      (\st,\attrs, \lbrace (\cidi,\cidu,\cattrs_i) \rbrace_{i\in[n]})
+      \gets \adv(\upk) \\
+      \pcif b=0:
+      \yissue^* \gets \fissue(\upk,\lbrace (\cidi,\cattrs_i)
+      \rbrace_{i\in[n]},\attrs) \\
+      \pcelse: \yissue^* \getr \rngfissue \setminus \lbrace 0 \rbrace \\
       b^* \gets \adv(\st,\yissue*) \\
       \pcreturn b=b^*
     }
@@ -27,7 +27,7 @@ complementing the informal \defref{def:uas-acc-func}.
 
 
 Next, we define the \SimSetup, \ExtractIssue, \ExtractSign functions. \SimSetup
-(formally defined in \figref{fig:helper-funcs}).essentially replaces the
+(formally defined in \figref{fig:helper-funcs}) essentially replaces the
 \Setup algorithm of each NIZK with the corresponding \NIZKSimSetup algorithm,
 and returns the generated parameters along with the
 trapdoors. \ExtractIssue and \ExtractSign simply run the \Extract functions
@@ -151,26 +151,40 @@ used as witnesses in the proofs.
 \subsection{Issuance Anonymity}
 
 \begin{proof}[\thmref{thm:issue-anonymity-uas}; Issuance anonymity of \CUASGen]
-  % We prove the special case in which the adversary makes only one query to the
-  % \OBTCHALb oracle. The generalization to polynomially many queries follows from
-  % a standard hybrid argument.
+  We prove the special case in which the adversary makes only one query to the
+  \OBTCHALb oracle. The generalization to polynomially many queries follows
+  from a standard hybrid argument.
 
-  First, observe that, excluding the \yissue value output revealed to the issuer
-  during the interactive issuance protocol, \CUASGen essentially runs an
-  interactive signing protocol of an \SBCM scheme, augmented with a
-  zero-knowledge NIZK for $\NIZKRel_{\Issue}$. As stated in \appref{sapp:sbcm},
-  blindness of the (non-augmented) \SBCM scheme, and the zero-knowledge property
-  of the NIZK for $\NIZKRel_{\Issue}$, ensure that the challenge credentials are
-  indistinguishable between thesmselves. Concretely, we can replace the NIZK
-  proofs sent by the user by simulated proofs.
+  We start from the \ExpIssAnonb, as defined in \figref{fig:exp-uas-anonb}. 
 
-  Finally, note that, to avoid trivial wins by the adversary, the issuance
-  anonymity game requires that \fissue either rejects (returns $\yissue=0$) for
-  both challenge users, or it accepts for both (returns $\yissue \neq 0$).
-  Moreover, in the latter case, since we require that \fissue functions are
-  \UAS-acceptable functions, the resulting \yissue value is hiding with respect
-  to the input arguments. Thus, adding \yissue does not allow the adversary to
-  distinguish credential issuance protocols.  
+  Game 1: We simulate the NIZK proof corresponding to $\NIZKRel_{\Issue}$ that
+  the \OBTCHALb oracle produces when queried by \adv. The zero-knowledge
+  property of the NIZK system ensures that game 1 is indistinguishable from
+  the original experiment.
+
+  Game 2: In queries to \OBTCHALb, before simulating the NIZK proof, we replace
+  the produced \yissue value with a random element from \rngfissue. Since
+  \fissue is a \UAS-acceptable function, game 2 is indistinguishable from game
+  1.
+
+  From an adversary \adv~against Game 2, we can build an adversary \advB against
+  \SBCM's blindness property. The simulation that
+  \advB does is straightforward. \advB runs Game 2 for \adv, randomly picking
+  a number $q < n$, where $n$ is the number of users that \adv~creates via
+  \UGEN, and assigning to the $q$-th user the $(\SBCMvk,\SBCMsk)$ key pair
+  that \advB receives in its blindness game. Then, when \adv~makes a query
+  to its \OBTCHALb oracle, if the chosen issuer is the $q$-th user, \advB
+  forwards \adv's messages to its own $\langle COM(\SBCMvk,
+  \overline{\smsg}_{\bin},\smsg),\cdot\rangle$ oracle. Finally, \advB outputs
+  whatever \adv~does. Note that, since in Game 2 we replace the \yissue value
+  with a random value, and simulate the $\NIZKRel_{\Issue}$ proof, \adv~is not
+  receiving information about the blindly signed messages beyond what \advB
+  forwards from its own oracle. Thus, if \adv~wins in its game, \advB wins in
+  its blindness game. However, since \advB has to guess the correct user
+  that \adv~will use as issuer in its \OBTCHALb oracle, we have a $1/n$ security
+  loss, where $n$ is the total number of users created by \adv.
+  %
+  \qed
 \end{proof}
 
 \subsection{Signature Anonymity}
@@ -186,37 +200,45 @@ used as witnesses in the proofs.
   We start from $G_0=\ExpSigAnonb$.  %
   From $G_0$, we consider $G^0_0 = \ExpSigAnonz$. The challenge sent to the
   adversary is $(\csig_0,\yeval) \gets \Sign(\PRVUK[\cuid_0],\PUBOK[\oid],
-  \CRED[\scid_0],\msg,\feval)$, where $\csig_0 = (\pi_0,\Ec_{\yinsp})$, with
+  \CRED[\scid_0],\msg,\feval)$, where $\csig_0 = (\pi_0,\cinsp)$, with
   $\pi_0 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\msg,\feval,\yeval,
-  \ceval,\cinsp,\PUBIK[\scid_0],\widetilde{\Eek},\PUBOK[\oid]),(\PRVUK[\cuid_0],
-  \CRED[\scid_0],\attrs_{\scid_0},\yeval^1,\yinsp,r,r'))$, $\ceval = \EEnc
-  (\widetilde{\Eek},\yeval^1;r)$, and $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$.
+  \cinsp,\lbrace\PUBIK[\scid_{i,0}]\rbrace_{i\in[n]},\PUBOK[\oid]),
+  (\PUBUK[\cuid_0],\PRVUK[\cuid_0],\lbrace (\scid_{i,0},\attrs_{i,0},
+  \CRED[\scid_{i,0}]) \rbrace_{i\in[n]},\yeval^1,\yinsp,r,r'))$, and $\cinsp =
+  \EEnc(\PUBOK[\oid],\yinsp;r')$, for some random $r,r'$ and $n \ge 0$.
   % 
   Further, we build $G_1^0$ from $G_0^0$ by simulating the proof $\pi_0$. That
   is, in $G_1^0$, $\csig_0 = (\pi_0^s,\ceval,\cinsp)$, where $\pi^s_0 =
   \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
-  \ceval,\cinsp,\PUBIK[\scid_0],\PUBOK[\oid]))$. By zero-knowledgeness
-  of $\NIZK^{\Sign}$, $G_1^0$ is indistinguishable from $G_0^0$.
+  \cinsp,\lbrace\PUBIK[\scid_{i,0}]\rbrace_{i\in[n]},\PUBOK[\oid]))$. By
+  zero-knowledgeness of $\NIZK^{\Sign}$, $G_1^0$ is indistinguishable from
+  $G_0^0$.
 
   Similarly, we consider $G_0^1$ and $G_1^1$. That is, $G_0^1 = \ExpSigAnono$,
   where the challenge
   sent to the adversary is $(\csig_1,\yeval) \gets \Sign(\PRVUK[\cuid_1],
-  \PUBOK[\oid],\CRED[\scid_1],\msg,\feval)$, where $\csig_1 = (\pi_1,\ceval,
+  \PUBOK[\oid],\CRED[\scid_1],\msg,\feval)$, where $\csig_1 = (\pi_1,
   \cinsp)$, with $\pi_1 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},
-  (\msg,\feval,\yeval,\ceval,\cinsp,\PUBIK[\scid_1],\widetilde{\Eek},
-  \PUBOK[\oid]),(\PRVUK[\cuid_1],\CRED[\scid_1],\attrs_{\scid_1},\yeval^1,
-  \yinsp,r,r'))$, $\ceval = \EEnc(\widetilde{\Eek},\yeval^1;r)$, and
-  $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$. As before, build $G_1^1$ from
-  $G_0^1$, simulating $\pi_1$. That is, in $G_1^1$, $\csig_1 = (\pi_1^s,\ceval,
-  \cinsp)$, where $\pi^s_1 = \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},
-  \NIZKtrap,(\msg,\feval,\yeval,\ceval,\cinsp,\PUBIK[\scid_1],\widetilde{\Eek},
-  \PUBOK[\oid]))$. Again, by zero-knowledge of $\NIZK^{\Sign}$, $G_1^1$ is
-  indistinguishable from $G_0^1$. Note also that $G_1^1$ and $G_1^0$ are
-  indistinguishable, due to the IND-CCA property of the encryption scheme
-  (so, the \ceval values in $\csig_0$ and $\csig_1$ are indistinguishable),
-  in the  challenge oracle used in the anonymity game, we restrict to
-  $\PUBIK[\scid_0] = \PUBIK[\scid_1]$, and the respective \cinsp values encrypt
-  the same \yinsp value (and, otherwise, \adv~is not allowed to open it).
+  (\msg,\feval,\yeval,
+  \cinsp,\lbrace\PUBIK[\scid_{i,1}]\rbrace_{i\in[n]},\PUBOK[\oid]),
+  (\PUBUK[\cuid_1],\PRVUK[\cuid_1],\lbrace (\scid_{i,1},\attrs_{i,1},
+  \CRED[\scid_{i,1}]) \rbrace_{i\in[n]},\yeval^1,\yinsp,r,r'))$, and
+  $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$, for random $r,r'$ and $n \ge 0$. As
+  before, build $G_1^1$ from $G_0^1$, simulating $\pi_1$. That is, in $G_1^1$,
+  $\csig_1 = (\pi_1^s,\ceval,\cinsp)$, where $\pi^s_1 =
+  \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
+  \cinsp,\lbrace\PUBIK[\scid_{i,1}]\rbrace_{i\in[n]},\PUBOK[\oid]))$. Again, by
+  zero-knowledge of $\NIZK^{\Sign}$, $G_1^1$ is
+  indistinguishable from $G_0^1$.
+
+  Note that, at this point, $G_1^1$ and $G_1^0$ are indistinguishable.
+  Concretely, the challenge signatures they produce have the structure $\Sig_b =
+  ((\pi_b,\cinsp),\yeval)$ where, to prevent trivial wins, \yeval is enforced
+  (in the \SIGN oracle) to be the same for both challenge users, and \cinsp
+  either encrypts the same value for both users, or \adv~cannot query the \OPEN
+  oracle. \SIGN also enforces that $\PUBIK[\scid_0] = \PUBIK[\scid_1]$. Finally,
+  the proofs $\pi_b$ are simulated, and thus reveal no information about the
+  signer keys or credentials.
 
   Finally, consider the definition of $\AdvSigAnon=|\Pr\lbrack
   \ExpSigAnono(1^\secpar)=1\rbrack-\Pr\lbrack\ExpSigAnonz(1^\secpar)=1\rbrack|
@@ -231,57 +253,51 @@ used as witnesses in the proofs.
 \subsection{Issuance Unforgeability}
 
 \begin{proof}[\thmref{thm:issue-forge-uas}; Issuance unforgeability of \CUASGen]
-  We show that the probability that \fissue outputs $0$ is negligible, as well
-  as the probability that the extracted \usk is not the one that was used to
-  request some of the credentials employed to obtain the credential specified by
-  the adversary.
-  %
-  For this purpose, we define two games, $G_0=\ExpForgeIssue$, and $G_1$, which
-  is exactly the same, but where, within the \Setup algorithm, we replace
-  $\NIZKSetup^{\Issue}$ with $\NIZKSimSetup^{\Issue}$. Due to zero-knowledgeness
-  of $\NIZK^{\NIZKRel_{\Issue}}$, both games are indistinguishable.
+  We show that the probability that \fissue outputs a wrong $\yinsp$ value is
+  negligible, as well as the probability that the credential identifier does not
+  belong to an existing (honest or corrupt) user.
 
-  Now, observe that the adversary is required to output a credential
-  identifier for which associated entries in \trans and \CRED exist; moreover,
-  if such a credential was produced by an issuer, we must have access to those
-  entries, as issuers are assumed to be honest.
+  Observe that the adversary is required to output a credential identifier for
+  which associated entries in \trans and \CRED exist; moreover, if such a
+  credential was produced by an issuer, we must have access to those entries, as
+  issuers are assumed to be honest in this game.
   %
-  Then, given that $\NIZKRel_{\Issue}$ is knowledge extractable (which is implied
-  by simulation-extractability), in game $G_1$
-  we can apply the \NIZKExtract function, which produces a tuple $(\usk,\scred,
-  \attrs_{\scred})$ from $\utrans = (\Ccom,\attrs,\sipk,\cred,\NIZKproof)$.
+  Since we can access $\trans[\cid] = (\yissue,\utrans)$, and \utrans contains
+  a NIZK proof $\NIZKproof_{\Issue}$ proving knowledge by the user of a witness
+  in $\NIZKRel_{\Issue}$, which is simulation extractable, \ExtractIssue
+  produces a tuple $(\upk,\usk,\lbrace (\cid_i,\attrs_i,\cred_i)
+  \rbrace_{i\in[n]}$.
   %
-  Since \NIZKproof is accepted by \ExtractIssue, from the soundness of \NIZK, we
-  know that all $\cred \in \scred$ are valid signatures over \usk, and their
-  respective $\attrs_{\cred}$. Thus, \IdentifyCred returns $1$ for all $(\usk,
-  \attrs_{\cred},\cred)$ tuples. That is, all the credentials in \scred given
-  to \fissue belong to the same user, who is the owner of \usk.
-  %
-  Finally, since issuers are honest, we know that $\ATTR[\cid] = \attrs$ and,
-  consequently, $\fissue(\usk,\scred,\ATTR[\cid]) = \fissue(\usk,\scred,\attrs)
-  = 1$, due to the soundness of \NIZK.
-  %
+  From the fact that issuers are honest, we know that $\ATTR[\cid]$ must match
+  the attribute set \attrs used by user and issuer in the issuance protocol.
+  Thus, from  soundness of the NIZK system, the $(\upk,\lbrace (\cid_i,\attrs_i,
+  \cred_i) \rbrace_{i\in[n]}$ values within the extracted tuple, along with
+  $\ATTR[\cid] = \attrs$ must make \fissue output \yissue, except with
+  negligible probability. Moreover, soundness of the NIZK system also implies
+  that all credentials are bound to the same \usk, which is associated to the
+  extracted \upk.
+  
+  Finally, suppose that the extracted \upk does not belong to a \uid in
+  $\HU \cup \CU$. Then, the produced credential is a forgery. \todo{How to
+    extract the forgery in this case?? I think that expanding the definition
+    so that it requires \adv~to produce a valid signature would make things
+    much easier...}
   \qed
 \end{proof}
 
 \subsection{Signature Unforgeability}
 
 \begin{proof}[\thmref{thm:sign-forge-uas}; Signature unforgeability of \CUASGen]
-  As in \thmref{thm:issue-forge-uas}, we define two games, $G_0=\ExpForgeSign$,
-  and $G_1$, which is exactly the same but where, within the \Setup algorithm,
-  we replace $\NIZKSetup^{\Sign}$ with $\NIZKSimSetup^{\Sign}$. After
-  zero-knowledgeness of $\NIZK^{\Sign}$, both games are indistinguishable.
-  %
-  Next, we show that an adversary winning $G_1$ can be used to break the
+  We show that an adversary \adv~winning \ExpForgeSign can be used to break the
   one-more unforgeability property of \SBCM.
  
-  If the verification at line 4 holds, then $(\msg,\feval,\yeval,\ceval,
-  \cinsp,\sipk,\opk,\widetilde{\Eek}) \in \NIZKLang^{\Sign}$. Then:
+  If the verification at line 4 of \ExpForgeSign holds, then $(\msg,\feval,
+  \yeval,\cinsp,\sipk,\opk,\widetilde{\Eek}) \in \NIZKLang^{\Sign}$. Then:
   %
 
   \paragraph{(a) \Judge accepts $(\yinsp,\iproof)$.} %
   Simulation extractability of $\NIZK^{\Sign}$ thus ensures that $\cinsp =
-  \EEnc(\Eek,\yinsp)$, and since the $(\yinsp,\iproof)$ is generated honestly at
+  \EEnc(\Eek,\yinsp)$, and since $(\yinsp,\iproof)$ is generated honestly at
   line 5, then \yinsp is the correct decryption of \cinsp, and  correctness of
   $\NIZK^{\Open}$ ensures that \Judge outputs $1$ at line 6.
 
@@ -289,25 +305,30 @@ used as witnesses in the proofs.
     pair.} Also, due to simulation extractability of $\NIZK^{\Sign}$:
 
   \begin{itemize}
-  \item $\yeval^0 = \yeval$, where $(\yeval^0,\cdot) = \feval(\usk,\scred,
-    \msg)$, and $\yeval$ is as output by \adv~at step 2.    
-  \item $\tyeval^1 = \yeval^1$, where $(\cdot,\yeval^1) = \feval(\usk,\scred,
-    \msg)$, and $\tyeval^1$ is as extracted by \ExtractSign at line 7.
+  \item $\yeval^0 = \yeval$, where $(\yeval^0,\cdot) = \feval(\upk,\lbrace
+    (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)$, and $\yeval$ is as output by
+    \adv~at step 2.    
+  \item $\tyeval^1 = \yeval^1$, where $(\cdot,\yeval^1) = \feval(\upk,\lbrace
+    (\cid_i,\attrs_i)\rbrace_{i\in[n]},\msg)$, and $\tyeval^1$ is as extracted
+    by \ExtractSign at line 7.
   \end{itemize}
 
-  Thus, the probability of \adv~winning at line 9 is $0$.
+  Thus, the probability of \adv~winning at line 9 is negligible, due to
+  simulation extractability of $\NIZK^{\Sign}$.
 
   \paragraph{(c) The output of \finsp matches the output of \Open.} %
   After (a), the \yinsp value output by \Open is the correct decryption of
   \cinsp. After (b), the $(\yeval^0=\yeval,\yeval^1)$ values output by
   \ExtractSign match the evaluation of \feval. Thus, simulation extractability
-  of $\NIZK^{\Sign}$ ensures that $\finsp((\yeval^0,\yeval^1),\usk,\scred,\msg)
-  = \yinsp$ and, also, that \yinsp matches the $\yinsp'$ value extracted by
-  \ExtractSign. Thus, the probability of \adv~winning at line 10 is $0$.
+  of $\NIZK^{\Sign}$ ensures that $\finsp((\yeval^0,\yeval^1),\upk,\lbrace
+  (\cid_i,\attrs_i)\rbrace_{i\in[n]},\msg) = \yinsp$ and, also, that \yinsp
+  matches the $\yinsp'$ value extracted by \ExtractSign. Thus, the probability
+  of \adv~winning at line 10 is negligible due to simulation extractability
+  of $\NIZK^{\Sign}$.
 
   \paragraph{(d) All {\cred}s are bound to the same \usk.} %
-  $\NIZKRel^{\Sign}$ includes a condition that $\forall \cred \in \scred,
-  \SBCMVerify(\ipk_{\cred},\cred,\usk,\attrs_{\cred}) = 1$. Thus, simulation
+  $\NIZKRel^{\Sign}$ includes a condition that $\forall i\in[n],
+  \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$. Thus, simulation
   extractability of $\NIZK^{\Sign}$ and correctness of \SBCM, ensure that all
   credentials involved in the signature contain \usk as their user key (first)
   attribute. Consequently, \IdentifyCred returns $1$ for all the involved
