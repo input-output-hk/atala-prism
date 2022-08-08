@@ -292,13 +292,13 @@ used as witnesses in the proofs.
   one-more unforgeability property of \SBCM.
  
   If the verification at line 4 of \ExpForgeSign holds, then $(\msg,\feval,
-  \yeval,\cinsp,\sipk,\opk,\widetilde{\Eek}) \in \NIZKLang^{\Sign}$. Then:
+  \yeval,\cinsp,\sipk,\opk) \in \NIZKLang^{\Sign}$. Then:
   %
 
   \paragraph{(a) \Judge accepts $(\yinsp,\iproof)$.} %
   Simulation extractability of $\NIZK^{\Sign}$ thus ensures that $\cinsp =
   \EEnc(\Eek,\yinsp)$, and since $(\yinsp,\iproof)$ is generated honestly at
-  line 5, then \yinsp is the correct decryption of \cinsp, and  correctness of
+  line 5, then \yinsp is the correct decryption of \cinsp, and completeness of
   $\NIZK^{\Open}$ ensures that \Judge outputs $1$ at line 6.
 
   \paragraph{(b) $(\yeval^0,\yeval^1)$ are the correct signature evaluation
@@ -317,7 +317,8 @@ used as witnesses in the proofs.
   simulation extractability of $\NIZK^{\Sign}$.
 
   \paragraph{(c) The output of \finsp matches the output of \Open.} %
-  After (a), the \yinsp value output by \Open is the correct decryption of
+  After (a), and correctness of the public key encryption algorihtm, the \yinsp
+  value output by \Open is the correct decryption of
   \cinsp. After (b), the $(\yeval^0=\yeval,\yeval^1)$ values output by
   \ExtractSign match the evaluation of \feval. Thus, simulation extractability
   of $\NIZK^{\Sign}$ ensures that $\finsp((\yeval^0,\yeval^1),\upk,\lbrace
@@ -330,22 +331,16 @@ used as witnesses in the proofs.
   $\NIZKRel^{\Sign}$ includes a condition that $\forall i\in[n],
   \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$. Thus, simulation
   extractability of $\NIZK^{\Sign}$ and correctness of \SBCM, ensure that all
-  credentials involved in the signature contain \usk as their user key (first)
-  attribute. Consequently, \IdentifyCred returns $1$ for all the involved
-  credentials, and the probability of \adv~winning at line 11 is $0$.
-
-  \paragraph{(e) \usk must belong to a known user.} %
-  The only remaining option for $\adv$ to win is via winning condition at line
-  12, meaning that \IdentifySig fails to find an honest or corrupt users with
-  a \usk matching the one used to request the credentials used to produce the
-  signature output by \adv. However, at line 12, we already know that all
-  credentials are valid signatures by the issuer and that, also, all are bound
-  to the same user key. If this key is not associated to any known user, this
-  means that there is no matching $\langle\Obtain,\Issue\rangle$ transcript for
-  a credential over \usk --i.e., the honest issuer did not issue any credential
-  to \usk. But, as \sig must have been produced with at least one credential
-  (extracted at step 7), then this credential is a forgery, breaking security
-  against one-more forgery of the \SBCM scheme.
+  credentials involved in the signature contain the same \usk as their user key
+  (first) attribute. Thus, either $\OWNR[\lbrace \cid_i \rbrace_{i\in[n]}]$
+  returns some \uid in $\HU \cup \CU$, or it returns $\bot$ because no such
+  \uid exists (but not because more than one \cid belongs to different {\uid}s).
+  Assume that no such \uid exists. Clearly, such a signature breaks the one-more
+  forgery property of \SBCM, as it cannot have been produced via a call to
+  \SIGN, which only accepts {\cid}s that belong to known {\uid}s. Therefore, the
+  probability that \adv~wins at line 11 is negligible, given simulation
+  extractability of $\NIZK^{\Sign}$, and correctness and one-more forgery
+  security of \SBCM.
   %
   \qed
 \end{proof}
@@ -358,8 +353,9 @@ used as witnesses in the proofs.
   % $\NIZKRel_{\Open}$ is zero-knowledge and simulation-extractable, and \SBCM is
   % blind, then our \CUASGen construction is secure.
 
-  First, suppose that the \Sig that \adv~outputs at line 2 exists in
-  \SIG, for some \uid. Then, Given that the signature is accepted by \Verify at
+  First, suppose that, in the check done at line 10, the \Sig that \adv~outputs
+  at line 2 exists in \SIG, for some \uid. In that case, given that the
+  signature is accepted by \Verify at
   line 3, and after simulation extractability of $\NIZK^{\Sign}$, $\yeval =
   \yeval^0$, and $\tyeval^1 = \yeval^1$. Similarly, since the $(\yinsp,\iproof)$
   pair output by \adv~is accepted by \Judge, simulation extractability of
@@ -389,8 +385,8 @@ used as witnesses in the proofs.
   After the zero-knowledge property of $\NIZK^{\NIZKRel_{\Sign}}$, $G_1$ is
   indistinguishable from $G_0$. Now, in $G_1$, simulation extractability of
   $\NIZK^{\NIZKRel_{\Sign}}$ ensures that \ExtractSign must output a valid
-  witness for $(\msg,\feval,\yeval^0,\ceval,\cinsp,\sipk_{\scred},\Eek,
-  \widetilde{\Eek})$. Note that this witness must include some \usk which,
+  witness for $(\msg,\feval,\yeval^0,\cinsp,\lbrace ipk_i \rbrace_{i\in[n]},
+  \Eek)$. Note that this witness must include some \usk which,
   for \adv~to win the game, must belong to an honest user. However, since the
   user (whichever it is) has not been corrupted, its \usk has not been leaked
   to \adv~via corruption queries (nor via \SIGN queries, where the proof of

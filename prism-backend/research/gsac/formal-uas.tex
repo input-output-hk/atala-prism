@@ -251,12 +251,12 @@ corresponding user/issuer/opener keys.
 \item[\CCRED.] Like \CRED, but keeps track of challenge credentials in the
   issuance anonymity game.
 \item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
-  ``\uid such that $\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot)$''. We
-  may also use \OWNR over a set of {\cid}s (\scid). In that case, our convention
-  is that $\OWNR[\scid]$ returns $\bot$ if not all passed {\cid}s belong to the
-  same \uid. Since $\bot$ is not a valid \uid, all conditions checking
-  membership of the output of \OWNR to a list of users equal false if \OWNR
-  returns $\bot$.
+  ``\uid such that $\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot)$'', or
+  $\bot$ if there is no wuch \uid. We may also use \OWNR over a set of {\cid}s
+  (\scid). In that case, our convention is that $\OWNR[\scid]$ returns $\bot$ if
+  not all passed {\cid}s belong to the same \uid. Since $\bot$ is not a valid
+  \uid, all conditions checking membership of the output of \OWNR to a list of
+  users equal false if \OWNR returns $\bot$.
 \item[\ATTR.] For notational convenience, when we write $\ATTR[\cid]$ we mean
   ``\attrs such that $\CRED[\cid] = (\cdot,\cdot,\cdot,\attrs,\cdot,\cdot)$''.
 \item[\ISR.] For notational convenience, when we write $\ISR[\cid]$ we mean
@@ -1462,10 +1462,10 @@ the proofs to \appref{app:uas-proofs}.
 \begin{theorem}[Signing unforgeability of \CUASGen]
   \label{thm:sign-forge-uas}
   If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is simulation
-  extractable,the NIZK scheme for $\NIZKRel_{\Open}$ is complete, the public-key
-  encryption scheme is correct, and \SBCM is correct and one-more unforgeable,
-  then our \CUASGen construction satisfies signing unforgeability as defined in
-  \defref{def:sign-forge-uas}, except with negligible probability.
+  extractable, the scheme for $\NIZKRel_{\Open}$ is complete, the public key
+  encryption algorithm is correct, and the \SBCM scheme is correct and one-more
+  unforgeable, then our \CUASGen construction satisfies signing unforgeability
+  as defined in \defref{def:sign-forge-uas}, except with negligible probability.
 \end{theorem}
 
 \begin{theorem}[Non-frameability of \CUASGen]
