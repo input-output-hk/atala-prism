@@ -58,7 +58,7 @@ An \UAS scheme is composed by the following algorithms:
   function \finsp, an opener runs \OKeyGen to generate its opening key pair.
   The function \finsp defines the type of utility that will be extractable from
   signatures.
-\item[$\ISet((\upk,\usk),\fissue) \rightarrow \ipk$.] Given a user key
+\item[$\ISet(\upk,\usk,\fissue) \rightarrow \ipk$.] Given a user key
   pair, and an issuance function \fissue for checking that credential requestors
   meet some conditions to be issued a credential, an existing user runs \ISet to
   extend the user public key, enabling this user to issue credentials meeting
@@ -114,16 +114,18 @@ the user who computes them, and has to prove correctness of such computation.
 We give concrete examples in \secref{sec:relationships}, and define them next:
 
 \begin{description}
-\item[$\fissue: (\upk,\lbrace (\cid_i,\cattrs_i)\rbrace_{i \in [n]},\attrs)
+\item[$\fissue: (\upk,\usk,\lbrace (\cid_i,\cattrs_i)\rbrace_{i \in [n]},\attrs)
   \rightarrow \yissue$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
   defines the customized conditions required by the issuer to grant a credential
-  over attributes \attrs, when requested by a user with public key \upk,
+  over attributes \attrs, when requested by a user with key pair $(\upk,\usk)$,
   leveraging a set of $n$ previously obtained credentials with identifiers and
   attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where
   $n$ may be $0$ if no previously obtained credential is used). \fissue returns
   a value $\yissue \in \rngfissue \cup \lbrace 0 \rbrace$, where we adopt the
   convention that $\yissue = 0$ means that the issuance request is denied.
+  \fissue functions must be \UAS-acceptable, as defined in
+  \defref{def:uas-acc-func}.
 \item[$\feval: (\upk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
   \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
   family of functions \famfeval, can be set on a per-signature basis. They
@@ -150,30 +152,48 @@ governs the information revealed at signing time. On the other hand, \finsp
 governs the information that may be revealed after signing, and is defined by
 openers when they set up their key pair. Thus even though signers and verifiers
 may negotiate to use any opener for a given signature, it is not possible for
-an opener to change the chosen function. In the sequel, we restrict to
-\UAS-acceptable functions, defined as follows:
+an opener to change the chosen function.
+
+Concerning \fissue functions, our \UAS model requires them to be \UAS-acceptable
+functions.  At a high level, this requires that \fissue functions do not reveal
+anything about the signer's data used as input. This is formally captured in
+\figref{fig:uas-acceptable}.
+
+\begin{figure}[ht!]
+  \centering  
+  \scalebox{0.9}{
+    \procedure{$\Exp^{\UAS-acc-b}_\adv(1^\secpar)$}{%
+      \parm \gets \Setup(1^\secpar) \\
+      (\upk,\usk) \gets \KeyGen(\parm) \\
+      (\st,\attrs, \lbrace (\cidi,\cidu,\cattrs_i) \rbrace_{i\in[n]})
+      \gets \adv(\upk) \\
+      \pcif b=0:
+      \yissue^* \gets \fissue(\upk,\usk,\lbrace (\cidi,\cattrs_i)
+      \rbrace_{i\in[n]},\attrs) \\
+      \pcelse: \yissue^* \getr \rngfissue \setminus \lbrace 0 \rbrace \\
+      b^* \gets \adv(\st,\yissue^*) \\
+      \pcreturn b^*
+    }
+  }
+  \label{fig:uas-acceptable}
+  \caption{Formal definition of \UAS-acceptable \fissue functions.}
+\end{figure}
 
 \begin{definition}{(\UAS-acceptable \fissue functions)}
   \label{def:uas-acc-func}
-  We say that a \fissue function chosen from some family \famfissue is
-  \UAS-acceptable if, conditioned on it returning a non-zero value, the
-  value it produces is indistinguishable from random.
-  % %
-  % Similarly, a \feval function chosen from some family \famfeval is
-  % \UAS-acceptable if the $\yeval^1$ component of its output is hiding with
-  % respect to its \upk and $\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}$ inputs.
+  A \fissue function is \UAS acceptable if, for any p.p.t. adversary \adv,
+  $|\Pr[\Exp^{\UAS-acc-1}_\adv(1^\secpar)=1]-\Pr[\Exp^{\UAS-acc-0}_\adv
+  (1^\secpar)=0]|$ is a negligible function of $1^\secpar$.
 \end{definition}
 
-That is, at a high level we require that \fissue and \feval functions do not
-reveal anything about the signer. \todo{Since the concept is quite intuitive, we
-  defer the formal definition to \appref{app:XXX}}. We give in
-\secref{ssec:generic-construction-uas}
-a generic \CUASGen construction that assumes \UAS-acceptable functions. Next, we
-define the concept of \CUASGen restrictions. Briefly, these are special cases of
-our generic construction that target a concrete variant of the utility-privacy
-tradeoff by defining concrete \fissue, \feval and \finsp functions. Security of
-\CUASGen implies security of its restrictions, as long as the chosen functions
-are \CUASGen-acceptable.
+A \UAS construction thus can only be secure if the \fissue function it uses is
+\UAS-acceptable.
+%
+Next, we define the concept of \CUASGen restrictions. Briefly, these are special
+cases of our generic construction that target a concrete variant of the
+utility-privacy tradeoff by defining concrete \fissue, \feval and \finsp
+functions. Security of \CUASGen implies security of its restrictions, as long as
+the chosen functions are \CUASGen-acceptable.
 
 \begin{definition}{(\CUASGen restrictions)}
   \label{def:uas-restrictions}
@@ -283,7 +303,9 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 \begin{description}
 % \item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
 %   the associated issuance function.
-\item[\UGEN.] Adds a new user to the game, generating its keypair.  
+\item[\HUGEN.] Adds a new honest user to the game, generating its keypair.
+\item[\HUGEN.] Adds a new corrupt user to the game, setting its \upk to the
+  value given by the adversary.  
 \item[\OGEN.] Adds a new opener to the game, generating its key pair and
   setting the associated evaluation and inspection functions.
 % \item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
@@ -352,24 +374,28 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         %   \pcreturn \top \\
         % }
 
-        \procedure{$\UGEN(\uid)$}{%
+        \procedure{$\HUGEN(\uid)$}{%
           \pcif \uid \in \HU \lor \uid \in \CU: \pcreturn \bot \\
           (\upk,\usk) \gets \KeyGen(\parm) \\
           \UK[\uid] \gets (\upk,\usk) \\
           \HU \gets \HU \cup \lbrace \uid \rbrace \\
           \pcreturn \upk \\
         }
-
-        \procedure{$\ISET(\uid,\fissue)$}{%
-          \pcif \uid \notin \HU \cup \CU: \pcreturn \bot \\
+        
+        \procedure{$\UCORR(\uid)$}{%
+          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
           \pcif \uid \in \HI \cup \CI: \pcreturn \bot \\
-          \pcif \fissue \notin \famfissue: \pcreturn \bot \\
-          \ipk \gets \ISet(\UK[\uid],\fissue) \\
-          \IK[\uid] \gets ((\ipk,\fissue),\PRVUK[\uid]) \\
-          \pcif \uid \in \HU: \HI \gets \HI \cup \lbrace \uid \rbrace \\
-          \pcif \uid \in \CU: \CI \gets \CI \cup \lbrace \uid \rbrace \\
-          \pcreturn \ipk \\
-        }        
+          \HU \gets \HU \setminus \lbrace \uid \rbrace \\
+          \CU \gets \CU \cup \lbrace \uid \rbrace \\
+          \pcreturn (\PRVUK[\uid],\CRED[\uid]) \\
+        }
+        
+        \procedure{$\ICORR(\uid)$}{%
+          \pcif \uid \notin \HI: \pcreturn \bot \\
+          \HI \gets \HI \setminus \lbrace \uid \rbrace \\
+          \CI \gets \CI \cup \lbrace \uid \rbrace \\
+          \pcreturn(\PRVUK[\uid],\CRED[\uid]) \\
+        }
 
         \procedure{$\OGEN(\oid,\finsp)$}{%
           \pcif \oid \in \HO \lor \oid \in \CO: \pcreturn \bot \\
@@ -386,21 +412,24 @@ oracles, which are formally defined in \figref{fig:oracles1} and
       
       \begin{minipage}[t]{.5\textwidth}
 
-        \procedure{$\UCORR(\uid)$}{%
-          \pcif \uid \in \CU \lor \uid \notin \HU: \pcreturn \bot \\
+        \procedure{$\CUGEN(\uid,\upk)$}{%          
+          \pcif \uid \in \HU \lor \CU: \pcreturn \bot \\
+          \CU \gets \CU \cup \lbrace \uid \rbrace \\          
+          \UK[\uid] = (\upk,\bot) \\          
+          \pcreturn \top \\
+        }
+
+        \procedure{$\ISET(\uid,\fissue)$}{%
+          \pcif \uid \notin \HU \cup \CU: \pcreturn \bot \\
           \pcif \uid \in \HI \cup \CI: \pcreturn \bot \\
-          \HU \gets \HU \setminus \lbrace \uid \rbrace \\
-          \CU \gets \CU \cup \lbrace \uid \rbrace \\
-          \pcreturn (\PRVUK[\uid],\CRED[\uid]) \\
-        }
-
-        \procedure{$\ICORR(\uid)$}{%
-          \pcif \uid \notin \HI: \pcreturn \bot \\
-          \HI \gets \HI \setminus \lbrace \uid \rbrace \\
-          \CI \gets \CI \cup \lbrace \uid \rbrace \\
-          \pcreturn(\PRVUK[\uid],\CRED[\uid]) \\
-        }
-
+          \pcif \fissue \notin \famfissue: \pcreturn \bot \\
+          \ipk \gets \ISet(\PUBUK[\uid],\PRVUK[\uid],\fissue) \\
+          \IK[\uid] \gets ((\ipk,\fissue),\PRVUK[\uid]) \\
+          \pcif \uid \in \HU: \HI \gets \HI \cup \lbrace \uid \rbrace \\
+          \pcif \uid \in \CU: \CI \gets \CI \cup \lbrace \uid \rbrace \\
+          \pcreturn \ipk \\
+        }        
+        
         \procedure{$\OCORR(\oid)$}{%
           \pcif \oid \in \CO \lor \oid \notin \HO: \pcreturn \bot \\
           \pcif \exists (\oid,\cdot,\cdot,\cdot,\cdot,
@@ -409,16 +438,6 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \CO \gets \CO \cup \lbrace \oid \rbrace \\
           \pcreturn \osk \\
         }
-        
-        % \procedure{$\CUGEN(\uid)$}{%          
-        %   \pcif \uid \in \CU: \pcreturn \bot \\
-        %   \CU \gets \CU \cup \lbrace \uid \rbrace \\          
-        %   \pcif \uid \in \HU: \\
-        %   \pcind \HU \gets \HU \setminus \lbrace \uid \rbrace; \\
-        %   \pcind \pcreturn (\UK[\uid],\CRED[\uid]) \\
-        %   \pcelse: \UK[\uid] = \bot \\          
-        %   \pcreturn \top \\
-        % }
 
         \procedure{$\RREG(i)$}{%
           \pcreturn \trans[i] \\
@@ -542,8 +561,9 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \in \CRED: \\
           \pcind \pcreturn \bot \\
           \textrm{Parse}~\PUBIK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-          \pcif 0(\fissue(\PUBUK[\cuid_0],\cscid_0,\attrs)) \neq \\
-          \pcind 0(\fissue(\PUBUK[\cuid_1],\cscid_1,\attrs)): \pcreturn \bot \\
+          \pcif 0(\fissue(\PUBUK[\cuid_0],\PRVUK[\cuid_0],\cscid_0,\attrs)) \neq \\
+          \pcind 0(\fissue(\PUBUK[\cuid_1],\PRVUK[\cuid_1],\cscid_1,\attrs)):
+          \pcreturn \bot \\
           \langle \Cred, \cdot \rangle \gets
           \langle \Obtain(\PRVUK[\cuid_b],\cidu,\PUBIK[\iid],\cscid_b,\attrs),
           \adv \rangle \\
@@ -683,7 +703,7 @@ credentials, user key, and message.
     \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\uid,\oid,\scid,\msg,\feval)
-      \gets \adv^{\UGEN,\OGEN,\ISET,\OBTISS,\RREG}(\parm) \\
+      \gets \adv^{\HUGEN,\OGEN,\ISET,\OBTISS,\RREG}(\parm) \\
       \pcif \feval \notin \famfeval: \pcreturn 0 \\
       \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
       (\Sig = (\sig,\yeval)) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,
@@ -697,7 +717,7 @@ credentials, user key, and message.
 %      \fissue^{\cid}),\cdot)\\
       \pcind \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
       \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-      \pcind \pcif \fissue(\PUBUK[\uid],\attrs,
+      \pcind \pcif \fissue(\PUBUK[\uid],\PRVUK[\uid],\attrs,
       (\lbrace(\cid_i,\ATTR[\cid_i])\rbrace_{i\in[n]})) \neq \yissue:
       \pcreturn 1 \\
       (\yeval^0,\yeval^1) \gets \feval(\PUBUK[\uid],(\scid,\ATTR[\scid]),\msg) \\
@@ -717,6 +737,8 @@ credentials, user key, and message.
 
 \subsubsection{Security Properties}
 \label{sssec:security}
+
+\todo{All the following assumes \UAS-acceptable \fissue functions.}
 
 Security of an \UAS scheme is defined in terms of anonymity, unforgeability and
 non-frameability. We now introduce and formally define the corresponding
@@ -943,11 +965,7 @@ stronger than the traditional CCA-like security of group signatures, where no
 challenge signature can be open.
 
 The formal specification of the anonymity games is given in
-\figref{fig:exp-uas-anonb}, where
-$\OIssAnon \gets (\lbrace\OO,\UU\rbrace\GEN,\ISET,\ISET,\lbrace\II,
-\OO,\UU\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\OBTCHALb)$, and $\OSigAnon
-\gets (\lbrace\OO,\UU\rbrace\GEN,\ISET,\ISET,\lbrace\II,\OO,\UU\rbrace
-\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\CHALb)$.
+\figref{fig:exp-uas-anonb}.
 
 \begin{figure*}[htp!]
   \centering
@@ -968,7 +986,11 @@ $\OIssAnon \gets (\lbrace\OO,\UU\rbrace\GEN,\ISET,\ISET,\lbrace\II,
       }
     \end{minipage}
   }
-  \caption{Issuance and signature anonymity experiments for \UAS schemes.}
+  \caption{Issuance and signature anonymity experiments for \UAS schemes.
+    $\OIssAnon \gets (\lbrace\OO,\HU,\CU\rbrace\GEN,\ISET,\lbrace\II,
+    \OO,\UU\rbrace\CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\OBTCHALb)$, and $\OSigAnon
+    \gets (\lbrace\OO,\HU,\CU\rbrace\GEN,\ISET,\lbrace\II,\OO,\UU\rbrace
+    \CORR,\OBTAIN,\WREG,\SIGN,\OPEN,\CHALb)$}
   \label{fig:exp-uas-anonb}
 \end{figure*}
 
@@ -1022,62 +1044,60 @@ schemes, that only credential owners can produce valid signatures. \UAS also
 has verifiable openings as some group signature schemes, which sits somewhere
 in between, and we must ensure that the values output by \Open are correct and
 trace back to a user with consistent credentials. All the previous is captured
-by a signature unforgeability property. We define this by allowing the adversary
+by an unforgeability property. We define this by allowing the adversary
 to call any oracle, except the one for corrupting issuers. The adversary wins if
 it produces a valid signature over some message that: (1), opens to a wrong
 value, or to a value that cannot be processed by \Judge; (2), is not consistent
 with the expected \Yeval value; or (3), cannot be associated to known
 credentials owned by a known user.
-
-Again, since \UAS schemes (may) require proving claims at issuance time, we
+%
+In addition, \UAS schemes allow proving claims at issuance time. Thus, we
 need to ensure that those claims cannot be forged by an adversary without the
-proper attributes. In this case, since we (need to) assume trusted issuers, we
-can condition on having the $\langle \Obtain,\Issue \rangle$ transcripts
-available for analysis. Thus, the adversary -- with access to the same oracles
-as above -- is challenged to output a credential identifier for a credential
-that exists in \CRED and (1), the conditions required by \fissue were not
-satisfied, or some of the credentials used to support the request does not
-belong to the requesting user; or (2) all credentials used to support the
-request are bound to the same secret key, but that secret key does not belong
-to any known user. The issuance unforgeability notion formalizes this.
+proper attributes. To ensure this, besides the winning conditions stated above,
+the adversary also wins the unforgeability game if the produced signature
+was produced with a credential for which the conditions required by \fissue were
+not satisfied.
+%
+\ExpForge is formally defined in \figref{fig:exp-uas-unfor}).
 
-For both \ExpForgeIssue and \ExpForgeSign (in \figref{fig:exp-uas-unfor}), the
-adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
-\lbrace\OO,\UU\rbrace\GEN,\ISET,\lbrace\OO,\UU\rbrace\CORR,\OBTISS,\ISSUE,\RREG,
-\SIGN,\OPEN$.
+\todo{Mention that, in this definition, a credential that does not meet \fissue
+  is not considered a forgery unless it is used to produce a signature. This is
+  consistent with other works -- e.g., Camenisch, Krenn, Lehmann...}
 
 \begin{figure}[htp!]
   \centering
   \scalebox{0.9}{
     \begin{minipage}[t]{\textwidth}
-      \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
-        (\parm,\trap) \gets \SimSetup(1^\secpar) \\
-        \cid \gets \adv^{\Oforgeissue}(\parm) \\
-        \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot:
-        \pcreturn 0 \\
-        \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
-        \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-        % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
-        ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]})
-        \gets \ExtractIssue(\trap,\utrans) \\
-        % \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
-        % \trans[\cid_i]) \\
-        % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
-        \pcif \fissue(\upk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
-        \rbrace_{i\in[n]}) \neq \yissue:
-        \pcreturn 1 \\
-        \pcif \nexists \uid~\suchthat~\PUBUK[\uid]=\upk \land
-        \uid \in \HU \cup \CU: \pcreturn 1 \\
-%        \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
-        \pcreturn 0
-      }
-      \vspace*{0.5em}
+%       \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
+%         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
+%         \cid \gets \adv^{\Oforgeissue}(\parm) \\
+%         \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot:
+%         \pcreturn 0 \\
+%         \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
+%         \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
+%         % (\usk,\sCred) \gets \ExtractIssue(\trap,\trans[\cid]) \\
+%         ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]})
+%         \gets \ExtractIssue(\trap,\utrans) \\
+%         % \pcfor i \in [n]: (\usk_i,\cdot) \gets \ExtractIssue(\trap,
+%         % \trans[\cid_i]) \\
+%         % \pcif \exists i \in [n]~\suchthat~\usk \neq \usk_i: \pcreturn 1 \\
+%         \pcif \fissue(\upk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
+%         \rbrace_{i\in[n]}) \neq \yissue:
+%         \pcreturn 1 \\
+%         \pcif \OWNR[\lbrace\cid_i\rbrace_{i\in[n]}\cup\cid] \notin \HU \cup \CU:
+%         \pcreturn 1 \\
+% %        \pcif \nexists \uid~\suchthat~\PUBUK[\uid]=\upk \land
+% %        \uid \in \HU \cup \CU: \pcreturn 1 \\
+% %        \pcif \OWNR[\cid] \notin \HU \cup \CU: \pcreturn 1 \\
+%         \pcreturn 0
+%       }
+%       \vspace*{0.5em}
       
     % \end{minipage}    
     % \begin{minipage}[t]{\textwidth}
-      \procedure[linenumbering]{$\ExpForgeSign(1^\secpar)$}{%
+      \procedure[linenumbering]{$\ExpForge(1^\secpar)$}{%
         (\parm,\trap) \gets \Setup(1^\secpar) \\
-        (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforgesign}(\parm) \\
+        (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforge}(\parm) \\
         \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
         \SIG[\uid]: \pcreturn 0 \\
         \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
@@ -1089,8 +1109,16 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         % \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
         % \pcif \yinsp \neq \yinsp': \pcreturn 1 \\
         % \pcreturn 0
-	((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
+	(\upk,\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
         \yeval^1,\yinsp') \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+        \pcif \exists i\in[n]~\suchthat~
+        \fissue(\upk,\usk,\attrs_i,\lbrace(\cid_{i,j},\attrs_{i,j})
+        \rbrace_{j\in[n_i]}) \neq \yissue^i \lor
+        \OWNR[\lbrace\cid_{i,j}\rbrace_{j\in[n_i]}]\notin \HU \cup \CU, \\
+        \pcind \textrm{where}~(\yissue^i,\utrans) \gets \trans[\cid_i]~\textrm{and}~
+        (\cdot,\cdot,\lbrace(\cid_{i,j},\attrs_{i,j},\cred_{i,j})
+        \rbrace_{j\in[n_i]}) \gets \ExtractIssue(\trap,\utrans]): \\
+        \pcind \pcreturn 1 \\        
         (\yeval^0,\yeval^1) \gets \feval(\upk,\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]}, \msg) \\
         \pcif \yeval \neq \yeval^0 \lor \yeval^1 \neq \tyeval^1:
@@ -1101,13 +1129,14 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
         \pcreturn 1 \\
 %        \textrm{Let~}\scid \gets \lbrace \cid_i \rbrace_{i\in[n]};
         \pcif \OWNR[\lbrace \cid_i \rbrace_{i\in[n]}] \notin \HU \cup \CU:
-        \pcreturn 1 \\
+        \pcreturn 1 \\        
         \pcreturn 0        
       }      
     \end{minipage}
   }
-  \caption{Experiments for credential issuance and signature unforgeability in
-    \UAS schemes.}
+  \caption{Unforgeability experiments in \UAS schemes.
+    $\Oforge \gets \lbrace\OO,\HU,\CU\rbrace\GEN,\ISET,\lbrace\OO,\UU\rbrace
+    \CORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$.}
   \label{fig:exp-uas-unfor}
 \end{figure}    
 
@@ -1143,26 +1172,35 @@ adversary is given access to the oracle set $\Oforgeissue = \Oforgesign \gets
 %   \label{fig:exp-uas-unfor-sign}
 % \end{figure}
 
-\begin{definition}{(Unforgeable issuance of \UAS)}
-  \label{def:issue-forge-uas}  
-  We define the advantage \AdvForgeIssue of $\adv$ against \ExpForgeIssue as
-  $\AdvForgeIssue=\Pr\lbrack\ExpForgeIssue(1^\secpar)=1\rbrack$.
-  %
-  A \UAS scheme has unforgeable issuance if, for any p.p.t. adversary $\adv$,
-  \AdvForgeIssue is a negligible function of $1^\secpar$.
-\end{definition}
+% \begin{definition}{(Unforgeable issuance of \UAS)}
+%   \label{def:issue-forge-uas}  
+%   We define the advantage \AdvForgeIssue of $\adv$ against \ExpForgeIssue as
+%   $\AdvForgeIssue=\Pr\lbrack\ExpForgeIssue(1^\secpar)=1\rbrack$.
+%   %
+%   A \UAS scheme has unforgeable issuance if, for any p.p.t. adversary $\adv$,
+%   \AdvForgeIssue is a negligible function of $1^\secpar$.
+% \end{definition}
 
-\begin{definition}{(Unforgeable signing of \UAS)}
-  \label{def:sign-forge-uas}  
-  We define the advantage \AdvForgeSign of $\adv$ against \ExpForgeSign as
-  $\AdvForgeSign=\Pr\lbrack\ExpForgeSign(1^\secpar)=1\rbrack$.
-  %
-  A \UAS scheme has unforgeable signing if, for any p.p.t. adversary $\adv$,
-  \AdvForgeSign is a negligible function of $1^\secpar$.
-\end{definition}
+% \begin{definition}{(Unforgeable signing of \UAS)}
+%   \label{def:sign-forge-uas}  
+%   We define the advantage \AdvForgeSign of $\adv$ against \ExpForgeSign as
+%   $\AdvForgeSign=\Pr\lbrack\ExpForgeSign(1^\secpar)=1\rbrack$.
+%   %
+%   A \UAS scheme has unforgeable signing if, for any p.p.t. adversary $\adv$,
+%   \AdvForgeSign is a negligible function of $1^\secpar$.
+% \end{definition}
 
-For short, we say that an \UAS scheme that has both unforgeable issuance and
-signing, is an unforgeable \UAS scheme.
+% For short, we say that an \UAS scheme that has both unforgeable issuance and
+% signing, is an unforgeable \UAS scheme.
+
+\begin{definition}{(Unforgeability of \UAS)}
+  \label{def:forge-uas}  
+  We define the advantage \AdvForge of $\adv$ against \ExpForge as $\AdvForge=
+  \Pr\lbrack\ExpForge(1^\secpar)=1\rbrack$.
+  %
+  A \UAS scheme is unforgeable if, for any p.p.t. adversary $\adv$, \AdvForge is
+  a negligible function of $1^\secpar$.
+\end{definition}
 
 \paragraph{On the generality of unforgeability in \UAS schemes.} %
 Regarding the information revealed at signature time ($\yeval^0$), \UAS's
@@ -1173,7 +1211,7 @@ subtle. The fact that multiple users may produce signatures opening to the same
 value necessarily forces to generalize what is a forgery -- and, certainly,
 resorting to extraction-based techniques seems unavoidable.
 
-As for anonymity, note that by tweaking the \fissue, \feval and \finsp
+As with anonymity, by tweaking the \fissue, \feval and \finsp
 functions, one can easily mimic behaviour of more restricted schemes. For
 instance, \feval, along with the $\yeval^0$ output, allows revealing
 authenticated attribute-related information alongside the signatures, as in AC
@@ -1202,10 +1240,7 @@ the signature, we then extract the secret data used to generate it. The
 adversary wins if the signature and opening proof are accepted, but the \yeval
 or \yinsp values do not match what they should be based on the extracted data;
 or if the signature can be associated to the secret key of an honest user who
-did not produce it (i.e., no matching call to \SIGN exists). In the game, the
-adversary has access to the oracles in $\Oframe \gets
-\lbrace\OO,\UU\rbrace\GEN,\ISET,\lbrace\II,\OO,\UU\rbrace\CORR,
-\WREG,\OBTAIN,\SIGN$.
+did not produce it (i.e., no matching call to \SIGN exists).
 
 \begin{figure}[htp!]  
   \centering
@@ -1239,7 +1274,9 @@ adversary has access to the oracles in $\Oframe \gets
       \pcreturn 0
     }
   }
-  \caption{Experiment for non-frameability on \UAS schemes.}
+  \caption{Experiment for non-frameability on \UAS schemes.
+    $\Oframe \gets \lbrace\OO,\HU,\CU\rbrace\GEN,\ISET,\lbrace\II,\OO,\UU\rbrace
+    \CORR,\WREG,\OBTAIN,\SIGN$.}
   \label{fig:exp-uas-frame}
 \end{figure}
 
@@ -1418,11 +1455,6 @@ parse \Sig as $((\cdot,\cinsp),\cdot)$ and verify \NIZKproof with
 $\NIZKVerify(\NIZKcrs_{\Open},\NIZKproof,(\cinsp,\yinsp))$. Accept it the NIZK
 verification passes, and reject otherwise.
 
-\paragraph{Interactive Credential Presentation.} In \appref{app:interactive-uas}
-we show how to convert the non-interactive signing and verification processes
-into an interactive protocol. While the transformation is quite straightforward,
-it is of high relevance for real world use cases.
-
 \subsection{Correctness and Security of \CUASGen}
 \label{ssec:security-uas}
 
@@ -1434,7 +1466,8 @@ the proofs to \appref{app:uas-proofs}.
   If the underlying schemes for commitments, public-key encryption and \SBCM,
   are correct, as well as the NIZKs for $\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$,
   and $\NIZKRel_{\Open}$, our generic construction \CUASGen satisfies
-  correctness as defined in \defref{def:correctness-uas}.
+  correctness as defined in \defref{def:correctness-uas}, except with negligible
+  probability.
 \end{theorem}
 
 \begin{theorem}[Issuance anonymity of \CUASGen]
@@ -1442,39 +1475,51 @@ the proofs to \appref{app:uas-proofs}.
   If the \SBCM scheme is blinding, the NIZK system used for $\NIZKRel_{\Issue}$ 
   is zero-knowledge, and \fissue is a \UAS-acceptable function, our \CUASGen
   construction satisfies issuance anonymity as defined in
-  \defref{def:issue-anonymity-uas}.
+  \defref{def:issue-anonymity-uas}, except with negligible probability.
 \end{theorem}
 
 \begin{theorem}[Signature anonymity of \CUASGen]
   \label{thm:sign-anonymity-uas}
   If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge, and the
-  public-key encryption scheme is IND-CCA secure, our \CUASGen construction
-  satisfies signature anonymity as defined in \defref{def:sign-anonymity-uas}.
+  public-key encryption scheme is IND-CCA secure, and \fissue is
+  \UAS-acceptable, our \CUASGen construction
+  satisfies signature anonymity as defined in \defref{def:sign-anonymity-uas},
+  except with negligible probability.
 \end{theorem}
 
-\begin{theorem}[Issuance unforgeability of \CUASGen]
-  \label{thm:issue-forge-uas}
-  If the underlying NIZK used for $\NIZKRel_{\Issue}$ is zero-knowledge,
-  simulation extractable and sound, then our \CUASGen construction satisfies
-  issuance unforgeability as defined in \defref{def:issue-forge-uas}.
-\end{theorem}
+% \begin{theorem}[Issuance unforgeability of \CUASGen]
+%   \label{thm:issue-forge-uas}
+%   If the underlying NIZK used for $\NIZKRel_{\Issue}$ is zero-knowledge,
+%   simulation extractable and sound, then our \CUASGen construction satisfies
+%   issuance unforgeability as defined in \defref{def:issue-forge-uas}.
+% \end{theorem}
 
-\begin{theorem}[Signing unforgeability of \CUASGen]
-  \label{thm:sign-forge-uas}
+% \begin{theorem}[Signing unforgeability of \CUASGen]
+%   \label{thm:sign-forge-uas}
+%   If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is simulation
+%   extractable, the scheme for $\NIZKRel_{\Open}$ is complete, the public key
+%   encryption algorithm is correct, and the \SBCM scheme is correct and one-more
+%   unforgeable, then our \CUASGen construction satisfies signing unforgeability
+%   as defined in \defref{def:sign-forge-uas}, except with negligible probability.
+% \end{theorem}
+
+\begin{theorem}[Unforgeability of \CUASGen]
+  \label{thm:forge-uas}
   If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is simulation
   extractable, the scheme for $\NIZKRel_{\Open}$ is complete, the public key
-  encryption algorithm is correct, and the \SBCM scheme is correct and one-more
-  unforgeable, then our \CUASGen construction satisfies signing unforgeability
-  as defined in \defref{def:sign-forge-uas}, except with negligible probability.
+  encryption algorithm is correct, the \SBCM scheme is correct and one-more
+  unforgeable, and \fissue is \UAS-acceptable, then our \CUASGen construction
+  satisfies unforgeability as defined in \defref{def:sign-forge-uas}, except
+  with negligible probability.
 \end{theorem}
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
   If the underlying scheme for $\NIZK^{\Sign}$ is zero-knowledge and simulation
-  extractable, the scheme for $\NIZK^{\Open}$ is simulation-extractable, and
-  \SBCM scheme is blind, then our \CUASGen construction satisfies
-  non-frameability as defined in \defref{def:frame-uas}, except with negligible
-  probability.
+  extractable, the scheme for $\NIZK^{\Open}$ is simulation-extractable, the
+  \SBCM scheme is blind, and \fissue is \UAS-acceptable, then our \CUASGen
+  construction satisfies non-frameability as defined in \defref{def:frame-uas},
+  except with negligible probability.
 \end{theorem}
 
 \markulf{Put proofs here for XXXX?}\jesus{I can't parse XXXX.}
@@ -1487,9 +1532,9 @@ In previous subsections, we have described a main construction for \CUASGen,
 where generalization is achieved by allowing system designers to specify
 concrete \fissue, \feval and \finsp functions depending on their needs. Note
 however that alternative constructions are of course possible that, while
-still be close to \CUASGen, may differ in key aspects while still meeting the
-\UAS model. We briefly one such variant next, that we leverage to build related
-schemes. \todo{Security proofs are deferred to \appref{app:uas-variants-proofs}.}
+still meeting the \UAS model, may differ from \CUASGen. We briefly one such
+variant next, that we leverage to build related schemes.
+\todo{Security proofs are deferred to \appref{app:uas-variants-proofs}.}
 
 % \paragraph{$\CUASGen^{usr-iss}$: Collapsing issuers and users.} %
 % On occasions, it may be useful to not make a distinction between issuers and
@@ -1507,11 +1552,10 @@ reasonable for usual situations since, intuitively, it seems hard that a
 verifier accepts a signature produced with a credential without knowing if the
 credential's issuer is trustworthy. However, there may be cases in which
 relaxations are acceptable. For instance, it may be enough to know that the
-issuer belongs to some set of well-known issuers. We merge this with the
-previous extension that collapses issuers and users. Although it would also be
-possible to apply the modification to \CUASGen independently, from a theoretical
-point of view, the combined extension interesting, as it allows to mimic ring
-signatures. 
+issuer belongs to some set of well-known issuers. Beyond practical applications,
+this extension is also interesting from a theoretical point of view, as it
+allows us to prove that ring signatures can be seen as a special case of a \UAS
+scheme (cf. \secref{ssec:related-models-rs}). 
 
 We show the modified NIZK relation for signing in \figref{fig:nizk-ring}. For
 notational simplicity, we restrict to just one credential per signature.
@@ -1528,6 +1572,14 @@ trivial to distinguish signatures.
   \caption{$\NIZKRel^{hide-iss}_{\Sign}$ relation for $\CUASGen^{hide-iss}$.}
   \label{fig:nizk-ring}
 \end{figure}
+
+\paragraph{Interactive Credential Presentation.}
+\todo{Does this meet the model? If not, we should move this elsewhere.}
+In \appref{app:interactive-uas}
+we show how to convert the non-interactive signing and verification processes
+into an interactive protocol. While the transformation is quite straightforward,
+it is of high relevance for real world use cases.
+
 
 %%% Local Variables:
 %%% mode: latex

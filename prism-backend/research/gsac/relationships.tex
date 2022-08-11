@@ -4,11 +4,15 @@
 % [11 pages max]
 
 In the following, to showcase the generality of \UAS and \CUASGen, we reproduce
-models of related schemes in the literature -- some of them slightly adapted.
+models of related schemes in the literature.
 Then, we give concrete $(\fissue,\feval,\finsp)$-\CUASGen restrictions and prove
 that they securely instantiate the models for the presented schemes, if the
 corresponding \CUASGen restriction is a secure \UAS construction. Concretely,
-we rely on the functions described in \figref{fig:func-restrictions}.
+we rely on the functions described in \figref{fig:func-restrictions}. Observe
+that all the \fissue functions listed in \figref{fig:func-restrictions} are
+\UAS-acceptable. Specifically, $\fissue^1$ and $\fissue^{\sring}$ are trivially
+\UAS-acceptable (for $\rngfissue = \bin$); whereas $\fissue^{single,F,I}$ is
+\UAS-acceptable if $F$ is a secure PRF \needcite.
 
 \begin{figure}[ht!]
 
@@ -16,10 +20,11 @@ we rely on the functions described in \figref{fig:func-restrictions}.
     \begin{minipage}[t]{\textwidth}
       \textbf{Issuance functions:}
       \begin{align}
-        & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{single,F,I}(\upk,\cdot,\cdot) \coloneqq \pcreturn F(I,\upk)
+        & \fissue^1(\cdot,\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
+        & \fissue^{single,F,I}(\cdot,\usk,\cdot,\cdot) \coloneqq \pcreturn
+          F(I,\usk)
           \nonumber \\
-        & \fissue^{\sring}(\upk,\attrs,\cdot) \coloneqq
+        & \fissue^{\sring}(\upk,\cdot,\attrs,\cdot) \coloneqq
           \pcreturn (\attrs = \sring \land \upk \in \attrs) \nonumber
       \end{align}
       
@@ -91,9 +96,9 @@ We adopt the model in \cite{bsz05}. In this abstraction
 of group signatures, the opener returns an index uniquely identifying the group
 member that created a signature, along with a correctness proof. For ease of
 exposition, assume that, w.l.o.g., this index is just the public key that the
-group member chooses\markulf{can he choose an existing public key?} when joining the group\footnote{The user public key is
-  assumed to be accessible from a public table in \cite{bsz05}, so it is easy
-  to translate the public key into an index, if needed.}. A group signature
+group member generates randomly when joining the group\footnote{The user public
+  key is assumed to be accessible from a public table in \cite{bsz05}, so it is
+  easy to translate the public key into an index, if needed.}. A group signature
 scheme, according to \cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign,
 \Verify, \Open and \Judge algorithms, as well as an $\langle\Obtain,\Issue
 \rangle$ interactive protocol. Their intuition is similar to that of
@@ -117,11 +122,10 @@ reference, we replicate the security games in \figref{fig:model-gs}.
         (\msg,\sig,\upk,\tau) \gets \adv^{\mathcal{O}^{frame}}
         (\gpk,\osk,\isk) \\
         \pcif \Verify(\gpk,\msg,\sig) = 0: \pcreturn 0 \\
-        \pcreturn 1~\pcif \upk \in \HU \land \PRVUK[\upk] \neq \bot \land
-        \Judge(\gpk,\upk,\msg,\sig,\tau) = 1~\land \\
+        \pcreturn (\upk \in \HU \land \PRVUK[\upk] \neq \bot \land
+        \Judge(\gpk,\upk,\msg,\sig,\tau) = 1)~\land \\
         \pcind \adv~\textrm{did not query}~USK(\upk)~\textrm{or}~
-        GSig(\PRVUK[\upk],\msg) \\
-        \pcreturn 0
+        GSig(\PRVUK[\upk],\msg)
       }       
     \end{minipage}
   }
@@ -152,15 +156,16 @@ reference, we replicate the security games in \figref{fig:model-gs}.
 \end{figure}
 
 \subsubsection{\CUASGS construction.} %
-\todo{Clarify how $\fissue^{single,F,I}$ works! This is also common with other
-  constructions...}
 We show that the $(\fissue^{single,F,I},\feval^0,\finsp^{\upk})$-\CUASGen
 restriction, is a secure group signature scheme according to \cite{bsz05}.
-Observe that the $\fissue^{single,F,I}$ function is further parameterized with
-a list $L$ maintained by the issuer and must be fetched by users prior to
-joining. It restricts that any user can have at most one credential (associated
-to a same user key pair). We first quickly define the algorithms, and then
-prove security.
+As stated, the $\fissue^{single,F,I}$ is an \UAS-acceptable function if $F$ is a
+PRF. In that case, its output is a random-looking string that depends on the
+user secret key \usk, and a string $I$ uniquely identifying the user. Thus, it
+will be the same per $(\usk,I)$ pair, and can be used by issuer $I$ to prevent
+issuing more than one credential per user -- without enabling linking across
+issuers. Basically, each issuer maintains a list of received $\yissue = F(\usk,
+I)$ values, and rejects issuing a credential for already existing \yissue
+values. From this, the GS algorithms are as follows:
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs \Setup from \CUASGen,
@@ -170,9 +175,10 @@ prove security.
 \item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \KeyGen from \CUASGen.
 \item[$\langle \cred,\utrans \rangle \gets
   \langle\Obtain(\usk,\ipk),\Issue(\isk,\upk)\rangle$.] Runs $\langle\Obtain,
-  \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$. If the issuer
-  gets $\yissue = 0$, rejects issuing a new credential. Otherwise, it completes
-  the protocol and adds $\yissue$ to $L$.
+  \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$. Upon receiving
+  the \yissue value, the issuer checks if it already exists in a list $L$
+  (initially set to $\emptyset$); if it exists, aborts issuance. Otherwise, it
+  completes the protocol and adds $\yissue$ to $L$.
 \item[$\sig \gets \Sign(\gpk,\cred,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
   runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen,
   where $\yeval = 0$ is the constant output of $\feval^0$.
@@ -198,9 +204,8 @@ in \appref{app:related-proofs}.
 \end{theorem}
 
 \begin{theorem}[Traceability of \CUASGS]
-  If the base \CUASGen construction has unforgeable signing according to
-  \defref{def:sign-forge-uas}, then \CUASGS is a traceable group signature
-  scheme.\markulf{Hiding of $Com(\usk;0)$?}
+  If the base \CUASGen construction is unforgeable according to
+  \defref{def:forge-uas}, then \CUASGS is a traceable group signature scheme.
 \end{theorem}
 
 \begin{theorem}[Non-frameability of \CUASGS]
@@ -303,8 +308,9 @@ detail, the construction is as follows:
   $\CUASGen^{hide-iss}$. Note that \dattrs defines the public keys within
   $\attrs \subseteq \sring$ to be revealed through \yeval.
 \item[$1/0 \gets Verify(R,\Sig,\msg)$.] Parses \Sig as $(\sig,\yeval)$ and
-  runs $\Verify(\opk,\yeval=\lbrace \ipk_i\rbrace_{i\in\dattrs},\sig,\yeval,
-  \msg,\feval^{\sring,\dattrs})$ as in $\CUASGen^{hide-iss}$.
+  runs $\Verify(\opk,\yeval,\Sig,\msg,\feval^{\sring,\dattrs})$ as in
+  $\CUASGen^{hide-iss}$. Note that, in valid signatures, $\yeval = \lbrace
+  \ipk_i\rbrace_{i\in\dattrs}$.
 \end{description}
 
 %Note that by using, e.g., $\finsp^{\upk}$, we essentially get a ring signature
@@ -315,13 +321,13 @@ We state next the theorems for the security of \CUASRing. The proofs are
 available in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASRing]
-  If the base \CUASGen construction has signature anonymity according to
-  \defref{def:sign-anonymity-uas}, then \CUASRing is an anonymous ring signature
-  scheme.
+  If the base $\CUASGen^{hide-iss}$ construction has signature anonymity
+  according to \defref{def:sign-anonymity-uas}, then \CUASRing is an anonymous
+  ring signature scheme.
 \end{theorem}
 
 \begin{theorem}[Unforgeability of \CUASRing]
-  If the base \CUASGen construction is non-frameable according to
+  If the base $\CUASGen^{hide-iss}$ construction is non-frameable according to
   \defref{def:frame-uas}, then \CUASRing is an unforgeable ring signature
   scheme.
 \end{theorem}
@@ -338,7 +344,7 @@ the issuance protocol in \UAS. Similarly, $Show,Verify$ corresponds to
 the interactive extension of \Sign and \Verify in \UAS, which we show how
 to build in \appref{app:interactive-uas}. The security definitions rely on
 $HU, CU, ObtIss, Obtain, Issue, Show$, and $LoR$ oracles, which are essentially
-equivalent to our \UGEN, \UCORR, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb
+equivalent to our \HUGEN, \CUGEN, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb
 oracles\footnote{The $CU$ oracle in \cite{fhs19} actually allows the adversary
   to create corrupt user secret keys, while in our corruption model, corrupt
   users have keys generated by the system that are later learned by the
@@ -396,21 +402,21 @@ first quickly define the algorithms, and then prove security.
 % \item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar,
 %   \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
 %   \CUASGen construction. Returns $\parm \gets (\parm',\opk)$.
-\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] $\parm' \gets
+\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] From \CUASGen, run $\parm' \gets
   \Setup(1^\secpar)$ and $(\opk,\osk) \gets \OKeyGen(\parm',
-  \finsp^0)$ from \CUASGen, and sets $\parm \gets (\parm',\opk)$. Then,
-  runs \IKeyGen, also from \CUASGen, setting $\fissue^1$ as issuance function.
-\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \UKeyGen from \CUASGen.
+  \finsp^0)$, and set $\parm \gets (\parm',\opk)$. Run $(\upk,\usk) \gets
+  \KeyGen(\parm')$ and $\ipk \gets \ISet(\upk,\usk,\fissue^1)$. Set $\isk \gets
+  \usk$.
+\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \KeyGen from \CUASGen.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
-  Runs the $\langle \Obtain,\Issue \rangle$ protocol from \CUASGen, using
-  $\fissue^1$ as issuance function.
+  Runs $\langle \Obtain,\Issue \rangle$ from \CUASGen.
 \item[$\langle 1/0,((1,\utrans)/(0,\utrans)\rangle
   \gets \langle Show(\ipk,\attrs,\dattrs,
   \cred),\Verify(\ipk,\dattrs) \rangle$.]
-  Runs the interactive extension of \Sign and \Verify of the \CUASGen protocol,
-  using $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as
-  open function, with \opk from \parm as opener public key.
+  Runs the interactive extension of \Sign and \Verify of \CUASGen, using
+  $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as open
+  function, with \opk from \parm as opener public key.
 \end{description}
 
 \paragraph{Security of \CUASAC.} %
@@ -426,7 +432,7 @@ available in \appref{app:related-proofs}.
 
 \begin{theorem}[Unforgeability of \CUASAC]
   \label{thm:forge-cuasac}
-  If the base \CUASGen construction has signature unforgeability according to
+  If the base \CUASGen construction is unforgeabile according to
   \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
   \markulf{Hiding of $pk_U$?}
 \end{theorem}
@@ -438,10 +444,11 @@ In \cite{cks10}, revocable anonymous credentials are proposed. From \CUASGen, it
 is straightforward to build an AC system with verifier local revocation, like in
 \cite{bs04}. Basically, we leverage the $\cid=(\cidi,\cidu)$ identifiers,
 encoded as attributes, to define a $(\feval,\finsp)$ function pair that: (1)
-ensures that opening outputs a one-way function of the {\cid}s concatenated with
-the verifier name; and (2) ensures that, if the {\cid}s have been added to a
-revocation list by the verifier, the verifier will know it -- and hence will be
-able to reject the signature. We first give a simple model in
+ensures that opening outputs the evaluation of a PRF of the {\cid}s concatenated
+with the verifier name; and (2) ensures that, if some {\cid} of the credentials
+used to produce a signature have been added to a revocation list by the
+verifier, the verifier will know it -- and hence will be able to reject the
+signature. We first give a simple model in
 \figref{fig:model-rac}, extending that in \secref{ssec:related-models-ac}.
 Concretely, to the functionality in \secref{ssec:related-models-ac}, we now
 explicitly add
@@ -497,23 +504,22 @@ verifiable openings, but this would be straightforward.
 
 \subsubsection{\CUASRAC Construction.} %
 Briefly, we build a revocable anonymous credential as a $(\fissue^1,
-\feval^{\dattrs,F,V,L},\finsp^{F})$-\CUASGen restriction. The \feval is
-parameterized with a one-way and collision-resistant function $F$
-(e.g., a cryptographic hash), a string identifying the verifier $V$ and a
-list $L$ of ``revocation handles'' by $V$. 
+\feval^{\dattrs,F,V,L},\finsp^{F})$-\CUASGen restriction. \feval is
+parameterized with a PRF $F$, a string identifying the verifier $V$ and a
+list $L$ of ``revocation handles'' by $V$. Note that these can be hardcoded,
+though: $F$ can be common to all verifiers, $V$ is also fixed (per verifier),
+and $L$ can be updated with some reasonable frequency -- e.g., daily -- so that
+the cost of recomputing $\feval^{\dattrs,F,V,L}$ is not high.
 %
 Since credentials in \CUASGen have two identifiers (\cidi, chosen by the issuer;
 and \cidu, chosen by the user), $\feval^{\dattrs,F,V,L}$ internally computes
 $F(V,\cidi)$ and $F(V,\cidu)$. If either appears in $L$, \feval sets $\yeval^0$
 to $0$, which the verifier interprets as ``revoked credential''. Otherwise,
-it sets $\yeval^0 \gets \dattrs(\cred)$ and $\yeval^1 \gets V$; $\yeval^1$ is
+it sets $\yeval^0 \gets \lbrace \attrs_i \rbrace_{i\in\dattrs}$ and
+$\yeval^1 \gets V$. $\yeval^1$ is
 then used by $\finsp^F$ to compute $\yinsp \gets (F(\yeval^1,\cidi),
 F(\yeval^1,\cidu))$. Thus, if the verifier $V$ wants to revoke a credential, all
 it has to do is ask the opener to decrypt $\yinsp$, via $RetrieveCredHandle$.
-Note that, in the $\feval^{\dattrs,F,V,L}$ function, $L$ is a sort of variable.
-However, each verifier $V$ may just update its own list with some reasonable
-frequency (e.g., daily), and use a pre-compiled version of
-$\feval^{\dattrs,F,V,L}$ in which $L$ is actually a constant.
 %
 In more detail, the algorithms are as follows:
 
@@ -535,9 +541,9 @@ In more detail, the algorithms are as follows:
   \Verify(\ipk,\dattrs) \rangle$.]
   Runs the interactive extension of \Sign and \Verify of the \CUASGen protocol,
   using $\feval^{\dattrs,F,V,L}$ as signature evaluation function, and
-  $\finsp^F$ as open function.
+  $\finsp^F$ as open function. If $\yeval^0 = 0$, the signature is rejected.
 \item[$h/\bot \gets RetrieveCredHandle(\osk,\utrans)$.]
-  Gets $(\sig,\yeval)$ from the $\langle Show,\Verify\rangle$ transcript
+  Gets $(\sig,\yeval^0)$ from the $\langle Show,\Verify\rangle$ transcript
   \utrans, and runs \Open from \CUASGen. If $\yeval^0 \neq 0$ (i.e., the
   signature was created by a non-revoked credential), this returns $(F(V,\cidi),
   F(V,\cidu))$, which the verifier can add to its revocation list $L$.
@@ -555,8 +561,8 @@ available in \appref{app:related-proofs}.
 \end{theorem}
 
 \begin{theorem}[Unforgeability of \CUASRAC]
-  If the base \CUASGen construction has sign unforgeability according to
-  \defref{def:sign-forge-uas}, and $F$ is one-way and collision-resistant, then
+  If the base \CUASGen construction is unforgeable according to
+  \defref{def:forge-uas}, and $F$ is one-way and collision-resistant, then
   \CUASRAC is an unforgeable RAC scheme.
 \end{theorem}
 
@@ -568,12 +574,8 @@ Multimodal Private Signatures (or, rather, a close relative, see next) are
 directly implementable as a $(\fissue^{single,F,I},\feval^{\yeval^1},
 \finsp^{\ast})$-\CUASGen restriction, where $\feval^{\yeval^1}$ is any signature
 evaluation function that ignores the $\yeval^0$ output, and $\finsp^{\ast}$ is
-any open function. Concretely, by restricting to a system with one issuer and
-one opener, one credential per user, one attribute per credential (the user
-secret key)% , $\fissue^1$ issuance functions, and
-% \feval functions that only use the $\yeval^1$ output -- which we denote with
-% $\feval^{\yeval^1}$
-.
+any open function. Concretely, this restricts to a system with one issuer and
+one opener, one credential per user, no attributes in the credentials.
 
 There are some differences, though. On the one hand, our signature anonymity
 property is somehow in the middle of MPS's privacy-1 and privacy-2 variants.
@@ -592,11 +594,11 @@ in MPS) that has too much granularity in their ranges, will lead to a barely
 private system. This is a known issue, for instance, in functional encryption
 \needcite.
 
-On the other hand, our issuance-related properties (issuance anonymity and
-issuance unforgeability) are unachievable by MPS. Issuance anonymity simply does
-not make sense in MPS, as it only supports one credential (without attributes)
-per user. Issuance unforgeability does not make sense either, since there are no
-configurable issuance policies in MPS -- instead, they have the fixed policy of
+On the other hand, anonymous issuance, and the capability to customize issuance
+policies are unachievable by MPS. Anonymous issuance simply does not make sense
+in MPS, as it only supports one credential (without attributes) per user.
+Customized issuance is achieved in \UAS via the \fissue functions, with no
+equivalent in MPS -- instead, MPS has the fixed policy of
 ``proving knowledge of a user secret key''. These extensions are not trivial
 from a theoretical point of view, and also have a big impact in the practicality
 of the resulting system. Also, MPS does not include verifiable openings. While
@@ -609,14 +611,12 @@ signature, and the other will be encrypted. Still both computations are proved
 correct. Making part of the output unencrypted allows implementing very useful
 variants such as anonymous credentials, as shown before.
 
-For the model of MPS schemes, we refer to the original paper \needcite.
+For the model of MPS schemes, we refer to the original paper \cite{ngsy22}.
 
 \subsubsection{\CUASMPS construction.} %
 As mentioned, any $(\fissue^{single,F,I},\feval^{\yeval^1},
-\finsp^\ast)$-restriction of \CUASGen with only one issuer and opener, one
-credential per user, and one attribute per credential (the user secret key),
-implements an MPS scheme where $F=\feval^{\yeval^1}$ and $G=\finsp^\ast$.
-With these functions, the construction is essentially as in
+\finsp^\ast)$-restriction implements an MPS scheme where $F=\feval^{\yeval^1}$
+and $G=\finsp^\ast$. With these functions, the construction is essentially as in
 \secref{ssec:related-models-gs}.
 %
 Finally, note that, in MPS, $G$ is further parameterized with a value $j$, which
@@ -632,24 +632,24 @@ available in \appref{app:related-proofs}.
 \begin{theorem}[Privacy-1 of \CUASMPS]
   If the base \CUASGen construction has signature anonymity according to
   \defref{def:sign-anonymity-uas}, then \CUASMPS satisfies privacy-1
-  according to \needcite.
+  according to \cite{ngsy22}.
 \end{theorem}
 
 \begin{theorem}[Extractability of \CUASMPS]
-  If the base \CUASGen construction has signature unforgeability according to
-  \defref{def:sign-forge-uas}, then it is an extractable MPS scheme.
+  If the base \CUASGen construction is unforgeable according to
+  \defref{def:forge-uas}, then it is an extractable MPS scheme.
 \end{theorem}
 
 \begin{theorem}[Unforgeability-1 of \CUASMPS]
-  If the base \CUASGen construction has signature unforgeability according to
+  If the base \CUASGen construction is unforgeable according to
   \defref{def:sign-forge-uas}, then \CUASMPS satisfies unforgeability-1 as
-  defined in \needcite.
+  defined in \cite{ngsy22}.
 \end{theorem}
 
 \begin{theorem}[Unforgeability-2 of \CUASMPS]
   If the base \CUASGen construction has non-frameability according to
   \defref{def:frame-uas}, then \CUASMPS satisfies unforgeability-2 as
-  defined in \needcite.
+  defined in \cite{ngsy22}.
 \end{theorem}
 
 %%% Local Variables:
