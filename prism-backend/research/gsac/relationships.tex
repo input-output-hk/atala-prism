@@ -44,7 +44,13 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
         & \hspace*{2em}\pcif F(V,\cidi) \in L \lor F(V,\cidu) \in L:
           \pcreturn (0,\ast) \nonumber \\
         & \hspace*{2em}\pcelse \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},V)
-        \nonumber   
+          \nonumber \\
+        & \feval^{g,MPS}(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)
+          \coloneqq \nonumber \\
+        & \hspace*{2em}\pcif g(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},
+          \msg) = 0: \pcreturn \bot \nonumber \\
+        & \hspace*{2em}\pcelse \pcreturn (\ast,g(\upk,\lbrace
+          (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)) \nonumber
       \end{align}
     \end{minipage}
   }
@@ -63,7 +69,9 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
         & \hspace*{2em}\pcif \yeval^0 \neq 0:
           \pcreturn (F(\yeval^1,\cidi),F(\yeval^1,\cidu)) \nonumber \\
         & \hspace*{2em}\pcelse \pcreturn 0
-          \nonumber
+          \nonumber \\
+        & \finsp^{h,MPS}((\cdot,\yeval^1),\upk,\cid,\attrs,\cdot) \coloneqq
+          \pcreturn h(\yeval^1,\upk,\cid,\attrs) \nonumber         
       \end{align}
     \end{minipage}
     \hspace*{5em}
@@ -80,12 +88,7 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
   \caption{Functions for the \CUASGen restrictions described next.
     For readability, we use ``$\cdot$'' to denote input arguments that are
     ignored; and ``$\ast$'' to denote output values that can be set to anything
-    (but should be ignored).}
-    % $\attrs(\cred)$ returns all attributes in \cred. $\dattrs(\cred)$ returns
-    % $\dattrs \subseteq \attrs(\cred)$. $\attrs_i(\cred)$ returns $i$-th
-    % attribute in \cred. $\ast$ means the output is ignored (in these examples,
-    % we use this to mean that $\yeval^1$ is unused. $\bot$ means the function
-    % fails.}
+    (but should be ignored). $\bot$ means that the function fails.}
   \label{fig:func-restrictions}
 \end{figure}
 
@@ -433,7 +436,7 @@ available in \appref{app:related-proofs}.
 \begin{theorem}[Unforgeability of \CUASAC]
   \label{thm:forge-cuasac}
   If the base \CUASGen construction is unforgeabile according to
-  \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
+  \defref{def:forge-uas}, then \CUASAC is an unforgeable AC scheme.
   \markulf{Hiding of $pk_U$?}
 \end{theorem}
 
@@ -454,11 +457,12 @@ Concretely, to the functionality in \secref{ssec:related-models-ac}, we now
 explicitly add
 the $OKeyGen$ function (equivalent to \OKeyGen, with a fixed \finsp function),
 which generates the opener key pair, extend $Verify$ to receive also a list $L$
-of revoked identifiers, and we add a function (and corresponding oracle) $id/\bot
-\gets RetrieveCredId(\osk,\utrans)$ that can extract the identifier of the
-credential used in a presentation transcript \utrans -- and which is essentially
-equivalent to \Open in \UAS. For simplicity, we do not include the equivalent to
-verifiable openings, but this would be straightforward.
+of revoked credential identifiers, and we add a function (and corresponding
+oracle) $cid/\bot \gets RetrieveCredId(\osk,\utrans)$ that can extract an
+identifier of the credential used in a presentation transcript \utrans -- and
+which is essentially equivalent to \Open in \UAS. For simplicity, we do not
+include the equivalent to verifiable openings, but this would be
+straightforward.
 
 \begin{figure}[ht!]
   \centering
@@ -498,7 +502,9 @@ verifiable openings, but this would be straightforward.
     ReqCredHandle,LoR\rbrace$. $\mathcal{O}_{forge} \gets \lbrace HU,CU,
     Obtain,ObtIss,Issue,Show,ReqCredHandle \rbrace$. $ReqCredHandle$ is
     equivalent to \OPEN, operating on transcripts \utrans instead of signatures.
-    Also, \OWNR and \ATTR tables are essentially as in \secref{ssec:model-uas}.}
+    In particular, this implies that it rejects queries for transcripts related
+    to challenge users. Also, \OWNR and \ATTR tables are essentially as in
+    \secref{ssec:model-uas}.}
   \label{fig:model-rac}  
 \end{figure}
 
@@ -553,19 +559,21 @@ In more detail, the algorithms are as follows:
 We state next the theorems for the security of \CUASRAC. The proofs are
 available in \appref{app:related-proofs}.
 
-\begin{theorem}[Issuance anonymity of \CUASRAC]
-  \todo{review}
+\begin{theorem}[Anonymity of \CUASRAC]
   If the base \CUASGen construction has signature anonymity according to
-  \defref{def:sign-anonymity-uas}, and $F$ is one-way and collision-resistant,
-  then \CUASAC is an anonymous AC scheme according to \cite{fhs19}.  
+  \defref{def:sign-anonymity-uas}, and $F$ is one-way, then \CUASRAC is an
+  anonymous AC scheme according to \cite{fhs19}.  
 \end{theorem}
 
 \begin{theorem}[Unforgeability of \CUASRAC]
   If the base \CUASGen construction is unforgeable according to
-  \defref{def:forge-uas}, and $F$ is one-way and collision-resistant, then
-  \CUASRAC is an unforgeable RAC scheme.
+  \defref{def:forge-uas}, and $F$ is one-way, then \CUASRAC is an unforgeable
+  RAC scheme.
 \end{theorem}
 
+Note that, if we aim at global credential (resp. user) revocation rather than
+verifier-local revocation, we can have \finsp just output the $(\cidi,\cidu)$
+pair (resp., \upk), and no assumption regarding $F$ is needed.
 
 \subsection{Multimodal Private Signatures}
 \label{ssec:related-models-mps}
@@ -616,14 +624,17 @@ For the model of MPS schemes, we refer to the original paper \cite{ngsy22}.
 \subsubsection{\CUASMPS construction.} %
 As mentioned, any $(\fissue^{single,F,I},\feval^{\yeval^1},
 \finsp^\ast)$-restriction implements an MPS scheme where $F=\feval^{\yeval^1}$
-and $G=\finsp^\ast$. With these functions, the construction is essentially as in
-\secref{ssec:related-models-gs}.
+and $G=\finsp^\ast$. With these functions, the construction is direct.
+\CUASMPS's setup runs \CUASGen's \Setup, \OKeyGen, and generates the issuer key
+pair by running \KeyGen and \ISet (with $\fissue^1$). For MPS's join, \CUASMPS
+runs first \KeyGen to generate the user key pair, and then proceeds as in
+\CUASGen. \Sign, \Verify and \Open, are as in \CUASGen.
 %
 Finally, note that, in MPS, $G$ is further parameterized with a value $j$, which
 essentially is the result of applying $F$ to the message and signer identity,
 and is not leaked to the opener nor any other third party. The equivalent in
-\UAS is the $\yeval^1$ value, which is encrypted with a single-use key pair, and
-is an input of \yinsp.
+\UAS is the $\yeval^1$ value which, in \CUASGen, is encrypted with a single-use
+key pair, and is an input of \yinsp.
 
 \paragraph{Security of \CUASMPS.} %
 We state next the theorems for the security of \CUASMPS. The proofs are

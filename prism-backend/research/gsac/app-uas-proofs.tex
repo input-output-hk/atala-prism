@@ -330,11 +330,12 @@ used as witnesses in the proofs.
   (first) attribute. Thus, either $\OWNR[\lbrace \cid_i \rbrace_{i\in[n]}]$
   returns some \uid in $\HU \cup \CU$, or it returns $\bot$ because no such
   \uid exists (but not because more than one \cid belongs to different {\uid}s).
-  Assume that no such \uid exists. Such a signature breaks the one-more
-  forgery property of \SBCM, as it has not been produced via a call to \SIGN
-  (it is not in $\SIG$). Therefore, the probability that \adv~wins at line 14 is
-  negligible, given simulation extractability of $\NIZK^{\Sign}$, and
-  correctness and one-more forgery security of \SBCM.
+  Assume that no such \uid exists. Then, the {$\cred_i$}s extracted by
+  \ExtractSign cannot have been produced via a call to either \OBTISS or \ISSUE,
+  since they only accepts calls from known {\uid}s (either in \HU or \CU,
+  respectively). Since, by simulation extractability of $\NIZK^{\Sign}$, at
+  least one such credential must have been used to produce the signature, then
+  this breaks the one-more forgery property of the underlying \SBCM.
   %
   \qed
 \end{proof}

@@ -1063,6 +1063,7 @@ not satisfied.
 \todo{Mention that, in this definition, a credential that does not meet \fissue
   is not considered a forgery unless it is used to produce a signature. This is
   consistent with other works -- e.g., Camenisch, Krenn, Lehmann...}
+\todo{Require that $n>=1$ in the creds used to produce a signature...}
 
 \begin{figure}[htp!]
   \centering
@@ -1206,9 +1207,9 @@ not satisfied.
 Regarding the information revealed at signature time ($\yeval^0$), \UAS's
 unforgeability notion is equivalent to that of known AC schemes. It is the
 generalization of the information output at opening time ($\yinsp$), only
-present up to know in MPS \needcite what makes the notion of unforgeability more
-subtle. The fact that multiple users may produce signatures opening to the same
-value necessarily forces to generalize what is a forgery -- and, certainly,
+present up to know in MPS \cite{ngsy22} what makes the notion of unforgeability
+more subtle. The fact that multiple users may produce signatures opening to the
+same value necessarily forces to generalize what is a forgery -- and, certainly,
 resorting to extraction-based techniques seems unavoidable.
 
 As with anonymity, by tweaking the \fissue, \feval and \finsp
