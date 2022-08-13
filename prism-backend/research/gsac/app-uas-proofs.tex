@@ -291,7 +291,7 @@ used as witnesses in the proofs.
   \cup \CU$. This, in addition to the fact that {\usk}s are produced uniformly
   at random, means that $\cred_i$ is not bound to a \usk owned by a known
   user. But then, $\cred_i$ cannot have been produced via \OBTISS or \ISSUE,
-  which only accept request from known {\uid}s (either in \HU or \CU,
+  which only accept requests from known {\uid}s (either in \HU or \CU,
   respectively). Thus, $\cred_i$ is a valid \SBCM signature, that has not been
   produced via an honest query, which breaks the one-more forgery property of
   \SBCM.
@@ -393,6 +393,26 @@ used as witnesses in the proofs.
   %
   \qed
 \end{proof}
+
+\subsection{Security of $\CUASGen^{hide-iss}$}
+\label{sapp:sec-hide-iss}
+
+The only aspect that changes from \CUASGen to $\CUASGen^{hide-iss}$ is the
+relationship used for signing, where we hide the specific issuer who produced
+the (now only) credential used for signing.
+%
+This change does not affect the proofs for issuance anonymity, nor signature
+anonymity.
+%
+Concerning unforgeability, note that the credential that is used to produce the
+\UAS signature still needs to originate from a \uid in either \HU or \CU.
+Otherwise, such credential, extracted by \ExtractSign, is a forgery and breaks
+the one-more forgery property of \SBCM. Moreover, such credential must exist,
+due to simulation extractability of the underlying NIZK.
+%
+The proof for non-frameability is also unaffected by the change.
+
+Thus, if \CUASGen is a secure \UAS scheme, so is $\CUASGen^{hide-iss}$.
 
 
 %%% Local Variables:

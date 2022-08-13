@@ -1563,10 +1563,11 @@ scheme (cf. \secref{ssec:related-models-rs}).
 We show the modified NIZK relation for signing in \figref{fig:nizk-ring}. For
 notational simplicity, we restrict to just one credential per signature.
 %
-Modelling-wise, no changes are needed. Perhaps notably, in this case, the
+Modelling-wise, no changes are needed. Perhaps notably, even in this case, the
 anonymity property is still required to enforce that both challenge signatures
 are associated to the same set of (potential) issuers -- otherwise, it is
-trivial to distinguish signatures.
+trivial to distinguish signatures. Security for $\CUASGen^{hide-iss}$, based on
+security of \CUASGen, is sketched in \appref{sapp:sec-hide-iss}.
 
 \begin{figure}[ht!]
   \scalebox{0.9}{
@@ -1576,7 +1577,7 @@ trivial to distinguish signatures.
   \label{fig:nizk-ring}
 \end{figure}
 
-\paragraph{Interactive Credential Presentation.}
+\paragraph{Interactive Credential Presentations.}
 \todo{Does this meet the model? If not, we should move this elsewhere.}
 In \appref{app:interactive-uas}
 we show how to convert the non-interactive signing and verification processes

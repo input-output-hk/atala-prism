@@ -90,8 +90,8 @@ the underlying $\CUASGen^{hide-iss}$ construction is secure.
   $\fissue^{\sring}$ as issuance function, and $\finsp^0$ as opening function.
   Then, \advB invokes $\adv$ passing the $n$ produced public keys, and
   answers $\adv$'s $SIGN(i,R,\msg)$ queries as follows. If user $i$ has not yet
-  produced a credential for ring $\pk_i \in R$, \advB makes a call to its
-  \OBTAIN oracle, using $R$ as attribute set. If such a credential was already
+  produced a credential for ring $R$, where $\pk_i \in R$, \advB makes a call to
+  its \OBTAIN oracle, using $R$ as attribute set. If such a credential was already
   produced, \advB simply reuses it. Then, \advB uses the corresponding user and
   credential identifiers as parameters to a query to its own \SIGN oracle
   (specifying $\feval^{\attrs}$ as signature evaluation function). Eventually,
@@ -128,7 +128,7 @@ the underlying $\CUASGen^{hide-iss}$ construction is secure.
   moreover, given the construction of $Verify$ in \CUASRing, there is some
   honest \usk within $R$ that produced the signature, so $\OWNR[\scid] \in \HU$
   in \advB's non-frameability game. Also, since $\adv$ never queried its $SIGN$
-  oracle, then by construction there cannot exist a matching entry in the
+  oracle, then by construction there cannot exist a matching entry in \advB's
   $\SIG[\uid]$ table. Thus, \advB wins the non-frameability game whenever
   $\adv$ wins its unforgeability game. Since \CUASGen is non-frameable, then
   this probability must be negligible.
