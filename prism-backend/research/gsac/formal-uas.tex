@@ -1250,6 +1250,8 @@ did not produce it (i.e., no matching call to \SIGN exists).
       (\parm,\trap) \gets \SimSetup(1^\secpar) \\
       (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval,\yinsp,\iproof) \gets
       \adv^{\Oframe}(\parm) \\
+      \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\msg,\feval) \in
+      \SIG[\uid]: \pcreturn 0 \\
       \pcif \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0:
       \pcreturn 0 \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
@@ -1268,10 +1270,10 @@ did not produce it (i.e., no matching call to \SIGN exists).
       \rbrace_{i\in[n]},\msg)
       \neq \yinsp \lor \yinsp \neq \yinsp': \\
       \pcind \pcreturn 1 \\
-      \textrm{Let~}\scid \gets \lbrace \cid_i \rbrace_{i\in[n]};
-      \pcif \OWNR[\scid] \in \HU \land
-      (\cdot,\cdot,\Sig,\Yeval,\msg,\feval) \notin \SIG[\OWNR[\scid]]: \\
-      \pcind \pcreturn 1 \\
+      %\textrm{Let~}\scid \gets \lbrace \cid_i \rbrace_{i\in[n]};
+      \pcif \OWNR[\lbrace \cid_i \rbrace_{i\in[n]}] \in \HU: % \land
+      %(\cdot,\cdot,\Sig,\Yeval,\msg,\feval) \notin \SIG[\OWNR[\scid]]: \\
+      \pcreturn 1 \\
       \pcreturn 0
     }
   }

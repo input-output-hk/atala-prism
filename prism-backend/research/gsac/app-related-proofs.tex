@@ -332,15 +332,21 @@ construction also ensures MPS-extractability.
   \CUASGen, as defined for \UAS.
 
   Simulation of \adv's oracles by \advB is again direct (as in previous proofs).
-  Now, suppose that \adv~wins. Then, by assumption, the identity extracted by
-  \adv~(which maps to a $\cid$ for \advB), does not belong to the set of corrupt
-  users in \adv's game. By construction of \advB, then, $\OWNR[\cid] \notin \CU$
-  in \advB's unforgeability game.
-  \todo{The following seems wrong.}
-  But it cannot belong to an honest user either,  
-  as \adv's signature does not exist in \SIG. Otherwise, suppose it belongs to
-  an honest user (in list \HU of \advB's game). Then, it breaks one-more
-  unforgeability of the \SBCM scheme used by \CUASGen, as it is a valid.
+  Now, suppose that \adv~wins -- i.e., the identity extracted by \adv~does not
+  belong to the set of corrupt users in \adv's game. By construction of \advB
+  (identities in \adv's game map to a $\cid$ for \advB), $\OWNR[\cid] \notin
+  \CU$ in \advB's unforgeability game either.
+  % 
+  However, in order for \advB to win in its own game, we need to prove also that
+  the produced identity does not belong to a user in \HU either. Suppose that it
+  does. Simulation extractability ensures that the credentials extracted by
+  \adv~all belong to the same user (by assumption, in \HU) -- i.e., they are
+  bound to its \usk. Moreover, since \adv~wins its game, the signature output by
+  \adv~has not been obtained via its \SIGN oracle. But, given that the user is
+  honest, its \usk has been produced uniformly at random, and has not been
+  leaked to \adv~(as the issuer is also honest). Thus, the probability that
+  the extracted credentials belong to an honest user is negligible and, if
+  \adv~wins its game, \advB also does.
   %
   \qed
 \end{proof}
@@ -357,7 +363,7 @@ construction also ensures MPS-extractability.
   \CUASGen, as defined for \UAS.
 
   Simulation of \adv's oracles by \advB is as in the unforgeability-1 proof.
-  \advB outputs whatever \adv~outputs, adding a $(\yinsp,iproof)$ pair, honestly
+  \advB outputs whatever \adv~outputs, adding a $(\yinsp,\iproof)$ pair, honestly
   generated from \adv's output. Note that the winning condition of \adv~
   requires that the produced signature belongs to an honest user, without
   having been produced via a call to the signing oracle. By construction of

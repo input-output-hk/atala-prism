@@ -322,7 +322,7 @@ used as witnesses in the proofs.
   of \adv~winning at line 13 is negligible due to simulation extractability
   of $\NIZK^{\Sign}$.
 
-  \paragraph{(e) All {\cred}s are bound to the same \usk.} %
+  \paragraph{(e) All {\cred}s are bound to the \usk of a known \uid.} %
   $\NIZKRel^{\Sign}$ includes a condition that $\forall i\in[n],
   \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$. Thus, simulation
   extractability of $\NIZK^{\Sign}$ and correctness of \SBCM, ensure that all
@@ -332,7 +332,7 @@ used as witnesses in the proofs.
   \uid exists (but not because more than one \cid belongs to different {\uid}s).
   Assume that no such \uid exists. Then, the {$\cred_i$}s extracted by
   \ExtractSign cannot have been produced via a call to either \OBTISS or \ISSUE,
-  since they only accepts calls from known {\uid}s (either in \HU or \CU,
+  since they only accept calls from known {\uid}s (either in \HU or \CU,
   respectively). Since, by simulation extractability of $\NIZK^{\Sign}$, at
   least one such credential must have been used to produce the signature, then
   this breaks the one-more forgery property of the underlying \SBCM.
@@ -343,24 +343,25 @@ used as witnesses in the proofs.
 \subsection{Non-Frameability}
 
 \begin{proof}[\thmref{thm:frame-uas}; Non-frameability of \CUASGen]
+  \label{prf:frame-uas}
 
   % We prove that, if the NIZK system used for $\NIZKRel_{\Sign}$ and
   % $\NIZKRel_{\Open}$ is zero-knowledge and simulation-extractable, and \SBCM is
   % blind, then our \CUASGen construction is secure.
 
-  First, suppose that the \Sig that \adv~outputs at line 2 exists in \SIG, for
-  some \uid. In that case, the signature is accepted by \Verify at
-  line 3, and after simulation extractability of $\NIZK^{\Sign}$, $\yeval =
-  \yeval^0$, and $\tyeval^1 = \yeval^1$. Similarly, if the $(\yinsp,\iproof)$
+  Since the signature output by \adv~is accepted by \Verify at line 4,
+  simulation extractability of $\NIZK^{\Sign}$ ensures that $\yeval = \yeval^0$,
+  and $\tyeval^1 = \yeval^1$. Similarly, if the $(\yinsp,\iproof)$
   pair output by \adv~is accepted by \Judge, simulation extractability of
-  $\NIZK^{\Sign}$ and $\NIZK^{\Open}$ implies that both checks at lines 7 and 8
-  pass. Hence, the probability that the adversary wins at either lines 7 or 8 is
+  $\NIZK^{\Sign}$ and $\NIZK^{\Open}$ implies that both checks at lines 8 and 9
+  pass. Hence, the probability that the adversary wins at either lines 8 or 9 is
   negligible, after simulation extractability of $\NIZK^{\Sign}$ and
   $\NIZK^{\Open}$.
 
   Next, we prove that, after zero-knowledge and simulation extractability of
-  $\NIZKRel_{\Sign}$, and blindness of \SBCM, $\Sig \in \SIG$ except with
-  negligible probability.
+  $\NIZKRel_{\Sign}$, and blindness of \SBCM, no credential from an honest user
+  can be extracted from the signature output by \adv, except with negligible
+  probability.
   %
   The crucial observation is that, as in \cite{cl06} \CUASGen's \Sign algorithm
   produces a signature of knowledge for the relation defined by
@@ -381,14 +382,14 @@ used as witnesses in the proofs.
   indistinguishable from $G_0$. Now, in $G_1$, simulation extractability of
   $\NIZK^{\NIZKRel_{\Sign}}$ ensures that \ExtractSign outputs a valid
   witness for $(\msg,\feval,\yeval^0,\cinsp,\lbrace ipk_i \rbrace_{i\in[n]},
-  \Eek)$. Note that this witness must include some \usk which,
-  for \adv~to win the game, must belong to an honest user. However, since the
-  user (whichever it is) has not been corrupted, its \usk has not been leaked
-  to \adv~via corruption queries (nor via \SIGN queries, where the proof of
-  knowledge within \Sign is now simulated). Moreover, blindness of \SBCM ensures
-  that the issuer (who is potentially corrupt), did not learn \usk either during
-  calls to \OBTAIN. Thus, the probability that $\UK[\uid] = \usk$ for $\uid \in
-  \HU$ and \Sig produced by the adversary, is negligible.
+  \Eek)$. Note that this witness must include some \usk which, in case of
+  being owned by an honest user, has not been leaked to \adv~--as the user
+  has not been corrupted, nor the \usk has been leaked via \SIGN queries,
+  where the proof of knowledge within \Sign is now simulated). Moreover,
+  blindness of \SBCM ensures that the issuer (who is potentially corrupt), did
+  not learn \usk either during calls to \OBTAIN. Thus, since \usk is picked
+  uniformly at random by honest users, the probability that $\UK[\uid] = \usk$
+  for $\uid \in \HU$ and \Sig produced by the adversary, is negligible.
   %
   \qed
 \end{proof}
