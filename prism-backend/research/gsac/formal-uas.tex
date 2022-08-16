@@ -1329,7 +1329,7 @@ issuers, to the AC domain.
 In this section, we give a generic construction of an \UAS scheme, based on
 generic building blocks. We use three different NP relations in our generic
 construction. Namely: $\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$, and
-$\NIZKRel_{\Open}$, described next and specified in CS notation \needcite
+$\NIZKRel_{\Open}$, described next and specified in CS notation \cite{cs97}
 in \figref{fig:nizkrels}.
 
 \begin{description}
@@ -1577,13 +1577,45 @@ security of \CUASGen, is sketched in \appref{sapp:sec-hide-iss}.
   \label{fig:nizk-ring}
 \end{figure}
 
-\paragraph{Interactive Credential Presentations.}
-\todo{Does this meet the model? If not, we should move this elsewhere.}
-In \appref{app:interactive-uas}
-we show how to convert the non-interactive signing and verification processes
-into an interactive protocol. While the transformation is quite straightforward,
-it is of high relevance for real world use cases.
+\paragraph{$\CUASGen^{int}$: Interactive Credential Presentations with replay
+  protection.}
+%
+In group signatures, signing and verification are non-interactive processes;
+whereas in anonymous credentials, they are an interactive protocol. \CUASGen
+targets the non-interactive approach. Now, we sketch how to transform this into
+an interactive protocol that ensures replay protection.
 
+Modelling-wise, this requires to replace the \Sign and \Verify functions with
+a single $\langle 1/0,(\yeval,\utrans_{\Sig})/\bot \rangle \gets \langle
+\Sign(\usk,\opk,\sCred,\msg,\feval), \Verify(\opk,\sipk,\msg,\feval) \rangle$,
+where $\utrans_{\Sig}$ is the transcript of the protocol, and is logged now in
+an equivalent of the \SIG table (\CSIG for challenge transcripts). The \SIGN
+and \CHALb oracles now also accept a random value from the adversary, but
+are otherwise adapted in the natural way, where the signer is always honest, but
+the verifier is played by the adversary (e.g., similar to the \OBTAIN oracle).
+
+The construction is also simple. Basically, prior to signing the message, we
+require that the verifier sends to the user a number picked uniformly at random
+from an appropriate domain, which must be concatenated to the signed message. If
+there is no need to actually sign a message, then the message is set to an empty
+string, and the user only signs the random number.
+%
+If the logic within the \feval and \finsp functions needs to ignore the random
+value $rnd$ sent by the verifier, note that it is trivial to transform these
+functions so that they treat the message concatenated with $rnd$ as a pair
+$(\msg,rnd)$, and simply ignore $rnd$.
+
+We sketch security of $\CUASGen^{int}$ in \appref{sapp:sec-interactive} assuming
+the same security properties as in \UAS. Note that extra properties may be
+needed in some scenarios. For instance, informally, the non-interactive version
+does not provide deniability and, thus, our transform to the interactive case
+does not provide it either. On the other hand, transferability is possible in
+both cases, which may be useful, e.g., in situations where chaining multiple
+requests is needed.
+%
+However, since probably the most common use of interactive presentations simply
+worry about preventing replay attacks, we leave a more detailed analysis of
+possible transforms (still meeting the \UAS model) out of scope.
 
 %%% Local Variables:
 %%% mode: latex
