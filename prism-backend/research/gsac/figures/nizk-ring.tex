@@ -13,7 +13,8 @@
     $\yinsp = \finsp((\yeval^0,\yeval^1),\upk,
     (\cid,\attrs),\msg)~\land$ \\
     $\exists i\in[n]~\suchthat~%\ipk_i=\upk \land
-    \SBCMVerify(\ipk_i,\cred,\usk,\attrs) = 1$
+    \SBCMVerify(\ipk_i,\cred,\usk,
+    \lbrace \cid_i \rbrace \cup \attrs) = 1$
   };
   \draw [thick,decorate,decoration={brace}] (-5.75,5.50) -- (-5.75,7.75);
   \draw [thick,decorate,decoration={brace}] (5.75,7.75) -- (5.75,5.50);

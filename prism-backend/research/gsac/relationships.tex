@@ -20,11 +20,11 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
     \begin{minipage}[t]{\textwidth}
       \textbf{Issuance functions:}
       \begin{align}
-        & \fissue^1(\cdot,\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{single,F,I}(\cdot,\usk,\cdot,\cdot) \coloneqq \pcreturn
-          F(I,\usk)
+        & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
+        & \fissue^{single,F,I}(\upk,\cdot,\cdot) \coloneqq \pcreturn
+          F(I,\upk)
           \nonumber \\
-        & \fissue^{\sring}(\upk,\cdot,\attrs,\cdot) \coloneqq
+        & \fissue^{\sring}(\upk,\cdot,\attrs) \coloneqq
           \pcreturn (\attrs = \sring \land \upk \in \attrs) \nonumber
       \end{align}
       
@@ -95,18 +95,18 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
 \subsection{Group Signatures}
 \label{ssec:related-models-gs}
 
-We adopt the model in \cite{bsz05}. In this abstraction
-of group signatures, the opener returns an index uniquely identifying the group
-member that created a signature, along with a correctness proof. For ease of
-exposition, assume that, w.l.o.g., this index is just the public key that the
-group member generates randomly when joining the group\footnote{The user public
-  key is assumed to be accessible from a public table in \cite{bsz05}, so it is
-  easy to translate the public key into an index, if needed.}. A group signature
-scheme, according to \cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign,
-\Verify, \Open and \Judge algorithms, as well as an $\langle\Obtain,\Issue
-\rangle$ interactive protocol. Their intuition is similar to that of
-\UAS, so we refer to \cite{bsz05} for detailed descriptions. For ease of
-reference, we replicate the security games in \figref{fig:model-gs}.
+We adopt the model in \cite{bsz05}. In this abstraction of group signatures, the
+opener returns an index uniquely identifying the group member that created a
+signature, along with a correctness proof. For ease of exposition, assume that,
+w.l.o.g., this index is just the public key that the group member generates
+randomly when joining the group\footnote{The user public key is assumed to be
+  accessible from a public table in \cite{bsz05}, so it is easy to translate the
+  public key into an index, if needed.}. A group signature scheme, according to
+\cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign, \Verify, \Open and
+\Judge algorithms, as well as an $\langle\Obtain,\Issue\rangle$ interactive
+protocol. Their intuition is similar to that of \UAS, so we refer to
+\cite{bsz05} for detailed descriptions. For ease of reference, we replicate the
+security games in \figref{fig:model-gs}.
 
 \begin{figure}[ht!]
   \centering
@@ -163,12 +163,12 @@ We show that the $(\fissue^{single,F,I},\feval^0,\finsp^{\upk})$-\CUASGen
 restriction, is a secure group signature scheme according to \cite{bsz05}.
 As stated, the $\fissue^{single,F,I}$ is an \UAS-acceptable function if $F$ is a
 PRF. In that case, its output is a random-looking string that depends on the
-user secret key \usk, and a string $I$ uniquely identifying the user. Thus, it
-will be the same per $(\usk,I)$ pair, and can be used by issuer $I$ to prevent
-issuing more than one credential per user -- without enabling linking across
-issuers. Basically, each issuer maintains a list of received $\yissue = F(\usk,
-I)$ values, and rejects issuing a credential for already existing \yissue
-values. From this, the GS algorithms are as follows:
+user public key \upk, and a string $I$ uniquely identifying the user. Thus, it
+will be the same per $(\upk,I)$ pair, and can be used by issuer $I$ to prevent
+issuing more than one credential per user. Basically, the issuer maintains a
+list of received $\yissue = F(\upk,I)$ values, and rejects issuing a credential
+for already existing \yissue values. From this, the GS algorithms are as
+follows:
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs \Setup from \CUASGen,
@@ -181,7 +181,8 @@ values. From this, the GS algorithms are as follows:
   \Issue\rangle$ as in \CUASGen, with $\attrs \gets \emptyset$. Upon receiving
   the \yissue value, the issuer checks if it already exists in a list $L$
   (initially set to $\emptyset$); if it exists, aborts issuance. Otherwise, it
-  completes the protocol and adds $\yissue$ to $L$.
+  completes the protocol and adds $\yissue$ to $L$. It is responsibility of the
+  issuer to maintain $L$.
 \item[$\sig \gets \Sign(\gpk,\cred,\msg)$.] Parses \gpk as $(\ipk,\opk)$, and
   runs $(\sig,0) \gets \Sign(\usk,\opk,\cred,\msg,\feval^0)$ from \CUASGen,
   where $\yeval = 0$ is the constant output of $\feval^0$.
@@ -340,20 +341,9 @@ available in \appref{app:related-proofs}.
 
 We adopt the model in \cite{fhs19}, for anonymous credentials with selective
 disclosure. Therein, an anonymous credential scheme is defined via $OrgKeyGen$
-(which we rename to $IssKeyGen$, and is equivalent to \KeyGen+\ISet in \UAS),
-and $UserKeyGen$ (\KeyGen in \UAS) algorithms, and $Obtain,Issue$ and $Show,
-Verify$ interactive protocols. The issuance interactive protocol corresponds to
-the issuance protocol in \UAS. Similarly, $Show,Verify$ corresponds to
-the interactive extension of \Sign and \Verify in \UAS, which we show how
-to build in \appref{app:interactive-uas}. The security definitions rely on
-$HU, CU, ObtIss, Obtain, Issue, Show$, and $LoR$ oracles, which are essentially
-equivalent to our \HUGEN, \CUGEN, \OBTISS, \OBTAIN, \ISSUE, \SIGN, and \CHALb
-oracles\footnote{The $CU$ oracle in \cite{fhs19} actually allows the adversary
-  to create corrupt user secret keys, while in our corruption model, corrupt
-  users have keys generated by the system that are later learned by the
-  adversary. This is however for notational simplicity -- and, indeed, in our
-  construction, all users need to prove knowledge of the \usk, which would be
-  consistent with the stronger corruption model in \cite{fhs19}}. We refer to
+(which we rename to $IssKeyGen$), and $UserKeyGen$ algorithms, and $Obtain,
+Issue$ and $Show,Verify$ interactive protocols. The security definitions rely on
+$HU, CU, ObtIss, Obtain, Issue, Show$, and $LoR$ oracles. We refer to
 \cite{fhs19} for the full details. For ease of reference, we summarize the
 security definitions in \figref{fig:model-ac}.% , with inocuous
 % adaptations to make them more suitable for comparison with our definitions --
@@ -392,32 +382,34 @@ security definitions in \figref{fig:model-ac}.% , with inocuous
   \caption{Security games for anonymous credentials with selective disclosure
     \cite{fhs19}. \OWNR and \ATTR tables are essentially as in \UAS. \adv~wins
     the unforgeability game if it authenticates successfully while revealing
-    attributes not contained in adversarially controlled credentials.}
+    attributes not contained in adversarially controlled credentials. All
+    oracles in this model have a direct equivalent in \UAS.
+  }
   \label{fig:model-ac}  
 \end{figure}
 
 \subsubsection{\CUASAC Construction.} %
-We show that a $(\fissue^1,\feval^{\dattrs},\finsp^0)$-\CUASGen restriction, is
-a secure anonymous credential scheme according to the model in \cite{fhs19}. We
-first quickly define the algorithms, and then prove security.
+We show that a $(\fissue^1,\feval^{\dattrs},\finsp^0)$-$\CUASGen^{int}$
+restriction, is a secure anonymous credential scheme according to the model in
+\cite{fhs19}. We first quickly define the algorithms, and then prove security.
 
 \begin{description}
 % \item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar,
 %   \AttrSpace)$ and $(\opk,\osk) \gets \OKeyGen(\parm',\finsp^0)$ from our
 %   \CUASGen construction. Returns $\parm \gets (\parm',\opk)$.
-\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] From \CUASGen, run $\parm' \gets
-  \Setup(1^\secpar)$ and $(\opk,\osk) \gets \OKeyGen(\parm',
+\item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] From $\CUASGen^{int}$, run $\parm'
+  \gets \Setup(1^\secpar)$ and $(\opk,\osk) \gets \OKeyGen(\parm',
   \finsp^0)$, and set $\parm \gets (\parm',\opk)$. Run $(\upk,\usk) \gets
   \KeyGen(\parm')$ and $\ipk \gets \ISet(\upk,\usk,\fissue^1)$. Set $\isk \gets
   \usk$.
-\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \KeyGen from \CUASGen.
+\item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \KeyGen from $\CUASGen^{int}$.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
-  Runs $\langle \Obtain,\Issue \rangle$ from \CUASGen.
+  Runs $\langle \Obtain,\Issue \rangle$ from $\CUASGen^{int}$.
 \item[$\langle 1/0,((1,\utrans)/(0,\utrans)\rangle
   \gets \langle Show(\ipk,\attrs,\dattrs,
   \cred),\Verify(\ipk,\dattrs) \rangle$.]
-  Runs the interactive extension of \Sign and \Verify of \CUASGen, using
+  Runs the interactive transform of \Sign and \Verify of $\CUASGen^{int}$, using
   $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as open
   function, with \opk from \parm as opener public key.
 \end{description}
@@ -428,20 +420,19 @@ available in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASAC]
   \label{thm:anon-cuasac}
-  If the base \CUASGen construction has signature anonymity according to
+  If the base $\CUASGen^{int}$ construction has signature anonymity according to
   \defref{def:sign-anonymity-uas}, then \CUASAC is an anonymous AC scheme
   according to \cite{fhs19}.
 \end{theorem}
 
 \begin{theorem}[Unforgeability of \CUASAC]
   \label{thm:forge-cuasac}
-  If the base \CUASGen construction is unforgeabile according to
+  If the base $\CUASGen^{int}$ construction is unforgeabile according to
   \defref{def:forge-uas}, then \CUASAC is an unforgeable AC scheme.
-  \markulf{Hiding of $pk_U$?}
 \end{theorem}
 
 \subsection{Revocable Anonymous Credentials}
-\label{sapp:related-models-rac}
+\label{ssec:related-models-rac}
 
 In \cite{cks10}, revocable anonymous credentials are proposed. From \CUASGen, it
 is straightforward to build an AC system with verifier local revocation, like in

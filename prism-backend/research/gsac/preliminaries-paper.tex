@@ -10,15 +10,15 @@ Next we introduce the main building blocks we will be using in our
 constructions. More detailed definitions and references appear in
 \appref{app:crypto-building-blocks}.
 
-\paragraph{Digital Signatures.} %
-Defined as a tuple (\SSetup,\SKeyGen,\SSign,\SVerify). Algorithm $\parm \gets
-\SSetup(\secpar)$ produces public parameters for the other algorithms.
-$(\vk,\sk) \gets \SKeyGen(\parm)$ generates the verification-signing key
-pair, algorithm $\sig \gets \SSign(\sk,\msg)$ signs message \msg with
-signing key \Ssk, producing signature \Ssig, and $1/0 \gets \SVerify(\vk,
-\sig,\msg)$ checks whether \Ssig is a valid signature over \msg, under
-verification key \Svk. We rely on existentially unforgeable digital signature
-schemes.
+% \paragraph{Digital Signatures.} %
+% Defined as a tuple (\SSetup,\SKeyGen,\SSign,\SVerify). Algorithm $\parm \gets
+% \SSetup(\secpar)$ produces public parameters for the other algorithms.
+% $(\vk,\sk) \gets \SKeyGen(\parm)$ generates the verification-signing key
+% pair, algorithm $\sig \gets \SSign(\sk,\msg)$ signs message \msg with
+% signing key \Ssk, producing signature \Ssig, and $1/0 \gets \SVerify(\vk,
+% \sig,\msg)$ checks whether \Ssig is a valid signature over \msg, under
+% verification key \Svk. We rely on existentially unforgeable digital signature
+% schemes.
 
 \paragraph{Public-Key Encryption.} %
 Defined as a tuple (\ESetup,\EKeyGen,\EEnc,\EDec). Algorithm $\parm \gets
@@ -29,15 +29,15 @@ encryption key \Eek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\dk,
 \Ec)$ decrypts ciphertexts using decryption key \Edk. We rely on IND-CCA
 public-key encryption schemes.
 
-\paragraph{(Block) Commitment Schemes.} %
-Defined as a tuple (\CSetup,\CCommit). Algorithm $\parm \gets
-\CSetup(\secpar)$ produces the parameters for committing to values. $\Ccom
-\gets \CCommit(\parm, \smsg; r)$ produces a commitment \Ccom over a set of
-messages \smsg, using randomness $r$ (which we may omit when explicitly
-stating it is not necessary). We will further use commitment schemes that
-allow committing to vectors of messages. Therein, the \CCommit algorithm simply
-receives a block of messages. In both cases, we require hiding and binding
-(block) commitment schemes.
+% \paragraph{(Block) Commitment Schemes.} %
+% Defined as a tuple (\CSetup,\CCommit). Algorithm $\parm \gets
+% \CSetup(\secpar)$ produces the parameters for committing to values. $\Ccom
+% \gets \CCommit(\parm, \smsg; r)$ produces a commitment \Ccom over a set of
+% messages \smsg, using randomness $r$ (which we may omit when explicitly
+% stating it is not necessary). We will further use commitment schemes that
+% allow committing to vectors of messages. Therein, the \CCommit algorithm simply
+% receives a block of messages. In both cases, we require hiding and binding
+% (block) commitment schemes.
 
 \paragraph{Non-Interactive Zero-Knowledge.} %
 We use non-interactive zero-knowledge proofs of knowledge (NIZK), in the CRS
@@ -104,10 +104,6 @@ a specific element of a set, we use sub-indexes, e.g., $\sipk_i$ is the $i$-th
 We also assume the existence of a well defined attribute space over which
 issuers in our schemes can issue credentials on. We denote this set with
 \AttrSpace.
-%
-Except when otherwise stated, we assume that, given a credential \cred, the
-public key of its issuer, $\ipk_{\cred}$ can be retrieved. Similarly, the
-attribute set contained in a credential \cred is denoted $\attrs_{\cred}$.
 %
 $0(p)$ returns $True$ if $p=0$, or $False$ otherwise.
 

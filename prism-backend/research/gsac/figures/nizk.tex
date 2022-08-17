@@ -11,7 +11,8 @@
     $(\upk,\usk) \gets \KeyGen(\parm;r)~\land$ \\% \Ccom = \CCommit(\usk;r)~\land$ \\
     $\fissue(\upk,\attrs,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}) = \yissue~
     \land$ \\
-    $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,\cattrs_i) = 1$
+    $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,
+    \lbrace \cid_i \rbrace \cup \cattrs_i) = 1$
   };
   \draw [thick,decorate,decoration={brace}] (-7.175,8.00) -- (-7.175,9.75);
   \draw [thick,decorate,decoration={brace}] (1.175,9.75) -- (1.175,8.00);
@@ -30,7 +31,8 @@
     \feval(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\ 
     $\yinsp = \finsp((\yeval^0,\yeval^1),\upk,
     \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)~\land$ \\
-    $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$
+    $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,
+    \lbrace \cid_i \rbrace \cup \attrs_i) = 1$
   };
   \draw [thick,decorate,decoration={brace}] (-5.50,5.50) -- (-5.50,7.75);
   \draw [thick,decorate,decoration={brace}] (5.50,7.75) -- (5.50,5.50);
