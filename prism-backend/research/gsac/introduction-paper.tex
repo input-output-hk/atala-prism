@@ -61,9 +61,8 @@ is with CL-type signatures \cite{cl02}. But the fact that they support efficient
 zero-knowledge protocols for proving knowledge of a signature, makes them very
 suitable to build GS schemes -- even without exploiting the possibility to
 encode many attributes. Indeed, BBS+ signatures \cite{bbs04,cdl16b} have been
-used to design and instantiate GS schemes \cite{gl19,dl21}, as well as  PS16
-signatures \cite{ps16,cdl+20}. Both are CL-like signature schemes, and thus
-can be (and have been) used to design AC schemes \needcite.
+used to design and instantiate GS schemes \cite{gl19,dl21}, as is the case for
+PS16 signatures \cite{ps16,cdl+20}.
 
 Also, both AC and GS branches have experienced remarkable efforts towards
 generalisation. In the AC domain, malleable signatures are used as core building
@@ -132,9 +131,10 @@ Strictly speaking, for AC schemes, we build on a simple transform of our main
 construction and model that turns non-interactive signatures into interactive
 authentication protocols with protection against replay attacks\footnote{This is
   the well-known folklore approach that has the verifier send a fresh nonce to
-  be signed.}. We further show how to build ring signatures (RS) in the model
-given by \cite{bkm06}, from an alternative construction that improves issuer
-privacy.
+  be signed by the alleged owner of the private key related to a known
+  public key.}. We further show how to
+build ring signatures (RS) in the model given by \cite{bkm06}, from an
+alternative construction that improves issuer privacy.
 %
 The most interesting part being that, while we prove implications with other
 previously known schemes, our generalisation approach allows to merge features

@@ -277,8 +277,7 @@ We use the following sets and tables in our definitions:
   from context, we sometimes use $\CRED[\cid]$ (resp. $\CRED[\scid]$) to
   mean \cred (resp. \scred) in $\CRED[\cid] = (\cdot,\cred,\cdot,\cdot,
   \cdot,\cdot)$ (resp. $\CRED[\scid]$).
-\item[\CCRED.] Like \CRED, but tracks challenge credentials in the issuance
-  anonymity game.
+\item[\CCRED.] Like \CRED, but tracks challenge credentials.
 \item[\OWNR.] For notational convenience, when we write $\OWNR[\cid]$ we mean
   ``\uid such that $\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot)$'', or
   $\bot$ if there is no wuch \uid. We may also use \OWNR over a set of {\cid}s
@@ -1501,7 +1500,7 @@ the proofs to \appref{app:uas-proofs}.
   extractable, the scheme for $\NIZKRel_{\Open}$ is complete, the public key
   encryption algorithm is correct, and the \SBCM scheme is correct and one-more
   unforgeable, then our \CUASGen construction
-  satisfies unforgeability as defined in \defref{def:sign-forge-uas}, except
+  satisfies unforgeability as defined in \defref{def:forge-uas}, except
   with negligible probability.
 \end{theorem}
 

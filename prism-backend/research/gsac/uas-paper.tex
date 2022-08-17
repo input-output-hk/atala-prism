@@ -57,41 +57,37 @@ Version of \today
   common cryptographic building blocks. However, each has its own approach
   modelling-wise, despite obvious commonalities.
   %
-  Even within systems of the same type, multiple ``sub-models'' coexist that
-  cater for slightly different requirements.
+  Even within systems of the same type, multiple ``sub-models'' and
+  constructions coexist that cater for slightly different requirements.
+
+  Previous works, like Camenisch et al in SAC'15, or Nguyen et al in CRYPTO'22
+  generalize aspects of those systems, but still within their own domain --
+  anonymous credentials and group signatures, respectively.
 
   In this work, we make a significant generalization effort in order to come
-  up with a flexible game-based model that subsumes (a reasonable subset of)
-  previous models in this domain. The key to this flexibility lies in functional
-  placeholders that, with careful constraints, still allow to capture the
-  usual anonymity, unforgeability and non-frameability properties. We refer
+  up with a flexible game-based model that subsumes
+  previous ones. The key to this flexibility lies in functional placeholders
+  that, with careful constraints, still allow to capture generalized notions of
+  the usual anonymity, unforgeability and non-frameability properties. We refer
   to this unified model as \emph{Universal Anonymous Signatures} (\UAS).
 
-  To showcase the generality of our model, we first give a generic construction
-  of \UAS, along with minor variations of this construction that also meet the
-  \UAS model. Then, we prove that well-known related schemes can be built as a
-  special case (restriction) of our generic construction, just by giving
-  concrete definitions of the previously mentioned functional placeholders.
-  In particular, we prove our \UAS model spans (vanila) group signatures, group
-  signatures with message-dependent opening, multimodal private signatures,
-  attribute-based anonymous credentials, revocable anonymous credentials,
-  delegatable anonymous credentials, and ring signatures. This also proves
-  interesting (and, in some sense, folklore) facts, such as the fact that ring
-  signatures can be seen as a multi-issuer group signature scheme, in which
-  every user is also an issuer. Also, it paves the way to come up with
-  ``hybrid'' constructions where one (e.g.) combines features of anonymous
-  credentials (proving predicates at authentication time), with features of
-  group signatures (conditional deanonymization based on attributes of the
-  signer).
+  To showcase the generality of \UAS, we give a main construction, plus two
+  alternative ones that slightly modify it, following our \UAS model.
+  We prove that, from these constructions, we can build multiple variants of
+  group signatures, anonymous credentials, and ring signatures, just by giving
+  concrete definitions of the mentioned functional placeholders.
   
-  Besides the main theoretical contribution of providing a unified model for
-  many related schemes, we do believe that a (possibly more relevant) practical
-  contribution consists on the fact that system designers and cryptographic
-  engineers may adotp some generic construction of \UAS, and then simply focus
-  on concrete definitions of a few functional placeholders, to tweak the
-  different utility-vs-privacy tradeoff they want to achieve -- without the need
-  to prove everything from scratch, nor needing to switch to a completely
-  different construction if their needs change.
+  Our main theoretical contribution is unifying previously separate
+  (albeit close) systems under the same generalized model. Indeed, such unified
+  model allows to, very easily, build ``hybrid'' systems that combine features
+  of previously separately modelled constructions: e.g., anonymous credentials
+  with conditional deanonymization based on their attributes.
+  
+  More practically, this has the consequence that cryptographic
+  engineers and system designers can tweak the desired utility-vs-privacy
+  tradeoff that best suits their needs, just by defining a few functions --
+  but without needing to prove security from scratch or implement
+  a whole system.
 \end{abstract}
 
 \input{introduction-paper.tex}
