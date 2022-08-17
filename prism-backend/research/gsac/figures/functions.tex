@@ -1,0 +1,81 @@
+\begin{tikzpicture}
+
+  \pgfdeclarelayer{bg}    % declare background layer
+  \pgfsetlayers{bg,main}  % set the order of the layers (main is the standard layer)
+
+  \node (issue) at (0.00,5.00) { \bf Issuance functions };
+  \node (sign) at (6.75,5.00) { \bf Signature evaluation functions };  
+  \node (open) at (0.00,2.15) { \bf Open functions };
+
+  % Issue functions
+  \node (fissue1) at (-0.75,4.50) {
+    $\fissue^1(\cdot,\cdot,\cdot) \coloneqq \pcreturn 1$
+  };
+  \node (fissue2) at (0.58,4.00) {
+    $\fissue^{single,F,I}(\upk,\cdot,\cdot) \coloneqq \pcreturn F(I,\upk)$
+  };
+  \node[align=left] (fissue3) at (0.00,3.25) {
+    $\fissue^{\sring}(\upk,\cdot,\attrs) \coloneqq$ \\
+    \hspace*{1em}$\pcreturn (\attrs = \sring \land \upk \in \attrs)$
+  };
+
+  % Signature evaluation functions
+  \node (fsign1) at (5.80,4.50) {
+    $\feval^0(\cdot,\cdot,\cdot) \coloneqq \pcreturn (0,\ast)$
+  };
+  \node[align=left] (fsign2) at (6.55,4.00) {
+    $\feval^{\dattrs}(\cdot,(\cdot,\attrs),\cdot) \coloneqq
+    \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},\ast)$
+  };
+  \node[align=left] (fsign3) at (5.98,2.90) {
+    $\feval^{\sring,\dattrs}(\upk,(\cdot,\attrs),\cdot) \coloneqq$ \\
+    \hspace*{1em}$\pcif \upk \in \lbrace \attrs_i \rbrace_{i\in\dattrs}
+    \subseteq \sring:$ \\
+    \hspace*{2em}$\pcreturn (\lbrace \attrs_i \rbrace_{i\in\dattrs},\ast)$ \\
+    \hspace*{1em}$\pcelse \pcreturn \bot$
+  };
+  \node[align=left] (fsign4) at (6.65,1.20) {
+    $\feval^{\dattrs,F,V,L}(\upk,((\cidi,\cidu),\attrs),\cdot) \coloneqq$ \\
+    \hspace*{1em}$\pcif F(V,\cidi) \in L \lor F(V,\cidu) \in L:$ \\
+    \hspace*{2em}$\pcreturn \bot$ \\
+    \hspace*{1em}$\pcelse \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},V)$
+  };
+  \node[align=left] (fsign5) at (7.00,-0.65) {
+    $\feval^{g,MPS}(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg) \coloneqq$ \\
+    \hspace*{1em}$\pcif g(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},
+    \msg) = 0:$ \\
+    \hspace*{2em}$\pcreturn \bot$ \\
+    \hspace*{1em}$\pcelse$ \\
+    \hspace*{2em}$\pcreturn (\ast,g(\upk,\lbrace(\cid_i,\attrs_i)
+    \rbrace_{i\in[n]},\msg))$
+  };
+
+  % Open functions
+  \node (fopen1) at (-0.50,1.65) {
+    $\finsp^0(\cdot,\cdot,\cdot,\cdot) \coloneqq \pcreturn 0$
+  };
+  \node (fopen2) at (0.00,1.05) {
+    $\finsp^{\upk}(\cdot,\upk,\cdot,\cdot) \coloneqq \pcreturn \upk$
+  };
+  \node[align=left] (fopen3) at (0.65,0.00) {
+    $\finsp^{F}((\yeval^0,\yeval^1),\cdot,((\cidi,\cidu),\attrs),\cdot)
+    \coloneqq$ \\
+    \hspace*{1em}$\pcif \yeval^0 \neq 0:$\\
+    \hspace*{2em}$\pcreturn (F(\yeval^1,\cidi),F(\yeval^1,\cidu))$ \\
+    \hspace*{1em}$\pcelse \pcreturn 0$
+  };
+  \node[align=left] (fopen4) at (0.15,-1.30){
+    $\finsp^{h,MPS}((\cdot,\yeval^1),\upk,\cid,\attrs,\cdot) \coloneqq$ \\
+    \hspace*{1em}$\pcreturn h(\yeval^1,\upk,\cid,\attrs)$
+  };
+  
+  % \draw[draw=black,thick] (5.65,2.29) rectangle ++(1.43,0.44);
+  % \draw[draw=black,dashed,thick] (1.80,1.09) rectangle ++(1.75,0.44);
+  % \draw[draw=black,dotted,thick] (3.85,1.09) rectangle ++(2.30,0.44);
+    
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

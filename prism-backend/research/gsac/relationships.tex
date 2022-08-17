@@ -15,76 +15,7 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
 \UAS-acceptable if $F$ is a secure PRF \needcite.
 
 \begin{figure}[ht!]
-
-  \scalebox{0.9}{
-    \begin{minipage}[t]{\textwidth}
-      \textbf{Issuance functions:}
-      \begin{align}
-        & \fissue^1(\cdot,\cdot,\cdot) \coloneqq 1 \nonumber \\
-        & \fissue^{single,F,I}(\upk,\cdot,\cdot) \coloneqq \pcreturn
-          F(I,\upk)
-          \nonumber \\
-        & \fissue^{\sring}(\upk,\cdot,\attrs) \coloneqq
-          \pcreturn (\attrs = \sring \land \upk \in \attrs) \nonumber
-      \end{align}
-      
-      \textbf{Signature evaluation functions:}
-      \begin{align}
-        & \feval^0(\cdot,\cdot,\cdot) \coloneqq \pcreturn (0,\ast) \nonumber \\
-        & \feval^{\dattrs}(\cdot,(\cdot,\attrs),\cdot)
-          \coloneqq \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},\ast)
-          \nonumber \\
-        & \feval^{\sring,\dattrs}(\upk,(\cdot,\attrs),\cdot)
-          \coloneqq \pcif \upk \in \lbrace \attrs_i \rbrace_{i\in\dattrs}
-          \subseteq \sring:
-          \pcreturn (\lbrace \attrs_i \rbrace_{i\in\dattrs},\ast);
-          \pcelse \pcreturn (0,\ast) \nonumber \\
-        & \feval^{\dattrs,F,V,L}(\upk,((\cidi,\cidu),\attrs),\cdot) \coloneqq
-          \nonumber \\
-        & \hspace*{2em}\pcif F(V,\cidi) \in L \lor F(V,\cidu) \in L:
-          \pcreturn (0,\ast) \nonumber \\
-        & \hspace*{2em}\pcelse \pcreturn (\lbrace \attrs_i \rbrace_{i\in \dattrs},V)
-          \nonumber \\
-        & \feval^{g,MPS}(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)
-          \coloneqq \nonumber \\
-        & \hspace*{2em}\pcif g(\upk,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},
-          \msg) = 0: \pcreturn \bot \nonumber \\
-        & \hspace*{2em}\pcelse \pcreturn (\ast,g(\upk,\lbrace
-          (\cid_i,\attrs_i) \rbrace_{i\in[n]},\msg)) \nonumber
-      \end{align}
-    \end{minipage}
-  }
-  \vspace*{1em}
-  
-  \scalebox{0.9}{
-    \begin{minipage}[t]{\textwidth}
-      \textbf{Open functions:}
-      \begin{align}
-        & \finsp^0(\cdot,\cdot,\cdot,\cdot) \coloneqq 0 \nonumber \\
-        & \finsp^{\upk}(\cdot,\upk,\cdot,\cdot) \coloneqq
-          \pcreturn \upk % \CCommit(\usk;0)
-          \nonumber \\
-        & \finsp^{F}((\yeval^0,\yeval^1),\cdot,((\cidi,\cidu),\attrs),\cdot)
-          \coloneqq \nonumber \\
-        & \hspace*{2em}\pcif \yeval^0 \neq 0:
-          \pcreturn (F(\yeval^1,\cidi),F(\yeval^1,\cidu)) \nonumber \\
-        & \hspace*{2em}\pcelse \pcreturn 0
-          \nonumber \\
-        & \finsp^{h,MPS}((\cdot,\yeval^1),\upk,\cid,\attrs,\cdot) \coloneqq
-          \pcreturn h(\yeval^1,\upk,\cid,\attrs) \nonumber         
-      \end{align}
-    \end{minipage}
-    \hspace*{5em}
-    % \begin{minipage}[t]{0.47\textwidth}
-    %   \begin{framed}
-    %     $\attrs(\cred)$ returns all attributes in \cred \\
-    %     $\dattrs(\cred)$ returns $\dattrs \subseteq \attrs(\cred)$ \\
-    %     $\attrs_i(\cred)$ returns $i$-th attribute in \cred \\
-    %     $\ast$ means the output is ignored \\
-    %     $\bot$ means the function fails
-    %   \end{framed}
-    % \end{minipage}
-  }
+  \input{figures/functions.tex}
   \caption{Functions for the \CUASGen restrictions described next.
     For readability, we use ``$\cdot$'' to denote input arguments that are
     ignored; and ``$\ast$'' to denote output values that can be set to anything
@@ -262,7 +193,7 @@ to \cite{bkm06} for details on the syntax and definitions.
   \caption{Security games for ring signatures \cite{bkm06}. The $SIGN$ oracle
     accepts $(i,R,\msg)$ tuples, with $pk_i \in R$, adds the tuple to a list of
     queries, and returns $\sig \gets Sign(\sk_i,R,\msg)$. $CORR$
-    accepts an index $i$, and leaks $\sk_i$ to $\adv$. Corrupted users are added
+    accepts an index $i$, and leaks $\sk_i$. Corrupted users are added
     to $CU$.}
   \label{fig:model-rs}  
 \end{figure}
@@ -379,12 +310,11 @@ security definitions in \figref{fig:model-ac}.% , with inocuous
       }       
     \end{minipage}      
   }
-  \caption{Security games for anonymous credentials with selective disclosure
-    \cite{fhs19}. \OWNR and \ATTR tables are essentially as in \UAS. \adv~wins
-    the unforgeability game if it authenticates successfully while revealing
-    attributes not contained in adversarially controlled credentials. All
-    oracles in this model have a direct equivalent in \UAS.
-  }
+  \caption{Games for anonymous credentials with selective disclosure
+    \cite{fhs19}. \OWNR, \ATTR, and the oracles, are essentially as in
+    \UAS. \adv~wins $\Exp^{forge}_{\adv,ac}$ if it authenticates successfully
+    while revealing attributes not contained in adversarially controlled
+    credentials.}
   \label{fig:model-ac}  
 \end{figure}
 
@@ -409,9 +339,9 @@ restriction, is a secure anonymous credential scheme according to the model in
 \item[$\langle 1/0,((1,\utrans)/(0,\utrans)\rangle
   \gets \langle Show(\ipk,\attrs,\dattrs,
   \cred),\Verify(\ipk,\dattrs) \rangle$.]
-  Runs the interactive transform of \Sign and \Verify of $\CUASGen^{int}$, using
-  $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as open
-  function, with \opk from \parm as opener public key.
+  Runs the interactive $\langle \Sign, \Verify\rangle$ of  $\CUASGen^{int}$,
+  using $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as
+  open function, with \opk from \parm as opener public key.
 \end{description}
 
 \paragraph{Security of \CUASAC.} %
@@ -434,26 +364,16 @@ available in \appref{app:related-proofs}.
 \subsection{Revocable Anonymous Credentials}
 \label{ssec:related-models-rac}
 
-In \cite{cks10}, revocable anonymous credentials are proposed. From \CUASGen, it
-is straightforward to build an AC system with verifier local revocation, like in
-\cite{bs04}. Basically, we leverage the $\cid=(\cidi,\cidu)$ identifiers,
-encoded as attributes, to define a $(\feval,\finsp)$ function pair that: (1)
-ensures that opening outputs the evaluation of a PRF of the {\cid}s concatenated
-with the verifier name; and (2) ensures that, if some {\cid} of the credentials
-used to produce a signature have been added to a revocation list by the
-verifier, the verifier will know it -- and hence will be able to reject the
-signature. We first give a simple model in
-\figref{fig:model-rac}, extending that in \secref{ssec:related-models-ac}.
-Concretely, to the functionality in \secref{ssec:related-models-ac}, we now
-explicitly add
-the $OKeyGen$ function (equivalent to \OKeyGen, with a fixed \finsp function),
+In \cite{cks10}, revocable anonymous credentials are proposed. We first give a
+simple model in \figref{fig:model-rac}, extending that in
+\secref{ssec:related-models-ac}. Concretely, to the functionality in
+\secref{ssec:related-models-ac}, we now explicitly add the $OKeyGen$ function,
 which generates the opener key pair, extend $Verify$ to receive also a list $L$
 of revoked credential identifiers, and we add a function (and corresponding
 oracle) $cid/\bot \gets RetrieveCredId(\osk,\utrans)$ that can extract an
-identifier of the credential used in a presentation transcript \utrans -- and
-which is essentially equivalent to \Open in \UAS. For simplicity, we do not
-include the equivalent to verifiable openings, but this would be
-straightforward.
+identifier of the credential used in a presentation transcript \utrans. For
+simplicity, we do not include the equivalent to verifiable openings, but this
+would be straightforward.
 
 \begin{figure}[ht!]
   \centering
@@ -500,19 +420,19 @@ straightforward.
 \end{figure}
 
 \subsubsection{\CUASRAC Construction.} %
-Briefly, we build a revocable anonymous credential as a $(\fissue^1,
-\feval^{\dattrs,F,V,L},\finsp^{F})$-\CUASGen restriction. \feval is
-parameterized with a PRF $F$, a string identifying the verifier $V$ and a
-list $L$ of ``revocation handles'' by $V$. Note that these can be hardcoded,
-though: $F$ can be common to all verifiers, $V$ is also fixed (per verifier),
+Briefly, this is achieved via a $(\fissue^1,\feval^{\dattrs,F,V,L},
+\finsp^{F})$-$\CUASGen^{int}$ restriction. \feval is parameterized with a PRF
+$F$, a string identifying the verifier $V$ and a list $L$ of ``revocation
+handles'' by $V$. Note that these can be hardcoded, though: $F$ can be common to
+all verifiers, $V$ is also fixed (per verifier),
 and $L$ can be updated with some reasonable frequency -- e.g., daily -- so that
 the cost of recomputing $\feval^{\dattrs,F,V,L}$ is not high.
 %
-Since credentials in \CUASGen have two identifiers (\cidi, chosen by the issuer;
-and \cidu, chosen by the user), $\feval^{\dattrs,F,V,L}$ internally computes
-$F(V,\cidi)$ and $F(V,\cidu)$. If either appears in $L$, \feval sets $\yeval^0$
-to $0$, which the verifier interprets as ``revoked credential''. Otherwise,
-it sets $\yeval^0 \gets \lbrace \attrs_i \rbrace_{i\in\dattrs}$ and
+Since credentials in $\CUASGen^{int}$ have two identifiers (\cidi, chosen by the
+issuer; and \cidu, chosen by the user), $\feval^{\dattrs,F,V,L}$ internally
+computes $F(V,\cidi)$ and $F(V,\cidu)$. If either appears in $L$, \feval sets
+$\yeval^0$ to $0$, which the verifier interprets as ``revoked credential''.
+Otherwise, it sets $\yeval^0 \gets \lbrace \attrs_i \rbrace_{i\in\dattrs}$ and
 $\yeval^1 \gets V$. $\yeval^1$ is
 then used by $\finsp^F$ to compute $\yinsp \gets (F(\yeval^1,\cidi),
 F(\yeval^1,\cidu))$. Thus, if the verifier $V$ wants to revoke a credential, all
@@ -524,24 +444,25 @@ In more detail, the algorithms are as follows:
 \item[$\parm \gets \Setup(1^\secpar)$.] Runs $\Setup(1^\secpar)$ as in
   \CUASGen.
 \item[$(\ipk,\isk) \gets IssKeyGen(\parm)$.] Runs \KeyGen+\ISet from our
-  \CUASGen construction, setting $\fissue^1$ as issuance function.
+  $\CUASGen^{int}$ construction, setting $\fissue^1$ as issuance function.
 \item[$(\ipk,\isk) \gets OKeyGen(\parm)$.] Runs \OKeyGen from our
-  \CUASGen construction, setting $\finsp^F$ as opening function.
+  $\CUASGen^{int}$ construction, setting $\finsp^F$ as opening function.
 \item[$(\upk,\usk) \gets UserKeyGen(\ipk)$.] Runs \KeyGen from the
-  \CUASGen construction.
+  $\CUASGen^{int}$ construction.
 \item[$\langle \cred/\bot,\top/\bot \rangle \gets
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
   Runs the $\langle \Obtain,\Issue \rangle$ protocol from \CUASGen, using
   $\fissue^1$ as issuance function.
-\item[$\langle 1/0,(1,\utrans)/(0,\utrans)\rangle \gets \langle Show(\ipk,
+\item[$\langle 1/0,(\dattrs,\utrans)/(0,\utrans)\rangle \gets \langle Show(\ipk,
   \attrs,\dattrs,\cred),
   \Verify(\ipk,\dattrs) \rangle$.]
-  Runs the interactive extension of \Sign and \Verify of the \CUASGen protocol,
+  Runs the interactive $\langle\Sign,\Verify\rangle$ of $\CUASGen^{int}$,
   using $\feval^{\dattrs,F,V,L}$ as signature evaluation function, and
-  $\finsp^F$ as open function. If $\yeval^0 = 0$, the signature is rejected.
+  $\finsp^F$ as open function. The \dattrs value output by the verifier is
+  the $\yeval^0$ value produced by \Sign (when accepted by \Verify).
 \item[$h/\bot \gets RetrieveCredHandle(\osk,\utrans)$.]
   Gets $(\sig,\yeval^0)$ from the $\langle Show,\Verify\rangle$ transcript
-  \utrans, and runs \Open from \CUASGen. If $\yeval^0 \neq 0$ (i.e., the
+  \utrans, and runs \Open from $\CUASGen^{int}$. If $\yeval^0 \neq 0$ (i.e., the
   signature was created by a non-revoked credential), this returns $(F(V,\cidi),
   F(V,\cidu))$, which the verifier can add to its revocation list $L$.
 \end{description}
@@ -551,30 +472,28 @@ We state next the theorems for the security of \CUASRAC. The proofs are
 available in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASRAC]
-  If the base \CUASGen construction has signature anonymity according to
+  If the base $\CUASGen^{int}$ construction has signature anonymity according to
   \defref{def:sign-anonymity-uas}, and $F$ is one-way, then \CUASRAC is an
   anonymous AC scheme according to \cite{fhs19}.  
 \end{theorem}
 
 \begin{theorem}[Unforgeability of \CUASRAC]
-  If the base \CUASGen construction is unforgeable according to
+  If the base $\CUASGen^{int}$ construction is unforgeable according to
   \defref{def:forge-uas}, and $F$ is one-way, then \CUASRAC is an unforgeable
   RAC scheme.
 \end{theorem}
 
-Note that, if we aim at global credential (resp. user) revocation rather than
-verifier-local revocation, we can have \finsp just output the $(\cidi,\cidu)$
-pair (resp., \upk), and no assumption regarding $F$ is needed.
+% Note that, if we aim at global credential (resp. user) revocation rather than
+% verifier-local revocation, we can have \finsp just output the $(\cidi,\cidu)$
+% pair (resp., \upk), and no assumption regarding $F$ is needed.
 
 \subsection{Multimodal Private Signatures}
 \label{ssec:related-models-mps}
 
 Multimodal Private Signatures (or, rather, a close relative, see next) are
-directly implementable as a $(\fissue^{single,F,I},\feval^{\yeval^1},
-\finsp^{\ast})$-\CUASGen restriction, where $\feval^{\yeval^1}$ is any signature
-evaluation function that ignores the $\yeval^0$ output, and $\finsp^{\ast}$ is
-any open function. Concretely, this restricts to a system with one issuer and
-one opener, one credential per user, no attributes in the credentials.
+directly implementable as a $(\fissue^{single,F,I},\feval^{g,MPS},
+\finsp^{h,MPS})$-\CUASGen restriction. Concretely, this restricts to a system
+with one credential per user and no attributes in the credentials.
 
 There are some differences, though. On the one hand, our signature anonymity
 property is somehow in the middle of MPS's privacy-1 and privacy-2 variants.
@@ -591,30 +510,30 @@ that these differences are mostly of theoretical interest, though. In practice,
 what matters is that any variant of \feval and \finsp functions ($F$ and $G_j$
 in MPS) that has too much granularity in their ranges, will lead to a barely
 private system. This is a known issue, for instance, in functional encryption
-\needcite.
+\cite{bsw11}.
 
-On the other hand, anonymous issuance, and the capability to customize issuance
+On the other hand, anonymous issuance and the capability to customize issuance
 policies are unachievable by MPS. Anonymous issuance simply does not make sense
-in MPS, as it only supports one credential (without attributes) per user.
-Customized issuance is achieved in \UAS via the \fissue functions, with no
+in MPS, as it only supports one credential (without attributes) per user, and
+customized issuance is achieved in \UAS via the \fissue functions, with no
 equivalent in MPS -- instead, MPS has the fixed policy of
 ``proving knowledge of a user secret key''. These extensions are not trivial
-from a theoretical point of view, and also have a big impact in the practicality
+from a modelling point of view, and also have a big impact in the practicality
 of the resulting system. Also, MPS does not include verifiable openings. While
 this is easy to add, we consider it to be essential, given that the proposed
 generalization of opening allows the opener to output ``any value''. Hence, the
 need to ensure that the produced value is the legitimate one, seems to be more
 necessary than ever. Finally, our \feval function is a generalization of $F$ in
 MPS, as it allows two outputs: one will be returned in the clear along with the
-signature, and the other will be encrypted. Still both computations are proved
-correct. Making part of the output unencrypted allows implementing very useful
-variants such as anonymous credentials, as shown before.
+signature, and the other will be encrypted. Indeed, making part of the output
+unencrypted allows implementing very useful variants such as anonymous
+credentials, as shown before.
 
 For the model of MPS schemes, we refer to the original paper \cite{ngsy22}.
 
 \subsubsection{\CUASMPS construction.} %
-As mentioned, any $(\fissue^{single,F,I},\feval^{\yeval^1},
-\finsp^\ast)$-restriction implements an MPS scheme where $F=\feval^{\yeval^1}$
+As mentioned, any $(\fissue^{single,F,I},\feval^{g,MPS},
+\finsp^{h,MPS})$-restriction implements an MPS scheme where $F=\feval^{\yeval^1}$
 and $G=\finsp^\ast$. With these functions, the construction is direct.
 \CUASMPS's setup runs \CUASGen's \Setup, \OKeyGen, and generates the issuer key
 pair by running \KeyGen and \ISet (with $\fissue^1$). For MPS's join, \CUASMPS
@@ -625,7 +544,7 @@ Finally, note that, in MPS, $G$ is further parameterized with a value $j$, which
 essentially is the result of applying $F$ to the message and signer identity,
 and is not leaked to the opener nor any other third party. The equivalent in
 \UAS is the $\yeval^1$ value which, in \CUASGen, is encrypted with a single-use
-key pair, and is an input of \yinsp.
+key pair, and is an input of \finsp.
 
 \paragraph{Security of \CUASMPS.} %
 We state next the theorems for the security of \CUASMPS. The proofs are
@@ -644,7 +563,7 @@ available in \appref{app:related-proofs}.
 
 \begin{theorem}[Unforgeability-1 of \CUASMPS]
   If the base \CUASGen construction is unforgeable according to
-  \defref{def:sign-forge-uas}, then \CUASMPS satisfies unforgeability-1 as
+  \defref{def:forge-uas}, then \CUASMPS satisfies unforgeability-1 as
   defined in \cite{ngsy22}.
 \end{theorem}
 
