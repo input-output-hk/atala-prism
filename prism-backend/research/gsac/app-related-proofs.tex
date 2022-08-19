@@ -142,22 +142,25 @@ We prove that \CUASAC is an anonymous and unforgeable anonymous credential
 scheme, according to \cite{fhs19}, if the underlying \CUASGen construction
 is anonymous and unforgeable. Note that AC schemes modelled as in \cite{fhs19}
 do not have issuance anonymity, as the user public key is passed to the issuer.
+Note that, for ease of reference to the games in \secref{sec:formal-uas}, we
+reduce to security of \CUASGen rather than to $\CUASGen^{int}$. The
+``translation'' between \CUASGen and $\CUASGen^{int}$ is trivial, though.
 
 \begin{theorem}[Anonymity of \CUASAC]
   \label{thm:anon-cuasac}
   If the base \CUASGen construction is anonymous according to
-  \defref{def:anonymity-uas}, then \CUASAC is an anonymous AC scheme according
-  to \cite{fhs19}.
+  \defref{def:sign-anonymity-uas}, then \CUASAC is an anonymous AC scheme
+  according to \cite{fhs19}.
 \end{theorem}
 
 \begin{proof}
   Given \adv~against anonymity of \CUASAC as defined in \cite{fhs19}, we build
-  an adversary \advB against anonymity of \CUASGen as defined in
-  \defref{def:sign-anonymity-uas}.
+  an adversary \advB against signature anonymity of \CUASGen as defined
+  in \defref{def:sign-anonymity-uas}.
 
   To simulate oracle calls by \adv, \advB simply redirects to its corresponding
   oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR$, \advB redirects to
-  \HUGEN,\CUGEN,\OBTAIN,\SIGN,\CHALb, respectively. Note that ``translating''
+  \HUGEN,\CUGEN,\OBTAIN,\SIGN,\CHALb, respectively. Note that translating
   the inputs from the former into inputs for the latter is trivial.
   Obviously, if \adv~wins in its anonymity game, then so does \advB with the
   same probability.
@@ -195,26 +198,32 @@ do not have issuance anonymity, as the user public key is passed to the issuer.
 We prove that \CUASRAC is an anonymous and unforgeable anonymous credential
 scheme, according to \cite{fhs19}, if the underlying \CUASGen construction
 has signature anonymity and is unforgeable.
+%
+As for \CUASAC, we reduce to security of \CUASGen rather than to
+$\CUASGen^{int}$. The ``translation'' between \CUASGen and $\CUASGen^{int}$ is
+again trivial.
 
 \begin{theorem}[Anonymity of \CUASRAC]
   \label{thm:anon-cuasrac}
   If the base \CUASGen construction has signature anonymity according to
-  \defref{def:sign-anonymity-uas}, and $F$ is one-way, then \CUASAC is an
-  anonymous AC scheme according to \cite{fhs19}.
+  \defref{def:sign-anonymity-uas}, then \CUASAC is an anonymous AC scheme
+  according to \cite{fhs19}.
 \end{theorem}
 
 \begin{proof}
   Given \adv~ against anonymity of \CUASRAC as defined in
   \figref{fig:model-rac}, we build an adversary \advB against anonymity of
   \CUASGen as defined in \defref{def:sign-anonymity-uas}.
-
-  First observe that, given a revocation handles $F(V,\cidi)$ and $F(V,\cidu)$
-  extracted from any credential showing, it is not possible to extract $\cidi$
-  nor $\cidu$, as $F$ is one-way.
+  %
+  But, first observe that, since the revocation oracle is basically an extension
+  of the \OPEN oracle -- also keeping track of the revoked users per verifier --
+  queries involving challenge users are rejected if the revocation handle does
+  not match for both challenge users.
   
   To simulate oracle calls by \adv, \advB simply redirects to its corresponding
   oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR,ReqCredHandle$, \advB
-  redirects to \HUGEN, \CUGEN, \OBTAIN, \SIGN, \CHALb, or \OPEN, respectively.
+  redirects to \HUGEN, \CUGEN, \OBTAIN, \SIGN, \CHALb, or \OPEN (in this case,
+  also keeping track of the queries, per verifier), respectively.
   Note that ``translating'' the inputs from the former into inputs for the
   latter is trivial. Also, observe that $ReqCredHandle$/\OPEN essentially
   refuses to open transcripts from challenge users (signatures, in the
@@ -228,8 +237,8 @@ has signature anonymity and is unforgeable.
 
 \begin{theorem}[Unforgeability of \CUASRAC]
   If the base \CUASGen construction has unforgeability according to
-  \defref{def:forge-uas}, and $F$ is one-way, then
-  \CUASRAC is an unforgeable RAC scheme.
+  \defref{def:forge-uas}, and $F$ is one-way, then \CUASRAC is an
+  unforgeable RAC scheme.
 \end{theorem}
 
 \begin{proof}
@@ -238,11 +247,15 @@ has signature anonymity and is unforgeable.
   \CUASGen as defined in \defref{def:forge-uas}.
 
   To simulate oracle calls by \adv, \advB acts as in the anonymity proof. Assume
-  that \adv~wins its game via the winning condition of line 7 in the RAC
+  that \adv~wins its game via the winning condition of line 9 in the RAC
   unforgeability game. The same reasoning as in \CUASAC applies here. Next, note
-  that the probability of \adv~winning its game via the winning condition at
-  line 9 is negligible, due to soundness of the NIZK scheme used for signing,
-  and the one-wayness of $F$ in $\feval^{\dattrs,F,V,L}$ and $\finsp^{F}$.
+  that the probability of \adv~winning its game via condition $h_0 \in L$ at
+  line 11 is negligible, due to soundness of the NIZK for $\NIZKRel_{\Sign}$.
+  Moreover, soundness of NIZK for $\NIZKRel^{\Sign}$ as well as one-wayness
+  of $F$ ensure that, if $h_1 \notin L$, then $b_1 = 1$. Namely, even when given
+  $F(V,\cidi),F(V,\cidu)$ for a credential identified by $(\cidi,\cidu)$ owned
+  by an honest user, and some (potentially malicious) $V$, it is not possible to
+  generate $F(V',\cidi)$ nor $F(V',\cidu)$, for $V'=V$.
   % 
   \qed
 \end{proof}

@@ -271,8 +271,9 @@ available in \appref{app:related-proofs}.
 \label{ssec:related-models-ac}
 
 We adopt the model in \cite{fhs19}, for anonymous credentials with selective
-disclosure. Therein, an anonymous credential scheme is defined via $OrgKeyGen$
-(which we rename to $IssKeyGen$), and $UserKeyGen$ algorithms, and $Obtain,
+disclosure, which restricts to one credential per presentation. Therein, an
+anonymous credential scheme is defined via $OrgKeyGen$ (which we rename to
+$IssKeyGen$), and $UserKeyGen$ algorithms, and $Obtain,
 Issue$ and $Show,Verify$ interactive protocols. The security definitions rely on
 $HU, CU, ObtIss, Obtain, Issue, Show$, and $LoR$ oracles. We refer to
 \cite{fhs19} for the full details. For ease of reference, we summarize the
@@ -364,8 +365,8 @@ available in \appref{app:related-proofs}.
 \subsection{Revocable Anonymous Credentials}
 \label{ssec:related-models-rac}
 
-In \cite{cks10}, revocable anonymous credentials are proposed. We first give a
-simple model in \figref{fig:model-rac}, extending that in
+In \cite{cks10,ckl+15}, revocable anonymous credentials are proposed. We first
+give a simple model in \figref{fig:model-rac}, extending that in
 \secref{ssec:related-models-ac}. Concretely, to the functionality in
 \secref{ssec:related-models-ac}, we now explicitly add the $OKeyGen$ function,
 which generates the opener key pair, extend $Verify$ to receive also a list $L$
@@ -378,44 +379,50 @@ would be straightforward.
 \begin{figure}[ht!]
   \centering
   \scalebox{0.9}{      
-    \begin{minipage}[t]{0.45\textwidth}
+    \begin{minipage}[t]{0.43\textwidth}
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,rac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
         (\opk,\osk) \gets \OKeyGen(\parm) \\        
         (\ipk,\isk) \gets IssKeyGen(\parm) \\        
-        b^* \gets \adv^{\mathcal{O}_{anon}}(\parm,\ipk,\opk) \\
+        b^* \gets \adv^{\mathcal{O}_{rac},LoR}(\parm,\ipk,\opk) \\
         \pcreturn b^*
-      }        
+      }
     \end{minipage}
   }
   \scalebox{0.9}{      
-    \begin{minipage}[t]{.55\textwidth}
+    \begin{minipage}[t]{.57\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,rac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
         (\opk,\osk) \gets \OKeyGen(\parm) \\        
         (\ipk,\isk) \gets IssKeyGen(\parm) \\
-        (D,L,\st) \gets
-        \adv^{\mathcal{O}_{forge}}(\parm,\ipk) \\
-        \langle \cdot,(b,\utrans)\rangle
+        (\cid,D,L,\st) \gets
+        \adv^{\mathcal{O}_{rac}}(\parm,\ipk,\opk) \\
+        \langle \cdot,(b_0,\utrans_0)\rangle
         \gets \langle \adv(\st),\Verify(\ipk,D,L)\rangle \\
-        \pcif b = 0: \pcreturn 0 \\
-        \pcif \nexists j~\suchthat~(\OWNR[j] \in \CU
-        \land D \subseteq \ATTR[j]): \pcreturn 1 \\    
-        h \gets RetrieveCredHandle(\osk,\utrans) \\
-        \pcif h \in L \lor h = \bot: \pcreturn 1 \\
+        \langle \cdot,(b_1,\utrans_1)\rangle
+        \gets \langle Show(\ipk,\ATTR[\cid],D,\CRED[\cid]), \\
+        \hspace*{7.25em}\Verify(\ipk,D,L)\rangle \\
+        \pcif \OWNR[\cid] \notin \HU \lor
+        D \not\subseteq \ATTR[\cid]: \pcreturn 0 \\
+        \pcif b_0 = 1 \land \nexists j~\suchthat~(\OWNR[j] \in \CU
+        \land D \subseteq \ATTR[j]): \\
+        \pcind \pcreturn 1 \\
+        h_{\bin} \gets RetrieveCredHandle(\osk,\utrans_{\bin}) \\
+        \pcif h_0 \in L \lor (h_1 \notin L \land b_1 = 0): \pcreturn 1 \\
         \pcreturn 0
       }       
     \end{minipage}      
   }
   \caption{Security games for revocable anonymous credentials with selective
     disclosure based on \cite{fhs19}. 
-    $\mathcal{O}_{anon} \gets \lbrace HU,CU,Obtain,Issue,ObtIss,Show,
-    ReqCredHandle,LoR\rbrace$. $\mathcal{O}_{forge} \gets \lbrace HU,CU,
-    Obtain,ObtIss,Issue,Show,ReqCredHandle \rbrace$. $ReqCredHandle$ is
-    equivalent to \OPEN, operating on transcripts \utrans instead of signatures.
-    In particular, this implies that it rejects queries for transcripts related
-    to challenge users. Also, \OWNR and \ATTR tables are essentially as in
-    \secref{ssec:model-uas}.}
+    $\mathcal{O}_{rac} \gets \lbrace HU,CU,Obtain,Issue,ObtIss,Show,
+    ReqCredHandle\rbrace$. $ReqCredHandle$ is
+    equivalent to \OPEN, operating on transcripts \utrans instead of signatures
+    but, in addition, keeps a list of revoked users (per verifier), based on the
+    queries it receives. In $\Exp^{forge}_{\adv,rac}$, \adv~wins if it
+    authenticates using a revoked credential or with insufficient attributes, or
+    if it prevents an honest user from authenticating using a non-revoked
+    credential.}
   \label{fig:model-rac}  
 \end{figure}
 
@@ -430,8 +437,7 @@ the cost of recomputing $\feval^{\dattrs,F,V,L}$ is not high.
 %
 Since credentials in $\CUASGen^{int}$ have two identifiers (\cidi, chosen by the
 issuer; and \cidu, chosen by the user), $\feval^{\dattrs,F,V,L}$ internally
-computes $F(V,\cidi)$ and $F(V,\cidu)$. If either appears in $L$, \feval sets
-$\yeval^0$ to $0$, which the verifier interprets as ``revoked credential''.
+computes $F(V,\cidi)$ and $F(V,\cidu)$. If either appears in $L$, \feval aborts.
 Otherwise, it sets $\yeval^0 \gets \lbrace \attrs_i \rbrace_{i\in\dattrs}$ and
 $\yeval^1 \gets V$. $\yeval^1$ is
 then used by $\finsp^F$ to compute $\yinsp \gets (F(\yeval^1,\cidi),
@@ -453,17 +459,16 @@ In more detail, the algorithms are as follows:
   \langle \Obtain(\usk,\ipk,\attrs),\Issue(\isk,\upk,\attrs) \rangle$.]
   Runs the $\langle \Obtain,\Issue \rangle$ protocol from \CUASGen, using
   $\fissue^1$ as issuance function.
-\item[$\langle 1/0,(\dattrs,\utrans)/(0,\utrans)\rangle \gets \langle Show(\ipk,
+\item[$\langle 1/0,(\yeval,\utrans)/(0,\utrans)\rangle \gets \langle Show(\ipk,
   \attrs,\dattrs,\cred),
   \Verify(\ipk,\dattrs) \rangle$.]
   Runs the interactive $\langle\Sign,\Verify\rangle$ of $\CUASGen^{int}$,
   using $\feval^{\dattrs,F,V,L}$ as signature evaluation function, and
-  $\finsp^F$ as open function. The \dattrs value output by the verifier is
-  the $\yeval^0$ value produced by \Sign (when accepted by \Verify).
+  $\finsp^F$ as open function. The \yeval value output by the verifier, when
+  it accepts, is the $\yeval^0$ value produced by \Sign.
 \item[$h/\bot \gets RetrieveCredHandle(\osk,\utrans)$.]
   Gets $(\sig,\yeval^0)$ from the $\langle Show,\Verify\rangle$ transcript
-  \utrans, and runs \Open from $\CUASGen^{int}$. If $\yeval^0 \neq 0$ (i.e., the
-  signature was created by a non-revoked credential), this returns $(F(V,\cidi),
+  \utrans, and runs \Open from $\CUASGen^{int}$. This returns $(F(V,\cidi),
   F(V,\cidu))$, which the verifier can add to its revocation list $L$.
 \end{description}
 
@@ -473,19 +478,19 @@ available in \appref{app:related-proofs}.
 
 \begin{theorem}[Anonymity of \CUASRAC]
   If the base $\CUASGen^{int}$ construction has signature anonymity according to
-  \defref{def:sign-anonymity-uas}, and $F$ is one-way, then \CUASRAC is an
-  anonymous AC scheme according to \cite{fhs19}.  
+  \defref{def:sign-anonymity-uas}, then \CUASRAC is an anonymous AC scheme
+  according to \cite{fhs19}.  
 \end{theorem}
 
 \begin{theorem}[Unforgeability of \CUASRAC]
   If the base $\CUASGen^{int}$ construction is unforgeable according to
-  \defref{def:forge-uas}, and $F$ is one-way, then \CUASRAC is an unforgeable
-  RAC scheme.
+  \defref{def:forge-uas}, and $F$ is a one-way function, then \CUASRAC is an
+  unforgeable RAC scheme.
 \end{theorem}
 
-% Note that, if we aim at global credential (resp. user) revocation rather than
-% verifier-local revocation, we can have \finsp just output the $(\cidi,\cidu)$
-% pair (resp., \upk), and no assumption regarding $F$ is needed.
+Note that, if we aim at global credential (resp. user) revocation rather than
+verifier-local revocation, we can have \finsp just output the $(\cidi,\cidu)$
+pair (resp., \upk), and no assumption regarding $F$ is needed.
 
 \subsection{Multimodal Private Signatures}
 \label{ssec:related-models-mps}

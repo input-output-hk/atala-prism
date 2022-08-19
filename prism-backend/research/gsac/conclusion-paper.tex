@@ -1,7 +1,36 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-\todo{Try to restrict to 0.5 pages max}
+We present a general model for privacy-preserving signatures and authentication,
+and provide a generic construction, secure in our model, that allows
+different privacy-vs-utility tradeoffs to be reached.
+%
+Then, we prove that well-known schemes are special cases of our generic
+construction. The implied schemes include group signatures, anonymous
+credentials (with and without revocation), ring signatures, or the recently
+proposed multimodal private signatures.
+
+The flexibility of our model is achieved via functional placeholders that
+modulate the behaviour at credential issuance time, the utility
+information ``leaked'' along with the produced signatures, and the utility
+information extractable from already produced signatures. These functions are
+computed by the users themselves, who need to prove correct computation.
+Our setting also combines features of anonymous credential schemes, like
+attribute-based credentials and multiple issuers, which we extend with openers
+(like in group signatures), but also enabling that multiple openers coexist.
+This further increases the flexibility, by removing the tight issuer-opener
+coupling in previous works.
+
+For future work, an obvious line is to come up with (and implement) concrete
+instantiations of our generic construction in order to evaluate efficiency in
+real-world use cases. Also, it may be interesting to come up with alternative
+generic constructions -- for instance, based on structure-preserving signatures.
+%
+Finally, in this work we focus only on utility over \emph{one} signature. But
+extending our model and constructions to span utility over \emph{multiple}
+signatures promises to be interesting, both regarding its modelling and the
+potential use cases.
+
 
 %%% Local Variables:
 %%% mode: latex
