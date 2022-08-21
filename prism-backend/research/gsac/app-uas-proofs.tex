@@ -108,19 +108,17 @@ used as witnesses in the proofs.
 \subsection{Correctness}
 
 \begin{proof}[\thmref{thm:correctness-uas}; Correctness of \CUASGen]
-  By correctness of \SBCM and the NIZK for $\NIZKRel_{\Sign}$, the signature
-  produced at line 5 of \ExpCorrect is accepted at line 6 by \Verify.
+  By correctness of \SBCM and the NIZK for \RelSig, the signature
+  produced at line 4 of \ExpCorrect is accepted at line 5 by \Verify.
   Moreover, all the credentials employed to honestly produce the signature,
-  identified with \scid, meet their respective issuance policies due to
-  correctness of the NIZK for $\NIZKRel_{\Issue}$, so no $\fissue^\cid$ check
-  returns $0$ at line 9. Similarly, as $\feval \in \famfeval$ is checked at
-  line 3, and due to correctness of the NIZK for $\NIZKRel_{\Sign}$, the
-  output of \feval matches $\yeval^0$ at line $11$, which must have been
-  computed over $\usk=\UK[\uid]$, as in line $10$, due to correctness of the
-  commitment scheme. Finally, correctness of the NIZKs for $\NIZKRel_{\Sign}$
-  and $\NIZKRel_{\Open}$, and correctness of the encryption scheme, ensure that
-  \Judge accepts the proof produced by \Open, and \yinsp is the correct value
-  for the chosen $\finsp^{\oid}$.
+  identified with \scid, meet their respective (honest) issuance policies due to
+  correctness of the NIZK for \RelIss, so no $\fissue^{\cid}$ check
+  returns $\neq \yissue^i$ at line 10. Similarly, as $\feval \in \famfeval$ is
+  checked at line 3, and due to correctness of the NIZK for \RelSig,
+  the output of \feval matches \yeval at line $12$. Finally, correctness of the
+  NIZKs for \RelSig and \RelIns, and correctness of the encryption scheme,
+  ensure that \Judge accepts the proof produced by \Open, and \yinsp is the
+  correct value for the (honestly) chosen \finsp.
 \end{proof}
 
 \subsection{Issuance Anonymity}

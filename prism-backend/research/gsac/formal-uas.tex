@@ -704,8 +704,7 @@ credentials, user key, and message.
       \parm \gets \Setup(1^\secpar) \\
       (\uid,\oid,\scid,\msg,\feval)
       \gets \adv^{\HUGEN,\OGEN,\ISET,\OBTISS,\RREG}(\parm) \\
-      \pcif \feval \notin \famfeval: \pcreturn 0 \\
-      \pcif \OWNR[\scid] \neq \uid: \pcreturn 0 \\
+      \pcif \feval \notin \famfeval \lor \OWNR[\scid] \neq \uid: \pcreturn 0 \\
       (\Sig = (\sig,\yeval)) \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\scid,\msg,
       \feval) \\
       \pcif \Verify(\PUBOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) = 0: \pcreturn 1 \\
@@ -723,9 +722,10 @@ credentials, user key, and message.
       (\yeval^0,\yeval^1) \gets \feval(\PUBUK[\uid],(\scid,\ATTR[\scid]),\msg) \\
       \pcif \yeval^0 \neq \yeval: \pcreturn 1 \\
       (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\PUBIK[\scid],\Sig,\msg,\feval) \\
+      \textrm{Parse}~\PUBOK[\oid]~\textrm{as}~((\cdot,\finsp),\cdot) \\
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\scid],\yinsp,\iproof,\Sig,\msg,\feval)
       = 0~\lor \\
-      \pcind \yinsp \neq \finsp^\oid((\yeval,\yeval^1),
+      \pcind \yinsp \neq \finsp((\yeval,\yeval^1),
       \PUBUK[\uid],(\scid,\ATTR[\scid]),\msg)): \\
       \pcind \pcreturn 1 \\
       \pcreturn 0
