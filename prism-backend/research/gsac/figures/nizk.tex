@@ -4,12 +4,12 @@
   \node (issue) at (-7.95,8.875) { $\NIZKRel_{\Issue} = $ };
   \node (issue2) at (-3.00,9.50) {
     $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r),
-    (\attrs,\lbrace \ipk_i \rbrace_{i\in[n]},\yissue):$
+    (\cid,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]},\yissue):$
   };
   \node[align=center] (issue3) at (-3.00,8.625) {
 %    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r)~\land$ \\
     $(\upk,\usk) \gets \KeyGen(\parm;r)~\land$ \\% \Ccom = \CCommit(\usk;r)~\land$ \\
-    $\fissue(\upk,\attrs,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}) = \yissue~
+    $\fissue(\upk,\cid,\attrs,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}) = \yissue~
     \land$ \\
     $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,
     \lbrace \cid_i \rbrace \cup \cattrs_i) = 1$

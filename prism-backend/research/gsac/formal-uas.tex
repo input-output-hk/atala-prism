@@ -13,7 +13,7 @@ and AC schemes, generalizing whenever possible. Like in ACs, there are multiple
 issuers, and each user can get one or more credentials from any of them; and,
 also, use more than one credential simultaneously to produce a signature. We
 incorporate openers, as in GSs, but there is no tight relationship between
-issuer and opener. As a consequence, signers (potentially along with verifiers)
+issuer and opener. As a consequence, users (potentially along with verifiers)
 may choose, on a per-signature basis, the policies governing the utility
 information extractable from a signature. Finally, we incorporate functions that
 allow tweaking the conditions checked at credential issuance and signature
@@ -30,16 +30,18 @@ too aggressive, it is certainly a worst-case scenario, and greatly simplifies
 the modelling.
 %
 Somehow related, we model a scheme in which users generate their secret keys in
-a standalone way, and then leverage their keys to request credentials.
-Therefore, if one ``user'' generates (e.g.) two keys, and then uses each of
-these keys to request multiple credentials, then from the point of view of our
-modelling, we see this \emph{cryptographically} as two different users.
-This may seem too ideal to model real world situations. However, we argue that
-this can in fact be very close to reality, where a well-known issuer, after
-properly identifying a user, attests the (possibly blinded) public key this
-user proves control of. Indeed, our model and syntax support exactly this
-approach, by allowing users to leverage previously obtained credentials in
-order to request new ones.
+a standalone way, and then leverage these keys to request credentials. This may
+seem too ideal as a model for real world situations, as we cannot know how
+many keys a user has generated. However, we argue that this can in fact be very
+close to reality, where a well-known issuer, after properly identifying a user,
+attests the (possibly blinded) public key this user proves control of. Indeed,
+our model and syntax support exactly this approach, by allowing users to
+leverage previously obtained credentials in order to request new ones.
+A consequence of this is that, if ``one user'' generates (e.g.) two keys, and
+then uses each of these keys to request multiple credentials, then from the
+point of view of our modelling, we see this \emph{cryptographically} as two
+different users -- and, anyway, that same ``user'' cannot combine credentials
+bound to different keys.
 
 \paragraph{Users and issuers.} %
 Finally, a relevant aspect of our approach is that users and issuers are
@@ -48,7 +50,7 @@ that, when users wish to become issuers, they have to advertise their public
 keys, along with their conditions for granting credentials. For simplicity, we
 just assume that they somehow ``publish their public keys''. In practice, this
 may be done in several ways, depending on the situation: self-signing, relying
-on external PKIs, bulletin-boards, etc.
+on external PKIs, bulletin boards, etc.
 %
 This approach has actually been used before to model delegatable anonymous
 credentials \cite{bcc+09}, and it turns out to be also very useful for our
@@ -62,7 +64,7 @@ An \UAS scheme is composed by the following algorithms:
 \begin{description}
 \item[$\Setup(\secpar) \rightarrow \parm$.] Given a security parameter \secpar,
   returns a global system parameter variable \parm. We assume that \parm are
-  available to all the other functions.
+  available to all other functions.
 \item[$\KeyGen(\parm) \rightarrow (\upk,\usk)$.] Given \parm, a user runs
   \KeyGen to generate its user key pair. 
 \item[$\OKeyGen(\parm,\finsp) \rightarrow (\opk,\osk)$.] Given \parm, and the
@@ -97,7 +99,7 @@ An \UAS scheme is composed by the following algorithms:
 \item[$\Sign(\usk,\opk,\sCred,\msg,\feval) \rightarrow (\sig,\yeval)$.] %
   Upon receiving a user secret key \usk, opener public key \opk, a set of
   credentials \sCred, a message \msg and evaluation function \feval, returns
-  signature \sig, and a plaintext value \yeval. We use use \Sig to denote the
+  signature \sig, and a value \yeval. We use use \Sig to denote the
   tuple $(\sig,\yeval)$.
 \item[$\Verify(\opk,\sipk,\Sig,\msg,\feval) \rightarrow 1/0$.]
   Checks whether $\Sig = (\sig,\yeval)$ is a valid signature
@@ -122,31 +124,30 @@ it is possible to modulate the behaviour of the resulting instantiation, by
 controling the conditions upon which a new credential can be issued, the
 information revealed at signing time, or after signing. In all cases, it is
 the user who computes them, and has to prove correctness of such computation.
-We give concrete examples in \secref{sec:relationships}, and define them next:
+We give concrete examples in \secref{sec:relationships}.
 
 \begin{description}
-\item[$\fissue: (\upk,\lbrace (\cid_i,\cattrs_i)\rbrace_{i \in [n]},\attrs)
+\item[$\fissue: (\upk,\cid,\attrs,\lbrace (\cid_i,\cattrs_i)\rbrace_{i \in [n]})
   \rightarrow \yissue$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
   defines the customized conditions required by the issuer to grant a credential
-  over attributes \attrs, when requested by a user with public key \upk,
+  with identifier $\cid = (\cidi,\cidu)$, over attributes \attrs, when requested
+  by a user with public key \upk,
   leveraging a set of $n$ previously obtained credentials with identifiers and
   attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where
   $n$ may be $0$ if no previously obtained credential is used). \fissue returns
   a value $\yissue \in \rngfissue \cup \lbrace 0 \rbrace$, where we adopt the
-  convention that $\yissue = 0$ means that the issuance request is denied.
-  \fissue functions must be \UAS-acceptable, as defined in
-  \defref{def:uas-acc-func}.
+  convention that $\yissue = 0$ means that the issuance request is denied; and
+  $\yissue \neq 0$ means that the request is approved. \fissue functions must be
+  \UAS-acceptable, as defined in \defref{def:uas-acc-func}.
 \item[$\feval: (\upk,\lbrace(\cid_i,\cattrs_i)\rbrace_{i \in [n]},\msg)
   \rightarrow (\yeval^0,\yeval^1)$.] Signing evaluation functions, from a
   family of functions \famfeval, can be set on a per-signature basis. They
   receive the user public key \upk, a set of credentials with identifiers
   and attributes $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$
   (where $n \ge 1$), and the message to be signed \msg. \feval outputs two
-  values, $\yeval^0$ and $\yeval^1$. $\yeval^0$ is output directly alongside the
-  signature,  both can in addition be used to modulate the behaviour of
-  \finsp, and must belong in a well defined set \rngfeval. For readability,
-  we write $\Yeval = (\yeval^0,\yeval^1)$.
+  values, $\yeval^0$ and $\yeval^1$. Both must belong in a well defined set
+  \rngfeval. For readability, we write $\Yeval = (\yeval^0,\yeval^1)$.
 \item[$\finsp: (\Yeval,\upk,\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]},
   \msg) \rightarrow \yinsp$.]
   Chosen by openers from a family of functions \famfinsp. The opening
@@ -166,7 +167,7 @@ may negotiate to use any opener for a given signature, it is not possible for
 an opener to change the chosen function.
 
 Concerning \fissue functions, our \UAS model requires them to be \UAS-acceptable
-functions.  At a high level, this requires that \fissue functions do not reveal
+functions. At a high level, this requires that \fissue functions do not reveal
 anything about the signer's data used as input. This is formally captured in
 \figref{fig:uas-acceptable}.
 
@@ -179,8 +180,8 @@ anything about the signer's data used as input. This is formally captured in
       (\st,\attrs, \lbrace (\cidi,\cidu,\cattrs_i) \rbrace_{i\in[n]})
       \gets \adv(\upk) \\
       \pcif b=0:
-      \yissue^* \gets \fissue(\upk,\lbrace (\cidi,\cattrs_i)
-      \rbrace_{i\in[n]},\attrs) \\
+      \yissue^* \gets \fissue(\upk,\cid,\attrs,\lbrace (\cid_i,\cattrs_i)
+      \rbrace_{i\in[n]}) \\
       \pcelse: \yissue^* \getr \rngfissue \setminus \lbrace 0 \rbrace \\
       b^* \gets \adv(\st,\yissue^*) \\
       \pcreturn b^*
@@ -246,11 +247,11 @@ identified by their \uid, we also sometimes use \iid to refer to a user acting
 as issuer, especially, for operations involving both a user and an issuer (this
 also applies for key pairs).
 %
-All tables/sets are initialized as empty tables/sets. For notational
-convenience, we often use these identifiers instead of the corresponding
-user/issuer/opener keys.
+For notational convenience, we often use these identifiers instead of the
+corresponding user/issuer/opener keys.
 %
-We use the following sets and tables in our definitions:
+All tables/sets are initialized as empty tables/sets. We use the following sets
+and tables in our definitions:
 
 \begin{description}
 \item[$\mathsf{H}\lbrace\mathsf{U},\mathsf{I},\mathsf{O} \rbrace$.] Sets of
@@ -312,13 +313,13 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 % \item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
 %   the associated issuance function.
 \item[\HUGEN.] Adds a new honest user to the game, generating its keypair.
-\item[\HUGEN.] Adds a new corrupt user to the game, setting its \upk to the
+\item[\CUGEN.] Adds a new corrupt user to the game, setting its \upk to the
   value given by the adversary.  
 \item[\OGEN.] Adds a new opener to the game, generating its key pair and
   setting its evaluation and inspection functions.
 % \item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
 %   key to the adversary.
-\item[\ISET.] ``Upgrades'' an user to become an issuer, specifying its
+\item[\ISET.] ``Upgrades'' a user to become an issuer, specifying its
   \fissue function.
 \item[\UCORR.] Corrupts an existing (and honest) user, giving its secret
   key to the adversary. If the user was also an issuer, it becomes a corrupt
@@ -569,8 +570,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \in \CRED: \\
           \pcind \pcreturn \bot \\
           \textrm{Parse}~\PUBIK[\iid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-          \pcif 0(\fissue(\PUBUK[\cuid_0],\PRVUK[\cuid_0],\cscid_0,\attrs)) \neq \\
-          \pcind 0(\fissue(\PUBUK[\cuid_1],\PRVUK[\cuid_1],\cscid_1,\attrs)):
+          \pcif 0(\fissue(\PUBUK[\cuid_0],(\cdot,\cidu),\attrs,\lbrace (\ccid_{0,i},\ATTR[\ccid_{0,i}])\rbrace_{i\in[n]})) \neq \\
+          \pcind 0(\fissue(\PUBUK[\cuid_1],(\cdot,\cidu),\attrs,\lbrace (\ccid_{1,i},\ATTR[\ccid_{1,i}])\rbrace_{i\in[n]})):
           \pcreturn \bot \\
           \langle \Cred, \cdot \rangle \gets
           \langle \Obtain(\PRVUK[\cuid_b],\cidu,\PUBIK[\iid],\cscid_b,\attrs),
@@ -716,7 +717,7 @@ credentials, user key, and message.
 %      \fissue^{\cid}),\cdot)\\
       \pcind \textrm{Parse}~\trans[\cid]~\textrm{as}~(\yissue,\utrans);
       \PUBIK[\cid]~\textrm{as}~((\cdot,\fissue),\cdot) \\
-      \pcind \pcif \fissue(\PUBUK[\uid],\PRVUK[\uid],\attrs,
+      \pcind \pcif \fissue(\PUBUK[\uid],\cid,\attrs,
       (\lbrace(\cid_i,\ATTR[\cid_i])\rbrace_{i\in[n]})) \neq \yissue:
       \pcreturn 1 \\
       (\yeval^0,\yeval^1) \gets \feval(\PUBUK[\uid],(\scid,\ATTR[\scid]),\msg) \\
@@ -939,12 +940,10 @@ corrupt users. The adversary can also obtain credentials, produce signatures,
 and open them. We need to make some limitations to prevent trivial wins: first,
 when querying the oracle for obtaining a challenge credential out of two
 possible user-credential set pairs, the issuance protocol must either succeed or
-fail for both; also, the adversary can open signatures produced with credential
-sets containing challenge credentials $\cred_b$, only if the output of \Open is
-the same as with the complementary $\cred_{1-b}$ (note that any other signature
-can be opened).
-Intuitively, if the adversary cannot distinguish arbitrary runs with all oracles
-(provided the previous constraints) when he gets challenge credentials
+fail for both; also, the adversary cannot mix challenge and non-challenge
+credentials in the same call to the \SIGN oracle -- but can otherwise open
+any signature. With these restrictions, if the adversary cannot distinguish
+arbitrary runs with all oracles when he gets challenge credentials
 $\cred_b$, from runs with credentials $\cred_{1-b}$, then the issuance protocol
 is privacy-preserving.
 
@@ -1009,29 +1008,6 @@ The formal specification of the anonymity games is given in
   $\adv$, \AdvSigAnon is a negligible function of $1^\secpar$.
 \end{definition}
 
-\paragraph{On the generality of anonymity in \UAS schemes.} %
-From the point of view of the achieved privacy, depending on how one defines
-\fissue, \feval and \finsp, it is easy to see that the resulting scheme would
-have different privacy levels. For instance, a scheme that has very granular
-\feval outputs barely provides privacy. Or a scheme for which most signatures
-include the same \finsp value has less accountability, but higher privacy.
-%
-This is a natural consequence of the fact that, with different choices of those
-functions, one can mimic the behaviour of (more restricted) schemes. For
-instance, by setting \finsp to output the signer's public key, and \feval to
-output nothing, one gets the same anonymity as in vanilla group signatures
-(concretely, no challenge signature can be opened). Or, if \feval outputs any
-arbitrary subset of the attributes in the used credential(s), and \finsp outputs
-any constant value, then we get the same anonymity as in conventional selective
-disclosure anonymous credential schemes, where any pair of users with different
-subset of revealed attributes are clearly distinguishable. The impact of \fissue
-is somehow orthogonal to the previous, but can be seen as a kind of equivalent
-to \feval, at issuance time.
-%
-Importantly, note that the model is agnostic to the concrete instantiation of
-these functions, and just cares about whether their outputs are equal or not,
-in order to avoid trivial wins by the adversary.
-
 \paragraph{Unforgeability.} \UAS inherits from AC schemes the notion that no
 adversary can prove claims unless it owns credentials with the proper
 attributes -- although, in \UAS, claims can be proven at issuance time, and
@@ -1041,7 +1017,7 @@ values output by \Open are correct and trace back to a user with consistent
 credentials. All the previous is captured by an unforgeability property. We
 define it by allowing the adversary to call any oracle, except the one for
 corrupting issuers. The adversary wins if it produces a valid signature that:
-(1) the produced signature leveraged with a credential for
+(1) the produced signature leveraged a credential for
 which the conditions required by \fissue were not satisfied; (2), opens to a
 wrong value, or to a value that cannot be processed by \Judge; (3), is not
 consistent with the expected \Yeval value; or (4), cannot be associated to
@@ -1104,12 +1080,12 @@ which greatly simplifies the modelling, has also been used before (e.g.
 	(\upk,\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
         \yeval^1,\yinsp') \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
         \pcif \exists i\in[n]~\suchthat~
-        \fissue(\upk,\usk,\attrs_i,\lbrace(\cid_{i,j},\attrs_{i,j})
+        \fissue(\upk,\cid_i,\attrs_i,\lbrace(\cid_{i,j},\attrs_{i,j})
         \rbrace_{j\in[n_i]}) \neq \yissue^i \lor
-        \OWNR[\lbrace\cid_{i,j}\rbrace_{j\in[n_i]}]\notin \HU \cup \CU, \\
+        \OWNR[\cid_i \cup \lbrace\cid_{i,j}\rbrace_{j\in[n_i]}]\notin \HU \cup \CU, \\
         \pcind \textrm{where}~(\yissue^i,\utrans) \gets \trans[\cid_i]~\textrm{and}~
         (\cdot,\cdot,\lbrace(\cid_{i,j},\attrs_{i,j},\cred_{i,j})
-        \rbrace_{j\in[n_i]}) \gets \ExtractIssue(\trap,\utrans]): \\
+        \rbrace_{j\in[n_i]}) \gets \ExtractIssue(\trap,\utrans): \\
         \pcind \pcreturn 1 \\        
         (\yeval^0,\yeval^1) \gets \feval(\upk,\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]}, \msg) \\
@@ -1194,35 +1170,22 @@ which greatly simplifies the modelling, has also been used before (e.g.
   a negligible function of $1^\secpar$.
 \end{definition}
 
-\paragraph{On the generality of unforgeability in \UAS schemes.} %
-Regarding the information revealed at signature time ($\yeval^0$), \UAS's
-unforgeability notion is equivalent to that of known AC schemes. It is the
-generalization of the information output at opening time ($\yinsp$), only
-present up to know in MPS \cite{ngsy22} what makes the notion of unforgeability
-more subtle. The fact that multiple users may produce signatures opening to the
-same value necessarily forces to generalize what is a forgery -- and, certainly,
-resorting to extraction-based techniques seems unavoidable.
-
-As with anonymity, by tweaking the \fissue, \feval and \finsp
-functions, one can easily mimic behaviour of more restricted schemes. For
-instance, \feval, along with the $\yeval^0$ output, allows revealing
-authenticated attribute-related information alongside the signatures, as in AC
-schemes. Or, with \fissue, rules for delegation can be easily encoded, leading
-to delegatable schemes.
-
 \paragraph{Non-frameability.} %
 The notion of non-frameability in \UAS schemes is unavoidably more subtle than
-in group signatures. To see this, we note that, by allowing arbitrary
-evaluation and open functions to be used, it can be perfectly valid to
-have a signature produced by a corrupted user output the same \yeval or \yinsp
-values than the ones output when evaluating or opening a signature by an honest
-user.
+in group signatures\footnote{As far as we know, non-frameability has not been
+  considered in anonymous credential schemes. Thus, \UAS is the first scheme
+  that concretely models what can we expect, unforgeability-wise, in the
+  presence of malicious issuers in the AC domain.}. To see
+this, note that, by allowing arbitrary evaluation and open functions to be used,
+it can be perfectly valid to have a signature produced by a corrupted user
+output the same \yeval or \yinsp values than the ones output when evaluating or
+opening a signature by an honest user.
 %
 More generally, since the issuer is dishonest in non-frameability properties
 and, in \UAS, the value produced by \Open may depend on the attributes
 included in user credentials, the adversary may even be able to just produce
-``legitimate'' openings that output any desired value. Note that this is a
-relevant property, as it tells us the minimal unforgeability expectations we
+``legitimate'' openings that output any desired value. Note anyway that this is
+a relevant property, as it tells us the minimal unforgeability expectations we
 can have, even against malicious issuers and openers.
 
 In the non-frameability definition for \UAS, given in experiment \ExpNonframe in
@@ -1283,54 +1246,51 @@ did not produce it (i.e., no matching call to \SIGN exists).
   \AdvNonframe is a negligible function of $1^\secpar$.
 \end{definition}
 
-\paragraph{On the generality of non-frameability in \UAS schemes.} %
-The notion captured in \UAS is a sort of extension of the non-frameability
-notion in group signatures, in two aspects. First, by defining a very granular
-\finsp function (one that outputs the signers public key, or equivalent),
-we get a scheme in which it is not possible to frame a user at all. Yet, by
-defining a coarser \finsp function (e.g., one that outputs the nationality of
-the signer), while framing a single user is still not possible (the checks in
-lines 9 an 10 avoid it), in practice, there will be a set of ``potential
-candidates to frame'' (e.g., all users of the given nationality). This can be
-seen as a useful feature in many use cases, though.
-%
-The second aspect follows a similar reasoning, but through \feval. However, this
-type of functionality revealing information at signing time is not available in
-group signatures. Also, even though it is available in anonymous credentials, no
-equivalent property has been considered, to the best of our knowledge. Thus,
-through \UAS schemes, we extend the unforgeability expectations against corrupt
-issuers, to the AC domain.
+% \paragraph{Tradeoffs in privacy and security.} %
+% Note that, depending on how granular the behaviour and output of the \fissue,
+% \feval and \finsp functions are, the less private the resulting \UAS
+% instantiation would be, and vice versa. In some sense, this is captured in the
+% model as, the more granular the outputs are, the more constrained is the
+% adversary.
+% %
+% For instance, a \feval function that reveals all the attributes of the signing
+% credentials provides even less privacy than a conventional signature scheme. Or
+% a scheme that reveals all those attributes via \finsp is even more accountable
+% that a vanilla group signature scheme, as it directly gives away more personal
+% information than a public key.
+% %
+% Equivalent reasoning happens with \fissue, although there the behaviour (whether
+% a request is accepted or not) is what is more telling, rather than the output
+% of the function on its own.
 
-% Anonymous credentials do not have non-frameability property and, thus, it is
-% hard to make a comparison. However, we can draw some connections with AC schemes
-% that support revocation, as revocation is somehow equivalent to linking, which
-% is a type of inspection available in group signatures. In this sense, note that
-% basic revocation (without straight deanonymization) can be trivially achieved
-% through our generic \Open function. For instance, one could set \finsp to
-% be a pseudorandom number seeded with the user's public key (or credential). In
-% this sense, \Open could be essentially seen as a Verifiable Random Function.
-% If we compare with group signatures, our notion is also more general than the
-% conventional one, again for the same reason as sign unforgeability (i.e., \Open
-% can return any value, not just the signer's identity). Thus, the need to extract
-% the signer's data in order to detect if a framing has taken place.
+% Similarly, unforgeability and non-frameability in \UAS cannot just be concerned
+% on whether a signature is produced by a (set of) legitimately obtained
+% credentials. It must also worry about whether the values output by \feval and
+% \finsp are consistent. That is, a user who does not have a credential proving
+% some claim, should not be able to prove it. Conversely, if a user does not own
+% a credential that can produce some concrete \yeval or \yinsp values, should not
+% be ``suspicious'' of having produced a signature with those values. Moreover,
+% it may be possible that more than one user produces signatures evaluating (via
+% \yeval) or opening (via \yinsp) to the same values -- and it does not mean that
+% any of those users is being framed.
 
 \subsection{\CUASGen: A Generic \UAS Construction}
 \label{ssec:generic-construction-uas}
 
 In this section, we give a generic construction of an \UAS scheme, based on
 generic building blocks. We use three different NP relations:
-$\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$, and $\NIZKRel_{\Open}$, described next
+\RelIss, \RelSig, and \RelIns, described next
 and specified in CS notation \cite{cs97} in \figref{fig:nizkrels}.
 
 \begin{description}
-\item[$\NIZKRel_{\Issue}$:] For NIZK proofs at issuance time. Requires users to
+\item[\RelIss:] For NIZK proofs at issuance time. Requires users to
   prove knowledge of \usk and the related \upk. It also requires that any
   additional credential supporting the request be a valid credential (signed by
   some issuer) and bound to \upk, and enforces the corresponding \fissue policy.
-\item[$\NIZKRel_{\Sign}$:] For NIZK proofs at signing time. Ensures that
+\item[\RelSig:] For NIZK proofs at signing time. Ensures that
   signatures ``encode'' the correct signature evaluation and opening values, and
   that any credential used to create the signature is bound to the same \upk.
-\item[$\NIZKRel_{\Open}$:] For NIZK proofs at opening time. Ensures that the
+\item[\RelIns:] For NIZK proofs at opening time. Ensures that the
   utility information extracted by the \Open algorithm is correct.
 \end{description}
 
@@ -1387,7 +1347,7 @@ the user key, as well as on $\cid=(\cidi,\cidu)$ and the attributes in \attrs.
 In addition, the user proves correct computation of the \fissue function set by
 the issuer based on the $\cred_i$ credentials and its user public key.
 This is essentially achieved through an execution of an \SBCM interactive
-signing protocol with $\NIZKRel_{\Issue}$ as NP relation. Since \fissue is
+signing protocol with \RelIss as NP relation. Since \fissue is
 evaluated by the user, but depends on the \cidi value chosen by the issuer, the
 issuer first needs to send \cidi.
 Then both interact to produce the \SBCM signature, where the
@@ -1397,7 +1357,7 @@ issuer runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
 \rbrace_{i\in[n]})$. Observe that, within this protocol, the user sends a NIZK
 proof $\NIZKproof_{\Issue}$ ensuring that it knows a valid witness $(\upk,\usk,
 \lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r)$ for the relation
-$\NIZKRel_{\Issue}$. The credential \cred produced by the user is the result of
+\RelIss. The credential \cred produced by the user is the result of
 the interactive signing protocol, whereas the issuer produces $(\yissue,
 \utrans)$, where \yissue is the output of \fissue, and \utrans is the
 communication transcript of the signing protocol.% , which is a $(\Ccom,(\cid,\attrs),\lbrace
@@ -1406,7 +1366,7 @@ communication transcript of the signing protocol.% , which is a $(\Ccom,(\cid,\a
 \paragraph{$\Sig \gets \Sign(\usk,\opk,
   \sCred=(\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)\rbrace_{i\in[n]}),
   \msg,\feval)$.} %
-In the signing algorithm, we make use of relation $\NIZKRel_{\Sign}$.
+In the signing algorithm, we make use of relation \RelSig.
 % 
 The user first evaluates $\Yeval = (\yeval^0,\yeval^1) \gets \feval (\upk,
 \lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]},\msg)$. Then, parses \opk as $(\Eek,
@@ -1431,7 +1391,7 @@ whether \yeval meets its needs.
 
 \paragraph{$(\yinsp,\NIZKproof)/\bot \gets
   \Open(\osk,\sipk,\Sig,\msg,\feval)$.} %
-Here we leverage relation $\NIZKRel_{\Open}$.
+Here we leverage relation \RelIns.
 %
 To open a signature, the opener first verifies the signature by running $\Verify
 (\opk,\sipk, \Sig,\msg,\feval)$. If verification succeeds, it parses
@@ -1455,16 +1415,16 @@ the proofs to \appref{app:uas-proofs}.
 
 \begin{theorem}[Correctness of \CUASGen]
   \label{thm:correctness-uas}
-  If the underlying schemes for commitments, public-key encryption and \SBCM,
-  are correct, as well as the NIZKs for $\NIZKRel_{\Issue}$, $\NIZKRel_{\Sign}$,
-  and $\NIZKRel_{\Open}$, our generic construction \CUASGen satisfies
+  If the underlying schemes for public-key encryption and \SBCM are correct, as
+  well as the NIZKs for \RelIss, \RelSig,
+  and \RelIns, our generic construction \CUASGen satisfies
   correctness as defined in \defref{def:correctness-uas}, except with negligible
   probability.
 \end{theorem}
 
 \begin{theorem}[Issuance anonymity of \CUASGen]
   \label{thm:issue-anonymity-uas}
-  If the \SBCM scheme is blinding, the NIZK system used for $\NIZKRel_{\Issue}$ 
+  If the \SBCM scheme is blinding, the NIZK system used for \RelIss 
   is zero-knowledge, and \fissue is a \UAS-acceptable function, our \CUASGen
   construction satisfies issuance anonymity as defined in
   \defref{def:issue-anonymity-uas}, except with negligible probability.
@@ -1472,7 +1432,7 @@ the proofs to \appref{app:uas-proofs}.
 
 \begin{theorem}[Signature anonymity of \CUASGen]
   \label{thm:sign-anonymity-uas}
-  If the NIZK system used for $\NIZKRel_{\Sign}$ is zero-knowledge, and the
+  If the NIZK system used for \RelSig is zero-knowledge, and the
   public-key encryption scheme is IND-CCA secure, our \CUASGen construction
   satisfies signature anonymity as defined in \defref{def:sign-anonymity-uas},
   except with negligible probability.
@@ -1480,15 +1440,15 @@ the proofs to \appref{app:uas-proofs}.
 
 % \begin{theorem}[Issuance unforgeability of \CUASGen]
 %   \label{thm:issue-forge-uas}
-%   If the underlying NIZK used for $\NIZKRel_{\Issue}$ is zero-knowledge,
+%   If the underlying NIZK used for \RelIss is zero-knowledge,
 %   simulation extractable and sound, then our \CUASGen construction satisfies
 %   issuance unforgeability as defined in \defref{def:issue-forge-uas}.
 % \end{theorem}
 
 % \begin{theorem}[Signing unforgeability of \CUASGen]
 %   \label{thm:sign-forge-uas}
-%   If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is simulation
-%   extractable, the scheme for $\NIZKRel_{\Open}$ is complete, the public key
+%   If the underlying NIZK scheme for \RelSig is simulation
+%   extractable, the scheme for \RelIns is complete, the public key
 %   encryption algorithm is correct, and the \SBCM scheme is correct and one-more
 %   unforgeable, then our \CUASGen construction satisfies signing unforgeability
 %   as defined in \defref{def:sign-forge-uas}, except with negligible probability.
@@ -1496,18 +1456,17 @@ the proofs to \appref{app:uas-proofs}.
 
 \begin{theorem}[Unforgeability of \CUASGen]
   \label{thm:forge-uas}
-  If the underlying NIZK scheme for $\NIZKRel_{\Sign}$ is simulation
-  extractable, the scheme for $\NIZKRel_{\Open}$ is complete, the public key
-  encryption algorithm is correct, and the \SBCM scheme is correct and one-more
-  unforgeable, then our \CUASGen construction
-  satisfies unforgeability as defined in \defref{def:forge-uas}, except
-  with negligible probability.
+  If the underlying NIZK system for \RelSig is simulation extractable, the NIZK
+  system for \RelIns is complete, the public key encryption algorithm is
+  correct, and the \SBCM scheme is correct and one-more unforgeable, then our
+  \CUASGen construction satisfies unforgeability as defined in
+  \defref{def:forge-uas}, except with negligible probability.
 \end{theorem}
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
-  If the underlying scheme for $\NIZK^{\Sign}$ is zero-knowledge and simulation
-  extractable, the scheme for $\NIZK^{\Open}$ is simulation-extractable, and the
+  If the underlying NIZK system for \RelSig is zero-knowledge and simulation
+  extractable, the NIZK system for \RelIns is simulation-extractable, and the
   \SBCM scheme is blind, then our \CUASGen
   construction satisfies non-frameability as defined in \defref{def:frame-uas},
   except with negligible probability.
@@ -1521,16 +1480,16 @@ the proofs to \appref{app:uas-proofs}.
 In previous subsections, we have described our main construction \CUASGen. 
 However, alternative constructions are of course possible that, while
 still meeting the \UAS model, may differ from \CUASGen. We describe one such
-variant next $\CUASGen^{hide-iss}$, that we leverage to build related schemes.
+variant next \CUASGenHideIss, that we leverage to build related schemes.
 %
-Similarly, we describe $\CUASGen^{int}$ which transforms \CUASGen by turning the
+Similarly, we describe \CUASGenInt which transforms \CUASGen by turning the
 non-interactive signature and verification processes into an interactive
 protocol. Strictly speaking, the model changes, but the needed modifications
 are minimal.
 %
 Security proofs are deferred to \appref{app:uas-proofs}.
 
-\paragraph{$\CUASGen^{hide-iss}$: $\NIZKRel_{\Sign}$ with issuer hiding.} %
+\paragraph{\CUASGenHideIss: \RelSig with issuer hiding.} %
 In \CUASGen it is required that the identity of the
 issuer of each credential involved in a signature is revealed. This seems
 reasonable for usual situations since, intuitively, it seems hard that a
@@ -1548,18 +1507,18 @@ notational simplicity, we restrict to just one credential per signature.
 Modelling-wise, no changes are needed. Perhaps notably, even in this case, the
 anonymity property is still required to enforce that both challenge signatures
 are associated to the same set of (potential) issuers -- otherwise, it is
-trivial to distinguish signatures. Security for $\CUASGen^{hide-iss}$, based on
+trivial to distinguish signatures. Security for \CUASGenHideIss, based on
 security of \CUASGen, is sketched in \appref{sapp:sec-hide-iss}.
 
 \begin{figure}[ht!]
   \scalebox{0.9}{
     \input{figures/nizk-ring.tex}
   }
-  \caption{$\NIZKRel^{hide-iss}_{\Sign}$ relation for $\CUASGen^{hide-iss}$.}
+  \caption{$\NIZKRel^{hide-iss}_{\Sign}$ relation for \CUASGenHideIss.}
   \label{fig:nizk-ring}
 \end{figure}
 
-\paragraph{$\CUASGen^{int}$: Interactive Credential Presentations with replay
+\paragraph{\CUASGenInt: Interactive Credential Presentations with replay
   protection.}
 %
 In group signatures, signing and verification are non-interactive processes;
@@ -1587,7 +1546,7 @@ value $rnd$ sent by the verifier, note that it is trivial to transform these
 functions so that they treat the message concatenated with $rnd$ as a pair
 $(\msg,rnd)$, and simply ignore $rnd$.
 
-We sketch security of $\CUASGen^{int}$ in \appref{sapp:sec-interactive} assuming
+We sketch security of \CUASGenInt in \appref{sapp:sec-interactive} assuming
 the same security properties as in \UAS. Note that extra properties may be
 needed in some scenarios. For instance, informally, the non-interactive version
 does not provide deniability and, thus, our transform to the interactive case
