@@ -1,0 +1,57 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Identity management is one of the hardest problems in the digital domain%
+\footnote{\url{https://www.maddyness.com/uk/2021/11/04/digital-identity-is-one-of-the-21st-centurys-biggest-challenges/}. Last access, August 30th, 2022.}.
+It requires to address needs that are already complex on their own, such as:
+
+\begin{itemize}
+\item Establishing a connection between a digital persona and a physical one.
+\item Interoperability across solutions.
+\item Security and privacy, without sacrificing functionality.
+\end{itemize}
+
+As usual, the third item makes things even more complicated and, still, is
+essential. Without proper handling of one's secrets, impersonation is trivial.
+Without robust privacy protection mechanisms, high user adoption is unlikely,
+and regulatory compliance, impossible. Yet, adding security makes systems less
+usable, and adding privacy typically comes at the cost of using functionality.
+
+From the previous, is not surprising that (privacy-preserving and secure)
+digital identity has been a fertile ground for research. Indeed, at least for
+the last four decades, it has been a recurring topic in the main cryptography
+and security academic venues. Also, roughly during the last decade, it has
+received increased attention in the industry\footnote{See, for instance, the
+  Idemix and PrivacyABC projects, the W3C DID and Verifiable Credentials
+  specification efforts, or the related ``anoncreds'' working group, etc.}
+
+In fact, if one tries to get up to date with the latest advances in the domain,
+a non-negligible added complexity is to navigate through the vast amount of
+previous work. Quickly, seemingly incompatible systems arise, that offer a
+different privacy-vs-utility tradeoff: from private systems that do not lose
+utility at the cost of introducing a fully trusted third party who can revoke
+anyone's privacy; to fully private systems that do not allow privacy revocation,
+but lose all utility; passing through many things in between. Needing to make a
+hard decission for a concrete privacy-vs-utility tradeoff is one of the big
+drawbacks of existing systems.
+
+We introduce here Universal Anonymous Signatures -- UAS, for short. UAS
+is a flexible framework for privacy-preserving identities. Cryptographically,
+it generalizes much work done durng the last 40 years. In UAS, identities are
+sets of attested attributes, which have proven to be a powerful way to represent
+physical-world identities. In addition, UAS enables that arbitrary claims are
+proven based on these attributes, both at the time that a signature is verified
+and, also \uline{afterwards} -- if needed and the request is granted by an
+authority chosen by the signer. The claims to be proven are chosen by the
+verifier (possibly jointly with the signer), but the signer is fully aware of
+the information that will or may be revealed, if any. Indeed, the option to
+reveal extra customizable information after the signature has been produced
+enables very relevant use cases and, as we will see, makes a big difference in
+addressing the privacy-vs-utility tradeoff. Finally, UAS is compatible with
+industry efforts that focus on interoperability, such as W3C's Verifiable
+Credentials or Anoncreds.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas-onepager"
+%%% End:

@@ -1,0 +1,64 @@
+\documentclass{llncs}
+\pagestyle{plain}
+
+\usepackage[n,advantage,operators,sets,adversary,landau,probability,notions,
+logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
+\usepackage{amssymb}
+\usepackage{xspace}
+\usepackage[normalem]{ulem}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{footnote}
+\usepackage{framed}
+\usetikzlibrary{decorations.pathreplacing,calligraphy}
+\makesavenoteenv{tabular}
+\makesavenoteenv{table}
+
+%% Set/unset to activate/deactivate author comments
+\def\authnotes{1}
+
+%%% Allows line-breaks in math formulae after commas
+\AtBeginDocument{%
+  \mathchardef\mathcomma\mathcode`\,
+  \mathcode`\,="8000 
+}
+{\catcode`,=\active
+  \gdef,{\mathcomma\discretionary{}{}{}}
+}
+
+%%%
+
+\setcounter{tocdepth}{2}
+
+\title{Universal Anonymous Signatures}
+\author{}
+\institute{}
+%\author{Jesus Diaz\inst{1} \and Markulf Kohlweiss\inst{2}}
+
+% \institute{Input Output Global,\\
+% \email{jesus.diazvico@iohk.io},\\
+% \and
+% Input Output Global and University of Edinburgh,\\
+% \email{markulf.kohlweiss@ed.ac.uk}}
+
+% Custom shorthands for this paper
+\input{symbols.tex}
+\input{symbols-uas.tex}
+
+\begin{document}
+{\def\addcontentsline#1#2#3{}\maketitle}%\maketitle
+
+\input{introduction-onepager.tex}
+\input{functionality.tex}
+\input{use-cases.tex}
+\input{status.tex}
+
+\bibliographystyle{splncs04}
+\bibliography{uas-onepager}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "uas-onepager"
+%%% End:
