@@ -173,7 +173,7 @@ anything about the signer's data used as input. This is formally captured in
 
 \begin{figure}[ht!]
   \centering  
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \procedure{$\Exp^{\UAS-acc-b}_\adv(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\upk,\usk) \gets \KeyGen(\parm) \\
@@ -355,7 +355,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 {%\setlength\intextsep{\sep}
   \begin{figure*}[ht!]
     \centering
-    \scalebox{0.9}{
+    \scalebox{0.85}{
 
       \begin{minipage}[t]{0.55\textwidth}
 
@@ -417,7 +417,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         
       \end{minipage}
     }
-    \scalebox{0.9}{
+    \scalebox{0.85}{
       
       \begin{minipage}[t]{.5\textwidth}
 
@@ -469,7 +469,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 {%\setlength\intextsep{\sep}
   \begin{figure*}[htp!]
     \centering
-    \scalebox{0.9}{
+    \scalebox{0.85}{
 
       \begin{minipage}[t]{0.55\textwidth}
 
@@ -539,7 +539,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         
       \end{minipage}
     }
-    \scalebox{0.9}{
+    \scalebox{0.85}{
       
       \begin{minipage}[t]{.5\textwidth}
 
@@ -699,7 +699,7 @@ credentials, user key, and message.
 
 \begin{figure}[htp!]
   \centering
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \procedure[linenumbering]{$\ExpCorrect(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\uid,\oid,\scid,\msg,\feval)
@@ -802,7 +802,7 @@ properties.
 
 % \begin{figure*}[htp!]
 %   \centering
-%   \scalebox{0.9}{
+%   \scalebox{0.85}{
 %     \begin{minipage}[t]{0.6\textwidth}
 %       \procedure[linenumbering]{$\ExpExtractIssue(1^\secpar)$}{%
 %         (\parm, \trap) \gets  \SimSetup(1^\secpar) \\
@@ -872,7 +872,7 @@ properties.
 
 % \begin{figure*}[htp!]
 %   \centering
-%   \scalebox{0.9}{
+%   \scalebox{0.85}{
 %     \begin{minipage}[t]{0.6\textwidth}
 %       \procedure[linenumbering]{$\ExpIdentifyCred(1^\secpar)$}{%
 %         (\parm, \trap) \gets  \SimSetup(1^\secpar) \\
@@ -965,7 +965,7 @@ The formal specification of the anonymity games is given in
 
 \begin{figure*}[htp!]
   \centering
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \begin{minipage}[t]{0.5\textwidth}
       \procedure[linenumbering]{$\ExpIssAnonb(1^\secpar)$}{%
         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
@@ -1034,7 +1034,7 @@ which greatly simplifies the modelling, has also been used before (e.g.
 
 \begin{figure}[htp!]
   \centering
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \begin{minipage}[t]{\textwidth}
 %       \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
 %         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
@@ -1064,7 +1064,7 @@ which greatly simplifies the modelling, has also been used before (e.g.
     % \end{minipage}    
     % \begin{minipage}[t]{\textwidth}
       \procedure[linenumbering]{$\ExpForge(1^\secpar)$}{%
-        (\parm,\trap) \gets \Setup(1^\secpar) \\
+        (\parm,\trap) \gets \SimSetup(1^\secpar) \\
         (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval) \gets \adv^{\Oforge}(\parm) \\
         \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
         \SIG[\uid]: \pcreturn 0 \\
@@ -1199,7 +1199,7 @@ did not produce it (i.e., no matching call to \SIGN exists).
 
 \begin{figure}[htp!]  
   \centering
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \procedure[linenumbering]{$\ExpNonframe(1^\secpar)$}{%
       (\parm,\trap) \gets \SimSetup(1^\secpar) \\
       (\oid,\siid,\Sig=(\sig,\yeval),\msg,\feval,\yinsp,\iproof) \gets
@@ -1296,7 +1296,7 @@ and specified in CS notation \cite{cs97} in \figref{fig:nizkrels}.
 
 \begin{figure}[ht!]
   \centering
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \input{figures/nizk.tex}
   }
   \caption{CS specification of the NP relations used in \CUASGen.}
@@ -1511,7 +1511,7 @@ trivial to distinguish signatures. Security for \CUASGenHideIss, based on
 security of \CUASGen, is sketched in \appref{sapp:sec-hide-iss}.
 
 \begin{figure}[ht!]
-  \scalebox{0.9}{
+  \scalebox{0.85}{
     \input{figures/nizk-ring.tex}
   }
   \caption{$\NIZKRel^{hide-iss}_{\Sign}$ relation for \CUASGenHideIss.}
@@ -1527,8 +1527,9 @@ targets the non-interactive approach. Now, we sketch how to transform this into
 an interactive protocol that ensures replay protection.
 
 Modelling-wise, this requires to replace the \Sign and \Verify functions with
-a single $\langle 1/0,(\yeval,\utrans_{\Sig})/\bot \rangle \gets \langle
-\Sign(\usk,\opk,\sCred,\msg,\feval), \Verify(\opk,\sipk,\msg,\feval) \rangle$,
+an interactive protocol $\langle 1/0,(\yeval,\utrans_{\Sig})/\bot \rangle \gets
+\langle\Sign(\usk,\opk,\sCred,\msg,\feval), \Verify(\opk,\sipk,\msg,\feval)
+\rangle$,
 where $\utrans_{\Sig}$ is the transcript of the protocol, and is logged now in
 an equivalent of the \SIG table (\CSIG for challenge transcripts). The \SIGN
 and \CHALb oracles now also accept a random value from the adversary, but

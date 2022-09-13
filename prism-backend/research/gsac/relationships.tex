@@ -15,7 +15,10 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
 \UAS-acceptable if $F$ is a secure PRF \cite{kl14}.
 
 \begin{figure}[ht!]
-  \input{figures/functions.tex}
+  \centering
+  \scalebox{0.85}{
+    \input{figures/functions.tex}
+  }
   \caption{Functions for the \CUASGen restrictions described next.
     For readability, we use ``$\cdot$'' to denote input arguments that are
     ignored; and ``$\ast$'' to denote output values that can be set to anything
@@ -41,7 +44,7 @@ security games in \figref{fig:model-gs}.
 
 \begin{figure}[ht!]
   \centering
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{0.45\textwidth}        
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,gs}(1^\secpar)$}{%
         (\gpk,\isk,\osk) \gets KeyGen(1^\secpar) \\
@@ -56,24 +59,22 @@ security games in \figref{fig:model-gs}.
         (\msg,\sig,\upk,\tau) \gets \adv^{\mathcal{O}_{frame}}
         (\gpk,\osk,\isk) \\
         \pcif \Verify(\gpk,\msg,\sig) = 0: \pcreturn 0 \\
-        \pcreturn (\upk \in \HU \land \PRVUK[\upk] \neq \bot \land
-        \Judge(\gpk,\upk,\msg,\sig,\tau) = 1)~\land \\
+        \pcreturn \upk \in \HU \land \PRVUK[\upk] \neq \bot \land
+        \Judge(\gpk,\upk,\msg,\sig,\tau) = 1~\land \\
         \pcind \adv~\textrm{did not query}~USK(\upk)~\textrm{or}~
         GSig(\PRVUK[\upk],\msg)
       }       
     \end{minipage}
   }
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{.55\textwidth}
       \procedure[linenumbering]{$\Exp^{trace}_{\adv,gs}(1^\secpar)$}{%
         (\gpk,\isk,\osk) \gets KeyGen(1^\secpar) \\
         (\msg,\sig) \gets \adv^{\mathcal{O}_{trace}}(\gpk,\osk) \\
         \pcif \Verify(\gpk,\msg,\sig) = 0: \pcreturn 0 \\
         (\upk, \tau) \gets \Open(\gpk,\osk,\trans,\msg,\sig) \\
-        \pcif \upk \notin \HU \cup \CU \lor \Judge(\gpk,\upk,\msg,\sig,\tau)
-        = 0: \\ 
-        \pcind \pcreturn 1 \\
-        \pcreturn 0
+        \pcreturn \upk \notin \HU \cup \CU \lor \Judge(\gpk,\upk,\msg,\sig,\tau)
+        = 0
       }       
     \end{minipage}      
   }
@@ -168,7 +169,7 @@ to \cite{bkm06} for details on the syntax and definitions.
 
 \begin{figure}[ht!]
   \centering
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{0.55\textwidth}        
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,rs}(1^\secpar)$}{%
         ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
@@ -182,7 +183,7 @@ to \cite{bkm06} for details on the syntax and definitions.
       }        
     \end{minipage}
   }
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{.5\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,rs}(1^\secpar)$}{%
         ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
@@ -289,7 +290,7 @@ the security definitions in \figref{fig:model-ac}.% , with inocuous
 
 \begin{figure}[ht!]
   \centering
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{0.5\textwidth}        
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,ac}(1^\secpar)$}{%
  %       \parm \gets \Setup(1^\secpar) \\
@@ -300,7 +301,7 @@ the security definitions in \figref{fig:model-ac}.% , with inocuous
       }        
     \end{minipage}
   }
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{.5\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,ac}(1^\secpar)$}{%
 %        \parm \gets \Setup(1^\secpar) \\
@@ -388,7 +389,7 @@ would be straightforward.
 
 \begin{figure}[ht!]
   \centering
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{0.43\textwidth}
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,rac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
@@ -399,7 +400,7 @@ would be straightforward.
       }
     \end{minipage}
   }
-  \scalebox{0.9}{      
+  \scalebox{0.85}{      
     \begin{minipage}[t]{.57\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,rac}(1^\secpar)$}{%
         \parm \gets \Setup(1^\secpar) \\
