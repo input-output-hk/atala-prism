@@ -54,8 +54,8 @@ to prove concrete claims over their private information. Looking a bit ahead,
 the output of these functions is defined in terms of (subsets of) the users'
 key, credentials and attributes, and signed message. But, during our modelling,
 we are only concerned with preventing that the output of these functions can
-be dishonestly altered, and with ensuring that it does not threaten privacy
-beyond what is necessary or unavoidable to reach the flexibility we want.
+be altered, and with ensuring that it does not threaten privacy beyond what is
+necessary or unavoidable to reach the flexibility we want.
 
 \subsection{Syntax}
 \label{ssec:syntax-uas}
@@ -120,8 +120,8 @@ An \UAS scheme is composed by the following algorithms:
 \end{description}
 
 \paragraph{Issuance, evaluation, and opening functions.} %
-We introduce three functions in our syntax and model. Through them,
-it is possible to modulate the behaviour of the resulting instantiation, by
+We introduce three functions in our syntax and model. Through them, it is
+possible to modulate the behaviour of the resulting instantiation, by
 controling the conditions upon which a new credential can be issued, the
 information revealed at signing time, or after signing. In all cases, it is
 the user who computes them, and has to prove correctness of such computation.
@@ -131,12 +131,11 @@ We give concrete examples in \secref{sec:relationships}.
 \item[$\fissue: (\upk,\cid,\attrs,\lbrace (\cid_i,\cattrs_i)\rbrace_{i \in [n]})
   \rightarrow \yissue$.] Chosen
   by each issuer within a family of functions \famfissue, the issuance function
-  defines the customized conditions required by the issuer to grant a credential
+  defines the conditions required by the issuer to grant a credential
   with identifier $\cid = (\cidi,\cidu)$, over attributes \attrs, when requested
-  by a user with public key \upk,
-  leveraging a set of $n$ previously obtained credentials with identifiers and
-  attributes given by $\lbrace (\cid_i,\cattrs_i) \rbrace_{i \in [n]}$ (where
-  $n$ may be $0$ if no previously obtained credential is used). \fissue returns
+  by a user with public key \upk, leveraging a set of $n$ previously obtained
+  credentials with identifiers and attributes given by $\lbrace (\cid_i,
+  \cattrs_i) \rbrace_{i \in [n]}$ (where $n$ may be $0$). \fissue returns
   a value $\yissue \in \rngfissue \cup \lbrace 0 \rbrace$, where we adopt the
   convention that $\yissue = 0$ means that the issuance request is denied; and
   $\yissue \neq 0$ means that the request is approved. \fissue functions must be
@@ -167,10 +166,13 @@ openers when they set up their key pair. Thus even though signers and verifiers
 may negotiate to use any opener for a given signature, it is not possible for
 an opener to change the chosen function.
 
-Concerning \fissue functions, our \UAS model requires them to be \UAS-acceptable
-functions. At a high level, this requires that \fissue functions do not reveal
-anything about the signer's data used as input. This is formally captured in
-\figref{fig:uas-acceptable}.
+Concerning \fissue functions, our \UAS model requires them to be
+\UAS-acceptable. At a high level, this requires that \fissue functions do not
+reveal anything about the signer's data used as input. This is formally captured
+in \figref{fig:uas-acceptable}.
+%
+A \UAS construction thus can only be secure if the \fissue functions it uses
+are \UAS-acceptable.
 
 \begin{figure}[ht!]
   \centering  
@@ -199,13 +201,10 @@ anything about the signer's data used as input. This is formally captured in
   (1^\secpar)=0]|$ is a negligible function of $1^\secpar$.
 \end{definition}
 
-A \UAS construction thus can only be secure if the \fissue function it uses is
-\UAS-acceptable.
-%
-Next, we define the concept of \CUASGen restrictions. Briefly, these are special
+Next, we define the concept of \CUASGen restrictions. These are special
 cases of our generic construction that target a concrete variant of the
 utility-privacy tradeoff by defining concrete \fissue, \feval and \finsp
-functions. Security of \CUASGen implies security of its restrictions, as long as
+functions. Security of \CUASGen implies security of its restrictions, if
 the chosen \fissue functions are \CUASGen-acceptable.
 
 \begin{definition}{(\CUASGen restrictions)}
