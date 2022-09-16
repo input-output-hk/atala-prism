@@ -4,7 +4,7 @@
   \node (issue) at (-7.95,8.875) { $\NIZKRel_{\Issue} = $ };
   \node (issue2) at (-3.00,9.50) {
     $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r),
-    (\cid,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]},\yissue):$
+    (\cid,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]},\boxed{\yissue}):$
   };
   \node[align=center] (issue3) at (-3.00,8.625) {
 %    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r)~\land$ \\
@@ -21,7 +21,7 @@
   \node (sign) at (-6.40,6.625) { $\NIZKRel_{\Sign} = $ };
   \node (sign2) at (0.00,7.50) {
     $(\upk,\usk,\lbrace(\cid_i,\attrs_i,\cred_i)\rbrace_{i\in[n]},\yeval^1,
-    \yinsp,r,r'), (\msg,\feval,\yeval^0,\cinsp,\lbrace\ipk_i\rbrace,\Eek):$
+    \yinsp,r,r'), (\msg,\feval,\dboxed{\yeval^0},\cinsp,\lbrace\ipk_i\rbrace,\Eek):$
   };
   \node[align=center] (sign3) at (0.00,6.35) {
 %    $\upk = \CCommit(\usk;0) \land \cinsp = \EEnc (\Eek,\yinsp;r)~\land$ \\
@@ -40,7 +40,7 @@
   %% Open
   \node (issue) at (2.15,8.875) { $\NIZKRel_{\Open} = $ };
   \node (issue2) at (4.45,9.125) {
-    $(\osk),(\Ec,\yinsp):$
+    $(\osk),(\Ec,\dotboxed{\yinsp}):$
   };
   \node (issue3) at (4.45,8.625) {
     $\yinsp = \EDec(\osk,\Ec)$
