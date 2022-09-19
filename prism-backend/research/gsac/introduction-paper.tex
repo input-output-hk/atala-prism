@@ -158,8 +158,10 @@ in previously obtained credentials. \feval is computed at signing time by the
 user, and controls and proves correctness of the information learned by
 verifiers. Finally, \finsp, although  computed also at signing time by the
 users, proves correctness of the utility information extractable after signing.
-The latter is, in addition, fed and modulated with the output of \feval. Through
-these functions, we define NP statements that need to be proven by different
+The latter is, in addition, fed and modulated with the output of \feval. With
+these functions, we allow achieving configurable utility-vs-privacy tradeoffs
+throughout the whole ``lifecycle'' (from issuance to opening). They also take
+a central role in defining the NP statements that need to be proven by different
 algorithms/protocols, summarised in \figref{fig:proof-blocks-uas}.
 
 \begin{figure}[ht!]
