@@ -831,8 +831,8 @@ proving arbitrary claims already when requesting credentials.
 
 In more detail, issuance unforgeability captures that all the credentials issued
 by an honest issuer meet the requirements set by the corresponding issuance
-function. Moreover, any credential used to support the request needs to belong
-to a known user. Without conventional opening, we need to resort to extraction.
+function. Moreover, any credential used to support a request needs to belong
+to a known user. 
 The adversary is required to output a credential identifier that must correspond
 to an existing credential issuance interaction -- note that the transcript must
 be available to us if it exists, as the issuer is honest. From this transcript,
@@ -842,15 +842,15 @@ identifiers of any used credential. The adversary wins if applying the output of
 the issuance function applied to the extracted witness is not consistent, or if
 the credential identifiers do not belong all to the same (known) user.
 
-Signature unforgeability is simply a combination of known requirements in AC and
+Signature unforgeability is a combination of known requirements in AC and
 GS schemes. Namely, the adversary is required to output a valid signature, and
 wins if the signature: (1) opens to a wrong value, or to a value that cannot be
 processed by \Judge; (2), is not consistent with the expected $\Yeval =
-(\yeval^0,\yeval^1)$ value; or (3), cannot be associated to known credentials
+(\yeval^0,\yeval^1)$ value; or (3), cannot be associated to credentials
 owned by a known user.
 
-The respective properties, \ExpForgeIssue and \ExpForgeSign, are formally
-defined in \figref{fig:exp-uas-unfor}).
+We formalize the respective properties, \ExpForgeIssue and \ExpForgeSign, in
+\figref{fig:exp-uas-unfor}.
 
 % \begin{figure}[htp!]
 %   \centering
@@ -1251,30 +1251,32 @@ the proofs to \appref{app:uas-proofs}.
   except with negligible probability.
 \end{theorem}
 
-% \begin{theorem}[Issuance unforgeability of \CUASGen]
-%   \label{thm:issue-forge-uas}
-%   If the underlying NIZK used for \RelIss is zero-knowledge,
-%   simulation extractable and sound, then our \CUASGen construction satisfies
-%   issuance unforgeability as defined in \defref{def:issue-forge-uas}.
-% \end{theorem}
-
-% \begin{theorem}[Signing unforgeability of \CUASGen]
-%   \label{thm:sign-forge-uas}
-%   If the underlying NIZK scheme for \RelSig is simulation
-%   extractable, the scheme for \RelIns is complete, the public key
-%   encryption algorithm is correct, and the \SBCM scheme is correct and one-more
-%   unforgeable, then our \CUASGen construction satisfies signing unforgeability
-%   as defined in \defref{def:sign-forge-uas}, except with negligible probability.
-% \end{theorem}
-
-\begin{theorem}[Unforgeability of \CUASGen]
-  \label{thm:forge-uas}
-  If the underlying NIZK system for \RelSig is simulation extractable, the NIZK
-  system for \RelIns is complete, the public key encryption algorithm is
-  correct, and the \SBCM scheme is correct and one-more unforgeable, then our
-  \CUASGen construction satisfies unforgeability as defined in
-  \defref{def:forge-uas}, except with negligible probability.
+\begin{theorem}[Issuance unforgeability of \CUASGen]
+  \label{thm:issue-forge-uas}
+  \todo{Update}
+  If the underlying NIZK used for \RelIss is zero-knowledge,
+  simulation extractable and sound, then our \CUASGen construction satisfies
+  issuance unforgeability as defined in \defref{def:issue-forge-uas}.
 \end{theorem}
+
+\begin{theorem}[Signing unforgeability of \CUASGen]
+  \label{thm:sign-forge-uas}
+  \todo{Update}
+  If the underlying NIZK scheme for \RelSig is simulation
+  extractable, the scheme for \RelIns is complete, the public key
+  encryption algorithm is correct, and the \SBCM scheme is correct and one-more
+  unforgeable, then our \CUASGen construction satisfies signing unforgeability
+  as defined in \defref{def:sign-forge-uas}, except with negligible probability.
+\end{theorem}
+
+% \begin{theorem}[Unforgeability of \CUASGen]
+%   \label{thm:forge-uas}
+%   If the underlying NIZK system for \RelSig is simulation extractable, the NIZK
+%   system for \RelIns is complete, the public key encryption algorithm is
+%   correct, and the \SBCM scheme is correct and one-more unforgeable, then our
+%   \CUASGen construction satisfies unforgeability as defined in
+%   \defref{def:forge-uas}, except with negligible probability.
+% \end{theorem}
 
 \begin{theorem}[Non-frameability of \CUASGen]
   \label{thm:frame-uas}
