@@ -1,20 +1,22 @@
 \begin{tikzpicture}
 
   %% Issue
-  \node (issue) at (-8.10,8.875) { $\NIZKRel_{\Issue} = $ };
-  \node (issue2) at (-3.00,9.50) {
-    $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r),
-    (\cid,\attrs,\lbrace \ipk_i \rbrace_{i\in[n]},\boxed{\yissue}):$
+  \node (issue) at (-9.00,8.875) { $\NIZKRel_{\Issue} = $ };
+  \node (issue2) at (-3.40,9.50) {
+    $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r,r'),
+    (\cid,\attrs,\ipk,\lbrace \ipk_i \rbrace_{i\in[n]},\boxed{\yissue}):$
   };
-  \node[align=center] (issue3) at (-3.00,8.625) {
+  \node[align=center] (issue3) at (-3.40,8.625) {
 %    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r)~\land$ \\
-    $(\upk,\usk) \gets \KeyGen(\parm;r)~\land$ \\% \Ccom = \CCommit(\usk;r)~\land$ \\
+    $(\upk,\usk) \gets \KeyGen(\parm;r)~\land$ \\
+    $\Ccom = \SBCMCom(\ipk,\usk,\lbrace \cid \rbrace \cup \attrs;r')~\land$ \\
+    % \Ccom = \CCommit(\usk;r)~\land$ \\   
     $\fissue(\upk,\cid,\attrs,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}) = \yissue~
     \land$ \\
     $\forall i \in [n], \SBCMVerify(\ipk_i,\cred_i,\usk,
     \lbrace \cid_i \rbrace \cup \cattrs_i) = 1$
   };
-  \draw [thick,decorate,decoration={brace}] (-7.35,8.00) -- (-7.35,9.75);
+  \draw [thick,decorate,decoration={brace}] (-8.25,8.00) -- (-8.25,9.75);
   \draw [thick,decorate,decoration={brace}] (1.35,9.75) -- (1.35,8.00);
 
   %% Sign

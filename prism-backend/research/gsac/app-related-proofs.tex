@@ -26,14 +26,14 @@ according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
 \end{proof}
 
 \begin{theorem}[Traceability of \CUASGS]
-  If the base \CUASGen construction is unforgeable according to
-  \defref{def:forge-uas}, then \CUASGS is a traceable group signature
+  If the base \CUASGen construction has signature unforgeability according to
+  \defref{def:sign-forge-uas}, then \CUASGS is a traceable group signature
   scheme.
 \end{theorem}
 
 \begin{proof}
   Assume an adversary \adv~against traceability in \CUASGS. We build an
-  adversary \advB against unforgeability of the $(\fissue^1,\feval^0,
+  adversary \advB against signature unforgeability of the $(\fissue^1,\feval^0,
   \finsp^{\upk})-\CUASGen$ restriction.
 
   \advB's simulation of \adv's environment is as in the proof for anonymity
@@ -41,12 +41,12 @@ according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
   traceability game. Note that, whenever \CUASGS accepts a signature, so does
   \CUASGen. Concretely,
   assume that \adv~wins the traceability game in \figref{fig:model-gs} with
-  $\upk \notin \HU \cup \CU$ at line 5. This implies that, in line 14 of the
-  \UAS unforgeability game (\figref{fig:exp-uas-unfor}) $\OWNR[\lbrace \cid_i
-  \rbrace_{i\in[n]}]$ returns an \uid which is not in either \HU or \CU.
+  $\upk \notin \HU \cup \CU$ at line 5. This implies that, in line 10 of the
+  \UAS signature unforgeability game (\figref{fig:exp-uas-unfor}) $\OWNR[\lbrace
+  \cid_i\rbrace_{i\in[n]}]$ returns an \uid which is not in either \HU or \CU.
   Similarly, if \adv~wins the traceability game with condition $\Judge(\dots)=0$
-  at line 5, then \advB wins its unforgeability game with the corresponding
-  check at line 6 in \figref{fig:exp-uas-unfor}.
+  at line 5, then \advB wins its signature unforgeability game with the
+  corresponding check at line 11 in \figref{fig:exp-uas-unfor}.
   %
   \qed
 \end{proof}
@@ -170,20 +170,20 @@ reduce to security of \CUASGen rather than to $\CUASGen^{int}$. The
 
 \begin{theorem}[Unforgeability of \CUASAC]
   \label{thm:forge-cuasac}
-  If the base \CUASGen construction is unforgeable according to
-  \defref{def:forge-uas}, then \CUASAC is an unforgeable AC scheme.
+  If the base \CUASGen construction has signature unforgeability according to
+  \defref{def:sign-forge-uas}, then \CUASAC is an unforgeable AC scheme.
 \end{theorem}
 
 \begin{proof}
   Given \adv~against unforgeability of \CUASAC as defined in \cite{fhs19}, we
-  build an adversary \advB against unforgeability of \CUASGen as defined in
-  \defref{def:forge-uas}.
+  build an adversary \advB against signature unforgeability of \CUASGen as
+  defined in \defref{def:sign-forge-uas}.
 
   To simulate oracle calls by \adv, \advB acts as in the anonymity proof
   ($ObtIss$ and $Issue$ for \adv~correspond to \OBTISS and \ISSUE for \advB).
   Assume that \adv~wins its game. Note that, since $b=1$ in line 4 of the
   unforgeability game of \figref{fig:model-ac}, then by construction, \Verify
-  also returns $1$ in the unforgeability game of \UAS. In addition, if
+  also returns $1$ in the signature unforgeability game of \UAS. In addition, if
   there is no corrupt user with a credential containing $D$, then this leads to
   \advB winning at line 12 in \figref{fig:exp-uas-unfor}, as no credential
   owned by a corrupt user that can be extracted can make the $\feval^{\dattrs}$

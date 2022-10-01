@@ -44,6 +44,7 @@
 \def\Lang{\ensuremath{L}\xspace}
 \def\msg{\ensuremath{m}\xspace}
 \def\smsg{\ensuremath{\boldsymbol{msg}}\xspace}
+\def\osmsg{\ensuremath{\overline{\smsg}}\xspace}
 \def\msgset{\ensuremath{\boldsymbol{msg}}\xspace}
 \def\parm{\ensuremath{par}\xspace}
 \def\Exp{\ensuremath{\mathsf{Exp}}\xspace}
@@ -71,6 +72,15 @@
 \def\tdattrs{\ensuremath{\tilde{\mathbf{d}}}\xspace}
 \def\tuattrs{\ensuremath{\tilde{\mathbf{u}}}\xspace}
 
+% Generic
+\def\Setup{\ensuremath{Setup}\xspace}
+\def\KeyGen{\ensuremath{KG}\xspace}
+\def\Com{\ensuremath{Com}\xspace}
+\def\Blind{\ensuremath{Blind}\xspace}
+\def\Sign{\ensuremath{Sign}\xspace}
+\def\Unblind{\ensuremath{Unblind}\xspace}
+\def\Verify{\ensuremath{Verify}\xspace}
+
 % SBM
 \def\SBM{\ensuremath{SBM}\xspace}
 \def\SBMSetup{\ensuremath{\SBM.Setup}\xspace}
@@ -91,7 +101,9 @@
 \def\SBCMSetup{\ensuremath{\SBCM.Setup}\xspace}
 \def\SBCMKeyGen{\ensuremath{\SBCM.KG}\xspace}
 \def\SBCMCom{\ensuremath{\SBCM.Com}\xspace}
+\def\SBCMBlind{\ensuremath{\SBCM.Blind}\xspace}
 \def\SBCMSign{\ensuremath{\SBCM.Sign}\xspace}
+\def\SBCMUnblind{\ensuremath{\SBCM.Unblind}\xspace}
 \def\SBCMVerify{\ensuremath{\SBCM.Verify}\xspace}
 \def\SBCMsecpar{\ensuremath{\kappa_{\SBCM}}\xspace}
 \def\SBCMparm{\ensuremath{\parm_{\SBCM}}\xspace}
@@ -99,7 +111,11 @@
 \def\SBCMsk{\ensuremath{sk_{\SBCM}}\xspace}
 \def\SBCMvk{\ensuremath{vk_{\SBCM}}\xspace}
 \def\SBCMsig{\ensuremath{\sigma_{\SBCM}}\xspace}
+\def\bsig{\ensuremath{\beta}\xspace}
+\def\SBCMbsig{\ensuremath{\bsig_{\SBCM}}\xspace}
+\def\SBCMcom{\ensuremath{\Ccom_{\SBCM}}\xspace}
 \def\ExpSBCMOMF{\ensuremath{\Exp^{OMF}_{\SBCM,\adv}}\xspace}
+\def\ExpSBCMEUF{\ensuremath{\Exp^{EUF}_{\SBCM,\adv}}\space}
 \def\ExpSBCMBlindb{\ensuremath{\Exp^{blind-b}_{\SBCM,\adv}}\xspace}
 \def\ExpSBCMBlindo{\ensuremath{\Exp^{blind-1}_{\SBCM,\adv}}\xspace}
 \def\ExpSBCMBlindz{\ensuremath{\Exp^{blind-0}_{\SBCM,\adv}}\xspace}
@@ -127,7 +143,8 @@
 \def\Cparm{\ensuremath{\parm_\C}\xspace}
 \def\Csk{\ensuremath{\sk_{\C}}\xspace}
 \def\Cvk{\ensuremath{\vk_{\C}}\xspace}
-\def\Ccom{\ensuremath{\C}\xspace}
+\def\com{\ensuremath{c}\xspace}
+\def\Ccom{\ensuremath{c}\xspace}
 \def\sCcom{\ensuremath{\mathbf{\C}}\xspace}
 \def\Copn{\ensuremath{opn}\xspace}
 \def\Cproof{\ensuremath{\pi_{\RS}}\xspace}

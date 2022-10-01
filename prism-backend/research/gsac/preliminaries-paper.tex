@@ -61,22 +61,34 @@ We use signature schemes that allow signing blocks of messages, and commitments
 to blocks of messages, and which are furthermore compatible with (efficient)
 proof systems over the produced signature and signed (commitments to) messages.
 For this purpose, we define such schemes as a tuple (\SBCMSetup,\SBCMKeyGen,
-\SBCMCom,\SBCMSign,\SBCMVerify). Algorithm $\parm \gets \SBCMSetup(\secpar)$
-produces the public parameters for the scheme. %
-$(\vk,\sk) \gets \SBCMKeyGen(\parm)$ produces a verification-signing
-key pair. $\sig/\bot \gets\langle \SBCMCom^{\NIZKRel}(\vk,\overline{\smsg},
-\smsg,(x,w)),\SBCMSign^\NIZKRel(\sk,\smsg,x) \rangle$ is an interactive protocol
-between a user, who runs \SBCMCom and has a set of messages $\overline{\smsg}$
-to be block-committed, and a signer, who owns signing key \sk; both also receive
-common input a block of messages \smsg. In addition, the user knows a pair
-$(x,w) \in \NIZKRel$, and proves (in zero-knowledge) knowledge of $w$ to the
-signer. The output of the protocol is a signature over
-$\overline{\smsg} \cup \smsg$. Algorithm $1/0 \gets \SBCMVerify(\vk,
-\sig,\overline{\smsg},\smsg)$ verifies a signature \sig over message vector
-$\overline{\smsg} \cup \smsg$. In addition, the
-produced signatures must be compatible with (efficient) NIZK proofs of knowledge
-of a signature, and of (arbitrary) claims over the signed (committed) messages.
-An \SBCM scheme must provide one-more-forgery type of security.
+\SBCMBlind,\SBCMSign,\SBCMUnblind,\SBCMVerify).
+%
+Algorithm $\parm \gets \SBCMSetup(\secpar)$ produces the public parameters for
+the scheme.
+% 
+$(\vk,\sk) \gets \SBCMKeyGen(\parm)$ produces a verification-signing key pair.
+%
+$(\Ccom,\pi,r) \gets \SBCMBlind^{\NIZKRel}(\vk,\osmsg,\smsg;x',w')$ is run by a
+user who wants to request a signature over $\osmsg \cup \smsg$, where only \smsg
+are revealed to the signer, and $\osmsg$ are to be signed in committed form.
+Moreover, \osmsg (and, possibly, $w'$) are witnesses to some statement defined
+over \smsg (and, possibly, $x'$), for a relationship \NIZKRel.
+%
+$\SBCMbsig \gets \SBCMSign^{\NIZKRel}(\sk,\Ccom,\pi,\smsg; x')$ is run by the
+signer, to produce a partial signature \SBCMbsig over a set of committed
+messages and set \smsg, satisfying relation \NIZKRel.
+%
+$\SBCMsig \gets \SBCMUnblind^{\NIZKRel}(\vk,\SBCMbsig,\Ccom,r,\osmsg,\smsg)$ is
+run by the user to complete a partial signature \SBCMbsig received by the
+signer, over \osmsg (committed to in \Ccom) and \smsg.
+%
+Finally, algorithm $1/0 \gets \SBCMVerify(\vk,\sig,\osmsg,\smsg)$ verifies a
+signature \sig over message vector $\osmsg \cup \smsg$.
+%
+In addition, the produced signatures must be compatible with (efficient) NIZK
+proofs of knowledge of a signature, and of (arbitrary) claims over the signed
+(committed) messages. An \SBCM scheme must provide one-more-forgery type of
+security.
 
 \subsection{Notation}
 \label{ssec:notation}

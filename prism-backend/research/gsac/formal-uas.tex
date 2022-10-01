@@ -278,7 +278,7 @@ and tables in our definitions:
 \item[\CCRED.] Like \CRED, but tracks challenge credentials.
 \item[\OWNR.] When we write $\OWNR[\cid]$ we mean
   ``\uid such that $\CRED[\cid] = (\uid,\cdot,\cdot,\cdot,\cdot,\cdot)$'', or
-  $\bot$ if there is no wuch \uid. We also use \OWNR over a set of {\cid}s
+  $\bot$ if there is no such \uid. We also use \OWNR over a set of {\cid}s
   (\scid). In that case, $\OWNR[\scid]$ returns $\bot$ if
   not all passed {\cid}s belong to the same \uid. Since $\bot$ is not a valid
   \uid, all conditions checking membership of the output of \OWNR to a list of
@@ -467,7 +467,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
   \begin{figure*}[htp!]
     \centering
     \scalebox{0.85}{
-
+      \hspace*{-2em}
       \begin{minipage}[t]{0.58\textwidth}
 
         \procedure{$\OBTISS(\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
@@ -489,16 +489,16 @@ oracles, which are formally defined in \figref{fig:oracles1} and
 
         \procedure{$\ISSUE(\uid,\iid,\attrs,\siid=
           \lbrace \iid_i\rbrace_{i\in[n]})$}{%
-          \pcif \uid \notin \CU \lor \iid \notin \HI: \pcreturn \bot \\          
+          \pcif \uid \notin \CU \lor \iid \notin \HI: \pcreturn \bot \\
           \langle \cdot, R \rangle \gets
           \langle \adv, 
           \Issue(\PRVIK[\iid],\siid,\attrs) \rangle \\
-          (\cdot,\cdot,(\cidi,\cdot)) \gets R \\
+          (\cdot,\cdot,\cid=(\cidi,\cdot)) \gets R \\
           \pcif \CRED[(\cidi,\cdot)] \neq \bot \lor \CCRED[(\cidi,\cdot)]
           \neq \bot: \\
           \pcind \pcreturn \bot \\          
-          \trans[(\cidi,\cdot)] \gets R \\
-          \CRED[(\cidi,\cdot)] \gets (\uid,\cdot,\iid,\attrs,n,\lbrace(\cdot,
+          \trans[\cid] \gets R \\
+          \CRED[\cid] \gets (\uid,\cdot,\iid,\attrs,n,\lbrace(\cid_i,
           \iid_i)
           \rbrace_{i\in[n]}) \\
           \pcreturn \top \\          
@@ -552,15 +552,15 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \attrs),\adv \rangle \\
           (\cid = (\cdot,\cidu), \cdot,\cdot,\cdot) \gets \Cred \\
           \pcif \CRED[(\cdot,\cidu)] \neq \bot \lor \CCRED[(\cidu,\cdot)] \neq
-          \bot: \\          
-          \CRED[(\cdot,\cidu)] \gets (\uid,\cred,\iid,\attrs,n,\lbrace(\cid_i,
+          \bot: \pcreturn \bot \\          
+          \CRED[\cid] \gets (\uid,\cred,\iid,\attrs,n,\lbrace(\cid_i,
           \iid_i) \rbrace_{i\in[n]}) \\
-          \pcreturn \top \\
+          \pcreturn \top
         }
 
         \procedure{$\OBTCHALb(\cuid_{0,1},\iid,\attrs,
           \stackrel{\cscid_{\lbrace 0,1 \rbrace}}
-          {\pcbox{\lbrace(\ccid_{0,i},\ccid_{1,i})\rbrace_{i\in[n]}}})$}{%
+          {\lbrace(\pcbox{(\ccid_{0,i},\ccid_{1,i})}},\iid_i)\rbrace_{i\in[n]})$}{%
           \pcif \cuid_0 \notin \HU \lor \cuid_1 \notin \HU: \pcreturn \bot \\
           \pcif \iid \notin \CI: \pcreturn \bot \\
           \pcif \exists i\in[n]~\suchthat~
@@ -580,8 +580,9 @@ oracles, which are formally defined in \figref{fig:oracles1} and
           \pcind \pcreturn \bot \\          
           \pcif \CRED[(\cdot,\cidu)] \neq \bot \lor
           \CCRED[(\cdot,\cidu)] \neq \bot: \pcreturn \bot \\          
-          \CCRED[(\cdot,\cidu)] \gets (\cuid_b,\cred,\iid,\attrs,\cscid_b,\siid) \\
-          \pcreturn \top \\
+          \CCRED[\cid] \gets (\cuid_b,\cred,\iid,\attrs, n,
+          \lbrace(\ccid_{b,i},\iid_i)\rbrace_{i\in[n]}) \\
+          \pcreturn \top
         }
 
         \procedure{$\CHALb(\oid,\stackrel{\cscid_{\lbrace 0,1 \rbrace}}{\pcbox{
@@ -631,18 +632,17 @@ them later for our construction.
   indistinguishable to that produced by the \Setup algorithm, as well as a
   trapdoor \trap.
 \item[$\ExtractIssue(\trap,\utrans) \rightarrow (\upk,\usk,\sCred=
-  \lbrace(\cid_i,\attrs_i,\cred_i) \rbrace_{i \in [n]})$.]
-  Receives trapdoor \trap and an $\langle \Obtain, \Issue \rangle$ transcript,
-  and returns the credential set \sCred, if any, involved in the request. It
-  requires honest issuers for the transcripts to be available. 
-\item[$\ExtractSign(\trap,\opk,\lbrace \ipk_i \rbrace_{i \in [n]},\Sig,\msg,
-  \feval) \rightarrow (\upk,\usk,\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
-  \rbrace_{i \in [n]},\yeval^1,\yinsp)$.] Receives trapdoor \trap, signature
-  \Sig over \msg and for \feval, opener public key \opk, and public keys
-  $\ipk_i$ from the issuers of the credentials used to produce \Sig. It outputs
-  the user secret key and credential set \sCred used to generate the signature,
-  and the $\yeval^1$ and \yinsp values. For notational convenience, we overload
-  this function and use \oid and \iid instead of the actual keys.
+  \lbrace(\cid_i,\attrs_i,\cred_i) \rbrace_{i \in [n]},
+  \Cred=(\cid,\attrs,\cred))$.]
+  Receives trapdoor \trap and a valid $\langle \Obtain, \Issue \rangle$
+  transcript \utrans. It outputs the credential \Cred issued as a result of the
+  interaction in \utrans, along with the involved user key pair $(\upk,\usk)$
+  and, if any, the credential set \sCred used to request \Cred.
+\item[$\ExtractSign(\trap,\Sig) \rightarrow
+  (\upk,\usk,\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
+  \rbrace_{i \in [n]},\yeval^1,\yinsp)$.] Receives trapdoor \trap and a valid
+  signature \Sig. It outputs the user secret key and credential set \sCred used
+  to generate the signature, and the $\yeval^1$ and \yinsp values. 
 % \item[$\IdentifyCred(\trap,\usk,\attrs_{\cred},\cred,\ipk)$.] Returns $1$ if
 %   \cred has been issued over attributes $\attrs_{\cred}$ and for a user with
 %   secret key \usk, by honest issuer with public key \ipk. Otherwise, it returns
@@ -824,33 +824,50 @@ The formal specification of the anonymity games is given in
 \end{definition}
 
 \paragraph{Unforgeability.} In \UAS schemes, we need to prevent forging either
-credential requests, or signatures. The latter is mostly a combination of the
+credential requests, and signatures. The latter is mostly a combination of the
 unforgeability of AC schemes, and the traceability of GS schemes with verifiable
-openings. However, issuance unforgeability is a direct consequence of allowing
-proving arbitrary claims already when requesting credentials.
+openings. However, the need for issuance unforgeability is a consequence of
+allowing to support credential requests with previously obtained credentials --
+functionality which, to the best of our knowledge, \UAS is the first scheme
+to support. In both cases, it is necessary to assume honest issuers. 
 
-In more detail, issuance unforgeability captures that all the credentials issued
-by an honest issuer meet the requirements set by the corresponding issuance
-function. Moreover, any credential used to support a request needs to belong
-to a known user. 
-The adversary is required to output a credential identifier that must correspond
-to an existing credential issuance interaction -- note that the transcript must
-be available to us if it exists, as the issuer is honest. From this transcript,
-we extract the witness used to compute the issuance function, which includes the
-output of the issuance function claimed by the requestor, and the credential
-identifiers of any used credential. The adversary wins if applying the output of
-the issuance function applied to the extracted witness is not consistent, or if
-the credential identifiers do not belong all to the same (known) user.
+Signature unforgeability, \ExpForgeSign, is mainly a combination (and
+generalisation) of known requirements in AC and GS schemes. Namely, the
+adversary is required to output a valid signature, from which we extract the
+user key pair, credentials, $\yeval^1$ and \yinsp values used to generate the
+signature. The adversary wins if the signature: (1) opens to a wrong value, or
+to a value that cannot be processed by \Judge; (2), is not consistent with the
+expected $\Yeval = (\yeval^0,\yeval^1)$ value; or (3), cannot be associated to
+credentials owned by a known user. Here, we again need to assume honest issuers.
+Otherwise, it is trivial for the adversary to produce untraceable credentials
+(i.e., that do not appear in any ``log'') which then evaluate to any desired
+value when used to generate a signature.
 
-Signature unforgeability is a combination of known requirements in AC and
-GS schemes. Namely, the adversary is required to output a valid signature, and
-wins if the signature: (1) opens to a wrong value, or to a value that cannot be
-processed by \Judge; (2), is not consistent with the expected $\Yeval =
-(\yeval^0,\yeval^1)$ value; or (3), cannot be associated to credentials
-owned by a known user.
+While it may seem enough to check that no valid signature can be created from
+forged credentials (i.e., credentials that did not meet their issuance policy,
+or are not bound to a known user), note that allowing credentials to
+endorse further credential requests makes this argument insufficient. For
+instance, if we only check the credentials involved in signature generation, it
+is perfectly possible that a forged credential is used to obtain a legitimate
+one, and then use the latter to finally create a valid signature -- concretly,
+such misbehaviour is not prevented by \ExpForgeSign. 
 
-We formalize the respective properties, \ExpForgeIssue and \ExpForgeSign, in
-\figref{fig:exp-uas-unfor}.
+We thus extend unforgeability of signatures with issuance unforgeability,
+\ExpForgeIssue. It captures that all honestly issued credentials meet the
+requirements set by the corresponding issuer, and that any further credential
+involved in the request is bound to the same known user. For this, we allow the
+adversary \adv~to interact with the oracles (restricted to honest issuers).
+Eventually, \adv~is challenged to output a credential identifier from which we
+extract the actual witnesses used in the credential request associated to \cid.
+\adv~wins if the issuance function, applied to the extracted values, does not
+meet the expected output, or if not all of the credentials (if any) used to
+support the request belong to a same (known) user. Note that the issuance
+transcript associated to \cid must exist, as we unavoidably need to restrict to
+honest issuers. Indeed, a dishonest issuer cannot be trusted to enforce any
+policy, nor to properly keep all transcripts. In practice, this means that
+dishonest issuers can create arbitrary credentials.
+
+We formalize both properties in \figref{fig:exp-uas-unfor}.
 
 % \begin{figure}[htp!]
 %   \centering
@@ -903,32 +920,53 @@ We formalize the respective properties, \ExpForgeIssue and \ExpForgeSign, in
     \begin{minipage}[t]{0.6\textwidth}
       \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
+        % (\Cred,\uid,\iid,\oid,\feval,\msg) \gets \adv^{\Oforge}(\parm) \\
+        % \Sig \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\Cred,\msg,\feval) \\
+        % \pcif \Verify(\PUBOK[\oid],\PUBIK[\iid],\Sig,\msg,\feval) = 0: \\
+        % \pcind \pcreturn 0 \\
+        % (\upk,\usk, (\cid,\attrs,\cdot), \cdot, \cdot) \\
+        % \pcind \gets \ExtractSign(\trap,\oid,\iid,\Sig,\msg,\feval) \\
+        % \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \pcreturn 1 \\
+        % (\yissue,\cdot) \gets \trans[\cid];
+        % ((\cdot,\fissue),\cdot) \gets \PUBIK[\cid] \\
+        % \pcif \nexists \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]}
+        % \in \CRED[\uid]~\suchthat \\
+        % \pcind \fissue(\upk,\cid,\attrs,
+        % \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]}) = \yissue: \\
+        % \pcind \pcreturn 1
+        % 
+        % ((\upk_1,r_1,\Ccom_1),\dots,(\upk_l,r_l,\Ccom_l),\st) \\
+        % \pcind \gets \adv^{\HUGEN,\CUGEN}(\texttt{choose},\parm) \\
+        % \pcif \exists i\in[l]~\suchthat~\forall \uid,
+        % \upk_i \neq \PUBUK[\uid]:  \\
+        % \pcind \pcreturn 0 \\
+        % \cid \gets \adv^{\Oforge}(\texttt{forge},\st,\parm) \\
         \cid \gets \adv^{\Oforge}(\parm) \\
-        \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot:
-        \pcreturn 0 \\
-        (\yissue,\utrans) \gets \trans[\cid];
-        ((\cdot,\fissue),\cdot) \gets \PUBIK[\cid] \\        
-        (\upk,\usk,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i \in [n]}) \\
-        \pcind \gets \ExtractIssue(\trap,\utrans) \\
-        \pcreturn \OWNR[\lbrace\cid_i\rbrace_{i\in[n]}\cup\cid] \notin \HU \cup
-        \CU~\lor \\
-        \pcind \fissue(\upk,\ATTR[\cid],\lbrace (\cid_i,\attrs_i)
-        \rbrace_{i\in[n]}) \neq \yissue        
+        \pcif \ISR[\cid] \notin \HI \lor \trans[\cid] = \bot: \pcreturn 0 \\
+        (\utrans,\yissue) \gets \trans[\cid] \\
+        (\upk,\cdot,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\cdot,\attrs,
+        \cdot) \gets \ExtractIssue(\trap,\utrans) \\
+        \textrm{Let $\scid \gets \lbrace \cid_i \rbrace_{i\in[n]} \cup
+          \lbrace \cid \rbrace$} \\
+        \pcreturn \OWNR[\scid] \notin \HU \cup \CU~\lor \\
+        \pcind \fissue(\upk,\cid,\attrs,\lbrace (\cid_i,\attrs_i)\rbrace_{i\in[n]})
+        \neq \yissue
       }      
     \end{minipage}    
     \begin{minipage}[t]{0.5\textwidth}
       \procedure[linenumbering=on]{$\ExpForgeSign(1^\secpar)$}{%
         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
         (\oid,\siid,\Sig=(\sig,\tyeval^0),\msg,\feval) \gets \adv^{\Oforge}(\parm) \\
-        \pcif \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
+        \pcif \exists \iid \in \siid~\suchthat~\iid \notin \HI \lor
+        \exists \uid~\suchthat~(\cdot,\cdot,\Sig,\cdot,\msg,\feval) \in
         \SIG[\uid]~\lor  \\
         \pcind \Verify(\PUBOK[\oid],\PUBIK[\siid],\Sig,\msg,\feval) = 0: \\
         \pcind \pcreturn 0 \\
         (\yinsp,\iproof) \gets \Open(\PRVOK[\oid],\siid,\Sig,\msg) \\
-	(\upk,\cdot,\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},
+	(\upk,\usk,\lbrace(\cid_i,\attrs_i,\cred_i)\rbrace_{i\in[n]},
         \tyeval^1,\tyinsp) % \pcskipln
         \\
-        \pcind \gets \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+        \pcind \gets \ExtractSign(\trap,\Sig) \\
         (\yeval^0,\yeval^1) \gets \feval(\upk,\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]}, \msg) \\
         \pcreturn \OWNR[\lbrace \cid_i \rbrace_{i\in[n]}] \notin
@@ -944,7 +982,11 @@ We formalize the respective properties, \ExpForgeIssue and \ExpForgeSign, in
   }
   \caption{Unforgeability experiments in \UAS schemes.
     $\Oforge \gets \lbrace\OO,\HU,\CU\rbrace\GEN,\ISET,\lbrace\OO,\UU\rbrace
-    \CORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$.}
+    \CORR,\OBTISS,\ISSUE,\RREG,\SIGN,\OPEN$. % In line 10 of \ExpForgeIssue, we
+    % slightly abuse notation to denote that user \uid does not own a set of
+    % credentials with {\cid}s and attributes equal to $\lbrace (\cid_i,\attrs_i)
+    % \rbrace_{i\in[n]}$.
+  }
   \label{fig:exp-uas-unfor}
 \end{figure}
 
@@ -1019,7 +1061,7 @@ did not produce it (i.e., no matching call to \SIGN exists).
       \pcif \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,\msg) = 0:
       \pcreturn 0 \\
       ((\upk,\usk),\lbrace(\cid_i,\attrs_i,\cdot)\rbrace_{i\in[n]},\tyeval^1,\yinsp') \gets
-      \ExtractSign(\trap,\oid,\siid,\Sig,\msg,\feval) \\
+      \ExtractSign(\trap,\Sig) \\
       % \Yeval=(\yeval^0,\yeval^1) \gets \feval(\usk,\scred,\msg) \\
       % \pcif \yeval \neq \yeval^0 \lor \tyeval^1 \neq \yeval^1: \pcreturn 1 \\
       % \pcif \finsp(\Yeval,\usk,\scred,\msg) \neq \yinsp
@@ -1150,31 +1192,31 @@ publishes \ipk. We assume that {\ipk}s are published in some properly (probably
 authenticated) way.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
-  \langle\Obtain(\usk,\cidu,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
-  \attrs),\Issue(\isk,\cidi,\lbrace \ipk_i \rbrace_{i\in[n]},\attrs)\rangle$.} %
+  \langle\Obtain(\usk,\ipk,\lbrace (\cid_i,\cattrs_i,\cred_i) \rbrace_{i\in[n]},
+  \attrs),\Issue(\isk,\lbrace \ipk_i \rbrace_{i\in[n]},\attrs)\rangle$.} %
 The protocol is run between an issuer with key pair $(\ipk,\isk)$, and a user
 with secret key \usk and credentials $\lbrace \cred_i \rbrace_{i\in[n]}$, where
 each $\cred_i$ is issued by an issuer with public key $\ipk_i$, and
-attests attributes $\cattrs_i$. The user requests a signature on a commitment to
-the user key, as well as on $\cid=(\cidi,\cidu)$ and the attributes in \attrs.
-In addition, the user proves correct computation of the \fissue function set by
-the issuer based on the $\cred_i$ credentials and its user public key.
-This is essentially achieved through an execution of an \SBCM interactive
-signing protocol with \RelIss as NP relation. Since \fissue is
-evaluated by the user, but depends on the \cidi value chosen by the issuer, the
-issuer first needs to send \cidi.
-Then both interact to produce the \SBCM signature, where the
-user runs $\SBCMCom^{\NIZKRel_{\Issue}}(\ipk,\usk,(\cid,\attrs),\lbrace (\cid_i,
-\cattrs_i,\cred_i)\rbrace_{i\in[n]},\lbrace \ipk_i \rbrace_{i\in[n]})$, and the
-issuer runs $\SBCMSign^{\NIZKRel_{\Issue}}(\isk,(\cid,\attrs),\lbrace\ipk_i
-\rbrace_{i\in[n]})$. Observe that, within this protocol, the user sends a NIZK
-proof $\NIZKproof_{\Issue}$ ensuring that it knows a valid witness $(\upk,\usk,
-\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r)$ for the relation
-\RelIss. The credential \cred produced by the user is the result of
-the interactive signing protocol, whereas the issuer produces $(\yissue,
-\utrans)$, where \yissue is the output of \fissue, and \utrans is the
-communication transcript of the signing protocol.% , which is a $(\Ccom,(\cid,\attrs),\lbrace
-% \ipk_i \rbrace_{i\in[n]},\cred,\pi)$ tuple (see \appref{sapp:sbcm} for details).
+attests attributes $\cattrs_i$. The issuer first sends the user a random
+identifier \cidi, which will be one of the signed attributes. The rest
+is essentially a sequence of \SBCMBlind, \SBCMSign, and \SBCMUnblind runs
+between user and issuer, over an extended NIZK for \RelIss (see
+\appref{sapp:sbcm}). Concretely:
+
+\begin{itemize}  
+\item \underline{Issuer}: Randomly pick \cidi. Send \cidi to the user.
+\item \underline{User}: Randomly pick \cidu; let $\cid \gets (\cidi,\cidu)$.
+  Compute $\yissue \gets \fissue(\upk,\cid,\attrs,\lbrace (\cid_i,\cattrs_i)
+  \rbrace_{i\in[n]})$. Run $(\Ccom,\pi,r) \gets \SBCMBlind^{\RelIss}(\ipk,\usk,
+  \lbrace \cid \rbrace \cup \attrs; \yissue, \lbrace (\cid_i,\cattrs_i)
+  \rbrace_{i\in[n]})$. Send $(\Ccom,\pi)$ to the issuer.
+\item \underline{Issuer}: Run $\SBCMbsig \gets \SBCMSign^{\RelIss}(\isk,\Ccom,
+  \pi,\attrs;\yissue)$. Return \SBCMbsig to the user. Output $((\cidi,\Ccom,\pi,
+  \SBCMbsig),\yissue)$. 
+\item \underline{User}: Run $\SBCMsig \gets \SBCMUnblind^{\RelIss}(\ipk,
+  \SBCMbsig,\Ccom,r,\usk,\lbrace \cid \rbrace \cup \attrs; \yissue, \lbrace
+  (\cid_i,\cattrs_i)\rbrace_{i\in[n]})$. Output $\cred \gets \SBCMsig$.
+\end{itemize}
 
 \paragraph{$\Sig \gets \Sign(\usk,\opk,
   \sCred=(\lbrace (\cid_i,\cattrs_i,\cred_i,\ipk_i)\rbrace_{i\in[n]}),
@@ -1252,21 +1294,19 @@ the proofs to \appref{app:uas-proofs}.
 \end{theorem}
 
 \begin{theorem}[Issuance unforgeability of \CUASGen]
-  \label{thm:issue-forge-uas}
-  \todo{Update}
-  If the underlying NIZK used for \RelIss is zero-knowledge,
-  simulation extractable and sound, then our \CUASGen construction satisfies
+  \label{thm:issue-forge-uas}  
+  If the underlying NIZK used for \RelIss is simulation extractable, and the
+  underlying \SBCM scheme is correct, then our \CUASGen construction satisfies
   issuance unforgeability as defined in \defref{def:issue-forge-uas}.
 \end{theorem}
 
-\begin{theorem}[Signing unforgeability of \CUASGen]
+\begin{theorem}[Signature unforgeability of \CUASGen]
   \label{thm:sign-forge-uas}
-  \todo{Update}
-  If the underlying NIZK scheme for \RelSig is simulation
-  extractable, the scheme for \RelIns is complete, the public key
-  encryption algorithm is correct, and the \SBCM scheme is correct and one-more
-  unforgeable, then our \CUASGen construction satisfies signing unforgeability
-  as defined in \defref{def:sign-forge-uas}, except with negligible probability.
+  If the underlying NIZK scheme for \RelSig is simulation extractable, the
+  scheme for \RelIns is complete, the public key encryption algorithm is
+  correct, and the \SBCM scheme is correct and one-more unforgeable, then our
+  \CUASGen construction satisfies signing unforgeability as defined in
+  \defref{def:sign-forge-uas}, except with negligible probability.
 \end{theorem}
 
 % \begin{theorem}[Unforgeability of \CUASGen]

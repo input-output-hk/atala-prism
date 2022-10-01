@@ -287,15 +287,15 @@ requirement in the unforgeability and non-frameability definitions. Thus, our
 \end{proof}
 
 \begin{theorem}[Unforgeability-1 of \CUASMPS]
-  If the base \CUASGen construction is unforgeable according to
-  \defref{def:forge-uas}, then \CUASMPS satisfies unforgeability-1 as defined in
-  \cite{ngsy22}.
+  If the base \CUASGen construction has signature unforgeability according to
+  \defref{def:sign-forge-uas}, then \CUASMPS satisfies unforgeability-1 as
+  defined in \cite{ngsy22}.
 \end{theorem}
 
 \begin{proof}
   Given an adversary \adv~against unforgeability-1 of \CUASMPS, as defined in
-  the MPS model, we build \advB that breaks unforgeability of the underyling
-  \CUASGen, as defined for \UAS.
+  the MPS model, we build \advB that breaks signature unforgeability of the
+  underyling \CUASGen, as defined for \UAS.
 
   Simulation of \adv's oracles by \advB is again direct (as in previous proofs).
   Now, suppose that \adv~wins -- i.e., the identity extracted by \adv~does not
@@ -529,15 +529,15 @@ again trivial.
 \end{proof}
 
 \begin{theorem}[Unforgeability of \CUASRAC]
-  If the base \CUASGen construction has unforgeability according to
-  \defref{def:forge-uas}, and $F$ is one-way, then \CUASRAC is an
+  If the base \CUASGen construction has signature unforgeability according to
+  \defref{def:sign-forge-uas}, and $F$ is one-way, then \CUASRAC is an
   unforgeable RAC scheme.
 \end{theorem}
 
 \begin{proof}
   Given \adv~against unforgeability of \CUASRAC as defined in
-  \figref{fig:model-rac}, we build an adversary \advB against unforgeability of
-  \CUASGen as defined in \defref{def:forge-uas}.
+  \figref{fig:model-rac}, we build an adversary \advB against signature
+  unforgeability of \CUASGen as defined in \defref{def:sign-forge-uas}.
 
   To simulate oracle calls by \adv, \advB acts as in the anonymity proof. Assume
   that \adv~wins its game via the winning condition of line 9 in the RAC
@@ -790,11 +790,13 @@ unforgeable.
   \qed
 \end{proof}
 
-\begin{theorem}[Unforgeability of \CUASAC]
-  If the base \CUASGenInt construction is unforgeable according to (the
-  interactive version of) \defref{def:forge-uas}, and non-frameabile according
-  to (the interactive version of) \defref{def:frame-uas}, then \CUASAC is an
-  unforgeable AC scheme.
+\begin{theorem}[Unforgeability of \CUASDAC]
+  If the base \CUASGenInt construction has issuance unforgeability according to
+  (the interactive version of) \defref{def:issue-forge-uas}, signature
+  unforgeability according to (the interactive version of)
+  \defref{def:sign-forge-uas}, and non-frameable according to (the interactive
+  version of) \defref{def:frame-uas}, then \CUASDAC is an unforgeable DAC
+  scheme.
 \end{theorem}
 
 \begin{proof}
@@ -815,8 +817,8 @@ unforgeable.
 
   From the previous, the same reasoning as in \thmref{thm:forge-cuasac} applies
   to an adversary \adv~winning at line 5 of $\Exp^{forge}_{\adv,dac}$. Next,
-  suppose that, from \utrans obtained at line 6, $ExtractChain$ outputs a
-  delegation chain that makes \adv~win at line 10. This means that an
+  suppose that from \utrans, $ExtractChain$ outputs at line 6 a
+  delegation chain that makes \adv~win at line 9. This means that an
   uncorrupted issuer at position $i-1$ of the chain did not own a credential
   containing $D'$, but the issuer at position $i$ does. Then, either of the
   following must happen:
@@ -828,7 +830,7 @@ unforgeable.
   \item The credential of the issuer at position $i$ is not a forgery, meaning
     that it is a valid signature by the issuer at position $i-1$, who did
     produce it. But this contradicts the conditions required by $\fissue^{n,D}$,
-    and therefore breaks unforgeability of \CUASGenInt.
+    and therefore breaks issuance unforgeability of \CUASGenInt.
   \end{itemize}
   %
   \qed

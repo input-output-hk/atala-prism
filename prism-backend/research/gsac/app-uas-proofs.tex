@@ -7,10 +7,14 @@ Next, we define the \SimSetup, \ExtractIssue, \ExtractSign functions. \SimSetup
 and returns the generated parameters along with the
 trapdoors. \ExtractIssue and \ExtractSign simply run the \Extract functions
 of the corresponding \NIZK scheme, leveraging the trapdoor produced during
-\SimSetup. Note that, due to the zero-knowledge and simulation extractability
-properties (respectively) of the underlying NIZKs, the result of \SimSetup
-is indistinguishable from that of \Setup, and the extracted values match those
-used as witnesses in the proofs.
+\SimSetup. Note that, in our games definitions, both algorithms are always run
+over signatures that have already been verified (in the case of \ExtractSign)
+or transcripts maintained by honest issuers (in the case of \ExtractIssue).
+Thus, the zero-knowledge proofs they contain are valid. Concerning \SimSetup,
+due to the zero-knowledge and simulation extractability properties
+(respectively) of the underlying NIZKs, its result is indistinguishable from
+that of \Setup, and the extracted values match those used as witnesses in the
+proofs.
 
 \begin{figure}[ht!]
   \centering  
@@ -19,17 +23,21 @@ used as witnesses in the proofs.
       \procedure{$\SimSetup(1^\secpar)$}{%
         \textrm{Parse}~\secpar~\textrm{as}~(\Csecpar,\NIZKsecpar,\SBCMsecpar,
         \Esecpar). \\
-        \Cparm \gets \CSetup(\Csecpar), \SBCMparm \gets  \SBCMSetup(\SBCMsecpar) \\
-        \Sparm \gets \SSetup(\Ssecpar), \Eparm \gets \ESetup(\Esecpar) \\
+        % \Cparm \gets \CSetup(\Csecpar), 
+        \SBCMparm \gets  \SBCMSetup(\SBCMsecpar) \\
+        % \Sparm \gets \SSetup(\Ssecpar), 
+        \Eparm \gets \ESetup(\Esecpar) \\
         (\NIZKcrs_{\Issue},\trap_{\Issue}) \gets
         \NIZKSimSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar) \\
         (\NIZKcrs_{\Sign},\trap_{\Sign}) \gets
         \NIZKSimSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar) \\
         (\NIZKcrs_{\Open},\trap_{\Open}) \gets
         \NIZKSimSetup^{\NIZKRel_{\Open}}(\NIZKsecpar) \\
-        \pcreturn ((\Cparm,\SBCMparm,\Sparm,\Eparm,\NIZKcrs_{\Issue},
-        \NIZKcrs_{\Sign},\NIZKcrs_{\Open},\AttrSpace), \\
-        \pcind (\trap_{\Issue},\trap_{\Sign},\trap_{\Open}))
+        \pcreturn ((% \Cparm,
+        \SBCMparm,% \Sparm,
+        \Eparm,\NIZKcrs_{\Issue},
+        \NIZKcrs_{\Sign},\NIZKcrs_{\Open},\AttrSpace),
+        (\trap_{\Issue},\trap_{\Sign},\trap_{\Open}))
       }
       
       % \procedure{$\ExtractIssue(\parm,\trap,\utrans)$}{%
@@ -223,48 +231,52 @@ used as witnesses in the proofs.
   \qed
 \end{proof}
 
-% \subsection{Issuance Unforgeability}
+\subsection{Issuance Unforgeability}
 
-% \begin{proof}[\thmref{thm:issue-forge-uas}; Issuance unforgeability of \CUASGen]
-%   We show that the probability that \fissue outputs a wrong $\yinsp$ value is
-%   negligible, as well as the probability that the credential identifier does not
-%   belong to an existing (honest or corrupt) user.
+\begin{proof}[\thmref{thm:issue-forge-uas}; Issuance unforgeability of \CUASGen]
+  We show that the probability that \fissue outputs a wrong $\yissue$ value is
+  negligible, as well as the probability that the issued credential, and any
+  supporting credential used in the request, do not all belong to a same known
+  (honest or corrupt) user.
 
-%   Observe that the adversary is required to output a credential identifier for
-%   which associated entries in \trans and \CRED exist; moreover, if such a
-%   credential was produced by an issuer, we must have access to those entries, as
-%   issuers are assumed to be honest in this game.
-%   %
-%   Since we can access $\trans[\cid] = (\yissue,\utrans)$, and \utrans contains
-%   a NIZK proof $\NIZKproof_{\Issue}$ proving knowledge by the user of a witness
-%   in $\NIZKRel_{\Issue}$, which is simulation extractable, \ExtractIssue
-%   produces a tuple $(\upk,\usk,\lbrace (\cid_i,\attrs_i,\cred_i)
-%   \rbrace_{i\in[n]}$.
-%   %
-%   From the fact that issuers are honest, we know that $\ATTR[\cid]$ must match
-%   the attribute set \attrs used by user and issuer in the issuance protocol.
-%   Thus, from  soundness of the NIZK system, the $(\upk,\lbrace (\cid_i,\attrs_i,
-%   \cred_i) \rbrace_{i\in[n]}$ values within the extracted tuple, along with
-%   $\ATTR[\cid] = \attrs$ must make \fissue output \yissue, except with
-%   negligible probability. Moreover, soundness of the NIZK system also implies
-%   that all credentials are bound to the same \usk, which is associated to the
-%   extracted \upk.
-  
-%   Finally, suppose that the extracted \upk does not belong to a \uid in
-%   $\HU \cup \CU$. Then, the produced credential is a forgery. \todo{How to
-%     extract the forgery in this case?? I think that expanding the definition
-%     so that it requires \adv~to produce a valid signature would make things
-%     much easier...}
-%   \qed
-% \end{proof}
+  Observe that we restrict to credentials issued by honest issuers. Thus, if a
+  credential with identifier \cid was issued by an honest issuer, a matching
+  $\trans[\cid]$ entry corresponding to its issuance must exist.
+  %
+  Then, $\trans[\cid] = (\yissue,\utrans)$, and \utrans contains a NIZK proof
+  $\NIZKproof_{\Issue}$ proving knowledge by the (potentially corrupt) user of a
+  witness in $\NIZKRel_{\Issue}$. Since the issuer is honest, it verifies the
+  NIZK as part of the issuance protocol, rejecting if the proof is not valid.
+  Thus, by simulation extractability, \ExtractIssue produces a $(\upk,\usk,
+  \lbrace (\cid_i,\attrs_i,\cred_i) \rbrace_{i\in[n]},(\cid,\attrs,\cred))$
+  tuple. Also due to simulation extractability, the value output by \fissue,
+  when evaluated upon the extracted values, must match the \yissue value
+  associated to $\trans[\cid]$.
 
-\subsection{Unforgeability}
+  Finally, the adversary wins if the \uid associated to the {\cid}s involved in
+  the request (i.e., both the \cid output by the adversary, as well as those
+  used to support its issuance) is not in \HU or \CU. This can happen if: (1)
+  all {\cid}s have the same owner \uid, but this \uid is different to all known
+  {\uid}s; or (2) $\OWNR[\scid] = \bot$ which, by definition of \OWNR happens if
+  not all of the involved {\cid}s in \scid have the same owner. Since the NIZK
+  used for $\NIZKRel_{\Issue}$ is simulation extractable -- where the issuer
+  verifies that all credentials are bound to the same \usk -- and due to
+  correctness of \SBCM, the probability that (2) happens is negligible, which
+  means that all involved {\cid}s have the same owner. Also, regarding (1), this
+  owner must be in either \HU or \CU as the \cid output by the adversary in step
+  2 has been produced via \ISSUE or \OBTISS which, by definition, only accept
+  known {\uid}s. Thus, the probability that \adv~wins the \ExpForgeIssue game is
+  negligible.
+  \qed
+\end{proof}
 
-\begin{proof}[\thmref{thm:forge-uas}; Signature unforgeability of \CUASGen]
-  We show that an adversary \adv~winning \ExpForge can be used to break the
+\subsection{Signature Unforgeability}
+
+\begin{proof}[\thmref{thm:sign-forge-uas}; Signature unforgeability of \CUASGen]
+  We show that an adversary \adv~winning \ExpForgeSign can be used to break the
   one-more unforgeability property of \SBCM.
  
-  If the verification at line 4 of \ExpForge holds, then $(\msg,\feval,
+  If the verification at line 4 of \ExpForgeSign holds, then $(\msg,\feval,
   \yeval,\cinsp,\sipk,\opk) \in \NIZKLang^{\Sign}$. Then:
   %
 
@@ -274,27 +286,7 @@ used as witnesses in the proofs.
   line 5, then \yinsp is the correct decryption of \cinsp, and completeness of
   $\NIZK^{\Open}$ ensures that \Judge outputs $1$ at line 6.
 
-  \paragraph{(b) All used credentials were correctly issued.} %
-  Since issuers are assumed to be honest, we have access to the $\trans[\cid_i]$
-  transcript for all credentials involved in producing the signature. Given
-  simulation extractability of $\NIZK^{\Issue}$, \ExtractIssue outputs a valid
-  witness $(\cdot,\cdot,\lbrace(\cid_{i,j},\attrs_{i,j},\cred_{i,j})
-  \rbrace_{j\in[n_j]})$ from each $\trans[\cid_i]$. This, concretely, implies
-  that the $\yissue^i$ value available in $\trans[\cid_i]$ matches the one
-  output by \fissue. Similarly, due to simulation extractability, the set of
-  credentials $\lbrace \cid_{i,j}\rbrace_{j\in[n_i]}$ used to request credential
-  $\cid_i$ cannot include credentials owned by different users, as this
-  condition is ensured by $\NIZKRel_{\Issue}$. Thus, $\uid = \OWNR[\lbrace
-  \cid_{i,j} \rbrace_{j\in[n_i]}] \neq \bot$. Now, assume that $\uid \notin \HU
-  \cup \CU$. This, in addition to the fact that {\usk}s are produced uniformly
-  at random, means that $\cred_i$ is not bound to a \usk owned by a known
-  user. But then, $\cred_i$ cannot have been produced via \OBTISS or \ISSUE,
-  which only accept requests from known {\uid}s (either in \HU or \CU,
-  respectively). Thus, $\cred_i$ is a valid \SBCM signature, that has not been
-  produced via an honest query, which breaks the one-more forgery property of
-  \SBCM.
-
-  \paragraph{(c) $(\yeval^0,\yeval^1)$ are the correct signature evaluation
+  \paragraph{(b) $(\yeval^0,\yeval^1)$ are the correct signature evaluation
     pair.} Also, due to simulation extractability of $\NIZK^{\Sign}$:
 
   \begin{itemize}
@@ -309,7 +301,7 @@ used as witnesses in the proofs.
   Thus, the probability of \adv~winning at line 12 is negligible, due to
   simulation extractability of $\NIZK^{\Sign}$.
 
-  \paragraph{(d) The output of \finsp matches the output of \Open.} %
+  \paragraph{(c) The output of \finsp matches the output of \Open.} %
   After (a), and correctness of the public key encryption algorihtm, the \yinsp
   value output by \Open is the correct decryption of
   \cinsp. After (c), the $(\yeval^0=\yeval,\yeval^1)$ values output by
@@ -320,7 +312,7 @@ used as witnesses in the proofs.
   of \adv~winning at line 13 is negligible due to simulation extractability
   of $\NIZK^{\Sign}$.
 
-  \paragraph{(e) All {\cred}s are bound to the \usk of a known \uid.} %
+  \paragraph{(d) All {\cred}s are bound to the \usk of a known \uid.} %
   $\NIZKRel^{\Sign}$ includes a condition that $\forall i\in[n],
   \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$. Thus, simulation
   extractability of $\NIZK^{\Sign}$ and correctness of \SBCM, ensure that all
