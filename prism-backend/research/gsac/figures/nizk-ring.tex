@@ -4,11 +4,11 @@
   \node (sign2) at (0.00,7.50) {
     $(\upk,\usk,(\cid,\attrs,\cred),\yeval^1,\yinsp,r,r'),
     (\msg,\feval,\yeval^0,\cinsp,\sipk=\lbrace\ipk_i
-    \rbrace_{i\in[n]},\Eek):$
+    \rbrace_{i\in[n]},\ek):$
   };
   \node[align=center] (sign3) at (0.00,6.35) {
     $(\upk,\usk) \gets \KeyGen(\parm;r) \land
-    \cinsp = \EEnc (\Eek,\yinsp;r')~\land $ \\
+    \cinsp = \EEnc (\ek,\yinsp;r')~\land $ \\
     $(\yeval^0,\yeval^1) = \feval(\upk,(\cid,\attrs),\msg)~\land$ \\ 
     $\yinsp = \finsp((\yeval^0,\yeval^1),\upk,
     (\cid,\attrs),\msg)~\land$ \\

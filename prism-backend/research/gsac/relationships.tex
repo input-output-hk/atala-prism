@@ -12,7 +12,7 @@ we rely on the functions described in \figref{fig:func-restrictions}. Observe
 that all the \fissue functions listed in \figref{fig:func-restrictions} are
 \UAS-acceptable. Specifically, $\fissue^1$ and $\fissue^{\sring}$ are trivially
 \UAS-acceptable (for $\rngfissue = \bin$); whereas $\fissue^{single,H,I}$ is
-\UAS-acceptable if $F$ is a secure PRF \cite{kl14}.
+\UAS-acceptable if $H$ is a secure PRF \cite{kl14}.
 
 \begin{figure}[ht!]
   \centering
@@ -32,8 +32,9 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
 We adopt the model in \cite{bsz05}. In this abstraction of group signatures, the
 opener returns an index uniquely identifying the group member that created a
 signature, along with a correctness proof. For ease of exposition, assume that,
-w.l.o.g., this index is just the public key that the group member generates
-randomly when joining the group\footnote{The user public key is assumed to be
+without loss of generality, this index is just the public key that the group
+member generates randomly when joining the group\footnote{The user public key is
+  assumed to be
   accessible from a public table in \cite{bsz05}, so it is easy to translate the
   public key into an index, if needed.}. A group signature scheme, according to
 \cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign, \Verify, \Open and
@@ -79,7 +80,7 @@ security games in \figref{fig:model-gs}.
     \end{minipage}      
   }
   \caption{Security games for group signatures \cite{bsz05}, only with minor    
-    ``harmless'' edits to compare easier with \CUASGS. Concretely, since we
+    ``harmless'' edits to ease comparison with \CUASGS. Concretely, since we
     output {\upk}s instead of indexes, $i=0$ in the traceability game now reads
     $\upk \notin \HU \cup \CU$. For the oracles' definitions, check the
     referenced paper.
@@ -96,19 +97,20 @@ security games in \figref{fig:model-gs}.
 \subsubsection{\CUASGS construction.} %
 We show that the $(\fissue^{single,H,I},\feval^0,\finsp^{\upk})$-\CUASGen
 restriction, is a secure group signature scheme according to \cite{bsz05}.
-As stated, $\fissue^{single,H,I}$ is an \UAS-acceptable function if $F$ is a
+As stated, $\fissue^{single,H,I}$ is an \UAS-acceptable function if $H$ is a
 PRF. In that case, its output is a random-looking string that depends on the
 user public key \upk, and a string $I$ uniquely identifying the issuer. Thus, it
-will be the same per $(\upk,I)$ pair, and can be used by issuer $I$ to prevent
+will be the same per $(I,\upk)$ pair, and can be used by issuer $I$ to prevent
 issuing more than one credential per user. Basically, the issuer maintains a
-list of received $\yissue = F(\upk,I)$ values, and rejects issuing a credential
+list of received $\yissue = H(I,\upk)$ values, and rejects issuing a credential
 for already existing ones. From this, the GS algorithms are as
 follows:
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs \Setup from \CUASGen,
-  and one instance of \KeyGen and \ISet with $\fissue^{single,H,I}$ (both for
-  the same user, who will be the only issuer in the GS scheme) and \OKeyGen.
+  and two instances of \KeyGen. One followed by \ISet with $\fissue^{single,H,
+    I}$ for the same user, who will be the issuer; and another for a different
+  user, who will be the opener, followed with \OKeyGen with $\finsp^{\upk}$.
   Assigns the public keys to \gpk.
 \item[$(\upk,\usk) \gets \UKeyGen(1^\secpar)$.] Runs \KeyGen from \CUASGen.
 \item[$\langle \cred,\utrans \rangle \gets
@@ -126,7 +128,7 @@ follows:
   outputs.
 \item[$(\upk,\pi) \gets \Open(\gpk,\osk,\trans,\sig,\msg)$.] Parses \gpk as
   $(\ipk,\opk)$, and returns whatever \CUASGen outputs in $\Open(\osk,\ipk,\sig,
-  0,\msg,\feval^0)$. Internally, the call to \Open runs $\finsp^{\upk}$.
+  0,\msg,\feval^0)$, which internally runs $\finsp^{\upk}$.
 \item[$1/0 \gets \Judge(\gpk,\pi,\upk,\sig,\msg)$.] Parses \gpk as $(\ipk,
   \opk)$, and returns whatever \CUASGen outputs in $\Judge(\opk,\upk,\pi,\sig,
   0,\msg)$.
@@ -173,7 +175,7 @@ to \cite{bkm06} for details on the syntax and definitions.
     \begin{minipage}[t]{0.55\textwidth}        
       \procedure[linenumbering]{$\Exp^{anon-b}_{\adv,rs}(1^\secpar)$}{%
         ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
-        (i_0,i_1,R,\msg,\st) \gets \adv^{\oracle{SIGN}}(\pk_1,\dots,\pk_n) \\
+        (i_0,i_1,R,\msg,\st) \gets \adv^{\oracle{Sign}}(\pk_1,\dots,\pk_n) \\
         \pcif R \not\subseteq \lbrace \pk_i \rbrace_{i\in[n]} \lor
         \lbrace \pk_{i_0},\pk_{i_1} \rbrace \not\subseteq R~\lor \\ %\\
         \pcind i_0 = i_1: \pcreturn \bot \\
@@ -187,19 +189,19 @@ to \cite{bkm06} for details on the syntax and definitions.
     \begin{minipage}[t]{.5\textwidth}
       \procedure[linenumbering]{$\Exp^{forge}_{\adv,rs}(1^\secpar)$}{%
         ((\pk_1,\sk_1),\dots,(\pk_n,\sk_n)) \gets KeyGen(1^\secpar) \\
-        (R,\sig,\msg) \gets \adv^{\oracle{SIGN},\oracle{CORR}}
+        (R,\sig,\msg) \gets \adv^{\oracle{Sign},\oracle{Corr}}
         (\pk_1,\dots,\pk_n) \\
         \pcif Verify(R,\sig,\msg) = 0: \pcreturn 0 \\
         \pcreturn (R \subseteq \lbrace \pk_i \rbrace_{i\in[n]} \setminus
         CU~\land \\
-        \pcind \adv~\textrm{never queried}~SIGN(\cdot,R,\msg))
+        \pcind \adv~\textrm{never queried}~\oracle{Sign}(\cdot,R,\msg))
       }       
     \end{minipage}      
   }
-  \caption{Security games for ring signatures \cite{bkm06}. The $\oracle{SIGN}$
+  \caption{Security games for ring signatures \cite{bkm06}. The $\oracle{Sign}$
     oracle accepts $(i,R,\msg)$ tuples, with $pk_i \in R$, adds the tuple to a
     list of queries, and returns $\sig \gets Sign(\sk_i,R,\msg)$.
-    $\oracle{CORR}$ accepts an index $i$, and leaks $\sk_i$. Corrupted users are
+    $\oracle{Corr}$ accepts an index $i$, and leaks $\sk_i$. Corrupted users are
     added to $CU$.}
   \label{fig:model-rs}  
 \end{figure}
@@ -242,12 +244,12 @@ detail, the construction is as follows:
 \item[$\Sig \gets \Sign(\sk_i,R,\msg).$]
   The signing user, with $\sk_i=\usk$ and $\pk_i=(\ipk_i,\opk)$ for some $i \in
   [n]$ where $\pk_i \in R$, first acts both as user and issuer to self-issue a
-  credential \Cred over an attribute set \attrs such that $\attrs \subseteq
-  \sring$. The user picks some \dattrs such that $\dattrs \subseteq [|\attrs|]$,
-  and computes the ring signature by running $\Sig = (\sig,\yeval) \gets
+  credential \Cred over an attribute set \attrs such that $\attrs = \sring$. The
+  user picks some \dattrs such that $\dattrs \subseteq [|\attrs|]$, and computes
+  the ring signature by running $\Sig = (\sig,\yeval) \gets
   \Sign(\usk,\opk,\Cred,\msg,\feval^{\sring,\dattrs})$ from
   \CUASGenHideIss. Note that \dattrs defines the public keys within
-  $\attrs \subseteq \sring$ to be revealed through \yeval.
+  $\attrs = \sring$ to be revealed through \yeval.
 \item[$1/0 \gets Verify(R,\Sig,\msg)$.] Parses \Sig as $(\sig,\yeval)$ and
   runs $\Verify(\opk,\yeval,\Sig,\msg,\feval^{\sring,\dattrs})$ as in
   \CUASGenHideIss. Note that, in valid signatures, $\yeval = \lbrace
@@ -282,7 +284,7 @@ disclosure, which restricts to one credential per presentation. Therein, an
 anonymous credential scheme is defined via $OrgKeyGen$ (which we rename to
 $IssKeyGen$), and $UserKeyGen$ algorithms, and $\langle Obtain,Issue\rangle$
 and $\langle Show,Verify \rangle$ interactive protocols. We
-refer to \cite{fhs19} for the full details. For ease of reference, we summarize
+refer to \cite{fhs19} for the full details. For ease of reference, we give
 the security definitions in \figref{fig:model-ac}.% , with inocuous
 % adaptations to make them more suitable for comparison with our definitions --
 % namely, we explicitly add a common setup process which is part of $IssKeyGen$
@@ -349,9 +351,9 @@ restriction, is a secure anonymous credential scheme according to the model in
   \gets \langle Show(\ipk,\attrs,\dattrs,
   \cred),\Verify(\ipk,\dattrs) \rangle$.]
   Runs the interactive $\langle \Sign, \Verify\rangle$ of  \CUASGenInt,
-  using $\feval^{\dattrs}$ as signature evaluation function, and $\finsp^0$ as
+  using $\feval^{\dattrs}$ as evaluation function, and $\finsp^0$ as
   open function, with \opk from \parm as opener public key. The \yeval value
-  output by the verifier, when it accepts, is the $\yeval^0$ value produced by
+  output by \Verify, when it accepts, is the $\yeval^0$ value output by
   \Sign in \CUASGenInt.
 \end{description}
 

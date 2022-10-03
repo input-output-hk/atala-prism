@@ -1,15 +1,15 @@
 \begin{tikzpicture}
 
   %% Issue
-  \node (issue) at (-9.00,8.875) { $\NIZKRel_{\Issue} = $ };
+  \node (issue) at (-9.00,8.875) { $\RelIss = $ };
   \node (issue2) at (-3.40,9.50) {
-    $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r,r'),
-    (\cid,\attrs,\ipk,\lbrace \ipk_i \rbrace_{i\in[n]},\boxed{\yissue}):$
+    $(\upk,\usk,\lbrace (\cid_i,\cattrs_i,\cred_i)\rbrace_{i \in [n]},r),
+    (\Ccom,\cid,\attrs,\ipk,\lbrace \ipk_i \rbrace_{i\in[n]},\boxed{\yissue}):$
   };
   \node[align=center] (issue3) at (-3.40,8.625) {
 %    $\upk = \CCommit(\usk;0) \land \Ccom = \CCommit(\usk;r)~\land$ \\
     $(\upk,\usk) \gets \KeyGen(\parm;r)~\land$ \\
-    $\Ccom = \SBCMCom(\ipk,\usk,\lbrace \cid \rbrace \cup \attrs;r')~\land$ \\
+    $\Ccom = \SBCMBlind(\ipk,\usk,\lbrace \cid \rbrace \cup \attrs)~\land$ \\
     % \Ccom = \CCommit(\usk;r)~\land$ \\   
     $\fissue(\upk,\cid,\attrs,\lbrace(\cid_i,\cattrs_i)\rbrace_{i\in[n]}) = \yissue~
     \land$ \\
@@ -20,7 +20,7 @@
   \draw [thick,decorate,decoration={brace}] (1.35,9.75) -- (1.35,8.00);
 
   %% Sign
-  \node (sign) at (-6.40,6.625) { $\NIZKRel_{\Sign} = $ };
+  \node (sign) at (-6.40,6.625) { $\RelSig = $ };
   \node (sign2) at (0.00,7.50) {
     $(\upk,\usk,\lbrace(\cid_i,\attrs_i,\cred_i)\rbrace_{i\in[n]},\yeval^1,
     \yinsp,r,r'), (\msg,\feval,\dboxed{\yeval^0},\cinsp,\lbrace\ipk_i\rbrace,\Eek):$
@@ -40,7 +40,7 @@
   \draw [thick,decorate,decoration={brace}] (5.50,7.75) -- (5.50,5.50);
 
   %% Open
-  \node (issue) at (2.35,8.875) { $\NIZKRel_{\Open} = $ };
+  \node (issue) at (2.35,8.875) { $\RelIns = $ };
   \node (issue2) at (4.65,9.125) {
     $(\osk),(\Ec,\dotboxed{\yinsp}):$
   };

@@ -83,7 +83,7 @@ other words, in GS, utility at authentication time is very limited -- but this
 is precisely the main strength in AC schemes, which also have a well defined
 notion of identity via attributes. On the other hand, the notion of
 accountability  is barely present in AC schemes. For instance, non-frameability
-is not even considered, and it is non-frameability what prevent honest users
+is not even considered, and it is non-frameability what prevents honest users
 from being held accountable of dishonest actions they did not take part in.
 %
 In any case, perhaps the most impractical limitation of all is that too many
@@ -130,7 +130,7 @@ openers, each with its own opening functionality. While powerful from a
 practical point of view, this introduces similar (unavoidable?) limitations
 privacy-wise as in functional encryption schemes \cite{bsw11} -- e.g., revealing
 too granular information at signing or opening time reduces privacy. However, on
-this occasion, signers controls ``how deanonymizable'' their signatures will
+this occasion, signers control ``how deanonymizable'' their signatures will
 be, and know it at signature generation time. This flexibility on the opening
 values also leads to the need of using extraction-based techniques for the
 modelling, since we cannot expect that opening outputs the real identity of the
@@ -180,7 +180,7 @@ algorithms/protocols, summarised in \figref{fig:proof-blocks-uas}.
 \paragraph{Universality.}
 To formally showcase that UAS can indeed claim to be universal, we prove that
 restrictions of our generic construction imply the GS and AC ancestors of UAS.
-But this includes not only their vanilla versions, but also relevant variants,
+This includes not only their vanilla versions, but also relevant variants,
 such as MPS \cite{ngsy22}, (a modified version of) group signatures with
 message-dependent opening \cite{seh+12}, or anonymous credentials with
 revocation \cite{cks10} or delegation \cite{bcc+09}.
