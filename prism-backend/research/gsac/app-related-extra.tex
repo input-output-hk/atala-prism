@@ -124,7 +124,7 @@ reference to \CUASGS, in \secref{ssec:related-models-gs}:
 \item[$(\upk,\pi) \gets \Open(\gpk,\osk,\trans,\sig,\msg)$.] Like in
   \CUASGS.
 \item[$1/0 \gets \Judge(\gpk,\pi,\upk,\sig,\msg)$.] Like in \CUASGen. Note that
-  \gpk includes an \opk with an opening fuction of type $\finsp^{\smsg}$.
+  \gpk includes an \opk with an opening function of type $\finsp^{\smsg}$.
 \end{description}
 
 \paragraph{Security of \CUASGSMDO.} %
@@ -154,7 +154,7 @@ oracle except for challenge signatures. In their privacy-2 variant, the opener
 is fully corrupt (i.e., \adv~ receives \osk), but the adversary can only be
 challenged with signatures that produce the same \yinsp value ($G_{j_b}(id_b)$
 in MPS). In our \UAS model, we allow the adversary to corrupt openers at will
-(getting ther \osk), but the challenge signatures must have been generated using
+(getting their \osk), but the challenge signatures must have been generated using
 the key of an uncorrupted opener; still, \adv~can call the open oracle for
 challenge signatures, as long as they have the same \yinsp value. We believe
 that these differences are mostly of theoretical interest, though. In practice,
@@ -163,18 +163,18 @@ in MPS) that has too much granularity in their ranges, will lead to a barely
 private system. This is a known issue, for instance, in functional encryption
 \cite{bsw11}.
 
-On the other hand, anonymous issuance and the capability to customize issuance
+On the other hand, anonymous issuance and the capability to customise issuance
 policies are unachievable by MPS. Anonymous issuance simply does not make sense
 in MPS, as it only supports one credential (without attributes) per user, and
-customized issuance is achieved in \UAS via the \fissue functions, with no
+customised issuance is achieved in \UAS via the \fissue functions, with no
 equivalent in MPS -- instead, MPS can be seen as having the fixed policy of
 ``proving knowledge of a user secret key''. These extensions are not trivial
 from a modelling point of view, and also have a big impact in the practicality
 of the resulting system. Also, MPS does not include verifiable openings. While
 this is easy to add, we consider it to be essential, given that the proposed
-generalization of opening allows the opener to output ``any value''. Hence, the
+generalisation of opening allows the opener to output ``any value''. Hence, the
 need to ensure that the produced value is the legitimate one seems to be more
-necessary than ever. Finally, our \feval function is a generalization of $F$ in
+necessary than ever. Finally, our \feval function is a generalisation of $F$ in
 MPS, as it allows two outputs: one will be returned in the clear along with the
 signature, and the other will be encrypted. Indeed, making part of the output
 unencrypted allows implementing very useful variants such as anonymous
@@ -208,7 +208,7 @@ With these functions, the construction is direct. \CUASMPS's setup runs
 first \KeyGen to generate the user key pair, and then proceeds as in \CUASGen.
 \Sign, \Verify and \Open, are as in \CUASGen.
 
-Finally, note that, in MPS, $G$ is further parameterized with a value $j$, which
+Finally, note that, in MPS, $G$ is further parameterised with a value $j$, which
 essentially is the result of applying $F$ to the message and signer identity,
 and is not leaked to the opener nor any other third party. The equivalent in
 \UAS is the $\yeval^1$ value which, in \CUASGen, is encrypted with a single-use
@@ -295,7 +295,7 @@ requirement in the unforgeability and non-frameability definitions. Thus, our
 \begin{proof}
   Given an adversary \adv~against unforgeability-1 of \CUASMPS, as defined in
   the MPS model, we build \advB that breaks signature unforgeability of the
-  underyling \CUASGen, as defined for \UAS.
+  underlying \CUASGen, as defined for \UAS.
 
   Simulation of \adv's oracles by \advB is again direct (as in previous proofs).
   Now, suppose that \adv~wins -- i.e., the identity extracted by \adv~does not
@@ -325,7 +325,7 @@ requirement in the unforgeability and non-frameability definitions. Thus, our
 
 \begin{proof}
   Given an adversary \adv~against unforgeability-2 of \CUASMPS, as defined in
-  the MPS model, we build \advB that breaks non-frameability of the underyling
+  the MPS model, we build \advB that breaks non-frameability of the underlying
   \CUASGen, as defined for \UAS.
 
   Simulation of \adv's oracles by \advB is as in the unforgeability-1 proof.
@@ -429,7 +429,7 @@ would be straightforward.
 Briefly, this is achieved via a $(\fissue^1,\feval^{\dattrs,H,V,L},
 \finsp^{F})$-\CUASGenInt restriction, where $\fissue^1$ is as in
 \figref{fig:func-restrictions}, and $\feval^{\dattrs,H,V,L}$ and $\finsp^{H}$
-are ase specified in \esref{eq:funcs-rac}.
+are as specified in \esref{eq:funcs-rac}.
 
 \begin{align}
   \feval^{\dattrs,H,V,L}(\upk,((\cidi,\cidu),\attrs),\cdot) \coloneqq &
@@ -783,7 +783,7 @@ unforgeable.
   signature anonymity of \CUASGenInt.
   %
   \adv's oracles are simulated as in the proof for issuance anonymity of
-  \CUASDAC -- in this case, \adv's \oracle{SigLoR} oracle corresonds to \advB's
+  \CUASDAC -- in this case, \adv's \oracle{SigLoR} oracle corresponds to \advB's
   \CHALb. Again, the simulation is perfect, and whenever \adv~wins its
   $\Exp^{sig-anon-b}$ game, so does \advB.
   % 

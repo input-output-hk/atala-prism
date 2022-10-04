@@ -1,9 +1,9 @@
-\section{Formalizing \UAS}
+\section{Formalising \UAS}
 \label{sec:formal-uas}
 
 % [11 pages max]
 
-Next we formalize our notion of Universal Anonymous Signatures
+Next we formalise our notion of Universal Anonymous Signatures
 (\UAS). We define its syntax, model, and give a generic construction, which
 we prove secure. 
 
@@ -75,7 +75,7 @@ In detail, an \UAS scheme is composed by the following algorithms:
   function \finsp, an opener runs \OKeyGen to generate its key pair. \finsp
   defines the utility extractable from signatures.
 \item[$\ISet(\upk,\usk,\fissue) \rightarrow \ipk$.] Given a user key
-  pair, and an issuance function \fissue for checking that credential requestors
+  pair, and an issuance function \fissue for checking that credential requesters
   meet some conditions to be issued a credential, an existing user runs \ISet to
   extend the user public key, enabling this user to issue credentials meeting
   \fissue.
@@ -201,7 +201,7 @@ are \UAS-acceptable.
 
 Next, we define the concept of \CUASGen restrictions. These are special
 cases of our generic construction that target a concrete variant of the
-utility-privacy tradeoff by defining concrete \fissue, \feval and \finsp
+utility-privacy trade-off by defining concrete \fissue, \feval and \finsp
 functions. Security of \CUASGen implies security of its restrictions, if
 the chosen \fissue function is \CUASGen-acceptable.
 
@@ -248,7 +248,7 @@ issuer.
 For notational convenience, we often use these identifiers instead of the
 corresponding user/issuer/opener keys.
 %
-All tables/sets are initialized as empty tables/sets. We use the following sets
+All tables/sets are initialised as empty tables/sets. We use the following sets
 and tables in our definitions:
 
 \begin{description}
@@ -302,13 +302,13 @@ and tables in our definitions:
 \end{description}
 
 \paragraph{Oracles.} %
-We leverage the following oracles, formalized in \figref{fig:oracles1} and
+We leverage the following oracles, formalised in \figref{fig:oracles1} and
 \figref{fig:oracles2}.
 
 \begin{description}
 % \item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
 %   the associated issuance function.
-\item[\HUGEN.] Adds a new honest user, generating its keypair.
+\item[\HUGEN.] Adds a new honest user, generating its key pair.
 \item[\CUGEN.] Adds a new corrupt user. Sets its \upk to the
   one given by the adversary.  
 \item[\OGEN.] Adds a new opener, generates its key pair and sets its opening
@@ -622,7 +622,7 @@ We leverage the following oracles, formalized in \figref{fig:oracles1} and
   .}
 We assume the existence of these helper functions. They are not functions
 available in the actual scheme, but rather to the challenger in the experiments
-we use to formalize security of \UAS schemes. We introduce them here, and define
+we use to formalise security of \UAS schemes. We introduce them here, and define
 them later for our construction.
 
 \begin{description}
@@ -688,7 +688,7 @@ them later for our construction.
 %   non-parallel or logarithmic number of joins) is necessary.}
 
 \paragraph{Correctness.} %
-Correctness of \UAS schemes is formalized through the experiment in
+Correctness of \UAS schemes is formalised through the experiment in
 \figref{fig:exp-uas-corr}. It states that a signature over any arbitrary message
 and valid function \feval, produced honestly leveraging credential set \scid,
 owned by user \uid, is accepted by \Verify. Moreover, all the credentials in
@@ -756,7 +756,7 @@ games to define the privacy expected in those situations.
 Issuance anonymity captures that, during credential issuance
 interactions, the adversary gains no information about the user(s) behind them,
 beyond what is leaked by the policies required for issuance. For this, we allow
-the adversary to control targetted issuers and openers, and add honest and
+the adversary to control targeted issuers and openers, and add honest and
 corrupt users. The adversary can also obtain credentials, produce signatures,
 and open them. To prevent trivial wins: (1) when querying the oracle for
 obtaining a challenge credential out of two possible user-credential set pairs,
@@ -847,13 +847,13 @@ Otherwise, it is trivial for the adversary to produce untraceable credentials
 (i.e., that do not appear in any ``log'') which then evaluate to any desired
 value when used to generate a signature.
 
-We could simply check that all the credetnials involved in valid signatures
+We could simply check that all the credentials involved in valid signatures
 satisfy their respective \fissue functions, and belong to known users. However,
 allowing credentials to endorse further credential requests makes this argument
 insufficient. For instance, if we only check the credentials involved in
 signature generation, it is perfectly possible that a forged credential is used
 to obtain a legitimate one, and then use the latter to finally create a valid
-signature -- concretly, such misbehaviour is not prevented by \ExpForgeSign. 
+signature -- concretely, such misbehaviour is not prevented by \ExpForgeSign. 
 
 We thus extend unforgeability of signatures with issuance unforgeability,
 \ExpForgeIssue. It captures that all honestly issued credentials meet the
@@ -871,7 +871,7 @@ exist, as we unavoidably need to restrict to honest issuers. Indeed, a dishonest
 issuer cannot be trusted to enforce any policy, nor to properly keep all
 transcripts.
 
-We formalize both properties in \figref{fig:exp-uas-unfor}.
+We formalise both properties in \figref{fig:exp-uas-unfor}.
 
 % \begin{figure}[htp!]
 %   \centering
@@ -1045,7 +1045,7 @@ included in user credentials, the adversary may even be able to produce
 a relevant property, as it tells us the minimal unforgeability expectations we
 can have, even against malicious issuers and openers.
 
-We formalize non-frameability in \ExpNonframe in \figref{fig:exp-uas-frame}.
+We formalise non-frameability in \ExpNonframe in \figref{fig:exp-uas-frame}.
 The adversary is challenged to produce a signature
 and opening proof that is accepted by \Verify and \Judge, respectively. From
 the signature, we then extract the secret data used to generate it. The
@@ -1136,7 +1136,7 @@ did not produce it (i.e., no matching call to \SIGN exists).
 We give a generic construction of an \UAS scheme, based on
 generic building blocks. We use three different NP relations: \RelIss, \RelSig,
 and \RelIns, described next and specified in CS notation \cite{cs97} in
-\figref{fig:nizkrels}. These relations include verifying that the comptuation of
+\figref{fig:nizkrels}. These relations include verifying that the computation of
 the \fissue, \feval and \finsp functions has been done correctly.
 
 \begin{description}

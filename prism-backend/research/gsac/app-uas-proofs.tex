@@ -136,7 +136,7 @@ plain form, and \cred is their alleged signature by the owner of public key
 
 \begin{proof}[\thmref{thm:issue-anonymity-uas}; Issuance anonymity of \CUASGen]
   We prove the special case in which the adversary makes only one query to the
-  \OBTCHALb oracle. The generalization to polynomially many queries follows
+  \OBTCHALb oracle. The generalisation to polynomially many queries follows
   from a standard hybrid argument.
 
   We start from the \ExpIssAnonb, as defined in \figref{fig:exp-uas-anonb}. 
@@ -176,7 +176,7 @@ plain form, and \cred is their alleged signature by the owner of public key
 \begin{proof}[\thmref{thm:sign-anonymity-uas}; Signature anonymity of \CUASGen]
 
   In this proof, we restrict to the case in which the adversary can only make
-  one query to the challenge oracle. Note however that the generalization to
+  one query to the challenge oracle. Note however that the generalisation to
   polynomially many queries given in \cite{bsz05} applies here too (with the
   corresponding security loss). Thus, proving security for one query to the
   challenge oracle is enough.
@@ -354,7 +354,7 @@ plain form, and \cred is their alleged signature by the owner of public key
   simulation extractability of $\NIZK^{\Sign}$.
 
   \paragraph{(c) The output of \finsp matches the output of \Open.} %
-  After (a), and correctness of the public key encryption algorihtm, the \yinsp
+  After (a), and correctness of the public key encryption algorithm, the \yinsp
   value output by \Open is the correct decryption of
   \cinsp. After (c), the $(\yeval^0=\yeval,\yeval^1)$ values output by
   \ExtractSign match the evaluation of \feval. Thus, simulation extractability
@@ -465,7 +465,7 @@ anonymity in $\CUASGen^{int}$ is the same as for \CUASGen.
 
 \paragraph{Signature Anonymity.} To see why the interactive variant has
 signature anonymity, assume an adversary \adv~that breaks it. We build \advB
-against the non-interactive \ExpSigAnonb from \adv~as follows. \advB initializes
+against the non-interactive \ExpSigAnonb from \adv~as follows. \advB initialises
 everything as in the \ExpSigAnonb game. When \adv~initiates a call to its
 interactive \SIGN (resp. \CHALb) oracle, \advB forwards it to its own oracle
 (but concatenating the random number to the message to be signed). \advB

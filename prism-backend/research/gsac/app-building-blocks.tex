@@ -54,7 +54,7 @@ A public-key encryption scheme is defined by the following algorithms:
 \item[$\Eparm \gets \ESetup(\Esecpar)$.] Produces public parameters \Eparm given
   a security parameter \Esecpar.
 \item[$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$.] Given public parameters \Eparm,
-  produces an encryption-decryption keypair $(\Eek,\Edk)$.
+  produces an encryption-decryption key pair $(\Eek,\Edk)$.
 \item[$\Ec \gets \EEnc(\Eek,\msg)$.] Encrypts message \msg with encryption key
   \Eek, producing ciphertext \Ec.
 \item[$\msg \gets \EDec(\Edk,\Ec)$.] Decrypts ciphertext \Ec with decryption key
@@ -170,7 +170,7 @@ commitments \cite{bcc+15}.
 Let \NIZKRel be an NP relation defined by pairs of elements $(\NIZKx,\NIZKw)$,
 where \NIZKx is a statement and \NIZKw a witness proving that $(\NIZKx,\NIZKw)
 \in \NIZKRel$. For concrete relations, we write $\NIZKRel = \lbrace (\NIZKx),
-(\NIZKw): f(x,w) \rbrace$, where $f(x,w)$ is a boolean predicate denoting the
+(\NIZKw): f(x,w) \rbrace$, where $f(x,w)$ is a Boolean predicate denoting the
 concrete conditions that \NIZKx and \NIZKw need to meet. The set of all \NIZKx
 such that there exists a \NIZKw for which $(\NIZKx,\NIZKw) \in \NIZKRel$ is the
 language, or \NIZKLang, for \NIZKRel. $\NIZKx \notin \NIZKLang$ means that
@@ -211,7 +211,7 @@ algorithms:
 
 When we want to make explicit the NP relation \NIZKRel to which the previous
 algorithms refer to, we use $\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel$, 
-$\NIZKVerify^\NIZKRel$, etc., and omit the \NIZK prefix and superindex when
+$\NIZKVerify^\NIZKRel$, etc., and omit the \NIZK prefix and super-index when
 clear from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\SimSetup,
 \Sim,\Extract)$ needs to meet the following properties:
 
@@ -313,7 +313,7 @@ where \ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
   \caption{Games for Simulation-Extractable NIZK schemes.}
 \end{figure}
 
-As studied in \cite{cl06}, simulation-extractable NIZKPoKs formalize the concept
+As studied in \cite{cl06}, simulation-extractable NIZKPoKs formalise the concept
 of ``signatures of knowledge'' (see, e.g., \cite{cs97}). Which basically means
 that, given an $(\NIZKx,\NIZKw)$ pair from an NP relation, we can treat \NIZKx
 as a public key, and \NIZKw as its corresponding private key, and leverage them
@@ -429,11 +429,11 @@ The syntax for an \SBCM scheme is as follows:
   \SBCMcom.
 \item[$\SBCMbsig \gets \SBCMSign(\SBCMsk,\SBCMcom,\pi,\smsg)$.] The
   signer, with signing key \SBCMsk, produces a blind signature \SBCMbsig over
-  the messages commited to in commitment \SBCMcom, as well as the messages in
+  the messages committed to in commitment \SBCMcom, as well as the messages in
   \smsg, with associated proof $\pi$.
 \item[$\SBCMsig \gets \SBCMUnblind(\SBCMvk,\SBCMbsig,\SBCMcom,r,\osmsg,\smsg)$.]
   A user, who requested a signature over \osmsg and \smsg, where \SBCMcom is a
-  commitment over \osmsg using randomness $r$, finalizes the signature,
+  commitment over \osmsg using randomness $r$, finalises the signature,
   computing \SBCMsig from the signer's partial signature \SBCMbsig.
 \item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\osmsg,\smsg)$.] Checks
   whether \SBCMsig is a valid signature over the set of messages \osmsg and
@@ -537,7 +537,7 @@ parameter.
 \end{figure}
 
 \paragraph{Augmented NIZKs.} %
-Constructions of \SBCM (e.g. \cite{asm06}), as well as the formalization we just
+Constructions of \SBCM (e.g. \cite{asm06}), as well as the formalisation we just
 described, require that the user proves, in zero-knowledge (via a NIZK),
 knowledge of the messages to be signed in committed
 form -- and the blinding factor used to hide them. Note that, in such
@@ -582,7 +582,7 @@ with (efficient) NIZK proofs of knowledge of a signature.
 \subsubsection{An Instantiation of \SBCM with BBS+}
 
 Next, we give an instantiation of an \SBCM scheme, based on BBS+ signatures.
-We emphasize again that this is essentially equivalent to the protocol for
+We emphasise again that this is essentially equivalent to the protocol for
 signing committed block of messages in \cite{asm06} and, also, to the equivalent
 ones in \cite{cl02,ps16} (although not for BBS+ signatures). The main difference
 being that we allow merging committed blocks of messages and blocks of
