@@ -30,7 +30,7 @@ the privacy-preserving cousin of W3C's Verifiable Credentials%
   2022.}.
 
 GS schemes enhance utility after authentication, allowing partial
-re-identification like linking of signatures, or even full deanonymization.
+re-identification like linking of signatures, or even full deanonymisation.
 While actual applications of group signatures seem hard to find in the real
 world, Direct Anonymous Attestation (DAA) \cite{bcc04,bl07,cdl16b} has been
 deployed to millions of computing devices into what's called TPM (Trusted
@@ -48,7 +48,7 @@ Functionality-wise, Attribute-Based Group Signatures add attributes to the
 credentials issued to group members, who can later use them to prove fixed
 claims \cite{emo09,aa14}. Hidden identity-based signatures also add attributes
 to the credentials, to prevent the opener (the trusted party who
-can deanonymize signers) from having to rely on the issuer in order to return
+can deanonymise signers) from having to rely on the issuer in order to return
 meaningful identifying information when opening a signature \cite{ks07}. Some AC
 schemes also incorporate some utility after authentication, like
 revocable AC schemes \cite{cks10}.
@@ -66,14 +66,14 @@ the AC domain, malleable signatures are used as core building block in
 \cite{cklm14}, to allow building both conventional AC and Delegatable AC
 systems, depending on the transformation supported by the malleable signatures.
 Also, \cite{ckl+15} gives a very generic approach to build AC schemes. In GS,
-very recently, BiAS \cite{lnpy21} and MPS \cite{ngsy22} flexibilize the
+very recently, BiAS \cite{lnpy21} and MPS \cite{ngsy22} flexibilise the
 trade-off between anonymity and accountability.
 
 %% Main drawbacks of precedents
 \paragraph{Limitations of GS and AC.} %
 Even the independent generalisation efforts in both GS and AC
 have limited applicability in the real world. On the GS side, although MPS
-achieves a powerful balance on when a signature is deanonymizable and what
+achieves a powerful balance on when a signature is deanonymisable and what
 information can be extracted, upon closer look, this information is somehow
 meaningless. Namely, the notion of identity is not well defined and, thus, it is
 not possible to assess whether the value output by their generalised open
@@ -107,7 +107,7 @@ generation, and opening times. Typically, at issuance time, the user proves
 knowledge of a secret key; at signing time, she proves that her secret key (and,
 potentially, more attributes) has been attested by some issuer; finally, at
 opening time, the opener proves that some fixed user-related information is
-contained in the de-anonymized signature.
+contained in the deanonymised signature.
 
 We note that instead of fixing in the model what concrete claim has to
 be made at each point, we can introduce \emph{functional placeholders} to be
@@ -130,7 +130,7 @@ openers, each with its own opening functionality. While powerful from a
 practical point of view, this introduces similar (unavoidable?) limitations
 privacy-wise as in functional encryption schemes \cite{bsw11} -- e.g., revealing
 too granular information at signing or opening time reduces privacy. However, on
-this occasion, signers control ``how deanonymizable'' their signatures will
+this occasion, signers control ``how deanonymisable'' their signatures will
 be, and know it at signature generation time. This flexibility on the opening
 values also leads to the need of using extraction-based techniques for the
 modelling, since we cannot expect that opening outputs the real identity of the
@@ -147,7 +147,7 @@ construction is simple. Like many previous related schemes, credentials are
 signatures over blocks of messages -- each message encoding a different
 attribute. Users simultaneously leveraging multiple credentials need to prove
 that they are bound to the same key. Utility information to be revealed at
-signing time is output in plaintext, and utility information extractable by
+signing time is output in plain text, and utility information extractable by
 openers is encrypted under their public key -- in both cases, users prove
 correct computation.
 
@@ -159,8 +159,8 @@ user, and controls and proves correctness of the information learned by
 verifiers. Finally, \finsp, although  computed also at signing time by the
 users, proves correctness of the utility information extractable after signing.
 The latter is, in addition, fed and modulated with the output of \feval. With
-these functions, we allow achieving configurable utility-vs-privacy tradeoffs
-throughout the whole ``lifecycle'' (from issuance to opening). They also take
+these functions, we allow achieving configurable utility-vs-privacy trade-offs
+throughout the whole ``life-cycle'' (from issuance to opening). They also take
 a central role in defining the NP statements that need to be proven by different
 algorithms/protocols, summarised in \figref{fig:proof-blocks-uas}.
 
@@ -196,7 +196,7 @@ authentication protocols with protection against replays\footnote{This is
 The most interesting part being that, while we prove implications with
 previously known schemes, our approach allows to merge their features: e.g.,
 one can easily instantiate GSs with with no revocation at all, ACs
-with full de-anonymization, RS with linkability, etc.
+with full deanonymisation, RS with linkability, etc.
 
 While already before \UAS it may have not seemed hard to build either of these
 primitives from another, with \UAS one essentially just needs to give concrete
@@ -262,10 +262,10 @@ achievable.
 % ``deanonymize only if 18+ years old''.
 
 \paragraph{Sample real-world use cases.} %
-By enabling customization at issuance, signing and opening times, as well as
+By enabling customisation at issuance, signing and opening times, as well as
 multiple uncoupled issuers and openers, the possibilities are large and
 especially useful in contexts where different parties may have different
-privacy-vs-utility tradeoffs. As an example, consider a social network that
+privacy-vs-utility trade-offs. As an example, consider a social network that
 requires under-age users to get permission from one parent. This can be defined
 via a delegatable credential scheme, checking that the delegation chain of the
 user requesting to join is valid via a policy at issuance time. Later, in order
