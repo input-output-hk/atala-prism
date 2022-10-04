@@ -7,12 +7,15 @@ In the following, to showcase the generality of \UAS and \CUASGen, we reproduce
 models of related schemes in the literature.
 Then, we give concrete $(\fissue,\feval,\finsp)$-\CUASGen restrictions and prove
 that they securely instantiate the models for the presented schemes, if the
-corresponding \CUASGen restriction is a secure \UAS construction. Concretely,
-we rely on the functions described in \figref{fig:func-restrictions}. Observe
-that all the \fissue functions listed in \figref{fig:func-restrictions} are
-\UAS-acceptable. Specifically, $\fissue^1$ and $\fissue^{\sring}$ are trivially
-\UAS-acceptable (for $\rngfissue = \bin$); whereas $\fissue^{single,H,I}$ is
-\UAS-acceptable if $H$ is a secure PRF \cite{kl14}.
+corresponding \CUASGen restriction is a secure \UAS construction. For lack of
+space, security proofs are deferred to \appref{app:related-proofs}.
+
+For the described \CUASGen restrictions, we rely on the functions described in
+\figref{fig:func-restrictions}. Observe that all the \fissue functions listed in
+\figref{fig:func-restrictions} are \UAS-acceptable. Specifically, $\fissue^1$
+and $\fissue^{\sring}$ are trivially \UAS-acceptable (for $\rngfissue = \bin$);
+whereas $\fissue^{single,H,I}$ is \UAS-acceptable if $H$ is a secure PRF
+\cite{kl14}.
 
 \begin{figure}[ht!]
   \centering
@@ -29,16 +32,16 @@ that all the \fissue functions listed in \figref{fig:func-restrictions} are
 \subsection{Group Signatures}
 \label{ssec:related-models-gs}
 
-We adopt the model in \cite{bsz05}. In this abstraction of group signatures, the
-opener returns an index uniquely identifying the group member that created a
-signature, along with a correctness proof. For ease of exposition, assume that,
-without loss of generality, this index is just the public key that the group
-member generates randomly when joining the group\footnote{The user public key is
+We adopt the model in \cite{bsz05}. In this abstraction, the opener returns an
+index uniquely identifying the group member who created a signature, along with
+a correctness proof. To ease exposition, we assume without loss of generality
+that this index is just the public key that group members generate randomly
+when joining the group\footnote{The user public key is
   assumed to be
   accessible from a public table in \cite{bsz05}, so it is easy to translate the
-  public key into an index, if needed.}. A group signature scheme, according to
-\cite{bsz05}, is composed of $KeyGen$, \UKeyGen, \Sign, \Verify, \Open and
-\Judge algorithms, as well as an $\langle\Obtain,\Issue\rangle$ interactive
+  public key into an index, if needed.}. A group signature scheme in
+\cite{bsz05} is composed of $KeyGen$, \UKeyGen, \Sign, \Verify, \Open and
+\Judge algorithms, and an $\langle\Obtain,\Issue\rangle$ interactive
 protocol. Their intuition is similar to that of \UAS, so we refer to
 \cite{bsz05} for detailed descriptions. For ease of reference, we replicate the
 security games in \figref{fig:model-gs}.
@@ -95,16 +98,15 @@ security games in \figref{fig:model-gs}.
 \end{figure}
 
 \subsubsection{\CUASGS construction.} %
-We show that the $(\fissue^{single,H,I},\feval^0,\finsp^{\upk})$-\CUASGen
-restriction, is a secure group signature scheme according to \cite{bsz05}.
+We show that a $(\fissue^{single,H,I},\feval^0,\finsp^{\upk})$-\CUASGen
+restriction is a secure group signature scheme according to \cite{bsz05}.
 As stated, $\fissue^{single,H,I}$ is an \UAS-acceptable function if $H$ is a
-PRF. In that case, its output is a random-looking string that depends on the
-user public key \upk, and a string $I$ uniquely identifying the issuer. Thus, it
-will be the same per $(I,\upk)$ pair, and can be used by issuer $I$ to prevent
-issuing more than one credential per user. Basically, the issuer maintains a
-list of received $\yissue = H(I,\upk)$ values, and rejects issuing a credential
-for already existing ones. From this, the GS algorithms are as
-follows:
+PRF, as its output is a random-looking string that depends on the user public
+key \upk, and a string $I$ uniquely identifying the issuer. Thus, it is the same
+per $(I,\upk)$ pair, and can be used by issuer $I$ to prevent issuing more than
+one credential per user. Basically, the issuer keeps a list of received
+$\yissue = H(I,\upk)$ values, and rejects issuing a credential for already
+existing ones. From this, the GS algorithms are as follows:
 
 \begin{description}
 \item[$(\gpk,\isk,\osk) \gets KeyGen(1^\secpar)$.] Runs \Setup from \CUASGen,
@@ -134,10 +136,10 @@ follows:
   0,\msg)$.
 \end{description}
 
-\paragraph{Security of \CUASGS.} %
-Our \CUASGS construction is an anonymous, traceable, and non-frameable group
-signature scheme, according to the model in \cite{bsz05}. For space constraints,
-proofs are deferred to \appref{app:related-proofs}.
+% \paragraph{Security of \CUASGS.} %
+% Our \CUASGS construction is an anonymous, traceable, and non-frameable group
+% signature scheme, according to the model in \cite{bsz05}. For space constraints,
+% proofs are deferred to \appref{app:related-proofs}.
 
 % \begin{theorem}[Anonymity of \CUASGS]
 %   If the base \CUASGen construction has signature anonymity according to
@@ -208,14 +210,14 @@ to \cite{bkm06} for details on the syntax and definitions.
 
 
 \subsubsection{\CUASRing Construction.} %
-We can use a $(\fissue^{\sring},\feval^{\sring,\dattrs},\finsp^0)$-restriction
-of \CUASGenHideIss to build a ring signature scheme according to the model
-in \figref{fig:model-rs}. In a nutshell, we let users self-issue
-credentials where the attributes are (a subset of encodings of) the public keys
-of the users in the system -- including their own public key. Then, a ring
-signature is just a \CUASGenHideIss signature that reveals a subset of
-the attributes -- i.e., a subset of the keys of the users in the system. In more
-detail, the construction is as follows:
+We use a $(\fissue^{\sring},\feval^{\sring,\dattrs},\finsp^0)$-restriction
+of \CUASGenHideIss to build a ring signature scheme in the model given in
+\figref{fig:model-rs}. Briefly, users self-issue credentials where the
+attributes are (encodings of) the public keys of the users in the system --
+including their own public key. Then, a ring signature is just a
+\CUASGenHideIss signature that reveals a subset of the attributes -- i.e., a
+subset of the keys of the users in the system. The construction
+is as follows:
 
 % \begin{align}
 %   & \NIZKRel_{\Sign}^{prv} \coloneqq \lbrace (\usk,\cred,\yeval^1,\yinsp,r,r',
@@ -259,10 +261,10 @@ detail, the construction is as follows:
 %Note that by using, e.g., $\finsp^{\upk}$, we essentially get a ring signature
 %scheme with linkability via an opener.
 
-\paragraph{Security of \CUASRing.} %
-Our \CUASRing construction is an anonymous and unforgeable ring signature
-scheme, according to the model in \cite{bkm06}. For space constraints,
-proofs are deferred to \appref{app:related-proofs}.
+% \paragraph{Security of \CUASRing.} %
+% Our \CUASRing construction is an anonymous and unforgeable ring signature
+% scheme, according to the model in \cite{bkm06}. For space constraints,
+% proofs are deferred to \appref{app:related-proofs}.
 
 % \begin{theorem}[Anonymity of \CUASRing]
 %   If the base \CUASGenHideIss construction has signature anonymity
@@ -279,12 +281,12 @@ proofs are deferred to \appref{app:related-proofs}.
 \subsection{Anonymous Credentials}
 \label{ssec:related-models-ac}
 
-We adopt the model in \cite{fhs19}, for anonymous credentials with selective
+We adopt the model in \cite{fhs19} for anonymous credentials with selective
 disclosure, which restricts to one credential per presentation. Therein, an
 anonymous credential scheme is defined via $OrgKeyGen$ (which we rename to
 $IssKeyGen$), and $UserKeyGen$ algorithms, and $\langle Obtain,Issue\rangle$
 and $\langle Show,Verify \rangle$ interactive protocols. We
-refer to \cite{fhs19} for the full details. For ease of reference, we give
+refer to \cite{fhs19} for the full details. For readability, we give
 the security definitions in \figref{fig:model-ac}.% , with inocuous
 % adaptations to make them more suitable for comparison with our definitions --
 % namely, we explicitly add a common setup process which is part of $IssKeyGen$
@@ -330,9 +332,8 @@ the security definitions in \figref{fig:model-ac}.% , with inocuous
 \end{figure}
 
 \subsubsection{\CUASAC Construction.} %
-We show that a $(\fissue^1,\feval^{\dattrs},\finsp^0)$-\CUASGenInt
-restriction, is a secure anonymous credential scheme according to the model in
-\cite{fhs19}. We first quickly define the algorithms, and then prove security.
+We build a secure anonymous credential scheme directly from a
+$(\fissue^1,\feval^{\dattrs},\finsp^0)$-\CUASGenInt restriction.
 
 \begin{description}
 % \item[$\parm \gets \Setup(1^\secpar)$.] Runs $\parm' \gets \Setup(1^\secpar,
@@ -357,10 +358,10 @@ restriction, is a secure anonymous credential scheme according to the model in
   \Sign in \CUASGenInt.
 \end{description}
 
-\paragraph{Security of \CUASAC.} %
-Our \CUASAC construction is an anonymous and unforgeable anonymous credential
-scheme, according to the model in \cite{fhs19}. For space constraints,
-proofs are deferred to \appref{app:related-proofs}.
+% \paragraph{Security of \CUASAC.} %
+% Our \CUASAC construction is an anonymous and unforgeable anonymous credential
+% scheme, according to the model in \cite{fhs19}. For space constraints,
+% proofs are deferred to \appref{app:related-proofs}.
 
 % \begin{theorem}[Anonymity of \CUASAC]
 %   \label{thm:anon-cuasac}

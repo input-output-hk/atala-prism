@@ -1,10 +1,10 @@
 \section{Correctness and Security Proofs for \CUASGen}
 \label{app:uas-proofs}
 
-Next, we define the \SimSetup, \ExtractIssue, \ExtractSign functions. \SimSetup
-(formally defined in \figref{fig:helper-funcs}) essentially replaces the
-\Setup algorithm of each NIZK with the corresponding \NIZKSimSetup algorithm,
-and returns the generated parameters along with the
+Next, we define the \SimSetup, \ExtractIssue, \ExtractSign, and \VerCred
+functions. \SimSetup (formally defined in \figref{fig:helper-funcs}) essentially
+replaces the \Setup algorithm of each NIZK with the corresponding \NIZKSimSetup
+algorithm, and returns the generated parameters along with the
 trapdoors. \ExtractIssue and \ExtractSign simply run the \Extract functions
 of the corresponding \NIZK scheme, leveraging the trapdoor produced during
 \SimSetup. Note that, in our games definitions, both algorithms are always run
@@ -14,7 +14,10 @@ Thus, the zero-knowledge proofs they contain are valid. Concerning \SimSetup,
 due to the zero-knowledge and simulation extractability properties
 (respectively) of the underlying NIZKs, its result is indistinguishable from
 that of \Setup, and the extracted values match those used as witnesses in the
-proofs.
+proofs. Finally, \VerCred simply calls the \SBCMVerify function with the
+received data -- where \usk is signed in committed form, \cid and \attrs in
+plain form, and \cred is their alleged signature by the owner of public key
+\ipk.
 
 \begin{figure}[ht!]
   \centering  
@@ -234,6 +237,55 @@ proofs.
 \subsection{Issuance Unforgeability}
 
 \begin{proof}[\thmref{thm:issue-forge-uas}; Issuance unforgeability of \CUASGen]
+  We show that, assuming simulation extractability of the NIZK for \RelIss, and
+  correctness and unforgeability of \SBCM, then \CUASGen has issuance
+  unforgeability.
+
+  Observe that we restrict to credentials issued by honest issuers. Thus, if a
+  credential with identifier \cid was issued by an honest issuer, a matching
+  $\trans[\cid]$ entry corresponding to its issuance must exist.
+  %
+  Then, $\trans[\cid] = (\yissue,\utrans)$, and \utrans contains a NIZK proof
+  \proofiss proving knowledge by the (potentially corrupt) user of a witness in
+  \RelIss. Since the issuer is honest, it verifies the NIZK as part of the
+  issuance protocol, rejecting if the proof is not valid. Thus, by simulation
+  extractability, \ExtractIssue produces a $(\upk,\usk,\lbrace (\cid_i,\attrs_i,
+  \cred_i,\ipk_i) \rbrace_{i\in[n]},(\cid,\attrs,\cred,\ipk))$ tuple.
+
+  Since credential \cid was honestly issued, simulation extractability and
+  correctness of \SBCM ensure that \VerCred returns $1$ when run over the values
+  output by \adv, along with the \usk extracted by \ExtractIssue. Also, by
+  simulation extractability, the value output by \fissue, when evaluated upon
+  the extracted values, must match the \yissue value stored alongside
+  $\trans[\cid]$.
+  %
+  In addition, the adversary wins if the \uid associated to the {\cid}s involved
+  in the request (i.e., both the \cid output by the adversary, as well as those
+  used to support its issuance) is not in \HU or \CU. This can happen if: (1)
+  all {\cid}s have the same owner \uid, but this \uid is different to all known
+  {\uid}s; or (2) $\OWNR[\scid] = \bot$ which, by definition of \OWNR happens if
+  not all of the involved {\cid}s in \scid have the same owner. Since the NIZK
+  used for \RelIss is simulation extractable -- where the issuer verifies that
+  all credentials are bound to the same \usk -- and due to correctness of \SBCM,
+  the probability that (2) happens is negligible, which means that all involved
+  {\cid}s have the same owner. Also, regarding (1), this owner must be in either
+  \HU or \CU as the \cid output by the adversary in step 2 has been produced via
+  \ISSUE or \OBTISS which, by definition, only accept known {\uid}s. Thus, the
+  probability that \adv~wins the \ExpForgeIssue game is negligible.
+
+  Finally, the adversary may also win if any of the $\cred_i$ credentials (1) is
+  not a valid signature by its issuer, or (2) if it is a valid signature by some
+  honest issuer who did not produce it. As before, (1) has negligible
+  probability due to simulation extractability of the NIZK for \RelIss. For (2),
+  assume that such a $\cred_i$ exists, then, it is an \SBCM forgery -- i.e., a
+  valid signature, verifiable under $\ipk_i$ belonging to an honest issuer, who
+  did not produce it via a call to \OBTISS or \ISSUE. Thus, it breaks the
+  one-more unforgeability property of \SBCM. By security of \SBCM, the
+  probability that it happens must be negligible.
+\end{proof}
+
+\iffalse
+\begin{proof}[\thmref{thm:issue-forge-uas}; Issuance unforgeability of \CUASGen]
   We show that the probability that \fissue outputs a wrong $\yissue$ value is
   negligible, as well as the probability that the issued credential, and any
   supporting credential used in the request, do not all belong to a same known
@@ -269,7 +321,7 @@ proofs.
   negligible.
   \qed
 \end{proof}
-
+\fi
 \subsection{Signature Unforgeability}
 
 \begin{proof}[\thmref{thm:sign-forge-uas}; Signature unforgeability of \CUASGen]

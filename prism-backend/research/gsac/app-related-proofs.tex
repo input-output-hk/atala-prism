@@ -3,8 +3,9 @@
 
 \subsection{Security of \CUASGS}
 
-We prove that our \CUASGS construction is a secure group signature scheme,
-according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
+We prove that our \CUASGS construction is an anonymous, traceable, and
+non-frameable group signature scheme, according to the model in \cite{bsz05}, if
+the underlying \CUASGen construction is secure.
 
 \begin{theorem}[Anonymity of \CUASGS]
   If the base \CUASGen construction has signature anonymity according to
@@ -72,8 +73,9 @@ according to \cite{bsz05}, if the underlying \CUASGen construction is secure.
 
 \subsection{Security of \CUASRing}
 
-We prove that our \CUASRing construction is anonymous and unforgeable, if
-the underlying $\CUASGen^{hide-iss}$ construction is secure.
+We prove that our \CUASRing construction is anonymous and unforgeable, in the
+model given in \cite{bkm06}, if the underlying $\CUASGen^{hide-iss}$
+construction is secure.
 
 \begin{theorem}[Anonymity of \CUASRing]
   If the base $\CUASGen^{hide-iss}$ construction is anonymous according to

@@ -72,9 +72,8 @@ In detail, an \UAS scheme is composed by the following algorithms:
   % public key, with randomness $r$
   . 
 \item[$\OKeyGen(\parm,\finsp) \rightarrow (\opk,\osk)$.] Given \parm, and
-  function \finsp, an opener runs \OKeyGen to generate its opening key pair.
-  The function \finsp defines the type of utility that will be extractable from
-  signatures.
+  function \finsp, an opener runs \OKeyGen to generate its key pair. \finsp
+  defines the utility extractable from signatures.
 \item[$\ISet(\upk,\usk,\fissue) \rightarrow \ipk$.] Given a user key
   pair, and an issuance function \fissue for checking that credential requestors
   meet some conditions to be issued a credential, an existing user runs \ISet to
@@ -126,9 +125,9 @@ In detail, an \UAS scheme is composed by the following algorithms:
 
 \paragraph{Issuance, evaluation, and opening functions.} %
 These are the functional placeholders that allow modulating the behaviour of the
-resulting instantiation. They controll the conditions upon which new credentials
-can be issued, the information revealed at signing time, or extractable from
-signatures. In all cases, the user computes them, and proves correctness of
+resulting instantiation. They control the conditions for issuing new
+credentials, the information revealed alongside signatures, or extractable
+from them. In all cases, the user computes them, and proves correctness of
 such computation. We give concrete examples in \secref{sec:relationships}.
 
 \begin{description}
@@ -293,7 +292,7 @@ and tables in our definitions:
   the opener, \scid is the set of identifiers of the credentials used for
   signing, \feval is the signing evaluation function, and \sig and \msg are the
   produced signature and signed message.
-\item[\CSIG.] Maintains challenge signatures output to the adversary in the
+\item[\CSIG.] Stores challenge signatures output to the adversary in the
   signature anonymity game, and is indexable by challenge signatures \csig.
   Each entry contains also $\cuid_b$ and $\cscid_b$, respectively the challenge
   user  and credential identifiers set used to produce \csig; as well as the
@@ -303,27 +302,25 @@ and tables in our definitions:
 \end{description}
 
 \paragraph{Oracles.} %
-In the game-based definitions of our \UAS model, we leverage the following
-oracles, which are formally defined in \figref{fig:oracles1} and
+We leverage the following oracles, formalized in \figref{fig:oracles1} and
 \figref{fig:oracles2}.
 
 \begin{description}
 % \item[\IGEN.] Adds a new issuer to the game, generating its keypair and setting
 %   the associated issuance function.
-\item[\HUGEN.] Adds a new honest user to the game, generating its keypair.
-\item[\CUGEN.] Adds a new corrupt user to the game, setting its \upk to the
-  value given by the adversary.  
-\item[\OGEN.] Adds a new opener to the game, generating its key pair and
-  setting its evaluation and opening functions.
+\item[\HUGEN.] Adds a new honest user, generating its keypair.
+\item[\CUGEN.] Adds a new corrupt user. Sets its \upk to the
+  one given by the adversary.  
+\item[\OGEN.] Adds a new opener, generates its key pair and sets its opening
+  function.
 % \item[\ICORR.] Corrupts an existing (and honest) issuer, by giving its secret
 %   key to the adversary.
 \item[\ISET.] ``Upgrades'' a user to become an issuer, specifying its
   \fissue function.
-\item[\UCORR.] Corrupts an existing (and honest) user, giving its secret
-  key to the adversary. If the user was also an issuer, it becomes a corrupt
-  issuer too.
-\item[\OCORR.] Corrupts an existing (and honest) opener, by giving its secret
-  key to the adversary.
+\item[\UCORR.] Corrupts an existing honest user, giving its \usk to the
+  adversary. If the user was also an issuer, it becomes a corrupt issuer too.
+\item[\OCORR.] Corrupts an existing honest opener, giving its \osk to the
+  adversary.
 % \item[\HUGEN.] Adds a new honest user to the game, by honestly generating
 %   the user's key pair.
 % \item[\CUGEN.] Adds a new corrupt user to the game or, if the specified
@@ -459,7 +456,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
     }
 
     \caption{Detailed oracles available in our model (1/2). Oracles for
-      generating key material for users, issuers, and openers.}
+      key generation.}
     \label{fig:oracles1}
   \end{figure*}
 }
@@ -474,7 +471,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
         \procedure{$\OBTISS(\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
           \rbrace_{i \in [n]})$}{%
           \pcif \uid \notin \HU \lor \iid \notin \HI: \pcreturn \bot \\
-          \pcif \exists i \in [n]~\suchthat~\cid_i \in \CCRED: \pcreturn \bot \\          
+          \pcif \exists i \in [n]~\suchthat~\cid_i \in \CCRED: \pcreturn \bot \\
           \langle \Cred, R \rangle \gets
           \langle \Obtain(\UK[\uid]\CRED[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs), \\
           \hspace*{50pt} \Issue(\PRVIK[\iid],\ISR[\lbrace \cid_i\rbrace_{i\in[n]}],\attrs)
@@ -541,7 +538,7 @@ oracles, which are formally defined in \figref{fig:oracles1} and
     }
     \scalebox{0.85}{
       
-      \begin{minipage}[t]{.5\textwidth}
+      \begin{minipage}[t]{.55\textwidth}
 
         \procedure{$\OBTAIN(\uid,\iid,\attrs,\lbrace (\cid_i,\iid_i)
           \rbrace_{i\in[n]})$}{%
@@ -621,7 +618,8 @@ oracles, which are formally defined in \figref{fig:oracles1} and
   \end{figure*}
 }
 
-\paragraph{Helper functions \SimSetup, \ExtractIssue, and \ExtractSign.}
+\paragraph{Helper functions % \SimSetup, \ExtractIssue, and \ExtractSign
+  .}
 We assume the existence of these helper functions. They are not functions
 available in the actual scheme, but rather to the challenger in the experiments
 we use to formalize security of \UAS schemes. We introduce them here, and define
@@ -633,12 +631,13 @@ them later for our construction.
   indistinguishable to that produced by the \Setup algorithm, as well as a
   trapdoor \trap.
 \item[$\ExtractIssue(\trap,\utrans) \rightarrow (\upk,\usk,\sCred=
-  \lbrace(\cid_i,\attrs_i,\cred_i) \rbrace_{i \in [n]},
-  \Cred=(\cid,\attrs,\cred))$.]
+  \lbrace(\cid_i,\attrs_i,\cred_i,\ipk_i) \rbrace_{i \in [n]},
+  \Cred=(\cid,\attrs,\cred,\ipk))$.]
   Receives trapdoor \trap and a valid $\langle \Obtain, \Issue \rangle$
   transcript \utrans. It outputs the credential \Cred issued as a result of the
   interaction in \utrans, along with the involved user key pair $(\upk,\usk)$
-  and, if any, the credential set \sCred used to request \Cred.
+  and the credential set \sCred used to request \Cred, of size $n$, where $n$
+  may be $0$.
 \item[$\ExtractSign(\trap,\Sig) \rightarrow
   (\upk,\usk,\sCred=\lbrace(\cid_i,\attrs_i,\cred_i)
   \rbrace_{i \in [n]},\yeval^1,\yinsp)$.] Receives trapdoor \trap and a valid
@@ -669,7 +668,11 @@ them later for our construction.
 %   % to \uid, extract the used secret key, and check if there is a match. In the
 %   % latter case, there is no guarantee of getting a one-to-one relationship
 %   % between \usk and \uid. Also, when used for corrupt users, this can only be
-%   % used when the issuer is honest, as transcripts are needed. 
+%   % used when the issuer is honest, as transcripts are needed.
+\item[$\VerCred(\usk,\cid,\attrs,\cred,\ipk) \rightarrow 1/0$.] Returns
+  $1$ if \cred is a valid credential with identifier \cid, issued by an issuer
+  with public key \ipk, over attributes \attrs, and bound to user secret key
+  \usk. Otherwise, it returns $0$.
 \end{description}
 
 % Note that, for all the helper functions, in the case of credentials, transcripts,
@@ -855,16 +858,18 @@ signature -- concretly, such misbehaviour is not prevented by \ExpForgeSign.
 We thus extend unforgeability of signatures with issuance unforgeability,
 \ExpForgeIssue. It captures that all honestly issued credentials meet the
 requirements set by the corresponding issuer, and that any further credential
-involved in the request is bound to the same known user. For this, we allow the
-adversary \adv~to interact with the oracles (restricted to honest issuers).
-Eventually, \adv~is challenged to output a credential identifier from which we
-extract the actual witnesses used in the credential request associated to \cid.
-\adv~wins if the issuance function, applied to the extracted values, does not
-meet the expected output, or if not all of the credentials (if any) used to
-support the request belong to the same (known) user to whom the new credential
-was issued. Note that the issuance transcript associated to \cid must exist, as
-we unavoidably need to restrict to honest issuers. Indeed, a dishonest issuer
-cannot be trusted to enforce any policy, nor to properly keep all transcripts.
+involved in the request is a valid credential, bound to the same known user. For
+this, we allow the adversary \adv~to interact with the oracles (restricted to
+honest issuers). Eventually, \adv~is challenged to output a credential \Cred
+from which we extract the actual witnesses used in the credential request
+associated to \cid. \adv~wins if the issuance function, applied to the extracted
+values, does not meet the expected output, if not all of the credentials (if
+any) used to endorse the request belong to the same (known) user to whom the new
+credential was issued, or if any of such credentials is a forgery. Note that the
+issuance transcript associated to the credential output by the adversary must
+exist, as we unavoidably need to restrict to honest issuers. Indeed, a dishonest
+issuer cannot be trusted to enforce any policy, nor to properly keep all
+transcripts.
 
 We formalize both properties in \figref{fig:exp-uas-unfor}.
 
@@ -916,40 +921,43 @@ We formalize both properties in \figref{fig:exp-uas-unfor}.
   \centering
   \hspace*{-2em}
   \scalebox{0.85}{
-    \begin{minipage}[t]{0.6\textwidth}
+    \begin{minipage}[t]{0.7\textwidth}
       \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
-        % (\Cred,\uid,\iid,\oid,\feval,\msg) \gets \adv^{\Oforge}(\parm) \\
-        % \Sig \gets \Sign(\PRVUK[\uid],\PUBOK[\oid],\Cred,\msg,\feval) \\
-        % \pcif \Verify(\PUBOK[\oid],\PUBIK[\iid],\Sig,\msg,\feval) = 0: \\
-        % \pcind \pcreturn 0 \\
-        % (\upk,\usk, (\cid,\attrs,\cdot), \cdot, \cdot) \\
-        % \pcind \gets \ExtractSign(\trap,\oid,\iid,\Sig,\msg,\feval) \\
-        % \pcif \trans[\cid] = \bot \lor \CRED[\cid] = \bot: \pcreturn 1 \\
-        % (\yissue,\cdot) \gets \trans[\cid];
-        % ((\cdot,\fissue),\cdot) \gets \PUBIK[\cid] \\
-        % \pcif \nexists \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]}
-        % \in \CRED[\uid]~\suchthat \\
-        % \pcind \fissue(\upk,\cid,\attrs,
-        % \lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]}) = \yissue: \\
-        % \pcind \pcreturn 1
-        % 
-        % ((\upk_1,r_1,\Ccom_1),\dots,(\upk_l,r_l,\Ccom_l),\st) \\
-        % \pcind \gets \adv^{\HUGEN,\CUGEN}(\texttt{choose},\parm) \\
-        % \pcif \exists i\in[l]~\suchthat~\forall \uid,
-        % \upk_i \neq \PUBUK[\uid]:  \\
-        % \pcind \pcreturn 0 \\
-        % \cid \gets \adv^{\Oforge}(\texttt{forge},\st,\parm) \\
+        (\cid,\attrs,\cred,\ipk) \gets \adv^{\Oforge}(\parm) \\
+        \pcif \ISR[\cid] \notin \HI \lor \trans[\cid] = \bot: \pcreturn 0 \\
+        (\utrans,\yissue) \gets \trans[\cid] \\
+        (\upk,\usk,\lbrace \Cred_i \rbrace_{i\in[n]}, \Cred)
+        \gets \ExtractIssue(\trap,\utrans) \\
+        \forall i\in[n], (\cid_i,\attrs_i,\cred_i,\ipk_i) \gets \C_i \\
+        (\cid,\attrs,\cred,\ipk) \gets \C;
+        \scid \gets \lbrace \cid_i \rbrace_{i\in[n]} \cup
+        \lbrace \cid \rbrace \\
+        \pcif \VerCred(\usk,\cid,\attrs,\cred,\ipk) = 0~\lor \\
+        \pcind \fissue(\upk,\cid,\attrs,\lbrace (\cid_i,\attrs_i)
+        \rbrace_{i\in[n]}) \neq \yissue~\lor \\
+        \pcind \OWNR[\scid] \notin \HU \cup \CU: \pcreturn 1 \\        
+        \pcif \exists i\in[n]~\suchthat~
+        \VerCred(\usk,\cid_i,\attrs_i,\cred_i,\ipk_i) = 0~\lor \\
+        \pcind (\exists \iid\in\HI~\suchthat~\PUBIK[\iid] = \ipk_i \land
+        \CRED[\cid_i] = \bot~\land \\
+        \pcind \VerCred(\usk,\cid_i,\attrs_i,\cred_i,\ipk_i) = 1):
+        \pcreturn 1 \\        
+        \pcreturn 0
+        %
+        \iffalse
         \cid \gets \adv^{\Oforge}(\parm) \\
         \pcif \ISR[\cid] \notin \HI \lor \trans[\cid] = \bot: \pcreturn 0 \\
         (\utrans,\yissue) \gets \trans[\cid] \\
-        (\upk,\cdot,\lbrace (\cid_i,\attrs_i) \rbrace_{i\in[n]},\cdot,\attrs,
-        \cdot) \gets \ExtractIssue(\trap,\utrans) \\
+        (\upk,\cdot,\lbrace (\cid_i,\attrs_i,\cred_i,\ipk_i) \rbrace_{i\in[n]},
+        \cdot,\attrs,\cdot,\cdot) \\
+        \pcind \gets \ExtractIssue(\trap,\utrans) \\
         \textrm{Let $\scid \gets \lbrace \cid_i \rbrace_{i\in[n]} \cup
           \lbrace \cid \rbrace$} \\
         \pcreturn \OWNR[\scid] \notin \HU \cup \CU~\lor \\
         \pcind \fissue(\upk,\cid,\attrs,\lbrace (\cid_i,\attrs_i)\rbrace_{i\in[n]})
         \neq \yissue
+        \fi
       }      
     \end{minipage}    
     \begin{minipage}[t]{0.6\textwidth}
@@ -1125,11 +1133,11 @@ did not produce it (i.e., no matching call to \SIGN exists).
 \subsection{\CUASGen: A Generic \UAS Construction}
 \label{ssec:generic-construction-uas}
 
-In this section, we give a generic construction of an \UAS scheme, based on
+We give a generic construction of an \UAS scheme, based on
 generic building blocks. We use three different NP relations: \RelIss, \RelSig,
 and \RelIns, described next and specified in CS notation \cite{cs97} in
-\figref{fig:nizkrels}. Crucially, these relations include verifying that the
-comptuation of the \fissue, \feval and \finsp functions has been done correctly.
+\figref{fig:nizkrels}. These relations include verifying that the comptuation of
+the \fissue, \feval and \finsp functions has been done correctly.
 
 \begin{description}
 \item[\RelIss:] For NIZK proofs at issuance time. Requires users to
@@ -1187,7 +1195,7 @@ Then, runs $(\ek,\dk) \gets \EKeyGen(\Eparm)$, and sets, $\opk \gets (\ek,
 
 \paragraph{$\ipk \gets \ISet((\upk,\usk),\fissue)$.} %
 A user willing to become an issuer just sets $\ipk \gets (\upk,\fissue)$, and
-publishes \ipk. We assume that {\ipk}s are published in some properly (probably
+publishes \ipk. We assume that {\ipk}s are published in some proper (probably
 authenticated) way.
 
 \paragraph{$\langle \cred/\bot,\utrans/\bot \rangle \gets
@@ -1264,7 +1272,7 @@ verification passes, and reject otherwise.
 \subsection{Correctness and Security of \CUASGen}
 \label{ssec:security-uas}
 
-We state the correctness and security theorems next, and defer the proofs to
+We now state the correctness and security theorems, and defer the proofs to
 \appref{app:uas-proofs}.
 
 \begin{theorem}[Correctness of \CUASGen]
@@ -1295,8 +1303,9 @@ We state the correctness and security theorems next, and defer the proofs to
 \begin{theorem}[Issuance unforgeability of \CUASGen]
   \label{thm:issue-forge-uas}  
   If the underlying NIZK used for \RelIss is simulation extractable, and the
-  underlying \SBCM scheme is correct, then our \CUASGen construction satisfies
-  issuance unforgeability as defined in \defref{def:issue-forge-uas}.
+  underlying \SBCM scheme is correct and one-more unforgeable, then our \CUASGen
+  construction satisfies issuance unforgeability as defined in
+  \defref{def:issue-forge-uas}.
 \end{theorem}
 
 \begin{theorem}[Signature unforgeability of \CUASGen]
@@ -1374,9 +1383,9 @@ security of \CUASGen, is sketched in \appref{sapp:sec-hide-iss}.
   protection.}
 %
 In group signatures, signing and verification are non-interactive processes;
-whereas in anonymous credentials, they are an interactive protocol. \CUASGen
-targets the non-interactive approach. Now, we sketch how to transform this into
-an interactive protocol with replay protection.
+whereas in anonymous credentials, it is an interactive protocol. While
+\CUASGen targets the non-interactive approach, we sketch how to transform it
+into an interactive protocol with replay protection.
 
 Modelling-wise, this requires to replace the \Sign and \Verify functions with
 an interactive protocol $\langle 1/0,(\yeval,\utrans_{\Sig})/\bot \rangle \gets

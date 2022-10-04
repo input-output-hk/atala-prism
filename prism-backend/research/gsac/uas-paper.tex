@@ -23,8 +23,9 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \makesavenoteenv{tabular}
 \makesavenoteenv{table}
 
-%% Set/unset to activate/deactivate author comments
+%% Set/unset to activate/deactivate author comments, anonymous submission, etc.
 \def\authnotes{0}
+\def\anonymous{1}
 
 %%% Allows line-breaks in math formulae after commas
 \AtBeginDocument{%
@@ -40,13 +41,18 @@ logic,ff,mm,primitives,events,complexity,asymptotics,keys]{cryptocode}
 \setcounter{tocdepth}{2}
 
 \title{Universal Anonymous Signatures}
+\ifnum\anonymous=1
+\author{}
+\institute{}
+\fi
+\ifnum\anonymous=0
 \author{Jesus Diaz\inst{1} \and Markulf Kohlweiss\inst{2}}
-
 \institute{Input Output Global,\\
 \email{jesus.diazvico@iohk.io},\\
 \and
 Input Output Global and University of Edinburgh,\\
 \email{markulf.kohlweiss@ed.ac.uk}}
+\fi
 
 % Custom shorthands for this paper
 \input{symbols.tex}

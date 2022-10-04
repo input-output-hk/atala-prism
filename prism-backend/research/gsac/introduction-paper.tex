@@ -6,8 +6,8 @@
 %% Brief description of main precedents (simple words)
 \paragraph{Anonymous authentication and signatures.} %
 Privacy-preserving signature and authentication systems have been a prolific
-field in the last decades. Anonymous credentials (AC) \cite{chau85} and group
-signatures (GS) \cite{ch91} are among the most relevant schemes. In both, the
+field for decades. Anonymous credentials (AC) \cite{chau85} and group signatures
+(GS) \cite{ch91} are among the most relevant schemes. In both, the
 high-level idea is common: users obtain credentials, which can then use to
 authenticate anonymously and indistinguishably from other users with similar
 credentials. 
@@ -43,15 +43,15 @@ and verification are interactive.
 %% Previous works summary w/ refs directly related contribs of UAS
 %% (or, tech approaches of main precedents)
 \paragraph{Evolution of AC and GS.} %
-AC and GS systems have followed separate paths, with some exceptions.
+AC and GS systems have followed separate paths, with exceptions.
 Functionality-wise, Attribute-Based Group Signatures add attributes to the
-credentials issued to group members, who can later use them to prove pre-fixed
+credentials issued to group members, who can later use them to prove fixed
 claims \cite{emo09,aa14}. Hidden identity-based signatures also add attributes
-to the credentials, with the aim of preventing the opener (the trusted party who
+to the credentials, to prevent the opener (the trusted party who
 can deanonymize signers) from having to rely on the issuer in order to return
 meaningful identifying information when opening a signature \cite{ks07}. Some AC
-schemes also incorporate some sort of utility after authentication, like
-AC schemes with revocation \cite{cks10}.
+schemes also incorporate some utility after authentication, like
+revocable AC schemes \cite{cks10}.
 
 This separation does not hold in the approaches to build them, though. The
 probably most fruitful way to instantiate AC is with CL-type signatures
@@ -71,20 +71,20 @@ trade-off between anonymity and accountability.
 
 %% Main drawbacks of precedents
 \paragraph{Limitations of GS and AC.} %
-However, even the generalisation efforts that have independently taken place in
-GS and AC have limited applicability in the real world. On the GS side, even
-though MPS achieves a powerful balance on when a signature is
-deanonymizable and what information can be extracted from it, upon closer look,
-this information is somehow meaningless. Namely, the notion of identity is not
-well defined and, thus, it is not possible to assess whether the value output by
-their generalised open function makes sense or even if it is legitimate. Also,
-just being able to prove membership at signing time is typically not enough. In
-other words, in GS, utility at authentication time is very limited -- but this
-is precisely the main strength in AC schemes, which also have a well defined
-notion of identity via attributes. On the other hand, the notion of
-accountability  is barely present in AC schemes. For instance, non-frameability
-is not even considered, and it is non-frameability what prevents honest users
-from being held accountable of dishonest actions they did not take part in.
+Even the independent generalisation efforts in both GS and AC
+have limited applicability in the real world. On the GS side, although MPS
+achieves a powerful balance on when a signature is deanonymizable and what
+information can be extracted, upon closer look, this information is somehow
+meaningless. Namely, the notion of identity is not well defined and, thus, it is
+not possible to assess whether the value output by their generalised open
+function makes sense or even if it is legitimate. Also, proving membership at
+signing time is typically not enough. In other words, in GS,
+utility at authentication time is very limited. This is precisely the main
+strength in AC schemes, which also have a well defined notion of identity via
+attributes. Conversely, the notion of accountability  is barely present in AC
+schemes. For instance, non-frameability is not even considered, and it is
+non-frameability what prevents honest users from being held accountable of
+dishonest actions they did not take part in.
 %
 In any case, perhaps the most impractical limitation of all is that too many
 models exist in both fields. Although similar, each model focuses on slightly
