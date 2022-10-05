@@ -51,22 +51,22 @@ security parameter.
 A public-key encryption scheme is defined by the following algorithms:
 
 \begin{description}
-\item[$\Eparm \gets \ESetup(\Esecpar)$.] Produces public parameters \Eparm given
-  a security parameter \Esecpar.
-\item[$(\Eek,\Edk) \gets \EKeyGen(\Eparm)$.] Given public parameters \Eparm,
-  produces an encryption-decryption key pair $(\Eek,\Edk)$.
-\item[$\Ec \gets \EEnc(\Eek,\msg)$.] Encrypts message \msg with encryption key
-  \Eek, producing ciphertext \Ec.
-\item[$\msg \gets \EDec(\Edk,\Ec)$.] Decrypts ciphertext \Ec with decryption key
-  \Edk.
+\item[$\parm \gets \ESetup(\secpar)$.] Produces public parameters \parm given
+  a security parameter \secpar.
+\item[$(\ek,\dk) \gets \EKeyGen(\parm)$.] Given public parameters \parm,
+  produces an encryption-decryption key pair $(\ek,\dk)$.
+\item[$\Ec \gets \EEnc(\ek,\msg)$.] Encrypts message \msg with encryption key
+  \ek, producing ciphertext \c.
+\item[$\msg \gets \EDec(\dk,\Ec)$.] Decrypts ciphertext \Ec with decryption key
+  \dk.
 \end{description}
 
 A public-key encryption scheme is correct if, given a honestly generated key
-pair $(\Eek,\Edk)$, produced with honestly generated parameters \Eparm,
-$\Pr[\EDec(\Edk,\EEnc(\Eek,\msg))=\msg] = 1$ with overwhelming probability.
+pair $(\ek,\dk)$, produced with honestly generated parameters \Eparm,
+$\Pr[\EDec(\dk,\EEnc(\ek,\msg))=\msg] = 1$ with overwhelming probability.
 
 A public-key encryption scheme has IND-CCA2 security if
-$\Pr[\ExpINDCCAiio(\Esecpar) = 1] - \Pr[\ExpINDCCAiiz(\Esecpar) = 1]|$ is
+$\Pr[\ExpINDCCAiio(\secpar) = 1] - \Pr[\ExpINDCCAiiz(\secpar) = 1]|$ is
 a negligible function of \Esecpar, for any p.p.t. adversary \adv, where
 \ExpINDCCAiib is as defined in \figref{fig:indcca2-game}.
 
@@ -74,15 +74,17 @@ a negligible function of \Esecpar, for any p.p.t. adversary \adv, where
   \scalebox{0.9}{  
     \begin{minipage}[t]{\textwidth}
       \centering      
-      \procedure{$\ExpINDCCAiib(\Esecpar)$}{%
-        \Eparm \gets \ESetup(\Esecpar) \\
-        (\Eek,\Edk) \gets \EKeyGen(\Eparm) \\
-        b^* \gets \adv^{\ELR(b,\cdot,\cdot),\EDEC(\Edk,\cdot)}(\Eek),
+      \procedure{$\ExpINDCCAiib(\secpar)$}{%
+        \parm \gets \ESetup(\secpar) \\
+        (\ek,\dk) \gets \EKeyGen(\parm) \\
+        b^* \gets \adv^{\oracle{\ELR}(b,\cdot,\cdot),
+          \oracle{\EDEC}(\dk,\cdot)}(\ek),
         ~\textrm{where:} \\
-        \pcind \ELR(b,\msg_0,\msg_1)~\textrm{returns}~\EEnc(\Eek,\msg_b),
+        \pcind \oracle{\ELR}(b,\msg_0,\msg_1)~\textrm{returns}~\EEnc(\ek,\msg_b),
         ~\textrm{and} \\
-        \pcind \EDEC(\Edk,\Ec)~\textrm{returns}~\EDec(\Edk,\Ec) \\
-        \pcif \EDEC~\textrm{has been called with an output of \ELR, abort} \\
+        \pcind \oracle{\EDEC}(\dk,\Ec)~\textrm{returns}~\EDec(\dk,\Ec) \\
+        \pcif \oracle{\EDEC}~\textrm{has been called with an output of \ELR,
+          abort} \\
         \pcreturn b^*
       }
     \end{minipage}
@@ -94,16 +96,16 @@ a negligible function of \Esecpar, for any p.p.t. adversary \adv, where
 \subsection{Commitments}
 \label{sapp:commitments}
 
-Although we don't expose commitments directly in our \UAS scheme or
-constructions, they are an essential part of \SBCM schemes. Thus, we overview
-them briefly next. In a nutshell, a commitment scheme is defined by the
-following algorithms:
+Although we don't directly leverage commitments fucntionality in our \UAS scheme
+or constructions, they are an essential part of \SBCM schemes, which we present
+in a following section. Thus, we overview commitment schemes briefly now. In a
+nutshell, a commitment scheme is defined by the following algorithms:
 
 \begin{description}
-\item[$\Cparm \gets \CSetup(\Csecpar)$.] Given a security parameter \Csecpar,
-  returns the public parameters \Cparm to commit messages.
-\item[$\Ccom \gets \CCommit(\Cparm,\msg;r)$.] Given the public parameters and
-  a message \msg, outputs a commitment \Ccom to \msg, for which randomness $r$
+\item[$\parm \gets \CSetup(\secpar)$.] Given a security parameter \secpar,
+  returns the public parameters \parm to commit messages.
+\item[$\Ccom \gets \CCommit(\parm,\msg;r)$.] Given the public parameters and
+  a message \msg, outputs a commitment \com to \msg, for which randomness $r$
   from some predefined randomness space $\mathcal{R}$ is used.
 \end{description}
 
@@ -114,33 +116,33 @@ and (usually) hiding:
 \begin{description}
 \item[Binding.] Intuitively, the binding property of commitment schemes means
   that no adversary can change the message that has been committed to. More
-  formally, $\Pr[\ExpComBind(\Csecpar) = 1]$ must be a negligible function of
+  formally, $\Pr[\ExpComBind(\secpar) = 1]$ must be a negligible function of
   the security parameter.
 \item[Hiding.] The hiding property captures that no adversary should be able to
   learn the message that was committed, when given only the commitment. This is
-  formally defined through \ExpComHideb, where $|\Pr[\ExpComHideb(\Csecpar)=1|
-  b=1] - \Pr[\ExpComHideb(\Csecpar)=1|b=0]|$ must be a negligible function of
+  formally defined through \ExpComHideb, where $|\Pr[\ExpComHideb(\secpar)=1|
+  b=1] - \Pr[\ExpComHideb(\secpar)=1|b=0]|$ must be a negligible function of
   the security parameter.
 \end{description}
 
 \begin{figure}[ht!]
   \scalebox{0.9}{
     \begin{minipage}[t]{0.5\textwidth}
-      \procedure{$\ExpComBind(\Csecpar)$}{%
-        \Cparm \gets \CSetup(\Csecpar) \\
-        (\msg_0,r_0,\msg_1,r_1) \gets \adv(\Cparm) \\
-        \Ccom_0 \gets \CCommit(\Cparm,\msg_0,r_0) \\
-        \Ccom_1 \gets \CCommit(\Cparm,\msg_1,r_1) \\
+      \procedure{$\ExpComBind(\secpar)$}{%
+        \parm \gets \CSetup(\secpar) \\
+        (\msg_0,r_0,\msg_1,r_1) \gets \adv(\parm) \\
+        \Ccom_0 \gets \CCommit(\parm,\msg_0,r_0) \\
+        \Ccom_1 \gets \CCommit(\parm,\msg_1,r_1) \\
         \pcif \msg_0 \neq \msg_1 \land \Ccom_0 = \Ccom_1: \pcreturn 1 \\
         \pcreturn 0
       }
     \end{minipage}
     \begin{minipage}[t]{0.5\textwidth}
       \procedure{$\ExpComHideb(\secpar)$}{%
-        \Cparm \gets \CSetup(\secpar) \\
-        b' \gets \adv^{COM(\Cparm,\cdot,\cdot)},~\textrm{where}: \\
-        \pcind COM(\Cparm,\msg_0,\msg_1): \\
-        \pcind \pcind r \getr \mathcal{R};~\pcreturn \CCommit(\Cparm,\msg_b,r) \\
+        \parm \gets \CSetup(\secpar) \\
+        b' \gets \adv^{\oracle{COM}(\parm,\cdot,\cdot)},~\textrm{where}: \\
+        \pcind COM(\parm,\msg_0,\msg_1): \\
+        \pcind \pcind r \getr \mathcal{R};~\pcreturn \CCommit(\parm,\msg_b,r) \\
         % (\msg_0,\msg_1,st) \gets \adv(\Cparm) \\
         % r \getr \mathcal{R} \\
         % \Ccom \gets \CCommit(\Cparm,\msg_b,r) \\
@@ -160,10 +162,10 @@ natural way. Namely, $\CCommit$ receives a vector/block of messages, \msgset
 instead of a single message. In the games, the adversary returns sets of
 messages and, in the binding game, the comparison $\msg_0 \neq \msg_1$ now
 compares sets $\msgset_0$ and $\msgset_1$, which must differ in at least one
-element. This extension is straight-forward, for instance, from Pedersen
+element. This extension is straightforward, for instance, from Pedersen
 commitments \cite{bcc+15}.
 
-\subsection{Simulation-Extractable Non-Interactive Zero-Knowledge
+\subsection{Simulation Extractable Non-Interactive Zero-Knowledge
   Proofs of Knowledge}
 \label{sapp:nizk}
 
@@ -182,24 +184,24 @@ NIZK system is a tuple $(\NIZKSetup,\NIZKProve,\NIZKVerify)$, defined as follows
 \cite{gos06}:
 
 \begin{description}
-\item[$\NIZKcrs \gets \NIZKSetup(\NIZKsecpar)$.] Generates a CRS \NIZKcrs from
-  security parameters \NIZKsecpar.
+\item[$\NIZKcrs \gets \NIZKSetup(\secpar)$.] Generates a CRS \NIZKcrs from
+  security parameters \secpar.
 \item[$\NIZKproof \gets \NIZKProve(\NIZKcrs,\NIZKx,\NIZKw)$.] Given \NIZKcrs,
   statement \NIZKx, and witness \NIZKw, creates a proof \NIZKproof.
 \item[$1/0 \gets \NIZKVerify(\NIZKcrs,\NIZKproof,\NIZKx)$.] Checks whether
   \NIZKproof is a valid proof for \NIZKx.
 \end{description}
 
-Any zero-knowledge proof of knowledge must meet completeness, soundness and
-zero-knowledge,properties. We further need an extra property, called
-\emph{simulation-extractability} \cite{cl06}, which amplifies the security
+Any zero-knowledge proof of knowledge must meet completeness, soundness, and
+zero-knowledge properties. We further need an extra property, called
+\emph{simulation extractability} \cite{cl06}, which amplifies the security
 requirements of (simulation-) soundness.
 %
 To define more formally the properties we need, we have to define three extra
 algorithms:
 
 \begin{description}
-\item[$(\NIZKcrs,\NIZKtrap) \gets \NIZKSimSetup(\NIZKsecpar)$.] Produces a
+\item[$(\NIZKcrs,\NIZKtrap) \gets \NIZKSimSetup(\secpar)$.] Produces a
   \NIZKcrs as the \NIZKSetup algorithm, along with a trapdoor \NIZKtrap.
 \item[$\NIZKproof \gets \NIZKSim(\NIZKcrs,\NIZKtrap,\NIZKx)$.] Given a trapdoor
   \NIZKtrap produced by \NIZKSimSetup, and a statement $\NIZKx \in \NIZKLang$,
@@ -212,13 +214,14 @@ algorithms:
 When we want to make explicit the NP relation \NIZKRel to which the previous
 algorithms refer to, we use $\NIZKSetup^\NIZKRel,\NIZKProve^\NIZKRel$, 
 $\NIZKVerify^\NIZKRel$, etc., and omit the \NIZK prefix and super-index when
-clear from context. Altogether, the tuple $(\Setup,\Prove,\Verify,\SimSetup,
-\Sim,\Extract)$ needs to meet the following properties:
+clear from context. Altogether, the tuple $(\Setup,\Prove,\Verify,
+\helper{\SimSetup},\helper{\Sim},\helper{\Extract})$ needs to meet the following
+properties:
 
 \paragraph{Completeness.} %
 Ensures that, for any $(\NIZKx,\NIZKw) \in \NIZKRel$, any honest prover will be
 able to create a proof \NIZKproof that is accepted by any honest verifier, with
-overwhelming probability. More precisely, $\Pr\lbrack\ExpNIZKComp(\NIZKsecpar)
+overwhelming probability. More precisely, $\Pr\lbrack\ExpNIZKComp(\secpar)
 \rbrack = 1$ with overwhelming probability, for any p.p.t. \adv, for
 \ExpNIZKComp in \figref{fig:nizk-games}.
 
@@ -227,9 +230,9 @@ Ensures that no adversary can create proofs accepted by \Verify, for
 statements $\NIZKx \notin \NIZKLang$, except with negligible probability. That
 is, for \ExpNIZKSound as in \figref{fig:nizk-games}, $\Pr\lbrack\ExpNIZKSound
 (\NIZKsecpar)\rbrack=1$ with overwhelming probability. If this holds only
-against p.p.t. adversaries, we talk of Non-Interactive \emph{arguments}, while
-if soundness holds even against unbounded adversaries, we talks about
-Non-Interactive proofs.
+against p.p.t. adversaries, we talk of non-interactive \emph{arguments}, while
+if soundness holds even against unbounded adversaries, we talk about
+non-interactive proofs.
 
 \paragraph{Zero-knowledge.} %
 Intuitively, captures that no information can be learned from a statement and
@@ -239,27 +242,29 @@ setup is done with \Setup, and $\adv$ has access to an honest prover
 \Prove; and a run in an ideal world ($b=1$), where the setup is replaced by
 \SimSetup, and proofs are simulated with the help of the trapdoor produced by
 \SimSetup, except when $\adv$ specifies $(\NIZKx,\NIZKw) \notin \NIZKRel$. Note
-that, in the context of simulation-extractable NIZK, this property not only
+that, in the context of simulation extractable NIZK, this property not only
 requires that the simulated proofs are indistinguishable to the real ones; it
 also requires that \SimSetup is indistinguishable from \Setup. All this is
-formalised by requiring that $|\Pr[\ExpNIZKZKb(\NIZKsecpar) = 1 | b = 1] -
-\Pr[\ExpNIZKZKb(\NIZKsecpar) = 1 | b = 0]$ be a negligible function of \secpar,
+formalised by requiring that $|\Pr[\ExpNIZKZKb(\secpar) = 1 | b = 1] -
+\Pr[\ExpNIZKZKb(\secpar) = 1 | b = 0]$ be a negligible function of \secpar,
 where \ExpNIZKZKb is as defined in \figref{fig:nizk-games}.
 
-\paragraph{Simulation-Extractability.} As stated, simulation-extractability
-is an extension to simulation soundness. In a nutshell,
-simulation-extractability requires that, even after having received a polynomial
+\paragraph{Simulation Extractability.} As stated, simulation extractability
+is an extension to simulation soundness, which is in turn an extension to
+knowledge soundness. In a nutshell,
+simulation extractability requires that, even after having received a polynomial
 number of simulated proofs of knowledge, no adversary can output a valid proof
 of knowledge from which no witness can be extracted. It implies simulation
 soundness, which ``just'' requires that no adversary can produce a valid proof
 after having seen polynomially many simulated proofs (but does not guarantee
-extraction). Formally, for simulation-extractability we require that
-$\Pr[\ExpNIZKSimExt(\NIZKsecpar)] = 1$ is a negligible function of \secpar,
+extraction). Formally, for simulation extractability we require that
+$\Pr[\ExpNIZKSimExt(\secpar)] = 1$ is a negligible function of \secpar,
 where \ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
 
 \begin{figure}[ht!]
-  \scalebox{0.9}{
-    \begin{minipage}[t]{0.5\textwidth}
+  \centering
+  \scalebox{0.85}{
+    \begin{minipage}[t]{0.55\textwidth}
       \procedure{$\ExpNIZKComp(\NIZKsecpar)$}{%
         \NIZKcrs \gets \Setup(\NIZKsecpar) \\
         (\NIZKx,\NIZKw) \gets \adv(\NIZKcrs) \\
@@ -277,21 +282,17 @@ where \ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
         \Sim(\NIZKcrs,\NIZKtrap,\NIZKx)~\pcif (\NIZKx,\NIZKw) \in \NIZKRel \\
         \pcind \pcind \bot~\pcif (\NIZKx,\NIZKw) \notin \NIZKRel \\
         \NIZKw' \gets \Extract(\NIZKcrs,\NIZKtrap,\NIZKx,\NIZKproof) \\
-        \pcif \Verify(\NIZKcrs,\NIZKproof,\NIZKx) = 1 \land
+        \pcreturn \Verify(\NIZKcrs,\NIZKproof,\NIZKx) = 1 \land
         (\NIZKx,\NIZKw') \notin \NIZKRel~\land \\
-        \pcind \NIZKx~\textrm{was not queried to $\Sim$ via $\Sim'$}: \\
-        \pcind \pcreturn 1 \\
-        \pcreturn 0
+        \pcind \NIZKx~\textrm{was not queried to $\Sim$ via $\Sim'$}
       }    
     \end{minipage}
-    \begin{minipage}[t]{0.5\textwidth}
+    \begin{minipage}[t]{0.55\textwidth}
       \procedure{$\ExpNIZKSound(\NIZKsecpar)$}{%
         \NIZKcrs \gets \Setup(\NIZKsecpar) \\
         (\NIZKproof,\NIZKx) \gets \adv(\NIZKcrs) \\
-        \pcif \NIZKx \notin \NIZKLang \land
-        \Verify(\NIZKcrs,\NIZKproof,\NIZKx): \\
-        \pcind \pcreturn 0 \\
-        \pcreturn 1 \\
+        \pcreturn 1 - (\NIZKx \notin \NIZKLang \land
+        \Verify(\NIZKcrs,\NIZKproof,\NIZKx)) \\
       }
       
       \procedure{$\ExpNIZKZKb(\NIZKsecpar)$}{%
@@ -310,16 +311,16 @@ where \ExpNIZKSimExt is defined in \figref{fig:nizk-games}.
     \end{minipage}
   }
   \label{fig:nizk-games}
-  \caption{Games for Simulation-Extractable NIZK schemes.}
+  \caption{Games for Simulation Extractable NIZK schemes.}
 \end{figure}
 
-As studied in \cite{cl06}, simulation-extractable NIZKPoKs formalise the concept
+As studied in \cite{cl06}, simulation extractable NIZKPoKs formalise the concept
 of ``signatures of knowledge'' (see, e.g., \cite{cs97}). Which basically means
 that, given an $(\NIZKx,\NIZKw)$ pair from an NP relation, we can treat \NIZKx
 as a public key, and \NIZKw as its corresponding private key, and leverage them
 to build digital signature schemes -- with the advantage of being able to do so
 while proving arbitrary claims, as long as they can be represented as an NP
-relation. We note that, given a simulation-extractable NIZK system, it is
+relation. We note that, given a simulation extractable NIZK system, it is
 straightforward to build a signature of knowledge by adding the message to be
 signed in the statement of the NIZK.
 
@@ -351,7 +352,7 @@ An \SBM scheme must satisfy correctness and unforgeability properties.
 \paragraph{Correctness.} %
 Informally, an \SBM scheme is correct if signatures generated between an honest
 party running running \SBMSign over \smsg, for honestly generated parameters
-and key pairs, results in a signature over $\smsg \cup \overline{\smsg}$ that is
+and key pairs, results in a signature over $\smsg \cup \osmsg$ that is
 accepted by \SBMVerify.
 
 \paragraph{Unforgeability.} %
@@ -390,7 +391,7 @@ signature. This is precisely the case of partially blind signatures, that
 collapse to blind signatures when there is no common message between user
 and signer; and to conventional signatures when the user does not input a
 message to be blindly signed \cite{ao00}. Partially blind signatures, as
-blind signatures \cite{ps96}, cannot be modelled with the conventional security
+blind signatures \cite{ps96}, don't typically follow the conventional security
 against existential forgeries. Simply because the user is actually expected to
 be able to create signatures on messages unknown to the signer, which formally
 translates into the impossibility to check whether a signature output by the
@@ -417,30 +418,30 @@ we briefly model such a scheme for Signatures over Blocks of Committed Messages
 The syntax for an \SBCM scheme is as follows:
 
 \begin{description}
-\item[$\SBCMparm \gets \SBCMSetup(\SBCMsecpar)$.] It produces public parameters
+\item[$\parm \gets \SBCMSetup(\secpar)$.] It produces public parameters
   for the other algorithms, given an input security parameter \SBCMsecpar.
-\item[$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.] Generates a
+\item[$(\vk,\SBCMsk) \gets \SBCMKeyGen(\parm)$.] Generates a
   verification-signing key pair.
-\item[$(\SBCMcom,\pi,r) \gets \SBCMBlind(\SBCMvk,\osmsg,\smsg)$.] A user
-  computes commitment \SBCMcom to request a signature over messages \osmsg (in
+\item[$(\Ccom,\pi,r) \gets \SBCMBlind(\vk,\osmsg,\smsg)$.] A user
+  computes commitment \Ccom to request a signature over messages \osmsg (in
   committed form) and \smsg (in plain form), to signer with verification key
-  \SBCMvk. The output is the commitment \SBCMcom, the randomness $r$ used to
+  \vk. The output is the commitment \Ccom, the randomness $r$ used to
   compute it, and a proof $\pi$ proving knowledge of \osmsg and \smsg in
-  \SBCMcom.
-\item[$\SBCMbsig \gets \SBCMSign(\SBCMsk,\SBCMcom,\pi,\smsg)$.] The
-  signer, with signing key \SBCMsk, produces a blind signature \SBCMbsig over
-  the messages committed to in commitment \SBCMcom, as well as the messages in
+  \Ccom.
+\item[$\bsig \gets \SBCMSign(\sk,\Ccom,\pi,\smsg)$.] The
+  signer, with signing key \sk, produces a blind signature \bsig over
+  the messages committed to in commitment \Ccom, as well as the messages in
   \smsg, with associated proof $\pi$.
-\item[$\SBCMsig \gets \SBCMUnblind(\SBCMvk,\SBCMbsig,\SBCMcom,r,\osmsg,\smsg)$.]
-  A user, who requested a signature over \osmsg and \smsg, where \SBCMcom is a
+\item[$\sig \gets \SBCMUnblind(\vk,\bsig,\Ccom,r,\osmsg,\smsg)$.]
+  A user, who requested a signature over \osmsg and \smsg, where \Ccom is a
   commitment over \osmsg using randomness $r$, finalises the signature,
-  computing \SBCMsig from the signer's partial signature \SBCMbsig.
-\item[$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\osmsg,\smsg)$.] Checks
-  whether \SBCMsig is a valid signature over the set of messages \osmsg and
-  \smsg, under verification key \SBCMvk.
+  computing \sig from the signer's partial signature \bsig.
+\item[$1/0 \gets \SBCMVerify(\vk,\sig,\osmsg,\smsg)$.] Checks
+  whether \sig is a valid signature over the set of messages \osmsg and
+  \smsg, under verification key \vk.
 \end{description}
 
-The correctness and security properties are then defined as follows.
+The correctness and security properties are defined as follows.
 
 \paragraph{Correctness.} %
 Informally, an \SBCM scheme is correct if signatures generated between an honest
@@ -454,7 +455,7 @@ that is accepted by \SBCMVerify.
 It must be unfeasible for an adversary to produce signatures over blocks of
 messages that have not been signed (in plain, or committed shape) by the
 signer. More formally, an \SBCM scheme is unforgeable if, for all p.p.t.
-adversaries $\adv$, $\Pr[\ExpSBCMOMF(\SBCMsecpar) = 1]$, as defined in
+adversaries $\adv$, $\Pr[\ExpSBCMOMF(\secpar) = 1]$, as defined in
 \figref{fig:sbcm-games}, is a negligible function of the security parameter.
 Note that this follows the ``one-more-forgery'' type of definition of blind
 signatures \cite{bold02}.
@@ -464,21 +465,21 @@ Finally, the signer must not learn the plaintext values of the messages that are
 signed in committed form. Note that this is a weaker notion than the usual
 blindness property of (partially) blind signature schemes, where it is
 additionally required that the adversary cannot link a signature to the signing
-process that produced it. Informally, we capture this basically as the blinding
+process that produced it. Informally, we capture this basically as the hiding
 notion of a commitment scheme -- and formally define it in \ExpSBCMBlindb in
 \figref{fig:sbcm-games}.
 %
 Note that, in the definition, we explicitly do not give back to the adversary
 \adv~any full signature (i.e., after running \SBCMUnblind) obtained from values
-returned by \adv, as this will allow the adversary to trivially check what
-messages (among the ones he chose) was signed. While this may seem a too weak
+returned by \adv, as this would allow the adversary to trivially check what
+messages (among the ones he chose) were signed. While this may seem a too weak
 notion, it is good enough for our needs, as in our \UAS construction we never
 share actual signatures, but zero-knowledge proofs of knowledge of such
 signatures.
 
 An \SBCM scheme is blind if, for all p.p.t.
-adversaries $\adv$, $|\Pr[\ExpSBCMBlindo(\SBCMsecpar) = 1] -
-\Pr[\ExpSBCMBlindz(\SBCMsecpar) = 1]|$ is a negligible function of the security
+adversaries $\adv$, $|\Pr[\ExpSBCMBlindo(\secpar) = 1] -
+\Pr[\ExpSBCMBlindz(\secpar) = 1]|$ is a negligible function of the security
 parameter.
 
 \begin{figure}[ht!]
@@ -488,7 +489,7 @@ parameter.
       \procedure[linenumbering]{$\ExpSBCMOMF(\secpar)$}{%
         \parm \gets \Setup(\secpar) \\
         (\vk,\sk) \gets \KeyGen(\parm) \\
-        \lbrace(\sig_i,\overline{\smsg}_i, \smsg_i)\rbrace_{i\in[n]} \gets
+        \lbrace(\sig_i,\osmsg_i, \smsg_i)\rbrace_{i\in[n]} \gets
         \adv^{\Sign(\sk,\cdot,\cdot,\cdot)}(\vk) \\
         \pcif \exists i \in [n]~\st~\Verify(\vk,\sig_i,\osmsg_i,\smsg_i) = 0: \\
         \pcind \pcreturn 0 \\
@@ -523,8 +524,9 @@ parameter.
         % \pcind (\st,\bsig_d) \gets \adv(\st,\sk,\com_d,\pi_d,\smsg) \\
         % \pcind \sig_d \gets \SBCMUnblind(\vk,\bsig_d,r_d,\osmsg_d,\smsg) \\
         % b^* \gets \adv(\st,\sig_b,\sig_{1-b}) \\       
-        b^* \gets \adv^{BLIND(\cdot,\cdot,\cdot)}(\vk),~\textrm{where:} \\
-        \pcind BLIND(\osmsg_0,\osmsg_1,\smsg): \\
+        b^* \gets \adv^{\oracle{BLIND}
+          (\cdot,\cdot,\cdot)}(\vk),~\textrm{where:} \\
+        \pcind \oracle{BLIND}(\osmsg_0,\osmsg_1,\smsg): \\
         \pcind \pcind (\com,\pi,r) \gets \Blind(\vk,\osmsg_b,\smsg); \\
         \pcind \pcind \pcreturn (\com,\pi) \\
         \pcreturn b = b^*
@@ -532,8 +534,7 @@ parameter.
     \end{minipage}
   }
   \label{fig:sbcm-games}
-  \caption{Games for \SBCM schemes.
-  }
+  \caption{Games for \SBCM schemes.}
 \end{figure}
 
 \paragraph{Augmented NIZKs.} %
@@ -550,7 +551,8 @@ extending the initial NIZK into a more general one.
 It is direct that, if the base \SBCM scheme satisfies blindness, then extending
 it with an arbitrary zero-knowledge NIZK proof over the signed messages, still
 maintains blindness (the adversary cannot distinguish which committed message
-set is signed, in the blindness game).
+set is signed, in the blindness game, as long as both challenge messages are
+in the NP language).
 %
 We use this extension in our \CUASGen construction. Note that, under this
 extension, we may also need to provide extra information to the \SBCMBlind,
@@ -566,10 +568,10 @@ part of the statement being proven, but are not contained within the actual
   \SBCMBlind, but for relation \NIZKRel, which requires extra values $x'$ and
   $w'$ for its statement and witnesses, beyond what may be included in \smsg and
   \osmsg, respectively.
-\item $\SBCMbsig \gets \SBCMSign^\NIZKRel(\sk,\Ccom,\pi,\smsg;x')$. Like
+\item $\bsig \gets \SBCMSign^\NIZKRel(\sk,\Ccom,\pi,\smsg;x')$. Like
   \SBCMSign, but for relation \NIZKRel, which requires extra values $x'$
   for its statement, beyond what may be included in \smsg.
-\item $\SBCMsig \gets \SBCMUnblind^\NIZKRel(\vk,\SBCMbsig,\Ccom,r,\osmsg,\smsg;
+\item $\sig \gets \SBCMUnblind^\NIZKRel(\vk,\bsig,\Ccom,r,\osmsg,\smsg;
   x',w')$. Like \SBCMUnblind, but for relation \NIZKRel, which requires extra
   values $x'$ and $w'$ for its statement and witnesses, beyond what may be
   included in \smsg and \osmsg, respectively.
@@ -589,58 +591,58 @@ being that we allow merging committed blocks of messages and blocks of
 (plaintext) messages into the same signature.
 %
 Note also that, in our instantiation, we just include a generic \NIZK, for some
-relation over witness $\overline{\smsg}$ (i.e., the messages to be blindly
+relation over witness \osmsg (i.e., the messages to be blindly
 signed), and statement $(\Ccom,\smsg)$ (i.e., their block commitment, and the
 plainly signed messages). This is intentional, as we want to support cases where
 proving arbitrary predicates is possible (as opposed to ``just'' proving that
-the commitment is over the messages in $\overline{\smsg}$).
+the commitment is over the messages in \osmsg).
 %
 When we want to make explicit the relation over which the employed \NIZK is
 defined, we add a $\NIZKRel$ superscript to the algorithms.
 
-\paragraph{$\SBCMparm \gets \SBCMSetup(\SBCMsecpar,\nattrs,\tnattrs)$.} %
+\paragraph{$\parm \gets \SBCMSetup(\secpar,\nattrs,\tnattrs)$.} %
 Generates a bilinear group $\BB = (p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,e)
-\gets \PGen(\SBCMsecpar)$, and $\nattrs+\tnattrs+1$ additional generators
+\gets \PGen(\secpar)$, and $\nattrs+\tnattrs+1$ additional generators
 $\gen{g}$, $\gen{h}_1,...,\gen{h}_{\nattrs}$,$\gen{\th}_1,...,\gen{\th}_{\tnattrs}$
-of $\GG_1$. Returns $\SBCMparm \gets (\SBCMsecpar,\nattrs,\tnattrs,\BB,
+of $\GG_1$. Returns $\parm \gets (\secpar,\nattrs,\tnattrs,\BB,
 \gen{g},\gen{h}_1,...,\gen{h}_{\nattrs},\gen{\th}_1,...,\gen{\th}_{\tnattrs})$.
-We assume that \SBCMparm is available to all other algorithms, even when not
+We assume that \parm is available to all other algorithms, even when not
 explicitly passed as an argument.
 
-\paragraph{$(\SBCMvk,\SBCMsk) \gets \SBCMKeyGen(\SBCMparm)$.} %
-Parses \SBCMparm as $(\cdot,\cdot,(p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,e),
-\dots$ $\NIZKcrs \gets \NIZKSetup(\secpar)$. Outputs $\SBCMsk \gets \ZZ^*_p$,
-and $\SBCMvk \gets (\NIZKcrs,\gen{g}_2^{\SBCMsk})$.
+\paragraph{$(\vk,\sk) \gets \SBCMKeyGen(\parm)$.} %
+Parses \parm as $(\secpar,\cdot,\cdot,(p,\GG_1,\GG_2,\GG_T,\gen{g}_1,\gen{g}_2,
+e),\dots)$. Computes $\NIZKcrs \gets \NIZKSetup(\secpar)$. Outputs $\sk \gets
+\ZZ^*_p$, and $\vk \gets (\NIZKcrs,\gen{g}_2^{\sk})$.
 
-\paragraph{$(\Ccom,\pi,r) \gets \SBCMBlind(\SBCMvk,\osmsg,\smsg)$.} %
+\paragraph{$(\Ccom,\pi,r) \gets \SBCMBlind(\vk,\osmsg,\smsg)$.} %
 If $|\smsg |>\nattrs$ or $|\osmsg|>\tnattrs$,
 abort. Else, fetch fresh randomness $r \getr \ZZ^*_p$, compute $\Ccom \gets
-\gen{g}^r\prod_{i \in [|\overline{\smsg}|]}\gen{\th}_i^{\overline{\smsg}_i}$,
-and $\NIZKproof \gets \NIZKProve(\NIZKcrs,(r,\overline{\smsg}),\Ccom)$.
+\gen{g}^r\prod_{i \in [|\osmsg|]}\gen{\th}_i^{\osmsg_i}$,
+and $\NIZKproof \gets \NIZKProve(\NIZKcrs,(r,\osmsg),\Ccom)$.
 Output $(\Ccom,\NIZKproof,r)$.
 
-\paragraph{$\SBCMbsig \gets \SBCMSign(\SBCMsk,\Ccom,\NIZKproof,\smsg)$.} %
+\paragraph{$\bsig \gets \SBCMSign(\sk,\Ccom,\NIZKproof,\smsg)$.} %
 If $|\smsg|>\nattrs$, abort. Else, run $\NIZKVerify(\NIZKcrs,\Ccom,\NIZKproof)$
 and return $0$ if it fails. Else, compute $x,\tilde{s} \getr \ZZ^*_p, A \gets
 (\gen{g}_1\Ccom \gen{g}^{\tilde{s}} \prod_{i \in |\smsg|}
-\gen{h}_i^{\smsg_i})^{1/(\SBCMsk+x)}$. Return $\SBCMbsig \gets (A,x,\tilde{s})$.
+\gen{h}_i^{\smsg_i})^{1/(\sk+x)}$. Return $\bsig \gets (A,x,\tilde{s})$.
 
-\paragraph{$\SBCMsig \gets \SBCMUnblind(\SBCMvk,\SBCMbsig,\Ccom,r,
+\paragraph{$\sig \gets \SBCMUnblind(\vk,\bsig,\Ccom,r,
   \osmsg,\smsg)$.} %
-Parse \SBCMbsig as $(A,x,\tilde{s})$
+Parse \bsig as $(A,x,\tilde{s})$
 If $A = 1_{\GG_1}$: return $0$. Else, compute $s \gets r + \tilde{s}$. If
-$e(A,\gen{g}_2)^xe(A,\SBCMvk) \neq e(\gen{g}_1\Ccom\gen{g}^{\tilde{s}}
+$e(A,\gen{g}_2)^xe(A,\vk) \neq e(\gen{g}_1\Ccom\gen{g}^{\tilde{s}}
 \prod_{i \in |\smsg|}\gen{h}_i^{\smsg_i},\gen{g}_2)$: return $0$. Else, return
 $(A,x,s)$.
 
-% \paragraph{$\SBCMsig/\bot \gets \langle \SBCMCom(\SBCMvk,\overline{\smsg},
+% \paragraph{$\SBCMsig/\bot \gets \langle \SBCMCom(\SBCMvk,\osmsg,
 %   \smsg), \SBCMSign(\SBCMsk,\smsg) \rangle$.} %
 
 % \begin{itemize}
-% \item \underline{User}: If $|\smsg|>\nattrs$ or $|\overline{\smsg}|>\tnattrs$,
+% \item \underline{User}: If $|\smsg|>\nattrs$ or $|\osmsg|>\tnattrs$,
 %   abort. Else, fetch fresh randomness $r \getr \ZZ^*_p$, compute $\Ccom \gets
-%   \gen{g}^r\prod_{i \in [|\overline{\smsg}|]}\gen{\th}_i^{\overline{\smsg}_i}$,
-%   and $\NIZKproof \gets \NIZKProve(\NIZKcrs,(r,\overline{\smsg}),\Ccom)$.
+%   \gen{g}^r\prod_{i \in [|\osmsg|]}\gen{\th}_i^{\osmsg_i}$,
+%   and $\NIZKproof \gets \NIZKProve(\NIZKcrs,(r,\osmsg),\Ccom)$.
 %   Send $(\Ccom,\NIZKproof)$ to Issuer.
 % \item \underline{Signer}: If $|\smsg|>\nattrs$, abort. Else, run $\NIZKVerify
 %   (\NIZKcrs,\Ccom,\NIZKproof)$ and return $0$ if it fails. Else, compute
@@ -653,11 +655,11 @@ $(A,x,s)$.
 %   \gen{g}_2)$: return $0$. Else, return $(A,x,s)$.
 % \end{itemize}
 
-\paragraph{$1/0 \gets \SBCMVerify(\SBCMvk,\SBCMsig,\overline{\smsg},\smsg)$.} %
-To verify a signature \SBCMsig, for message set $\overline{\smsg}$ that was
+\paragraph{$1/0 \gets \SBCMVerify(\vk,\sig,\osmsg,\smsg)$.} %
+To verify a signature \sig, for message set \osmsg that was
 signed as a block commitment, and message set \smsg, signed as plaintext, parse
-\SBCMsig as $(A,x,s)$ and check if $e(A,\gen{g}_2^x\SBCMvk) =
-e(\gen{g}_1\gen{g}^s\prod_{i \in |\overline{\smsg}|}\gen{h}^{\overline{\smsg}_i}
+\sig as $(A,x,s)$ and check if $e(A,\gen{g}_2^x\vk) =
+e(\gen{g}_1\gen{g}^s\prod_{i \in |\osmsg|}\gen{h}^{\osmsg_i}
 \prod_{i \in |\smsg|}\gen{h}^{\smsg_i},\gen{g}_2)$
 
 \paragraph{Augmented NIZKs.} %
@@ -682,15 +684,15 @@ for BBS+ EUF-security, when the adversary against EUF-security queries a
 signature, the simulator (the adversary against $q$-SDH) has to simulate the
 signature. For this, it requires the $l$ messages in the message set to be
 signed, which in plain BBS+ it is not a problem, as they are received in the
-clear. In the case of \SBCM, however, some of the messages to be signed are
-received as part of a commitment. Note however that, in \SBCM, besides receiving
+clear. In this case, however, some of the messages to be signed are
+received as part of a commitment. Note however that now, besides receiving
 the commitment, we also receive a NIZK proof of knowledge of the corresponding
 messages. Thus, the adversary against $q$-SDH in the OMF case only needs to
 extract the witnesses from the proof. This is doable after soundness of the NIZK
 and binding of the commitment scheme. %
-If the NIZK also has online-extractability, then we do not need to impose
-further requirements. If it is not, then the \SBCM scheme should not allow
-parallel signing requests, or limit the total number of signatures to be
+If the NIZK also has online extractability, then we do not need to impose
+further requirements. Otherwise, then the scheme should not allow
+parallel signing of requests, or limit the total number of signatures to be
 created to a logarithmic function of the security parameter (which is probably
 not reasonable in most cases; although it may be for group signature-like
 settings). We refer to \cite[Lemma 1]{cdl16b} for the full details of the proof
@@ -700,18 +702,18 @@ of EUF security in BBS+.
 %   that in \cite{cdl16b}...}
 
 \paragraph{Blindness.}
-Blindness of \SBCM is a direct consequence of the hiding property of the
+Blindness is a direct consequence of the hiding property of the
 underlying block commitment scheme. Indeed, assume an adversary $\adv$ against
 blindness of \SBCM. Then, $\adv$ can be used by \advB against the hiding
 property of the commitment scheme in a straightforward manner. Namely, \advB
-sets up the environment for \adv by running the \KeyGen algorithm using the
-\vk it receives. Then, for every query that \adv makes to its $BLIND$ oracle,
-\advB checks that the length of \smsg is acceptable (i.e., less than the
-maximum length allowed by \SBCM), and forwards the query to its own $COM$
-oracle using $\osmsg_0$ and $\osmsg_1$. To the output \Ccom of $COM$, \advB
-appends a simulated proof $\pi$, and forwards $(\Ccom,\pi)$ to \adv. Finally,
-\advB outputs whatever \adv~outputs. The simulation is correct due to the
-zero-knowledge property of the underlying NIZK. Thus, \advB wins whenever
+sets up the environment for \adv~by running the \KeyGen algorithm using the
+\vk it receives. Then, for every query that \adv~makes to its \oracle{BLIND}
+oracle, \advB checks that the length of \smsg is acceptable (i.e., less than the
+maximum length allowed by \SBCM), and forwards the query to its own \oracle{COM}
+oracle using $\osmsg_0$ and $\osmsg_1$. To the output \Ccom of \oracle{COM},
+\advB appends a simulated proof $\pi$, and forwards $(\Ccom,\pi)$ to \adv.
+Finally, \advB outputs whatever \adv~outputs. The simulation is correct due to
+the zero-knowledge property of the underlying NIZK. Thus, \advB wins whenever
 \adv~does.
 
 %%% Local Variables:

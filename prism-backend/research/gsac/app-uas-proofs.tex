@@ -4,11 +4,11 @@
 Next, we define the \SimSetup, \ExtractIssue, \ExtractSign, and \VerCred
 functions. \SimSetup (formally defined in \figref{fig:helper-funcs}) essentially
 replaces the \Setup algorithm of each NIZK with the corresponding \NIZKSimSetup
-algorithm, and returns the generated parameters along with the
-trapdoors. \ExtractIssue and \ExtractSign simply run the \Extract functions
-of the corresponding \NIZK scheme, leveraging the trapdoor produced during
-\SimSetup. Note that, in our games definitions, both algorithms are always run
-over signatures that have already been verified (in the case of \ExtractSign)
+algorithm, and returns the generated parameters along with the trapdoors.
+\ExtractIssue and \ExtractSign simply run the \helper{\Extract} functions of the
+corresponding \NIZK scheme, leveraging the trapdoor produced during \SimSetup.
+Note that, in our games definitions, both algorithms are always run over
+signatures that have already been verified (in the case of \ExtractSign)
 or transcripts maintained by honest issuers (in the case of \ExtractIssue).
 Thus, the zero-knowledge proofs they contain are valid. Concerning \SimSetup,
 due to the zero-knowledge and simulation extractability properties
@@ -24,18 +24,16 @@ plain form, and \cred is their alleged signature by the owner of public key
   \scalebox{0.9}{
     \begin{minipage}[t]{\textwidth}
       \procedure{$\SimSetup(1^\secpar)$}{%
-        \textrm{Parse}~\secpar~\textrm{as}~(\Csecpar,\NIZKsecpar,\SBCMsecpar,
-        \Esecpar). \\
         % \Cparm \gets \CSetup(\Csecpar), 
-        \SBCMparm \gets  \SBCMSetup(\SBCMsecpar) \\
+        \SBCMparm \gets  \SBCMSetup(\secpar) \\
         % \Sparm \gets \SSetup(\Ssecpar), 
-        \Eparm \gets \ESetup(\Esecpar) \\
+        \Eparm \gets \ESetup(\secpar) \\
         (\NIZKcrs_{\Issue},\trap_{\Issue}) \gets
-        \NIZKSimSetup^{\NIZKRel_{\Issue}}(\NIZKsecpar) \\
+        \NIZKSimSetup^{\RelIss}(\secpar) \\
         (\NIZKcrs_{\Sign},\trap_{\Sign}) \gets
-        \NIZKSimSetup^{\NIZKRel_{\Sign}}(\NIZKsecpar) \\
+        \NIZKSimSetup^{\RelSig}(\secpar) \\
         (\NIZKcrs_{\Open},\trap_{\Open}) \gets
-        \NIZKSimSetup^{\NIZKRel_{\Open}}(\NIZKsecpar) \\
+        \NIZKSimSetup^{\RelIns}(\secpar) \\
         \pcreturn ((% \Cparm,
         \SBCMparm,% \Sparm,
         \Eparm,\NIZKcrs_{\Issue},
@@ -141,27 +139,26 @@ plain form, and \cred is their alleged signature by the owner of public key
 
   We start from the \ExpIssAnonb, as defined in \figref{fig:exp-uas-anonb}. 
 
-  Game 1: We simulate the NIZK proof corresponding to $\NIZKRel_{\Issue}$ that
+  Game 1: We simulate the NIZK proof corresponding to \RelIss that
   the \OBTCHALb oracle produces when queried by \adv. The zero-knowledge
   property of the NIZK system ensures that game 1 is indistinguishable from
   the original experiment.
 
   Game 2: In queries to \OBTCHALb, before simulating the NIZK proof, we replace
-  the produced \yissue value with a random element from \rngfissue. Since
-  \fissue is a \UAS-acceptable function, game 2 is indistinguishable from game
-  1.
+  the produced \yissue value with a random element from $\rngfissue \setminus
+  0$. Since \fissue is a \UAS-acceptable function, game 2 is indistinguishable
+  from game 1.
 
   From an adversary \adv~against Game 2, we can build an adversary \advB against
   \SBCM's blindness property. The simulation that
   \advB does is straightforward. \advB runs Game 2 for \adv, randomly picking
   a number $q < n$, where $n$ is the number of users that \adv~creates via
-  \HUGEN, and assigning to the $q$-th user the $(\SBCMvk,\SBCMsk)$ key pair
-  that \advB receives in its blindness game. Then, when \adv~makes a query
-  to its \OBTCHALb oracle, if the chosen issuer is the $q$-th user, \advB
-  forwards \adv's messages to its own $\langle COM(\SBCMvk,
-  \overline{\smsg}_{\bin},\smsg),\cdot\rangle$ oracle. Finally, \advB outputs
+  \HUGEN, and assigning to the $q$-th user the \vk key that \advB receives in
+  its blindness game. Then, when \adv~makes a query to its \OBTCHALb oracle, if
+  the chosen issuer is the $q$-th user, \advB forwards \adv's messages to its
+  own \oracle{BLIND} oracle. Finally, \advB outputs \todo{XXXX UPDATE}
   whatever \adv~does. Note that, since in Game 2 we replace the \yissue value
-  with a random value, and simulate the $\NIZKRel_{\Issue}$ proof, \adv~is not
+  with a random value, and simulate the \RelIss proof, \adv~is not
   receiving information about the blindly signed messages beyond what \advB
   forwards from its own oracle. Thus, if \adv~wins in its game, \advB wins in
   its blindness game. However, since \advB has to guess the correct user
@@ -246,7 +243,7 @@ plain form, and \cred is their alleged signature by the owner of public key
   $\trans[\cid]$ entry corresponding to its issuance must exist.
   %
   Then, $\trans[\cid] = (\yissue,\utrans)$, and \utrans contains a NIZK proof
-  \proofiss proving knowledge by the (potentially corrupt) user of a witness in
+  \NIZKproof proving knowledge by the (potentially corrupt) user of a witness in
   \RelIss. Since the issuer is honest, it verifies the NIZK as part of the
   issuance protocol, rejecting if the proof is not valid. Thus, by simulation
   extractability, \ExtractIssue produces a $(\upk,\usk,\lbrace (\cid_i,\attrs_i,
@@ -282,6 +279,8 @@ plain form, and \cred is their alleged signature by the owner of public key
   did not produce it via a call to \OBTISS or \ISSUE. Thus, it breaks the
   one-more unforgeability property of \SBCM. By security of \SBCM, the
   probability that it happens must be negligible.
+  %
+  \qed
 \end{proof}
 
 \iffalse
@@ -333,13 +332,13 @@ plain form, and \cred is their alleged signature by the owner of public key
   %
 
   \paragraph{(a) \Judge accepts $(\yinsp,\iproof)$.} %
-  Simulation extractability of $\NIZK^{\Sign}$ ensures that $\cinsp =
+  Simulation extractability of the NIZK for \RelSig ensures that $\cinsp =
   \EEnc(\Eek,\yinsp)$, and since $(\yinsp,\iproof)$ is generated honestly at
   line 5, then \yinsp is the correct decryption of \cinsp, and completeness of
-  $\NIZK^{\Open}$ ensures that \Judge outputs $1$ at line 6.
+  the NIZK for \RelIns ensures that \Judge outputs $1$ at line 6.
 
   \paragraph{(b) $(\yeval^0,\yeval^1)$ are the correct signature evaluation
-    pair.} Also, due to simulation extractability of $\NIZK^{\Sign}$:
+    pair.} Also, due to simulation extractability of the NIZK for \RelSig:
 
   \begin{itemize}
   \item $\yeval^0 = \yeval$, where $(\yeval^0,\cdot) = \feval(\upk,\lbrace
@@ -351,31 +350,31 @@ plain form, and \cred is their alleged signature by the owner of public key
   \end{itemize}
 
   Thus, the probability of \adv~winning at line 12 is negligible, due to
-  simulation extractability of $\NIZK^{\Sign}$.
+  simulation extractability of the NIZK for \RelSig.
 
   \paragraph{(c) The output of \finsp matches the output of \Open.} %
   After (a), and correctness of the public key encryption algorithm, the \yinsp
   value output by \Open is the correct decryption of
   \cinsp. After (c), the $(\yeval^0=\yeval,\yeval^1)$ values output by
   \ExtractSign match the evaluation of \feval. Thus, simulation extractability
-  of $\NIZK^{\Sign}$ ensures that $\finsp((\yeval^0,\yeval^1),\upk,\lbrace
+  of the NIZK for \RelSig ensures that $\finsp((\yeval^0,\yeval^1),\upk,\lbrace
   (\cid_i,\attrs_i)\rbrace_{i\in[n]},\msg) = \yinsp$ and, also, that \yinsp
   matches the $\yinsp'$ value extracted by \ExtractSign. Thus, the probability
   of \adv~winning at line 13 is negligible due to simulation extractability
-  of $\NIZK^{\Sign}$.
+  of the NIZK for \RelSig.
 
   \paragraph{(d) All {\cred}s are bound to the \usk of a known \uid.} %
-  $\NIZKRel^{\Sign}$ includes a condition that $\forall i\in[n],
+  \RelSig includes a condition that $\forall i\in[n], 
   \SBCMVerify(\ipk_i,\cred_i,\usk,\attrs_i) = 1$. Thus, simulation
-  extractability of $\NIZK^{\Sign}$ and correctness of \SBCM, ensure that all
-  credentials involved in the signature contain the same \usk as their user key
-  (first) attribute. Thus, either $\OWNR[\lbrace \cid_i \rbrace_{i\in[n]}]$
+  extractability of the NIZK for \RelSig and correctness of \SBCM, ensure that
+  all credentials involved in the signature contain the same \usk as their user
+  key  (first) attribute. Thus, either $\OWNR[\lbrace \cid_i \rbrace_{i\in[n]}]$
   returns some \uid in $\HU \cup \CU$, or it returns $\bot$ because no such
   \uid exists (but not because more than one \cid belongs to different {\uid}s).
   Assume that no such \uid exists. Then, the {$\cred_i$}s extracted by
   \ExtractSign cannot have been produced via a call to either \OBTISS or \ISSUE,
   since they only accept calls from known {\uid}s (either in \HU or \CU,
-  respectively). Since, by simulation extractability of $\NIZK^{\Sign}$, at
+  respectively). Since, by simulation extractability of the NIZK for \RelSig at
   least one such credential must have been used to produce the signature, then
   this breaks the one-more forgery property of the underlying \SBCM.
   %
@@ -392,26 +391,26 @@ plain form, and \cred is their alleged signature by the owner of public key
   % blind, then our \CUASGen construction is secure.
 
   Since the signature output by \adv~is accepted by \Verify at line 4,
-  simulation extractability of $\NIZK^{\Sign}$ ensures that $\yeval = \yeval^0$,
-  and $\tyeval^1 = \yeval^1$. Similarly, if the $(\yinsp,\iproof)$
+  simulation extractability of the NIZK for \RelSig ensures that $\yeval =
+  \yeval^0$, and $\tyeval^1 = \yeval^1$. Similarly, if the $(\yinsp,\iproof)$
   pair output by \adv~is accepted by \Judge, simulation extractability of
-  $\NIZK^{\Sign}$ and $\NIZK^{\Open}$ implies that both checks at lines 8 and 9
+  the NIZKs for \RelSig and \RelIns implies that both checks at lines 8 and 9
   pass. Hence, the probability that the adversary wins at either lines 8 or 9 is
-  negligible, after simulation extractability of $\NIZK^{\Sign}$ and
-  $\NIZK^{\Open}$.
+  negligible, after simulation extractability of the NIZKs for \RelSig and
+  \RelIns.
 
-  Next, we prove that, after zero-knowledge and simulation extractability of
-  $\NIZKRel_{\Sign}$, and blindness of \SBCM, no credential from an honest user
+  Next, we prove that, after zero-knowledge and simulation extractability of the
+  NIZK for \RelSig, and blindness of \SBCM, no credential from an honest user
   can be extracted from the signature output by \adv, except with negligible
   probability.
   %
   The crucial observation is that, as in \cite{cl06} \CUASGen's \Sign algorithm
-  produces a signature of knowledge for the relation defined by
-  $\NIZKRel^{\Sign}$. That is, given $(x,w) \in \NIZKRel^{\Sign}$, one can
-  compare $x$ and $w$ to the public and private key of a signature algorithm,
-  respectively. In $\NIZKRel^{\Sign}$, $(\upk,\usk,\lbrace (\cid_i,\attrs_i,
+  produces a signature of knowledge for the relation defined by \RelSig
+  That is, given $(x,w) \in \NIZKRel^{\Sign}$, one can compare $x$ and $w$ to
+  the public and private key of a signature algorithm, respectively. In \RelSig,
+  $(\upk,\usk,\lbrace (\cid_i,\attrs_i,
   \cred_i)\rbrace_{i\in[n]},\yeval^1,\yinsp,r,r')$ is the private key ($w$), and
-  $(\msg,\feval,\yeval^0,\cinsp,\lbrace \ipk_i \rbrace_{i\in[n]},\Eek)$ is the
+  $(\msg,\feval,\yeval^0,\cinsp,\lbrace \ipk_i \rbrace_{i\in[n]},\ek)$ is the
   public key ($x$).
   %
   From this, we prove that an adversary has only negligible probability to forge
@@ -420,11 +419,11 @@ plain form, and \cred is their alleged signature by the owner of public key
 
   Consider game $G_1$, which is equivalent to $G_0 = \ExpNonframe$, except that
   in the \Sign function within the \SIGN oracle, we simulate the NIZK proof.
-  After the zero-knowledge property of $\NIZK^{\NIZKRel_{\Sign}}$, $G_1$ is
+  After the zero-knowledge property of the NIZK for \RelSig, $G_1$ is
   indistinguishable from $G_0$. Now, in $G_1$, simulation extractability of
-  $\NIZK^{\NIZKRel_{\Sign}}$ ensures that \ExtractSign outputs a valid
+  the NIZK for \RelSig ensures that \ExtractSign outputs a valid
   witness for $(\msg,\feval,\yeval^0,\cinsp,\lbrace ipk_i \rbrace_{i\in[n]},
-  \Eek)$. Note that this witness must include some \usk which, in case of
+  \ek)$. Note that this witness must include some \usk which, in case of
   being owned by an honest user, has not been leaked to \adv~--as the user
   has not been corrupted, nor the \usk has been leaked via \SIGN queries,
   where the proof of knowledge within \Sign is now simulated). Moreover,

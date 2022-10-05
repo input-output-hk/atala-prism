@@ -18,11 +18,12 @@ the underlying \CUASGen construction is secure.
   to an adversary \advB against anonymity of the $(\fissue^1,\feval^0,
   \finsp^{\upk})-\CUASGen$ instance.
 
-  Concretely, observe that calls to \adv's $Ch,Open,SndToU,WReg,USK,CrptU$
+  Concretely, observe that calls to \adv's \oracle{Ch}, \oracle{Open},
+  \oracle{SndToU}, \oracle{WReg}, \oracle{USK}, \oracle{CrptU}
   oracles can be directly simulated by calls to \advB's oracles $\CHALb,
-  \OPEN,\HUGEN,\WREG,\CUGEN,\UCORR$ oracles. Thus, if \adv~guesses its bit $b$
-  with non-negligible probability, this directly leads to a non-negligible
-  probability of guessing \advB's challenge bit.
+  \OPEN,\HUGEN,\OBTAIN,\WREG,\CUGEN,\UCORR$ oracles. Thus, if \adv~guesses its
+  bit $b$ with non-negligible probability, this directly leads to a
+  non-negligible probability of guessing \advB's challenge bit.
   \qed
 \end{proof}
 
@@ -38,7 +39,8 @@ the underlying \CUASGen construction is secure.
   \finsp^{\upk})-\CUASGen$ restriction.
 
   \advB's simulation of \adv's environment is as in the proof for anonymity
-  of \CUASGS. \advB simply outputs whatever \adv~outputs in line 2 of its
+  of \CUASGS (leveraging the \OBTISS and \ISSUE oracles, instead of \OBTAIN).
+  \advB simply outputs whatever \adv~outputs in line 2 of its
   traceability game. Note that, whenever \CUASGS accepts a signature, so does
   \CUASGen. Concretely,
   assume that \adv~wins the traceability game in \figref{fig:model-gs} with
@@ -84,14 +86,14 @@ construction is secure.
 \end{theorem}
 
 \begin{proof}
-  Assume $\adv$ is an adversary against ring signature anonymity for \CUASRing.
+  Assume \adv~is an adversary against anonymity for \CUASRing.
   Then, we build \advB against anonymity of \CUASGen. Concretely, \advB first
-  generates $n$ key pairs for \adv simulating $KeyGen$ in \adv's game. Since
+  generates $n$ key pairs for \adv~ simulating $KeyGen$ in \adv's game. Since
   $KeyGen$ simply uses algorithms of $\CUASGen^{hide-iss}$, \advB can do this
   directly via its own \HUGEN, \ISET, and \OGEN oracles, specifying
   $\fissue^{\sring}$ as issuance function, and $\finsp^0$ as opening function.
-  Then, \advB invokes $\adv$ passing the $n$ produced public keys, and
-  answers $\adv$'s $SIGN(i,R,\msg)$ queries as follows. If user $i$ has not yet
+  Then, \advB invokes $\adv$ passing the $n$ produced public keys, and answers
+  \adv's \oracle{SIGN}(i,R,\msg) queries as follows. If user $i$ has not yet
   produced a credential for ring $R$, where $\pk_i \in R$, \advB makes a call to
   its \OBTAIN oracle, using $R$ as attribute set. If such a credential was already
   produced, \advB simply reuses it. Then, \advB uses the corresponding user and
@@ -103,7 +105,7 @@ construction is secure.
   Finally, \advB outputs whatever $\adv$ outputs.
   %
   The simulation of \adv's anonymity game is perfect, and \advB wins its game
-  whenever \adv does.
+  whenever \adv~ does.
   \qed
 \end{proof}
 
@@ -117,11 +119,11 @@ construction is secure.
   Assume $\adv$ against unforgeability of \CUASRing wins the game. We build
   \advB winning the non-frameability game of \CUASGen with the same probability.
   %
-  \advB prepares the environment as the adversary \advB against anonymity,
-  and answers \adv's queries to the $SIGN$ oracle also as in the anonymity
-  proof. To answer \adv's queries to its $CORR$ oracle, \advB leverages the
-  \ICORR oracle in the non-frameability game for \UAS. Finally, \advB outputs
-  whatever $\adv$ outputs.
+  \advB prepares the environment as the adversary \advB against anonymity, and
+  answers \adv's queries to the \oracle{SIGN} oracle also as in the anonymity
+  proof. To answer \adv's queries to its \oracle{CORR} oracle, \advB leverages
+  the \ICORR oracle in the non-frameability game for \UAS. Finally, \advB
+  outputs whatever $\adv$ outputs.
 
   Note that, if $\adv$ wins its game, it means that the public keys of the
   issuers in $R$ all belong to uncorrupted users. Since the signature is
@@ -129,11 +131,11 @@ construction is secure.
   it is also accepted by \Verify in the \UAS non-frameability game. But,
   moreover, given the construction of $Verify$ in \CUASRing, there is some
   honest \usk within $R$ that produced the signature, so $\OWNR[\scid] \in \HU$
-  in \advB's non-frameability game. Also, since $\adv$ never queried its $SIGN$
-  oracle, then by construction there cannot exist a matching entry in \advB's
-  $\SIG[\uid]$ table. Thus, \advB wins the non-frameability game whenever
-  $\adv$ wins its unforgeability game. Since \CUASGen is non-frameable, then
-  this probability must be negligible.
+  in \advB's non-frameability game. Also, since $\adv$ never queried its
+  \oracle{SIGN} oracle, then by construction there cannot exist a matching entry
+  in \advB's $\SIG[\uid]$ table. Thus, \advB wins the non-frameability game
+  whenever $\adv$ wins its unforgeability game. Since \CUASGen is non-frameable,
+  then this probability must be negligible.
   %
   \qed
 \end{proof}
@@ -144,13 +146,13 @@ We prove that \CUASAC is an anonymous and unforgeable anonymous credential
 scheme, according to \cite{fhs19}, if the underlying \CUASGen construction
 is anonymous and unforgeable. Note that AC schemes modelled as in \cite{fhs19}
 do not have issuance anonymity, as the user public key is passed to the issuer.
-Note that, for ease of reference to the games in \secref{sec:formal-uas}, we
+For ease of reference to the games in \secref{sec:formal-uas}, we
 reduce to security of \CUASGen rather than to $\CUASGen^{int}$. The
 ``translation'' between \CUASGen and $\CUASGen^{int}$ is trivial, though.
 
 \begin{theorem}[Anonymity of \CUASAC]
   \label{thm:anon-cuasac}
-  If the base \CUASGen construction is anonymous according to
+  If the base \CUASGen construction has signature anonymity according to
   \defref{def:sign-anonymity-uas}, then \CUASAC is an anonymous AC scheme
   according to \cite{fhs19}.
 \end{theorem}
@@ -161,8 +163,9 @@ reduce to security of \CUASGen rather than to $\CUASGen^{int}$. The
   in \defref{def:sign-anonymity-uas}.
 
   To simulate oracle calls by \adv, \advB simply redirects to its corresponding
-  oracle, i.e.: for calls to $HU,CU,Obtain,Show,LoR$, \advB redirects to
-  \HUGEN,\CUGEN,\OBTAIN,\SIGN,\CHALb, respectively. Note that translating
+  oracle, i.e.: for calls to \oracle{HU}, \oracle{CU}, \oracle{Obtain},
+  \oracle{Show}, \oracle{LoR}, \advB redirects to
+  \HUGEN, \CUGEN, \OBTAIN, \SIGN, \CHALb, respectively. Note that translating
   the inputs from the former into inputs for the latter is trivial.
   Obviously, if \adv~wins in its anonymity game, then so does \advB with the
   same probability.
