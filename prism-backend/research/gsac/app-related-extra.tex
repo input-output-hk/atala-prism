@@ -587,7 +587,8 @@ with users -- instead, we have an $KG$ and $ISet$ algorithms, with the same
 meaning as in \UAS.
 %
 In the model for this setting, since there are multiple issuers, in addition
-to the oracles in \secref{ssec:related-models-ac}, we use $HI$ and $CI$ oracles,
+to the oracles in \secref{ssec:related-models-ac}, we use \oracle{HI} and
+\oracle{CI} oracles,
 for creating honest and corrupt issuers, which can be simulated via \HUGEN,
 \CUGEN, \ISET and \ICORR in our \UAS model.
 %
@@ -771,8 +772,12 @@ has anonymous issuance and signing, and is unforgeable.
   honest issuers of level $l>0$, to generate the signature \Sig that the
   (honest) issuer has to publish.
   %
-  If \adv~wins in its issuance anonymity game, then so does \advB with the same
-  probability, as the simulation is perfect.
+  Note that the issuance anonymity game for DAC is essentially the same as that
+  for \UAS, with the exception that -- to avoid trivial wins -- in the DAC game
+  we do not allow credentials with different delegation chains to be used
+  simultaneously in the challenge oracle.
+  %
+  Thus, if \adv~wins in its game, so does \advB.
   % 
   \qed
 \end{proof}
@@ -784,14 +789,17 @@ has anonymous issuance and signing, and is unforgeable.
 \end{theorem}
 
 \begin{proof}
-  Given \adv~ against signature anonymity of \CUASDAC as defined in
+  Given \adv~against signature anonymity of \CUASDAC as defined in
   $\Exp^{sig-anon-b}_{\adv,dac}(1^\secpar)$, we build an adversary \advB against
   signature anonymity of \CUASGenInt.
   %
   \adv's oracles are simulated as in the proof for issuance anonymity of
   \CUASDAC -- in this case, \adv's \oracle{SigLoR} oracle corresponds to \advB's
-  \CHALb. Again, the simulation is perfect, and whenever \adv~wins its
-  $\Exp^{sig-anon-b}$ game, so does \advB.
+  \CHALb.
+  %
+  Again, the game is the same as for \UAS, only conditioned on the challenge
+  signatures being produced from credentials with the same delegation chain.
+  Thus, whenever \adv~wins its $\Exp^{sig-anon-b}$ game, so does \advB.
   % 
   \qed
 \end{proof}
@@ -806,12 +814,13 @@ has anonymous issuance and signing, and is unforgeable.
 \end{theorem}
 
 \begin{proof}
-  First, we define the $ExtractChain(\utrans)$ function for our construction.
-  Note that \utrans is a tuple $(r,\Sig)$\footnote{This follows for the approach
+  First, we define the $\helper{ExtractChain}(\utrans)$ function for our
+  construction. Note that \utrans is a tuple $(r,\Sig)$\footnote{This follows
+    for the approach
     to transform non-interactive signature and verification in \UAS to
     interactive presentations, as described in \secref{ssec:variants}.}, where
-  $r$ is a fresh random number specified by the adversary,
-  and \Sig is a \CUASGen signature over $r$. Thus, $ExtractChain$ leverages
+  $r$ is a fresh random number specified by the adversary, and \Sig is a
+  \CUASGen signature over $r$. Thus, \helper{ExtractChain} leverages
   \ExtractSign from \CUASGen (see \secref{ssec:security-uas}) to get the
   credential and associated \ipk used to produce \Sig. Note that, for this
   \ipk (of level $n$), $\ipk = \ipk_{n-1}$ in $\Exp^{forge}_{\adv,dac}$. In
@@ -823,7 +832,7 @@ has anonymous issuance and signing, and is unforgeable.
 
   From the previous, the same reasoning as in \thmref{thm:forge-cuasac} applies
   to an adversary \adv~winning at line 5 of $\Exp^{forge}_{\adv,dac}$. Next,
-  suppose that from \utrans, $ExtractChain$ outputs at line 6 a
+  suppose that from \utrans, \helper{ExtractChain} outputs at line 6 a
   delegation chain that makes \adv~win at line 9. This means that an
   uncorrupted issuer at position $i-1$ of the chain did not own a credential
   containing $D'$, but the issuer at position $i$ does. Then, either of the

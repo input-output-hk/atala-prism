@@ -183,7 +183,7 @@ plain form, and \cred is their alleged signature by the owner of public key
   From $G_0$, we consider $G^0_0 = \ExpSigAnonz$. The challenge sent to the
   adversary is $(\csig_0,\yeval) \gets \Sign(\PRVUK[\cuid_0],\PUBOK[\oid],
   \CRED[\scid_0],\msg,\feval)$, where $\csig_0 = (\pi_0,\cinsp)$, with
-  $\pi_0 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},(\msg,\feval,\yeval,
+  $\pi_0 = \NIZKProve^{\RelSig}(\NIZKcrs_{\Sign},(\msg,\feval,\yeval,
   \cinsp,\lbrace\PUBIK[\scid_{i,0}]\rbrace_{i\in[n]},\PUBOK[\oid]),
   (\PUBUK[\cuid_0],\PRVUK[\cuid_0],\lbrace (\scid_{i,0},\attrs_{i,0},
   \CRED[\scid_{i,0}]) \rbrace_{i\in[n]},\yeval^1,\yinsp,r,r'))$, and $\cinsp =
@@ -191,16 +191,16 @@ plain form, and \cred is their alleged signature by the owner of public key
   % 
   Further, we build $G_1^0$ from $G_0^0$ by simulating the proof $\pi_0$. That
   is, in $G_1^0$, $\csig_0 = (\pi_0^s,\ceval,\cinsp)$, where $\pi^s_0 =
-  \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
+  \NIZKSim^{\RelSig}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
   \cinsp,\lbrace\PUBIK[\scid_{i,0}]\rbrace_{i\in[n]},\PUBOK[\oid]))$. By
-  zero-knowledgeness of $\NIZK^{\Sign}$, $G_1^0$ is indistinguishable from
+  zero-knowledgeness of the NIZK for \RelSig, $G_1^0$ is indistinguishable from
   $G_0^0$.
 
   Similarly, we consider $G_0^1$ and $G_1^1$. That is, $G_0^1 = \ExpSigAnono$,
   where the challenge
   sent to the adversary is $(\csig_1,\yeval) \gets \Sign(\PRVUK[\cuid_1],
   \PUBOK[\oid],\CRED[\scid_1],\msg,\feval)$, where $\csig_1 = (\pi_1,
-  \cinsp)$, with $\pi_1 = \NIZKProve^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},
+  \cinsp)$, with $\pi_1 = \NIZKProve^{\RelSig}(\NIZKcrs_{\Sign},
   (\msg,\feval,\yeval,
   \cinsp,\lbrace\PUBIK[\scid_{i,1}]\rbrace_{i\in[n]},\PUBOK[\oid]),
   (\PUBUK[\cuid_1],\PRVUK[\cuid_1],\lbrace (\scid_{i,1},\attrs_{i,1},
@@ -208,9 +208,9 @@ plain form, and \cred is their alleged signature by the owner of public key
   $\cinsp = \EEnc(\PUBOK[\oid],\yinsp;r')$, for random $r,r'$ and $n \ge 0$. As
   before, build $G_1^1$ from $G_0^1$, simulating $\pi_1$. That is, in $G_1^1$,
   $\csig_1 = (\pi_1^s,\ceval,\cinsp)$, where $\pi^s_1 =
-  \NIZKSim^{\NIZKRel_{\Sign}}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
+  \NIZKSim^{\RelSig}(\NIZKcrs_{\Sign},\NIZKtrap,(\msg,\feval,\yeval,
   \cinsp,\lbrace\PUBIK[\scid_{i,1}]\rbrace_{i\in[n]},\PUBOK[\oid]))$. Again, by
-  zero-knowledge of $\NIZK^{\Sign}$, $G_1^1$ is
+  zero-knowledge of THE NIZK for \RelSig, $G_1^1$ is
   indistinguishable from $G_0^1$.
 
   Note that, at this point, $G_1^1$ and $G_1^0$ are indistinguishable.
@@ -416,7 +416,7 @@ plain form, and \cred is their alleged signature by the owner of public key
   %
   The crucial observation is that, as in \cite{cl06} \CUASGen's \Sign algorithm
   produces a signature of knowledge for the relation defined by \RelSig
-  That is, given $(x,w) \in \NIZKRel^{\Sign}$, one can compare $x$ and $w$ to
+  That is, given $(x,w) \in \RelSig$, one can compare $x$ and $w$ to
   the public and private key of a signature algorithm, respectively. In \RelSig,
   $(\upk,\usk,\lbrace (\cid_i,\attrs_i,
   \cred_i)\rbrace_{i\in[n]},\yeval^1,\yinsp,r,r')$ is the private key ($w$), and
