@@ -835,7 +835,8 @@ allowing users to leverage previously obtained credentials in new credential
 requests -- functionality which, to the best of our knowledge, \UAS is the first
 scheme to support. In both cases, it is necessary to assume honest issuers. 
 
-Signature unforgeability, \ExpForgeSign, is mainly a combination (and
+Signature unforgeability, \ExpForgeSign (see \figref{fig:exp-uas-unfor}),
+is a combination (and
 generalisation) of known requirements in AC and GS schemes. Namely, the
 adversary is required to output a valid signature, from which we extract the
 user key pair, credentials, $\yeval^1$ and \yinsp values used to generate the
@@ -856,8 +857,9 @@ to obtain a legitimate one, and then use the latter to finally create a valid
 signature -- concretely, such misbehaviour is not prevented by \ExpForgeSign. 
 
 We thus extend unforgeability of signatures with issuance unforgeability,
-\ExpForgeIssue. It captures that all honestly issued credentials meet the
-requirements set by the corresponding issuer, and that any further credential
+\ExpForgeIssue (see \figref{fig:exp-uas-unfor}). It captures that all honestly
+issued credentials meet the requirements set by the corresponding issuer, and
+that any further credential
 involved in the request is a valid credential, bound to the same known user. For
 this, we allow the adversary \adv~to interact with the oracles (restricted to
 honest issuers). Eventually, \adv~is challenged to output a credential \Cred
@@ -870,8 +872,6 @@ issuance transcript associated to the credential output by the adversary must
 exist, as we unavoidably need to restrict to honest issuers. Indeed, a dishonest
 issuer cannot be trusted to enforce any policy, nor to properly keep all
 transcripts.
-
-We formalise both properties in \figref{fig:exp-uas-unfor}.
 
 % \begin{figure}[htp!]
 %   \centering
@@ -920,8 +920,8 @@ We formalise both properties in \figref{fig:exp-uas-unfor}.
 \begin{figure}[htp!]
   \centering
   \hspace*{-2em}
-  \scalebox{0.85}{
-    \begin{minipage}[t]{0.7\textwidth}
+  \scalebox{0.8}{
+    \begin{minipage}[t]{0.67\textwidth}
       \procedure[linenumbering]{$\ExpForgeIssue(1^\secpar)$}{%
         (\parm,\trap) \gets \SimSetup(1^\secpar) \\
         (\cid,\attrs,\cred,\ipk) \gets \adv^{\Oforge}(\parm) \\
@@ -977,7 +977,9 @@ We formalise both properties in \figref{fig:exp-uas-unfor}.
         (\yeval^0,\yeval^1) \gets \feval(\upk,\lbrace(\cid_i,\attrs_i)
         \rbrace_{i\in[n]}, \msg) \\
         \pcreturn \OWNR[\lbrace \cid_i \rbrace_{i\in[n]}] \notin
-        \HU \cup \CU~\lor \\
+        \HU \cup \CU \lor (\exists i\in[n]~\suchthat \\
+        \pcind \VerCred(\usk,\cid_i,\attrs_i,\cred_i,\ipk_i)=1 \land
+        \CRED[\cid] = \bot)~\lor \\
         \pcind \Judge(\PUBOK[\oid],\PUBIK[\siid],\yinsp,\iproof,\Sig,
         \msg,\feval) = 0~\lor \\
         \pcind \yeval^0 \neq \tyeval^0 \lor \yeval^1 \neq \tyeval^1 \lor

@@ -577,6 +577,16 @@ part of the statement being proven, but are not contained within the actual
   included in \smsg and \osmsg, respectively.
 \end{itemize}
 
+Modelling-wise, when using this extension, we need to refine also the
+\oracle{BLIND} oracle used in the blindness game, so that besides the $\osmsg_0$
+and $\osmsg_1$ messages to be signed in committed form, it also receives their
+corresponding extended witnesses and statements. To prevent trivial wins, the
+oracle aborts if any of the two options does not satisfy the relation. That is,
+calls to this oracle are: $\oracle{BLIND}^\NIZKRel((\osmsg_0,x'_0,w'_0),
+(\osmsg_1,x'_1,w'_1),\smsg)$. And, in case $((\smsg,x'_b),(\osmsg_b,w'_b))
+\notin \NIZKRel$, for $b=0,1$, \oracle{BLIND} aborts. Otherwise, the output
+is still $(\Ccom,\pi)$, for some ``extended'' $\pi$.
+
 \paragraph{Proofs of knowledge of a \SBCM signature.} %
 Finally, in addition, we require that the produced signatures must be compatible
 with (efficient) NIZK proofs of knowledge of a signature.

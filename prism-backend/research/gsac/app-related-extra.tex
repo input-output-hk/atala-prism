@@ -671,7 +671,8 @@ defined next:
 
 \begin{align}
   & \fissue^{l,D}(\cdot,\attrs,(\cid,\cattrs)) \coloneqq
-    \pcreturn \attrs_1 = l+1 \land \cattrs \subseteq D \nonumber \\
+    \pcreturn \cattrs_1 = l \land \attrs_1 = l+1
+    \land \cattrs \subseteq D \land \attrs_{[2..n]} \subseteq \cattrs \nonumber \\
   & \feval^{l,\dattrs}(\cdot,(\cid,\attrs),\cdot) \coloneqq
     \pcreturn((\attrs_1,\lbrace\attrs_i\rbrace_{i\in\dattrs}),\ast)
     \label{eq:funcs-dac}

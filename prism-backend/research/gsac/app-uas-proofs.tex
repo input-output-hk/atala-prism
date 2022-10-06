@@ -149,21 +149,22 @@ plain form, and \cred is their alleged signature by the owner of public key
   0$. Since \fissue is a \UAS-acceptable function, game 2 is indistinguishable
   from game 1.
 
-  From an adversary \adv~against Game 2, we can build an adversary \advB against
-  \SBCM's blindness property. The simulation that
-  \advB does is straightforward. \advB runs Game 2 for \adv, randomly picking
-  a number $q < n$, where $n$ is the number of users that \adv~creates via
-  \HUGEN, and assigning to the $q$-th user the \vk key that \advB receives in
-  its blindness game. Then, when \adv~makes a query to its \OBTCHALb oracle, if
-  the chosen issuer is the $q$-th user, \advB forwards \adv's messages to its
-  own \oracle{BLIND} oracle. Finally, \advB outputs \todo{XXXX UPDATE}
-  whatever \adv~does. Note that, since in Game 2 we replace the \yissue value
-  with a random value, and simulate the \RelIss proof, \adv~is not
-  receiving information about the blindly signed messages beyond what \advB
-  forwards from its own oracle. Thus, if \adv~wins in its game, \advB wins in
-  its blindness game. However, since \advB has to guess the correct user
-  that \adv~will use as issuer in its \OBTCHALb oracle, we have a $1/n$ security
-  loss, where $n$ is the total number of users created by \adv.
+  From an adversary \adv~against game 2, we can build an adversary \advB against
+  \SBCM's blindness property. The simulation that \advB does is straightforward.
+  \advB runs game 2 for \adv, using the \SBCM \parm variable it receives, to
+  set up the \SBCM instance for game 2. When \adv~makes a query to its \OBTCHALb
+  oracle, \advB prepares a call to its $\oracle{BLIND}^\RelIss$ oracle, setting
+  $\osmsg_b \gets \PRVUK[\cuid_b]$ as message to be blindly signed and
+  accompanying each $\osmsg_b$ with its corresponding
+  $(\cscid_{i,b},\ATTR[\cscid_{i,b}])$ (for all $i\in[n]$). In the response
+  received from $\oracle{BLIND}^\RelIss$ (which succeeds in case both options
+  are in \RelIss), \advB replaces the proof with a simulated one, and \yissue
+  with a random value (as done in game 2). With the response from \adv, \advB
+  completes the credential running \SBCMUnblind as usual. The rest of the
+  simulation is as in game 2. Finally, \advB outputs whatever \adv~outputs.
+  Again, zero-knowledge of the NIZK for \RelIss, and the fact that \fissue is
+  \UAS-acceptable, ensure that simulation is correct, and \advB wins whenever
+  \adv~does.
   %
   \qed
 \end{proof}
@@ -376,7 +377,16 @@ plain form, and \cred is their alleged signature by the owner of public key
   since they only accept calls from known {\uid}s (either in \HU or \CU,
   respectively). Since, by simulation extractability of the NIZK for \RelSig at
   least one such credential must have been used to produce the signature, then
-  this breaks the one-more forgery property of the underlying \SBCM.
+  this breaks the one-more forgery property of the underlying \SBCM scheme.
+
+  \paragraph{(e) All used credentials have been honestly issued.} %
+  Finally, assume that there exists some $\cred_i$ among the ones used to
+  produce the signature such that the credential is valid (i.e., \VerCred
+  returns $1$ for the extracted values), but no matching entry exists in
+  $\CRED[\cid]$. This means that the credential is a valid signature by the
+  honest issuer with public key $\ipk_i$, but it was not produced via a call
+  to \OBTISS or \ISSUE. Thus, it directly breaks the one-more forgery property
+  of the underlying \SBCM scheme.
   %
   \qed
 \end{proof}
@@ -435,32 +445,33 @@ plain form, and \cred is their alleged signature by the owner of public key
   \qed
 \end{proof}
 
-\subsection{Security of $\CUASGen^{hide-iss}$}
+\subsection{Security of \CUASGenHideIss}
 \label{sapp:sec-hide-iss}
 
-The only aspect that changes from \CUASGen to $\CUASGen^{hide-iss}$ is the
+The only aspect that changes from \CUASGen to \CUASGenHideIss is the
 relationship used for signing, where we hide the specific issuer who produced
 the (now only) credential used for signing.
 %
 This change does not affect the proofs for issuance anonymity, nor signature
 anonymity.
 %
-Concerning unforgeability, note that the credential that is used to produce the
-\UAS signature still needs to originate from a \uid in either \HU or \CU.
+Issuance unforgeability is also unaffected by the change. Concerning signature
+unforgeability, note that the credential that is used to produce the \UAS
+signature still needs to originate from a \uid in either \HU or \CU.
 Otherwise, such credential, extracted by \ExtractSign, is a forgery and breaks
 the one-more forgery property of \SBCM. Moreover, such credential must exist,
 due to simulation extractability of the underlying NIZK.
 %
 The proof for non-frameability is also unaffected by the change.
 
-Thus, if \CUASGen is a secure \UAS scheme, so is $\CUASGen^{hide-iss}$.
+Thus, if \CUASGen is a secure \UAS scheme, so is \CUASGenHideIss.
 
-\subsection{Security of $\CUASGen^{int}$}
+\subsection{Security of \CUASGenInt}
 \label{sapp:sec-interactive}
 
 \paragraph{Issuance Anonymity.} Since issuance anonymity is independent of
 whether signature/authentication is interactive or not, the proof for issuance
-anonymity in $\CUASGen^{int}$ is the same as for \CUASGen.
+anonymity in \CUASGenInt is the same as for \CUASGen.
 
 \paragraph{Signature Anonymity.} To see why the interactive variant has
 signature anonymity, assume an adversary \adv~that breaks it. We build \advB
@@ -479,8 +490,8 @@ indistinguishable with overwhelming probability.
 \paragraph{Unforgeability and non-frameability.} The simulation described for
 the anonymity case (i.e., \advB concatenating the random numbers
 to the message to be signed by the oracle) applies here too. Since the
-interactive protocol includes non-interactive proofs for the $\NIZKRel^{\Sign}$
-and $\NIZKRel^{Open}$ relations, the proofs for unforgeability and
+interactive protocol includes non-interactive proofs for the \RelSig
+and \RelIns relations, the proofs for unforgeability and
 non-frameability of \CUASGen still apply.
 
 %%% Local Variables:
