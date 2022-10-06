@@ -76,11 +76,11 @@ the underlying \CUASGen construction is secure.
 \subsection{Security of \CUASRing}
 
 We prove that our \CUASRing construction is anonymous and unforgeable, in the
-model given in \cite{bkm06}, if the underlying $\CUASGen^{hide-iss}$
+model given in \cite{bkm06}, if the underlying \CUASGenHideIss
 construction is secure.
 
 \begin{theorem}[Anonymity of \CUASRing]
-  If the base $\CUASGen^{hide-iss}$ construction is anonymous according to
+  If the base \CUASGenHideIss construction is anonymous according to
   \defref{def:sign-anonymity-uas}, then \CUASRing is an anonymous ring signature
   scheme.
 \end{theorem}
@@ -89,7 +89,7 @@ construction is secure.
   Assume \adv~is an adversary against anonymity for \CUASRing.
   Then, we build \advB against anonymity of \CUASGen. Concretely, \advB first
   generates $n$ key pairs for \adv~ simulating $KeyGen$ in \adv's game. Since
-  $KeyGen$ simply uses algorithms of $\CUASGen^{hide-iss}$, \advB can do this
+  $KeyGen$ simply uses algorithms of \CUASGenHideIss, \advB can do this
   directly via its own \HUGEN, \ISET, and \OGEN oracles, specifying
   $\fissue^{\sring}$ as issuance function, and $\finsp^0$ as opening function.
   Then, \advB invokes $\adv$ passing the $n$ produced public keys, and answers
@@ -110,7 +110,7 @@ construction is secure.
 \end{proof}
 
 \begin{theorem}[Unforgeability of \CUASRing]
-  If the base $\CUASGen^{hide-iss}$ construction is non-frameable according to
+  If the base \CUASGenHideIss construction is non-frameable according to
   \defref{def:frame-uas}, then \CUASRing is an unforgeable ring signature
   scheme.
 \end{theorem}
