@@ -862,12 +862,14 @@ issued credentials meet the requirements set by the corresponding issuer, and
 that any further credential
 involved in the request is a valid credential, bound to the same known user. For
 this, we allow the adversary \adv~to interact with the oracles (restricted to
-honest issuers). Eventually, \adv~is challenged to output a credential \Cred
-from which we extract the actual witnesses used in the credential request
-associated to \cid. \adv~wins if the issuance function, applied to the extracted
+honest issuers). Eventually, \adv~is challenged to output a credential
+$\Cred=(\cid,\attrs,\cred,\ipk)$. Using \cid, we extract the actual witnesses
+used in the credential request $\utrans[\cid]$. \adv~wins if the issuance
+function, applied to the extracted
 values, does not meet the expected output, if not all of the credentials (if
 any) used to endorse the request belong to the same (known) user to whom the new
-credential was issued, or if any of such credentials is a forgery. Note that the
+credential was issued, or if any of such credentials is not a valid signature by
+its issuer, or it is, but is a forgery. Note that the
 issuance transcript associated to the credential output by the adversary must
 exist, as we unavoidably need to restrict to honest issuers. Indeed, a dishonest
 issuer cannot be trusted to enforce any policy, nor to properly keep all
