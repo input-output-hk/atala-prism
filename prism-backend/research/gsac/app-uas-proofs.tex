@@ -153,11 +153,11 @@ plain form, and \cred is their alleged signature by the owner of public key
   \SBCM's blindness property. The simulation that \advB does is straightforward.
   \advB runs game 2 for \adv, using the \SBCM \parm variable it receives, to
   set up the \SBCM instance for game 2. When \adv~makes a query to its \OBTCHALb
-  oracle, \advB prepares a call to its $\oracle{BLIND}^\RelIss$ oracle, setting
+  oracle, \advB prepares a call to its $\oracle{BLIND}^{\RelIss}$ oracle, setting
   $\osmsg_b \gets \PRVUK[\cuid_b]$ as message to be blindly signed and
   accompanying each $\osmsg_b$ with its corresponding
   $(\cscid_{i,b},\ATTR[\cscid_{i,b}])$ (for all $i\in[n]$). In the response
-  received from $\oracle{BLIND}^\RelIss$ (which succeeds in case both options
+  received from $\oracle{BLIND}^{\RelIss}$ (which succeeds in case both options
   are in \RelIss), \advB replaces the proof with a simulated one, and \yissue
   with a random value (as done in game 2). With the response from \adv, \advB
   completes the credential running \SBCMUnblind as usual. The rest of the

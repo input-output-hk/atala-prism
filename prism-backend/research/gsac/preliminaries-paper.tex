@@ -26,7 +26,7 @@ Defined as a tuple (\ESetup,\EKeyGen,\EEnc,\EDec). Algorithm $\parm \gets
 $(\ek,\dk) \gets \EKeyGen(\parm)$ generates the encryption-decryption key
 pair, algorithm $\Ec \gets \EEnc(\ek,\msg)$ encrypts message \msg with
 encryption key \ek, producing ciphertext \Ec, and $\msg/\bot \gets \EDec(\dk,
-\Ec)$ decrypts ciphertexts using decryption key \Edk. We rely on IND-CCA
+\Ec)$ decrypts ciphertexts using decryption key \dk. We rely on IND-CCA
 public-key encryption schemes.
 
 % \paragraph{(Block) Commitment Schemes.} %
@@ -48,13 +48,13 @@ reference string \NIZKcrs. $\NIZKproof/\bot \gets \NIZKProveRel(\NIZKcrs,
 \NIZKx,\NIZKw)$ creates a NIZK proof of knowledge of witness \NIZKw for \NIZKx
 such that $(\NIZKw,\NIZKx) \in \NIZKRel$. $1/0 \gets \NIZKVerifyRel
 (\NIZKcrs,\NIZKx,\NIZKproof)$ verifies the proof. Within NIZK systems, we
-further need schemes that provide simulation-extractability, which in a nutshell
+further need schemes that provide simulation extractability, which in a nutshell
 means that no adversary can produce a proof from which we cannot extract a
 witness, even after seeing polynomially many simulated proofs. To model
-simulation-extractable NIZKs, we further need algorithms \NIZKSimSetup,
+simulation extractable NIZKs, we further need algorithms \NIZKSimSetup,
 \NIZKSim, and \NIZKExtract, that allow simulating proofs and extracting
 witnesses. The properties we build on are completeness, soundness,
-zero-knowledgeness, and simulation-extractability.
+zero-knowledgeness, and simulation extractability.
 
 \paragraph{Signatures over Blocks of Committed Messages, with proofs.} %
 We use signature schemes that allow signing blocks of messages, and commitments

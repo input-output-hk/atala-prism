@@ -177,7 +177,7 @@ are \UAS-acceptable.
     \procedure[linenumbering=on]{$\Exp^{\UAS-acc-b}_\adv(1^\secpar)$}{%
       \parm \gets \Setup(1^\secpar) \\
       (\upk,\usk) \gets \KeyGen(\parm) \\
-      (\st,\attrs, \lbrace (\cidi,\cidu,\cattrs_i) \rbrace_{i\in[n]})
+      (\st,\cid,\attrs,\lbrace (\cid_i=(\cidi_i,\cidu_i),\cattrs_i) \rbrace_{i\in[n]})
       \gets \adv(\upk) \\
       y \gets \fissue(\upk,\cid,\attrs,\lbrace (\cid_i,\cattrs_i)
       \rbrace_{i\in[n]}) \\
