@@ -1,0 +1,63 @@
+\section{VCs in Atala PRISM}
+\label{sec:vc-atala}
+
+In Atala PRISM, VCs are associated to a DID, with no limit on the number of VCs
+per DID. VCs (or just, credentials) can be issued, revoked, and presented --
+where a presentation involves both proving and verifying steps.
+
+\subsubsection{VC structure.}
+A VC contains at least the DID and issuing key index of the issuer, the DID and
+authentication key index of the holder, and a dictionary with further identity
+claims (name, nationality, etc.) This data is then signed by the issuing key.
+A credential presentation requires the holder to prove control over the
+specified authentication key. Issuers are trusted to verify the identity
+claims contained in credentials they issue.
+
+\subsubsection{Issuing VCs.}
+Issuing a VC involves creating and signing the corresponding data structure, and
+publishing it in the blockchain. In Atala PRISM, the publication can be done in
+batches, so in the following we treat all publication events as containing a
+batch of VCs (of size at least $1$).
+
+The protocol for creating a single VC is as defined in \figref{fig:issuevc}.
+Therein, we only describe how the prospective VC holder proves to the issuer
+ownership of the DID to be included in the VC. Indeed, this is the only
+claim whose correctness can be proved cryptographically; whereas for the other
+claims we need to trust the issuer. \figref{fig:issuevc} further captures how
+the issuer batches multiple VCs and publishes them in the blockchain.
+
+\begin{figure}
+  \scalebox{0.8}{
+    \procedure{\VCCreate}{%
+      \text{$\mathbf{Holder}(\did_H,\did_I,\ask)$} \> \>
+      \text{$\mathbf{Issuer}(\did_I,\isk)$} \> \> \textbf{VDR} \\
+      \> \sendmessageright{top=\text{$\did_H$,attrs}} \> \> \> \\
+      \> \> \> \sendmessageright{top=$\DID.Read(\did_H)$} \> \\
+      \> \> \> \sendmessageleft{top=\apk} \> \\
+      \> \> r \getr \ZZ \> \> \\
+      \> \sendmessageleft{top=$r$} \> \> \> \\
+      \sig \gets \Sig.Sign(\ask,r) \> \> \> \> \\
+      \> \sendmessageright{top=\sig} \> \> \> \\
+      \> \> \pcif !\Sig.Verify(\apk,\sig,r): \> \> \\
+      \> \> \pcind \pcreturn \bot \> \> \\
+      \> \> c \gets (\ipk,\apk,attrs) \> \> \\ 
+      \> \> vc \gets \Sig.Sign(\isk,c) \> \> \\
+      \> \sendmessageleft{top=\text{$(c,vc)$}} \> \> \> \\  
+      \pcif !\Sig.Verify(\ipk,vc,c): \> \> \> \> \\
+      \pcind \pcreturn \bot \> \> \> \> \\
+    }
+  }
+  \label{fig:issuevc}
+  \caption{Algorithms for issuing (creating and publishing) a VC.}
+\end{figure}
+
+
+\subsubsection{Revoking a VC.}
+
+\subsubsection{VC Presentations.}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "prism-protocol"
+%%% End:

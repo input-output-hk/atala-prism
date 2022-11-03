@@ -1,0 +1,65 @@
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+\subsection{Cryptographic Building Blocks}
+\label{ssec:bbs}
+
+\todo{Briefly describe algorithms they use.}
+
+\paragraph{Append-Only Bulletin Boards.} %
+%\todo{For now, simplified notion as in \cite{acc+20}.}
+
+\paragraph{Digital Signatures.} %
+%Maybe build on \IdealFSig from \cite{canetti03}.
+
+\paragraph{Merkle Trees.}
+
+\paragraph{Public Key Infrastructures.} %
+% Maybe build on \IdealFCA from \cite{canetti03}.
+
+\subsection{Self-Sovereign Identities}
+\label{ssec:ssi}
+
+\paragraph{Decentralised Identifiers (DIDs).} %
+Much of the SSI community is built on top of DIDs, which is a W3C Recommendation
+since 2022\footnote{\url{https://www.w3.org/TR/did-core}. Last access, 3rd
+  November, 2022.}. Essentially, the DID specification defines how to associate
+public keys and additional metadata to unique identifiers, leveraging verifiable
+data registries (VDR). Whereas there is no concrete requirement on these VDRs,
+the typical choice are blockchains, which leads to the ``Decentralised''
+adjective for DIDs. The DID specification describes the syntax that identifiers
+must follow, as well as the operations (CRUD: Create, Read, Update, Deactivate)
+that any DID-compatible mechanism must implement.
+
+That is, a mechanism following the DID specification must enable any user to be
+able to register a unique identifier, associate public key material to it, and
+manange it. Thus, it is natural to see such a mechamism as an equivalent to
+traditional Public Key Infrastructures (PKIs), where different instantiations of
+such a mechanism -- e.g., with different approaches to implement the CRUD
+methods required by the DID specification, or based on different VDRs -- can be
+seen as a different type of DID-based PKI.
+
+\todo{Maybe expand. Also, describe the difference between DID Document, and DID.
+  Also describe the concept of DID controller, essential to prevent manipulation
+  of DIDs and their documents.}
+
+\paragraph{Verifiable Credentials (VCs).} %
+\todo{Describe: Introduction to VCs. Relating to DIDs.}
+
+\subsection{Overview of Atala PRISM}
+\label{ssec:overview-prism}
+
+In a nutshell, Atala PRISM builds VCs and DIDs on top of the Cardano blockchain.
+More concretely, any entity can create (and manage) a DID, and issuers can issue
+VCs associated to a previously existing DID, where Cardano is the chosen VDR.
+Users can later leverage VCs to authenticate against any potential verifier, in
+a manner that all the information that the verifier needs to (cryptographically)
+authenticate the user is contained in the Cardano blockchain.
+
+\todo{Ellaborate more.}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "prism-protocol"
+%%% End:

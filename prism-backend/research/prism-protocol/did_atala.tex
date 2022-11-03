@@ -1,0 +1,234 @@
+\section{DIDs in Atala PRISM}
+\label{sec:did-atala}
+
+\subsection{Base Functionalities}
+\label{ssec:did-funcs}
+
+\paragraph{Append-Only Bulletin Boards.} %
+\todo{For now, simplified notion as in \cite{acc+20}.}
+
+\paragraph{Digital Signatures.} %
+Maybe build on \IdealFSig from \cite{canetti03}.
+
+\subsection{Functionality \IdealFPKIDID}
+
+Giving an ideal functionality for a DID-based PKI does not seem to be easy. The
+difficulty stems from the fact that the W3C specification (see footnote
+\todo{X}) is very permissive in regards to what can be seen as a valid DID
+method definition. Namely, it simply states the following conditions for any
+candidate method, in Section 8.2 of the specification:
+
+\begin{description}
+\item[Authentication.] It must define how authorisation is performed.  
+\item[Create.] It must specify how controllers create new DIDs.
+\item[Read.] It must specify how the contents of a DID can be fetched and
+  authenticated.
+\item[Update.] It must specify what updates can controllers apply (if any)
+  to existing DIDs.
+\item[Deactivate.] It must specify if DIDs can be deactivated, and how.
+\end{description}
+
+Where the authentication aspect specifically covers the way in which controllers
+prove to be entitled to perform create, update, or deactivate operations.
+
+However, since no functional requirements are given as to, e.g., what an update
+may be, or what a deactivation implies, it seems hard to define a functionality
+that would cover all possible options.
+%
+We thus take the basic approach to see DID documents as simple dictionaries
+(i.e., lists of labels with corresponding values), associated to a common label,
+the DID \todo{maybe draw something here}. From this, creating a DID is simply
+defining a set (of at least size 1) of initial label-value pairs and get an
+identifier associated to them. Updating a DID is essentially a creation, but
+over an existing identifier - the functionality just replaces the old contents
+with the new ones. And deactivating a DID means removing some of its labels and
+associated values, where removing all of them equates to deactivating the whole
+DID. Reading a DID just outputs the latest contents of the associated
+dictionary.
+%
+Our expectation is that this permissive approach allows to capture a large
+subset of all possible DID method implementations. Note that the functional
+restrictions we impose seem to be unavoidable. Namely, we do not specify how
+the actual identifiers are computed; instead, we allow the adversary to pick
+them. To update a DID, we only require such DID to exist, but otherwise its
+contents can be set to something completely new, as long as the caller is the
+same party who created it. Finally, deactivating labels within an existing DID
+requires that these labels exist -- and, again, that the caller is the same
+party who created the DID.
+%
+We capture this notion in \figref{fig:fpkidid}.
+
+
+\begin{figure}
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving command \cmd, for session \sid, with
+        arguments \args and from party $P$, \IdealFPKIDID operats as
+        follows.}
+      \textrm{If the received \cmd and \args pair does not meet any of
+        the following options, the request is ignored.}
+      \textrm{\todo{We assume that the functionality keeps track of the
+          received requests.}}
+    \end{minipage}
+    \vspace*{0.5em}
+    
+    \begin{minipage}[t]{0.55\textwidth}
+      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \args =
+        \lbrace (\lbl_i,\val_i) \rbrace_{i\in[n]}$}{
+        \pccomment{\fbox{DID Create operation}} \\
+        \ucio{Send}~(\uccmd{Create}, \sid, \args)~\text{to}~\adv \\
+        \ucio{Receive}~(\uccmd{ok}, did)~\text{from}~\adv \\
+        \pcif \sid = (P,\ssid): \\
+        \pcind \DID \gets \DID \cup \lbrace (P,did,\args) \rbrace  
+      }
+    \end{minipage}
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
+        \args = did$}{
+        \pccomment{\fbox{DID Read operation}} \\
+        \ucio{Send}~(\uccmd{Read},\sid,\args)~\text{to}~\adv \\
+        \ucio{Receive}~\uccmd{ok}~\text{from}~\adv \\
+        \pcif (\cdot,did,v) \in \DID: \\
+        \pcind \ucio{Output}~(\uccmd{Read},\sid,(did,v))~\text{to}~P \\
+        \pcelse: \\
+        \pcind \ucio{Output}~(\uccmd{Read},\sid,\bot)~\text{to}~P    
+      }    
+    \end{minipage}
+    \vspace*{0.25em} \\
+    \begin{minipage}[t]{0.55\textwidth}
+      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
+        \args = (did, \lbrace (\lbl_i,\val_i) \rbrace_{i\in[n]})$}{      
+        \pccomment{\fbox{DID Update operation}} \\
+        \ucio{Send}~(\uccmd{Update}, \sid, \args)~\text{to}~\adv \\
+        \ucio{Receive}~\uccmd{ok}~\text{from}~\adv \\
+        \pcif \sid = (P,\ssid) \land (P,did,v) \in \DID: \\
+        \pcind \DID \gets \DID \setminus \lbrace (P,did,v) \rbrace~\cup \\
+        \hspace*{7em} \lbrace (P, did, v \cup \args) \rbrace
+      }
+    \end{minipage}
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \args =
+        (did, \lbrace \lbl_i \rbrace_{i\in[n]})$}{
+        \pccomment{\fbox{DID Deactivate operation}} \\
+        \ucio{Send}~(\uccmd{Deact}, \sid, \args)~\text{to}~\adv \\
+        \ucio{Receive}~\uccmd{ok}~\text{from}~\adv \\
+        \pcif \sid = (P,\ssid)~\land \\
+        \pcind (P,did,v) \in \DID~\land \\
+        \pcind \lbrace \lbl_i \rbrace_{i\in[n]} \subseteq \LBL(v): \\
+        \pcind v' \gets v \setminus \lbrace (\lbl_i,\cdot) \rbrace_{i\in[n]} \\
+        \pcind \DID \gets \DID \setminus \lbrace (P,did,v) \rbrace~\cup \\
+        \hspace*{7em}\lbrace (P,did,v') \rbrace
+      }
+    \end{minipage}
+  \end{framed}
+  \caption{Ideal DID-based PKI functionality, \IdealFPKIDID.}
+  \label{fig:fpkidid}
+\end{figure}
+
+\subsubsection{Design choices.} %
+
+\begin{itemize}
+\item Add $did$s explicitly. Seems necessary to support multiple DIDs per party?
+\end{itemize}
+\subsection{\RealPKIDIDAtala Construction}
+
+\subsubsection{Key Types.} %
+All operations in Atala PRISM are authenticated, meaning that a cryptographic
+key needs to be involved in proving that the operation comes from the intended
+party. Currently, 4 types of keys are supported: master keys, for managing DIDs;
+issuing keys, for issuing VCs; communication keys, for key-exchange protocols;
+and authentication keys, to associate to VCs. For now, for simplicity we leave
+communications keys out, and treat master keys, issuing keys and authentication
+keys as digital signature key pairs -- \todo{note that extending the protocols
+  described next to support key-exchange keys, is direct}.
+
+The public part of each key, as well as some metadata (key identifier, key type,
+etc.) is associated to a DID, where multiple keys can be related to the same
+DID. Next, we describe how Atala PRISM implements the DID operations (create,
+read, update and deactivate/delete) required to be a valid DID method.
+
+\subsection{DID Management}
+
+\todo{For now, this ignores \emph{unpublished} DIDs.}
+
+We next describe the main operations with DIDs in Atala PRISM.
+
+\subsubsection{Create a DID.} %
+To create a DID, the user has to specify the number of master keys, issuing
+and authentication keys ($n_m,n_i,n_a$) she wants to create, where at least one
+master key is required. The process genereates as many keys as required. Then,
+a list of the keys, along with their identifiers and type, is created and
+used to form a transaction, signed by one of the master keys and submitted
+to the blockchain. Let (an encoding of) the hash of such list of keys be $h$.
+Then, the produced DID is ``did:prism:h''. We capture this algorithm more
+precisely in \figref{fig:cudid}. Therein, for simplicity, we assume that
+(w.l.o.g.) the master key that signs the transaction is the first one, and
+all the keys to generate are ordered so that the type of key can be inferred
+from its position -- this means that keys' identifiers are just counters of
+each type (in any case, whatever the implementation is, this need to be done
+unambiguosly).
+
+\begin{figure}
+  \begin{pchstack}[center, boxed, space=5mm]
+    \procedure[linenumbering]{$\DIDCreate(n_m,n_i,n_a)$}{
+      \pcif n_m < 1: \pcreturn \bot \\
+      \pcfor j \in [n_m]: (\mpk_j,\msk_j) \gets \Sig.\Gen(\secpar) \\
+      \pcfor j \in [n_i]: (\ipk_j,\isk_j) \gets \Sig.\Gen(\secpar) \\
+      \pcfor j \in [n_a]: (\apk_j,\ask_j) \gets \Sig.\Gen(\secpar) \\
+      \st \gets n_m||\lbrace (i,\mpk_i) \rbrace_{i\in[n_m]}|| \\
+      \hspace*{2.25em} n_i||\lbrace(n_m+j,\ipk_j)\rbrace_{j\in[n_i]}|| \\
+      \hspace*{2.25em} n_a||\lbrace(n_m+n_i+j,\apk_j)\rbrace_{j\in[n_a]}) \\
+      h \gets \Hash(\st); \did \gets ``did:prism:''||~h \\
+      \tx \gets \texttt{CreateDID} || \did || \st \\
+      \sig_{\tx} \gets \Sig.Sign(\msk_1,\tx) \\
+      \VDR.Push(\tx,\sig_{\tx}) \\
+      \pcreturn (\did,\lbrace (\mpk_j,\msk_j) \rbrace_{j\in[n_m]}, \\
+      \hspace*{5.5em}\lbrace (\ipk_j,\isk_j) \rbrace_{j\in[n_i]}, \\
+      \hspace*{5.5em}\lbrace (\apk_j,\ask_j) \rbrace_{j\in[n_a]})
+    }
+
+    \procedure[linenumbering]{$\DIDUpdate(\did,M,I,A,n'_m,n'_I,n'_A)$}{
+      \pcif M \not\subseteq [N_m] \lor I \not\subseteq [n_i] \lor
+      A \not\subseteq [N_a]: \\
+      \pcind \pcreturn \bot \\
+      \pcif M = [N_m] \land n'_m < 1: \pcreturn \bot \\
+      N \gets |M| + |I| + |A| \\
+      \pcfor j \in [n'_m]: (\mpk_j,\msk_j) \gets \Sig.\Gen(\secpar) \\
+      \pcfor j \in [n'_i]: (\ipk_j,\isk_j) \gets \Sig.\Gen(\secpar) \\
+      \pcfor j \in [n'_a]: (\apk_j,\ask_j) \gets \Sig.\Gen(\secpar) \\
+      \st \gets M||I||A||n'_m||\lbrace (N+i,\mpk_i) \rbrace_{i\in[n'_m]}|| \\
+      \hspace*{2.25em} n'_i||\lbrace(N+n'_m+j,\ipk_j)\rbrace_{j\in[n'_i]}|| \\
+      \hspace*{2.25em} n'_a||\lbrace(N+n'_m+n'_i+j,\apk_j)\rbrace_{j\in[n'_a]}) \\
+      \tx \gets \texttt{UpdateDID} || \did || \st \\
+      \sig_{\tx} \gets \Sig.Sign(\overline{\msk},\tx) \\
+      \VDR.Push(\tx,\sig_{\tx}) \\
+      \pcreturn (\lbrace (\mpk_j,\msk_j) \rbrace_{j\in[n'_m]}, \\
+      \hspace*{4em}\lbrace (\ipk_j,\isk_j) \rbrace_{j\in[n'_i]}, \\
+      \hspace*{4em}\lbrace (\apk_j,\ask_j) \rbrace_{j\in[n'_a]})
+    }  
+  \end{pchstack}
+  \label{fig:cudid}
+  \caption{Algorithms for creating and updating a DID.}
+\end{figure}
+
+\subsubsection{Read a DID.} \todo{PRISM nodes keep track of metadata?}
+
+\subsubsection{Update a DID.} %
+To update a DID, the alleged owner of the DID must specify the identifiers of
+the keys she wants to deactivate, and the number of keys of each type she wants
+to add. At least one master key (either new or old) must remain after this
+operation. Otherwise, the logic is as in the DID creation process, and it is
+specified in \figref{fig:cudid}. Therein, for readability we introduce the
+variables $N_m,N_i,N_a$, that keep track of (respectively) the number of master,
+issuing and authentication keys issued for the corresponding DID during its
+whole lifetime. Similarly, $\overline{MSK}$ denotes the master secret key with
+the lower index that has not been deactivated.
+
+\subsubsection{Deactivate a DID.} %
+The DID deactivation operation is implicitly implemented via the update
+operation. \todo{Confirm.}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "prism-protocol"
+%%% End:
