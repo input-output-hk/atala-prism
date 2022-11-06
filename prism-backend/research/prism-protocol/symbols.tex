@@ -22,6 +22,7 @@
 \newcommand{\gen}[1]{\ensuremath{#1}}
 
 \mathchardef\mhyphen="2D
+\def\suchthat{\ensuremath{s.t.}\xspace}
 
 % General
 \def\secpar{\ensuremath{1^\kappa}\xspace}
@@ -29,7 +30,8 @@
 \def\Hash{\ensuremath{Hash}\xspace}
 \def\tx{\ensuremath{tx}\xspace}
 \def\getr{\ensuremath{\stackrel{\$}{\gets}}\xspace}
-\def\args{\ensuremath{args}\xspace}
+\def\arg{\ensuremath{arg}\xspace}
+\def\msg{\ensuremath{m}\xspace}
 
 % UC
 \def\IdealF{\ensuremath{\mathcal{F}}\xspace}
@@ -43,6 +45,10 @@
 \def\sig{\ensuremath{\sigma}\xspace}
 \def\Sig{\ensuremath{\mathsf{S}}\xspace}
 \def\IdealFSig{\ensuremath{\IdealF_{SIG}}\xspace}
+\def\SIG{\ensuremath{\mathsf{SG}}\xspace}
+
+% Hashes
+\def\IdealFRO{\ensuremath{\IdealF_{RO}}\xspace}
 
 % Key Types
 \def\mpk{\ensuremath{mpk}\xspace}
@@ -51,6 +57,11 @@
 \def\isk{\ensuremath{isk}\xspace}
 \def\apk{\ensuremath{apk}\xspace}
 \def\ask{\ensuremath{ask}\xspace}
+\def\VK{\ensuremath{\mathsf{VK}}\xspace}
+
+% BB
+\def\aobbl{\ensuremath{L}\xspace}
+\def\IdealFaobb{\ensuremath{\IdealF_{BB}}\xspace}
 
 % VDR
 \def\VDR{\ensuremath{\mathsf{VDR}}\xspace}
@@ -65,7 +76,12 @@
 \def\lbl{\ensuremath{l}\xspace}
 \def\LBL{\ensuremath{L}\xspace}
 \def\val{\ensuremath{v}\xspace}
+\def\sval{\ensuremath{\mathbf{v}}\xspace}
 \def\VAL{\ensuremath{V}\xspace}
+\def\P{\ensuremath{\mathtt{P}}\xspace}
+% \def\Pc{\ensuremath{\mathtt{P}_{\mathtt{C}}}\xspace}
+% \def\Pu{\ensuremath{\mathtt{P}_{\mathtt{U}}}\xspace}
+% \def\Pd{\ensuremath{\mathtt{P}_{\mathtt{D}}}\xspace}
 
 % VCs
 \def\VC{\ensuremath{\mathsf{VC}}\xspace}
@@ -80,6 +96,10 @@
 
 % Atala
 \def\RealPKIDIDAtala{\ensuremath{\Pi_{PKI{\mhyphen}DID}^{Atala}}\xspace}
+\def\MasterKey{\texttt{M}}
+\def\AuthKey{\texttt{A}}
+\def\CommKey{\texttt{C}}
+\def\IssueKey{\texttt{I}}
 
 %%% Local Variables: 
 %%% mode: pdflatex
