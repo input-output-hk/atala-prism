@@ -35,11 +35,13 @@
 
 % UC
 \def\IdealF{\ensuremath{\mathcal{F}}\xspace}
+\newcommand{\ucio}[1]{\ensuremath{\text{#1}}}
 \newcommand{\uccmd}[1]{\ensuremath{\mathtt{#1}}}
 \def\cmd{\ensuremath{cmd}\xspace}
 \def\sid{\ensuremath{sid}\xspace}
 \def\ssid{\ensuremath{ssid}\xspace}
-\newcommand{\ucio}[1]{\ensuremath{\text{#1}}}
+\def\ucsend{\ucio{Send}\xspace}
+\def\ucrecv{\ucio{Recv}\xspace}
 
 % Signatures
 \def\sig{\ensuremath{\sigma}\xspace}
@@ -96,10 +98,11 @@
 
 % Atala
 \def\RealPKIDIDAtala{\ensuremath{\Pi_{PKI{\mhyphen}DID}^{Atala}}\xspace}
-\def\MasterKey{\texttt{M}}
-\def\AuthKey{\texttt{A}}
-\def\CommKey{\texttt{C}}
-\def\IssueKey{\texttt{I}}
+\def\MasterKey{\texttt{M}\xspace}
+\def\AuthKey{\texttt{A}\xspace}
+\def\CommKey{\texttt{C}\xspace}
+\def\IssueKey{\texttt{I}\xspace}
+\def\LMKI{\texttt{LMKI}\xspace}
 
 %%% Local Variables: 
 %%% mode: pdflatex

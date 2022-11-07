@@ -35,7 +35,7 @@ the functionality in \figref{fig:faobb}.
       \procedure[linenumbering]{$\pcif \cmd = \uccmd{Append} \land \arg = x$}{
         \pccomment{\fbox{Append data to \aobbl}} \\
         \aobbl \gets \aobbl || x \\
-        \pcif P~\text{is corrupt}:~\ucio{Send}~(\uccmd{Appended},x,P)~\text{to}
+        \pcif P~\text{is corrupt}:~\ucsend~(\uccmd{Appended},x,P)~\text{to}
         ~\adv
       }
     \end{minipage}
@@ -73,8 +73,8 @@ the functionality in \figref{fig:faobb}.
         \emptyset$}{
         \pccomment{\fbox{Key Generation}} \\
         \pcif \sid = (P,\ssid): \\
-        \pcind \ucio{Send}~(\uccmd{KeyGen},\sid)~\text{to}~\adv \\
-        \pcind \ucio{Receive}~(\uccmd{VerKey},\sid,v)~\text{from}~\adv \\
+        \pcind \ucsend~(\uccmd{KeyGen},\sid)~\text{to}~\adv \\
+        \pcind \ucrecv~(\uccmd{VerKey},\sid,v)~\text{from}~\adv \\
         \pcind \ucio{Output}~(\uccmd{VerKey},\sid,v)~\text{to}~P \\
         \pcind \text{Store}~(P,v)
       }
@@ -82,8 +82,8 @@ the functionality in \figref{fig:faobb}.
       \procedure[linenumbering]{$\pcif \cmd = \uccmd{Verify} \land
         \arg = (\sig,\msg,v')$}{
         \pccomment{\fbox{Verify a message}} \\
-        \ucio{Send}~(\uccmd{Verify},\sid,\msg,\sig,v)~\text{to}~\adv \\
-        \ucio{Receive}~(\uccmd{Verified},\sid,\msg,\phi)~\text{from}~\adv \\
+        \ucsend~(\uccmd{Verify},\sid,\msg,\sig,v)~\text{to}~\adv \\
+        \ucrecv~(\uccmd{Verified},\sid,\msg,\phi)~\text{from}~\adv \\
         \pcif v' = v \land (\msg,\sig,v,1) \in \SIG: f \gets 1 \\
         \pcelse \pcif v' = v \land P~\text{is not corrupt}~\land \\
         \pcind (\msg,\sig',v,1) \notin \SIG: \\
@@ -100,14 +100,14 @@ the functionality in \figref{fig:faobb}.
       \procedure[linenumbering]{$\pcif \cmd = \uccmd{Sign} \land \arg = \msg$}{
         \pccomment{\fbox{Sign a message}} \\
         \pcif \sid = (P,\ssid) \\
-        \pcind \ucio{Send}~(\uccmd{Sign},\sid,\msg)~\text{to}~\adv \\
-        \pcind \ucio{Receive}~(\uccmd{Signature},\sid,\msg,\sig)~\text{from}~
+        \pcind \ucsend~(\uccmd{Sign},\sid,\msg)~\text{to}~\adv \\
+        \pcind \ucrecv~(\uccmd{Sig.},\sid,\msg,\sig)~\text{from}~
         \adv \\
         \pcind \pcif (\msg,\sig,v,0) \in \SIG: \\
         \pcind \pcind \ucio{Output}~(\uccmd{Error}) \\
         \pcind \pcelse: \\
         \pcind \pcind \SIG \gets \SIG \cup (\msg,\sig,v,1) \\
-        \pcind \pcind \ucio{Output}~(\uccmd{Signature},\sid,\msg,\sig)
+        \pcind \pcind \ucio{Output}~(\uccmd{Sig.},\sid,\msg,\sig)
       }
     \end{minipage}
   \end{framed}
@@ -176,79 +176,92 @@ We capture the resulting notion in \figref{fig:fpkidid}.
 
 \begin{figure}
   \begin{framed}
-    \begin{minipage}[t]{\textwidth}
-      \textrm{Upon receiving a call $\IdealFPKIDID^{\P}(\cmd,\sid,\arg)$
-        from some party $P$ to run command \cmd, in session \sid, with arguments
-        \arg, $\IdealFPKIDID^{\P}$ operates as follows.}
-      \textrm{If the received \cmd and \arg pair does not meet any of
-        the following options, the request is ignored.}
-      \textrm{\P is a boolean predicate defining concrete conditions for
-        acceptable DID creations, updates and deactivations.
-      }
-      \textrm{\todo{We assume that the functionality keeps track of the
-          received requests.}}
-    \end{minipage}
+    \scalebox{0.9}{
+      \begin{minipage}[t]{\textwidth}
+        \textrm{Upon receiving a call $\IdealFPKIDID^{\P}(\cmd,\sid,\arg)$
+          from some party $P$ to run command \cmd, in session \sid, with arguments
+          \arg, $\IdealFPKIDID^{\P}$ operates as follows.}
+        \textrm{If the received \cmd and \arg pair does not meet any of
+          the following options, the request is ignored.}
+        \textrm{\P is a boolean predicate defining concrete conditions for
+          acceptable DID creations, updates and deactivations.
+        }
+        \textrm{\todo{We assume that the functionality keeps track of the
+            received requests.}}
+      \end{minipage}
+    }
     \vspace*{0.5em}
-    
-    \begin{minipage}[t]{0.55\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
-        \lbrace (i,\lbl_i) \rbrace_{i\in[n]}$}{
-        \pccomment{\fbox{DID Create operation}} \\
-        \ucio{Send}~(\uccmd{Create}, \sid, \arg)~\text{to}~\adv \\
-        \ucio{Receive}~(\uccmd{CreateOk}, \sid, did,
-        \lbrace \val_i \rbrace_{i\in[n]}) \\
-        \pcind \text{from}~\adv \\
-        \pcif (P,\did,\cdot) \notin \DID \land
-        \P(\lbrace \lbl_i \rbrace_{i\in[n]}) = 1: \\
-        \pcind \DID \gets \DID \cup \lbrace (P,did,\lbrace
-        (\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
-        \ucio{Output}~(\uccmd{Created},\sid,\did,
-        \lbrace \val_i \rbrace_{i\in[n]})
-      }
-    \end{minipage}
-    \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
-        \arg = did$}{
-        \pccomment{\fbox{DID Read operation}} \\
-        \ucio{Send}~(\uccmd{Read},\sid,\arg)~\text{to}~\adv \\
-        \ucio{Receive}~(\uccmd{ReadOk},\sid)~\text{from}~\adv \\
-        \pcif (\cdot,did,\sval) \in \DID: \\
-        \pcind \ucio{Output}~(\uccmd{Read},\sid,(did,\sval))~\text{to}~P \\
-        \pcelse: \\
-        \pcind \ucio{Output}~(\uccmd{Read},\sid,\bot)~\text{to}~P    
-      }    
-    \end{minipage}
+
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.55\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
+          \lbrace (i,\lbl_i) \rbrace_{i\in[n]}$}{
+          \pccomment{\fbox{DID Create operation}} \\
+          \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\adv \\
+          \ucrecv~(\uccmd{CreateOk}, \sid, did,
+          \lbrace (i, \val_i) \rbrace_{i\in[n]}) \\
+          \pcind \text{from}~\adv \\
+          \pcif (P,\did,\cdot) \notin \DID \land
+          \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 1: \\
+          \pcind \DID \gets \DID \cup \lbrace (P,did,\lbrace
+          (i,\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
+          \ucio{Output}~(\uccmd{Created},\sid,\did,
+          \lbrace (i,\val_i) \rbrace_{i\in[n]})
+        }
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
+          \arg = did$}{
+          \pccomment{\fbox{DID Read operation}} \\
+          \ucsend~(\uccmd{Read},\sid,\arg)~\text{to}~\adv \\
+          \ucrecv~(\uccmd{ReadOk},\sid)~\text{from}~\adv \\
+          \pcif (\cdot,did,\sval) \in \DID: \\
+          \pcind \ucio{Output}~(\uccmd{Read},\sid,(did,\sval))~\text{to}~P \\
+          \pcelse: \\
+          \pcind \ucio{Output}~(\uccmd{Read},\sid,\bot)~\text{to}~P    
+        }    
+      \end{minipage}
+    }
     \vspace*{0.25em} \\
-    \begin{minipage}[t]{0.55\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
-        \arg = (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{      
-        \pccomment{\fbox{DID Update operation}} \\
-        \ucio{Send}~(\uccmd{Update}, \sid, \arg)~\text{to}~\adv \\
-        \ucio{Receive}~(\uccmd{UpdateOk},\sid,
-        \lbrace \val_i \rbrace_{i\in[n]}) \\
-        \pcind \text{from}~\adv \\
-        \pcif (P,did,\sval) \in \DID \land
-        \P(\lbrace \lbl_i \rbrace_{i\in[n]}) = 1: \\
-        \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval) \rbrace~\cup \\
-        \hspace*{7em} \lbrace (P, did,
-        \lbrace \lbl_i,\val_i \rbrace_{i\in[n]}) \rbrace
-      }
-    \end{minipage}
-    \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
-        (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{
-        \pccomment{\fbox{DID Deactivate operation}} \\
-        \ucio{Send}~(\uccmd{Deact}, \sid, \arg)~\text{to}~\adv \\
-        \ucio{Receive}~(\uccmd{DeactOk},\sid)~\text{from}~\adv \\
-        \pcif (P,did,\sval) \in \DID~\land \\
-        \pcind \lbrace \lbl_i \rbrace_{i\in[n]} \subseteq \LBL(\sval): \\
-        \pcind \sval' \gets \sval \setminus \lbrace (\lbl_i,\cdot)
-        \rbrace_{i\in[n]} \\
-        \pcind \pcif \P(\sval') = 1: \\
-        \pcind \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval) \rbrace~\cup \\
-        \hspace*{8em}\lbrace (P,did,\sval') \rbrace
-      }
-    \end{minipage}
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.55\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
+          \arg = (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{      
+          \pccomment{\fbox{DID Update operation}} \\
+          \ucsend~(\uccmd{Update}, \sid, \arg)~\text{to}~\adv \\
+          \ucrecv~(\uccmd{UpdateOk},\sid,
+          \lbrace (i,\val_i) \rbrace_{i\in[n]}) \\
+          \pcind \text{from}~\adv \\
+          \pcif (P,did,\sval) \in \DID \land
+          \P(\lbrace (i,\lbl_i) \rbrace_{i\in[n]}) = 1: \\
+          \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval) \rbrace~\cup \\
+          \hspace*{7em} \lbrace (P, did,
+          \lbrace (i,\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
+          \ucio{Output}~(\uccmd{Updated},\sid,
+          (\did,\lbrace (i,\val_i) \rbrace_{i\in[n]}))
+        }
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
+          (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{
+          \pccomment{\fbox{DID Deactivate operation}} \\
+          \ucsend~(\uccmd{Deact}, \sid, \arg)~\text{to}~\adv \\
+          \ucrecv~(\uccmd{DeactOk},\sid)~\text{from}~\adv \\
+          \pcif (P,did,\sval) \in \DID~\land \\
+          \pcind \lbrace (i,\lbl_i) \rbrace_{i\in[n]} \subseteq \LBL(\sval): \\
+          \pcind \sval' \gets \sval \setminus \lbrace (i,\lbl_i,\cdot)
+          \rbrace_{i\in[n]} \\
+          \pcind \pcif \P(\sval') = 1: \\
+          \pcind \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval) \rbrace~\cup \\
+          \hspace*{8em}\lbrace (P,did,\sval') \rbrace \\
+          \ucio{Output}~(\uccmd{Deacted},\sid,(\did,\sval'))
+        }
+      \end{minipage}
+    }
   \end{framed}
   \caption{Ideal DID-based PKI functionality, \IdealFPKIDID.}
   \label{fig:fpkidid}
@@ -264,15 +277,26 @@ Atala.
 \paragraph{Key Types.} %
 All operations in Atala PRISM are authenticated, meaning that a cryptographic
 key needs to be involved in proving that the operation comes from the intended
-party. Currently, 4 types of keys are supported: master keys (\MasterKey), for
-operating on DIDs; issuing keys, for issuing VCs (\IssueKey); communication
-keys (\CommKey), for key-exchange protocols; and authentication keys, to
-associate to VCs (\AuthKey).
+party. Atala specifies four key types, that are thus supported in Atala's DID
+method. Namely: master keys (\MasterKey), for operating on DIDs; issuing keys,
+for issuing VCs (\IssueKey); communication keys (\CommKey), for key-exchange
+protocols; and authentication keys, to associate to VCs (\AuthKey).
+
+\paragraph{Custom Notation.} %
+Keys in Atala are identified by indexes. In the following description of the
+\RealPKIDIDAtala construction, given a set of keys, we frequently refer to the
+``master key with lowest index''.  For brevity, given a set \st, we use
+$\LMKI(\st)$ to denote such index.
 
 \paragraph{DID Operations.} %
 \todo{For now, this ignores \emph{unpublished} DIDs.}
-\figref{fig:alapkidid} contains the specification of Atala PRISM's DID method,
-which we describe next.
+\figref{fig:atalapkidid1} and \figref{fig:atalapkidid2} contain the
+specification of Atala PRISM's DID method,
+which we describe next. Looking at the \texttt{Create} and \texttt{Update}
+operations, it is clear that $\P(\lbrace \lbl_i \rbrace_{i\in[n]})$ in Atala
+requires that all key labels are of a known type (\MasterKey, \IssueKey,
+\CommKey, or \AuthKey) and that at least one of the keys in the DID Document
+is of type \MasterKey.
 
 \begin{description}
 \item{\uccmd{Create}.} %
@@ -289,12 +313,11 @@ which we describe next.
   in the list. The DID owner stores locally the list, along with the
   corresponding private keys.
 \item[\uccmd{Read}.] %
-  Getting the contents of a DID simply requires querying a \todo{PRISM node} for
-  it. The PRISM node returns the associated list, along with all related
-  \texttt{CreateDID} and \texttt{UpdateDID} transactions in the blockchain. If
-  the signatures of these transactions are valid, and the result of applying in
-  order all the operations produces the list returned by the \todo{PRISM node},
-  then the list is an up to date DID Document of the corresponding DID.
+  Getting the contents of a DID simply requires processing the associated
+  transactions in the blockchain. Namely, transactions $(\tx,\sig)$ where $\tx$
+  is either $(\texttt{CreateDID},\did,\cdot)$ or $(\texttt{UpdateDID},\did,
+  \cdot)$. The associated DID Document is the result of applying in an ordered
+  manner (from oldest to newest) all such validly signed transactions.
 \item[\uccmd{Update}.] %
   Updating a DID requires to (optionally) specify a list of previously existing
   key identifiers to remove, and (optionally) specify a list of new key
@@ -316,160 +339,144 @@ which we describe next.
   \emph{not} be deactivated.
 \end{description}
 
-\begin{figure}
+\begin{figure}[ht!]
   \begin{framed}
-    \begin{minipage}[t]{\textwidth}
-      \textrm{Upon receiving a call $\IdealFPKIDID^{\P}(\cmd,\sid,\arg)$
-        from some party $P$ to run command \cmd, in session \sid, with arguments
-        \arg, $\IdealFPKIDID^{\P}$ operates as follows.}
-      \textrm{If the received \cmd and \arg pair does not meet any of
-        the following options, the request is ignored.}
-      \textrm{\P is a boolean predicate defining concrete conditions for
-        acceptable DID creations, updates and deactivations.
-      }
-      \textrm{\todo{We assume that the functionality keeps track of the
-          received requests.}}
-    \end{minipage}
-    \vspace*{0.5em}
-    
-    \begin{minipage}[t]{0.55\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
-        \lbrace (i,\lbl_i) \rbrace_{i\in[n]}$}{
-        \pccomment{\fbox{DID Create operation}} \\
-        \st \gets \emptyset \\
-        \pcif \exists i~\suchthat~\lbl_i \notin [\MasterKey,\AuthKey,
-        \CommKey,\IssueKey] \lor
-        \nexists i~\suchthat~\lbl_i = \MasterKey: \\
-        \pcind \texttt{Abort} \\
-        \pcfor i \in [n]: \\
-        \pcind \sid' \gets (P,\sid,i) \\
-        \pcind \ucio{Send}~(\uccmd{KeyGen},\sid')~\text{to}~\IdealFSig \\
-        \pcind \ucio{Receive}~(\uccmd{VerKey},\sid',\pk_i)~\text{from}~
-        \IdealFSig \\
-        \pcind \st \gets \st~||~(i,\lbl_i,\pk_i) \\
-        \ucio{Send}~(\uccmd{Hash},\st)~\text{to}~\IdealFRO \\
-        \ucio{Receive}~(\uccmd{Hashed},\st,h)~\text{from}~\IdealFRO \\
-        \did \gets ``did:prism:''||~h \\
-        \text{Locally store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[n]}) \\
-        \tx \gets (\texttt{CreateDID}, \did, \st) \\
-        \text{Let}~j\in[n]~\text{be the least value s.t.}~\lbl_j = \MasterKey \\
-        \ucio{Send}~(\uccmd{Sign},(P,\sid,j),\msg)~\text{to}~\IdealFSig \\
-        \ucio{Receive}~(\uccmd{Signature},(P,\sid,j),\msg,\sig)~\text{from}~\IdealFSig \\
-        \ucio{Send}~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
-        \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace \pk_i \rbrace_{i\in[n]})
-      }
-    \end{minipage}
-    \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
-        \arg = did$}{
-        \pccomment{\fbox{DID Read operation}} \\  
-      }    
-    \end{minipage}
-    \vspace*{0.25em} \\
-    \begin{minipage}[t]{0.55\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
-        \arg = (did, \lbrace (i,\lbl_i) \rbrace_{i\in\tilde{N}\subseteq [\tilde{n}]})$}{
-        \pccomment{\fbox{DID Update operation}} \\
-        \pcif \exists i~\suchthat~\lbl_i \notin [\MasterKey,\AuthKey,
-        \CommKey,\IssueKey] \lor
-        \nexists i~\suchthat~\lbl_i = \MasterKey: \\
-        \pcind \texttt{Abort} \\
-        \text{Read}~(\did,\lbrace (i,\l_i,\pk_i) \rbrace_{i\in[n]})~
-        \text{from local storage} \\
-        \st_{add} \gets \emptyset \\
-        \pcfor i > n \in [\tilde{N}]: \\
-        \pcind \ucio{Send}~(\uccmd{KeyGen},(P,\sid,i))~\text{to}~\IdealFSig \\
-        \pcind \ucio{Receive}~(\uccmd{VerKey},(P,\sid,i),\pk_i)~\text{from}~
-        \IdealFSig \\
-        \pcind \st_{add} \gets \st_{add}~||~(i,\lbl_i,\pk_i) \\
-        \st_{del} \gets [n] \setminus [\tilde{N}] \\
-        \text{Locally store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \\
-        \tx \gets \texttt{UpdateDID}~||~\did~||~\st_{del}~||~\st_{add} \\
-        \text{Let}~j\in[n]~\text{be the least value s.t.}~\lbl_j = \MasterKey \\
-        \ucio{Send}~(\uccmd{Sign},(P,\sid,j),\msg)~\text{to}~\IdealFSig \\
-        \ucio{Receive}~(\uccmd{Signature},(P,\sid,j),\msg,\sig)~\text{from}~\IdealFSig \\
-        \ucio{Send}~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
-        \ucio{Output}~(\uccmd{Updated},\sid,\did,\lbrace \pk_i \rbrace_{i\in[\tilde{N}]})
-      }
-    \end{minipage}
-    \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
-        (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{
-        \pccomment{\fbox{DID Deactivate operation}} \\
-      }
-    \end{minipage}
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.55\textwidth}
+        \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Create} \land \arg =
+          \lbrace (i,\lbl_i) \rbrace_{i\in[n]}$}{
+          \pcif \exists i~\suchthat~\lbl_i \notin [\MasterKey,\AuthKey,
+          \CommKey,\IssueKey] \lor
+          \nexists i~\suchthat~\lbl_i = \MasterKey: \\
+          \pcind \texttt{abort} \\
+          \st \gets \emptyset \\
+          \pcfor i \in [n]: \\
+          \pcind \sid' \gets (P,\sid,i) \\
+          \pcind \ucsend~(\uccmd{KeyGen},\sid')~\text{to}~\IdealFSig \\
+          \pcind \ucrecv~(\uccmd{VerKey},\sid',\pk_i)~\text{from}~
+          \IdealFSig \\
+          \pcind \st \gets \st \cup \lbrace (i,\lbl_i,\pk_i) \rbrace \\
+          \ucsend~(\uccmd{Hash},\st)~\text{to}~\IdealFRO \\
+          \ucrecv~(\uccmd{Hashed},\st,h)~\text{from}~\IdealFRO \\
+          \did \gets ``did:prism:''||~h \\
+          \tx \gets (\texttt{CreateDID}, \did, \st) \\
+          \text{Let}~j\in[n]~\text{be the least value s.t.}~\lbl_j = \MasterKey \\
+          \ucsend~(\uccmd{Sign},(P,\sid,j),\tx)~\text{to}~\IdealFSig \\
+          \ucrecv~(\uccmd{Sig.},(P,\sid,j),\tx,\sig)~\text{from}~\IdealFSig \\
+          \ucsend~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
+          \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace \pk_i \rbrace_{i\in[n]})
+        }
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Read} \land
+          \arg = did$}{
+          \ucsend~(\uccmd{Retrieve})~\texttt{to}~\IdealFaobb \\
+          \ucrecv~(\uccmd{Retrieve},L)~\texttt{from}~\IdealFaobb \\
+          \st \gets \emptyset \\
+          L_{\did} \gets (\ast,\did,\ast) \subseteq \DID \\
+          \pcfor (\tx=(\texttt{op},\did,\cdot),\sig) \in L_{\did}: \\
+          \pcind \pk \gets \emptyset \\
+          \pcind \pcif \texttt{op} = \texttt{CreateDID}~\land \\
+          \pcind \pcind \text{no \texttt{CreateDID} appeared before}: \\
+          \pcind \pcind (\cdot,\cdot,\lbrace (i,\lbl_i,\pk_i)
+          \rbrace_{i\in[n]}) \gets \tx \\
+          \pcind \pcind \st \gets \lbrace (i,\lbl_i,\pk_i) \rbrace_{i \in [n]} \\
+          \pcind \pcind j \gets \LMKI(\st); \pk \gets \pk_j \\
+          \pcind \pcif \texttt{op} = \texttt{UpdateDID}: \\
+          \pcind \pcind (\cdot,\cdot,(\st_{del},\st_{add})) \gets \tx \\
+          \pcind \pcind \lbrace i \rbrace_{i\in[n]} \gets \st_{del} \\ 
+          \pcind \pcind \lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \gets \st_{add} \\
+          \pcind \pcind j \gets \LMKI(\st); \pk \gets \pk_j \\
+          \pcind \pcind \st \gets \st \setminus \st_{del} \cup \st_{add} \\
+          \pcind \pcif \pk = \emptyset: \text{abort} \\
+          \pcind \ucsend~(\uccmd{Verify},(P,\sid),\tx,\sig,\pk)~\text{to}~\IdealFSig \\
+          \pcind \ucrecv~(\uccmd{Verified},(P,\sid),\tx,b)~\text{from}~\IdealFSig \\
+          \pcind \pcif b = 0: \text{abort} \\
+          \ucio{Output}~(\uccmd{Read},\sid,(\did,\st))
+        }    
+      \end{minipage}
+    }
   \end{framed}
-  \caption{Atala PRISM DID-based PKI construction, \RealPKIDIDAtala.}
-  \label{fig:fpkidid}
+  \caption{\texttt{Create} and \texttt{Read} operations in Atala
+    PRISM DID-based PKI protocol, \RealPKIDIDAtala, realising \IdealFPKIDID
+    in the $(\IdealFRO,\IdealFSig,\IdealFaobb)$-hybrid model.}
+  \label{fig:atalapkidid1}
 \end{figure}
 
+\begin{figure}[ht!]
+  \begin{framed}
+    \scalebox{0.9}{
+      \begin{minipage}[t]{\textwidth}
+        \textrm{We assume that the party running
+          \texttt{Update} and \texttt{Deactivate} operations has an up to date
+          copy $(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[n]})$ of the DID to
+          modify. Otherwise, a \texttt{Read} operation needs to be run before.}
+      \end{minipage}
+    }
+    \vspace*{0.5em}
+    
+    \scalebox{0.90}{          
+      \begin{minipage}[t]{0.55\textwidth}
+        \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Update} \land
+          \arg = (did, \lbrace (i,\lbl_i) \rbrace_{i\in\tilde{N}\subseteq [\tilde{n}]})$}{
+          \pcif \exists i~\suchthat~\lbl_i \notin [\MasterKey,\AuthKey,
+          \CommKey,\IssueKey] \lor
+          \nexists i~\suchthat~\lbl_i = \MasterKey: \\
+          \pcind \texttt{abort} \\
+          \st_{add} \gets \emptyset \\
+          \pcfor i \in \tilde{N}~\suchthat~ i > n : \\
+          \pcind \ucsend~(\uccmd{KeyGen},(P,\sid,i))~\text{to}~\IdealFSig \\
+          \pcind \ucrecv~(\uccmd{VerKey},(P,\sid,i),\pk_i)~\text{from}~
+          \IdealFSig \\
+          \pcind \st_{add} \gets \st_{add} \cup \lbrace (i,\lbl_i,\pk_i) \rbrace \\
+          \st_{del} \gets [n] \setminus \tilde{N} \\
+          % \text{Locally store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \\
+          \tx \gets (\texttt{UpdateDID}, \did, (\st_{del}, \st_{add})) \\
+          j \gets \LMKI(\lbrace \lbl_i \rbrace_{i\in\tilde{N}}) \\
+          \ucsend~(\uccmd{Sign},(P,\sid,j),\tx)~\text{to}~\IdealFSig \\
+          \ucrecv~(\uccmd{Sig.},(P,\sid,j),\tx,\sig)~\text{from}~\IdealFSig \\
+          \ucsend~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
+          \ucio{Output}~(\uccmd{Updated},\sid,\did,\lbrace \pk_i \rbrace_{i\in[\tilde{N}]})
+        }
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.45\textwidth}
+        \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Deact} \land \arg =
+          (did, \lbrace (i,\lbl_i) \rbrace_{i\in N \subseteq[n]})$}{       
+          \text{Run as a \texttt{Update} operation}
+        }
+      \end{minipage}
+    }
+  \end{framed}
+  \caption{\texttt{Update} and \texttt{Deactivate} operations in Atala
+    PRISM DID-based PKI protocol, \RealPKIDIDAtala, realising \IdealFPKIDID
+    in the $(\IdealFRO,\IdealFSig,\IdealFaobb)$-hybrid model.}
+  \label{fig:atalapkidid2}
+\end{figure}
 
-% \begin{figure}
-  
-%   \begin{pchstack}[center, boxed, space=5mm]
-%     \procedure[linenumbering]{$\DIDCreate(\lbrace \lbl_i \rbrace_{i\in[n]})$}{
-%       \st \gets \emptyset \\
-%       \pcfor i \in [n]: \\
-%       \pcind \ucio{Send}~(\uccmd{KeyGen},(P,\sid,i))~\text{to}~\IdealFSig \\
-%       \pcind \ucio{Receive}~(\uccmd{VerKey},(P,\sid,i),\pk_i)~\text{from}~
-%       \IdealFSig \\
-%       \pcind \st \gets \st~||~(i,\lbl_i,\pk_i) \\
-%       \ucio{Send}~(\uccmd{Hash},\st)~\text{to}~\IdealFRO \\
-%       \ucio{Receive}~(\uccmd{Hashed},\st,h)~\text{from}~\IdealFRO \\
-%       \did \gets ``did:prism:''||~h \\
-%       \text{Store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[n]})~
-%       \text{in local storage} \\
-%       \tx \gets (\texttt{CreateDID}, \did, \st) \\
-%       \text{Let}~j\in[n]~\text{be the least value s.t.}~\lbl_j = \texttt{master} \\
-%       \pcif \text{no such $j$ exists}: \todo{abort} \\
-%       \ucio{Send}~(\uccmd{Sign},(P,\sid,j),\msg)~\text{to}~\IdealFSig \\
-%       \ucio{Receive}~(\uccmd{Signature},(P,\sid,j),\msg,\sig)~\text{from}~\IdealFSig \\
-%       \ucio{Send}~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
-%       \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace \pk_i \rbrace_{i\in[n]})
-%     }
+\subsection{Notes for Implementations}
 
-%     \procedure[linenumbering]
-%     {$\DIDUpdate(\did,\lbrace \tilde{\lbl}_i
-%       \rbrace_{i\ \in \tilde{N}\subseteq[\tilde{n}]})$}{
-%       \text{Read}~(\did,\lbrace (i,\l_i,\pk_i) \rbrace_{i\in[n]})~
-%       \text{from local storage} \\
-%       \st_{add} \gets \emptyset \\
-%       \pcfor i > n \in [\tilde{N}]: \\
-%       \pcind \ucio{Send}~(\uccmd{KeyGen},(P,\sid,i))~\text{to}~\IdealFSig \\
-%       \pcind \ucio{Receive}~(\uccmd{VerKey},(P,\sid,i),\pk_i)~\text{from}~
-%       \IdealFSig \\
-%       \pcind \st_{add} \gets \st_{add} || (i,\lbl_i,\pk_i) \\
-%       \st_{del} \gets [n] \setminus [\tilde{N}] \\
-%       \text{Store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]})~
-%       \text{in local storage} \\
-%       \tx \gets \texttt{UpdateDID} || \did || \st_{del} || \st_{add} \\
-%       \text{Let}~j\in[n]~\text{be the least value s.t.}~\lbl_j = \texttt{master} \\
-%       \ucio{Send}~(\uccmd{Sign},(P,\sid,j),\msg)~\text{to}~\IdealFSig \\
-%       \ucio{Receive}~(\uccmd{Signature},(P,\sid,j),\msg,\sig)~\text{from}~\IdealFSig \\
-%       \ucio{Send}~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
-%       \ucio{Output}~(\uccmd{Updated},\sid,\did,\lbrace \pk_i \rbrace_{i\in[\tilde{N}]})
-%     }  
-%   \end{pchstack}
-%   \label{fig:cudid}
-%   \caption{Algorithms for creating and updating a DID.}
-% \end{figure}
+We acknowledge that, in the pseudocode given in \figref{fig:atalapkidid1} and
+\figref{fig:atalapkidid2}, we have favoured notational simplicity over
+implementation efficiency or
+convenience. For instance, it is not really needed that the master key signing a
+transaction is the one with the lowest index -- any such key can actually do it.
+However, it makes notation much easier. Similarly, in practice it may be easier
+to use different ``function arguments'' to denote the set of keys to remove and
+a set of keys to add from/to an existing DID. However, notationally it is
+simpler to follow the chosen (equivalent) approach. Finally, key indexes don't
+need to follow a sequential order.
 
-\subsubsection{Read a DID.} \todo{PRISM nodes keep track of metadata?}
+Somehow related, it is of course not needed to fetch the contents of the whole
+blockchain whenever we want to get an up to date DID Document. Instead, the
+party running the operation can keep a local copy, and just fetch the new
+operations since it last synced. However, again the given simplified notion of
+a blockchain (via \IdealFaobb) eases notation -- and seems good enough for a
+first modelling effort.
 
-\subsubsection{Update a DID.} %
-To update a DID, the alleged owner of the DID must specify the identifiers of
-the keys she wants to deactivate, and the number of keys of each type she wants
-to add. At least one master key (either new or old) must remain after this
-operation. Otherwise, the logic is as in the DID creation process, and it is
-specified in \figref{fig:cudid}. Therein, for readability we introduce the
-variables $N_m,N_i,N_a$, that keep track of (respectively) the number of master,
-issuing and authentication keys issued for the corresponding DID during its
-whole lifetime. Similarly, $\overline{MSK}$ denotes the master secret key with
-the lower index that has not been deactivated.
-
-\subsubsection{Deactivate a DID.} %
-The DID deactivation operation is implicitly implemented via the update
-operation. \todo{Confirm.}
 
 %%% Local Variables:
 %%% mode: latex
