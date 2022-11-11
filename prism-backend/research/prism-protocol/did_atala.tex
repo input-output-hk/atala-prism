@@ -79,11 +79,11 @@ the functionality in \figref{fig:faobb}.
         \pcind \text{Store}~(P,v)
       }
       \vspace*{0.25em}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Verify} \land
+      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Verif} \land
         \arg = (\sig,\msg,v')$}{
         \pccomment{\fbox{Verify a message}} \\
-        \ucsend~(\uccmd{Verify},\sid,\msg,\sig,v)~\text{to}~\adv \\
-        \ucrecv~(\uccmd{Verified},\sid,\msg,\phi)~\text{from}~\adv \\
+        \ucsend~(\uccmd{Verif},\sid,\msg,\sig,v)~\text{to}~\adv \\
+        \ucrecv~(\uccmd{Verifd},\sid,\msg,\phi)~\text{from}~\adv \\
         \pcif v' = v \land (\msg,\sig,v,1) \in \SIG: f \gets 1 \\
         \pcelse \pcif v' = v \land P~\text{is not corrupt}~\land \\
         \pcind (\msg,\sig',v,1) \notin \SIG: \\
@@ -93,7 +93,7 @@ the functionality in \figref{fig:faobb}.
         \pcelse: \\
         \pcind \SIG \gets \SIG \cup \lbrace (\msg,\sig,v',\phi) \rbrace;~
         f \gets \phi \\
-        \ucio{Output}~(\uccmd{Verified},\sid,\msg,f)
+        \ucio{Output}~(\uccmd{Verifd},\sid,\msg,f)
       }
     \end{minipage}
     \begin{minipage}[t]{0.5\textwidth}
@@ -101,13 +101,13 @@ the functionality in \figref{fig:faobb}.
         \pccomment{\fbox{Sign a message}} \\
         \pcif \sid = (P,\ssid) \\
         \pcind \ucsend~(\uccmd{Sign},\sid,\msg)~\text{to}~\adv \\
-        \pcind \ucrecv~(\uccmd{Sig.},\sid,\msg,\sig)~\text{from}~
+        \pcind \ucrecv~(\uccmd{Signed},\sid,\msg,\sig)~\text{from}~
         \adv \\
         \pcind \pcif (\msg,\sig,v,0) \in \SIG: \\
         \pcind \pcind \ucio{Output}~(\uccmd{Error}) \\
         \pcind \pcelse: \\
         \pcind \pcind \SIG \gets \SIG \cup (\msg,\sig,v,1) \\
-        \pcind \pcind \ucio{Output}~(\uccmd{Sig.},\sid,\msg,\sig)
+        \pcind \pcind \ucio{Output}~(\uccmd{Signed},\sid,\msg,\sig)
       }
     \end{minipage}
   \end{framed}
@@ -116,6 +116,8 @@ the functionality in \figref{fig:faobb}.
 \end{figure}
 
 \subsection{Functionality \IdealFPKIDID}
+
+\todo{Mention public delayed outputs.}
 
 Giving an ideal functionality for a DID-based PKI does not seem to be easy. The
 difficulty stems from the fact that the W3C specification (see footnote
@@ -197,12 +199,13 @@ We capture the resulting notion in \figref{fig:fpkidid}.
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
           \lbrace (i,\lbl_i) \rbrace_{i\in[n]}$}{
           \pccomment{\fbox{DID Create operation}} \\
+          \pcif \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 0:
+          \text{abort} \\
           \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\adv \\
           \ucrecv~(\uccmd{CreateOk}, \sid, did,
           \lbrace (i, \val_i) \rbrace_{i\in[n]}) \\
           \pcind \text{from}~\adv \\
-          \pcif (P,\did,\cdot) \notin \DID \land
-          \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 1: \\
+          \pcif (\cdot,\did,\cdot) \notin \DID: \\
           \pcind \DID \gets \DID \cup \lbrace (P,did,\lbrace
           (i,\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
           \ucio{Output}~(\uccmd{Created},\sid,\did,
@@ -230,12 +233,13 @@ We capture the resulting notion in \figref{fig:fpkidid}.
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
           \arg = (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{      
           \pccomment{\fbox{DID Update operation}} \\
+          \pcif \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 0:
+          \text{abort} \\
           \ucsend~(\uccmd{Update}, \sid, \arg)~\text{to}~\adv \\
           \ucrecv~(\uccmd{UpdateOk},\sid,
           \lbrace (i,\val_i) \rbrace_{i\in[n]}) \\
           \pcind \text{from}~\adv \\
-          \pcif (P,did,\sval) \in \DID \land
-          \P(\lbrace (i,\lbl_i) \rbrace_{i\in[n]}) = 1: \\
+          \pcif (P,did,\sval) \in \DID: \\
           \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval) \rbrace~\cup \\
           \hspace*{7em} \lbrace (P, did,
           \lbrace (i,\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
@@ -341,6 +345,15 @@ is of type \MasterKey.
 
 \begin{figure}[ht!]
   \begin{framed}
+
+    \scalebox{0.9}{
+      \begin{minipage}[t]{\textwidth}
+        \textrm{Party $P$ running operation \cmd with arguments \arg, in
+          session \sid.}
+      \end{minipage}
+    }
+    \vspace*{0.5em}
+    
     \scalebox{0.9}{
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Create} \land \arg =
@@ -351,7 +364,7 @@ is of type \MasterKey.
           \pcind \texttt{abort} \\
           \st \gets \emptyset \\
           \pcfor i \in [n]: \\
-          \pcind \sid' \gets (P,\sid,i) \\
+          \pcind \sid' \gets ((P,i),\sid) \\
           \pcind \ucsend~(\uccmd{KeyGen},\sid')~\text{to}~\IdealFSig \\
           \pcind \ucrecv~(\uccmd{VerKey},\sid',\pk_i)~\text{from}~
           \IdealFSig \\
@@ -360,11 +373,12 @@ is of type \MasterKey.
           \ucrecv~(\uccmd{Hashed},\st,h)~\text{from}~\IdealFRO \\
           \did \gets ``did:prism:''||~h \\
           \tx \gets (\texttt{CreateDID}, \did, \st) \\
-          \text{Let}~j\in[n]~\text{be the least value s.t.}~\lbl_j = \MasterKey \\
-          \ucsend~(\uccmd{Sign},(P,\sid,j),\tx)~\text{to}~\IdealFSig \\
-          \ucrecv~(\uccmd{Sig.},(P,\sid,j),\tx,\sig)~\text{from}~\IdealFSig \\
+          j \gets \LMKI(\st); \sid' \gets ((P,j),\sid) \\
+          \ucsend~(\uccmd{Sign},\sid',\tx)~\text{to}~\IdealFSig \\
+          \ucrecv~(\uccmd{Signed},\sid',\tx,\sig)~\text{from}~\IdealFSig \\
           \ucsend~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
-          \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace \pk_i \rbrace_{i\in[n]})
+          \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace (i,\pk_i)
+          \rbrace_{i\in[n]})
         }
       \end{minipage}
     }
@@ -390,9 +404,9 @@ is of type \MasterKey.
           \pcind \pcind \lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \gets \st_{add} \\
           \pcind \pcind j \gets \LMKI(\st); \pk \gets \pk_j \\
           \pcind \pcind \st \gets \st \setminus \st_{del} \cup \st_{add} \\
-          \pcind \pcif \pk = \emptyset: \text{abort} \\
-          \pcind \ucsend~(\uccmd{Verify},(P,\sid),\tx,\sig,\pk)~\text{to}~\IdealFSig \\
-          \pcind \ucrecv~(\uccmd{Verified},(P,\sid),\tx,b)~\text{from}~\IdealFSig \\
+          \pcind \pcif \pk = \emptyset: \text{abort}; \pcelse \sid' \gets (P, \sid) \\
+          \pcind \ucsend~(\uccmd{Verif},\sid',\tx,\sig,\pk)~\text{to}~\IdealFSig \\
+          \pcind \ucrecv~(\uccmd{Verifd},\sid',\tx,b)~\text{from}~\IdealFSig \\
           \pcind \pcif b = 0: \text{abort} \\
           \ucio{Output}~(\uccmd{Read},\sid,(\did,\st))
         }    
@@ -409,6 +423,8 @@ is of type \MasterKey.
   \begin{framed}
     \scalebox{0.9}{
       \begin{minipage}[t]{\textwidth}
+        \textrm{Party $P$ running operation \cmd with arguments \arg, in
+          session \sid.} \\
         \textrm{We assume that the party running
           \texttt{Update} and \texttt{Deactivate} operations has an up to date
           copy $(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[n]})$ of the DID to
@@ -427,16 +443,16 @@ is of type \MasterKey.
           \pcind \texttt{abort} \\
           \st_{add} \gets \emptyset \\
           \pcfor i \in \tilde{N}~\suchthat~ i > n : \\
-          \pcind \ucsend~(\uccmd{KeyGen},(P,\sid,i))~\text{to}~\IdealFSig \\
-          \pcind \ucrecv~(\uccmd{VerKey},(P,\sid,i),\pk_i)~\text{from}~
+          \pcind \ucsend~(\uccmd{KeyGen},((P,i),\sid))~\text{to}~\IdealFSig \\
+          \pcind \ucrecv~(\uccmd{VerKey},((P,i),\sid),\pk_i)~\text{from}~
           \IdealFSig \\
           \pcind \st_{add} \gets \st_{add} \cup \lbrace (i,\lbl_i,\pk_i) \rbrace \\
           \st_{del} \gets [n] \setminus \tilde{N} \\
           % \text{Locally store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \\
           \tx \gets (\texttt{UpdateDID}, \did, (\st_{del}, \st_{add})) \\
           j \gets \LMKI(\lbrace \lbl_i \rbrace_{i\in\tilde{N}}) \\
-          \ucsend~(\uccmd{Sign},(P,\sid,j),\tx)~\text{to}~\IdealFSig \\
-          \ucrecv~(\uccmd{Sig.},(P,\sid,j),\tx,\sig)~\text{from}~\IdealFSig \\
+          \ucsend~(\uccmd{Sign},((P,j),\sid),\tx)~\text{to}~\IdealFSig \\
+          \ucrecv~(\uccmd{Signed},((P,j),\sid),\tx,\sig)~\text{from}~\IdealFSig \\
           \ucsend~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
           \ucio{Output}~(\uccmd{Updated},\sid,\did,\lbrace \pk_i \rbrace_{i\in[\tilde{N}]})
         }
@@ -457,7 +473,7 @@ is of type \MasterKey.
   \label{fig:atalapkidid2}
 \end{figure}
 
-\subsection{Notes for Implementations}
+\subsubsection{Notes for Implementations.} %
 
 We acknowledge that, in the pseudocode given in \figref{fig:atalapkidid1} and
 \figref{fig:atalapkidid2}, we have favoured notational simplicity over
@@ -476,6 +492,69 @@ party running the operation can keep a local copy, and just fetch the new
 operations since it last synced. However, again the given simplified notion of
 a blockchain (via \IdealFaobb) eases notation -- and seems good enough for a
 first modelling effort.
+
+\subsection{Security of \RealPKIDIDAtala}
+\label{ssec:sec-didatala}
+
+\todo{Define $\P_{Atala}$}
+
+\begin{theorem}[UC-security of \RealPKIDIDAtala]
+  \label{thm:sec-didatala}
+  \RealPKIDIDAtala UC-realizes $\IdealFPKIDID^{\P_{Atala}}$ in the $(\IdealFRO,
+  \IdealFSig, \IdealFaobb)$-hybrid model.
+\end{theorem}
+
+\begin{proof}
+  We show that \RealPKIDIDAtala UC-realizes \IdealFPKIDID, when configured
+  with policy $\P_{Atala}$. For this, we give a simulator \Sim such that, for
+  any environment \Env, $\Exec_{\RealPKIDIDAtala\adv,\Env} \approx
+  \Exec_{\phiDIDAtala,\Sim,\Env}$,
+  where \phiDIDAtala is a protocol composed with the same parties as
+  \RealPKIDIDAtala but where each party is simply a dummy party that forwards
+  any incoming/outgoing message to the ideal functionality \IdealFPKIDID. The
+  simulator \Sim runs internally a copy of the real-world adversary \adv, as
+  well as the ideal functionalities \IdealFRO, \IdealFSig and \IdealFaobb,
+  and any involved party.
+
+  \begin{description}
+  \item[Simulating DID Create.] %
+    %
+    % Policy check
+    \todo{Policy check not needed by \Sim, right?}
+    When \Sim receives a message $(\uccmd{Create},\sid,\lbrace (i,\lbl_i)
+    \rbrace_{i\in[n]})$ from a (dummy) party $P$, it simulates for \adv~the key
+    generation process of $n$ signing key pairs, by sending $n$
+    $(\uccmd{KeyGen},((P,i),\sid))$ queries to \adv~on
+    behalf of \IdealFSig, and receiving the $n$ corresponding $(\uccmd{VerKey},
+    ((P,i),\sid),\pk_i)$ responses.
+    %
+    % Hash computation
+    \Sim then concatenates all $(i,\lbl_i,\pk_i)$ tuples into \st, and simulates
+    a query to \IdealFRO \todo{do we need programmability or something?}, to set
+    \did as ``$did:prism: h$'' as DID value.
+    %
+    % Tx sim
+    With the DID value, \Sim simulates for \adv~the preparation of transaction
+    \tx. That is, \Sim uses the master key with lower index, $j \gets
+    \LMKI(\st)$, and simulates a query $(\uccmd{Sign},((P,j),\sid),\tx)$ to
+    \IdealFSig, obtaining from \adv~$(\uccmd{Signed},((P,j),\sid),\tx,\sig)$.
+    %
+    % BB append
+    \Sim also simulates appending the $(\tx,\sig)$ tuple to the bulletin board,
+    by sending $(\uccmd{Append},(\tx,\sig))$ to \adv~on behalf of \IdealFaobb.
+    %
+    % Output
+    Finally, \Sim sends the $(\uccmd{CreateOk},\sid,\did,\lbrace (i,\pk_i)
+    \rbrace_{i\in[n]})$ to \IdealFPKIDID.
+    Note that \did is generated uniformly at random. Thus, the probability that
+    \IdealFPKIDID halts because $\did \in \DID$ is negligible, and \IdealFPKIDID
+    outputs $(\uccmd{Created},\sid,\did,\lbrace (i,\val_i) \rbrace_{i\in[n]})$
+    to \Sim.
+  \item[Simulating DID Read.]
+  \item[Simulating DID Update.] 
+  \item[Simulating DID Deactivate.] Directly follows from DID Update.      
+  \end{description}
+\end{proof}
 
 
 %%% Local Variables:
