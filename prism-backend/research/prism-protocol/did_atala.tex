@@ -117,7 +117,12 @@ the functionality in \figref{fig:faobb}.
 
 \subsection{Functionality \IdealFPKIDID}
 
+\todo{Syntax using counter indexes doesn't seem a good idea (the simplification
+  does not seem to work for proving security). Maybe change to arbitrary labels
+  (and change current key label name to key type).}
 \todo{Mention public delayed outputs.}
+\todo{If the functionality tries to fetch some entry from a list, and the entry
+  does not exist, then it aborts (assumed for updates).}
 
 Giving an ideal functionality for a DID-based PKI does not seem to be easy. The
 difficulty stems from the fact that the W3C specification (see footnote
@@ -197,19 +202,19 @@ We capture the resulting notion in \figref{fig:fpkidid}.
     \scalebox{0.9}{
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
-          \lbrace (i,\lbl_i) \rbrace_{i\in[n]}$}{
+          \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}$}{
           \pccomment{\fbox{DID Create operation}} \\
-          \pcif \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 0:
+          \pcif \P(\lbrace (\lbl_i, \typ_i) \rbrace_{i\in[n]}) = 0:
           \text{abort} \\
           \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\adv \\
           \ucrecv~(\uccmd{CreateOk}, \sid, did,
-          \lbrace (i, \val_i) \rbrace_{i\in[n]}) \\
+          \lbrace (\lbl_i, \val_i) \rbrace_{i\in[n]}) \\
           \pcind \text{from}~\adv \\
           \pcif (\cdot,\did,\cdot) \notin \DID: \\
           \pcind \DID \gets \DID \cup \lbrace (P,did,\lbrace
-          (i,\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
+          (\lbl_i,\typ_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
           \ucio{Output}~(\uccmd{Created},\sid,\did,
-          \lbrace (i,\val_i) \rbrace_{i\in[n]})
+          \lbrace (\lbl_i,\typ_i,\val_i) \rbrace_{i\in[n]})
         }
       \end{minipage}
     }
@@ -231,15 +236,21 @@ We capture the resulting notion in \figref{fig:fpkidid}.
     \scalebox{0.9}{
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
-          \arg = (did, \lbrace (i,\lbl_i) \rbrace_{i\in[n]})$}{      
+          \arg = (did, \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[\tilde{n}]})$}{
           \pccomment{\fbox{DID Update operation}} \\
-          \pcif \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 0:
-          \text{abort} \\
+          % \pcif \P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]}) = 0:
+          % \text{abort} \\
+          \pcif (P,\did,\sval) \in DID: \\
+          \pcind \sval_{del} \gets \sval \setminus
+          \lbrace (\lbl_i,\cdot) \rbrace_{i\in[\tilde{n}]} \\ 
+          \pcind \sval_{add} \gets \lbrace (\lbl_i,\typ_i)
+          \rbrace_{i\in[\tilde{n}]} \setminus \sval_{del} \\
+          \pccomment{\todo{Continue here!! XXXX}} \\
           \ucsend~(\uccmd{Update}, \sid, \arg)~\text{to}~\adv \\
           \ucrecv~(\uccmd{UpdateOk},\sid,
           \lbrace (i,\val_i) \rbrace_{i\in[n]}) \\
           \pcind \text{from}~\adv \\
-          \pcif (P,did,\sval) \in \DID: \\
+          \pcif (P,did,\sval) \in \DID:  \\
           \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval) \rbrace~\cup \\
           \hspace*{7em} \lbrace (P, did,
           \lbrace (i,\lbl_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
@@ -297,8 +308,8 @@ $\LMKI(\st)$ to denote such index.
 \figref{fig:atalapkidid1} and \figref{fig:atalapkidid2} contain the
 specification of Atala PRISM's DID method,
 which we describe next. Looking at the \texttt{Create} and \texttt{Update}
-operations, it is clear that $\P(\lbrace \lbl_i \rbrace_{i\in[n]})$ in Atala
-requires that all key labels are of a known type (\MasterKey, \IssueKey,
+operations, it is clear that $\P(\lbrace (i, \lbl_i) \rbrace_{i\in[n]})$ in
+Atala requires that all key labels are of a known type (\MasterKey, \IssueKey,
 \CommKey, or \AuthKey) and that at least one of the keys in the DID Document
 is of type \MasterKey.
 
@@ -323,11 +334,18 @@ is of type \MasterKey.
   \cdot)$. The associated DID Document is the result of applying in an ordered
   manner (from oldest to newest) all such validly signed transactions.
 \item[\uccmd{Update}.] %
-  Updating a DID requires to (optionally) specify a list of previously existing
-  key identifiers to remove, and (optionally) specify a list of new key
+  To update a DID, we first assume for ease of exposition that the calling party
+  $P$ has an updated version of the associated DID Document (which included
+  a list of $n$ keys) -- if this is not the case, it suffices to make first a
+  call to \uccmd{Read} for the given DID. \todo{This seems relevant enough to
+    be highlighted in some more visible place, no?}
+  Then, updating a DID requires to (optionally) specify a list of previously
+  existing key identifiers to remove, and (optionally) specify a list of new key
   identifiers, and their types, to add. To simplify notation, we just adopt the
-  (equivalent) convention that the caller indicates a list of $(i,\lbl_i)$
-  pairs, which is interpreted as follows. If $i$ is an already existing
+  (equivalent) convention that the caller indicates a list of $\lbrace (i,
+  \lbl_i) \rbrace_{i\in\tilde{N}\subseteq[\tilde{n}]}$ pairs, where $\tilde{n}$
+  may be smaller or larger than $n$, depending on the desired update. This
+  list is then interpreted as follows. If $i$ is an already existing
   identifier, the label is ignored and the corresponding key is not removed. If
   $i$ is a new identifier, then a new key pair of the given type is created.
   Omitting an existing identifier is then interpreted as the desire to remove
@@ -428,7 +446,8 @@ is of type \MasterKey.
         \textrm{We assume that the party running
           \texttt{Update} and \texttt{Deactivate} operations has an up to date
           copy $(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[n]})$ of the DID to
-          modify. Otherwise, a \texttt{Read} operation needs to be run before.}
+          modify. Otherwise, a \texttt{Read} operation needs to be run before.
+          If no such \did exists, the execution is aborted.}
       \end{minipage}
     }
     \vspace*{0.5em}
@@ -442,7 +461,9 @@ is of type \MasterKey.
           \nexists i~\suchthat~\lbl_i = \MasterKey: \\
           \pcind \texttt{abort} \\
           \st_{add} \gets \emptyset \\
-          \pcfor i \in \tilde{N}~\suchthat~ i > n : \\
+          \pcfor i \in \tilde{N}~\suchthat~ i > n : \pccomment{$n$ is determined
+            by the local $(\did, \lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[n]})$
+            copy}\\
           \pcind \ucsend~(\uccmd{KeyGen},((P,i),\sid))~\text{to}~\IdealFSig \\
           \pcind \ucrecv~(\uccmd{VerKey},((P,i),\sid),\pk_i)~\text{from}~
           \IdealFSig \\
@@ -496,7 +517,11 @@ first modelling effort.
 \subsection{Security of \RealPKIDIDAtala}
 \label{ssec:sec-didatala}
 
-\todo{Define $\P_{Atala}$}
+Before going into the proofs, observe that the \uccmd{Create} and \uccmd{Update}
+operations in \RealPKIDIDAtala include (in lines 1-2) a policy on the received
+indexes and labels. Concretely, this policy requires that all labels are of a
+known key type, and that at least one of them is of type \MasterKey. In the
+sequel, we use $\P_{Atala}$ to refer to this policy.
 
 \begin{theorem}[UC-security of \RealPKIDIDAtala]
   \label{thm:sec-didatala}
@@ -511,22 +536,26 @@ first modelling effort.
   \Exec_{\phiDIDAtala,\Sim,\Env}$,
   where \phiDIDAtala is a protocol composed with the same parties as
   \RealPKIDIDAtala but where each party is simply a dummy party that forwards
-  any incoming/outgoing message to the ideal functionality \IdealFPKIDID. The
-  simulator \Sim runs internally a copy of the real-world adversary \adv, as
-  well as the ideal functionalities \IdealFRO, \IdealFSig and \IdealFaobb,
-  and any involved party.
+  every message from \Env to the ideal functionality \IdealFPKIDID, and every
+  response from \IdealFPKIDID back to \Env. The simulator \Sim runs internally a
+  copy of the real-world adversary \adv, as well as the ideal functionalities
+  \IdealFRO, \IdealFSig and \IdealFaobb, and any involved party.
 
   \begin{description}
   \item[Simulating DID Create.] %
-    %
+    % 
     % Policy check
-    \todo{Policy check not needed by \Sim, right?}
-    When \Sim receives a message $(\uccmd{Create},\sid,\lbrace (i,\lbl_i)
-    \rbrace_{i\in[n]})$ from a (dummy) party $P$, it simulates for \adv~the key
+    First, note that \IdealFPKIDID is parameterised with $\P_{Atala}$. Thus,
+    if the input labels don't match the policy, the functionality rejects the
+    request, just as in the real protocol \RealPKIDIDAtala.
+    %
+    % Keys generation
+    Next, when \Sim receives a message $(\uccmd{Create},\sid,\lbrace (i,\lbl_i)
+    \rbrace_{i\in[n]})$ from (dummy) party $P$, it simulates for \adv~the key
     generation process of $n$ signing key pairs, by sending $n$
     $(\uccmd{KeyGen},((P,i),\sid))$ queries to \adv~on
-    behalf of \IdealFSig, and receiving the $n$ corresponding $(\uccmd{VerKey},
-    ((P,i),\sid),\pk_i)$ responses.
+    behalf of \IdealFSig, and receiving the $n$ corresponding $(\uccmd{VerKey}, 
+    ((P,i), \sid), \pk_i)$ responses.
     %
     % Hash computation
     \Sim then concatenates all $(i,\lbl_i,\pk_i)$ tuples into \st, and simulates
@@ -545,13 +574,53 @@ first modelling effort.
     %
     % Output
     Finally, \Sim sends the $(\uccmd{CreateOk},\sid,\did,\lbrace (i,\pk_i)
-    \rbrace_{i\in[n]})$ to \IdealFPKIDID.
-    Note that \did is generated uniformly at random. Thus, the probability that
-    \IdealFPKIDID halts because $\did \in \DID$ is negligible, and \IdealFPKIDID
-    outputs $(\uccmd{Created},\sid,\did,\lbrace (i,\val_i) \rbrace_{i\in[n]})$
-    to \Sim.
+    \rbrace_{i\in[n]})$ to \IdealFPKIDID, and stores the tuple $(\did,\lbrace
+    (i,\lbl_i,\pk_i)\rbrace_{i\in[n]})$.
+    Note that \did is generated by an ideal random oracle (thus, uniformly at
+    random), just as in the real protocol \RealPKIDIDAtala. Thus, the
+    probability that \IdealFPKIDID halts because $\did \in \DID$ is negligible,
+    and \IdealFPKIDID outputs $(\uccmd{Created},\sid,\did,\lbrace (i,\val_i)
+    \rbrace_{i\in[n]})$.
   \item[Simulating DID Read.]
-  \item[Simulating DID Update.] 
+    %
+    % Ack
+    Upon receiving $(\uccmd{Read},\sid,\did)$ from dummy party P, \Sim simply
+    forwards the message to \adv and waits until receiving the response, which
+    is forwareded back to P.
+    %
+    % Consistent and indistinguishable results
+    Now, we show that the value returned by \IdealFPKIDID is indistinguishable
+    to that of \RealPKIDIDAtala. \todo{Do after Update.}
+  \item[Simulating DID Update.]
+    % 
+    % Policy check
+    First, note that \IdealFPKIDID is parameterised with $\P_{Atala}$. Thus,
+    if the input labels don't match the policy, the functionality rejects the
+    request, just as in the real protocol \RealPKIDIDAtala.
+    % 
+    % Read if needed
+    First, \Sim finds in its records the entry $(\did,\lbrace (i,\lbl_i,\pk_i)
+    \rbrace_{i\in[n]})$. If no such \did exists, aborts.
+    %
+    % Simulate generation of new keys
+    Then, \Sim parses the $\lbrace(i,\lbl_i)\rbrace_{i\in\tilde{N}\subseteq
+      [\tilde{n}]}$ for new indexes, and simulates for \adv~one call to the
+    $\uccmd{KeyGen}$ interface of \IdealFSig for each new key, and composes the
+    variable $\st_{add}$ as in the real protocol. Similarly, \Sim initializes
+    variable $\st_{del}$ by looking for indexes in $[n]$ no longer present in
+    $\tilde{N}$.
+    %
+    % Simulate transaction
+    Finally, \Sim prepares the transaction \tx as in the real protocol using
+    variables $\st_{add}$ and $\st_{del}$. For this, a \uccmd{Sign} request is
+    sent to \IdealFSign, and an \uccmd{Append} request is sent to \IdealFaobb.
+    \Sim sends the resulting $(\uccmd{UpdateOK},\sid,\lbrace (i,\pk_i)
+    \rbrace_{i\in[\tilde{N}]})$ back to \IdealFPKIDID.
+    %
+    % Indistinguishability
+    Note that, if \Sim does not abort, then a valid $(P,\did,\sval)$ entry must
+    exist in the \DID state variable of \IdealFPKIDID. Thus, \IdealFPKIDID does
+    not abort in line 6. Then, \IdealFPKIDID
   \item[Simulating DID Deactivate.] Directly follows from DID Update.      
   \end{description}
 \end{proof}
