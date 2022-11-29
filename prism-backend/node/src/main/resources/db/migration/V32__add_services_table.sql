@@ -21,7 +21,7 @@ CREATE TABLE services
 
     ledger                    VARCHAR(32)              NOT NULL,
 
-    CONSTRAINT services_did_suffux_fk
+    CONSTRAINT services_did_suffix_fk
         FOREIGN KEY (did_suffix) REFERENCES did_data (did_suffix)
 
 );
