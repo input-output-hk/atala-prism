@@ -1,6 +1,7 @@
 CREATE TABLE services
 (
     service_id                ID_TYPE PRIMARY KEY      NOT NULL,
+    id                        TEXT                     NOT NULl,
     did_suffix                ID_TYPE                  NOT NULL,
     type                      TEXT                     NOT NULL,
 
@@ -24,6 +25,9 @@ CREATE TABLE services
     ledger                    VARCHAR(32)              NOT NULL,
 
     CONSTRAINT services_did_suffix_fk
-        FOREIGN KEY (did_suffix) REFERENCES did_data (did_suffix)
+        FOREIGN KEY (did_suffix) REFERENCES did_data (did_suffix),
+
+    CONSTRAINT unique_id_and_did_suffix_on_services UNIQUE (did_suffix, id)
+
 
 );
