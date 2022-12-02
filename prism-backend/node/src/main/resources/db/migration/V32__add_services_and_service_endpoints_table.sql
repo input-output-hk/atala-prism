@@ -12,29 +12,30 @@ CREATE TABLE services
     added_on_ons              INTEGER                  NOT NULL,
     --^ Operation Sequence Number (osn) of the operation that added the key
 
-    deleted_on_transaction_id TRANSACTION_ID           DEFAULT NULL,
-    deleted_on                TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-    deleted_on_absn           INTEGER                  DEFAULT NULL,
-    deleted_on_ons            INTEGER                  DEFAULT NULL,
+    revoked_on_transaction_id TRANSACTION_ID           NULL,
+    revoked_on                TIMESTAMP WITH TIME ZONE NULL,
+    revoked_on_absn           INTEGER                  NULL,
+    revoked_on_ons            INTEGER                  NULL,
 
     ledger                    VARCHAR(32)              NOT NULL,
 
     CONSTRAINT services_did_suffix_fk
-        FOREIGN KEY (did_suffix) REFERENCES did_data (did_suffix),
-
-    CONSTRAINT unique_id_and_did_suffix_on_services UNIQUE (did_suffix, id)
+        FOREIGN KEY (did_suffix) REFERENCES did_data (did_suffix)
 
 );
+
+CREATE UNIQUE INDEX unique_did_suffix_and_id_on_non_revoked
+    ON services (did_suffix, id) WHERE (revoked_on is NULL);
+
 
 CREATE TABLE service_endpoints
 (
     service_endpoint_id ID_TYPE PRIMARY KEY NOT NULL,
-    index               INTEGER             NOT NULL,
+    url_index           INTEGER             NOT NULL,
     service_id          ID_TYPE             NOT NULL,
     url                 TEXT                NOT NULL,
 
     CONSTRAINT service_endpoints_service_id_fk
         FOREIGN KEY (service_id) REFERENCES services (service_id)
-
 
 );
