@@ -2,9 +2,9 @@
 \label{sec:did-atala}
 
 In this section we first give an ideal functionality for Public-Key
-Infrastructures built atop of DIDs \IdealFPKIDID, and subsequently describe
+Infrastructures built atop of DIDs \IdealGPKIDID, and subsequently describe
 Atala PRISM DID method \RealPKIDIDAtala, which is a protocol realizing
-\IdealFPKIDID.
+\IdealGPKIDID.
 %
 Before doing so, we introduce some base ideal functionalities upon which we
 rely for \RealPKIDIDAtala. Namely, a simplified notion of append-only bulletin
@@ -13,48 +13,158 @@ boards, and digital signatures.
 \subsection{Base Functionalities}
 \label{ssec:did-funcs}
 
-\paragraph{Append-Only Bulletin Boards.} %
-We adopt a simplified notion of append-only bulletin boards, given in
-\cite{acc+20}. This is a local functionality, that defines an (probably too)
-idealized version of a bulletin board, where no delays in the operations
-occur \todo{We probably want to improve this to use a UC version that
-  supports global functionalities}. For the sake of readability, we reproduce
-the functionality in \figref{fig:faobb}.
+\todo{Mention public delayed outputs.}
+\todo{If the functionalities try to fetch some entry from a list, and the entry
+  does not exist, then it aborts (assumed for updates).}
 
-\begin{figure}
+\paragraph{Hashes.} %
+We model hashes as a global subroutine. No participant needs extra power (such
+as programmability or observability), so we use a conventional random oracle --
+called strict random oracle in \cite{cdg+18}. For self-containment, we reproduce
+here the formulation.
+
+\begin{figure}[ht]
   \begin{framed}
     \begin{minipage}[t]{\textwidth}
-      \textrm{Upon receiving a call $\IdealFaobb(\cmd,\arg)$ from
+      \textrm{Upon receiving a call $\IdealGRO(\cmd,\sid,\arg)$ from some party
+        $P$ to run command \cmd, in session \sid, with arguments \arg,
+        \IdealGRO operates as follows.} \\
+      \textrm{\IdealGRO keeps a list \hashlist of known hashed messages, and
+        outputs hashes of length $l \gets l(n)$, for some fixed security
+        parameter $n$.}
+    \end{minipage}
+    \vspace*{0.5em}
+    
+    \centering
+    \procedure{$\pcif \cmd = \uccmd{HashQuery} \land \arg = \msg$}{%
+      \pcif (\msg,h) \notin \hashlist:
+      h \getr \bin^{l}; \hashlist \gets \hashlist \cup \lbrace (\msg,h) \rbrace \\
+      \ucio{Output}~(\uccmd{HashConfirm},h)
+    }
+  \end{framed}
+\end{figure}
+
+\paragraph{Global clock.} %
+Our ideal (global) functionality for a ledger relies on a global clock to model
+delays in appending information. We rely on the ideal global clock functionality
+given in \cite{kkk21}. In a nutshell, the functionality keeps track of the
+parties in the system, and allows them to signal their intention to advance the
+clock's time. When all parties agree on it, the clock's time is incremented. See
+\figref{fig:gclock}.
+
+\begin{figure}[ht]
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving a call $\IdealGclock(\cmd,\arg)$ from
         some party $P$ to run command \cmd, with arguments \arg,
-        \IdealFaobb operates as follows.}
-      \textrm{\IdealFaobb maintains a list \aobbl of bit strings.}      
+        \IdealGclock operates as follows.} \\
+      \textrm{\IdealGclock maintains a variable $t$ with the current itme,
+        a variable $T$ with the list of parties keeping track of the time,
+        and a map $A$ which keeps the parties' (dis)agreements to advance the
+        clock.}
     \end{minipage}
     \vspace*{0.5em}
 
-    \begin{minipage}[t]{0.55\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Append} \land \arg = x$}{
-        \pccomment{\fbox{Append data to \aobbl}} \\
-        \aobbl \gets \aobbl || x \\
-        \pcif P~\text{is corrupt}:~\ucsend~(\uccmd{Appended},x,P)~\text{to}
-        ~\adv
+    \begin{minipage}[t]{0.40\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Register} \land \arg = \emptyset$}{
+        T \gets T \cup \set{P} \\
+        \ucio{Output}~(\uccmd{Registered})~\text{to}~P \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Update} \land \arg = \emptyset$}{
+        A(P) \gets \top \\
+        \pcif \forall P \in T, A(P) = \top: \\
+        \pcind t \gets t + 1; \forall P \in T, A(P) = \bot \\
+        \pcind \ucio{Send}~(\uccmd{Updated})~\text{to}~P        
       }
     \end{minipage}
     \hspace*{1.25em}
-    \begin{minipage}[t]{0.45\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Retrieve} \land \arg =
-        \emptyset$}{
-        \pccomment{\fbox{Retrieve the contents of \aobbl}} \\
-        \text{Output}~(\uccmd{Retrieved},\aobbl)~\text{to}~P
+    \begin{minipage}[t]{0.60\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Deregister} \land \arg = \emptyset$}{
+        T \gets T \setminus \set{P} \\
+        \text{Output}~(\uccmd{DeregisteredOk})~\text{to}~P \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Read} \land \arg = \emptyset$}{
+        \text{Output}~(\uccmd{ReadOk},t)~\text{to}~P
       }
     \end{minipage}
   \end{framed}
-  \caption{Ideal append-only bulletin board functionality, \IdealFaobb, from
-    \cite{acc+20}.}
-  \label{fig:faobb}
+  \caption{Ideal subroutine for a global clock, from \cite{kkk21}.}
+  \label{fig:gclock}
 \end{figure}
 
-\paragraph{Hashes.} %
-\todo{\IdealFRO.}
+\paragraph{$\delta$-delay Ledger.} %
+We adopt a ledger notion given in \cite{kkk21}. This is global functionality
+that defines an ideal version of a ledger as a shared subroutine, which models
+the append-only property of ledgers, and the fact that changes take some delay
+until they are applied to the ledger.
+%
+This functionality accepts sending individual transactions to be added to the
+ledger state, fetching (reading) the state of the ledger, and extending the
+ledger by appending (blocks of) transactions to it. Interestingly, it gives the
+adversary control over when to advance the status of each party, as long as
+these advancements ensure the common prefix rule -- where $\ldgState' \prec
+\ldgState$ means that $\ldgState'$ is a prefix of \ldgState. It also relies
+on yet another global functionality, the global clock, to timestamp incoming
+transactions. If a transaction is not appended to an honest party's view before
+the given $\delta$ delay, then the functionality aborts.
+%
+For the sake of readability, we reproduce the functionality in
+\figref{fig:gledger}.
+
+\begin{figure}[ht]
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving a call $\IdealGdledger(\cmd,\arg)$ from
+        some party $P$ to run command \cmd, with arguments \arg,
+        \IdealGdledger operates as follows.} \\
+      \textrm{\IdealGdledger maintains a mapping \ldgMap which associates
+        parties with their view of the ledger.
+        \ldgUtxo is a multiset of unconfirmed transactions.
+        \ldgState is the authoritative ledger state
+        All mappings and (multi-)sets are initialised to empty values.
+      }
+    \end{minipage}
+    \vspace*{0.5em}
+
+    \begin{minipage}[t]{0.40\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Submit} \land \arg = \ldgTx$}{
+        \ucio{Send}~(\uccmd{Read})~\text{to}~\IdealGclock \\
+        \ucio{Recv}~(\uccmd{ReadOk},t)~\text{from}~\IdealGclock \\
+        \ldgUtxo \gets \ldgUtxo \cup \set{(\ldgTx,t)} \\ 
+        \ucio{Output}~(\uccmd{Transaction},\ldgTx,t)~\text{to}~\adv \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Extend} \land \arg = \ldgState'$}{
+        \pcif P = \adv \land \ldgState' \subseteq \ldgUtxo: \\
+        \pcind \ldgUtxo \gets \ldgUtxo \setminus \ldgState' \\
+        \pcind \ldgState \gets \ldgState || \ldgState'
+      }
+    \end{minipage}
+    \hspace*{1.25em}
+    \begin{minipage}[t]{0.60\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Read} \land \arg =
+        \emptyset$}{
+        % \pcif P = \adv: data \gets \ldgState \\
+        % \pcelse: data \gets \ldgMap(P) \\
+        \ucio{Send}~(\uccmd{Read})~\text{to}~\IdealGclock \\
+        \ucio{Recv}~(\uccmd{ReadOk},t)~\text{from}~\IdealGclock \\
+        \pcif \exists (\ldgTx,t') \in \ldgUtxo~\suchthat~|t-t'| > \delta:
+        \pcreturn \bot \\
+        \pcelse \pcif \exists (\ldgTx,t') \in \ldgState~\suchthat~ |t-t'|
+        > \delta~\land \\
+        \pcind \exists P' \in \ldgHonest~\suchthat~(\ldgTx,t') \notin \ldgMap(P'):
+        \pcreturn \bot \\        
+        \text{Output}~(\uccmd{ReadOk}, \ldgHead(\ldgMap(P)))~\text{to}~P \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Advance} \land \arg = (P',\ldgState')$}{
+        \pcif P = \adv \land \ldgMap(P') \prec \ldgState' \prec \ldgState:
+        \ldgMap(P') \gets \ldgState'
+      }
+    \end{minipage}
+  \end{framed}
+  \caption{Ideal subroutine for a global $\delta$-delay ledger, from
+    \cite{kkk21}.}
+  \label{fig:gledger}
+\end{figure}
 
 \paragraph{Digital Signatures.} %
 
@@ -69,7 +179,7 @@ the functionality in \figref{fig:faobb}.
     \vspace*{0.5em}
 
     \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{KeyGen} \land \arg =
+      \procedure{$\pcif \cmd = \uccmd{KeyGen} \land \arg =
         \emptyset$}{
         \pccomment{\fbox{Key Generation}} \\
         \pcif \sid = (P,\ssid): \\
@@ -79,7 +189,7 @@ the functionality in \figref{fig:faobb}.
         \pcind \text{Store}~(P,v)
       }
       \vspace*{0.25em}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Verif} \land
+      \procedure{$\pcif \cmd = \uccmd{Verif} \land
         \arg = (\sig,\msg,v')$}{
         \pccomment{\fbox{Verify a message}} \\
         \ucsend~(\uccmd{Verif},\sid,\msg,\sig,v)~\text{to}~\adv \\
@@ -97,7 +207,7 @@ the functionality in \figref{fig:faobb}.
       }
     \end{minipage}
     \begin{minipage}[t]{0.5\textwidth}
-      \procedure[linenumbering]{$\pcif \cmd = \uccmd{Sign} \land \arg = \msg$}{
+      \procedure{$\pcif \cmd = \uccmd{Sign} \land \arg = \msg$}{
         \pccomment{\fbox{Sign a message}} \\
         \pcif \sid = (P,\ssid) \\
         \pcind \ucsend~(\uccmd{Sign},\sid,\msg)~\text{to}~\adv \\
@@ -112,17 +222,10 @@ the functionality in \figref{fig:faobb}.
     \end{minipage}
   \end{framed}
   \caption{Ideal signature functionality, \IdealFSig, from \cite{canetti03}.}
-  \label{fig:faobb}
+  \label{fig:fsig}
 \end{figure}
 
-\subsection{Functionality \IdealFPKIDID}
-
-\todo{Syntax using counter indexes doesn't seem a good idea (the simplification
-  does not seem to work for proving security). Maybe change to arbitrary labels
-  (and change current key label name to key type).}
-\todo{Mention public delayed outputs.}
-\todo{If the functionality tries to fetch some entry from a list, and the entry
-  does not exist, then it aborts (assumed for updates).}
+\subsection{Global Functionality \IdealGPKIDID}
 
 Giving an ideal functionality for a DID-based PKI does not seem to be direct.
 The difficulty stems from the fact that the W3C specification (see footnote
@@ -198,9 +301,17 @@ the label-type-value dictionary approach, is left as an implementation detail.
 However, enforcing additional structure seems unavoidable in practice (e.g.,
 requiring that all DIDs include keys of certain type). Since this definitely
 has an impact on the behaviour of the ideal functionality, we parameterize it
-with a policy \P, which can operate only on the received labels and key types,
-and from which we only expect to return either $1$ to denote acceptance, or $0$
-to denote rejection.
+with a policy \P, which can be used as a black box: the functionality invokes
+\P with a set of labels and key types, and receives either $1$ to denote
+acceptance, or $0$ to denote rejection. However, it is not realistic to assume
+that, even corrupted parties will enforce such policies. Thus, our approach is
+to defer policy checking in the ideal functionality until after having
+interacted with the simulator \Sim. Intuitively then, if the output of the
+ideal functionality along with \Sim is indistinguishable to that of the real
+protocol with any real world adversary, then the policy is correctly enforced
+by the real protocol. Looking ahead, the real protocol in turn ``delegates''
+this policy-checking to an ideal append-only bulletin board. \todo{This captures
+  the idea, but refine and re-structure.}
 
 Note that we also allow the adversary to pick the values associated to the
 labels in new and updated DIDs. This is a strong requirement that follows the
@@ -216,16 +327,15 @@ We capture the resulting notion in \figref{fig:fpkidid}.
   \begin{framed}
     \scalebox{0.9}{
       \begin{minipage}[t]{\textwidth}
-        \textrm{Upon receiving a call $\IdealFPKIDID^{\P}(\cmd,\sid,\arg)$
+        \textrm{Upon receiving a call $\IdealGPKIDID^{\P}(\cmd,\sid,\arg)$
           from some party $P$ to run command \cmd, in session \sid, with arguments
-          \arg, $\IdealFPKIDID^{\P}$ operates as follows.}
+          \arg, $\IdealGPKIDID^{\P}$ operates as follows.}
         \textrm{If the received \cmd and \arg pair does not meet any of
           the following options, the request is ignored.}
         \textrm{\P is a boolean predicate defining concrete conditions for
-          acceptable DID creations, updates and deactivations.
-        }
-        \textrm{\todo{We assume that the functionality keeps track of the
-            received requests.}}
+          acceptable DID creations, updates and deactivations.}
+        \textrm{\didOP is a list of submitted (yet, possibly unconfirmed) DID
+          operations, and \DID is the authoritative state of published DIDs.}
       \end{minipage}
     }
     \vspace*{0.5em}
@@ -233,32 +343,35 @@ We capture the resulting notion in \figref{fig:fpkidid}.
     \scalebox{0.9}{
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
-          \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}$}{
-          \pccomment{\fbox{DID Create operation}} \\
-          \pcif \P(\lbrace (\lbl_i, \typ_i) \rbrace_{i\in[n]}) = 0:
-          \text{abort} \\
-          \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\adv \\
+          \setind{(\lbl_i,\typ_i)}{i\in[n]}$}{ 
+          \DID \gets \DIDReadLdg \\
+          \pcif (\did,\cdot) \in \DID \lor
+          \P(\setind{(\lbl_i,\typ_i)}{i\in[n]}) = 0: \\
+          \pcind \pcreturn \bot \\
+          \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\Sim \\
           \ucrecv~(\uccmd{CreateOk}, \sid, \did,
-          \sval=\lbrace \val_i \rbrace_{i\in[n]}) \\
-          \hspace*{2.8em}\text{from}~\adv \\
-          \pcif (\cdot,\did,\cdot) \notin \DID: \\
-          \pcind \DID \gets \DID \cup \lbrace (P,\did,\lbrace
-          (\lbl_i,\typ_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
-          \ucio{Output}~(\uccmd{Created},\sid,\did,\sval)
+          \sval=\setind{\val_i}{i\in[n]}) \\
+          \hspace*{2.7em}\text{from}~\Sim \\          
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
+          \didOp \gets (\did,\setind{(\lbl_i,\typ_i,\val_i)}{i\in[n]}) \\
+          \didOP \gets \didOP \cup \set{(P,\tau,\didOp)} \\
+          \ucsend~(\uccmd{Submit}, \didOp)~\text{to}~\IdealGdledger \\
+          \ucio{Output}~(\uccmd{ProcessedC},\sid,\did,\sval)
+          % \pcind \DID \gets \DID \cup \lbrace (P,\did,\lbrace
+          % (\lbl_i,\typ_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
+          % \ucio{Output}~(\uccmd{Created},\sid,\did,\sval,t)
         }
       \end{minipage}
     }
     \scalebox{0.9}{
       \begin{minipage}[t]{0.5\textwidth}
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
-          \arg = did$}{
-          \pccomment{\fbox{DID Read operation}} \\
-          % \ucsend~(\uccmd{Read},\sid,\arg)~\text{to}~\adv \\
-          % \ucrecv~(\uccmd{ReadOk},\sid)~\text{from}~\adv \\
-          \pcif (\cdot,did,\sval) \in \DID: \\
-          \pcind \ucio{Output}~(\uccmd{Read},\sid,(did,\sval))~\text{to}~P \\
-          \pcelse: \\
-          \pcind \ucio{Output}~(\uccmd{Read},\sid,\bot)~\text{to}~P    
+          \arg = \did$}{
+          \DID \gets \DIDReadLdg \\
+          \pcif (\did,\sval) \notin \DID \lor \P(\sval) = 0: \\
+          \pcind \pcreturn \bot \\
+          \ucio{Output}~(\uccmd{ReadOk},\sid,\did,\sval)~\text{to}~P
         }    
       \end{minipage}
     }
@@ -268,22 +381,23 @@ We capture the resulting notion in \figref{fig:fpkidid}.
         % \arg = (did, \sval= \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]})\$}{
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
           \arg = (did, \sval_d,\sval_a)$}{
-          \pccomment{\fbox{DID Update operation}} \\
+          \DID \gets \DIDReadLdg \\
+          \pcif (\did,\sval_0) \notin \DID: \pcreturn \bot \\
+          \pcif \P((\sval_0 \setminus \sval_d) \cup \sval_a) = 0:
+          \pcreturn \bot \\
+          \ucsend~(\uccmd{Update}, \sid,\did,\sval_d,\sval_a)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{UpdOk},\sid,\did,\lbrace \val^a_i \rbrace_{i\in[n^a]})~
+          \text{from}~\Sim \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
           \lbrace (\lbl_i^a,\typ_i^a) \rbrace_{i\in[n^a]} \gets \sval_a \\
-          \lbrace \lbl_i^d \rbrace_{i\in[n^d]} \gets \sval_d \\
-          \pcif (P,\did,\sval_0) \notin \DID: \text{abort} \\
-          % \sval_{del} \gets \sval_0 \setminus \sval;
-          % \sval_{add} \gets \sval \setminus \sval_{del} \\          
-          % n'' \gets |\sval_{add}| \\                    
-          \ucsend~(\uccmd{Update}, \sid, \sval_a)~\text{to}~\adv \\
-          \ucrecv~(\uccmd{UpdtOk},\sid,\lbrace \val^a_i \rbrace_{i\in[n^a]})~
-          \text{from}~\adv \\
+          %\lbrace \lbl_i^d \rbrace_{i\in[n^d]} \gets \sval_d \\          
           \sval_1 \gets (\sval_0 \setminus \sval_d) \cup
-          \lbrace (\lbl^a_i,\typ^a_i,\val^a_i) \rbrace_{i\in[n^a]} \\
-          \pcif \P(\sval_1) = 0: \text{abort} \\
-          \DID \gets \DID \setminus \lbrace (P,\did,\sval_0) \rbrace \cup
-          \lbrace (P, \did, \sval_1) \rbrace \\
-          \ucio{Output}~(\uccmd{Updated},\sid, (\did,\lbrace \val_a \rbrace_{i\in[n^a]}))
+          \setind{(\lbl^a_i,\typ^a_i,\val^a_i)}{i\in[n^a]} \\
+          \didOp \gets (\did,\sval_1);~
+          \didOP \gets \didOP \cup \set{(P,\tau,\didOp)} \\
+          \ucsend~(\uccmd{Submit}, \didOp)~\text{to}~\IdealGdledger \\
+          \ucio{Output}~(\uccmd{ProcessedU},\sid,\did,\didOp)
         }
       \end{minipage}
     }
@@ -291,22 +405,39 @@ We capture the resulting notion in \figref{fig:fpkidid}.
       \begin{minipage}[t]{0.5\textwidth}
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
           (did, \lbrace \lbl_i \rbrace_{i\in[n]})$}{
-          \pccomment{\fbox{DID Deactivate operation}} \\
-          % \ucsend~(\uccmd{Deact}, \sid, \arg)~\text{to}~\adv \\
-          % \ucrecv~(\uccmd{DeactOk},\sid)~\text{from}~\adv \\
-          \pcif (P,did,\sval_0) \in \DID: \\
-          \pcind \sval_1 \gets \sval_0 \setminus \lbrace \lbl_i
-          \rbrace_{i\in[n]} \\
-          \pcind \pcif \P(\sval_1) = 1: \\
-          \pcind \pcind \DID \gets \DID \setminus \lbrace (P,did,\sval_0)
-          \rbrace~\cup \\
-          \hspace*{8em}\lbrace (P,did,\sval_1) \rbrace \\
-          \ucio{Output}~(\uccmd{Deacted},\sid,\did)
+          \DID \gets \DIDReadLdg \\
+          \pcif (P,did,\sval_0) \notin \DID: \pcreturn \bot \\
+          \sval_1 \gets \sval_0 \setminus \lbrace \lbl_i \rbrace_{i\in[n]} \\
+          \pcif \P(\sval_1) = 0: \pcreturn \bot \\
+          \ucsend~(\uccmd{Deact}, \sid, \arg)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{DeactOk},\sid)~\text{from}~\Sim \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\          
+          \didOp \gets (\did,\sval_1);
+          \didOP \gets \didOP \cup \set{(P,\tau,\didOp)} \\
+          \ucsend~(\uccmd{Submit},\didOp)~\text{to}~\IdealGdledger \\          
+          \ucio{Output}~(\uccmd{ProcessedD},\sid,\did,\didOp)
+        }
+      \end{minipage}
+    }
+    \vspace*{0.25em} \\
+    \scalebox{0.9}{
+      \begin{minipage}[t]{\textwidth}
+        \centering
+        \procedure[linenumbering]{$\DIDReadLdg$}{
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGdledger~\text{and recv}~
+          (\uccmd{ReadOk},\DID)~\text{back} \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock ~\text{and recv}~
+          (\uccmd{ReadOk},\tau)~\text{back} \\
+          \pcif \exists (\cdot,\tau',\didOp) \in \didOP~\suchthat~
+          |\tau - \tau'| > \delta \land \P(\didOp) = 1 \land \didOp \notin \DID:
+          \pcreturn \bot \\
+          \pcreturn \DID
         }
       \end{minipage}
     }
   \end{framed}
-  \caption{Ideal DID-based PKI functionality, \IdealFPKIDID. We abuse set
+  \caption{Ideal DID-based PKI functionality, \IdealGPKIDID. We abuse set
     notation, and write $\lbrace (a_i,\dots) \rbrace_{i\in[n]} \setminus
     \lbrace (b_j,\dots) \rbrace_{j\in[m]}$ to mean subtracting from the first
     set the elements present in the second set, whenever $a_i = b_j$ for some
@@ -318,7 +449,7 @@ We capture the resulting notion in \figref{fig:fpkidid}.
 \subsection{The \RealPKIDIDAtala Construction}
 
 We next define the Atala PRISM DID method, following the interfaces defined for
-\IdealFPKIDID. We begin by describing the types of keys supported in Atala
+\IdealGPKIDID. We begin by describing the types of keys supported in Atala
 PRISM, and then specify how sets of such keys can be managed through DIDs in
 Atala.
 
@@ -335,6 +466,24 @@ Keys in Atala are identified by labels. In the following description of the
 \RealPKIDIDAtala construction, given a set of keys, we frequently refer to the
 ``master key with lowest label'' (using any order relation, like lexicographic
 order).  For brevity, given a set \st, we use $\LMKL(\st)$ to denote such label.
+
+\paragraph{$\P_{Atala}$ policy.} %
+Before proceeding with the specififying the DID operations in Atala, we define
+its policy on the keys' labels and types.
+
+\begin{figure}[ht]
+  \centering
+  \procedure{$\P_{Atala}(\lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]})$}{    
+    \pcif \exists i\in[n]~\suchthat~\typ_i \notin [\MasterKey,\IssueKey,
+    \CommKey,\AuthKey]: \pcreturn 0~\pccomment{All types must be known} \\   
+    \pcif \not\exists i\in[n]~\suchthat~\typ_i = \MasterKey: \pcreturn 0~
+    \pccomment{There must be at least one master key} \\
+    \pcif \exists i, j \in[n], i \neq j~\suchthat~\lbl_i = \lbl_j: \pcreturn 0~
+    \pccomment{No duplicate labels} \\
+    \pcreturn 1
+  }
+  \caption{Policy $\P_{Atala}$ that all DID documents must meet in Atala.}
+\end{figure}
 
 \paragraph{DID Operations.} %
 \todo{For now, this ignores \emph{unpublished} DIDs.}
@@ -409,10 +558,7 @@ is of type \MasterKey.
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Create} \land \arg =
           \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}$}{
-          \pcif \exists i~\suchthat~\typ_i \notin [\MasterKey,\AuthKey,
-          \CommKey,\IssueKey]~\lor \\
-          \pcind \nexists i~\suchthat~\typ_i = \MasterKey
-          \lor \exists i,j~\suchthat~\lbl_i = \lbl_j: abort \\
+          \pcif \P_{Atala}(\lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}) = 0: abort \\
           \st \gets \emptyset \\
           \pcfor i \in [n]: \\
           \pcind \sid' \gets ((P,\lbl_i),\sid) \\
@@ -420,14 +566,16 @@ is of type \MasterKey.
           \pcind \ucrecv~(\uccmd{VerKey},\sid',\pk_i)~\text{from}~
           \IdealFSig \\
           \pcind \st \gets \st \cup \lbrace (\lbl_i,\typ_i,\pk_i) \rbrace \\
-          \ucsend~(\uccmd{Hash},\st)~\text{to}~\IdealFRO \\
-          \ucrecv~(\uccmd{Hashed},\st,h)~\text{from}~\IdealFRO \\
+          \ucsend~(\uccmd{Hash},\st)~\text{to}~\IdealGRO \\
+          \ucrecv~(\uccmd{Hashed},\st,h)~\text{from}~\IdealGRO \\
           \did \gets ``did:prism:''||~h \\
           \tx \gets (\texttt{CreateDID}, \did, \st) \\
-          j \gets \LMKL(\st); \sid' \gets ((P,j),\sid) \\
+          \lbl \gets \LMKL(\st); \sid' \gets ((P,\lbl),\sid) \\
           \ucsend~(\uccmd{Sign},\sid',\tx)~\text{to}~\IdealFSig \\
           \ucrecv~(\uccmd{Signed},\sid',\tx,\sig)~\text{from}~\IdealFSig \\
-          \ucsend~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
+          \ucsend~(\uccmd{Append},(\tx,\sig))~\text{to}~\IdealGdledger \\
+          \text{Locally store}~
+          (\did, \lbrace (\lbl_i,\typ_i,\pk_i) \rbrace_{i\in[n]}) \\
           \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace \pk_i
           \rbrace_{i\in[n]})
         }
@@ -437,8 +585,8 @@ is of type \MasterKey.
       \begin{minipage}[t]{0.5\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Read} \land
           \arg = did$}{
-          \ucsend~(\uccmd{Retrieve})~\texttt{to}~\IdealFaobb \\
-          \ucrecv~(\uccmd{Retrieve},L)~\texttt{from}~\IdealFaobb \\
+          \ucsend~(\uccmd{Retrieve})~\texttt{to}~\IdealGdledger \\
+          \ucrecv~(\uccmd{Retrieve},L)~\texttt{from}~\IdealGdledger \\
           \st \gets \emptyset \\
           L_{\did} \gets (\ast,\did,\ast) \subseteq \DID \\
           \pcfor (\tx=(\texttt{op},\did,\cdot),\sig) \in L_{\did}: \\
@@ -454,20 +602,20 @@ is of type \MasterKey.
           \pcind \pcind \lbrace (\lbl^a_i,\typ^a_i,\pk^a_i)
           \rbrace_{i\in[n^a]} \gets \st_a \\
           \pcind \pcind \st \gets (\st \setminus \st_d) \cup \st_a \\
-          \pcind j \gets \LMKL(\st); \pk \gets \pk_j \\
-          \pcind \pcif \pk = \emptyset: \text{abort} \\
-          \pcind \pcelse \sid' \gets ((P,j),\sid) \\
+          \pcind \lbl \gets \LMKL(\st) \\
+          \pcind \pcif \lbl = \emptyset \lor \P_{Atala}(\st) = 0: \text{skip} \\
+          \pcind \pcelse \sid' \gets ((P,\lbl),\sid) \\
           \pcind \ucsend~(\uccmd{Verif},\sid',\tx,\sig,\pk)~\text{to}~\IdealFSig \\
           \pcind \ucrecv~(\uccmd{Verifd},\sid',\tx,b)~\text{from}~\IdealFSig \\
-          \pcind \pcif b = 0: \text{abort} \\
+          \pcind \pcif b = 0: \text{skip} \\
           \ucio{Output}~(\uccmd{Read},\sid,(\did,\st))
         }    
       \end{minipage}
     }
   \end{framed}
   \caption{\texttt{Create} and \texttt{Read} operations in Atala
-    PRISM DID-based PKI protocol, \RealPKIDIDAtala, realising \IdealFPKIDID
-    in the $(\IdealFRO,\IdealFSig,\IdealFaobb)$-hybrid model.}
+    PRISM DID-based PKI protocol, \RealPKIDIDAtala, realising \IdealGPKIDID
+    in the $(\IdealGRO,\IdealFSig,\IdealGdledger)$-hybrid model.}
   \label{fig:atalapkidid1}
 \end{figure}
 
@@ -493,28 +641,30 @@ is of type \MasterKey.
           % \CommKey,\IssueKey] \lor
           % \nexists i~\suchthat~\lbl_i = \MasterKey: \\
           % \pcind abort \\
-          \text{Run $(\uccmd{Read},\sid,\did)$ to fetch $(\did,\sval)$} \\
-          \pcif \sval = \bot: abort \\
+          % \text{Run $(\uccmd{Read},\sid,\did)$ to fetch $(\did,\sval)$} \\
+          % \pcif \sval = \bot: abort \\
+          \text{Fetch}~
+          (\did, \sval=\lbrace (\lbl_i,\typ_i,\pk_i) \rbrace_{i\in[n]})
+          ~\text{from storage} \\
           \st_a \gets \emptyset;~
           \lbrace (\lbl_i,\typ_i,\pk_i) \rbrace_{i\in[n]} \gets \sval \\
-          \lbrace \lbl^d_i \rbrace_{i\in[n^d]} \gets \sval^d;~
-          \lbrace (\lbl^a_i,\typ^a_i) \rbrace_{i\in[n^a]} \gets \sval^a \\
-          \sval' \gets (\sval \setminus \sval_d) \cup \sval_a \\
-          \pcif \exists (\cdot,\typ,\cdot) \in \sval' ~\suchthat~\typ \notin
-          [\MasterKey,\AuthKey,\CommKey,\IssueKey]~\lor \\
-          \pcind \nexists (\cdot,\MasterKey,\cdot) \in \sval'
-          \lor \text{\sval' has dupl. labels}: abort \\
-          \pcfor i \in [n^a] \\
-          \pcind \ucsend~(\uccmd{KeyGen},((P,i),\sid))~\text{to}~\IdealFSig \\
-          \pcind \ucrecv~(\uccmd{VerKey},((P,i),\sid),\pk^a_i)~\text{from}~
+          \lbrace \lbl^d_i \rbrace_{i\in[n_d]} \gets \sval_d;~
+          \lbrace (\lbl^a_i,\typ^a_i) \rbrace_{i\in[n_a]} \gets \sval_a \\
+          \sval' \gets (\sval \setminus \sval_d) \cup \sval_a
+          \pccomment{\todo{Syntax refinement needed here.}} \\
+          \pcif \P_{Atala}(\sval') = 0: abort \\          
+          \pcfor i \in [n_a] \\
+          \pcind \ucsend~(\uccmd{KeyGen},((P,\lbl_i),\sid))~\text{to}~\IdealFSig \\
+          \pcind \ucrecv~(\uccmd{VerKey},((P,\lbl_i),\sid),\pk^a_i)~\text{from}~
           \IdealFSig \\
           \pcind \st_a \gets \st_a \cup \lbrace (\lbl^a_i,\typ^a_i,\pk^a_i) \rbrace \\
           % \text{Locally store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \\
           \tx \gets (\texttt{UpdateDID}, \did, \sval_d, \st_a) \\
-          j \gets \LMKL(\sval) \\
-          \ucsend~(\uccmd{Sign},((P,j),\sid),\tx)~\text{to}~\IdealFSig \\
-          \ucrecv~(\uccmd{Signed},((P,j),\sid),\tx,\sig)~\text{from}~\IdealFSig \\
-          \ucsend~(\uccmd{Append},(\msg,\sig))~\text{to}~\IdealFaobb \\
+          \lbl \gets \LMKL(\sval) \\
+          \ucsend~(\uccmd{Sign},((P,\lbl),\sid),\tx)~\text{to}~\IdealFSig \\
+          \ucrecv~(\uccmd{Signed},((P,\lbl),\sid),\tx,\sig)~\text{from}~\IdealFSig \\
+          \ucsend~(\uccmd{Append},(\tx,\sig))~\text{to}~\IdealGdledger \\
+          \text{Locally store}~(\did,\sval) \\
           \ucio{Output}~(\uccmd{Updated},\sid,(\did,\lbrace \pk^a_i \rbrace_{i\in[n^a]}))
         }
       \end{minipage}
@@ -522,15 +672,16 @@ is of type \MasterKey.
     \scalebox{0.9}{
       \begin{minipage}[t]{0.45\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Deact} \land \arg =
-          (did, \lbrace \lbl_i \rbrace_{i\in[n]})$}{       
-          \text{Run as a \texttt{Update} operation}
+          (did, \sval)$}{       
+          \text{Run as a \texttt{Update} operation} \\
+          \text{with $\sval_d \gets \sval$ and $\sval_a \gets \emptyset$}
         }
       \end{minipage}
     }
   \end{framed}
   \caption{\texttt{Update} and \texttt{Deactivate} operations in Atala
-    PRISM DID-based PKI protocol, \RealPKIDIDAtala, realising \IdealFPKIDID
-    in the $(\IdealFRO,\IdealFSig,\IdealFaobb)$-hybrid model.}
+    PRISM DID-based PKI protocol, \RealPKIDIDAtala, realising \IdealGPKIDID
+    in the $(\IdealGRO,\IdealFSig,\IdealGdledger)$-hybrid model.}
   \label{fig:atalapkidid2}
 \end{figure}
 
@@ -551,7 +702,7 @@ Somehow related, it is of course not needed to fetch the contents of the whole
 blockchain whenever we want to get an up to date DID Document. Instead, the
 party running the operation can keep a local copy, and just fetch the new
 operations since it last synced. However, again the given simplified notion of
-a blockchain (via \IdealFaobb) eases notation -- and seems good enough for a
+a blockchain (via \IdealGdledger) eases notation -- and seems good enough for a
 first modelling effort.
 
 \subsection{Security of \RealPKIDIDAtala}
@@ -564,106 +715,117 @@ labels are unique, all types are of a known key type, and that at least one of
 them is of type \MasterKey. In the sequel, we use $\P_{Atala}$ to refer to this
 policy.
 
+\todo{Do we mention somewhere that {\sid}s have structure $(P,\sid')$? This is
+  used for \Sim to know which party is generating which keys.}
+
 \begin{theorem}[UC-security of \RealPKIDIDAtala]
   \label{thm:sec-didatala}
-  \RealPKIDIDAtala UC-realizes $\IdealFPKIDID^{\P_{Atala}}$ in the $(\IdealFRO,
-  \IdealFSig, \IdealFaobb)$-hybrid model.
+  \RealPKIDIDAtala UC-realizes $\IdealGPKIDID^{\P_{Atala}}$ in the $(\IdealGRO,
+  \IdealFSig, \IdealGdledger)$-hybrid model.
 \end{theorem}
 
 \begin{proof}
-  We show that \RealPKIDIDAtala UC-realizes \IdealFPKIDID, when configured
+  We show that \RealPKIDIDAtala UC-realizes \IdealGPKIDID, when configured
   with policy $\P_{Atala}$. For this, we give a simulator \Sim such that, for
   any environment \Env, $\Exec_{\RealPKIDIDAtala\adv,\Env} \approx
-  \Exec_{\phiDIDAtala,\Sim,\Env}$,
-  where \phiDIDAtala is a protocol composed with the same parties as
+  \Exec_{\phiDID,\Sim,\Env}$,
+  where \phiDID is a protocol composed with the same parties as
   \RealPKIDIDAtala but where each party is simply a dummy party that forwards
-  every message from \Env to the ideal functionality \IdealFPKIDID, and every
-  response from \IdealFPKIDID back to \Env. The simulator \Sim runs internally a
+  every message from \Env to the ideal functionality \IdealGPKIDID, and every
+  response from \IdealGPKIDID back to \Env. The simulator \Sim runs internally a
   copy of the real-world adversary \adv, as well as the ideal functionalities
-  \IdealFRO, \IdealFSig and \IdealFaobb, and any involved party.
+  \IdealGRO, \IdealFSig and \IdealGdledger, and any involved party.
 
   \begin{description}
   \item[Simulating DID Create.] %
     % 
-    % Policy check
-    First, note that \IdealFPKIDID is parameterised with $\P_{Atala}$. Thus,
-    if the input labels don't match the policy, the functionality rejects the
-    request, just as in the real protocol \RealPKIDIDAtala.
-    %
     % Keys generation
-    Next, when \Sim receives a message $(\uccmd{Create},\sid,\lbrace (\lbl_i,
-    \typ_i) \rbrace_{i\in[n]})$ from (dummy) party $P$, it simulates for \adv~
-    the key generation process of $n$ signing key pairs, by sending $n$
-    $(\uccmd{KeyGen},((P,\lbl_i),\sid))$ queries to \adv~on
-    behalf of \IdealFSig, and receiving the $n$ corresponding $(\uccmd{VerKey}, 
-    ((P,\lbl_i), \sid), \pk_i)$ responses.
+    If \Sim receives a message $(\uccmd{Create},\sid,\lbrace (\lbl_i,\typ_i)
+    \rbrace_{i\in[n]})$ from \IdealGPKIDID, with $\sid=(P,\sid')$, it simulates
+    the key generation process of $n$ signing key pairs run in the real
+    protocol, by sending $n$ queries $(\uccmd{KeyGen},((P,\lbl_i),\sid))$ to
+    \adv~on behalf of \IdealFSig, and receiving the $n$ corresponding
+    $(\uccmd{VerKey},((P,\lbl_i),\sid),\pk_i)$ responses.
     %
     % Hash computation
     \Sim then concatenates all $(\lbl_i,\typ_i,\pk_i)$ tuples into \st, and
-    simulates a query to \IdealFRO \todo{do we need programmability or
-      something?}, to set \did as ``$did:prism: h$'' as DID value.
+    simulates a query to \IdealGRO, to set \did as ``$did:prism: h$'' as DID
+    value.
     %
     % Tx sim
     With the DID value, \Sim simulates for \adv~the preparation of transaction
-    \tx. That is, \Sim uses the master key with lowest label, $j \gets
-    \LMKL(\st)$, and simulates a query $(\uccmd{Sign},((P,j),\sid),\tx)$ to
-    \IdealFSig, obtaining from \adv~$(\uccmd{Signed},((P,j),\sid),\tx,\sig)$.
+    \tx. That is, \Sim uses the master key with lowest label, $\lbl \gets
+    \LMKL(\st)$, and simulates a query $(\uccmd{Sign},((P,\lbl),\sid),\tx)$ to
+    \IdealFSig, obtaining from \adv~$(\uccmd{Signed},((P,\lbl),\sid),\tx,\sig)$.
     %
     % BB append
     \Sim also simulates appending the $(\tx,\sig)$ tuple to the bulletin board,
-    by sending $(\uccmd{Append},(\tx,\sig))$ to \adv~on behalf of \IdealFaobb.
+    by sending $(\uccmd{Append},(\tx,\sig))$ to \adv~on behalf of \IdealGdledger.
     %
     % Output
     Finally, \Sim sends the $(\uccmd{CreateOk},\sid,\did,\lbrace \pk_i
-    \rbrace_{i\in[n]})$ to \IdealFPKIDID, and stores the tuple $(\did,\lbrace
+    \rbrace_{i\in[n]})$ to \IdealGPKIDID, and stores the tuple $(P,\did,\lbrace
     (\lbl_i,\typ_i,\pk_i)\rbrace_{i\in[n]})$.
+    %
+    % Additional considerations
+    \todo{The following should probably go to the argumentation part.}
     Note that \did is generated by an ideal random oracle (thus, uniformly at
     random), just as in the real protocol \RealPKIDIDAtala. Hence, the
-    probability that \IdealFPKIDID halts because $\did \in \DID$ is negligible,
-    and \IdealFPKIDID outputs $(\uccmd{Created},\sid,\did,\lbrace \val_i
-    \rbrace_{i\in[n]})$.
+    probability that \IdealGPKIDID halts because $\did \in \DID$ is negligible,
+    and \IdealGPKIDID outputs $(\uccmd{Created},\sid,\did,\lbrace \val_i=\pk_i
+    \rbrace_{i\in[n]})$ to \IdealGPKIDID.
   \item[Simulating DID Read.]
+    To simulate read operations, when \Sim receives $(\uccmd{Read},\sid,\did)$
+    from \IdealGPKIDID, it first simulates for \adv~the call to \IdealGdledger, to
+    get the current status $L$ of the bulletin board. Then, \Sim reproduces the
+    processing a normal party would do: from older to newer entry in $L$ related
+    to \did, applies the updates in a sequential order -- ignoring any
+    \uccmd{UpdateDID} operation before a \uccmd{CreateDID}, and only applying
+    the first \uccmd{CreateDID}. If, after applying an update, $\P_{Atala}$ is
+    not met by the resulting set of keys and labels, \Sim skips the update.
+    Otherwise, \Sim simulates for \adv~a verification query to \IdealFSig for
+    the transaction corresponding to the update, and skips the update if the
+    signature fails.
     %
-    % Ack
-    Upon receiving $(\uccmd{Read},\sid,\did)$ from dummy party P, \Sim simply
-    forwards the message to \adv and waits until receiving the response, which
-    is forwareded back to P.
-    %
-    % Consistent and indistinguishable results
-    Now, we show that the value returned by \IdealFPKIDID is indistinguishable
-    to that of \RealPKIDIDAtala. \todo{Do after Update.}
+    Finally, if after processing all transactions related to \did, the resulting
+    contents differ from those stored by \Sim in its record $(P,\did,\sval)$,
+    \Sim aborts \todo{Do we need this?}. Otherwise, \Sim returns the processed
+    contents.    
   \item[Simulating DID Update.]
-    % 
-    % Policy check
-    First, note that \IdealFPKIDID is parameterised with $\P_{Atala}$. Thus,
-    if the input labels don't match the policy, the functionality rejects the
-    request, just as in the real protocol \RealPKIDIDAtala.
-    % 
-    % Read if needed
-    First, \Sim finds in its records the entry $(\did,\lbrace (i,\lbl_i,\pk_i)
-    \rbrace_{i\in[n]})$. If no such \did exists, aborts.
-    %
-    % Simulate generation of new keys
-    Then, \Sim parses the $\lbrace(i,\lbl_i)\rbrace_{i\in\tilde{N}\subseteq
-      [\tilde{n}]}$ for new indexes, and simulates for \adv~one call to the
-    $\uccmd{KeyGen}$ interface of \IdealFSig for each new key, and composes the
-    variable $\st_{add}$ as in the real protocol. Similarly, \Sim initializes
-    variable $\st_{del}$ by looking for indexes in $[n]$ no longer present in
-    $\tilde{N}$.
-    %
-    % Simulate transaction
-    Finally, \Sim prepares the transaction \tx as in the real protocol using
-    variables $\st_{add}$ and $\st_{del}$. For this, a \uccmd{Sign} request is
-    sent to \IdealFSig, and an \uccmd{Append} request is sent to \IdealFaobb.
-    \Sim sends the resulting $(\uccmd{UpdateOK},\sid,\lbrace (i,\pk_i)
-    \rbrace_{i\in[\tilde{N}]})$ back to \IdealFPKIDID.
-    %
-    % Indistinguishability
-    Note that, if \Sim does not abort, then a valid $(P,\did,\sval)$ entry must
-    exist in the \DID state variable of \IdealFPKIDID. Thus, \IdealFPKIDID does
-    not abort in line 6. Then, \IdealFPKIDID
+    % Load DID
+    Upon receiving a request from dummy party $P$, \IdealGPKIDID fetches
+    $(P,\did,\sval)$ from its records, and checks if $(\sval \setminus \sval_d)
+    \cup \sval_a$ meets $\P_{Atala}$. If either step fails, \IdealGPKIDID
+    aborts. Else, it sends $(\uccmd{Update},\sid,\did,\sval_d,\sval_a)$ to \Sim.
+    \Sim then retrieves $(P,\did,\sval)$ from its records \todo{this is kept at
+      some point, no?)} and simulates for \adv~the calls to \IdealFSig for the
+    keys in the received $\sval_a$. \Sim gets the key with the lowest label from
+    \sval, with label $\lbl$, bundles the transaction \tx, and simulates a call
+    to \IdealFSig to get a signature over \tx. Finally, \Sim simulates the call
+    to \IdealGdledger, and returns $(\uccmd{Updated},\sid,(\did,\lbrace \val_i
+    \rbrace_{i\in[n_a]}))$ to \IdealGPKIDID, where the $\val_i$'s are the values
+    output by \adv~when creating the new keys via simulated calls to \IdealFSig.
   \item[Simulating DID Deactivate.] Directly follows from DID Update.      
   \end{description}
+  \todo{This to take into account when arguing indistinguishability}:
+  \begin{itemize}
+  \item The records of \Sim are always consistent with \IdealGdledger.
+  \end{itemize}
+
+  % General comments
+  Now, observe that, in all ideal operations, the policy $\P_{Atala}$ is checked
+  on the resulting data structure. If the policy is not satisfied, the
+  functionality aborts. This is also the case for the real world.
+
+  % Create comments
+  Regarding create operations, note that, both in the simulation and in the real
+  world, the resulting \did value is produced in a consistent way -- via a call
+  to \IdealGRO, using the contents of the DID document to create.
+  % Key generation and signature comments
+  Similarly, the (verification) keys used and signatures are defined by \adv~
+  both the real and ideal world -- in the latter, as part of \Sim's simulation
+  of \IdealFSig.
+  
 \end{proof}
 
 

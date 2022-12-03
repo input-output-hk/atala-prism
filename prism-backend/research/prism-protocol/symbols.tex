@@ -21,6 +21,8 @@
 \newcommand{\br}[1]{\ensuremath{\lbrack #1 \rbrack}}
 \newcommand{\gen}[1]{\ensuremath{#1}}
 
+\newcommand{\setind}[2]{\ensuremath{\set{#1}_{#2}}}
+
 \mathchardef\mhyphen="2D
 \def\suchthat{\ensuremath{s.t.}\xspace}
 
@@ -35,6 +37,7 @@
 
 % UC
 \def\IdealF{\ensuremath{\mathcal{F}}\xspace}
+\def\IdealG{\ensuremath{\mathcal{G}}\xspace}
 \newcommand{\ucio}[1]{\ensuremath{\text{#1}}}
 \newcommand{\uccmd}[1]{\ensuremath{\mathtt{#1}}}
 \def\cmd{\ensuremath{cmd}\xspace}
@@ -53,7 +56,8 @@
 \def\SIG{\ensuremath{\mathsf{SG}}\xspace}
 
 % Hashes
-\def\IdealFRO{\ensuremath{\IdealF_{RO}}\xspace}
+\def\IdealGRO{\ensuremath{\IdealG_{RO}}\xspace}
+\def\hashlist{\ensuremath{HL}\xspace}
 
 % Key Types
 \def\mpk{\ensuremath{mpk}\xspace}
@@ -64,20 +68,34 @@
 \def\ask{\ensuremath{ask}\xspace}
 \def\VK{\ensuremath{\mathsf{VK}}\xspace}
 
+% Clock
+\def\IdealGclock{\ensuremath{\IdealG_{clock}}\xspace}
+
 % BB
-\def\aobbl{\ensuremath{L}\xspace}
-\def\IdealFaobb{\ensuremath{\IdealF_{BB}}\xspace}
+\def\ldgLedger{\ensuremath{L}\xspace}
+\def\IdealGledger{\ensuremath{\IdealG_{Ledger}}\xspace}
+\def\IdealGdledger{\ensuremath{\IdealGledger^\delta}\xspace}
+\def\ldgHonest{\ensuremath{H}\xspace}
+\def\ldgMap{\ensuremath{M}\xspace}
+\def\ldgState{\ensuremath{\Sigma}\xspace}
+\def\ldgUtxo{\ensuremath{U}\xspace}
+\def\ldgTx{\ensuremath{tx}\xspace}
+\def\ldgBlock{\ensuremath{B}\xspace}
+\def\ldgHead{\ensuremath{Head}\xspace}
 
 % VDR
 \def\VDR{\ensuremath{\mathsf{VDR}}\xspace}
 
 % DIDs
-\def\IdealFPKIDID{\ensuremath{\IdealF_{DID}}\xspace}
+\def\IdealGPKIDID{\ensuremath{\IdealG_{PKI-DID}}\xspace}
 \def\did{\ensuremath{did}\xspace}
 \def\DID{\ensuremath{\mathsf{DID}}\xspace}
 \def\DIDCreate{\ensuremath{\DID.Create}\xspace}
 \def\DIDRead{\ensuremath{\DID.Read}\xspace}
 \def\DIDUpdate{\ensuremath{\DID.Update}\xspace}
+\def\DIDReadLdg{\ensuremath{\mathsf{ParseLedger}}\xspace}
+\def\didOp{\ensuremath{op}\xspace}
+\def\didOP{\ensuremath{\mathsf{OP}}\xspace}
 \def\typ{\ensuremath{t}\xspace}
 \def\lbl{\ensuremath{l}\xspace}
 \def\LBL{\ensuremath{L}\xspace}
@@ -102,7 +120,7 @@
 
 % Atala
 \def\RealPKIDIDAtala{\ensuremath{\Pi_{DID}^{Atala}}\xspace}
-\def\phiDIDAtala{\ensuremath{\phi_{DID}^{Atala}}\xspace}
+\def\phiDID{\ensuremath{\phi_{DID}}\xspace}
 \def\MasterKey{\texttt{M}\xspace}
 \def\AuthKey{\texttt{A}\xspace}
 \def\CommKey{\texttt{C}\xspace}

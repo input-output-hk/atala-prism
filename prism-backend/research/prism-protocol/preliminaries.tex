@@ -17,6 +17,178 @@
 \paragraph{Public Key Infrastructures.} %
 % Maybe build on \IdealFCA from \cite{canetti03}.
 
+\paragraph{Ideal functionality specification.} %
+
+\iffalse
+We take the basic approach to see DID documents as simple dictionaries
+(i.e., lists of labels with corresponding types and values), associated to a
+common label, the DID. Based on this, we define the operations that compose an
+ideal basic functionality for DIDs, as follows:
+
+\begin{description}
+\item[Create interface.] To create a new DID, the functionality exposes a
+  \uccmd{Create} interface that receives a tuple of label and key type values.
+  Then, it asks the adversary to provide a value to each of the specified
+  labels, and the DID value. If the DID value does not exist in the records of
+  the functionality, a new entry (including the dictionary) is created. In order
+  to meet the authentication requirement, the ideal functionality takes note of
+  the party creating the DID, so that subsequent changes in the DID can only be
+  done by this party. We note that more advanced predicates could be defined, by
+  this bare minimum seems to be enough for most (current) DID methods.
+  \todo{Give evidence of the latter?}
+\item[Read interface.] The contents of existing DIDs can be fetched via the
+  \uccmd{Read} interface. It receives a DID value and, if it exists in the
+  functionality's records, returns the associated contents. Note that, if such
+  entry exists, then it is authentic by definition, and thus trivially meets
+  the authentication requirements.
+\item[Update interface.] The contents of existing DIDs can be modified via the
+  \uccmd{Update} interface. It requires to specify the actual DID and two lists:
+  $\sval_d$ with the labels to remove, and $\sval_a$ with the lables of new keys
+  to add (along with their types). The DID must exist in the records of the
+  functionality, and the call must originate from the same party that created
+  it. Note that this covers variants such as using update only to add new keys
+  (e.g. by specifying an empty $\sval_d$), or modifications of existing labels
+  (e.g., by adding an existing label in $\sval_d$, and also in $\sval_a$).
+\item[Deactivate interface.] Deactivating a DID is actually a simplification of
+  the update operation, without specifying new keys to add. This is possible
+  via the \uccmd{Deact} interface. Note that it is not strictly necessary to
+  specify this interface, as it is a special case of \uccmd{Update}. However, we
+  explicitly add it for proximity to the actual DID specification. \todo{Just
+    remove it?}
+\end{description}
+
+Our expectation is that this simple approach allows to capture a large
+subset of all possible DID method implementations. Note that the functional
+restrictions we impose seem to be unavoidable. Namely, we do not specify how
+the actual identifiers are computed; instead, we allow the adversary to pick
+them. To update a DID, we only require such DID to exist and that the caller
+is the party that created it, but otherwise the DID's contents can be set to
+something completely new. Finally, deactivating labels within an existing DID
+requires that these labels exist -- and, again, that the caller is the same
+party who created the DID. Concretely, note that any further structure beyond
+the label-type-value dictionary approach, is left as an implementation detail.
+However, enforcing additional structure seems unavoidable in practice (e.g.,
+requiring that all DIDs include keys of certain type). Since this definitely
+has an impact on the behaviour of the ideal functionality, we parameterize it
+with a policy \P, which can be used as a black box: the functionality invokes
+\P with a set of labels and key types, and receives either $1$ to denote
+acceptance, or $0$ to denote rejection. However, it is not realistic to assume
+that, even corrupted parties will enforce such policies. Thus, our approach is
+to defer policy checking in the ideal functionality until after having
+interacted with the simulator \Sim. Intuitively then, if the output of the
+ideal functionality along with \Sim is indistinguishable to that of the real
+protocol with any real world adversary, then the policy is correctly enforced
+by the real protocol. Looking ahead, the real protocol in turn ``delegates''
+this policy-checking to an ideal append-only bulletin board. \todo{This captures
+  the idea, but refine and re-structure.}
+
+Note that we also allow the adversary to pick the values associated to the
+labels in new and updated DIDs. This is a strong requirement that follows the
+argumentation in \cite{canetti03} for ideal digital signatures: namely, this
+means that there is absolutely any requirement on the way in which this values
+are computed (they might not even be conventional public keys). Indeed, this
+seems to match the permissive philosophy of defining DIDs in the W3C DID
+specification.
+
+We capture the resulting notion in \figref{fig:fpkidid}.
+
+\begin{figure}
+  \begin{framed}
+    \scalebox{0.9}{
+      \begin{minipage}[t]{\textwidth}
+        \textrm{Upon receiving a call $\IdealFPKIDID^{\P}(\cmd,\sid,\arg)$
+          from some party $P$ to run command \cmd, in session \sid, with arguments
+          \arg, $\IdealFPKIDID^{\P}$ operates as follows.}
+        \textrm{If the received \cmd and \arg pair does not meet any of
+          the following options, the request is ignored.}
+        \textrm{\P is a boolean predicate defining concrete conditions for
+          acceptable DID creations, updates and deactivations.
+        }
+        \textrm{\todo{We assume that the functionality keeps track of the
+            received requests.}}
+      \end{minipage}
+    }
+    \vspace*{0.5em}
+
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.55\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
+          \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}$}{
+          \pcif \P(\lbrace (\lbl_i, \typ_i) \rbrace_{i\in[n]}) = 0:
+          \text{abort} \\                    
+          \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{CreateOk}, \sid, \did,
+          \sval=\lbrace \val_i \rbrace_{i\in[n]}) \\
+          \hspace*{2.8em}\text{from}~\Sim \\
+          \pcif (\cdot,\did,\cdot) \notin \DID: \\
+          \pcind \DID \gets \DID \cup \lbrace (P,\did,\lbrace
+          (\lbl_i,\typ_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
+          \ucio{Output}~(\uccmd{Created},\sid,\did,\sval)
+        }
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
+          \arg = did$}{
+          \ucsend~(\uccmd{Read},\sid,\arg)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{ReadOk},\sid)~\text{from}~\Sim \\          
+          \pcif (\cdot,did,\sval) \notin \DID: abort \\
+          \pcif \P(\sval) = 0: abort \\
+          \ucio{Output}~(\uccmd{Read},\sid,(did,\sval))~\text{to}~P
+        }    
+      \end{minipage}
+    }
+    \vspace*{0.25em} \\
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.55\textwidth}
+        % \arg = (did, \sval= \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]})\$}{
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
+          \arg = (did, \sval_d,\sval_a)$}{          
+          % \sval_{del} \gets \sval_0 \setminus \sval;
+          % \sval_{add} \gets \sval \setminus \sval_{del} \\          
+          % n'' \gets |\sval_{add}| \\
+          \pcif (P,\did,\sval_0) \notin \DID: \text{abort} \\
+          \pcif \P((\sval \setminus \sval_d) \cup \sval_a) = 0: \text{abort} \\
+          \ucsend~(\uccmd{Update}, \sid,\did,\sval_d,\sval_a)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{UpdtOk},\sid,\did,\lbrace \val^a_i \rbrace_{i\in[n^a]})~
+          \text{from}~\Sim \\
+          \lbrace (\lbl_i^a,\typ_i^a) \rbrace_{i\in[n^a]} \gets \sval_a;~
+          \lbrace \lbl_i^d \rbrace_{i\in[n^d]} \gets \sval_d \\          
+          \sval_1 \gets (\sval_0 \setminus \sval_d) \cup
+          \lbrace (\lbl^a_i,\typ^a_i,\val^a_i) \rbrace_{i\in[n^a]} \\          
+          \DID \gets \DID \setminus \lbrace (P,\did,\sval_0) \rbrace \cup
+          \lbrace (P, \did, \sval_1) \rbrace \\
+          \ucio{Output}~(\uccmd{Updated},\sid, (\did,\lbrace \val_a \rbrace_{i\in[n^a]}))
+        }
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
+          (did, \lbrace \lbl_i \rbrace_{i\in[n]})$}{          
+          \pcif (P,did,\sval_0) \notin \DID: abort \\
+          \sval_1 \gets \sval_0 \setminus \lbrace \lbl_i \rbrace_{i\in[n]} \\
+          \pcif \P(\sval_1) = 0: abort \\
+          \ucsend~(\uccmd{Deact}, \sid, \arg)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{DeactOk},\sid)~\text{from}~\Sim \\          
+          \pcind \DID \gets \DID \setminus \lbrace(P,did,\sval_0)\rbrace~\cup \\
+          \hspace*{7em}\lbrace (P,did,\sval_1) \rbrace \\
+          \ucio{Output}~(\uccmd{Deacted},\sid,\did)
+        }
+      \end{minipage}
+    }
+  \end{framed}
+  \caption{Ideal PKI functionality, \IdealFPKI. We abuse set
+    notation, and write $\lbrace (a_i,\dots) \rbrace_{i\in[n]} \setminus
+    \lbrace (b_j,\dots) \rbrace_{j\in[m]}$ to mean subtracting from the first
+    set the elements present in the second set, whenever $a_i = b_j$ for some
+    $i,j$, even if the size of the $(a_i,\dots)$ and $(b_j,\dots)$ tuples do not
+    match.}
+  \label{fig:fpki}
+\end{figure}
+\fi
+
 \subsection{Self-Sovereign Identities}
 \label{ssec:ssi}
 
