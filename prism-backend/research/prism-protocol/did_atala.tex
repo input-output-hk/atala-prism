@@ -382,7 +382,8 @@ We capture the resulting notion in \figref{fig:fpkidid}.
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
           \arg = (did, \sval_d,\sval_a)$}{
           \DID \gets \DIDReadLdg \\
-          \pcif (\did,\sval_0) \notin \DID: \pcreturn \bot \\
+          \pcif (\did,\sval_0) \notin \DID \lor (P,\cdot,(\did,\cdot))
+          \notin \didOP: \pcreturn \bot \\
           \pcif \P((\sval_0 \setminus \sval_d) \cup \sval_a) = 0:
           \pcreturn \bot \\
           \ucsend~(\uccmd{Update}, \sid,\did,\sval_d,\sval_a)~\text{to}~\Sim \\
