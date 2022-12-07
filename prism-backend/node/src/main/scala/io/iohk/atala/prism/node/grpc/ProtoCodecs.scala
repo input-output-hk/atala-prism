@@ -51,6 +51,7 @@ object ProtoCodecs {
       )
   }
 
+
   def toDIDDataProto(
       did: String,
       didDataState: models.nodeState.DIDDataState
@@ -69,6 +70,21 @@ object ProtoCodecs {
           )
         )
       )
+      .withServices(didDataState.services.map(toProtoService))
+  }
+
+  def toProtoService(nodeStateService: models.nodeState.DIDServiceState): node_models.Service = {
+
+    val protoService = node_models
+      .Service()
+      .withId(nodeStateService.id)
+      .withType(nodeStateService.`type`)
+      .withServiceEndpoint(nodeStateService.serviceEndpoints.map(_.url))
+      .withAddedOn(toLedgerData(nodeStateService.addedOn))
+
+    nodeStateService.revokedOn
+      .map(toLedgerData)
+      .fold(protoService)(revokedOn => protoService.withDeletedOn(revokedOn))
   }
 
   def toProtoPublicKey(

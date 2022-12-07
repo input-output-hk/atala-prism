@@ -12,7 +12,13 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.{
+  CredentialBatchState,
+  DIDPublicKeyState,
+  DIDServiceEndpointState,
+  DIDServiceWithEndpoint,
+  LedgerData
+}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
 
@@ -60,6 +66,9 @@ package object daos extends BaseDAO {
 
   implicit val didSuffixPut: Put[DidSuffix] = Put[String].contramap(_.getValue)
   implicit val didSuffixGet: Get[DidSuffix] = Get[String].map(DidSuffix.apply)
+
+  implicit val IdTypePut: Put[IdType] = Put[String].contramap(_.getValue)
+  implicit val IdTypeGet: Get[IdType] = Get[String].map(IdType.apply)
 
   implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
   implicit val credentialIdGet: Get[CredentialId] =
@@ -163,6 +172,81 @@ package object daos extends BaseDAO {
             timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
           ),
           revokeLedgerData
+        )
+    }
+  }
+
+  implicit val didServiceWithEndpointRead: Read[DIDServiceWithEndpoint] = {
+    Read[
+      (
+          IdType,
+          String,
+          DidSuffix,
+          String,
+          TransactionId,
+          Instant,
+          Int,
+          Int,
+          Option[TransactionId],
+          Option[Instant],
+          Option[Int],
+          Option[Int],
+          Ledger,
+          Option[IdType],
+          Option[Int],
+          Option[String]
+      )
+    ].map {
+      case (
+            serviceId,
+            id,
+            didSuffix,
+            serviceType,
+            aTransactionId,
+            aTimestamp,
+            aABSN,
+            aOSN,
+            maybeRTransactionId,
+            maybeRTimestamp,
+            maybeRANSN,
+            maybeROSN,
+            ledger,
+            maybeServiceEndpointId,
+            maybeUrlIndex,
+            maybeUrl
+          ) =>
+        val addLedgerData = LedgerData(
+          transactionId = aTransactionId,
+          ledger = ledger,
+          timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
+        )
+        val revokeLedgerData =
+          for {
+            transactionId <- maybeRTransactionId
+            timestamp <- maybeRTimestamp
+            absn <- maybeRANSN
+            osn <- maybeROSN
+          } yield LedgerData(
+            transactionId = transactionId,
+            ledger = ledger,
+            timestampInfo = new TimestampInfo(timestamp.toEpochMilli, absn, osn)
+          )
+
+        val serviceEndpoint =
+          for {
+            serviceEndpointId <- maybeServiceEndpointId
+            urlIndex <- maybeUrlIndex
+            url <- maybeUrl
+          } yield DIDServiceEndpointState(serviceEndpointId, urlIndex, serviceId, url)
+
+        DIDServiceWithEndpoint(
+          serviceId = serviceId,
+          id = id,
+          didSuffix = didSuffix,
+          `type` = serviceType,
+          serviceEndpoint = serviceEndpoint,
+          addedOn = addLedgerData,
+          revokedOn = revokeLedgerData
         )
     }
   }

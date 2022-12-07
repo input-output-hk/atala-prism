@@ -15,8 +15,14 @@ import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
-import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.models.nodeState.{
+  DIDDataState,
+  DIDPublicKeyState,
+  DIDServiceState,
+  DIDServiceWithEndpoint,
+  LedgerData
+}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -68,6 +74,7 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
       canonicalSuffix: DidSuffix,
       publicKeysLimit: Option[Int]
   ): F[Either[NodeError, Option[DIDDataState]]] = {
+
     def fetchKeys(): EitherT[ConnectionIO, NodeError, List[DIDPublicKeyState]] = publicKeysLimit match {
       case None => EitherT.liftF(PublicKeysDAO.listAllLimited(canonicalSuffix, None))
       case Some(lim) =>
@@ -80,11 +87,48 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
           )
         } yield keys
     }
+
+    def fetchServices(): ConnectionIO[List[DIDServiceState]] = {
+      ServicesDAO
+        .getAllActiveByDidSuffix(canonicalSuffix)
+        .map { servicesWithEndpoint =>
+          servicesWithEndpoint
+            .groupBy(_.serviceId)
+            .map { serviceIdAndServices =>
+              val (serviceId, services) = serviceIdAndServices
+              /*
+               * NOTE: services.head should never fail, because services will always have at least
+               *       one element inside. This is guarantied by .groupBy function that is called
+               *       before .map, so groupBy will create an immutable.Map of serviceId and all
+               *       corresponding services, if there is none, element would not be added to the Map
+               *       TODO: find a way to represent this via type system somehow
+               * */
+              val service = services.head
+
+              DIDServiceState(
+                serviceId = serviceId,
+                id = service.id,
+                didSuffix = service.didSuffix,
+                `type` = service.`type`,
+                serviceEndpoints = services
+                  .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
+                    serviceEndpoint
+                  }
+                  .sortBy(_.urlIndex),
+                addedOn = service.addedOn,
+                revokedOn = service.revokedOn
+              )
+            }
+            .toList
+        }
+    }
+
     val query = for {
       lastOperationMaybe <- EitherT.liftF(DIDDataDAO.getLastOperation(canonicalSuffix))
       keys <- fetchKeys()
+      services <- EitherT.liftF(fetchServices())
     } yield lastOperationMaybe map { lastOperation =>
-      DIDDataState(canonicalSuffix, keys, lastOperation)
+      DIDDataState(canonicalSuffix, keys, services, lastOperation)
     }
 
     query.value
