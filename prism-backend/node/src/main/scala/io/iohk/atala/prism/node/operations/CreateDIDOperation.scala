@@ -7,7 +7,7 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.DIDPublicKey
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService}
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
@@ -18,6 +18,7 @@ import io.iohk.atala.prism.protos.{node_models => proto}
 case class CreateDIDOperation(
     id: DidSuffix,
     keys: List[DIDPublicKey],
+    services: List[DIDService],
     digest: Sha256Digest,
     ledgerData: LedgerData
 ) extends Operation {
@@ -69,7 +70,7 @@ case class CreateDIDOperation(
 object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
   val metricCounterName: String = "number_of_created_dids"
 
-  def parseData(
+  def parseKeysFromData(
       data: ValueAtPath[proto.CreateDIDOperation.DIDCreationData],
       didSuffix: DidSuffix
   ): Either[ValidationError, List[DIDPublicKey]] = {
@@ -98,6 +99,32 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     } yield reversedKeys.reverse
   }
 
+  def parseServicesFromData(
+      data: ValueAtPath[proto.CreateDIDOperation.DIDCreationData],
+      didSuffix: DidSuffix
+  ): Either[ValidationError, List[DIDService]] = {
+    val servicesValue = data.child(_.services, "services")
+
+    servicesValue { services =>
+      services.zipWithIndex
+        .foldLeft(
+          Either.right[ValidationError, List[DIDService]](List.empty)
+        ) { (acc, serviceAndIndex) =>
+          val (service, index) = serviceAndIndex
+          acc.flatMap(list =>
+            ParsingUtils
+              .parseService(
+                ValueAtPath(service, servicesValue.path / index.toString),
+                didSuffix
+              )
+              .map(_ :: list)
+          )
+        }
+        .map(_.reverse)
+    }
+
+  }
+
   override def parse(
       operation: proto.AtalaOperation,
       ledgerData: LedgerData
@@ -108,7 +135,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")
-      keys <- parseData(data, didSuffix)
-    } yield CreateDIDOperation(didSuffix, keys, operationDigest, ledgerData)
+      keys <- parseKeysFromData(data, didSuffix)
+      services <- parseServicesFromData(data, didSuffix)
+    } yield CreateDIDOperation(didSuffix, keys, services, operationDigest, ledgerData)
   }
 }

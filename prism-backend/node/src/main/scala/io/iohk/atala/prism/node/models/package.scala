@@ -50,6 +50,18 @@ package object models {
       key: ECPublicKey
   )
 
+  case class DIDService(
+      id: String,
+      didSuffix: DidSuffix,
+      `type`: String,
+      serviceEndpoints: List[DIDServiceEndpoint]
+  )
+
+  case class DIDServiceEndpoint(
+      urlIndex: Int,
+      url: String
+  )
+
   case class DIDData(
       didSuffix: DidSuffix,
       keys: List[DIDPublicKey],

@@ -10,10 +10,11 @@ import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
+import cats.implicits._
 
 import scala.util.Try
 
@@ -109,6 +110,49 @@ object ParsingUtils {
         s"Invalid key id: $id"
       )
     }
+  }
+
+  def parseService(
+      service: ValueAtPath[node_models.Service],
+      didSuffix: DidSuffix
+  ): Either[ValidationError, DIDService] = {
+
+    for {
+      id <- service.child(_.id, "id").parse { id =>
+        isValidUri(id) match {
+          case true => Right(id)
+          case false => Left(s"id $id is not a valid URI")
+        }
+      }
+      serviceType = service.child(_.`type`, "type")(identity)
+      serviceEndpoints = service.child(_.serviceEndpoint, "serviceEndpoint")
+      validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
+        .foldLeft(
+          Either.right[ValidationError, List[(String, Int)]](List.empty)
+        ) { (acc, uriAndIndex) =>
+          val (uri, index) = uriAndIndex
+          if (isValidUri(uri)) acc.map(list => (uri, index) :: list)
+          else
+            Left(
+              InvalidValue(
+                serviceEndpoints.path / index.toString,
+                uri,
+                s"service endpoint - $uri of service with id - $id is not a valid URI"
+              )
+            )
+        }
+        .map(_.reverse)
+
+    } yield DIDService(
+      id = id,
+      `type` = serviceType,
+      didSuffix = didSuffix,
+      serviceEndpoints = validatedServiceEndpointsAndIndexes.map { uriAndIndex =>
+        val (uri, index) = uriAndIndex
+        DIDServiceEndpoint(index, uri)
+      }
+    )
+
   }
 
   def parseKey(
