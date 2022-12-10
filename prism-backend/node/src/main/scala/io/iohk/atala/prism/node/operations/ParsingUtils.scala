@@ -121,11 +121,14 @@ object ParsingUtils {
       id <- service.child(_.id, "id").parse { id =>
         isValidUri(id) match {
           case true => Right(id)
-          case false => Left(s"id $id is not a valid URI")
+          case false => Left(s"Id $id is not a valid URI")
         }
       }
       serviceType = service.child(_.`type`, "type")(identity)
       serviceEndpoints = service.child(_.serviceEndpoint, "serviceEndpoint")
+      _ <- serviceEndpoints.parse { list =>
+        Either.cond(list.nonEmpty, (), s"Service with id - $id must have at least one service endpoint")
+      }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
         .foldLeft(
           Either.right[ValidationError, List[(String, Int)]](List.empty)
@@ -137,7 +140,7 @@ object ParsingUtils {
               InvalidValue(
                 serviceEndpoints.path / index.toString,
                 uri,
-                s"service endpoint - $uri of service with id - $id is not a valid URI"
+                s"Service endpoint - $uri of service with id - $id is not a valid URI"
               )
             )
         }

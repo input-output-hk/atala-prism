@@ -26,5 +26,5 @@ object IdType {
       )
   }
 
-  def random(): IdType = IdType(value = Sha256.compute(java.util.UUID.randomUUID.toString.getBytes).getHexValue)
+  def random: IdType = IdType(value = Sha256.compute(java.util.UUID.randomUUID.toString.getBytes).getHexValue)
 }

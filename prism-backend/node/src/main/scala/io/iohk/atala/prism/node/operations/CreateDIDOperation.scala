@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
 case class CreateDIDOperation(
@@ -62,6 +62,15 @@ case class CreateDIDOperation(
             EntityExists("public key", key.keyId): StateError
           }
         }
+      }
+
+      _ <- services.traverse[ConnectionIOEitherTError, Unit] { service: DIDService =>
+        EitherT {
+          ServicesDAO.insert(service, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
+          }
+        }
+
       }
     } yield ()
   }
