@@ -27,12 +27,11 @@ object ServicesDAO {
        """.stripMargin.query[DIDServiceWithEndpoint].to[List]
   }
 
-  /**
-   * Insert service and services endpoints of that service
-   * @param service
-   * @param ledgerData
-   * @return
-   */
+  /** Insert service and services endpoints of that service
+    * @param service
+    * @param ledgerData
+    * @return
+    */
   def insert(service: DIDService, ledgerData: LedgerData): ConnectionIO[Unit] = {
     val addedOn = ledgerData.timestampInfo
     val newServiceId = IdType.random
@@ -75,6 +74,25 @@ object ServicesDAO {
       _ <- insertServiceStatement
       _ <- insertServiceEndpointsStatement
     } yield ()
+
+  }
+
+  /**
+   * Revoke all services associated with the did
+   * @param suffix
+   * @param ledgerData
+   * @return
+   */
+  def revokeAllServices(suffix: DidSuffix, ledgerData: LedgerData): ConnectionIO[Boolean] = {
+    val revokedOn = ledgerData.timestampInfo
+    sql"""|
+          |UPDATE services
+          |SET revoked_on = ${revokedOn.getAtalaBlockTimestamp.toInstant},
+          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
+          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+          |    revoked_on_transaction_id = ${ledgerData.transactionId}
+          |WHERE did_suffix = ${suffix}
+          |""".stripMargin.update.run.map(_ > 0)
 
   }
 
