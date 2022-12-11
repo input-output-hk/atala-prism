@@ -77,12 +77,11 @@ object ServicesDAO {
 
   }
 
-  /**
-   * Revoke all services associated with the did
-   * @param suffix
-   * @param ledgerData
-   * @return
-   */
+  /** Revoke all services associated with the DID
+    * @param suffix
+    * @param ledgerData
+    * @return
+    */
   def revokeAllServices(suffix: DidSuffix, ledgerData: LedgerData): ConnectionIO[Boolean] = {
     val revokedOn = ledgerData.timestampInfo
     sql"""|
@@ -94,6 +93,26 @@ object ServicesDAO {
           |WHERE did_suffix = $suffix AND revoked_on is NULL
           |""".stripMargin.update.run.map(_ > 0)
 
+  }
+
+  /**
+   * Revoke single service of a DID
+   * @param suffix
+   * @param id
+   * @param ledgerData
+   * @return
+   */
+  def revokeService(suffix: DidSuffix, id: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
+    val revokedOn = ledgerData.timestampInfo
+
+    sql"""|
+          |UPDATE services
+          |SET revoked_on = ${revokedOn.getAtalaBlockTimestamp.toInstant},
+          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
+          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+          |    revoked_on_transaction_id = ${ledgerData.transactionId}
+          |WHERE did_suffix = $suffix AND id = $id AND revoked_on is NULL
+          |""".stripMargin.update.run.map(_ > 0)
   }
 
 }

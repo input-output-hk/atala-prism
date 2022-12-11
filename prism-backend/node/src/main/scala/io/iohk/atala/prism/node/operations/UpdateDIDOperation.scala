@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndp
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.ValidationError.MissingValue
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
 
@@ -96,7 +96,7 @@ case class UpdateDIDOperation(
               StateError.KeyAlreadyRevoked()
             )
           }
-          result <- EitherT
+          _ <- EitherT
             .right[StateError](
               PublicKeysDAO.revoke(didSuffix, keyId, ledgerData)
             )
@@ -107,7 +107,25 @@ case class UpdateDIDOperation(
                 StateError.EntityMissing("key", keyId)
               )
             }
-        } yield result
+        } yield ()
+      case AddServiceAction(service) =>
+        EitherT.apply {
+          ServicesDAO.insert(service, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
+          }
+        }
+      case RemoveServiceAction(id) =>
+        EitherT
+          .right[StateError](
+            ServicesDAO.revokeService(didSuffix, id, ledgerData)
+          )
+          .subflatMap { wasRemoved =>
+            Either.cond(
+              wasRemoved,
+              (),
+              StateError.EntityMissing("service", s"${didSuffix.getValue} - $id"): StateError
+            )
+          }
     }
   }
 
