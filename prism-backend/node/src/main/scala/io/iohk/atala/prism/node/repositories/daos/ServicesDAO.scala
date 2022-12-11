@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import doobie.Update
 import io.iohk.atala.prism.models.{DidSuffix, IdType}
 import io.iohk.atala.prism.node.models.DIDService
@@ -95,13 +96,12 @@ object ServicesDAO {
 
   }
 
-  /**
-   * Revoke single service of a DID
-   * @param suffix
-   * @param id
-   * @param ledgerData
-   * @return
-   */
+  /** Revoke single service of a DID
+    * @param suffix
+    * @param id
+    * @param ledgerData
+    * @return
+    */
   def revokeService(suffix: DidSuffix, id: String, ledgerData: LedgerData): ConnectionIO[Boolean] = {
     val revokedOn = ledgerData.timestampInfo
 
