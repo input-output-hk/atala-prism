@@ -6,17 +6,25 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.models.{DidSuffix, IdType}
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage, nodeState}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
+import io.iohk.atala.prism.node.operations.ValidationError.MissingValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
 
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
+case class AddServiceAction(service: DIDService) extends UpdateDIDAction
+
+// id, not to be confused with internal service_id in db, this is services.id
+case class RemoveServiceAction(id: String) extends UpdateDIDAction
+case class UpdateServiceAction(id: String, `type`: String, serviceEndpoints: List[DIDServiceEndpoint])
+    extends UpdateDIDAction
 
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
@@ -146,21 +154,66 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       action: ValueAtPath[node_models.UpdateDIDAction],
       didSuffix: DidSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
-    if (action(_.action.isAddKey)) {
-      val addKeyAction = action.child(_.getAddKey, "addKey")
-      for {
-        key <- addKeyAction
-          .childGet(_.key, "key")
-          .flatMap(ParsingUtils.parseKey(_, didSuffix))
-      } yield AddKeyAction(key)
-    } else if (action(_.action.isRemoveKey)) {
-      val removeKeyAction = action.child(_.getRemoveKey, "removeKey")
-      val keyIdVal = removeKeyAction.child(_.keyId, "keyId")
-      for {
-        keyId <- ParsingUtils.parseKeyId(keyIdVal)
-      } yield RevokeKeyAction(keyId)
-    } else {
-      Left(action.child(_.action, "action").missing())
+
+    action { uda =>
+      uda.action match {
+        case Action.AddKey(value) =>
+          val path = action.path / "addKey" / "key"
+          val addKeyAction = value.key
+            .toRight(MissingValue(path))
+            .map(ValueAtPath(_, path))
+            .flatMap(ParsingUtils.parseKey(_, didSuffix))
+            .map(AddKeyAction)
+
+          addKeyAction
+
+        case Action.RemoveKey(value) =>
+          val path = action.path / "removeKey" / "keyId"
+          val removeKeyAction = ParsingUtils
+            .parseKeyId(
+              ValueAtPath(value.keyId, path)
+            )
+            .map(RevokeKeyAction)
+
+          removeKeyAction
+
+        case Action.AddService(value) =>
+          val path = action.path / "addService" / "service"
+          val addServiceAction = value.service
+            .toRight(MissingValue(path))
+            .map(ValueAtPath(_, path))
+            .flatMap(ParsingUtils.parseService(_, didSuffix))
+            .map(AddServiceAction)
+
+          addServiceAction
+
+        case Action.RemoveService(value) =>
+          val path = action.path / "removeService" / "serviceId"
+          val removeServiceAction = ParsingUtils
+            .parseKeyId(
+              ValueAtPath(value.serviceId, path)
+            )
+            .map(RemoveServiceAction)
+
+          removeServiceAction
+
+        case Action.UpdateService(value) =>
+          val path = action.path / "updateService"
+
+          for {
+            id <- ParsingUtils.parseKeyId(
+              ValueAtPath(value.serviceId, path / "serviceId")
+            )
+            serviceType <- ParsingUtils.parseServiceType(ValueAtPath(value.`type`, path / "type"))
+            serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
+              ValueAtPath(value.serviceEndpoints, path / "serviceEndpoints"),
+              id
+            )
+          } yield UpdateServiceAction(id, serviceType, serviceEndpoints)
+
+        case Action.Empty => Left(action.child(_.action, "action").missing())
+
+      }
     }
   }
 

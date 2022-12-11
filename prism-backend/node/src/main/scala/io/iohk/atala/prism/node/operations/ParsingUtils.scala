@@ -112,22 +112,24 @@ object ParsingUtils {
     }
   }
 
-  def parseService(
-      service: ValueAtPath[node_models.Service],
-      didSuffix: DidSuffix
-  ): Either[ValidationError, DIDService] = {
+  def parseServiceId(
+      serviceId: ValueAtPath[String]
+  ): Either[ValidationError, String] =
+    serviceId.parse { id =>
+      Either.cond(
+        isValidUri(id),
+        id,
+        s"Id $id is not a valid URI"
+      )
+    }
 
+  def parseServiceEndpoints(
+      serviceEndpoints: ValueAtPath[List[String]],
+      serviceId: String
+  ): Either[ValidationError, List[DIDServiceEndpoint]] = {
     for {
-      id <- service.child(_.id, "id").parse { id =>
-        isValidUri(id) match {
-          case true => Right(id)
-          case false => Left(s"Id $id is not a valid URI")
-        }
-      }
-      serviceType = service.child(_.`type`, "type")(identity)
-      serviceEndpoints = service.child(_.serviceEndpoint, "serviceEndpoint")
       _ <- serviceEndpoints.parse { list =>
-        Either.cond(list.nonEmpty, (), s"Service with id - $id must have at least one service endpoint")
+        Either.cond(list.nonEmpty, (), s"Service with id - $serviceId must have at least one service endpoint")
       }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
         .foldLeft(
@@ -140,20 +142,40 @@ object ParsingUtils {
               InvalidValue(
                 serviceEndpoints.path / index.toString,
                 uri,
-                s"Service endpoint - $uri of service with id - $id is not a valid URI"
+                s"Service endpoint - $uri of service with id - $serviceId is not a valid URI"
               )
             )
         }
         .map(_.reverse)
+    } yield validatedServiceEndpointsAndIndexes.map { uriAndIndex =>
+      val (uri, index) = uriAndIndex
+      DIDServiceEndpoint(index, uri)
+    }
+  }
 
+  def parseServiceType(serviceType: ValueAtPath[String]): Either[ValidationError, String] = Either.cond(
+    serviceType(_.nonEmpty),
+    serviceType(identity),
+    MissingValue(serviceType.path)
+  )
+
+  def parseService(
+      service: ValueAtPath[node_models.Service],
+      didSuffix: DidSuffix
+  ): Either[ValidationError, DIDService] = {
+
+    for {
+      id <- parseServiceId(service.child(_.id, "id"))
+      serviceType <- parseServiceType(service.child(_.`type`, "type"))
+      parsedServiceEndpoints <- parseServiceEndpoints(
+        service.child(_.serviceEndpoint.toList, "serviceEndpoint"),
+        id
+      )
     } yield DIDService(
       id = id,
       `type` = serviceType,
       didSuffix = didSuffix,
-      serviceEndpoints = validatedServiceEndpointsAndIndexes.map { uriAndIndex =>
-        val (uri, index) = uriAndIndex
-        DIDServiceEndpoint(index, uri)
-      }
+      serviceEndpoints = parsedServiceEndpoints
     )
 
   }

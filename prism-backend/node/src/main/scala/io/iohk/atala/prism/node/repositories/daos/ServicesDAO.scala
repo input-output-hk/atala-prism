@@ -91,7 +91,7 @@ object ServicesDAO {
           |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
           |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
           |    revoked_on_transaction_id = ${ledgerData.transactionId}
-          |WHERE did_suffix = ${suffix}
+          |WHERE did_suffix = $suffix AND revoked_on is NULL
           |""".stripMargin.update.run.map(_ > 0)
 
   }
