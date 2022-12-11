@@ -73,6 +73,28 @@ case class UpdateDIDOperation(
     } yield CorrectnessData(key, Some(lastOperation))
   }
 
+  private def revokeService(didSuffix: DidSuffix, id: String, ledgerData: LedgerData) = {
+    EitherT
+      .right[StateError](
+        ServicesDAO.revokeService(didSuffix, id, ledgerData)
+      )
+      .subflatMap { wasRemoved =>
+        Either.cond(
+          wasRemoved,
+          (),
+          StateError.EntityMissing("service", s"${didSuffix.getValue} - $id"): StateError
+        )
+      }
+  }
+
+  private def createService(service: DIDService, ledgerData: LedgerData) = {
+    EitherT.apply {
+      ServicesDAO.insert(service, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+        EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
+      }
+    }
+  }
+
   protected def applyAction(
       action: UpdateDIDAction
   ): EitherT[ConnectionIO, StateError, Unit] = {
@@ -108,24 +130,21 @@ case class UpdateDIDOperation(
               )
             }
         } yield ()
-      case AddServiceAction(service) =>
-        EitherT.apply {
-          ServicesDAO.insert(service, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
-          }
-        }
-      case RemoveServiceAction(id) =>
-        EitherT
-          .right[StateError](
-            ServicesDAO.revokeService(didSuffix, id, ledgerData)
-          )
-          .subflatMap { wasRemoved =>
-            Either.cond(
-              wasRemoved,
-              (),
-              StateError.EntityMissing("service", s"${didSuffix.getValue} - $id"): StateError
-            )
-          }
+      case AddServiceAction(service) => createService(service, ledgerData)
+
+      case RemoveServiceAction(id) => revokeService(didSuffix, id, ledgerData)
+
+      case UpdateServiceAction(id, serviceType, serviceEndpoints) =>
+        /*
+        * revoke the current service and create a new one with
+        * provided service endpoints, this approach of updating service is
+        * chosen to preserve the history of the service updates and which service
+        * endpoints used to be associated with which instance
+         */
+        for {
+          _ <- revokeService(didSuffix, id, ledgerData)
+          _ <- createService(DIDService(id, didSuffix, serviceType, serviceEndpoints), ledgerData)
+        } yield ()
     }
   }
 
