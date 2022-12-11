@@ -6,7 +6,7 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.{DidSuffix, IdType}
+import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
@@ -243,7 +243,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             )
             serviceType <- ParsingUtils.parseServiceType(ValueAtPath(value.`type`, path / "type"))
             serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
-              ValueAtPath(value.serviceEndpoints, path / "serviceEndpoints"),
+              ValueAtPath(value.serviceEndpoints.toList, path / "serviceEndpoints"),
               id
             )
           } yield UpdateServiceAction(id, serviceType, serviceEndpoints)

@@ -1,9 +1,7 @@
 package io.iohk.atala.prism.node.operations
 
 import java.time.LocalDate
-import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
+import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
@@ -14,7 +12,6 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndp
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
-import cats.implicits._
 
 import scala.util.Try
 
