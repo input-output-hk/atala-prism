@@ -16,11 +16,7 @@ import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
-import io.iohk.atala.prism.node.models.nodeState.{
-  DIDDataState,
-  DIDPublicKeyState,
-  DIDServiceState
-}
+import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, DIDServiceState}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics

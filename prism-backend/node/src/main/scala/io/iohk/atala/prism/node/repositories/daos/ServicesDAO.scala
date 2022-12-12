@@ -60,12 +60,11 @@ object ServicesDAO {
     } yield didServices
   }
 
-  /***
-   * Get a single did service and its associated service endpoints that is not revoked
-   * @param suffix
-   * @param id
-   * @return
-   */
+  /** * Get a single did service and its associated service endpoints that is not revoked
+    * @param suffix
+    * @param id
+    * @return
+    */
   def get(suffix: DidSuffix, id: String): ConnectionIO[Option[DIDServiceState]] = {
     val query = sql"""
          |SELECT s.service_id, s.id, s.did_suffix, s.type,

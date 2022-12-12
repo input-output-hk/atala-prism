@@ -51,7 +51,6 @@ object ProtoCodecs {
       )
   }
 
-
   def toDIDDataProto(
       did: String,
       didDataState: models.nodeState.DIDDataState
