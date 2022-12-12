@@ -19,8 +19,7 @@ import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttem
 import io.iohk.atala.prism.node.models.nodeState.{
   DIDDataState,
   DIDPublicKeyState,
-  DIDServiceState,
-  DIDServiceWithEndpoint
+  DIDServiceState
 }
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
@@ -91,36 +90,6 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
     def fetchServices(): ConnectionIO[List[DIDServiceState]] = {
       ServicesDAO
         .getAllActiveByDidSuffix(canonicalSuffix)
-        .map { servicesWithEndpoint =>
-          servicesWithEndpoint
-            .groupBy(_.serviceId)
-            .map { serviceIdAndServices =>
-              val (serviceId, services) = serviceIdAndServices
-              /*
-               * NOTE: services.head should never fail, because services will always have at least
-               *       one element inside. This is guarantied by .groupBy function that is called
-               *       before .map, so groupBy will create an immutable.Map of serviceId and all
-               *       corresponding services, if there is none, element would not be added to the Map
-               *       TODO: find a way to represent this via type system somehow
-               * */
-              val service = services.head
-
-              DIDServiceState(
-                serviceId = serviceId,
-                id = service.id,
-                didSuffix = service.didSuffix,
-                `type` = service.`type`,
-                serviceEndpoints = services
-                  .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
-                    serviceEndpoint
-                  }
-                  .sortBy(_.urlIndex),
-                addedOn = service.addedOn,
-                revokedOn = service.revokedOn
-              )
-            }
-            .toList
-        }
     }
 
     val query = for {

@@ -7,7 +7,7 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, DIDServiceWithEndpoint, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
@@ -98,23 +98,15 @@ case class UpdateDIDOperation(
   private def getService(didSuffix: DidSuffix, id: String): ConnectionIO[Option[DIDService]] = {
 
     for {
-      servicesWEndpoint <- ServicesDAO.get(didSuffix, id)
-      service = servicesWEndpoint.headOption
-      didService = service.map { s =>
+      maybeDidServiceState <- ServicesDAO.get(didSuffix, id)
+      didService = maybeDidServiceState.map(x =>
         DIDService(
-          id = s.id,
-          didSuffix = s.didSuffix,
-          `type` = s.`type`,
-          serviceEndpoints = servicesWEndpoint
-            .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
-              DIDServiceEndpoint(
-                urlIndex = serviceEndpoint.urlIndex,
-                url = serviceEndpoint.url
-              )
-            }
-            .sortBy(_.urlIndex)
+          id = x.id,
+          didSuffix = x.didSuffix,
+          `type` = x.`type`,
+          serviceEndpoints = x.serviceEndpoints.map(s => DIDServiceEndpoint(s.urlIndex, s.url))
         )
-      }
+      )
     } yield didService
   }
 
@@ -179,8 +171,11 @@ case class UpdateDIDOperation(
             case None => Left(StateError.EntityMissing("service", s"${didSuffix.getValue} - $id"): StateError)
           }
           _ <- revokeService(didSuffix, id, ledgerData)
-          newServiceType = if (serviceType.nonEmpty) serviceType else service.`type` // use old type if new is not provided (no update)
-          newServiceEndpoints = if (serviceEndpoints.nonEmpty) serviceEndpoints else service.serviceEndpoints // use old service endpoints if new ones are not provided
+          newServiceType =
+            if (serviceType.nonEmpty) serviceType else service.`type` // use old type if new is not provided (no update)
+          newServiceEndpoints =
+            if (serviceEndpoints.nonEmpty) serviceEndpoints
+            else service.serviceEndpoints // use old service endpoints if new ones are not provided
           newService = DIDService(id, didSuffix, newServiceType, newServiceEndpoints)
           _ <- createService(newService, ledgerData)
         } yield ()

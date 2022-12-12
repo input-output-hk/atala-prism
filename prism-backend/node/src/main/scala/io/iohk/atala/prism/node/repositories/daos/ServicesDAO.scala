@@ -6,7 +6,7 @@ import doobie.implicits.legacy.instant._
 import doobie.Update
 import io.iohk.atala.prism.models.{DidSuffix, IdType}
 import io.iohk.atala.prism.node.models.DIDService
-import io.iohk.atala.prism.node.models.nodeState.{DIDServiceWithEndpoint, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.{DIDServiceState, DIDServiceWithEndpoint, LedgerData}
 import io.iohk.atala.prism.utils.syntax._
 
 object ServicesDAO {
@@ -15,8 +15,8 @@ object ServicesDAO {
     * @param suffix
     * @return
     */
-  def getAllActiveByDidSuffix(suffix: DidSuffix): ConnectionIO[List[DIDServiceWithEndpoint]] = {
-    sql"""
+  def getAllActiveByDidSuffix(suffix: DidSuffix): ConnectionIO[List[DIDServiceState]] = {
+    val query = sql"""
          |SELECT s.service_id, s.id, s.did_suffix, s.type,
          |       s.added_on_transaction_id, s.added_on, s.added_on_absn, s.added_on_osn,
          |       s.revoked_on_transaction_id, s.revoked_on, s.revoked_on_absn, s.revoked_on_osn,
@@ -26,10 +26,42 @@ object ServicesDAO {
          |LEFT JOIN service_endpoints se on s.service_id = se.service_id
          |WHERE did_suffix = $suffix AND s.revoked_on is NULL
        """.stripMargin.query[DIDServiceWithEndpoint].to[List]
+
+    for {
+      servicesWithEndpoints <- query
+      didServices = servicesWithEndpoints
+        .groupBy(_.serviceId)
+        .map { serviceIdAndServices =>
+          val (serviceId, services) = serviceIdAndServices
+          /*
+           * NOTE: services.head should never fail, because services will always have at least
+           *       one element inside. This is guarantied by .groupBy function that is called
+           *       before .map, so groupBy will create an immutable.Map of serviceId and all
+           *       corresponding services, if there is none, element would not be added to the Map
+           *       TODO: find a way to represent this via type system somehow
+           * */
+          val service = services.head
+
+          DIDServiceState(
+            serviceId = serviceId,
+            id = service.id,
+            didSuffix = service.didSuffix,
+            `type` = service.`type`,
+            serviceEndpoints = services
+              .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
+                serviceEndpoint
+              }
+              .sortBy(_.urlIndex),
+            addedOn = service.addedOn,
+            revokedOn = service.revokedOn
+          )
+        }
+        .toList
+    } yield didServices
   }
 
-  def get(suffix: DidSuffix, id: String): ConnectionIO[List[DIDServiceWithEndpoint]] = {
-    sql"""
+  def get(suffix: DidSuffix, id: String): ConnectionIO[Option[DIDServiceState]] = {
+    val query = sql"""
          |SELECT s.service_id, s.id, s.did_suffix, s.type,
          |       s.added_on_transaction_id, s.added_on, s.added_on_absn, s.added_on_osn,
          |       s.revoked_on_transaction_id, s.revoked_on, s.revoked_on_absn, s.revoked_on_osn,
@@ -39,6 +71,26 @@ object ServicesDAO {
          |LEFT JOIN service_endpoints se on s.service_id = se.service_id
          |WHERE did_suffix = $suffix AND s.id = $id
        """.stripMargin.query[DIDServiceWithEndpoint].to[List]
+
+    for {
+      servicesWEndpoint <- query
+      service = servicesWEndpoint.headOption
+      didService = service.map { s =>
+        DIDServiceState(
+          serviceId = s.serviceId,
+          id = s.id,
+          didSuffix = s.didSuffix,
+          `type` = s.`type`,
+          serviceEndpoints = servicesWEndpoint
+            .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
+              serviceEndpoint
+            }
+            .sortBy(_.urlIndex),
+          addedOn = s.addedOn,
+          revokedOn = s.revokedOn
+        )
+      }
+    } yield didService
   }
 
   /** Insert service and services endpoints of that service
