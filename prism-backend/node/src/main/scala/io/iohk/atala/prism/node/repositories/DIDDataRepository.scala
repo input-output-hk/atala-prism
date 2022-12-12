@@ -126,7 +126,6 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
     val query = for {
       lastOperationMaybe <- EitherT.liftF(DIDDataDAO.getLastOperation(canonicalSuffix))
       keys <- fetchKeys()
-//      services <- EitherT.liftF(fetchServices())
       services <- EitherT(fetchServices().map(_.asRight[NodeError]))
     } yield lastOperationMaybe map { lastOperation =>
       DIDDataState(canonicalSuffix, keys, services, lastOperation)

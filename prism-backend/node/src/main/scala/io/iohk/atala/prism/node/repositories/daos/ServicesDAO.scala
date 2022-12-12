@@ -28,6 +28,19 @@ object ServicesDAO {
        """.stripMargin.query[DIDServiceWithEndpoint].to[List]
   }
 
+  def get(suffix: DidSuffix, id: String): ConnectionIO[List[DIDServiceWithEndpoint]] = {
+    sql"""
+         |SELECT s.service_id, s.id, s.did_suffix, s.type,
+         |       s.added_on_transaction_id, s.added_on, s.added_on_absn, s.added_on_osn,
+         |       s.revoked_on_transaction_id, s.revoked_on, s.revoked_on_absn, s.revoked_on_osn,
+         |       s.ledger,
+         |       se.service_endpoint_id, se.url_index, se.url
+         |FROM services AS s
+         |LEFT JOIN service_endpoints se on s.service_id = se.service_id
+         |WHERE did_suffix = $suffix AND s.id = $id
+       """.stripMargin.query[DIDServiceWithEndpoint].to[List]
+  }
+
   /** Insert service and services endpoints of that service
     * @param service
     * @param ledgerData

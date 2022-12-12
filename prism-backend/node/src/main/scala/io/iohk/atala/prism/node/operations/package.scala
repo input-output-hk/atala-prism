@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node
 
 import java.time.Instant
-import cats.data.EitherT
+import cats.data.{EitherT, NonEmptyList}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
@@ -50,6 +50,20 @@ package object operations {
     case class MissingValue(override val path: Path) extends ValidationError {
       override def name = "Missing Value"
       override def explanation = "missing value"
+    }
+
+    case class MissingAtLeastOneValue(paths: NonEmptyList[Path]) extends ValidationError {
+      override def name: String = "Missing at least one value"
+
+      override def path: Path = paths.head
+
+      override def explanation: String = "Missing at least one value"
+
+      override def render: String =
+        s"""|
+            |At least one of those values must be provided:
+            |${paths.map(_.dotRender).toList.mkString("\n")}
+            |""".stripMargin
     }
 
     case class InvalidValue(
