@@ -11,7 +11,7 @@ import io.iohk.atala.prism.utils.syntax._
 
 object ServicesDAO {
 
-  /** * Get all services joined with corresponding service endpoints that are not revoked
+  /** * Get all services and its associated services endpoints that are not revoked
     * @param suffix
     * @return
     */
@@ -60,6 +60,12 @@ object ServicesDAO {
     } yield didServices
   }
 
+  /***
+   * Get a single did service and its associated service endpoints that is not revoked
+   * @param suffix
+   * @param id
+   * @return
+   */
   def get(suffix: DidSuffix, id: String): ConnectionIO[Option[DIDServiceState]] = {
     val query = sql"""
          |SELECT s.service_id, s.id, s.did_suffix, s.type,
@@ -69,7 +75,7 @@ object ServicesDAO {
          |       se.service_endpoint_id, se.url_index, se.url
          |FROM services AS s
          |LEFT JOIN service_endpoints se on s.service_id = se.service_id
-         |WHERE did_suffix = $suffix AND s.id = $id
+         |WHERE did_suffix = $suffix AND s.id = $id AND s.revoked_on is NULL
        """.stripMargin.query[DIDServiceWithEndpoint].to[List]
 
     for {

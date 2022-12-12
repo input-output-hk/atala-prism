@@ -27,7 +27,8 @@ import io.iohk.atala.prism.node.repositories.daos.{
   CredentialBatchesDAO,
   DIDDataDAO,
   KeyValuesDAO,
-  PublicKeysDAO
+  PublicKeysDAO,
+  ServicesDAO
 }
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
@@ -175,7 +176,8 @@ object DataPreparation {
     val query = for {
       maybeLastOperation <- DIDDataDAO.getLastOperation(didSuffix)
       keys <- PublicKeysDAO.findAll(didSuffix)
-    } yield DIDDataState(didSuffix, keys, maybeLastOperation.value)
+      services <- ServicesDAO.getAllActiveByDidSuffix(didSuffix)
+    } yield DIDDataState(didSuffix, keys, services, maybeLastOperation.value)
 
     query
       .transact(xa)
