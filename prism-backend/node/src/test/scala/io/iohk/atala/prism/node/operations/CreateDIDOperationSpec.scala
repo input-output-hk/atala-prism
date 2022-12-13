@@ -402,7 +402,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       DataPreparation
         .createDID(
-          DIDData(parsedOperation.id, Nil, parsedOperation.digest),
+          DIDData(parsedOperation.id, Nil, Nil, parsedOperation.digest),
           dummyLedgerData
         )
 

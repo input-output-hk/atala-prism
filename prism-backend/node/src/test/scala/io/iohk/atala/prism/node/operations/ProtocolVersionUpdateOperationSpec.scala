@@ -182,6 +182,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -206,6 +207,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -226,6 +228,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -253,6 +256,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -275,6 +279,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -308,6 +313,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -330,6 +336,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -352,6 +359,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -393,6 +401,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             proposerDIDSuffix,
             proposerDidKeys,
+            Nil,
             proposerCreateDIDOperation.digest
           ),
           dummyLedgerData

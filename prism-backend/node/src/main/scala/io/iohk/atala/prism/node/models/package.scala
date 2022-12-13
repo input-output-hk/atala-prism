@@ -65,6 +65,7 @@ package object models {
   case class DIDData(
       didSuffix: DidSuffix,
       keys: List[DIDPublicKey],
+      services: List[DIDService],
       lastOperation: Sha256Digest
   )
 

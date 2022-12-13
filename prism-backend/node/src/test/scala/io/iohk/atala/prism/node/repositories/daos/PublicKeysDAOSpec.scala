@@ -43,7 +43,7 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
     )
   )
 
-  val didData = DIDData(didSuffix, keys, operationDigest)
+  val didData = DIDData(didSuffix, keys, Nil, operationDigest)
   val dummyTimestamp =
     new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val dummyLedgerData = LedgerData(
@@ -114,7 +114,7 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
 
     "return None when retrieving non-existing key" in {
       DataPreparation.createDID(
-        DIDData(didSuffix, keys.tail, operationDigest),
+        DIDData(didSuffix, keys.tail, Nil, operationDigest),
         dummyLedgerData
       )
       val result = DataPreparation.findKey(didSuffix, "master")

@@ -163,6 +163,7 @@ object DataPreparation {
         ledgerData
       )
       _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
+      _ <- didData.services.traverse((service: DIDService) => ServicesDAO.insert(service, ledgerData))
     } yield ()
 
     query

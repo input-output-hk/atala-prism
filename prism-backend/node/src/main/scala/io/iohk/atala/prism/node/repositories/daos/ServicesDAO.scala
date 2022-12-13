@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
@@ -107,15 +108,15 @@ object ServicesDAO {
     val addedOn = ledgerData.timestampInfo
     val newServiceId = IdType.random
 
-    val insertServiceStatement: ConnectionIO[Int] =
+    val insertServiceStatement: ConnectionIO[Unit] =
       sql"""
             |INSERT INTO services (service_id, id, did_suffix, type,
             |    added_on_transaction_id, added_on, added_on_absn, added_on_osn, ledger)
             |VALUES ($newServiceId, ${service.id}, ${service.didSuffix}, ${service.`type`},
-            |    ${addedOn.getAtalaBlockTimestamp.toInstant}, ${addedOn.getAtalaBlockSequenceNumber},
-            |    ${addedOn.getOperationSequenceNumber}, ${ledgerData.transactionId}, ${ledgerData.ledger})
-            |
-      """.stripMargin.update.run
+            |    ${ledgerData.transactionId}, ${addedOn.getAtalaBlockTimestamp.toInstant},
+            |    ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
+            |    ${ledgerData.ledger})
+      """.stripMargin.update.run.void
 
     val insertServiceEndpointsStatementString =
       """|

@@ -260,7 +260,7 @@ object CredentialBatchesRepositorySpec {
       dummyTimestampInfo
     )
     DataPreparation.createDID(
-      DIDData(didSuffix, keys = Nil, lastOperation),
+      DIDData(didSuffix, keys = Nil, Nil, lastOperation),
       dummyLedgerData
     )
   }

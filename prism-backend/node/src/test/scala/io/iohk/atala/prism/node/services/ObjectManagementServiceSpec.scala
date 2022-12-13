@@ -540,6 +540,7 @@ class ObjectManagementServiceSpec
         DIDData(
           proposerDIDSuffix,
           proposerDidKeys,
+          Nil,
           proposerCreateDIDOperation.digest
         ),
         dummyLedgerData
