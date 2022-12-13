@@ -72,6 +72,9 @@ object CreateDIDOperationSpec {
       revokingKeys.getPublicKey
     )
 
+  private val serviceId1 = "did:prism:123#linked-domain1"
+  private val serviceId2 = "did:prism:123#linked-domain2"
+
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(
       value = node_models.CreateDIDOperation(
@@ -115,6 +118,28 @@ object CreateDIDOperationSpec {
                 ),
                 None,
                 node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
+              )
+            ),
+            services = List(
+              node_models.Service(
+                id = serviceId1,
+                `type` = "didCom-credential-exchange",
+                serviceEndpoint = List(
+                  "https://foo.example.com",
+                  "https://baz.example.com"
+                ),
+                addedOn = None,
+                deletedOn = None
+              ),
+              node_models.Service(
+                id = serviceId2,
+                `type` = "didCom-chat-message-exchange",
+                serviceEndpoint = List(
+                  "https://baz.example.com",
+                  "https://qux.example.com"
+                ),
+                addedOn = None,
+                deletedOn = None
               )
             )
           )
@@ -197,6 +222,109 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
     "parse valid CreateDid AtalaOperation" in {
       CreateDIDOperation
         .parse(exampleOperation, dummyLedgerData) mustBe a[Right[_, _]]
+    }
+
+    "parse services correctly from valid createDid AtalaOperation" in {
+      val parsed = CreateDIDOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .value
+
+      val services = parsed.services
+      services.size mustBe 2
+
+      services.head.id mustBe serviceId1
+      services.head.`type` mustBe "didCom-credential-exchange"
+      services.head.serviceEndpoints.zipWithIndex.foreach { epAndIndex =>
+        val (ep, index) = epAndIndex
+        ep.url mustBe exampleOperation.operation.createDid.value.didData.value.services.head.serviceEndpoint(index)
+      }
+
+      services.last.id mustBe serviceId2
+      services.last.`type` mustBe "didCom-chat-message-exchange"
+      services.last.serviceEndpoints.zipWithIndex.foreach { epAndIndex =>
+        val (ep, index) = epAndIndex
+        ep.url mustBe exampleOperation.operation.createDid.value.didData.value.services.last.serviceEndpoint(index)
+      }
+
+    }
+
+    "fail to parse services if id of one of the services is not a valid URI" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = "not a valid URI",
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              "https://baz.example.com"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "id")
+        case Right(_) => fail("Failed to validate invalid service id")
+      }
+
+    }
+
+    "fail to parse services if service endpoint of one of the services is not a valid URI" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              "not a valid URI"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint", "1")
+        case Right(_) => fail("Failed to validate invalid service endpoint")
+      }
+    }
+
+    "fail to parse services if type of one of the services is empty" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              "https://baz.example.com"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.MissingValue(path)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "type")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
     }
 
     "return error when a key has missing curve name" in {

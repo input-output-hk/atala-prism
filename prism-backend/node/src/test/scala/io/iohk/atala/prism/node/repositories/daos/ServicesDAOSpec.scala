@@ -57,11 +57,12 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
       `type` = "didCom-credential-exchange",
       serviceEndpoints = List(
         DIDServiceEndpoint(
-          url = "https://bar.example.com",
+          url = "https://foo.example.com",
           urlIndex = 0
         ),
         DIDServiceEndpoint(
-          url = "https://baz.example.com",
+          url = "https://bar.example.com",
+
           urlIndex = 1
         )
       )
@@ -72,11 +73,11 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
       `type` = "didCom-chat-message-exchange",
       serviceEndpoints = List(
         DIDServiceEndpoint(
-          url = "https://qux.example.com",
+          url = "https://baz.example.com",
           urlIndex = 0
         ),
         DIDServiceEndpoint(
-          url = "https://baz.example.com",
+          url = "https://qux.example.com",
           urlIndex = 1
         )
       )
