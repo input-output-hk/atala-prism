@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.data.NonEmptyList
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
@@ -127,7 +128,7 @@ object UpdateDIDOperationSpec {
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddKeyAction,
-          exampleRemoveKeyAction,
+          exampleRemoveKeyAction
         )
       )
     )
@@ -188,11 +189,82 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       invalidValueTest(_.updateDid.id := "", Vector("updateDid", "id"), "")
     }
 
+    "return error when id in AddServiceAction of the service is not valid" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(id = "not valid URI")),
+        Vector("updateDid", "actions", "2", "addService", "service", "id"),
+        "not valid URI"
+      )
+    }
+
+    "return error when one of the service endpoints in AddServiceAction of the service is not valid" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(serviceEndpoint = List("https://foo.example.com", "not valid URI"))),
+        Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint", "1"),
+        "not valid URI"
+      )
+    }
+
+    "return error when type in AddServiceAction of the service is empty" in {
+      missingValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(`type` = "")),
+        Vector("updateDid", "actions", "2", "addService", "service", "type")
+      )
+    }
+
+    "return error when service endpoints in AddServiceAction of the service is empty" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(serviceEndpoint = Nil)),
+        Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint"),
+        "List()"
+      )
+    }
+
     "return error when id in RemoveServiceAction is not valid" in {
       invalidValueTest(
         _.updateDid.actions(3).removeService.serviceId := "not valid URI",
         Vector("updateDid", "actions", "3", "removeService", "serviceId"),
         "not valid URI"
+      )
+    }
+
+    "return error if id of the service in UpdateService is not valid" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .serviceId := "not valid URI",
+        Vector("updateDid", "actions", "4", "updateService", "serviceId"),
+        "not valid URI"
+      )
+    }
+
+    "return error if both type and service endpoints are empty in UpdateService" in {
+      missingAtLeastOneValueTest(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .modify(_.copy(`type` = "", serviceEndpoints = Nil)),
+        NonEmptyList(
+          Vector("updateDid", "actions", "4", "updateService", "type"),
+          List(Vector("updateDid", "actions", "4", "updateService", "serviceEndpoints"))
+        )
       )
     }
 
