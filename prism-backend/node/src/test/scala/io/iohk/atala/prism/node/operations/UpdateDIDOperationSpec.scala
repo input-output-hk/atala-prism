@@ -66,12 +66,69 @@ object UpdateDIDOperationSpec {
     )
   )
 
+  val exampleAddServiceAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.AddService(
+      node_models.AddServiceAction(
+        Some(
+          node_models.Service(
+            id = "did:prism:123#linked-domain-added-via-update-did",
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              "https://baz.example.com"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+    )
+  )
+
+  val exampleRemoveServiceAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.RemoveService(
+      node_models.RemoveServiceAction(
+        serviceId = "did:prism:123#linked-domain-added-via-update-did"
+      )
+    )
+  )
+  val exampleUpdateServiceAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.UpdateService(
+      node_models.UpdateServiceAction(
+        serviceId = "did:prism:123#linked-domain-added-via-update-did",
+        `type` = "didCom-credential-exchange-updated",
+        serviceEndpoints = List(
+          "https://qux.example.com"
+        )
+      )
+    )
+  )
+
+  val exampleAllActionsOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleAddKeyAction,
+          exampleRemoveKeyAction,
+          exampleAddServiceAction,
+          exampleRemoveServiceAction,
+          exampleUpdateServiceAction
+        )
+      )
+    )
+  )
+
   val exampleAddAndRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
-        actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
+        actions = Seq(
+          exampleAddKeyAction,
+          exampleRemoveKeyAction,
+        )
       )
     )
   )
@@ -102,9 +159,16 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
   override type Repr = UpdateDIDOperation
   override val exampleOperation =
-    UpdateDIDOperationSpec.exampleAddAndRemoveOperation
+    UpdateDIDOperationSpec.exampleAllActionsOperation
+
   val signedExampleOperation = BlockProcessingServiceSpec.signOperation(
     exampleOperation,
+    signingKeyId,
+    signingKey
+  )
+
+  val signedAddAndRemoveKeysOperation = BlockProcessingServiceSpec.signOperation(
+    UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
     signingKeyId,
     signingKey
   )
@@ -122,6 +186,14 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
     "return error when id is not provided / empty" in {
       invalidValueTest(_.updateDid.id := "", Vector("updateDid", "id"), "")
+    }
+
+    "return error when id in RemoveServiceAction is not valid" in {
+      invalidValueTest(
+        _.updateDid.actions(3).removeService.serviceId := "not valid URI",
+        Vector("updateDid", "actions", "3", "removeService", "serviceId"),
+        "not valid URI"
+      )
     }
 
     "return error when AddKey id is not provided / empty" in {
@@ -264,7 +336,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
 
       val parsedOperation = UpdateDIDOperation
-        .parse(signedExampleOperation, dummyLedgerData)
+        .parse(signedAddAndRemoveKeysOperation, dummyLedgerData)
         .toOption
         .value
 

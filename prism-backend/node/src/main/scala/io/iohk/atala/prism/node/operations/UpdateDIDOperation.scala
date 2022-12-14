@@ -21,7 +21,7 @@ case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
 case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
-// id, not to be confused with internal service_id in db, this is services.id
+// id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
 case class UpdateServiceAction(id: String, `type`: String, serviceEndpoints: List[DIDServiceEndpoint])
     extends UpdateDIDAction
@@ -261,7 +261,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
         case Action.RemoveService(value) =>
           val path = action.path / "removeService" / "serviceId"
           val removeServiceAction = ParsingUtils
-            .parseKeyId(
+            .parseServiceId(
               ValueAtPath(value.serviceId, path)
             )
             .map(RemoveServiceAction)
@@ -272,7 +272,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           val path = action.path / "updateService"
 
           for {
-            id <- ParsingUtils.parseKeyId(
+            id <- ParsingUtils.parseServiceId(
               ValueAtPath(value.serviceId, path / "serviceId")
             )
             serviceType = value.`type` // if empty then do not update
