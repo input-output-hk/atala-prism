@@ -62,7 +62,6 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
         ),
         DIDServiceEndpoint(
           url = "https://bar.example.com",
-
           urlIndex = 1
         )
       )
@@ -278,9 +277,6 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
       receivedServices.head.id mustBe serviceId2
     }
-
-
-
 
   }
 }

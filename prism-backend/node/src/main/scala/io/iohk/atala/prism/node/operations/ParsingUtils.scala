@@ -127,7 +127,11 @@ object ParsingUtils {
   ): Either[ValidationError, List[DIDServiceEndpoint]] = {
     for {
       _ <- serviceEndpoints.parse { list =>
-        Either.cond(list.nonEmpty || !validateEmpty, (), s"Service with id - $serviceId must have at least one service endpoint")
+        Either.cond(
+          list.nonEmpty || !validateEmpty,
+          (),
+          s"Service with id - $serviceId must have at least one service endpoint"
+        )
       }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
         .foldLeft(
