@@ -9,9 +9,9 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
-import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
+import io.iohk.atala.prism.node.repositories.daos.{PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -100,6 +100,42 @@ object UpdateDIDOperationSpec {
         `type` = "didCom-credential-exchange-updated",
         serviceEndpoints = List(
           "https://qux.example.com"
+        )
+      )
+    )
+  )
+
+  val exampleAddServiceOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleAddServiceAction
+        )
+      )
+    )
+  )
+
+  val exampleRemoveServiceOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleRemoveServiceAction
+        )
+      )
+    )
+  )
+
+  val exampleUpdateServiceOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleUpdateServiceAction
         )
       )
     )
@@ -601,6 +637,134 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .futureValue
 
       result mustBe Right(())
+    }
+
+    "Add service on updateDID when AddService action is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(exampleAddServiceOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val service = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      service.nonEmpty mustBe true
+
+    }
+
+    "Remove service on updateDID when RemoveService action is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      ServicesDAO
+        .insert(
+          DIDService(
+            id = "did:prism:123#linked-domain-added-via-update-did",
+            didSuffix = createDidOperation.id,
+            `type` = "to-be-revoked",
+            serviceEndpoints = Nil
+          ),
+          dummyLedgerData
+        )
+        .transact(database)
+        .unsafeRunSync()
+
+      val serviceBeforeRevocation = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceBeforeRevocation.nonEmpty mustBe true
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(exampleRemoveServiceOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val serviceAfterRevocation = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceAfterRevocation.nonEmpty mustBe false
+
+    }
+
+    "update service on updateDID when UpdateServiceAction is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      ServicesDAO
+        .insert(
+          DIDService(
+            id = "did:prism:123#linked-domain-added-via-update-did",
+            didSuffix = createDidOperation.id,
+            `type` = "to-be-updated",
+            serviceEndpoints = Nil
+          ),
+          dummyLedgerData
+        )
+        .transact(database)
+        .unsafeRunSync()
+
+      val serviceBeforeUpdate = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceBeforeUpdate.nonEmpty mustBe true
+      serviceBeforeUpdate.value.`type` mustBe "to-be-updated"
+      serviceBeforeUpdate.value.serviceEndpoints.size mustBe 0
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(exampleUpdateServiceOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val serviceAfterUpdate = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceAfterUpdate.nonEmpty mustBe true
+      serviceAfterUpdate.value.`type` mustBe "didCom-credential-exchange-updated"
+      serviceAfterUpdate.value.serviceEndpoints.size mustBe 1
+      serviceAfterUpdate.value.serviceEndpoints.head.url mustBe "https://qux.example.com"
     }
 
   }
