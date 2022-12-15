@@ -163,7 +163,10 @@ object ServicesDAO {
           |""".stripMargin.update.run.map(_ > 0)
   }
 
-  private def constructDIDServiceState(service: DIDServiceWithEndpoint, endpoints: List[DIDServiceWithEndpoint]): DIDServiceState =
+  private def constructDIDServiceState(
+      service: DIDServiceWithEndpoint,
+      endpoints: List[DIDServiceWithEndpoint]
+  ): DIDServiceState =
     DIDServiceState(
       serviceId = service.serviceId,
       id = service.id,
