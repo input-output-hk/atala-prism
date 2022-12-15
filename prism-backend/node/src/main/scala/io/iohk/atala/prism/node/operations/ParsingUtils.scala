@@ -156,7 +156,7 @@ object ParsingUtils {
   }
 
   def parseServiceType(serviceType: ValueAtPath[String]): Either[ValidationError, String] = Either.cond(
-    serviceType(_.nonEmpty),
+    serviceType(_.trim.nonEmpty),
     serviceType(identity),
     MissingValue(serviceType.path)
   )

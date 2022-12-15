@@ -302,28 +302,34 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
     }
 
     "fail to parse services if type of one of the services is empty" in {
-      val updated = exampleOperation.update(
-        _.createDid.didData.services := List(
-          node_models.Service(
-            id = serviceId1,
-            `type` = "",
-            serviceEndpoint = List(
-              "https://foo.example.com",
-              "https://baz.example.com"
-            ),
-            addedOn = None,
-            deletedOn = None
+      val typesToCheck = List("  ", "", "\n", "\t")
+
+      val parsedServices = typesToCheck.map { tp =>
+        val updated = exampleOperation.update(
+          _.createDid.didData.services := List(
+            node_models.Service(
+              id = serviceId1,
+              `type` = tp,
+              serviceEndpoint = List(
+                "https://foo.example.com",
+                "https://baz.example.com"
+              ),
+              addedOn = None,
+              deletedOn = None
+            )
           )
         )
-      )
 
-      val parsed = CreateDIDOperation
-        .parse(updated, dummyLedgerData)
+        CreateDIDOperation
+          .parse(updated, dummyLedgerData)
+      }
 
-      inside(parsed) {
-        case Left(ValidationError.MissingValue(path)) =>
-          path.path mustBe Vector("createDid", "didData", "services", "0", "type")
-        case Right(_) => fail("Failed to validate invalid service type")
+      parsedServices.foreach { parsedService =>
+        inside(parsedService) {
+          case Left(ValidationError.MissingValue(path)) =>
+            path.path mustBe Vector("createDid", "didData", "services", "0", "type")
+          case Right(_) => fail("Failed to validate invalid service type")
+        }
       }
     }
 
