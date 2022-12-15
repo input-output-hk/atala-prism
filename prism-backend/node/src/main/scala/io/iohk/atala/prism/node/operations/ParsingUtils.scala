@@ -123,12 +123,12 @@ object ParsingUtils {
   def parseServiceEndpoints(
       serviceEndpoints: ValueAtPath[List[String]],
       serviceId: String,
-      validateEmpty: Boolean = true
+      canBeEmpty: Boolean = true
   ): Either[ValidationError, List[DIDServiceEndpoint]] = {
     for {
       _ <- serviceEndpoints.parse { list =>
         Either.cond(
-          list.nonEmpty || !validateEmpty,
+          list.nonEmpty || !canBeEmpty,
           (),
           s"Service with id - $serviceId must have at least one service endpoint"
         )

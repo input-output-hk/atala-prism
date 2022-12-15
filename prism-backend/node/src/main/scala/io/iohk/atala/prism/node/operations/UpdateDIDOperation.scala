@@ -271,7 +271,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
               ValueAtPath(value.serviceEndpoints.toList, path / "serviceEndpoints"),
               id,
-              validateEmpty = false
+              canBeEmpty = false
             )
             _ <-
               if (serviceType.isEmpty && serviceEndpoints.isEmpty) {
