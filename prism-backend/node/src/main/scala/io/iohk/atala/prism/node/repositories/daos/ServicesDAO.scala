@@ -33,7 +33,7 @@ object ServicesDAO {
       didServices = servicesWithEndpoints
         .groupBy(_.serviceId)
         .map { serviceIdAndServices =>
-          val (serviceId, services) = serviceIdAndServices
+          val (_, services) = serviceIdAndServices
           /*
            * NOTE: services.head should never fail, because services will always have at least
            *       one element inside. This is guarantied by .groupBy function that is called
@@ -43,19 +43,8 @@ object ServicesDAO {
            * */
           val service = services.head
 
-          DIDServiceState(
-            serviceId = serviceId,
-            id = service.id,
-            didSuffix = service.didSuffix,
-            `type` = service.`type`,
-            serviceEndpoints = services
-              .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
-                serviceEndpoint
-              }
-              .sortBy(_.urlIndex),
-            addedOn = service.addedOn,
-            revokedOn = service.revokedOn
-          )
+          constructDIDServiceState(service, services)
+
         }
         .toList
     } yield didServices
@@ -79,22 +68,10 @@ object ServicesDAO {
        """.stripMargin.query[DIDServiceWithEndpoint].to[List]
 
     for {
-      servicesWEndpoint <- query
-      service = servicesWEndpoint.headOption
+      servicesWEndpoints <- query
+      service = servicesWEndpoints.headOption
       didService = service.map { s =>
-        DIDServiceState(
-          serviceId = s.serviceId,
-          id = s.id,
-          didSuffix = s.didSuffix,
-          `type` = s.`type`,
-          serviceEndpoints = servicesWEndpoint
-            .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
-              serviceEndpoint
-            }
-            .sortBy(_.urlIndex),
-          addedOn = s.addedOn,
-          revokedOn = s.revokedOn
-        )
+        constructDIDServiceState(s, servicesWEndpoints)
       }
     } yield didService
   }
@@ -185,5 +162,20 @@ object ServicesDAO {
           |WHERE did_suffix = $suffix AND id = $id AND revoked_on is NULL
           |""".stripMargin.update.run.map(_ > 0)
   }
+
+  private def constructDIDServiceState(service: DIDServiceWithEndpoint, endpoints: List[DIDServiceWithEndpoint]): DIDServiceState =
+    DIDServiceState(
+      serviceId = service.serviceId,
+      id = service.id,
+      didSuffix = service.didSuffix,
+      `type` = service.`type`,
+      serviceEndpoints = endpoints
+        .collect { case DIDServiceWithEndpoint(_, _, _, _, Some(serviceEndpoint), _, _) =>
+          serviceEndpoint
+        }
+        .sortBy(_.urlIndex),
+      addedOn = service.addedOn,
+      revokedOn = service.revokedOn
+    )
 
 }
