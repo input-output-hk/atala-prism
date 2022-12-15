@@ -23,7 +23,7 @@ case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
 // id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
-case class UpdateServiceAction(id: String, `type`: String, serviceEndpoints: List[DIDServiceEndpoint])
+case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: List[DIDServiceEndpoint])
     extends UpdateDIDAction
 
 case class UpdateDIDOperation(
@@ -172,7 +172,7 @@ case class UpdateDIDOperation(
           }
           _ <- revokeService(didSuffix, id, ledgerData)
           newServiceType =
-            if (serviceType.nonEmpty) serviceType else service.`type` // use old type if new is not provided (no update)
+            if (serviceType.nonEmpty) serviceType.get else service.`type` // use old type if new is not provided (no update)
           newServiceEndpoints =
             if (serviceEndpoints.nonEmpty) serviceEndpoints
             else service.serviceEndpoints // use old service endpoints if new ones are not provided
@@ -267,7 +267,8 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             id <- ParsingUtils.parseServiceId(
               ValueAtPath(value.serviceId, path / "serviceId")
             )
-            serviceType = value.`type` // if empty then do not update
+            serviceType =
+              if (value.`type`.trim.isEmpty) None else Some(value.`type`.trim) // if empty then do not update
             serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
               ValueAtPath(value.serviceEndpoints.toList, path / "serviceEndpoints"),
               id,
