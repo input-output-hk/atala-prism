@@ -172,7 +172,8 @@ case class UpdateDIDOperation(
           }
           _ <- revokeService(didSuffix, id, ledgerData)
           newServiceType =
-            if (serviceType.nonEmpty) serviceType.get else service.`type` // use old type if new is not provided (no update)
+            if (serviceType.nonEmpty) serviceType.get
+            else service.`type` // use old type if new is not provided (no update)
           newServiceEndpoints =
             if (serviceEndpoints.nonEmpty) serviceEndpoints
             else service.serviceEndpoints // use old service endpoints if new ones are not provided
