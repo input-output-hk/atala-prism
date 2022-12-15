@@ -13,6 +13,7 @@ import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
+import io.iohk.atala.prism.node.repositories.daos.ServicesDAO
 import io.iohk.atala.prism.node.{DataPreparation, models}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, ECKeyData}
@@ -333,6 +334,30 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
+    "fail to parse services if service endpoints are empty" in {
+
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "some type",
+            serviceEndpoint = Nil,
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsedService = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsedService) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
+    }
+
     "return error when a key has missing curve name" in {
       val invalidOperation = exampleOperation
         .update(_.createDid.didData.publicKeys(0).ecKeyData.curve := "")
@@ -526,6 +551,25 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         keyState.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
         keyState.revokedOn mustBe None
       }
+    }
+
+    "create service in database" in {
+      val parsedOperation = CreateDIDOperation
+        .parse(exampleOperation, dummyLedgerData)
+        .toOption
+        .value
+
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val foundService = ServicesDAO.get(parsedOperation.id, serviceId1).transact(database).unsafeRunSync()
+
+      foundService.nonEmpty mustBe true
     }
 
     "return error when given DID already exists" in {
