@@ -230,43 +230,35 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       uda.action match {
         case Action.AddKey(value) =>
           val path = action.path / "addKey" / "key"
-          val addKeyAction = value.key
+          value.key
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
             .flatMap(ParsingUtils.parseKey(_, didSuffix))
             .map(AddKeyAction)
 
-          addKeyAction
-
         case Action.RemoveKey(value) =>
           val path = action.path / "removeKey" / "keyId"
-          val removeKeyAction = ParsingUtils
+          ParsingUtils
             .parseKeyId(
               ValueAtPath(value.keyId, path)
             )
             .map(RevokeKeyAction)
 
-          removeKeyAction
-
         case Action.AddService(value) =>
           val path = action.path / "addService" / "service"
-          val addServiceAction = value.service
+          value.service
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
             .flatMap(ParsingUtils.parseService(_, didSuffix))
             .map(AddServiceAction)
 
-          addServiceAction
-
         case Action.RemoveService(value) =>
           val path = action.path / "removeService" / "serviceId"
-          val removeServiceAction = ParsingUtils
+          ParsingUtils
             .parseServiceId(
               ValueAtPath(value.serviceId, path)
             )
             .map(RemoveServiceAction)
-
-          removeServiceAction
 
         case Action.UpdateService(value) =>
           val path = action.path / "updateService"
