@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.data.NonEmptyList
+
 import java.time.Instant
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
@@ -31,6 +33,27 @@ trait ProtoParsingTestHelpers {
   protected def signingKeyId = "master"
 
   protected def signingKey = CreateDIDOperationSpec.masterKeys.getPrivateKey
+
+  protected def missingAtLeastOneValueTest(
+      mutation: Lens[
+        node_models.AtalaOperation,
+        node_models.AtalaOperation
+      ] => Mutation[node_models.AtalaOperation],
+      expectedPaths: NonEmptyList[Vector[String]]
+  ): Assertion = {
+    val invalidOperation = exampleOperation.update(mutation)
+    val signedOperation = BlockProcessingServiceSpec.signOperation(
+      invalidOperation,
+      signingKeyId,
+      signingKey
+    )
+
+    inside(operationCompanion.parse(signedOperation, dummyLedgerData2)) {
+      case Left(ValidationError.MissingAtLeastOneValue(paths)) =>
+        val got = paths.map(_.path).toList
+        got mustBe expectedPaths.toList
+    }
+  }
 
   protected def missingValueTest[U](
       mutation: Lens[

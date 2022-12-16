@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node
 
 import java.time.Instant
-import cats.data.EitherT
+import cats.data.{EitherT, NonEmptyList}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
@@ -18,6 +18,8 @@ import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolVersionsDAO}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+
+import scala.util.matching.Regex
 
 package object operations {
 
@@ -50,6 +52,20 @@ package object operations {
       override def explanation = "missing value"
     }
 
+    case class MissingAtLeastOneValue(paths: NonEmptyList[Path]) extends ValidationError {
+      override def name: String = "Missing at least one value"
+
+      override def path: Path = paths.head
+
+      override def explanation: String = "Missing at least one value"
+
+      override def render: String =
+        s"""|
+            |At least one of those values must be provided:
+            |${paths.map(_.dotRender).toList.mkString("\n")}
+            |""".stripMargin
+    }
+
     case class InvalidValue(
         override val path: Path,
         value: String,
@@ -57,6 +73,7 @@ package object operations {
     ) extends ValidationError {
       override def name = "Invalid Value"
     }
+
   }
 
   /** Error during applying an operation to the state */
@@ -327,4 +344,14 @@ package object operations {
           parseOperationWithMockedLedger(op).toOption
         }
       }
+
+  def isValidUri(uri: String): Boolean = {
+
+    val regex: Regex =
+      """^\w+:(\/?\/?)[^\s]+$""".r
+
+    regex.findFirstMatchIn(uri).nonEmpty
+
+  }
+
 }

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.data.EitherT
 import cats.effect.{MonadCancelThrow, Resource}
+import cats.syntax.either._
 import cats.syntax.comonad._
 import cats.syntax.functor._
 import cats.{Applicative, Comonad, Functor}
@@ -15,8 +16,8 @@ import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
-import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
+import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, DIDServiceState}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -68,6 +69,7 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
       canonicalSuffix: DidSuffix,
       publicKeysLimit: Option[Int]
   ): F[Either[NodeError, Option[DIDDataState]]] = {
+
     def fetchKeys(): EitherT[ConnectionIO, NodeError, List[DIDPublicKeyState]] = publicKeysLimit match {
       case None => EitherT.liftF(PublicKeysDAO.listAllLimited(canonicalSuffix, None))
       case Some(lim) =>
@@ -80,11 +82,21 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
           )
         } yield keys
     }
+
+    def fetchServices(): EitherT[ConnectionIO, NodeError, List[DIDServiceState]] = {
+      EitherT(
+        ServicesDAO
+          .getAllActiveByDidSuffix(canonicalSuffix)
+          .map(_.asRight[NodeError])
+      )
+    }
+
     val query = for {
       lastOperationMaybe <- EitherT.liftF(DIDDataDAO.getLastOperation(canonicalSuffix))
       keys <- fetchKeys()
+      services <- fetchServices()
     } yield lastOperationMaybe map { lastOperation =>
-      DIDDataState(canonicalSuffix, keys, lastOperation)
+      DIDDataState(canonicalSuffix, keys, services, lastOperation)
     }
 
     query.value

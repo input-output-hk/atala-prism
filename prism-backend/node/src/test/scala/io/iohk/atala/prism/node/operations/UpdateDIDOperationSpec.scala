@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.node.operations
 
+import cats.data.NonEmptyList
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
@@ -8,9 +9,10 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.nodeState.DIDServiceEndpointState
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
-import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
+import io.iohk.atala.prism.node.repositories.daos.{PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -66,12 +68,105 @@ object UpdateDIDOperationSpec {
     )
   )
 
+  val exampleAddServiceAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.AddService(
+      node_models.AddServiceAction(
+        Some(
+          node_models.Service(
+            id = "did:prism:123#linked-domain-added-via-update-did",
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              "https://baz.example.com"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+    )
+  )
+
+  val exampleRemoveServiceAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.RemoveService(
+      node_models.RemoveServiceAction(
+        serviceId = "did:prism:123#linked-domain-added-via-update-did"
+      )
+    )
+  )
+  val exampleUpdateServiceAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.UpdateService(
+      node_models.UpdateServiceAction(
+        serviceId = "did:prism:123#linked-domain-added-via-update-did",
+        `type` = "didCom-credential-exchange-updated",
+        serviceEndpoints = List(
+          "https://qux.example.com"
+        )
+      )
+    )
+  )
+
+  val exampleAddServiceOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleAddServiceAction
+        )
+      )
+    )
+  )
+
+  val exampleRemoveServiceOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleRemoveServiceAction
+        )
+      )
+    )
+  )
+
+  val exampleUpdateServiceOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleUpdateServiceAction
+        )
+      )
+    )
+  )
+
+  val exampleAllActionsOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleAddKeyAction,
+          exampleRemoveKeyAction,
+          exampleAddServiceAction,
+          exampleRemoveServiceAction,
+          exampleUpdateServiceAction
+        )
+      )
+    )
+  )
+
   val exampleAddAndRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
         id = createDidOperation.id.getValue,
-        actions = Seq(exampleAddKeyAction, exampleRemoveKeyAction)
+        actions = Seq(
+          exampleAddKeyAction,
+          exampleRemoveKeyAction
+        )
       )
     )
   )
@@ -102,9 +197,16 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
   override type Repr = UpdateDIDOperation
   override val exampleOperation =
-    UpdateDIDOperationSpec.exampleAddAndRemoveOperation
+    UpdateDIDOperationSpec.exampleAllActionsOperation
+
   val signedExampleOperation = BlockProcessingServiceSpec.signOperation(
     exampleOperation,
+    signingKeyId,
+    signingKey
+  )
+
+  val signedAddAndRemoveKeysOperation = BlockProcessingServiceSpec.signOperation(
+    UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
     signingKeyId,
     signingKey
   )
@@ -122,6 +224,131 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
     "return error when id is not provided / empty" in {
       invalidValueTest(_.updateDid.id := "", Vector("updateDid", "id"), "")
+    }
+
+    "return error when id in AddServiceAction of the service is not valid" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(id = "not valid URI")),
+        Vector("updateDid", "actions", "2", "addService", "service", "id"),
+        "not valid URI"
+      )
+    }
+
+    "return error when one of the service endpoints in AddServiceAction of the service is not valid" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(serviceEndpoint = List("https://foo.example.com", "not valid URI"))),
+        Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint", "1"),
+        "not valid URI"
+      )
+    }
+
+    "return error when type in AddServiceAction of the service is empty" in {
+      missingValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(`type` = "")),
+        Vector("updateDid", "actions", "2", "addService", "service", "type")
+      )
+    }
+
+    "return error when service endpoints in AddServiceAction of the service is empty" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(2)
+          .addService
+          .service
+          .modify(_.copy(serviceEndpoint = Nil)),
+        Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint"),
+        "List()"
+      )
+    }
+
+    "return error when id in RemoveServiceAction is not valid" in {
+      invalidValueTest(
+        _.updateDid.actions(3).removeService.serviceId := "not valid URI",
+        Vector("updateDid", "actions", "3", "removeService", "serviceId"),
+        "not valid URI"
+      )
+    }
+
+    "return error if id of the service in UpdateService is not valid" in {
+      invalidValueTest(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .serviceId := "not valid URI",
+        Vector("updateDid", "actions", "4", "updateService", "serviceId"),
+        "not valid URI"
+      )
+    }
+
+    "return error if both type and service endpoints are empty in UpdateService" in {
+      missingAtLeastOneValueTest(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .modify(_.copy(`type` = "", serviceEndpoints = Nil)),
+        NonEmptyList(
+          Vector("updateDid", "actions", "4", "updateService", "type"),
+          List(Vector("updateDid", "actions", "4", "updateService", "serviceEndpoints"))
+        )
+      )
+    }
+
+    "pass validation when service endpoints are missing in updateService but type is present" in {
+
+      val updated = exampleOperation.update(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .modify(_.copy(serviceEndpoints = Nil))
+      )
+
+      val signed = BlockProcessingServiceSpec.signOperation(
+        updated,
+        signingKeyId,
+        signingKey
+      )
+
+      val result = UpdateDIDOperation
+        .parse(signed, dummyLedgerData)
+        .toOption
+        .value
+
+      result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
+    }
+
+    "pass validation when service endpoints are present but type is missing" in {
+
+      val updated = exampleOperation.update(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .modify(_.copy(`type` = ""))
+      )
+
+      val signed = BlockProcessingServiceSpec.signOperation(
+        updated,
+        signingKeyId,
+        signingKey
+      )
+
+      val result = UpdateDIDOperation
+        .parse(signed, dummyLedgerData)
+        .toOption
+        .value
+
+      result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
     }
 
     "return error when AddKey id is not provided / empty" in {
@@ -264,7 +491,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
 
       val parsedOperation = UpdateDIDOperation
-        .parse(signedExampleOperation, dummyLedgerData)
+        .parse(signedAddAndRemoveKeysOperation, dummyLedgerData)
         .toOption
         .value
 
@@ -457,6 +684,146 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .futureValue
 
       result mustBe Right(())
+    }
+
+    "Add service on updateDID when AddService action is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(exampleAddServiceOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val service = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      val expectedServiceEndpoints = List(
+        "https://foo.example.com",
+        "https://baz.example.com"
+      )
+
+      service.nonEmpty mustBe true
+      service.get.id mustBe "did:prism:123#linked-domain-added-via-update-did"
+      service.get.`type` mustBe "didCom-credential-exchange"
+      service.get.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
+        expectedServiceEndpoints(urlIndex) mustBe url
+      }
+
+    }
+
+    "Remove service on updateDID when RemoveService action is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      ServicesDAO
+        .insert(
+          DIDService(
+            id = "did:prism:123#linked-domain-added-via-update-did",
+            didSuffix = createDidOperation.id,
+            `type` = "to-be-revoked",
+            serviceEndpoints = List(
+              DIDServiceEndpoint(0, "https://foo.example.com")
+            )
+          ),
+          dummyLedgerData
+        )
+        .transact(database)
+        .unsafeRunSync()
+
+      val serviceBeforeRevocation = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceBeforeRevocation.nonEmpty mustBe true
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(exampleRemoveServiceOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val serviceAfterRevocation = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceAfterRevocation.nonEmpty mustBe false
+
+    }
+
+    "update service on updateDID when UpdateServiceAction is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      ServicesDAO
+        .insert(
+          DIDService(
+            id = "did:prism:123#linked-domain-added-via-update-did",
+            didSuffix = createDidOperation.id,
+            `type` = "to-be-updated",
+            serviceEndpoints = Nil
+          ),
+          dummyLedgerData
+        )
+        .transact(database)
+        .unsafeRunSync()
+
+      val serviceBeforeUpdate = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceBeforeUpdate.nonEmpty mustBe true
+      serviceBeforeUpdate.value.`type` mustBe "to-be-updated"
+      serviceBeforeUpdate.value.serviceEndpoints.size mustBe 0
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(exampleUpdateServiceOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val serviceAfterUpdate = ServicesDAO
+        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .transact(database)
+        .unsafeRunSync()
+
+      serviceAfterUpdate.nonEmpty mustBe true
+      serviceAfterUpdate.value.`type` mustBe "didCom-credential-exchange-updated"
+      serviceAfterUpdate.value.serviceEndpoints.size mustBe 1
+      serviceAfterUpdate.value.serviceEndpoints.head.url mustBe "https://qux.example.com"
     }
 
   }

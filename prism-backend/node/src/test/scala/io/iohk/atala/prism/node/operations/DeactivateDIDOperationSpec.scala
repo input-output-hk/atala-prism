@@ -19,8 +19,6 @@ object DeactivateDIDOperationSpec {
   val masterKeys = CreateDIDOperationSpec.masterKeys
   val issuingKeys = CreateDIDOperationSpec.issuingKeys
 
-  // val newMasterKeys = EC.generateKeyPair()
-
   val createDidOperation: CreateDIDOperation =
     CreateDIDOperation
       .parse(CreateDIDOperationSpec.exampleOperation, dummyLedgerData)
@@ -122,7 +120,7 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
   }
 
   "DeactivateDIDOperation.applyState" should {
-    "deactivate DID and revoke all keys in the database" in {
+    "deactivate DID, revoke all keys and services in the database" in {
       DeactivateDIDOperationSpec.createDidOperation
         .applyState(dummyApplyOperationConfig)
         .transact(database)
@@ -134,6 +132,10 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
 
+      val didInfoBeforeRevocation = DataPreparation.findByDidSuffix(DeactivateDIDOperationSpec.createDidOperation.id)
+
+      didInfoBeforeRevocation.services.size mustBe 2
+
       parsedOperation
         .applyState(dummyApplyOperationConfig)
         .transact(database)
@@ -142,9 +144,10 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
 
-      val didInfo = DataPreparation.findByDidSuffix(DeactivateDIDOperationSpec.createDidOperation.id)
+      val didInfoAfterRevocation = DataPreparation.findByDidSuffix(DeactivateDIDOperationSpec.createDidOperation.id)
 
-      didInfo.keys.filter(_.revokedOn.isEmpty) mustBe List()
+      didInfoAfterRevocation.keys.filter(_.revokedOn.isEmpty) mustBe List()
+      didInfoAfterRevocation.services.size mustBe 0
     }
 
     "return error when DID is missing in the DB" in {

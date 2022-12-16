@@ -31,7 +31,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
       }
     }
 
-    "failparsing with an invalid curve point" in {
+    "fail parsing with an invalid curve point" in {
       val xByteString: ByteString = ByteString.copyFrom(DatatypeConverter.parseHexBinary("01"))
       val yByteString: ByteString = ByteString.copyFrom(DatatypeConverter.parseHexBinary("02"))
       inside(

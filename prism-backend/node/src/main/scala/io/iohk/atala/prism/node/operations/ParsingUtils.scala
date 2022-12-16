@@ -1,16 +1,14 @@
 package io.iohk.atala.prism.node.operations
 
 import java.time.LocalDate
-import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
+import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.{DIDPublicKey, KeyUsage}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
@@ -109,6 +107,76 @@ object ParsingUtils {
         s"Invalid key id: $id"
       )
     }
+  }
+
+  def parseServiceId(
+      serviceId: ValueAtPath[String]
+  ): Either[ValidationError, String] =
+    serviceId.parse { id =>
+      Either.cond(
+        isValidUri(id),
+        id,
+        s"Id $id is not a valid URI"
+      )
+    }
+
+  def parseServiceEndpoints(
+      serviceEndpoints: ValueAtPath[List[String]],
+      serviceId: String,
+      canBeEmpty: Boolean = false
+  ): Either[ValidationError, List[DIDServiceEndpoint]] = {
+    type EitherValidationError[B] = Either[ValidationError, B]
+    for {
+      _ <- serviceEndpoints.parse { list =>
+        Either.cond(
+          list.nonEmpty || canBeEmpty,
+          (),
+          s"Service with id - $serviceId must have at least one service endpoint"
+        )
+      }
+      validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
+        .traverse[EitherValidationError, (String, Int)] { case (uri, index) =>
+          if (isValidUri(uri)) Right((uri, index))
+          else
+            Left(
+              InvalidValue(
+                serviceEndpoints.path / index.toString,
+                uri,
+                s"Service endpoint - $uri of service with id - $serviceId is not a valid URI"
+              )
+            )
+        }
+    } yield validatedServiceEndpointsAndIndexes.map { case (uri, index) =>
+      DIDServiceEndpoint(index, uri)
+    }
+  }
+
+  def parseServiceType(serviceType: ValueAtPath[String], canBeEmpty: Boolean = false): Either[ValidationError, String] =
+    Either.cond(
+      serviceType(tp => tp.trim.nonEmpty || canBeEmpty),
+      serviceType(_.trim),
+      MissingValue(serviceType.path)
+    )
+
+  def parseService(
+      service: ValueAtPath[node_models.Service],
+      didSuffix: DidSuffix
+  ): Either[ValidationError, DIDService] = {
+
+    for {
+      id <- parseServiceId(service.child(_.id, "id"))
+      serviceType <- parseServiceType(service.child(_.`type`, "type"))
+      parsedServiceEndpoints <- parseServiceEndpoints(
+        service.child(_.serviceEndpoint.toList, "serviceEndpoint"),
+        id
+      )
+    } yield DIDService(
+      id = id,
+      `type` = serviceType,
+      didSuffix = didSuffix,
+      serviceEndpoints = parsedServiceEndpoints
+    )
+
   }
 
   def parseKey(
