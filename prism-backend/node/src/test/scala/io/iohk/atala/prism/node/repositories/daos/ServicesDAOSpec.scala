@@ -238,6 +238,9 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
       receivedServiceAfterInsertion.id mustBe services.head.id
       receivedServiceAfterInsertion.`type` mustBe services.head.`type`
+      receivedServiceAfterInsertion.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
+        services.head.serviceEndpoints(urlIndex).url mustBe url
+      }
 
     }
 
