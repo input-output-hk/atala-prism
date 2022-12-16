@@ -151,11 +151,13 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
 
       // Validate that valid services are bing selected correctly just in case
+      // this check does not ensure all services ware inserted, but this scenario is covered by other tests
+      // an it is not the scenario that is being tested in this test anyway.
       validateStandardSelection(services, receivedServices)
 
       val serviceWithoutServiceEndpoints = receivedServices.find(_.id == "did:prism:123#linked-domain0").value
 
-      // validate that service endpoints are
+      // validate that service endpoints are empty
       serviceWithoutServiceEndpoints.serviceEndpoints.isEmpty mustBe true
       serviceWithoutServiceEndpoints.`type` mustBe "no-service-endpoints"
 
