@@ -4,20 +4,233 @@
 \subsection{Cryptographic Building Blocks}
 \label{ssec:bbs}
 
-\todo{Briefly describe algorithms they use.}
+% \todo{Briefly describe algorithms they use.}
 
-\paragraph{Append-Only Bulletin Boards.} %
-%\todo{For now, simplified notion as in \cite{acc+20}.}
+% \paragraph{Append-Only Bulletin Boards.} %
+% %\todo{For now, simplified notion as in \cite{acc+20}.}
+
+% \paragraph{Digital Signatures.} %
+% %Maybe build on \IdealFSig from \cite{canetti03}.
+
+% \paragraph{Merkle Trees.}
+
+% \paragraph{Public Key Infrastructures.} %
+% % Maybe build on \IdealFCA from \cite{canetti03}.
+
+% \subsection{Base Functionalities}
+% \label{ssec:did-funcs}
+
+\todo{Mention public delayed outputs.}
+\todo{If the functionalities try to fetch some entry from a list, and the entry
+  does not exist, then it aborts (assumed for updates).}
+
+\paragraph{Hashes.} %
+We model hashes as a global subroutine. No participant needs extra power (such
+as programmability or observability), so we use a conventional random oracle --
+called strict random oracle in \cite{cdg+18}. For self-containment, we reproduce
+here the formulation.
+
+\begin{figure}[ht]
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving a call $\IdealGRO(\cmd,\sid,\arg)$ from some party
+        $P$ to run command \cmd, in session \sid, with arguments \arg,
+        \IdealGRO operates as follows.} \\
+      \textrm{\IdealGRO keeps a list \hashlist of known hashed messages, and
+        outputs hashes of length $l \gets l(n)$, for some fixed security
+        parameter $n$.}
+    \end{minipage}
+    \vspace*{0.5em}
+    
+    \centering
+    \procedure{$\pcif \cmd = \uccmd{HashQuery} \land \arg = \msg$}{%
+      \pcif (\msg,h) \notin \hashlist:
+      h \getr \bin^{l}; \hashlist \gets \hashlist \cup \lbrace (\msg,h) \rbrace \\
+      \ucio{Output}~(\uccmd{HashConfirm},h)
+    }
+  \end{framed}
+\end{figure}
+
+\paragraph{Global clock.} %
+Our ideal (global) functionality for a ledger relies on a global clock to model
+delays in appending information. We rely on the ideal global clock functionality
+given in \cite{kkk21}. In a nutshell, the functionality keeps track of the
+parties in the system, and allows them to signal their intention to advance the
+clock's time. When all parties agree on it, the clock's time is incremented. See
+\figref{fig:gclock}.
+
+\begin{figure}[ht]
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving a call $\IdealGclock(\cmd,\arg)$ from
+        some party $P$ to run command \cmd, with arguments \arg,
+        \IdealGclock operates as follows.} \\
+      \textrm{\IdealGclock maintains a variable $t$ with the current itme,
+        a variable $T$ with the list of parties keeping track of the time,
+        and a map $A$ which keeps the parties' (dis)agreements to advance the
+        clock.}
+    \end{minipage}
+    \vspace*{0.5em}
+
+    \begin{minipage}[t]{0.40\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Register} \land \arg = \emptyset$}{
+        T \gets T \cup \set{P} \\
+        \ucio{Output}~(\uccmd{Registered})~\text{to}~P \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Update} \land \arg = \emptyset$}{
+        A(P) \gets \top \\
+        \pcif \forall P \in T, A(P) = \top: \\
+        \pcind t \gets t + 1; \forall P \in T, A(P) = \bot \\
+        \pcind \ucio{Send}~(\uccmd{Updated})~\text{to}~P        
+      }
+    \end{minipage}
+    \hspace*{1.25em}
+    \begin{minipage}[t]{0.60\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Deregister} \land \arg = \emptyset$}{
+        T \gets T \setminus \set{P} \\
+        \text{Output}~(\uccmd{DeregisteredOk})~\text{to}~P \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Read} \land \arg = \emptyset$}{
+        \text{Output}~(\uccmd{ReadOk},t)~\text{to}~P
+      }
+    \end{minipage}
+  \end{framed}
+  \caption{Ideal subroutine for a global clock, from \cite{kkk21}.}
+  \label{fig:gclock}
+\end{figure}
+
+\paragraph{$\delta$-delay Ledger.} %
+We adopt a ledger notion given in \cite{kkk21}. This is global functionality
+that defines an ideal version of a ledger as a shared subroutine, which models
+the append-only property of ledgers, and the fact that changes take some delay
+until they are applied to the ledger.
+%
+This functionality accepts sending individual transactions to be added to the
+ledger state, fetching (reading) the state of the ledger, and extending the
+ledger by appending (blocks of) transactions to it. Interestingly, it gives the
+adversary control over when to advance the status of each party, as long as
+these advancements ensure the common prefix rule -- where $\ldgState' \prec
+\ldgState$ means that $\ldgState'$ is a prefix of \ldgState. It also relies
+on yet another global functionality, the global clock, to timestamp incoming
+transactions. If a transaction is not appended to an honest party's view before
+the given $\delta$ delay, then the functionality aborts.
+%
+For the sake of readability, we reproduce the functionality in
+\figref{fig:gledger}.
+
+\begin{figure}[ht]
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving a call $\IdealGdledger(\cmd,\arg)$ from
+        some party $P$ to run command \cmd, with arguments \arg,
+        \IdealGdledger operates as follows.} \\
+      \textrm{\IdealGdledger maintains a mapping \ldgMap which associates
+        parties with their view of the ledger.
+        \ldgUtxo is a multiset of unconfirmed transactions.
+        \ldgState is the authoritative ledger state
+        All mappings and (multi-)sets are initialised to empty values.
+      }
+    \end{minipage}
+    \vspace*{0.5em}
+
+    \begin{minipage}[t]{0.40\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Submit} \land \arg = \ldgTx$}{
+        \ucio{Send}~(\uccmd{Read})~\text{to}~\IdealGclock \\
+        \ucio{Recv}~(\uccmd{ReadOk},t)~\text{from}~\IdealGclock \\
+        \ldgUtxo \gets \ldgUtxo \cup \set{(\ldgTx,t)} \\ 
+        \ucio{Output}~(\uccmd{Transaction},\ldgTx,t)~\text{to}~\adv \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Extend} \land \arg = \ldgState'$}{
+        \pcif P = \adv \land \ldgState' \subseteq \ldgUtxo: \\
+        \pcind \ldgUtxo \gets \ldgUtxo \setminus \ldgState' \\
+        \pcind \ldgState \gets \ldgState || \ldgState'
+      }
+    \end{minipage}
+    \hspace*{1.25em}
+    \begin{minipage}[t]{0.60\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Read} \land \arg =
+        \emptyset$}{
+        % \pcif P = \adv: data \gets \ldgState \\
+        % \pcelse: data \gets \ldgMap(P) \\
+        \ucio{Send}~(\uccmd{Read})~\text{to}~\IdealGclock \\
+        \ucio{Recv}~(\uccmd{ReadOk},t)~\text{from}~\IdealGclock \\
+        \pcif \exists (\ldgTx,t') \in \ldgUtxo~\suchthat~|t-t'| > \delta:
+        \pcreturn \bot \\
+        \pcelse \pcif \exists (\ldgTx,t') \in \ldgState~\suchthat~ |t-t'|
+        > \delta~\land \\
+        \pcind \exists P' \in \ldgHonest~\suchthat~(\ldgTx,t') \notin \ldgMap(P'):
+        \pcreturn \bot \\        
+        \text{Output}~(\uccmd{ReadOk}, \ldgHead(\ldgMap(P)))~\text{to}~P \\
+      }
+      \procedure{$\pcif \cmd = \uccmd{Advance} \land \arg = (P',\ldgState')$}{
+        \pcif P = \adv \land \ldgMap(P') \prec \ldgState' \prec \ldgState:
+        \ldgMap(P') \gets \ldgState'
+      }
+    \end{minipage}
+  \end{framed}
+  \caption{Ideal subroutine for a global $\delta$-delay ledger, from
+    \cite{kkk21}.}
+  \label{fig:gledger}
+\end{figure}
 
 \paragraph{Digital Signatures.} %
-%Maybe build on \IdealFSig from \cite{canetti03}.
 
-\paragraph{Merkle Trees.}
+\begin{figure}
+  \begin{framed}
+    \begin{minipage}[t]{\textwidth}
+      \textrm{Upon receiving a call $\IdealFSig(\cmd,\sid,\arg)$ from some party
+        $P$ to run command \cmd, in session \sid, with arguments \arg,
+        \IdealFSig operates as follows.} \\
+      \textrm{\IdealFSig keeps a list \SIG of known signed messages.}      
+    \end{minipage}
+    \vspace*{0.5em}
 
-\paragraph{Public Key Infrastructures.} %
-% Maybe build on \IdealFCA from \cite{canetti03}.
-
-\paragraph{Ideal functionality specification.} %
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{KeyGen} \land \arg =
+        \emptyset$}{
+        \pccomment{\fbox{Key Generation}} \\
+        \pcif \sid = (P,\ssid): \\
+        \pcind \ucsend~(\uccmd{KeyGen},\sid)~\text{to}~\adv \\
+        \pcind \ucrecv~(\uccmd{VerKey},\sid,v)~\text{from}~\adv \\
+        \pcind \ucio{Output}~(\uccmd{VerKey},\sid,v)~\text{to}~P \\
+        \pcind \text{Store}~(P,v)
+      }
+      \vspace*{0.25em}
+      \procedure{$\pcif \cmd = \uccmd{Verif} \land
+        \arg = (\sig,\msg,v')$}{
+        \pccomment{\fbox{Verify a message}} \\
+        \ucsend~(\uccmd{Verif},\sid,\msg,\sig,v)~\text{to}~\adv \\
+        \ucrecv~(\uccmd{Verifd},\sid,\msg,\phi)~\text{from}~\adv \\
+        \pcif v' = v \land (\msg,\sig,v,1) \in \SIG: f \gets 1 \\
+        \pcelse \pcif v' = v \land P~\text{is not corrupt}~\land \\
+        \pcind (\msg,\sig',v,1) \notin \SIG: \\
+        \pcind \SIG \gets \SIG \cup \lbrace (\msg,\sig,v,0) \rbrace;
+        f \gets 0 \\
+        \pcelse \pcif (\msg,\sig,v',f') \in \SIG: f \gets f' \\
+        \pcelse: \\
+        \pcind \SIG \gets \SIG \cup \lbrace (\msg,\sig,v',\phi) \rbrace;~
+        f \gets \phi \\
+        \ucio{Output}~(\uccmd{Verifd},\sid,\msg,f)
+      }
+    \end{minipage}
+    \begin{minipage}[t]{0.5\textwidth}
+      \procedure{$\pcif \cmd = \uccmd{Sign} \land \arg = \msg$}{
+        \pccomment{\fbox{Sign a message}} \\
+        \pcif \sid = (P,\ssid) \\
+        \pcind \ucsend~(\uccmd{Sign},\sid,\msg)~\text{to}~\adv \\
+        \pcind \ucrecv~(\uccmd{Signed},\sid,\msg,\sig)~\text{from}~
+        \adv \\
+        \pcind \pcif (\msg,\sig,v,0) \in \SIG: \\
+        \pcind \pcind \ucio{Output}~(\uccmd{Error}) \\
+        \pcind \pcelse: \\
+        \pcind \pcind \SIG \gets \SIG \cup (\msg,\sig,v,1) \\
+        \pcind \pcind \ucio{Output}~(\uccmd{Signed},\sid,\msg,\sig)
+      }
+    \end{minipage}
+  \end{framed}
+  \caption{Ideal signature functionality, \IdealFSig, from \cite{canetti03}.}
+  \label{fig:fsig}
+\end{figure}
 
 \iffalse
 We take the basic approach to see DID documents as simple dictionaries
@@ -195,25 +408,43 @@ We capture the resulting notion in \figref{fig:fpkidid}.
 \paragraph{Decentralised Identifiers (DIDs).} %
 Much of the SSI community is built on top of DIDs, which is a W3C Recommendation
 since 2022\footnote{\url{https://www.w3.org/TR/did-core}. Last access, 3rd
-  November, 2022.}. Essentially, the DID specification defines how to associate
+  November, 2022.}. Strictly speaking, a DID is a string that uniquely
+identifies information referring to some entity, whereas such information is
+the DID document. The DID controller is yet another entity who is allowed to
+apply changes to a DID document. In the sequel, for simplicity we assume that
+the controller is also the entity that the information in the DID document
+refers to, but this is not necessarily the case in general.
+
+Essentially, the DID specification defines how to associate
 public keys and additional metadata to unique identifiers, leveraging verifiable
 data registries (VDR). Whereas there is no concrete requirement on these VDRs,
 the typical choice are blockchains, which leads to the ``Decentralised''
 adjective for DIDs. The DID specification describes the syntax that identifiers
-must follow, as well as the operations (CRUD: Create, Read, Update, Deactivate)
-that any DID-compatible mechanism must implement.
+must follow, as well as the CRUD (Create, Read, Update, Deactivate) operations
+that any DID-compatible mechanism must implement. Concretely:
+
+\begin{description}
+\item[Create.] Must specify how controllers create new DIDs.
+\item[Read.] Must specify how the contents of a DID can be fetched and
+  authenticated.
+\item[Update.] Must specify what updates can controllers apply (if any)
+  to existing DIDs.
+\item[Deactivate.] Must specify if (parts of) existing DIDs can be signaled
+  as no longer valid, and how.
+\end{description}
 
 That is, a mechanism following the DID specification must enable any user to be
 able to register a unique identifier, associate public key material to it, and
-manange it. Thus, it is natural to see such a mechamism as an equivalent to
-traditional Public Key Infrastructures (PKIs), where different instantiations of
-such a mechanism -- e.g., with different approaches to implement the CRUD
-methods required by the DID specification, or based on different VDRs -- can be
-seen as a different type of DID-based PKI.
+manange it. Thus, as we do here, it is natural to see such a mechanism as an
+specific type of Public Key Infrastructures (PKIs), where different
+approaches to implement the CRUD methods required by the DID specification, or
+based on different VDRs -- can be seen as a different type of DID-based PKI.
 
-\todo{Maybe expand. Also, describe the difference between DID Document, and DID.
-  Also describe the concept of DID controller, essential to prevent manipulation
-  of DIDs and their documents.}
+A final requirement put by the W3C DID specification concerns authorisation.
+Namely, it states (in Section 8.2) that candidate DID methods ``must define how
+authorisation is performed''. This concretely means that DID methods have to
+define the way in which controllers prove to be entitled to perform create,
+update, or deactivate operations.
 
 \paragraph{Verifiable Credentials (VCs).} %
 \todo{Describe: Introduction to VCs. Relating to DIDs.}
