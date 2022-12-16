@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, DIDServiceEndpointState}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
@@ -235,8 +235,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       services.head.id mustBe serviceId1
       services.head.`type` mustBe "didCom-credential-exchange"
-      services.head.serviceEndpoints.zipWithIndex.foreach { epAndIndex =>
-        val (ep, index) = epAndIndex
+      services.head.serviceEndpoints.zipWithIndex.foreach { case (ep, index) =>
         ep.url mustBe exampleOperation.operation.createDid.value.didData.value.services.head.serviceEndpoint(index)
       }
 
@@ -249,7 +248,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     }
 
-    "fail to parse services if id of one of the services is not a valid URI" in {
+    "fail to parse services if one of the services has invalid id" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
@@ -276,7 +275,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     }
 
-    "fail to parse services if id of one of the is a valid URI but has whitespaces" in {
+    "fail to parse services if one of the services has valid id but with whitespace" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
@@ -303,7 +302,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     }
 
-    "fail to parse services if service endpoint of one of the services is not a valid URI" in {
+    "fail to parse services if one of the service endpoints of any service is not a valid URI" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
@@ -329,7 +328,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
-    "fail to parse services if service endpoint of one of the services valid URI but has whitespaces" in {
+    "fail to parse services if one of the service endpoints of any service is not valid but has whitespace" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
@@ -622,6 +621,18 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       val foundService = ServicesDAO.get(parsedOperation.id, serviceId1).transact(database).unsafeRunSync()
 
       foundService.nonEmpty mustBe true
+
+      val expectedServiceEndpoints = List(
+        "https://foo.example.com",
+        "https://baz.example.com"
+      )
+
+      foundService.nonEmpty mustBe true
+      foundService.get.id mustBe serviceId1
+      foundService.get.`type` mustBe "didCom-credential-exchange"
+      foundService.get.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
+        expectedServiceEndpoints(urlIndex) mustBe url
+      }
     }
 
     "return error when given DID already exists" in {

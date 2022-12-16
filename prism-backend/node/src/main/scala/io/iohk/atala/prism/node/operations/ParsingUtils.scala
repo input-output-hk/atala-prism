@@ -146,7 +146,6 @@ object ParsingUtils {
               )
             )
         }
-//        .map(_.reverse)
     } yield validatedServiceEndpointsAndIndexes.map { case (uri, index) =>
       DIDServiceEndpoint(index, uri)
     }

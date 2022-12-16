@@ -9,7 +9,8 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage}
+import io.iohk.atala.prism.node.models.nodeState.DIDServiceEndpointState
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.repositories.daos.{PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
@@ -327,7 +328,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
     }
 
-    "pass validation when type is present but service endpoints are missing" in {
+    "pass validation when service endpoints are present but type is missing" in {
 
       val updated = exampleOperation.update(
         _.updateDid
@@ -709,7 +710,17 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .transact(database)
         .unsafeRunSync()
 
+      val expectedServiceEndpoints = List(
+        "https://foo.example.com",
+        "https://baz.example.com"
+      )
+
       service.nonEmpty mustBe true
+      service.get.id mustBe "did:prism:123#linked-domain-added-via-update-did"
+      service.get.`type` mustBe "didCom-credential-exchange"
+      service.get.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
+        expectedServiceEndpoints(urlIndex) mustBe url
+      }
 
     }
 
@@ -726,7 +737,9 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
             id = "did:prism:123#linked-domain-added-via-update-did",
             didSuffix = createDidOperation.id,
             `type` = "to-be-revoked",
-            serviceEndpoints = Nil
+            serviceEndpoints = List(
+              DIDServiceEndpoint(0, "https://foo.example.com")
+            )
           ),
           dummyLedgerData
         )

@@ -104,8 +104,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     first.`type` mustBe expected.head.`type`
     first.serviceEndpoints.size mustBe expected.head.serviceEndpoints.size
     first.serviceEndpoints.head.serviceId mustBe first.serviceId
-    first.serviceEndpoints.zipWithIndex.foreach { seAndIndex: (DIDServiceEndpointState, Int) =>
-      val (se, index) = seAndIndex
+    first.serviceEndpoints.zipWithIndex.foreach { case (se, index) =>
       se.urlIndex mustBe expected.head.serviceEndpoints(index).urlIndex
       se.url mustBe expected.head.serviceEndpoints(index).url
     }
@@ -151,10 +150,12 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
 
+      // Validate that valid services are bing selected correctly just in case
       validateStandardSelection(services, receivedServices)
 
       val serviceWithoutServiceEndpoints = receivedServices.find(_.id == "did:prism:123#linked-domain0").value
 
+      // validate that service endpoints are
       serviceWithoutServiceEndpoints.serviceEndpoints.isEmpty mustBe true
       serviceWithoutServiceEndpoints.`type` mustBe "no-service-endpoints"
 
