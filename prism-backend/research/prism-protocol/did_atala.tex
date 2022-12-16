@@ -336,6 +336,11 @@ We capture the resulting notion in \figref{fig:fpkidid}.
           acceptable DID creations, updates and deactivations.}
         \textrm{\didOP is a list of submitted (yet, possibly unconfirmed) DID
           operations, and \DID is the authoritative state of published DIDs.}
+        \todo{Think about what happens if two conflicting ops (esp. create)
+          are submitted with diff $t < \delta$.}
+        \todo{Idea: func keeps track of DID ownership, associated to parties.
+          Also, replace \didOP with an UTXO, that gets updated like the delay
+          ledger (i.e., upon applying a new op, remove it from the set.)}
       \end{minipage}
     }
     \vspace*{0.5em}
@@ -344,14 +349,14 @@ We capture the resulting notion in \figref{fig:fpkidid}.
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
           \setind{(\lbl_i,\typ_i)}{i\in[n]}$}{ 
-          \DID \gets \DIDReadLdg \\
-          \pcif (\did,\cdot) \in \DID \lor
-          \P(\setind{(\lbl_i,\typ_i)}{i\in[n]}) = 0: \\
-          \pcind \pcreturn \bot \\
+          %\DID \gets \DIDReadLdg \\          
           \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\Sim \\
           \ucrecv~(\uccmd{CreateOk}, \sid, \did,
           \sval=\setind{\val_i}{i\in[n]}) \\
-          \hspace*{2.7em}\text{from}~\Sim \\          
+          \hspace*{2.7em}\text{from}~\Sim \\
+          % \pcif (\did,\cdot) \in \DID \lor
+          % \P(\setind{(\lbl_i,\typ_i)}{i\in[n]}) = 0: \\
+          % \pcind \pcreturn \bot \\
           \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
           \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
           \didOp \gets (\did,\setind{(\lbl_i,\typ_i,\val_i)}{i\in[n]}) \\
@@ -362,6 +367,31 @@ We capture the resulting notion in \figref{fig:fpkidid}.
           % (\lbl_i,\typ_i,\val_i) \rbrace_{i\in[n]}) \rbrace \\
           % \ucio{Output}~(\uccmd{Created},\sid,\did,\sval,t)
         }
+        \vspace*{0.25em} \\
+
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
+          \arg = (did, \sval_d,\sval_a)$}{
+          \DID \gets \DIDReadLdg \\
+          \pcif (P,\did) \notin \didOWN: \pcreturn \bot \\
+          \pcif (\did,\sval_0) \notin \DID: \pcreturn \bot \\ %\lor (P,\cdot,(\did,\cdot))
+          % \notin \didOP: \\
+          % \pcind \pcreturn \bot \\
+          % \pcif \P((\sval_0 \setminus \sval_d) \cup \sval_a) = 0:
+          % \pcreturn \bot \\
+          \ucsend~(\uccmd{Update}, \sid,\did,\sval_d,\sval_a)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{UpdOk},\sid,\did,\setind{\val^a_i}{i\in[n^a]})~
+          \text{from}~\Sim \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
+          \lbrace (\lbl_i^a,\typ_i^a) \rbrace_{i\in[n^a]} \gets \sval_a \\
+          % \lbrace \lbl_i^d \rbrace_{i\in[n^d]} \gets \sval_d \\          
+          \sval_1 \gets (\sval_0 \setminus \sval_d) \cup
+          \setind{(\lbl^a_i,\typ^a_i,\val^a_i)}{i\in[n^a]} \\
+          \didOp \gets (\did,\sval_1);~
+          \didOP \gets \didOP \cup \set{(P,\tau,\didOp)} \\
+          \ucsend~(\uccmd{Submit}, \didOp)~\text{to}~\IdealGdledger \\
+          \ucio{Output}~(\uccmd{ProcessedU},\sid,\did,\didOp)
+        }        
       \end{minipage}
     }
     \scalebox{0.9}{
@@ -369,47 +399,21 @@ We capture the resulting notion in \figref{fig:fpkidid}.
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
           \arg = \did$}{
           \DID \gets \DIDReadLdg \\
-          \pcif (\did,\sval) \notin \DID \lor \P(\sval) = 0: \\
-          \pcind \pcreturn \bot \\
+          \pcif (\did,\sval) \notin \DID: \pcreturn \bot \\ % \lor \P(\sval) = 0: \\
+          %\pcind \pcreturn \bot \\
           \ucio{Output}~(\uccmd{ReadOk},\sid,\did,\sval)~\text{to}~P
-        }    
-      \end{minipage}
-    }
-    \vspace*{0.25em} \\
-    \scalebox{0.9}{
-      \begin{minipage}[t]{0.55\textwidth}
-        % \arg = (did, \sval= \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]})\$}{
-        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
-          \arg = (did, \sval_d,\sval_a)$}{
-          \DID \gets \DIDReadLdg \\
-          \pcif (\did,\sval_0) \notin \DID \lor (P,\cdot,(\did,\cdot))
-          \notin \didOP: \pcreturn \bot \\
-          \pcif \P((\sval_0 \setminus \sval_d) \cup \sval_a) = 0:
-          \pcreturn \bot \\
-          \ucsend~(\uccmd{Update}, \sid,\did,\sval_d,\sval_a)~\text{to}~\Sim \\
-          \ucrecv~(\uccmd{UpdOk},\sid,\did,\lbrace \val^a_i \rbrace_{i\in[n^a]})~
-          \text{from}~\Sim \\
-          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
-          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
-          \lbrace (\lbl_i^a,\typ_i^a) \rbrace_{i\in[n^a]} \gets \sval_a \\
-          %\lbrace \lbl_i^d \rbrace_{i\in[n^d]} \gets \sval_d \\          
-          \sval_1 \gets (\sval_0 \setminus \sval_d) \cup
-          \setind{(\lbl^a_i,\typ^a_i,\val^a_i)}{i\in[n^a]} \\
-          \didOp \gets (\did,\sval_1);~
-          \didOP \gets \didOP \cup \set{(P,\tau,\didOp)} \\
-          \ucsend~(\uccmd{Submit}, \didOp)~\text{to}~\IdealGdledger \\
-          \ucio{Output}~(\uccmd{ProcessedU},\sid,\did,\didOp)
         }
-      \end{minipage}
-    }
-    \scalebox{0.9}{
-      \begin{minipage}[t]{0.5\textwidth}
+        \vspace*{0.25em} \\
+
         \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
           (did, \lbrace \lbl_i \rbrace_{i\in[n]})$}{
           \DID \gets \DIDReadLdg \\
-          \pcif (P,did,\sval_0) \notin \DID: \pcreturn \bot \\
+          \pcif (P,\did) \notin \didOWN: \pcreturn \bot \\                    
+          \pcif (P,did,\sval_0) \notin \DID: \pcreturn \bot \\ % \lor (P,\cdot,(\did,\cdot))
+          % \notin \didOP: \\
+          % \pcind \pcreturn \bot \\
           \sval_1 \gets \sval_0 \setminus \lbrace \lbl_i \rbrace_{i\in[n]} \\
-          \pcif \P(\sval_1) = 0: \pcreturn \bot \\
+          % \pcif \P(\sval_1) = 0: \pcreturn \bot \\
           \ucsend~(\uccmd{Deact}, \sid, \arg)~\text{to}~\Sim \\
           \ucrecv~(\uccmd{DeactOk},\sid)~\text{from}~\Sim \\
           \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
@@ -419,9 +423,25 @@ We capture the resulting notion in \figref{fig:fpkidid}.
           \ucsend~(\uccmd{Submit},\didOp)~\text{to}~\IdealGdledger \\          
           \ucio{Output}~(\uccmd{ProcessedD},\sid,\did,\didOp)
         }
+%        \vspace*{0.05em} \\
+
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Extend} \land \arg =
+          \didOP'$}{
+          \pcif P \neq \Sim \lor \didOP' \subseteq \didOP: \pcreturn \bot \\
+          \DID \gets \DIDReadLdg \\          
+          %\lor~\\
+          %\pcind \exists \didOp \in \didOP'~\suchthat~\P(\didOp) = 0: \\
+          %\pcind \pcreturn \bot \\
+          \pcfor \didOp = (P,\cdot,(\did,\cdot)) \in \didOP': \\
+          \pcind \pcif \P(\didOp,\DID) = 0: \pcreturn \bot \\
+          \pcind \didOWN \gets (P,\did) \\
+          \didOP \gets \didOP \setminus \didOP' \\
+          \ucsend~(\uccmd{Extend},\didOP')~\text{to}~\IdealGledger
+        }
       \end{minipage}
     }
     \vspace*{0.25em} \\
+    
     \scalebox{0.9}{
       \begin{minipage}[t]{\textwidth}
         \centering
