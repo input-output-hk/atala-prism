@@ -276,6 +276,33 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     }
 
+    "fail to parse services if id of one of the is a valid URI but has whitespaces" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = s" $serviceId1",
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              "https://baz.example.com"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "id")
+        case Right(_) => fail("Failed to validate invalid service id")
+      }
+
+    }
+
     "fail to parse services if service endpoint of one of the services is not a valid URI" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
@@ -285,6 +312,32 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
             serviceEndpoint = List(
               "https://foo.example.com",
               "not a valid URI"
+            ),
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint", "1")
+        case Right(_) => fail("Failed to validate invalid service endpoint")
+      }
+    }
+
+    "fail to parse services if service endpoint of one of the services valid URI but has whitespaces" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = List(
+              "https://foo.example.com",
+              " https://bar.example.com"
             ),
             addedOn = None,
             deletedOn = None

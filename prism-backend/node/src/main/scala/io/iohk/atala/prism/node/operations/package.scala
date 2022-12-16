@@ -350,7 +350,7 @@ package object operations {
     val regex: Regex =
       """^\w+:(\/?\/?)[^\s]+$""".r
 
-    regex.findFirstMatchIn(uri.trim).nonEmpty
+    regex.findFirstMatchIn(uri).nonEmpty
 
   }
 

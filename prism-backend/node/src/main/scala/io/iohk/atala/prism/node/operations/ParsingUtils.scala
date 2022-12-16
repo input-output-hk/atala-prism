@@ -115,7 +115,7 @@ object ParsingUtils {
     serviceId.parse { id =>
       Either.cond(
         isValidUri(id),
-        id.trim,
+        id,
         s"Id $id is not a valid URI"
       )
     }
@@ -136,7 +136,7 @@ object ParsingUtils {
       }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
         .traverse[EitherValidationError, (String, Int)] { case (uri, index) =>
-          if (isValidUri(uri)) Right((uri.trim, index))
+          if (isValidUri(uri)) Right((uri, index))
           else
             Left(
               InvalidValue(
