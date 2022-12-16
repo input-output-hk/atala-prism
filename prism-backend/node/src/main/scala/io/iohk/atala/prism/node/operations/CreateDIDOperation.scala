@@ -115,21 +115,17 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     val servicesValue = data.child(_.services, "services")
 
     servicesValue { services =>
-      services.zipWithIndex
-        .foldLeft(
-          Either.right[ValidationError, List[DIDService]](List.empty)
-        ) { (acc, serviceAndIndex) =>
-          val (service, index) = serviceAndIndex
-          acc.flatMap(list =>
-            ParsingUtils
-              .parseService(
-                ValueAtPath(service, servicesValue.path / index.toString),
-                didSuffix
-              )
-              .map(_ :: list)
-          )
+      type EitherValidationError[B] = Either[ValidationError, B]
+
+      services.zipWithIndex.toList
+        .traverse[EitherValidationError, DIDService] { case (service, index) =>
+          ParsingUtils
+            .parseService(
+              ValueAtPath(service, servicesValue.path / index.toString),
+              didSuffix
+            )
         }
-        .map(_.reverse)
+
     }
 
   }

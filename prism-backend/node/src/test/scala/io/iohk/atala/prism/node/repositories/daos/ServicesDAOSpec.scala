@@ -136,6 +136,8 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     }
 
     "ServicesDAO.getAllActiveByDidSuffix should retrieve services without services endpoints correctly" in {
+      // Note: this scenario should not be possible, other tests verify that no service can be created without service endpoints
+      // however this test tests that selection and grouping of service endpoints by service_id works correctly in this scenario as well.
       val services1 = DIDService(
         id = "did:prism:123#linked-domain0",
         didSuffix = didSuffix,

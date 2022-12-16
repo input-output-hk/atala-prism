@@ -559,7 +559,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-
       parsedOperation
         .applyState(dummyApplyOperationConfig)
         .transact(database)

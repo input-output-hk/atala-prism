@@ -125,6 +125,7 @@ object ParsingUtils {
       serviceId: String,
       canBeEmpty: Boolean = true
   ): Either[ValidationError, List[DIDServiceEndpoint]] = {
+    type EitherValidationError[B] = Either[ValidationError, B]
     for {
       _ <- serviceEndpoints.parse { list =>
         Either.cond(
@@ -134,11 +135,8 @@ object ParsingUtils {
         )
       }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
-        .foldLeft(
-          Either.right[ValidationError, List[(String, Int)]](List.empty)
-        ) { (acc, uriAndIndex) =>
-          val (uri, index) = uriAndIndex
-          if (isValidUri(uri)) acc.map(list => (uri, index) :: list)
+        .traverse[EitherValidationError, (String, Int)] { case (uri, index) =>
+          if (isValidUri(uri)) Right((uri, index))
           else
             Left(
               InvalidValue(
@@ -148,9 +146,8 @@ object ParsingUtils {
               )
             )
         }
-        .map(_.reverse)
-    } yield validatedServiceEndpointsAndIndexes.map { uriAndIndex =>
-      val (uri, index) = uriAndIndex
+//        .map(_.reverse)
+    } yield validatedServiceEndpointsAndIndexes.map { case (uri, index) =>
       DIDServiceEndpoint(index, uri)
     }
   }
