@@ -136,7 +136,7 @@ object ParsingUtils {
       }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
         .traverse[EitherValidationError, (String, Int)] { case (uri, index) =>
-          if (isValidUri(uri)) Right((uri, index))
+          if (isValidUri(uri)) Right((uri.trim, index))
           else
             Left(
               InvalidValue(
