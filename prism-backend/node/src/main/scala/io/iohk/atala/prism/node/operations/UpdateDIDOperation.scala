@@ -247,11 +247,13 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
         case Action.AddService(value) =>
           val path = action.path / "addService" / "service"
-          value.service
+          val res = value.service
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
             .flatMap(ParsingUtils.parseService(_, didSuffix))
             .map(AddServiceAction)
+          println(res)
+          res
 
         case Action.RemoveService(value) =>
           val path = action.path / "removeService" / "serviceId"
@@ -273,7 +275,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
               ValueAtPath(value.serviceEndpoints.toList, path / "serviceEndpoints"),
               id,
-              canBeEmpty = false
+              canBeEmpty = true
             )
             _ <-
               if (serviceType.isEmpty && serviceEndpoints.isEmpty) {

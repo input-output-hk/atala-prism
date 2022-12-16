@@ -115,7 +115,7 @@ object ParsingUtils {
     serviceId.parse { id =>
       Either.cond(
         isValidUri(id),
-        id,
+        id.trim,
         s"Id $id is not a valid URI"
       )
     }
@@ -123,13 +123,13 @@ object ParsingUtils {
   def parseServiceEndpoints(
       serviceEndpoints: ValueAtPath[List[String]],
       serviceId: String,
-      canBeEmpty: Boolean = true
+      canBeEmpty: Boolean = false
   ): Either[ValidationError, List[DIDServiceEndpoint]] = {
     type EitherValidationError[B] = Either[ValidationError, B]
     for {
       _ <- serviceEndpoints.parse { list =>
         Either.cond(
-          list.nonEmpty || !canBeEmpty,
+          list.nonEmpty || canBeEmpty,
           (),
           s"Service with id - $serviceId must have at least one service endpoint"
         )
@@ -152,11 +152,12 @@ object ParsingUtils {
     }
   }
 
-  def parseServiceType(serviceType: ValueAtPath[String]): Either[ValidationError, String] = Either.cond(
-    serviceType(_.trim.nonEmpty),
-    serviceType(identity),
-    MissingValue(serviceType.path)
-  )
+  def parseServiceType(serviceType: ValueAtPath[String], canBeEmpty: Boolean = false): Either[ValidationError, String] =
+    Either.cond(
+      serviceType(tp => tp.trim.nonEmpty || canBeEmpty),
+      serviceType(_.trim),
+      MissingValue(serviceType.path)
+    )
 
   def parseService(
       service: ValueAtPath[node_models.Service],

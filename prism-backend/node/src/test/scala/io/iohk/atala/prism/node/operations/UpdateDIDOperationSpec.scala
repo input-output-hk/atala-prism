@@ -304,6 +304,52 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       )
     }
 
+    "pass validation when service endpoints are missing in updateService but type is present" in {
+
+      val updated = exampleOperation.update(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .modify(_.copy(serviceEndpoints = Nil))
+      )
+
+      val signed = BlockProcessingServiceSpec.signOperation(
+        updated,
+        signingKeyId,
+        signingKey
+      )
+
+      val result = UpdateDIDOperation
+        .parse(signed, dummyLedgerData)
+        .toOption
+        .value
+
+      result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
+    }
+
+    "pass validation when type is present but service endpoints are missing" in {
+
+      val updated = exampleOperation.update(
+        _.updateDid
+          .actions(4)
+          .updateService
+          .modify(_.copy(`type` = ""))
+      )
+
+      val signed = BlockProcessingServiceSpec.signOperation(
+        updated,
+        signingKeyId,
+        signingKey
+      )
+
+      val result = UpdateDIDOperation
+        .parse(signed, dummyLedgerData)
+        .toOption
+        .value
+
+      result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
+    }
+
     "return error when AddKey id is not provided / empty" in {
       invalidValueTest(
         _.updateDid.actions(0).addKey.key.id := "",
