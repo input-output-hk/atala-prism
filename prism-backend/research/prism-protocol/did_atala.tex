@@ -1,23 +1,12 @@
-\section{DIDs in Atala PRISM}
+\section{Atala PRISM's \RealPKIDIDAtala: A DID-based PKI}
 \label{sec:did-atala}
 
-In this section we first give an ideal functionality for Public-Key
-Infrastructures built atop of DIDs \IdealGPKIDID, and subsequently describe
-Atala PRISM DID method \RealPKIDIDAtala, which is a protocol realizing
-\IdealGPKIDID.
+In this section we first describe Atala PRISM DID method \RealPKIDIDAtala, and
+prove that it realizes \IdealGPKIDID.
 %
-Before doing so, we introduce some base ideal functionalities upon which we
-rely for \RealPKIDIDAtala. Namely, a simplified notion of append-only bulletin
-boards, and digital signatures.
-
-\subsection{Global Functionality \IdealGPKIDID}
-
-\subsection{The \RealPKIDIDAtala Construction}
-
-We next define the Atala PRISM DID method, following the interfaces defined for
-\IdealGPKIDID. We begin by describing the types of keys supported in Atala
-PRISM, and then specify how sets of such keys can be managed through DIDs in
-Atala.
+We begin by describing the types of keys supported in Atala PRISM, and then
+specify how sets of such keys can be managed through the previously introduced
+dictionaries in \IdealGPKIDID.
 
 \paragraph{Key Types.} %
 All operations in Atala PRISM are authenticated, meaning that a cryptographic
@@ -36,6 +25,8 @@ order).  For brevity, given a set \st, we use $\LMKL(\st)$ to denote such label.
 \paragraph{$\P_{Atala}$ policy.} %
 Before proceeding with the specififying the DID operations in Atala, we define
 its policy on the keys' labels and types.
+\todo{This needs to take into account the caller, and the previous state of the
+  PKI list.}
 
 \begin{figure}[ht]
   \centering

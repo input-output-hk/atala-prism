@@ -1,0 +1,199 @@
+\section{\IdealGPKIDID: A PKI with Verifiable Delayed Updates}
+\label{sec:pkivdu}
+
+In this section, we present the ideal functionality for a PKI that supports
+updates which (informally) are:
+
+\begin{itemize}
+\item Verifiable: It can be checked that the sequence of changes that lead to
+  the current state of a (set of) public key(s) have been applied by their
+  legitimate owner.
+\item Delayed: Changes to existing (sets of) public keys, or requests to add
+  new ones, get applied after at most some predefined delay.
+\end{itemize}
+
+\paragraph{The ideal functionality.} %
+We take the generic approach to see a PKI as a system that stores dictionaries
+(i.e., lists of labels with corresponding types and values), where each
+dictionary is associated to a single identifier. The functionality is then
+defined in terms of the (CRUD) operations that can be run to manage such
+objects. To define the ideal functionality as abstractly as possible, we only
+make use of one external (global) subroutine: a clock \IdealGclock.
+Indeed, given that the objects stored in the PKI can be modified, and such
+objects are in fact public keys used to authenticate entities at concrete points
+in time, keeping track of when a mocification takes place, is crucial -- e.g.,
+to know if a public key is/was valid at a certain point in time.
+%
+Otherwise, the functionality simply keeps track of the requested (CRUD)
+operations, makes sure that only the entitled party can perform them, and that
+the maximum delay is not violated. Note that this delay can be set to any
+arbitrarily small value, which means that a delayed PKI is simply a
+generalisation of a (non-delayed) PKI.
+%
+Finally, we parameterize the ideal functionality with a policy \P, that we use
+to account for any arbitrary requirements that concrete instantiations may
+impose on the contents of the objects managed by the PKI. For instance, some
+concrete PKI may refuse to store RSA public keys of length less than $4096$
+bits; or, in the DID setting, a DID method may require that all DID Documents
+contain an active key of some concrete type. 
+
+We now describe the interfaces exposed by \IdealGPKIDID, following the previous
+guidelines. They are formally defined in \figref{fig:fpkidid}.
+
+\begin{description}
+\item[Create.] Upon receiving the instruction \uccmd{Create}, the functionality
+  adds a new set of values $\val_i$, each of type $\typ_i$ and identified with
+  label $\lbl_i$. Following the definition in \cite{canetti03} (where the
+  adversary chooses the public keys, equivalent to our $\val_i$ values), the
+  functionality asks \Sim to provide the $\val_i$ values, as well as the
+  identifier to associate to the complete set. If the identifier does not
+  already exist in the PKI list \VDRL, the functionality fetches the
+  current time from the global clock \IdealGclock, and adds the requested
+  operation to the list of unconfirmed operations, \VDROP.
+\item[Read.] Upon recieving the instruction \uccmd{Read}, the functionality
+  fetches the dictionary associated to identifier \VDRid from the list of
+  confirmed operations in the PKI. In addition, the functionality fetches the
+  current time from the global clock \IdealGclock and, if there is any
+  unconfirmed operation older than the predefined delay, it aborts. Otherwise,
+  returns the dictionary associated to \VDRid.
+\item[Update.] Receives the instruction \uccmd{Update}, associated to an
+  identifier \VDRid, to which the caller whishes to add a set of label and type
+  entries $\sval_a$, and from which it whishes to remove a set of labels
+  $\sval_d$. If the entry \VDRid exists in the PKI list \VDRL, the functionality
+  asks the adversary to provide the values for the new labels. Then, applies the
+  additions and removals honestly, gets the current time from \IdealGclock, and
+  adds the operation to the list of unconfirmed operations.
+\item[Deactivate.] The functionality exposes the interface \uccmd{Deact}, for
+  deactivating specific labels within an identifier in the PKI list \VDRL (where
+  deactivating all the labels wichin an identifier is equivalent to deactivating
+  the whole identifier). If the given identifier exists, the functionality
+  removes the given labels from it, fetches the current time, and adds the
+  operation to the list of unconfirmed operations.
+\end{description}
+
+In addition, the adversary \Sim gets access to an interface \uccmd{Process},
+which lets it decide when the operations received by the ideal functionality
+get applied. However, if, upon reading the contents of the PKI (via the
+\uccmd{Read} interface), some unconfirmed operation is detected that is older
+than the predefined delay, the functionality aborts. Note that, as long as the
+maximum delay or the policy \P are not violated, the adversary has the
+capability to pick in which order are (unconfirmed) operations applied, as it
+specifies the operations to be processed.
+
+\todo{The following is a bit messy, but important. Improve writeup.}
+Concerning the policy \P, the functionality checks that every operation to be
+processed satisfies it. Policies (may) take into account both the contents of
+the operation ($\VDROp = (\VDRid,\sval,P,\tau)$) and the current (confirmed)
+state of the PKI, \VDRL. Note that the specific set of values \sval in the
+unconfirmed operation are always computed in advance by the corresponding
+interface (\uccmd{Create}, \uccmd{Update}, or \uccmd{Deactivate}), ensuring that
+the value passed to the policy has been correctly processed. In addition, the
+functionality does not make any check on the identity of the party who submitted
+each operation. Instead, this can be done by the policies, and allows capturing
+multiple types of PKIs, e.g., PKIs that support delegation, or those that don't.
+\todo{We should at least specify a bit more formally what conditions policies
+  need to meet in this regard? How?}
+
+\begin{figure}
+  \begin{framed}
+    \scalebox{0.9}{
+      \begin{minipage}[t]{\textwidth}
+        \textrm{Upon receiving a call $\IdealGPKIDID(\cmd,\sid,\arg)$
+          from some party $P$ to run command \cmd, in session \sid, with arguments
+          \arg, $\IdealGPKIDID$ operates as follows.}
+        \textrm{If the received \cmd and \arg pair does not meet any of
+          the following options, the request is ignored.}
+        \textrm{\P is a boolean predicate defining concrete conditions for
+          acceptable operations.}
+        \textrm{\didOP is a list of submitted (yet, possibly unconfirmed)
+          operations, and \VDRL is the authoritative state of published
+          operations.}        
+      \end{minipage}
+    }
+    \vspace*{0.5em}
+
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.57\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Create} \land \arg =
+          \setind{(\lbl_i,\typ_i)}{i\in[n]}$}{ 
+          \ucsend~(\uccmd{Create}, \sid, \arg)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{CreateOk}, \sid, \VDRid,
+          \sval=\setind{\val_i}{i\in[n]}) \\
+          \hspace*{2.7em}\text{from}~\Sim \\
+          \pcif (\VDRid,\cdot,\cdot,\cdot) \in \VDRL: \pcreturn \bot \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
+          \VDROP \gets \VDROP \cup \set{(\VDRid,
+            \setind{(\lbl_i,\typ_i,\val_i)}{i\in[n]},P,\tau)} \\
+          \ucio{Output}~(\uccmd{ProcessedC},\sid,\VDRid,\sval)
+        }
+        \vspace*{0.15em} \\
+
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Update} \land
+          \arg = (\VDRid, \sval_d,\sval_a)$}{
+          \pcif (\VDRid,\sval_0,P,\cdot) \notin \VDRL: \pcreturn \bot \\
+          \ucsend~(\uccmd{Update}, \sid,\VDRid,\sval_d,\sval_a)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{UpdOk},\sid,\VDRid,\setind{\val^a_i}{i\in[n^a]})~
+          \text{from}~\Sim \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
+          \lbrace (\lbl_i^a,\typ_i^a) \rbrace_{i\in[n^a]} \gets \sval_a \\
+          \sval_1 \gets (\sval_0 \setminus \sval_d) \cup
+          \setind{(\lbl^a_i,\typ^a_i,\val^a_i)}{i\in[n^a]} \\
+          \VDROP \gets \VDROP \cup \set{(\VDRid,\sval_1,P,\tau)} \\
+          \ucio{Output}~(\uccmd{ProcessedU},\sid,\VDRid,\sval_1)
+        }        
+      \end{minipage}
+    }
+    \scalebox{0.9}{
+      \begin{minipage}[t]{0.5\textwidth}
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Read} \land
+          \arg = \VDRid$}{
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
+          \pcif \exists (\cdot,\cdot,\cdot,\tau') \in \VDROP~\suchthat~
+          |\tau-\tau'| > \delta: \\
+          \pcind \pcreturn \bot \\
+          \pcif (\VDRid,\sval,\cdot,\cdot) \notin \VDRL: \pcreturn \bot \\
+          \ucio{Output}~(\uccmd{ReadOk},\sid,\VDRid,\sval)~\text{to}~P
+        }
+        \vspace*{0.15em} \\
+
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Deact} \land \arg =
+          (\VDRid, \lbrace \lbl_i \rbrace_{i\in[n]})$}{
+          \pcif (\VDRid,\sval_0,P,\cdot) \notin \VDRL: \pcreturn \bot \\ 
+          \sval_1 \gets \sval_0 \setminus \lbrace \lbl_i \rbrace_{i\in[n]} \\
+          \ucsend~(\uccmd{Deact}, \sid, \arg)~\text{to}~\Sim \\
+          \ucrecv~(\uccmd{DeactOk},\sid)~\text{from}~\Sim \\
+          \ucsend~(\uccmd{Read})~\text{to}~\IdealGclock \\
+          \ucrecv~(\uccmd{ReadOk},\tau)~\text{from}~\IdealGclock \\
+          \VDROP \gets \VDROP \cup \set{(\VDRid,\sval_1,P,\tau)} \\
+          \ucio{Output}~(\uccmd{ProcessedD},\sid,\VDRid,\sval_1)
+        }
+        \vspace*{0.15em} \\
+
+        \procedure[linenumbering]{$\pcif \cmd = \uccmd{Process} \land \arg =
+          \VDROP'$}{
+          \pcif P \neq \Sim \lor \VDROP' \not\subseteq \VDROP: \pcreturn \bot \\
+          \pcfor \VDROp = (\VDRid,\sval,P,\tau) \in \VDROP': \\
+          \pcind \pcif \P(\VDROp,\VDRL) = 0: \pcreturn \bot \\
+          \VDROP \gets \VDROP \setminus \VDROP' \\
+          \VDRL \gets \VDRL \cup \VDROP'
+        }
+      \end{minipage}
+    }
+  \end{framed}
+  \caption{Ideal PKI functionality with delayed verifiable updates,
+    \IdealGPKIDID. We abuse set notation, and write $\lbrace (a_i,\dots)
+    \rbrace_{i\in[n]} \setminus \lbrace (b_j,\dots) \rbrace_{j\in[m]}$ to mean
+    subtracting from the first set the elements present in the second set,
+    whenever $a_i = b_j$ for some $i,j$, even if the size of the $(a_i,\dots)$
+    and $(b_j,\dots)$ tuples do not match.}
+  \label{fig:fpkidid}
+\end{figure}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "prism-protocol"
+%%% End:
