@@ -4,9 +4,14 @@
 In this section we first describe Atala PRISM DID method \RealPKIDIDAtala, and
 prove that it realizes \IdealGPKIDID.
 %
-We begin by describing the types of keys supported in Atala PRISM, and then
-specify how sets of such keys can be managed through the previously introduced
-dictionaries in \IdealGPKIDID.
+We begin by describing the types of keys supported in Atala PRISM, and the
+policy \PAtala that all CRUD operations need to meet.
+
+\paragraph{Custom Notation.} %
+Keys in Atala are identified by labels. In the following description of the
+\RealPKIDIDAtala construction, given a set of keys, we frequently refer to the
+``master key with lowest label'' (using any order relation, like lexicographic
+order).  For brevity, given a set \st, we use $\LMKL(\st)$ to denote such label.
 
 \paragraph{Key Types.} %
 All operations in Atala PRISM are authenticated, meaning that a cryptographic
@@ -16,13 +21,7 @@ method. Namely: master keys (\MasterKey), for operating on DIDs; issuing keys,
 for issuing VCs (\IssueKey); communication keys (\CommKey), for key-exchange
 protocols; and authentication keys, to associate to VCs (\AuthKey).
 
-\paragraph{Custom Notation.} %
-Keys in Atala are identified by labels. In the following description of the
-\RealPKIDIDAtala construction, given a set of keys, we frequently refer to the
-``master key with lowest label'' (using any order relation, like lexicographic
-order).  For brevity, given a set \st, we use $\LMKL(\st)$ to denote such label.
-
-\paragraph{$\P_{Atala}$ policy.} %
+\paragraph{\PAtala policy.} %
 Before proceeding with the specififying the DID operations in Atala, we define
 its policy on the keys' labels and types.
 \todo{This needs to take into account the caller, and the previous state of the
@@ -30,7 +29,7 @@ its policy on the keys' labels and types.
 
 \begin{figure}[ht]
   \centering
-  \procedure{$\P_{Atala}(\lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]})$}{    
+  \procedure{$\PAtala(\lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]})$}{    
     \pcif \exists i\in[n]~\suchthat~\typ_i \notin [\MasterKey,\IssueKey,
     \CommKey,\AuthKey]: \pcreturn 0~\pccomment{All types must be known} \\   
     \pcif \not\exists i\in[n]~\suchthat~\typ_i = \MasterKey: \pcreturn 0~
@@ -39,7 +38,7 @@ its policy on the keys' labels and types.
     \pccomment{No duplicate labels} \\
     \pcreturn 1
   }
-  \caption{Policy $\P_{Atala}$ that all DID documents must meet in Atala.}
+  \caption{Policy \PAtala that all DID documents must meet in Atala.}
 \end{figure}
 
 \paragraph{DID Operations.} %
@@ -54,21 +53,21 @@ is of type \MasterKey.
 
 \begin{description}
 \item{\uccmd{Create}.} %
-  To create a DID, the user has to specify the key pairs to create, along with
-  fresh identifiers (labels) and their type. For ease of exposition, we assume
-  that the used identifiers just follow a sequence. The predicate \P in Atala
-  simply requires that at least one key pair of \MasterKey type is created. The
-  \uccmd{Create} algorithm creates as many keys of each type as requested,
-  and keeps a list with the identifier, type and public key of each key pair.
-  This list is then hashed into a value \texttt{h}, and the created DID is
-  ``\texttt{\did:prism:h}''. A transaction containing the created list, the
-  DID, and the \texttt{CreateDID} instruction is sent to the blockchain,
-  signed by one of the master keys -- w.l.o.g., we simply use the first one
-  in the list. The DID owner stores locally the list, along with the
-  corresponding private keys.
+  To create a DID, the user has to specify the fresh identifiers (labels) and
+  types of the key pairs to include in the DID. The \uccmd{Create} algorithm
+  creates as many keys of each type as requested, by leveraging the ideal
+  functionality \IdealFSig, and keeps a list with the identifier, type and
+  public key of each key pair. This list is then hashed into a value \texttt{h}
+  via \IdealGRO, and the created DID is ``\texttt{\did:prism:h}''. A transaction
+  containing the created list, the DID, and the \texttt{CreateDID} instruction
+  is sent to the blockchain via a call to \IdealGdledger, signed by one of the
+  master keys -- w.l.o.g., we 
+  simply use the first one in the list. The DID owner stores locally the list.
 \item[\uccmd{Read}.] %
   Getting the contents of a DID simply requires processing the associated
-  transactions in the blockchain. Namely, transactions $(\tx,\sig)$ where $\tx$
+  transactions in the blockchain. Namely, the interface first fetches all the
+  contents from the \IdealGdledger functionality. Then, transactions the
+  relevant transactions are those with $(\tx,\sig)$ where $\tx$
   is either $(\texttt{CreateDID},\did,\cdot)$ or $(\texttt{UpdateDID},\did,
   \cdot)$. The associated DID Document is the result of applying in an ordered
   manner (from oldest to newest) all such validly signed transactions.
@@ -76,24 +75,20 @@ is of type \MasterKey.
   To update a DID, we first assume for ease of exposition that the calling party
   $P$ has an updated version of the associated DID Document (which included
   a list of $n$ keys) -- if this is not the case, it suffices to make first a
-  call to \uccmd{Read} for the given DID. \todo{This seems relevant enough to
-    be highlighted in some more visible place, no?}
+  call to \uccmd{Read} for the given DID.
+  %
   Then, updating a DID requires to (optionally) specify a list of previously
-  existing key identifiers to remove, and (optionally) specify a list of new key
-  identifiers, and their types, to add. To simplify notation, we just adopt the
-  (equivalent) convention that the caller indicates a list of $\lbrace (i,
-  \lbl_i) \rbrace_{i\in\tilde{N}\subseteq[\tilde{n}]}$ pairs, where $\tilde{n}$
-  may be smaller or larger than $n$, depending on the desired update. This
-  list is then interpreted as follows. If $i$ is an already existing
-  identifier, the label is ignored and the corresponding key is not removed. If
-  $i$ is a new identifier, then a new key pair of the given type is created.
-  Omitting an existing identifier is then interpreted as the desire to remove
-  the corresponding key pair. Otherwise, the same policy as for \uccmd{Create}
-  applies here. Key pairs for the new keys are generated, and a transaction is
-  sent to the blockchain, signed with one of the master keys in the DID
-  \emph{before applying the update}. This transaction contains a list of the
-  identifiers of the keys to remove, and a list of the identifiers and types
-  of the keys to add.
+  existing key labels to remove $\sval_d$, and (optionally) specify a list
+  $\sval_a$ of new key labels and their types to add. The result of removing
+  the labels in $\sval_d$ and adding the new keys in $\sval_a$ must satisfy
+  \PAtala. Key pairs for the new keys are generated via \IdealFSig, and a
+  transaction is sent to the blockchain via \IdealGdledger, signed (again, via
+  \IdealFSig) with one of the master keys in the DID \emph{before applying the
+    update}. This transaction contains a list of the identifiers of the keys to
+  remove, and a list of the identifiers and types of the keys to add.
+  %
+  Note that the DID remains the same, even though the original contents of
+  the associated DID document may change.
 \item[\uccmd{Deactivate}.] %
   A deactivate operation is simply an update operation with no new key
   identifiers, and that only specifies the existing identifiers that will
@@ -115,7 +110,7 @@ is of type \MasterKey.
       \begin{minipage}[t]{0.55\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Create} \land \arg =
           \lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}$}{
-          \pcif \P_{Atala}(\lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}) = 0: abort \\
+          \pcif \PAtala(\lbrace (\lbl_i,\typ_i) \rbrace_{i\in[n]}) = 0: abort \\
           \st \gets \emptyset \\
           \pcfor i \in [n]: \\
           \pcind \sid' \gets ((P,\lbl_i),\sid) \\
@@ -130,10 +125,10 @@ is of type \MasterKey.
           \lbl \gets \LMKL(\st); \sid' \gets ((P,\lbl),\sid) \\
           \ucsend~(\uccmd{Sign},\sid',\tx)~\text{to}~\IdealFSig \\
           \ucrecv~(\uccmd{Signed},\sid',\tx,\sig)~\text{from}~\IdealFSig \\
-          \ucsend~(\uccmd{Append},(\tx,\sig))~\text{to}~\IdealGdledger \\
+          \ucsend~(\uccmd{Submit},(\tx,\sig))~\text{to}~\IdealGdledger \\
           \text{Locally store}~
           (\did, \lbrace (\lbl_i,\typ_i,\pk_i) \rbrace_{i\in[n]}) \\
-          \ucio{Output}~(\uccmd{Created},\sid,\did,\lbrace \pk_i
+          \ucio{Output}~(\uccmd{ProcessedC},\sid,\did,\lbrace \pk_i
           \rbrace_{i\in[n]})
         }
       \end{minipage}
@@ -160,12 +155,12 @@ is of type \MasterKey.
           \rbrace_{i\in[n^a]} \gets \st_a \\
           \pcind \pcind \st \gets (\st \setminus \st_d) \cup \st_a \\
           \pcind \lbl \gets \LMKL(\st) \\
-          \pcind \pcif \lbl = \emptyset \lor \P_{Atala}(\st) = 0: \text{skip} \\
+          \pcind \pcif \lbl = \emptyset \lor \PAtala(\st) = 0: \text{skip} \\
           \pcind \pcelse \sid' \gets ((P,\lbl),\sid) \\
           \pcind \ucsend~(\uccmd{Verif},\sid',\tx,\sig,\pk)~\text{to}~\IdealFSig \\
           \pcind \ucrecv~(\uccmd{Verifd},\sid',\tx,b)~\text{from}~\IdealFSig \\
           \pcind \pcif b = 0: \text{skip} \\
-          \ucio{Output}~(\uccmd{Read},\sid,(\did,\st))
+          \ucio{Output}~(\uccmd{ReadOk},\sid,\did,\st)
         }    
       \end{minipage}
     }
@@ -190,16 +185,6 @@ is of type \MasterKey.
       \begin{minipage}[t]{0.6\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Update} \land
           \arg = (did, \sval_d, \sval_a)$}{
-          % \pcif \exists i~\suchthat~\typ_i \notin [\MasterKey,\AuthKey,
-          % \CommKey,\IssueKey]~\lor \\
-          % \pcind \nexists i~\suchthat~\typ_i = \MasterKey
-          % \lor \exists i,j~\suchthat~\lbl_i = \lbl_j: abort \\
-          % \pcif \exists i~\suchthat~\lbl_i \notin [\MasterKey,\AuthKey,
-          % \CommKey,\IssueKey] \lor
-          % \nexists i~\suchthat~\lbl_i = \MasterKey: \\
-          % \pcind abort \\
-          % \text{Run $(\uccmd{Read},\sid,\did)$ to fetch $(\did,\sval)$} \\
-          % \pcif \sval = \bot: abort \\
           \text{Fetch}~
           (\did, \sval=\lbrace (\lbl_i,\typ_i,\pk_i) \rbrace_{i\in[n]})
           ~\text{from storage} \\
@@ -209,20 +194,21 @@ is of type \MasterKey.
           \lbrace (\lbl^a_i,\typ^a_i) \rbrace_{i\in[n_a]} \gets \sval_a \\
           \sval' \gets (\sval \setminus \sval_d) \cup \sval_a
           \pccomment{\todo{Syntax refinement needed here.}} \\
-          \pcif \P_{Atala}(\sval') = 0: abort \\          
+          \pcif \PAtala(\sval') = 0: abort \\          
           \pcfor i \in [n_a] \\
           \pcind \ucsend~(\uccmd{KeyGen},((P,\lbl_i),\sid))~\text{to}~\IdealFSig \\
           \pcind \ucrecv~(\uccmd{VerKey},((P,\lbl_i),\sid),\pk^a_i)~\text{from}~
           \IdealFSig \\
           \pcind \st_a \gets \st_a \cup \lbrace (\lbl^a_i,\typ^a_i,\pk^a_i) \rbrace \\
-          % \text{Locally store}~(\did,\lbrace (i,\lbl_i,\pk_i) \rbrace_{i\in[\tilde{n}]} \\
           \tx \gets (\texttt{UpdateDID}, \did, \sval_d, \st_a) \\
           \lbl \gets \LMKL(\sval) \\
           \ucsend~(\uccmd{Sign},((P,\lbl),\sid),\tx)~\text{to}~\IdealFSig \\
           \ucrecv~(\uccmd{Signed},((P,\lbl),\sid),\tx,\sig)~\text{from}~\IdealFSig \\
-          \ucsend~(\uccmd{Append},(\tx,\sig))~\text{to}~\IdealGdledger \\
+          \ucsend~(\uccmd{Submit},(\tx,\sig))~\text{to}~\IdealGdledger \\
           \text{Locally store}~(\did,\sval) \\
-          \ucio{Output}~(\uccmd{Updated},\sid,(\did,\lbrace \pk^a_i \rbrace_{i\in[n^a]}))
+          \ucio{Output}~(\uccmd{ProcessedU},\sid,\did,\lbrace \pk^a_i \rbrace_{i\in[n^a]}) \\
+          \text{\todo{The previous must return all the final pks, not only
+              $pk^a$, to be compatible with deact.}}
         }
       \end{minipage}
     }
@@ -230,8 +216,10 @@ is of type \MasterKey.
       \begin{minipage}[t]{0.45\textwidth}
         \procedure[linenumbering=on]{$\pcif \cmd = \uccmd{Deact} \land \arg =
           (did, \sval)$}{       
-          \text{Run as a \texttt{Update} operation} \\
-          \text{with $\sval_d \gets \sval$ and $\sval_a \gets \emptyset$}
+          \text{Run as an \texttt{Update} operation with} \\
+          \text{ $\sval_d \gets \sval$ and $\sval_a \gets \emptyset$,
+            and output} \\
+          \text{\uccmd{ProcessedD} instead of \uccmd{ProcessedU}}
         }
       \end{minipage}
     }
@@ -265,125 +253,195 @@ first modelling effort.
 \subsection{Security of \RealPKIDIDAtala}
 \label{ssec:sec-didatala}
 
-Before going into the proofs, observe that the \uccmd{Create} (in lines 1-2) and
-\uccmd{Update} (in lines 6-7) operations in \RealPKIDIDAtala include a policy on
-the received key labels and types. Concretely, this policy requires that all
-labels are unique, all types are of a known key type, and that at least one of
-them is of type \MasterKey. In the sequel, we use $\P_{Atala}$ to refer to this
-policy.
+We prove security of \RealPKIDIDAtala by showing that it UC-emulates
+\IdealGPKIDID. For this, we leverage concretely the results in \cite{bch+20} and
+\cite{bhz21}. In a nutshell, the former extends the notions of UC emulation and
+composition so that they are compatible, in the plain UC model, with global
+subroutines (such as a global clock, a ledger, or a random oracle).
+\cite{bhz21} builds on these results to make them suitable for systems that rely
+simultaneously on multiple global functionalities.
+%
+To make the previous a bit more precise, we replicate here the relevant theorem
+from \cite{bhz21} (in \cite{bch+20}, the same statement appears with only one
+global subroutine).
 
-\todo{Do we mention somewhere that {\sid}s have structure $(P,\sid')$? This is
-  used for \Sim to know which party is generating which keys.}
-
-\begin{theorem}[UC-security of \RealPKIDIDAtala]
-  \label{thm:sec-didatala}
-  \RealPKIDIDAtala UC-realizes $\IdealGPKIDID$ in the $(\IdealGRO,
-  \IdealFSig, \IdealGdledger)$-hybrid model.
+\begin{theorem}[UC emulation with multiple global setups \cite{bhz21}]
+  \label{thm:uc-bhz21}
+  Let $\pi$, $\phi$ and $\gamma_1,\dots,\gamma_n$ be protocols. We say that
+  $\pi$ $\xi$-UC-emulates $\phi$ in the presence of global subroutines
+  $\gamma_1,\dots,\gamma_n$ if protocols $\pi$ and $\phi$ are formulated with
+  respect to a global subroutine $\hat{\gamma}_{\gamma_1,\dots,\gamma_n}$ and
+  $\UCM[\pi,\hat{\gamma}_{\gamma_1,\dots,\gamma_n}]$ $\xi$-emulates protocol
+  $\UCM[\phi,\hat{\gamma}_{\gamma_1,\dots,\gamma_n}]$.
 \end{theorem}
 
+At a high level, to apply the results in \cite{bch+20,bzh21}, we show the global
+subroutines used in \IdealGPKIDID and \RealPKIDIDAtala can be merged into the
+single ``meta'' global subroutine $\hat{\gamma}_{\gamma_1,\dots,\gamma_n}$
+required by \thmref{thm:uc-bhz21}, which furthermore meets the conditions to be
+subsequently suitable for UC-emulation. In addition, we argue that this is
+usually the case for the known realisations of each respective global
+subroutine. (This ensures that our approach is natural, and indeed UC-realisable
+in practice.)
+%
+We then describe how the management protocol \UCM works in conjunction with
+our \IdealGPKIDID and the ``meta'' global subroutines (in the ideal world), and
+with \RealPKIDIDAtala and the ``meta'' global subroutine (in the real world).
+%
+Finally, we show that the latter emulates the former.
+%
+We emphasise that this is merely an application of the results in
+\cite{bch+20,bhz21} to our setting. The previously sketched process is detailed
+next, directly referencing the relevant theorems of the relevant works, when
+appropriate.
+
+\paragraph{The meta-global subroutine \gAtala.} %
+We next show that the global subroutines used in \RealPKIDIDAtala are leveraged
+in a way that is compatible with \cite[Theorem 4.3]{bhz21}. This is not a full
+proof for a concrete application of such theorem, as that would require proving
+that concrete protocols UC-emulate each global functionality. However, we
+initially leave it ``incomplete'' to show that any combination of instantiations
+of our global subroutines can be used to build a secure variant of the Atala
+DID protocol (later, we show the concrete instantiations that Atala currently
+uses). For concreteness, we refer to this ``partial'' property as mergability
+of the global subroutines of Atala into \gAtala.
+
+\begin{lemma}[Mergability of \gAtala]
+  \label{lma:gAtala}
+  Let $\gamma_1 \gets \IdealGdledger$, $\gamma_2 \gets \IdealGRO$, $\gamma_3
+  \gets \IdealGclock$. Then:
+  \begin{enumerate}
+  \item For $i < 3$, $\gamma_i$ is subroutine respecting except for calls to
+    $\gamma_{i+1,\dots,3}$, and $\gamma_3$ is subroutine respecing. All
+  $\gamma_i$'s are subroutine exposing.
+\item For $i>1$, $\gamma_i$ is $\gamma_j$-regular, for all $j \in \set{1,
+    \dots,\i-1}$.
+  \end{enumerate}
+\end{lemma}
+
 \begin{proof}
-  We show that \RealPKIDIDAtala UC-realizes \IdealGPKIDID, when configured
-  with policy $\P_{Atala}$. For this, we give a simulator \Sim such that, for
-  any environment \Env, $\Exec_{\RealPKIDIDAtala\adv,\Env} \approx
-  \Exec_{\phiDID,\Sim,\Env}$,
-  where \phiDID is a protocol composed with the same parties as
-  \RealPKIDIDAtala but where each party is simply a dummy party that forwards
-  every message from \Env to the ideal functionality \IdealGPKIDID, and every
-  response from \IdealGPKIDID back to \Env. The simulator \Sim runs internally a
-  copy of the real-world adversary \adv, as well as the ideal functionalities
-  \IdealGRO, \IdealFSig and \IdealGdledger, and any involved party.
-
-  \begin{description}
-  \item[Simulating DID Create.] %
-    % 
-    % Keys generation
-    If \Sim receives a message $(\uccmd{Create},\sid,\lbrace (\lbl_i,\typ_i)
-    \rbrace_{i\in[n]})$ from \IdealGPKIDID, with $\sid=(P,\sid')$, it simulates
-    the key generation process of $n$ signing key pairs run in the real
-    protocol, by sending $n$ queries $(\uccmd{KeyGen},((P,\lbl_i),\sid))$ to
-    \adv~on behalf of \IdealFSig, and receiving the $n$ corresponding
-    $(\uccmd{VerKey},((P,\lbl_i),\sid),\pk_i)$ responses.
-    %
-    % Hash computation
-    \Sim then concatenates all $(\lbl_i,\typ_i,\pk_i)$ tuples into \st, and
-    simulates a query to \IdealGRO, to set \did as ``$did:prism: h$'' as DID
-    value.
-    %
-    % Tx sim
-    With the DID value, \Sim simulates for \adv~the preparation of transaction
-    \tx. That is, \Sim uses the master key with lowest label, $\lbl \gets
-    \LMKL(\st)$, and simulates a query $(\uccmd{Sign},((P,\lbl),\sid),\tx)$ to
-    \IdealFSig, obtaining from \adv~$(\uccmd{Signed},((P,\lbl),\sid),\tx,\sig)$.
-    %
-    % BB append
-    \Sim also simulates appending the $(\tx,\sig)$ tuple to the bulletin board,
-    by sending $(\uccmd{Append},(\tx,\sig))$ to \adv~on behalf of \IdealGdledger.
-    %
-    % Output
-    Finally, \Sim sends the $(\uccmd{CreateOk},\sid,\did,\lbrace \pk_i
-    \rbrace_{i\in[n]})$ to \IdealGPKIDID, and stores the tuple $(P,\did,\lbrace
-    (\lbl_i,\typ_i,\pk_i)\rbrace_{i\in[n]})$.
-    %
-    % Additional considerations
-    \todo{The following should probably go to the argumentation part.}
-    Note that \did is generated by an ideal random oracle (thus, uniformly at
-    random), just as in the real protocol \RealPKIDIDAtala. Hence, the
-    probability that \IdealGPKIDID halts because $\did \in \DID$ is negligible,
-    and \IdealGPKIDID outputs $(\uccmd{Created},\sid,\did,\lbrace \val_i=\pk_i
-    \rbrace_{i\in[n]})$ to \IdealGPKIDID.
-  \item[Simulating DID Read.]
-    To simulate read operations, when \Sim receives $(\uccmd{Read},\sid,\did)$
-    from \IdealGPKIDID, it first simulates for \adv~the call to \IdealGdledger, to
-    get the current status $L$ of the bulletin board. Then, \Sim reproduces the
-    processing a normal party would do: from older to newer entry in $L$ related
-    to \did, applies the updates in a sequential order -- ignoring any
-    \uccmd{UpdateDID} operation before a \uccmd{CreateDID}, and only applying
-    the first \uccmd{CreateDID}. If, after applying an update, $\P_{Atala}$ is
-    not met by the resulting set of keys and labels, \Sim skips the update.
-    Otherwise, \Sim simulates for \adv~a verification query to \IdealFSig for
-    the transaction corresponding to the update, and skips the update if the
-    signature fails.
-    %
-    Finally, if after processing all transactions related to \did, the resulting
-    contents differ from those stored by \Sim in its record $(P,\did,\sval)$,
-    \Sim aborts \todo{Do we need this?}. Otherwise, \Sim returns the processed
-    contents.    
-  \item[Simulating DID Update.]
-    % Load DID
-    Upon receiving a request from dummy party $P$, \IdealGPKIDID fetches
-    $(P,\did,\sval)$ from its records, and checks if $(\sval \setminus \sval_d)
-    \cup \sval_a$ meets $\P_{Atala}$. If either step fails, \IdealGPKIDID
-    aborts. Else, it sends $(\uccmd{Update},\sid,\did,\sval_d,\sval_a)$ to \Sim.
-    \Sim then retrieves $(P,\did,\sval)$ from its records \todo{this is kept at
-      some point, no?)} and simulates for \adv~the calls to \IdealFSig for the
-    keys in the received $\sval_a$. \Sim gets the key with the lowest label from
-    \sval, with label $\lbl$, bundles the transaction \tx, and simulates a call
-    to \IdealFSig to get a signature over \tx. Finally, \Sim simulates the call
-    to \IdealGdledger, and returns $(\uccmd{Updated},\sid,(\did,\lbrace \val_i
-    \rbrace_{i\in[n_a]}))$ to \IdealGPKIDID, where the $\val_i$'s are the values
-    output by \adv~when creating the new keys via simulated calls to \IdealFSig.
-  \item[Simulating DID Deactivate.] Directly follows from DID Update.      
-  \end{description}
-  \todo{This to take into account when arguing indistinguishability}:
-  \begin{itemize}
-  \item The records of \Sim are always consistent with \IdealGdledger.
-  \end{itemize}
-
-  % General comments
-  Now, observe that, in all ideal operations, the policy $\P_{Atala}$ is checked
-  on the resulting data structure. If the policy is not satisfied, the
-  functionality aborts. This is also the case for the real world.
-
-  % Create comments
-  Regarding create operations, note that, both in the simulation and in the real
-  world, the resulting \did value is produced in a consistent way -- via a call
-  to \IdealGRO, using the contents of the DID document to create.
-  % Key generation and signature comments
-  Similarly, the (verification) keys used and signatures are defined by \adv~
-  both the real and ideal world -- in the latter, as part of \Sim's simulation
-  of \IdealFSig.
-  
+  \qed
 \end{proof}
+
+% Before going into the proofs, observe that the \uccmd{Create} (in lines 1-2) and
+% \uccmd{Update} (in lines 6-7) operations in \RealPKIDIDAtala include a policy on
+% the received key labels and types. Concretely, this policy requires that all
+% labels are unique, all types are of a known key type, and that at least one of
+% them is of type \MasterKey. In the sequel, we use \PAtala to refer to this
+% policy.
+
+% \todo{Do we mention somewhere that {\sid}s have structure $(P,\sid')$? This is
+%   used for \Sim to know which party is generating which keys.}
+
+% \begin{theorem}[UC-security of \RealPKIDIDAtala]
+%   \label{thm:sec-didatala}
+%   \RealPKIDIDAtala UC-realizes $\IdealGPKIDID$ in the $(\IdealGRO,
+%   \IdealFSig, \IdealGdledger)$-hybrid model.
+% \end{theorem}
+
+% \begin{proof}
+%   We show that \RealPKIDIDAtala UC-realizes \IdealGPKIDID, when configured
+%   with policy \PAtala. For this, we give a simulator \Sim such that, for
+%   any environment \Env, $\Exec_{\RealPKIDIDAtala\adv,\Env} \approx
+%   \Exec_{\phiDID,\Sim,\Env}$,
+%   where \phiDID is a protocol composed with the same parties as
+%   \RealPKIDIDAtala but where each party is simply a dummy party that forwards
+%   every message from \Env to the ideal functionality \IdealGPKIDID, and every
+%   response from \IdealGPKIDID back to \Env. The simulator \Sim runs internally a
+%   copy of the real-world adversary \adv, as well as the ideal functionalities
+%   \IdealGRO, \IdealFSig and \IdealGdledger, and any involved party.
+
+%   \begin{description}
+%   \item[Simulating DID Create.] %
+%     % 
+%     % Keys generation
+%     If \Sim receives a message $(\uccmd{Create},\sid,\lbrace (\lbl_i,\typ_i)
+%     \rbrace_{i\in[n]})$ from \IdealGPKIDID, with $\sid=(P,\sid')$, it simulates
+%     the key generation process of $n$ signing key pairs run in the real
+%     protocol, by sending $n$ queries $(\uccmd{KeyGen},((P,\lbl_i),\sid))$ to
+%     \adv~on behalf of \IdealFSig, and receiving the $n$ corresponding
+%     $(\uccmd{VerKey},((P,\lbl_i),\sid),\pk_i)$ responses.
+%     %
+%     % Hash computation
+%     \Sim then concatenates all $(\lbl_i,\typ_i,\pk_i)$ tuples into \st, and
+%     simulates a query to \IdealGRO, to set \did as ``$did:prism: h$'' as DID
+%     value.
+%     %
+%     % Tx sim
+%     With the DID value, \Sim simulates for \adv~the preparation of transaction
+%     \tx. That is, \Sim uses the master key with lowest label, $\lbl \gets
+%     \LMKL(\st)$, and simulates a query $(\uccmd{Sign},((P,\lbl),\sid),\tx)$ to
+%     \IdealFSig, obtaining from \adv~$(\uccmd{Signed},((P,\lbl),\sid),\tx,\sig)$.
+%     %
+%     % BB append
+%     \Sim also simulates appending the $(\tx,\sig)$ tuple to the bulletin board,
+%     by sending $(\uccmd{Submit},(\tx,\sig))$ to \adv~on behalf of \IdealGdledger.
+%     %
+%     % Output
+%     Finally, \Sim sends the $(\uccmd{CreateOk},\sid,\did,\lbrace \pk_i
+%     \rbrace_{i\in[n]})$ to \IdealGPKIDID, and stores the tuple $(P,\did,\lbrace
+%     (\lbl_i,\typ_i,\pk_i)\rbrace_{i\in[n]})$.
+%     %
+%     % Additional considerations
+%     \todo{The following should probably go to the argumentation part.}
+%     Note that \did is generated by an ideal random oracle (thus, uniformly at
+%     random), just as in the real protocol \RealPKIDIDAtala. Hence, the
+%     probability that \IdealGPKIDID halts because $\did \in \DID$ is negligible,
+%     and \IdealGPKIDID outputs $(\uccmd{Created},\sid,\did,\lbrace \val_i=\pk_i
+%     \rbrace_{i\in[n]})$ to \IdealGPKIDID.
+%   \item[Simulating DID Read.]
+%     To simulate read operations, when \Sim receives $(\uccmd{Read},\sid,\did)$
+%     from \IdealGPKIDID, it first simulates for \adv~the call to \IdealGdledger, to
+%     get the current status $L$ of the bulletin board. Then, \Sim reproduces the
+%     processing a normal party would do: from older to newer entry in $L$ related
+%     to \did, applies the updates in a sequential order -- ignoring any
+%     \uccmd{UpdateDID} operation before a \uccmd{CreateDID}, and only applying
+%     the first \uccmd{CreateDID}. If, after applying an update, \PAtala is
+%     not met by the resulting set of keys and labels, \Sim skips the update.
+%     Otherwise, \Sim simulates for \adv~a verification query to \IdealFSig for
+%     the transaction corresponding to the update, and skips the update if the
+%     signature fails.
+%     %
+%     Finally, if after processing all transactions related to \did, the resulting
+%     contents differ from those stored by \Sim in its record $(P,\did,\sval)$,
+%     \Sim aborts \todo{Do we need this?}. Otherwise, \Sim returns the processed
+%     contents.    
+%   \item[Simulating DID Update.]
+%     % Load DID
+%     Upon receiving a request from dummy party $P$, \IdealGPKIDID fetches
+%     $(P,\did,\sval)$ from its records, and checks if $(\sval \setminus \sval_d)
+%     \cup \sval_a$ meets \PAtala. If either step fails, \IdealGPKIDID
+%     aborts. Else, it sends $(\uccmd{Update},\sid,\did,\sval_d,\sval_a)$ to \Sim.
+%     \Sim then retrieves $(P,\did,\sval)$ from its records \todo{this is kept at
+%       some point, no?)} and simulates for \adv~the calls to \IdealFSig for the
+%     keys in the received $\sval_a$. \Sim gets the key with the lowest label from
+%     \sval, with label $\lbl$, bundles the transaction \tx, and simulates a call
+%     to \IdealFSig to get a signature over \tx. Finally, \Sim simulates the call
+%     to \IdealGdledger, and returns $(\uccmd{Updated},\sid,(\did,\lbrace \val_i
+%     \rbrace_{i\in[n_a]}))$ to \IdealGPKIDID, where the $\val_i$'s are the values
+%     output by \adv~when creating the new keys via simulated calls to \IdealFSig.
+%   \item[Simulating DID Deactivate.] Directly follows from DID Update.      
+%   \end{description}
+%   \todo{This to take into account when arguing indistinguishability}:
+%   \begin{itemize}
+%   \item The records of \Sim are always consistent with \IdealGdledger.
+%   \end{itemize}
+
+%   % General comments
+%   Now, observe that, in all ideal operations, the policy \PAtala is checked
+%   on the resulting data structure. If the policy is not satisfied, the
+%   functionality aborts. This is also the case for the real world.
+
+%   % Create comments
+%   Regarding create operations, note that, both in the simulation and in the real
+%   world, the resulting \did value is produced in a consistent way -- via a call
+%   to \IdealGRO, using the contents of the DID document to create.
+%   % Key generation and signature comments
+%   Similarly, the (verification) keys used and signatures are defined by \adv~
+%   both the real and ideal world -- in the latter, as part of \Sim's simulation
+%   of \IdealFSig.
+  
+% \end{proof}
 
 
 %%% Local Variables:
