@@ -275,30 +275,34 @@ global subroutine).
   $\UCM[\phi,\hat{\gamma}_{\gamma_1,\dots,\gamma_n}]$.
 \end{theorem}
 
-At a high level, to apply the results in \cite{bch+20,bzh21}, we show the global
+At a high level, to apply the results in \cite{bch+20,bhz21}, we show the global
 subroutines used in \IdealGPKIDID and \RealPKIDIDAtala can be merged into the
 single ``meta'' global subroutine $\hat{\gamma}_{\gamma_1,\dots,\gamma_n}$
 required by \thmref{thm:uc-bhz21}, which furthermore meets the conditions to be
 subsequently suitable for UC-emulation. In addition, we argue that this is
 usually the case for the known realisations of each respective global
-subroutine. (This ensures that our approach is natural, and indeed UC-realisable
-in practice.)
+subroutine. (This suggests that our approach is natural, and indeed
+UC-realisable in practice.)
 %
 We then describe how the management protocol \UCM works in conjunction with
-our \IdealGPKIDID and the ``meta'' global subroutines (in the ideal world), and
-with \RealPKIDIDAtala and the ``meta'' global subroutine (in the real world).
+our \IdealGPKIDID and the ``meta'' global subroutines in the ideal world (i.e.,
+$\UCM[\IdealGPKIDID,\hat{\gamma}_{\gamma_1,\dots,\gamma_n}]$), and
+with \RealPKIDIDAtala and the ``meta'' global subroutine in the real world
+(i.e., $\UCM[\RealPKIDIDAtala,\hat{\gamma}_{\gamma_1,\dots,\gamma_n}]$).
 %
-Finally, we show that the latter emulates the former.
+Finally, we show that the latter emulates the former. This concludes the proof
+for \thmref{thm:uc-bhz21}.
 %
 We emphasise that this is merely an application of the results in
 \cite{bch+20,bhz21} to our setting. The previously sketched process is detailed
-next, directly referencing the relevant theorems of the relevant works, when
+next, directly referencing the relevant theorems of the corresponding works when
 appropriate.
 
 \paragraph{The meta-global subroutine \gAtala.} %
+\todo{The idea is here, but the wording is clumsy. Re-write.}
 We next show that the global subroutines used in \RealPKIDIDAtala are leveraged
 in a way that is compatible with \cite[Theorem 4.3]{bhz21}. This is not a full
-proof for a concrete application of such theorem, as that would require proving
+proof for a concrete application of the theorem, as that would require proving
 that concrete protocols UC-emulate each global functionality. However, we
 initially leave it ``incomplete'' to show that any combination of instantiations
 of our global subroutines can be used to build a secure variant of the Atala
@@ -306,22 +310,97 @@ DID protocol (later, we show the concrete instantiations that Atala currently
 uses). For concreteness, we refer to this ``partial'' property as mergability
 of the global subroutines of Atala into \gAtala.
 
-\begin{lemma}[Mergability of \gAtala]
+\begin{lemma}[Mergeability of \gAtala]
   \label{lma:gAtala}
+
   Let $\gamma_1 \gets \IdealGdledger$, $\gamma_2 \gets \IdealGRO$, $\gamma_3
   \gets \IdealGclock$. Then:
+  
   \begin{enumerate}
   \item For $i < 3$, $\gamma_i$ is subroutine respecting except for calls to
     $\gamma_{i+1,\dots,3}$, and $\gamma_3$ is subroutine respecing. All
-  $\gamma_i$'s are subroutine exposing.
-\item For $i>1$, $\gamma_i$ is $\gamma_j$-regular, for all $j \in \set{1,
-    \dots,\i-1}$.
+    $\gamma_i$'s are subroutine exposing.
+  \item For $i>1$, $\gamma_i$ is $\gamma_j$-regular, for all $j \in \set{1,
+      \dots,i-1}$.
   \end{enumerate}
+  
 \end{lemma}
 
 \begin{proof}
+  \todo{In the sequel, when the $\gamma_i$'s should be protocols, not ideal
+    functionalities; e.g., $\gamma_3 = \IdealP_{\IdealGclock}$, not
+    $\IdealGclock$ (the argument should be ok, it is just a wording error).}
+  We start with the first item, for which we briefly recall the notion of
+  subroutine respecting protocols. Intuitively, a protocol $\pi$ is subroutine
+  respecting if, for any session \sid of $\pi$, the main parties of \sid are the
+  only ones that communicate with the outside world; this also means that
+  subparties only accept input and subroutine output from parties in \sid. A
+  more precise definition is available in the 2020 version of \cite{canetti00}.
+
+  Now, the protocol $\IdealP_\IdealF$ associated to an ideal functionality
+  \IdealF is composed of dummy parties that simply relay information back and
+  forth between the environment \Env and \IdealF (and no one else). The dummy
+  parties are the main parties of $\IdealP_\IdealF$, whereas \IdealF is a
+  sub-party.
+
+  In the case of \IdealGclock ($\gamma_3$) and \IdealGRO ($\gamma_2$), their
+  corresponding protocols, $\IdealP_{\IdealGclock}$ and $\IdealP_{\IdealGRO}$
+  are trivially subroutine respecting. Namely, for each session \sid of
+  $\IdealP_{\IdealGclock}$ (resp. $\IdealP_{\IdealGRO}$):
+
+  \begin{itemize}
+  \item \IdealGclock (resp. \IdealGRO) is the only sub-party in the protocol
+    session \sid, and it only accepts input from the main (dummy) parties in
+    $\IdealP_{\IdealGclock}$ (resp. $\IdealP_{\IdealGRO}$) in \sid.
+  \item The main (dummy) parties of session \sid in $\IdealP_{\IdealGclock}$
+    (resp. $\IdealP_{\IdealGRO}$) ignore subroutine outputs from parties other
+    than \IdealGclock (resp. \IdealGRO)'s on session \sid. Similarly,
+    \IdealGclock (resp. \IdealGRO) ignores subroutine outputs.
+  \item \IdealGclock (resp. \IdealGRO) in \sid only passes subroutine output to
+    the main (dummy) parties in \sid.
+  \item Main (dummy) parties in session \sid of $\IdealP_{\IdealGclock}$ (resp.
+    $\IdealGRO$), and \IdealGclock (resp. \IdealGRO)  don't pass input to
+    parties not in \sid. 
+  \end{itemize}
+
+  Next, observe that \IdealGdledger ($\gamma_1$) is also subroutine respecting
+  except for calls to \IdealGclock ($\gamma_3$). Concretely, for each session
+  of the ideal protocol $\IdealP_{\IdealGdledger}$ of \IdealGdledger:
+
+  \begin{itemize}
+  \item Excluding calls to \IdealGclock, \IdealGdledger is the only sub-party in
+    the protocol session \sid, and it only accepts input from the main (dummy)
+    parties in $\IdealP_{\IdealGdledger}$ in \sid.
+  \item The main (dummy) parties of session \sid in $\IdealP_{\IdealGdledger}$
+    ignore subroutine outputs from parties other than \IdealGdledger's on
+    session \sid. Also, \IdealGdledger ignores subroutine outputs from any
+    party, with the exception from parties in \IdealGclock.
+  \item \IdealGdledger in \sid only passes subroutine output to the main (dummy)
+    parties of $\IdealP_{\IdealGdledger}$, and to the parties in \IdealGclock,
+    in \sid.
+  \item Main (dummy) parties in session \sid of $\IdealP_{\IdealGdledger}$ and
+    \IdealGdledger don't pass input to parties not in \sid, with the exception
+    of parties in $\IdealP_{\IdealGclock}$.
+  \end{itemize}
+
+  In summary, $\gamma_3 = \IdealGclock$ and $\gamma_2 = \IdealGRO$ are
+  subroutine respecting (and, obviously, $\gamma_2$ is also subroutine
+  respecting except for calls to $\gamma_3$). Also, $\gamma_1 = \IdealGdledger$
+  is subroutine respecting except for calls to $\gamma_3$ -- and, since
+  $\gamma_1$ does not use $\gamma_2$, it is trivially also subroutine respecting
+  except for calls to $\gamma_2$ and $\gamma_3$.
+
+  Thus, condition 1 of \lmaref{lma:gAtala} is met. Now, we move to condition 2.
+  
   \qed
 \end{proof}
+
+\paragraph{The management protocol $\UCM[\IdealGPKIDID,\gAtala]$.}
+
+\paragraph{The management protocol $\UCM[\RealPKIDIDAtala,\gAtala]$.}
+
+\paragraph{$\UCM[\IdealGPKIDID,\gAtala]$ $\xi$-UC emulates
+  $\UCM[\RealPKIDIDAtala,\gAtala]$.}
 
 % Before going into the proofs, observe that the \uccmd{Create} (in lines 1-2) and
 % \uccmd{Update} (in lines 6-7) operations in \RealPKIDIDAtala include a policy on

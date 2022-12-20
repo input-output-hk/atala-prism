@@ -46,7 +46,7 @@ here the formulation.
     \procedure{$\pcif \cmd = \uccmd{HashQuery} \land \arg = \msg$}{%
       \pcif (\msg,h) \notin \hashlist:
       h \getr \bin^{l}; \hashlist \gets \hashlist \cup \lbrace (\msg,h) \rbrace \\
-      \ucio{Output}~(\uccmd{HashConfirm},h)
+      \ucio{Output}~(\uccmd{HashConfirm},\sid,h)
     }
   \end{framed}
 \end{figure}
@@ -62,10 +62,10 @@ clock's time. When all parties agree on it, the clock's time is incremented. See
 \begin{figure}[ht]
   \begin{framed}
     \begin{minipage}[t]{\textwidth}
-      \textrm{Upon receiving a call $\IdealGclock(\cmd,\arg)$ from
-        some party $P$ to run command \cmd, with arguments \arg,
-        \IdealGclock operates as follows.} \\
-      \textrm{\IdealGclock maintains a variable $t$ with the current itme,
+      \textrm{Upon receiving a call $\IdealGclock(\cmd,\sid,\arg)$ from
+        some party $P$ to run command \cmd, in session \sid, with arguments
+        \arg, \IdealGclock operates as follows.} \\
+      \textrm{\IdealGclock maintains a variable $t$ with the current time,
         a variable $T$ with the list of parties keeping track of the time,
         and a map $A$ which keeps the parties' (dis)agreements to advance the
         clock.}
@@ -75,23 +75,23 @@ clock's time. When all parties agree on it, the clock's time is incremented. See
     \begin{minipage}[t]{0.40\textwidth}
       \procedure{$\pcif \cmd = \uccmd{Register} \land \arg = \emptyset$}{
         T \gets T \cup \set{P} \\
-        \ucio{Output}~(\uccmd{Registered})~\text{to}~P \\
+        \ucio{Output}~(\uccmd{Registered},\sid)~\text{to}~P \\
       }
       \procedure{$\pcif \cmd = \uccmd{Update} \land \arg = \emptyset$}{
         A(P) \gets \top \\
         \pcif \forall P \in T, A(P) = \top: \\
         \pcind t \gets t + 1; \forall P \in T, A(P) = \bot \\
-        \pcind \ucio{Send}~(\uccmd{Updated})~\text{to}~P        
+        \pcind \ucio{Send}~(\uccmd{Updated},\sid)~\text{to}~P        
       }
     \end{minipage}
     \hspace*{1.25em}
     \begin{minipage}[t]{0.60\textwidth}
       \procedure{$\pcif \cmd = \uccmd{Deregister} \land \arg = \emptyset$}{
         T \gets T \setminus \set{P} \\
-        \text{Output}~(\uccmd{DeregisteredOk})~\text{to}~P \\
+        \text{Output}~(\uccmd{DeregisteredOk},\sid)~\text{to}~P \\
       }
       \procedure{$\pcif \cmd = \uccmd{Read} \land \arg = \emptyset$}{
-        \text{Output}~(\uccmd{ReadOk},t)~\text{to}~P
+        \text{Output}~(\uccmd{ReadOk},\sid,t)~\text{to}~P
       }
     \end{minipage}
   \end{framed}
@@ -121,9 +121,9 @@ For the sake of readability, we reproduce the functionality in
 \begin{figure}[ht]
   \begin{framed}
     \begin{minipage}[t]{\textwidth}
-      \textrm{Upon receiving a call $\IdealGdledger(\cmd,\arg)$ from
-        some party $P$ to run command \cmd, with arguments \arg,
-        \IdealGdledger operates as follows.} \\
+      \textrm{Upon receiving a call $\IdealGdledger(\cmd,\sid,\arg)$ from
+        some party $P$ to run command \cmd, in session \sid, with arguments
+        \arg, \IdealGdledger operates as follows.} \\
       \textrm{\IdealGdledger maintains a mapping \ldgMap which associates
         parties with their view of the ledger.
         \ldgUtxo is a multiset of unconfirmed transactions.
@@ -135,10 +135,10 @@ For the sake of readability, we reproduce the functionality in
 
     \begin{minipage}[t]{0.40\textwidth}
       \procedure{$\pcif \cmd = \uccmd{Submit} \land \arg = \ldgTx$}{
-        \ucio{Send}~(\uccmd{Read})~\text{to}~\IdealGclock \\
-        \ucio{Recv}~(\uccmd{ReadOk},t)~\text{from}~\IdealGclock \\
+        \ucio{Send}~(\uccmd{Read},\sid)~\text{to}~\IdealGclock \\
+        \ucio{Recv}~(\uccmd{ReadOk},\sid,t)~\text{from}~\IdealGclock \\
         \ldgUtxo \gets \ldgUtxo \cup \set{(\ldgTx,t)} \\ 
-        \ucio{Output}~(\uccmd{Transaction},\ldgTx,t)~\text{to}~\adv \\
+        \ucio{Output}~(\uccmd{Submitted},\sid,\ldgTx,t)~\text{to}~\adv \\
       }
       \procedure{$\pcif \cmd = \uccmd{Extend} \land \arg = \ldgState'$}{
         \pcif P = \adv \land \ldgState' \subseteq \ldgUtxo: \\
@@ -152,15 +152,15 @@ For the sake of readability, we reproduce the functionality in
         \emptyset$}{
         % \pcif P = \adv: data \gets \ldgState \\
         % \pcelse: data \gets \ldgMap(P) \\
-        \ucio{Send}~(\uccmd{Read})~\text{to}~\IdealGclock \\
-        \ucio{Recv}~(\uccmd{ReadOk},t)~\text{from}~\IdealGclock \\
+        \ucio{Send}~(\uccmd{Read},\sid)~\text{to}~\IdealGclock \\
+        \ucio{Recv}~(\uccmd{ReadOk},\sid,t)~\text{from}~\IdealGclock \\
         \pcif \exists (\ldgTx,t') \in \ldgUtxo~\suchthat~|t-t'| > \delta:
         \pcreturn \bot \\
         \pcelse \pcif \exists (\ldgTx,t') \in \ldgState~\suchthat~ |t-t'|
         > \delta~\land \\
         \pcind \exists P' \in \ldgHonest~\suchthat~(\ldgTx,t') \notin \ldgMap(P'):
         \pcreturn \bot \\        
-        \text{Output}~(\uccmd{ReadOk}, \ldgHead(\ldgMap(P)))~\text{to}~P \\
+        \text{Output}~(\uccmd{ReadOk},\sid,\ldgHead(\ldgMap(P)))~\text{to}~P \\
       }
       \procedure{$\pcif \cmd = \uccmd{Advance} \land \arg = (P',\ldgState')$}{
         \pcif P = \adv \land \ldgMap(P') \prec \ldgState' \prec \ldgState:
