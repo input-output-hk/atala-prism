@@ -231,7 +231,7 @@ is of type \MasterKey.
 \end{figure}
 
 \subsubsection{Notes for Implementations.} %
-
+\todo{This needs updating. However, keeping it here until I confirm.}
 We acknowledge that, in the pseudocode given in \figref{fig:atalapkidid1} and
 \figref{fig:atalapkidid2}, we have favoured notational simplicity over
 implementation efficiency or
@@ -252,6 +252,16 @@ first modelling effort.
 
 \subsection{Security of \RealPKIDIDAtala}
 \label{ssec:sec-didatala}
+
+\commentwho{Jesus}{What follows is essentially right on its own, but I interpreted
+  \cite{bhz21} somehow wrongly. The approach is: (1) merge all (ideal) global
+  subroutines (ledger, RO, clock) into one (\gAtala); (2) prove that theorem 1
+  below is met, where the real protocol is \RealPKIDIDAtala, and the ideal
+  (global) functionality is \IdealGPKIDID -- although we can ignore that it is
+  a global functionality here. Then, it would be nice to prove that Cardano as
+  instantiation of the ledger, and whatever else for RO and clock, allow to
+  instantiate the merged global subroutine (this is what I've mostly done next,
+  to some extent). So, basically, revert the order of what I was trying to do.}
 
 We prove security of \RealPKIDIDAtala by showing that it UC-emulates
 \IdealGPKIDID. For this, we leverage concretely the results in \cite{bch+20} and
@@ -310,11 +320,15 @@ DID protocol (later, we show the concrete instantiations that Atala currently
 uses). For concreteness, we refer to this ``partial'' property as mergability
 of the global subroutines of Atala into \gAtala.
 
-\begin{lemma}[Mergeability of \gAtala]
+\begin{lemma}[Mergeability of \gAtala \todo{``Mergeability'' may not be the
+    best term}]
   \label{lma:gAtala}
 
+  % Let $\gamma_1 \gets \IdealGPKIDID$, $\gamma_2 \gets \IdealGdledger$,
+  % $\gamma_3 \gets \IdealGRO$, $\gamma_4 \gets \IdealGclock$. Then:
+
   Let $\gamma_1 \gets \IdealGdledger$, $\gamma_2 \gets \IdealGRO$, $\gamma_3
-  \gets \IdealGclock$. Then:
+  \gets \IdealGclock$. Then:  
   
   \begin{enumerate}
   \item For $i < 3$, $\gamma_i$ is subroutine respecting except for calls to
@@ -327,9 +341,6 @@ of the global subroutines of Atala into \gAtala.
 \end{lemma}
 
 \begin{proof}
-  \todo{In the sequel, when the $\gamma_i$'s should be protocols, not ideal
-    functionalities; e.g., $\gamma_3 = \IdealP_{\IdealGclock}$, not
-    $\IdealGclock$ (the argument should be ok, it is just a wording error).}
   We start with the first item, for which we briefly recall the notion of
   subroutine respecting protocols. Intuitively, a protocol $\pi$ is subroutine
   respecting if, for any session \sid of $\pi$, the main parties of \sid are the
@@ -383,15 +394,44 @@ of the global subroutines of Atala into \gAtala.
     of parties in $\IdealP_{\IdealGclock}$.
   \end{itemize}
 
+  % The same argument as for \IdealGdledger applies for \IdealGPKIDID, since it
+  % also leverages \IdealGclock ($\gamma_4$) in its definition.
+
   In summary, $\gamma_3 = \IdealGclock$ and $\gamma_2 = \IdealGRO$ are
   subroutine respecting (and, obviously, $\gamma_2$ is also subroutine
   respecting except for calls to $\gamma_3$). Also, $\gamma_1 = \IdealGdledger$
   is subroutine respecting except for calls to $\gamma_3$ -- and, since
   $\gamma_1$ does not use $\gamma_2$, it is trivially also subroutine respecting
-  except for calls to $\gamma_2$ and $\gamma_3$.
+  except for calls to $\gamma_2$.
 
-  Thus, condition 1 of \lmaref{lma:gAtala} is met. Now, we move to condition 2.
-  
+  Thus, condition 1 of \lmaref{lma:gAtala} is met, except for the subroutine
+  exposing part. However, even though it is not explicitly stated in their
+  corresponding definitions, it is possible to transform the \IdealGclock,
+  \IdealGRO and \IdealGdledger (by adding a directory ITI and an extra shell
+  taking care of the proper redirections) so that they are actually subroutine
+  exposing - cf \cite[Definition 2.7]{bch+20}. Now, we move to condition 2.
+  Concretely:
+
+  \begin{itemize}
+  \item $\gamma_2$ is $\gamma_1$-regular: The main (dummy) parties in
+    $\gamma_2$ ($\IdealP_{\IdealGRO}$) do not invoke new ITIs of $\gamma_1$
+    ($\IdealP_{\IdealGdledger}$) via messages to the subroutine output tape.
+    Also, the main (dummy) parties of $\IdealP_{\IdealGRO}$ do not have an ITI
+    with code $\IdealP_{\IdealGdledger}$ as subsidiary.
+  \item $\gamma_3$ is $\gamma_2$-regular: The main (dummy) parties in
+    $\gamma_3$ ($\IdealP_{\IdealGclock}$) do not invoke new ITIs of $\gamma_2$
+    ($\IdealP_{\IdealGRO}$) via messages to the subroutine output tape. Also,
+    the main (dummy) parties of $\IdealP_{\IdealGclock}$ do not have an ITI with
+    code $\IdealP_{\IdealGRO}$ as subsidiary.
+  \item $\gamma_3$ is $\gamma_1$-regular: The main (dummy) parties in
+    $\gamma_3$ ($\IdealP_{\IdealGclock}$) do not invoke new ITIs of $\gamma_1$
+    ($\IdealP_{\IdealGdledger}$) via messages to the subroutine output tape --
+    dummy parties in $\gamma_3$ pass subroutine output to parties in $\gamma_1$,
+    but already existing ones. Also, the main (dummy) parties of
+    $\IdealP_{\IdealGclock}$ do not have an ITI with code
+    $\IdealP_{\IdealGdledger}$ as subsidiary.
+  \end{itemize}
+  %
   \qed
 \end{proof}
 
