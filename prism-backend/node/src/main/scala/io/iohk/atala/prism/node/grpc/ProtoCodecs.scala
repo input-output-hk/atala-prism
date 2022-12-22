@@ -9,13 +9,7 @@ import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{DidSuffix, Ledger}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
-import io.iohk.atala.prism.node.models.KeyUsage.{
-  AuthenticationKey,
-  CommunicationKey,
-  IssuingKey,
-  MasterKey,
-  RevocationKey
-}
+import io.iohk.atala.prism.node.models.KeyUsage._
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
@@ -116,9 +110,11 @@ object ProtoCodecs {
     keyUsage match {
       case MasterKey => node_models.KeyUsage.MASTER_KEY
       case IssuingKey => node_models.KeyUsage.ISSUING_KEY
-      case CommunicationKey => node_models.KeyUsage.COMMUNICATION_KEY
+      case KeyAgreementKey => node_models.KeyUsage.KEY_AGREEMENT_KEY
       case RevocationKey => node_models.KeyUsage.REVOCATION_KEY
       case AuthenticationKey => node_models.KeyUsage.AUTHENTICATION_KEY
+      case CapabilityInvocationKey => node_models.KeyUsage.CAPABILITY_INVOCATION_KEY
+      case CapabilityDelegationKey => node_models.KeyUsage.CAPABILITY_DELEGATION_KEY
     }
   }
 

@@ -482,39 +482,39 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         LocalDateTime.of(2020, 5, 12, 0, 0).toInstant(ZoneOffset.UTC)
       val laterTimestamp =
         LocalDateTime.of(2020, 5, 13, 0, 0).toInstant(ZoneOffset.UTC)
-      val issuerCommKeys: Seq[
-        (String, ECKeyPair, Option[Instant], KeyUsage.COMMUNICATION_KEY.type)
+      val issuerKeyAgreementKeys: Seq[
+        (String, ECKeyPair, Option[Instant], KeyUsage.KEY_AGREEMENT_KEY.type)
       ] = Seq(
         (
           "foo",
           EC.generateKeyPair(),
           None,
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         ),
         (
           "bar",
           EC.generateKeyPair(),
           None,
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         ),
         (
           "revoked",
           EC.generateKeyPair(),
           Some(laterTimestamp),
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         ),
         (
           "master",
           EC.generateKeyPair(),
           None,
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         )
       )
       val (holderKeys, holderDID) = createDid
       val (issuerKeys, issuerDID) = createDid
       testReturningNonRevokedKeysForADIDOwningParticipant(
         earlierTimestamp,
-        issuerCommKeys,
+        issuerKeyAgreementKeys,
         issuerKeys,
         holderKeys,
         issuerDID,
@@ -527,32 +527,32 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
         LocalDateTime.of(2020, 5, 12, 0, 0).toInstant(ZoneOffset.UTC)
       val laterTimestamp =
         LocalDateTime.of(2020, 5, 13, 0, 0).toInstant(ZoneOffset.UTC)
-      val issuerCommKeys: Seq[
-        (String, ECKeyPair, Option[Instant], KeyUsage.COMMUNICATION_KEY.type)
+      val issuerKeyAgreementKeys: Seq[
+        (String, ECKeyPair, Option[Instant], KeyUsage.KEY_AGREEMENT_KEY.type)
       ] = Seq(
         (
           "foo",
           EC.generateKeyPair(),
           None,
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         ),
         (
           "bar",
           EC.generateKeyPair(),
           None,
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         ),
         (
           "revoked",
           EC.generateKeyPair(),
           Some(laterTimestamp),
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         ),
         (
           "master",
           EC.generateKeyPair(),
           None,
-          node_models.KeyUsage.COMMUNICATION_KEY
+          node_models.KeyUsage.KEY_AGREEMENT_KEY
         )
       )
 
@@ -560,7 +560,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       val (issuerKeys, issuerDID) = createDid
       testReturningNonRevokedKeysForADIDOwningParticipant(
         earlierTimestamp,
-        issuerCommKeys,
+        issuerKeyAgreementKeys,
         issuerKeys,
         holderKeys,
         issuerDID,
@@ -666,8 +666,8 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
 
   private def testReturningNonRevokedKeysForADIDOwningParticipant(
       earlierTimestamp: Instant,
-      issuerCommKeys: Seq[
-        (String, ECKeyPair, Option[Instant], KeyUsage.COMMUNICATION_KEY.type)
+      issuerKeyAgreementKeys: Seq[
+        (String, ECKeyPair, Option[Instant], KeyUsage.KEY_AGREEMENT_KEY.type)
       ],
       issuerAuthKey: ECKeyPair,
       holderKey: ECKeyPair,
@@ -690,7 +690,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       Some(
         node_models.DIDData(
           id = issuerDID.getSuffix,
-          publicKeys = issuerCommKeys.map { case (keyId, key, revokedTimestamp, usage) =>
+          publicKeys = issuerKeyAgreementKeys.map { case (keyId, key, revokedTimestamp, usage) =>
             val ecPoint = key.getPublicKey.getCurvePoint
             node_models.PublicKey(
               id = keyId,
@@ -745,7 +745,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase with MockitoSugar {
       // TODO remove "master" key when we stop filtering out non-communication keys
       val expectedKeyNames = Set("foo", "bar", "master")
       val expectedKeys =
-        issuerCommKeys.filter(k => expectedKeyNames.contains(k._1)).map { case (keyId, key, _, _) =>
+        issuerKeyAgreementKeys.filter(k => expectedKeyNames.contains(k._1)).map { case (keyId, key, _, _) =>
           (keyId, key.getPublicKey.getEncoded.toVector)
         }
 

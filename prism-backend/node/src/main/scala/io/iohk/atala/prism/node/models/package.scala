@@ -25,9 +25,11 @@ package object models {
 
     case object MasterKey extends KeyUsage
     case object IssuingKey extends KeyUsage
-    case object CommunicationKey extends KeyUsage
+    case object KeyAgreementKey extends KeyUsage
     case object RevocationKey extends KeyUsage
     case object AuthenticationKey extends KeyUsage
+    case object CapabilityInvocationKey extends KeyUsage
+    case object CapabilityDelegationKey extends KeyUsage
 
   }
 
