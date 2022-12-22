@@ -187,12 +187,16 @@ object ParsingUtils {
       keyUsage <- key.child(_.usage, "usage").parse {
         case node_models.KeyUsage.MASTER_KEY => Right(KeyUsage.MasterKey)
         case node_models.KeyUsage.ISSUING_KEY => Right(KeyUsage.IssuingKey)
-        case node_models.KeyUsage.COMMUNICATION_KEY =>
-          Right(KeyUsage.CommunicationKey)
+        case node_models.KeyUsage.KEY_AGREEMENT_KEY =>
+          Right(KeyUsage.KeyAgreementKey)
         case node_models.KeyUsage.REVOCATION_KEY =>
           Right(KeyUsage.RevocationKey)
         case node_models.KeyUsage.AUTHENTICATION_KEY =>
           Right(KeyUsage.AuthenticationKey)
+        case node_models.KeyUsage.CAPABILITY_INVOCATION_KEY =>
+          Right(KeyUsage.CapabilityInvocationKey)
+        case node_models.KeyUsage.CAPABILITY_DELEGATION_KEY =>
+          Right(KeyUsage.CapabilityDelegationKey)
         case _ => Left("Unknown value")
       }
       keyId <- parseKeyId(key.child(_.id, "id"))

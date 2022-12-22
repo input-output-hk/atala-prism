@@ -42,8 +42,8 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
-      keyId = "communication",
-      keyUsage = KeyUsage.CommunicationKey,
+      keyId = "keyAgreement",
+      keyUsage = KeyUsage.KeyAgreementKey,
       key = EC.generateKeyPair().getPublicKey
     )
   )
