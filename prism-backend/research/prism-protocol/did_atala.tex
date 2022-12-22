@@ -253,15 +253,77 @@ first modelling effort.
 \subsection{Security of \RealPKIDIDAtala}
 \label{ssec:sec-didatala}
 
-\commentwho{Jesus}{What follows is essentially right on its own, but I interpreted
-  \cite{bhz21} somehow wrongly. The approach is: (1) merge all (ideal) global
-  subroutines (ledger, RO, clock) into one (\gAtala); (2) prove that theorem 1
-  below is met, where the real protocol is \RealPKIDIDAtala, and the ideal
-  (global) functionality is \IdealGPKIDID -- although we can ignore that it is
-  a global functionality here. Then, it would be nice to prove that Cardano as
-  instantiation of the ledger, and whatever else for RO and clock, allow to
-  instantiate the merged global subroutine (this is what I've mostly done next,
-  to some extent). So, basically, revert the order of what I was trying to do.}
+We now prove that \RealPKIDIDAtala $\xi$-UC-emulates \IdealGPKIDID, in the
+presence of global subroutines \IdealGclock, \IdealGRO, and \IdealGdledger.
+Given that (multiple) global subroutines are involved, the proving process
+requires several steps, which we summarise first, and then specify in detail. In
+this process, we rely on recent results in \cite{bch+20,bhz21} as well as,
+naturally, on the UC framework \cite{canetti00}. In a nutshell, the steps we
+take are as follows (here, we are intentionally imprecise on occasions, in
+favour of giving a high-level idea of the overall approach):
+
+\todo{Some diagram would probably help much here.}
+\begin{enumerate}
+\item \emph{(Merging global subroutines into \gAtala)} Following the strategy
+  in \cite{bhz21}, we combine all the global subroutines needed in our protocols
+  into a single (equivalent) one. While merely ``bureaucratic'', this
+  facilitates the analysis in subsequent steps. We refer to this combined
+  global shared subroutine as \gAtala.
+\item \emph{(\gAtala is subroutine respecting)} We show that only main ITIs
+  in \gAtala accept input from ITIs not in \gAtala, no ITI within \gAtala passes
+  input to ITIs not in \gAtala, no ITI in \gAtala expects subroutine output from
+  other ITIs outside of \gAtala, and all subroutine outputs produced within
+  \gAtala are sent to the outside world via \gAtala's main ITIs.
+\item \emph{(\RealPKIDIDAtala is \gAtala-subroutine respecting)} We show that
+  \RealPKIDIDAtala is also subroutine respecting, as just described for \gAtala,
+  except actually for calls to \gAtala. This means that ITIs within
+  \RealPKIDIDAtala may communicate directly with machines in \gAtala without
+  needing to ``pass through'' the main ITIs of \RealPKIDIDAtala, and can
+  communicate with them even if they are not part of \RealPKIDIDAtala's session.
+\item \emph{(\IdealGPKIDID is \gAtala-subroutine respecting)} Same as before,
+  but with \IdealGPKIDID.
+\item \emph{(\gAtala is \RealPKIDIDAtala-regular)} We show that ITIs in \gAtala
+  do not invoke new ITIs of \RealPKIDIDAtala as subroutines, nor call or expect
+  subroutine output from machines of \RealPKIDIDAtala.
+\item \emph{(\gAtala is \IdealGPKIDID-regular)} Same as before, but with
+  \IdealGPKIDID.
+\item \emph{(Executions of $\UCM[\RealPKIDIDAtala,\gAtala]$ are indistinguishable
+    from execution of \RealPKIDIDAtala in the presence of \gAtala)} Given the
+  previous preconditions, \cite[Proposition 3.4]{bch+20} ensures that we can
+  safely apply a transformation $\UCM[\cdot,\cdot]$ to \RealPKIDIDAtala, which
+  allows to leverage the techniques from the plain UC framework.
+\item \emph{(Executions of $\UCM[\IdealGPKIDID,\gAtala]$ are indistinguishable
+    from execution of \IdealGPKIDID in the presence of \gAtala)} Same as before,
+  but with \IdealGPKIDID.
+\item \emph{(\RealPKIDIDAtala $\xi$-UC-emulates \IdealGPKIDID in the presence
+    of \gAtala)} By \cite[Definition 3.1]{bch+20}, if $\UCM[\RealPKIDIDAtala,
+  \gAtala]$ $\xi$-UC-emulates $\UCM[\IdealGPKIDID,\gAtala]$, then
+  \RealPKIDIDAtala $\xi$-UC-emulates \IdealGPKIDID, in the presence
+  of \gAtala.
+\end{enumerate}
+
+We now proceed to specify in more detail the previous steps.
+
+\paragraph{1. Merging global subroutines into \gAtala.} This transformation
+is straightforward, and can be done as in \cite[Definition 4.1]{bhz21}. Namely,
+let $\gamma_1 \gets \IdealGledger$, $\gamma_2 \gets \IdealGRO$, and $\gamma_3
+\gets \IdealGclock$. Then, we define \gAtala to be a functionality that simply
+accepts inputs of type $(\uccmd{query},\sid,i,x)$, and makes a query to
+$\gamma_i$, with input $x$ on session \sid -- e.g., a query $(\uccmd{query},
+\sid,2,(\uccmd{HasQuery},m))$ results in a query $(\uccmd{HashQuery},\sid,m)$ to
+\IdealGRO.
+%
+This allows us to directly apply the results in \cite{bch+20}. \todo{Later, we
+  will get back to arguing that the usual candidates for UC-realising the
+  individual $\gamma_i$'s meet certain properties that make them suitable for
+  UC-realising the ``merged'' functionality \gAtala. Thus, our main results
+  apply when considering real instantiations of the global subroutines, rather
+  than their idealised counterparts.}
+
+\paragraph{2. \gAtala is subroutine respecting.} 
+
+\commentwho{Jesus}{Not removing what follows for now,  because it will be
+  useful. But keep on the proof process stated in the previous enumeration.}
 
 We prove security of \RealPKIDIDAtala by showing that it UC-emulates
 \IdealGPKIDID. For this, we leverage concretely the results in \cite{bch+20} and
@@ -285,11 +347,16 @@ global subroutine).
   $\UCM[\phi,\hat{\gamma}_{\gamma_1,\dots,\gamma_n}]$.
 \end{theorem}
 
-At a high level, to apply the results in \cite{bch+20,bhz21}, we show the global
-subroutines used in \IdealGPKIDID and \RealPKIDIDAtala can be merged into the
-single ``meta'' global subroutine $\hat{\gamma}_{\gamma_1,\dots,\gamma_n}$
-required by \thmref{thm:uc-bhz21}, which furthermore meets the conditions to be
-subsequently suitable for UC-emulation. In addition, we argue that this is
+At a high level, to apply the results in \cite{bch+20,bhz21}, we merge the
+global subroutines used in \IdealGPKIDID and \RealPKIDIDAtala into a single
+``meta'' global subroutine $\gAtala = \hat{\gamma}_{\gamma_1,\dots,\gamma_n}$
+required by \thmref{thm:uc-bhz21}.
+%
+Then, to prove UC emulation, we follow the approach in \cite{bch+20} and
+describe a management protocol \UCM
+
+which furthermore meets the conditions to be
+subsequently suitable for UC-emulation. In addition, we later argue that this is
 usually the case for the known realisations of each respective global
 subroutine. (This suggests that our approach is natural, and indeed
 UC-realisable in practice.)
