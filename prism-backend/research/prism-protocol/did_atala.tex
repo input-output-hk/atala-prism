@@ -254,7 +254,8 @@ first modelling effort.
 \label{ssec:sec-didatala}
 
 We now prove that \RealPKIDIDAtala $\xi$-UC-emulates \IdealGPKIDID, in the
-presence of global subroutines \IdealGclock, \IdealGRO, and \IdealGdledger.
+presence of global subroutines \IdealGclock, \IdealGRO, and \IdealGdledger,
+as well as local digital signatures functionality \IdealFSig.
 Given that (multiple) global subroutines are involved, the proving process
 requires several steps, which we summarise first, and then specify in detail. In
 this process, we rely on recent results in \cite{bch+20,bhz21} as well as,
@@ -288,12 +289,12 @@ favour of giving a high-level idea of the overall approach):
 \item \emph{(\gAtala is \IdealGPKIDID-regular)} Same as before, but with
   \IdealGPKIDID.
 \item \emph{(Executions of $\UCM[\RealPKIDIDAtala,\gAtala]$ are indistinguishable
-    from execution of \RealPKIDIDAtala in the presence of \gAtala)} Given the
+    from executions of \RealPKIDIDAtala in the presence of \gAtala)} Given the
   previous preconditions, \cite[Proposition 3.4]{bch+20} ensures that we can
   safely apply a transformation $\UCM[\cdot,\cdot]$ to \RealPKIDIDAtala, which
   allows to leverage the techniques from the plain UC framework.
 \item \emph{(Executions of $\UCM[\IdealGPKIDID,\gAtala]$ are indistinguishable
-    from execution of \IdealGPKIDID in the presence of \gAtala)} Same as before,
+    from executions of \IdealGPKIDID in the presence of \gAtala)} Same as before,
   but with \IdealGPKIDID.
 \item \emph{(\RealPKIDIDAtala $\xi$-UC-emulates \IdealGPKIDID in the presence
     of \gAtala)} By \cite[Definition 3.1]{bch+20}, if $\UCM[\RealPKIDIDAtala,
@@ -310,8 +311,8 @@ let $\gamma_1 \gets \IdealGledger$, $\gamma_2 \gets \IdealGRO$, and $\gamma_3
 \gets \IdealGclock$. Then, we define \gAtala to be a functionality that simply
 accepts inputs of type $(\uccmd{query},\sid,i,x)$, and makes a query to
 $\gamma_i$, with input $x$ on session \sid -- e.g., a query $(\uccmd{query},
-\sid,2,(\uccmd{HasQuery},m))$ results in a query $(\uccmd{HashQuery},\sid,m)$ to
-\IdealGRO.
+\sid,2,(\uccmd{HashQuery},m))$ results in a query $(\uccmd{HashQuery},\sid,m)$
+to \IdealGRO.
 %
 This allows us to directly apply the results in \cite{bch+20}. \todo{Later, we
   will get back to arguing that the usual candidates for UC-realising the
@@ -320,9 +321,87 @@ This allows us to directly apply the results in \cite{bch+20}. \todo{Later, we
   apply when considering real instantiations of the global subroutines, rather
   than their idealised counterparts.}
 
-\paragraph{2. \gAtala is subroutine respecting.} 
+\paragraph{2. \gAtala is subroutine respecting.} We start by observing that
+all of the $\gamma_i$'s that compose \gAtala are subroutine respecting.
+Concretely, on the one hand:
 
-\commentwho{Jesus}{Not removing what follows for now,  because it will be
+\begin{itemize}
+\item \IdealGclock (resp. \IdealGRO) is the only sub-party in the protocol
+  session \sid, and it only accepts input from the main (dummy) parties in
+  $\IdealP_{\IdealGclock}$ (resp. $\IdealP_{\IdealGRO}$) in \sid.
+\item The main (dummy) parties of session \sid in $\IdealP_{\IdealGclock}$
+  (resp. $\IdealP_{\IdealGRO}$) ignore subroutine outputs from parties other
+  than \IdealGclock (resp. \IdealGRO)'s on session \sid. Similarly,
+  \IdealGclock (resp. \IdealGRO) ignores subroutine outputs.
+\item \IdealGclock (resp. \IdealGRO) in \sid only passes subroutine output to
+  the main (dummy) parties in \sid.
+\item Main (dummy) parties in session \sid of $\IdealP_{\IdealGclock}$ (resp.
+  $\IdealP_{\IdealGRO}$), and \IdealGclock (resp. \IdealGRO)  don't pass input
+  to parties not in \sid. 
+\end{itemize}
+
+On the other hand, \IdealGdledger ($\gamma_1$) is also subroutine respecting
+except for calls to \IdealGclock ($\gamma_3$). Concretely, for each session
+of the ideal protocol $\IdealP_{\IdealGdledger}$ of \IdealGdledger:
+
+\begin{itemize}
+\item Excluding calls to \IdealGclock, \IdealGdledger is the only sub-party in
+  the protocol session \sid, and it only accepts input from the main (dummy)
+  parties in $\IdealP_{\IdealGdledger}$ in \sid.
+\item The main (dummy) parties of session \sid in $\IdealP_{\IdealGdledger}$
+  ignore subroutine outputs from parties other than \IdealGdledger's on
+  session \sid. Also, \IdealGdledger ignores subroutine outputs from any
+  party, with the exception from parties in \IdealGclock.
+\item \IdealGdledger in \sid only passes subroutine output to the main (dummy)
+  parties of $\IdealP_{\IdealGdledger}$, and to \IdealGclock, in \sid.
+\item Main (dummy) parties in session \sid of $\IdealP_{\IdealGdledger}$ and
+  \IdealGdledger don't pass input to parties not in \sid, with the exception
+  of parties in $\IdealP_{\IdealGclock}$.
+\end{itemize}
+
+In \gAtala, the main (dummy) parties of each $\gamma_i$ become main (dummy)
+parties of \gAtala. Thus, from the previous, it is easy to see that \gAtala is
+subroutine respecting. \todo{Perhaps add a figure here -- like the one in my
+  notes.}
+
+\paragraph{3. \RealPKIDIDAtala is \gAtala-subroutine respecting.}
+The only parties with which \RealPKIDIDAtala communicates (concretely, via
+passing subroutine requests, or receiving subroutine responses) that do not
+share the same \sid as \RealPKIDIDAtala, are \IdealGclock, \IdealGRO, and
+\IdealGdledger -- all of them bundled within \gAtala. Thus, \RealPKIDIDAtala is
+\gAtala-subroutine respecting.
+
+\paragraph{4. \IdealGPKIDID is \gAtala-subroutine respecting.}
+As in the previous step, the only parties with which \IdealGPKIDID communicates
+that do not share the same \sid as \IdealGPKIDID, is \IdealGclock, which is
+bundled within \gAtala. Thus, \IdealGPKIDID is also \gAtala-subroutine
+respecting.
+
+\paragraph{5. \gAtala is \RealPKIDIDAtala-regular.} No main party of
+\IdealGdledger, \IdealGRO, or \IdealGclock (respectively, $\gamma_1$,
+$\gamma_2$, and $\gamma_3$), invokes a new ITI of \RealPKIDIDAtala via the
+subroutine output tape or has an ITI with code \RealPKIDIDAtala as subsidiary.
+Since \gAtala bundles all $\gamma_i$'s, the same applies to \gAtala, and
+thus \gAtala is \RealPKIDIDAtala-regular.
+
+\paragraph{6. \gAtala is \IdealGPKIDID-regular.} No main party of
+\IdealGdledger, \IdealGRO, or \IdealGclock (respectively, $\gamma_1$,
+$\gamma_2$, and $\gamma_3$), invokes a new ITI of \IdealGPKIDID via the
+subroutine output tape or has an ITI with code \IdealGPKIDID as subsidiary.
+Since \gAtala bundles all $\gamma_i$'s, the same applies to \gAtala, and
+thus \gAtala is \IdealGPKIDID-regular.
+
+\paragraph{7. Executions of $\UCM[\RealPKIDIDAtala,\gAtala]$ are
+  indistinguishable from executions of \RealPKIDIDAtala in the presence of
+  \gAtala.}
+
+\paragraph{8. Executions of $\UCM[\IdealGPKIDID,\gAtala]$ are indistinguishable
+  from executions of \IdealGPKIDID in the presence of \gAtala.}
+
+\paragraph{9. \RealPKIDIDAtala $\xi$-UC-emulates \IdealGPKIDID in the presence
+  of \gAtala.}
+
+\commentwho{Jesus}{Not removing what follows for now,  because it may/will be
   useful. But keep on the proof process stated in the previous enumeration.}
 
 We prove security of \RealPKIDIDAtala by showing that it UC-emulates
