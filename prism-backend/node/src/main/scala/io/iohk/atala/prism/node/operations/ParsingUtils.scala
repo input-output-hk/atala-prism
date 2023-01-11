@@ -12,6 +12,7 @@ import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndp
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
+import io.iohk.atala.prism.utils.UriUtils
 
 import scala.util.Try
 
@@ -38,7 +39,6 @@ object ParsingUtils {
       }
     } yield parsedDate
   }
-  val KEY_ID_RE = "^\\w+$".r
 
   def parseKeyData(
       keyData: ValueAtPath[node_models.PublicKey]
@@ -99,12 +99,12 @@ object ParsingUtils {
     }
   }
 
-  def parseKeyId(id: ValueAtPath[String]): Either[ValidationError, String] = {
-    id.parse { id =>
+  def parseKeyId(keyId: ValueAtPath[String]): Either[ValidationError, String] = {
+    keyId.parse { id =>
       Either.cond(
-        KEY_ID_RE.pattern.matcher(id).matches(),
+        UriUtils.isValidUriFragment(id),
         id,
-        s"Invalid key id: $id"
+        s"Key id: \"$id\" is not a valid URI fragment"
       )
     }
   }
@@ -114,9 +114,9 @@ object ParsingUtils {
   ): Either[ValidationError, String] =
     serviceId.parse { id =>
       Either.cond(
-        isValidUri(id),
+        UriUtils.isValidUriFragment(id),
         id,
-        s"Id $id is not a valid URI"
+        s"Service id: \"$id\" is not a valid URI fragment"
       )
     }
 
@@ -136,15 +136,16 @@ object ParsingUtils {
       }
       validatedServiceEndpointsAndIndexes <- serviceEndpoints(identity).zipWithIndex
         .traverse[EitherValidationError, (String, Int)] { case (uri, index) =>
-          if (isValidUri(uri)) Right((uri, index))
-          else
-            Left(
+          UriUtils
+            .normalizeUri(uri)
+            .toRight(
               InvalidValue(
                 serviceEndpoints.path / index.toString,
                 uri,
                 s"Service endpoint - $uri of service with id - $serviceId is not a valid URI"
               )
             )
+            .map(uri => (uri, index))
         }
     } yield validatedServiceEndpointsAndIndexes.map { case (uri, index) =>
       DIDServiceEndpoint(index, uri)
