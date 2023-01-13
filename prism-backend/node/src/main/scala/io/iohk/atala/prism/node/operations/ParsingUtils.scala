@@ -138,6 +138,7 @@ object ParsingUtils {
         .traverse[EitherValidationError, (String, Int)] { case (uri, index) =>
           UriUtils
             .normalizeUri(uri)
+            .map(uri => (uri, index))
             .toRight(
               InvalidValue(
                 serviceEndpoints.path / index.toString,
@@ -145,7 +146,7 @@ object ParsingUtils {
                 s"Service endpoint - $uri of service with id - $serviceId is not a valid URI"
               )
             )
-            .map(uri => (uri, index))
+
         }
     } yield validatedServiceEndpointsAndIndexes.map { case (uri, index) =>
       DIDServiceEndpoint(index, uri)
