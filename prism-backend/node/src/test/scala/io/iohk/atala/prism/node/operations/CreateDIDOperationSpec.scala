@@ -73,8 +73,8 @@ object CreateDIDOperationSpec {
       revokingKeys.getPublicKey
     )
 
-  private val serviceId1 = "did:prism:123#linked-domain1"
-  private val serviceId2 = "did:prism:123#linked-domain2"
+  private val serviceId1 = "linked-domain1"
+  private val serviceId2 = "linked-domain2"
 
   val exampleOperation: node_models.AtalaOperation = node_models.AtalaOperation(
     node_models.AtalaOperation.Operation.CreateDid(

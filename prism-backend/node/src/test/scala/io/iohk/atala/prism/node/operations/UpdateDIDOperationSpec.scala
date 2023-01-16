@@ -73,7 +73,7 @@ object UpdateDIDOperationSpec {
       node_models.AddServiceAction(
         Some(
           node_models.Service(
-            id = "did:prism:123#linked-domain-added-via-update-did",
+            id = "linked-domain-added-via-update-did",
             `type` = "didCom-credential-exchange",
             serviceEndpoint = List(
               "https://foo.example.com",
@@ -90,14 +90,14 @@ object UpdateDIDOperationSpec {
   val exampleRemoveServiceAction = node_models.UpdateDIDAction(
     node_models.UpdateDIDAction.Action.RemoveService(
       node_models.RemoveServiceAction(
-        serviceId = "did:prism:123#linked-domain-added-via-update-did"
+        serviceId = "linked-domain-added-via-update-did"
       )
     )
   )
   val exampleUpdateServiceAction = node_models.UpdateDIDAction(
     node_models.UpdateDIDAction.Action.UpdateService(
       node_models.UpdateServiceAction(
-        serviceId = "did:prism:123#linked-domain-added-via-update-did",
+        serviceId = "linked-domain-added-via-update-did",
         `type` = "didCom-credential-exchange-updated",
         serviceEndpoints = List(
           "https://qux.example.com"
@@ -445,7 +445,6 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
     "provide the data required for correctness verification" in {
       createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
-
       val parsedOperation = UpdateDIDOperation
         .parse(signedExampleOperation, dummyLedgerData)
         .toOption
@@ -706,7 +705,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .futureValue
 
       val service = ServicesDAO
-        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .get(createDidOperation.id, "linked-domain-added-via-update-did")
         .transact(database)
         .unsafeRunSync()
 
@@ -716,7 +715,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       )
 
       service.nonEmpty mustBe true
-      service.get.id mustBe "did:prism:123#linked-domain-added-via-update-did"
+      service.get.id mustBe "linked-domain-added-via-update-did"
       service.get.`type` mustBe "didCom-credential-exchange"
       service.get.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
         expectedServiceEndpoints(urlIndex) mustBe url
@@ -734,7 +733,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       ServicesDAO
         .insert(
           DIDService(
-            id = "did:prism:123#linked-domain-added-via-update-did",
+            id = "linked-domain-added-via-update-did",
             didSuffix = createDidOperation.id,
             `type` = "to-be-revoked",
             serviceEndpoints = List(
@@ -747,7 +746,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .unsafeRunSync()
 
       val serviceBeforeRevocation = ServicesDAO
-        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .get(createDidOperation.id, "linked-domain-added-via-update-did")
         .transact(database)
         .unsafeRunSync()
 
@@ -766,7 +765,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .futureValue
 
       val serviceAfterRevocation = ServicesDAO
-        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .get(createDidOperation.id, "linked-domain-added-via-update-did")
         .transact(database)
         .unsafeRunSync()
 
@@ -784,7 +783,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       ServicesDAO
         .insert(
           DIDService(
-            id = "did:prism:123#linked-domain-added-via-update-did",
+            id = "linked-domain-added-via-update-did",
             didSuffix = createDidOperation.id,
             `type` = "to-be-updated",
             serviceEndpoints = Nil
@@ -795,7 +794,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .unsafeRunSync()
 
       val serviceBeforeUpdate = ServicesDAO
-        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .get(createDidOperation.id, "linked-domain-added-via-update-did")
         .transact(database)
         .unsafeRunSync()
 
@@ -816,7 +815,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .futureValue
 
       val serviceAfterUpdate = ServicesDAO
-        .get(createDidOperation.id, "did:prism:123#linked-domain-added-via-update-did")
+        .get(createDidOperation.id, "linked-domain-added-via-update-did")
         .transact(database)
         .unsafeRunSync()
 
