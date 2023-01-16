@@ -22,7 +22,7 @@ object DockerPostgresService extends DockerKit {
     DefaultDockerClient.fromEnv().build()
   )
 
-  val PostgresImage = "postgres:11.5"
+  val PostgresImage = "postgres:13"
   val PostgresUsername = "postgres"
   val PostgresPassword = "postgres"
   val DatabaseName = "db"
