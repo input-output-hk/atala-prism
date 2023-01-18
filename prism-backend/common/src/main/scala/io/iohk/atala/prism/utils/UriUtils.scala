@@ -3,6 +3,7 @@ package io.iohk.atala.prism.utils
 import io.lemonlabs.uri.{Uri, Url, Urn, QueryString}
 import io.lemonlabs.uri.config.UriConfig
 import io.lemonlabs.uri.encoding.PercentEncoder
+import io.lemonlabs.uri.decoding.UriDecodeException
 
 object UriUtils {
 
@@ -26,7 +27,7 @@ object UriUtils {
      *     remove "." and ".." segments from path
      *     remove duplicate forward slashes (//) from path
      *   scheme specific normalization (http, https) since it is likely to be often used type of URL
-     *     remove port 80 for http and 443 for https if present
+     *     remove default port
      *     sort query parameters by key alphabetically
      *     remove duplicates (by name/key)
      *     encode special characters that are disallowed in path and query
@@ -36,6 +37,8 @@ object UriUtils {
      *   convert to lowercase
      *   decode all percent encoded triplets (including unreserved)
      *   encode any that need to be encoded
+     *
+     * URL without a scheme is treated as invalid
      */
     implicit val config: UriConfig = UriConfig.default.copy(queryEncoder = PercentEncoder())
 
@@ -44,6 +47,7 @@ object UriUtils {
       val parsed = Uri.parse(uriStr)
       parsed match {
         case url: Url =>
+          if (url.schemeOption.isEmpty) throw new UriDecodeException("Scheme is empty")
           // lowercase schema
           val schemeNormalized = url.schemeOption.map(_.toLowerCase())
 
@@ -60,6 +64,9 @@ object UriUtils {
                 scheme match {
                   case "http" => if (port == 80) None else Some(port)
                   case "https" => if (port == 443) None else Some(port)
+                  case "ftp" => if (port == 21) None else Some(port)
+                  case "ws" | "wss" => if (port == 80) None else Some(port)
+                  case _ => Some(port)
                 }
               case None => Some(port)
             }

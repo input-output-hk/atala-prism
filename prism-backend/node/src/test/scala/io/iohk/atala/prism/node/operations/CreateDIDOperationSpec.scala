@@ -126,8 +126,8 @@ object CreateDIDOperationSpec {
                 id = serviceId1,
                 `type` = "didCom-credential-exchange",
                 serviceEndpoint = List(
-                  "https://foo.example.com",
-                  "https://baz.example.com"
+                  "https://foo.example.com/",
+                  "https://baz.example.com/"
                 ),
                 addedOn = None,
                 deletedOn = None
@@ -136,8 +136,8 @@ object CreateDIDOperationSpec {
                 id = serviceId2,
                 `type` = "didCom-chat-message-exchange",
                 serviceEndpoint = List(
-                  "https://baz.example.com",
-                  "https://qux.example.com"
+                  "https://baz.example.com/",
+                  "https://qux.example.com/"
                 ),
                 addedOn = None,
                 deletedOn = None
@@ -266,7 +266,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
               "https://example.com/home/about?a=a1&b=b1",
               "https://example.com/home/about?b=b1&a=a1",
               "https://example.com/home/about?cartoon=tom%26jerry",
-              "https://example.com/home/about?cartoon=tom jerry"
+              "https://example.com/home/about?cartoon=tom jerry",
+              "https://example.com/ho me"
             ),
             addedOn = None,
             deletedOn = None
@@ -294,6 +295,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       parsed(8) mustBe "https://example.com/home/about?a=a1&b=b1"
       parsed(9) mustBe "https://example.com/home/about?cartoon=tom%26jerry"
       parsed(10) mustBe "https://example.com/home/about?cartoon=tom%20jerry"
+      parsed(11) mustBe "https://example.com/ho%20me"
 
     }
 
@@ -672,8 +674,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       foundService.nonEmpty mustBe true
 
       val expectedServiceEndpoints = List(
-        "https://foo.example.com",
-        "https://baz.example.com"
+        "https://foo.example.com/",
+        "https://baz.example.com/"
       )
 
       foundService.nonEmpty mustBe true

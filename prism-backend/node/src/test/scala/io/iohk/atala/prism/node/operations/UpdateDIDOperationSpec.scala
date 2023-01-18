@@ -710,8 +710,8 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .unsafeRunSync()
 
       val expectedServiceEndpoints = List(
-        "https://foo.example.com",
-        "https://baz.example.com"
+        "https://foo.example.com/",
+        "https://baz.example.com/"
       )
 
       service.nonEmpty mustBe true
@@ -822,7 +822,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       serviceAfterUpdate.nonEmpty mustBe true
       serviceAfterUpdate.value.`type` mustBe "didCom-credential-exchange-updated"
       serviceAfterUpdate.value.serviceEndpoints.size mustBe 1
-      serviceAfterUpdate.value.serviceEndpoints.head.url mustBe "https://qux.example.com"
+      serviceAfterUpdate.value.serviceEndpoints.head.url mustBe "https://qux.example.com/"
     }
 
   }
