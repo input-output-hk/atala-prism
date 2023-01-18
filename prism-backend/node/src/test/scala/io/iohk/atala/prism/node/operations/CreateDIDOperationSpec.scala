@@ -280,7 +280,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .value
         .services
         .head
-        .serviceEndpoints.map(_.url)
+        .serviceEndpoints
+        .map(_.url)
 
       parsed(0) mustBe "https://example.com/home/about"
       parsed(1) mustBe "http://example.com/home/about"

@@ -15,16 +15,28 @@ object UriUtils {
     */
   def normalizeUri(uriStr: String): Option[String] = {
 
-    /** List of normalizations performed: percent encoding normalization decode unreserved characters case normalization
-      * scheme and host to lowercase, all percent encoded triplets use uppercase hexadecimal chars path segment
-      * normalization remove "." and ".." segments from path remove duplicate forward slashes (//) from path scheme
-      * specific normalization (http, https) since it is likely to be often used type of URL remove port 80 for http and
-      * 443 for https if present sort query parameters by key alphabetically, remove duplicates (by name/key) encode
-      * special characters that are disallowed in path and query, decode the ones that are allowed if encoded
-      *
-      * for URN convert to lowercase decode all percent encoded triplets (including unreserved) encode any that need to
-      * be encoded
-      */
+    /*
+     * List of normalizations performed:
+     *   percent encoding normalization
+     *     decode unreserved characters
+     *   case normalization
+     *     scheme and host to lowercase
+     *     all percent encoded triplets use uppercase hexadecimal chars
+     *   path segment normalization
+     *     remove "." and ".." segments from path
+     *     remove duplicate forward slashes (//) from path
+     *   scheme specific normalization (http, https) since it is likely to be often used type of URL
+     *     remove port 80 for http and 443 for https if present
+     *     sort query parameters by key alphabetically
+     *     remove duplicates (by name/key)
+     *     encode special characters that are disallowed in path and query
+     *     decode the ones that are allowed if encoded
+     *
+     * for URN:
+     *   convert to lowercase
+     *   decode all percent encoded triplets (including unreserved)
+     *   encode any that need to be encoded
+     */
     implicit val config: UriConfig = UriConfig.default.copy(queryEncoder = PercentEncoder())
 
     try {
