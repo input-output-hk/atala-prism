@@ -32,6 +32,7 @@ object versions {
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
   val fs2 = "3.2.5"
+  val scalaUri = "4.0.0"
   val prismSdk = "v1.4.1-snapshot-1671656884-5999f2f" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
@@ -83,6 +84,7 @@ object Dependencies {
   val twirlApi = "com.typesafe.play" %% "twirl-api" % versions.twirl
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
   val fs2 = "co.fs2" %% "fs2-io" % versions.fs2
+  val scalaUri = "io.lemonlabs" %% "scala-uri" % versions.scalaUri
 
   // SDK dependencies
 

@@ -1,19 +1,10 @@
 package io.iohk.atala.prism.utils
 
-import java.net.{URI, URLDecoder}
+import io.lemonlabs.uri.{Uri, Url, Urn, QueryString}
+import io.lemonlabs.uri.config.UriConfig
+import io.lemonlabs.uri.encoding.PercentEncoder
 
 object UriUtils {
-
-  // URL encoded triplet, a.k special character like %23 - '#' for example
-  private[this] val tripletRegex = "%[0-9a-f]{2}".r
-
-  // Characters that should never be encoded, according to https://www.rfc-editor.org/rfc/rfc3986#section-2.3
-  private[this] val unreservedRegex = "[a-zA-Z0-9-._~]".r
-
-  // Reserved characters that always need to be encoded
-//  private[this] val reservedRegex = "[!*'();:@&=+$,/?#\\[\\] ]".r
-
-  private[this] val genericUriRegex = "^\\w+:(\\/?\\/?)[^\\s]+$".r
 
   /** Normalized URI according to <a
     * href="https://www.rfc-editor.org/rfc/rfc3986#section-6">RFC&nbsp;3986,&nbsp;section-6</a>
@@ -24,74 +15,69 @@ object UriUtils {
     */
   def normalizeUri(uriStr: String): Option[String] = {
 
-    // Characters that should never be encoded, according to https://www.rfc-editor.org/rfc/rfc3986#section-2.3
+    /** List of normalizations performed: percent encoding normalization decode unreserved characters case normalization
+      * scheme and host to lowercase, all percent encoded triplets use uppercase hexadecimal chars path segment
+      * normalization remove "." and ".." segments from path remove duplicate forward slashes (//) from path scheme
+      * specific normalization (http, https) since it is likely to be often used type of URL remove port 80 for http and
+      * 443 for https if present sort query parameters by key alphabetically, remove duplicates (by name/key) encode
+      * special characters that are disallowed in path and query, decode the ones that are allowed if encoded
+      *
+      * for URN convert to lowercase decode all percent encoded triplets (including unreserved) encode any that need to
+      * be encoded
+      */
+    implicit val config: UriConfig = UriConfig.default.copy(queryEncoder = PercentEncoder())
+
     try {
-      if (genericUriRegex.matches(uriStr)) { // validate basic structure
-        val pathSegmentNormalized = new URI(uriStr) // additional validation
-          .normalize() // path segment normalization
-          .toString
+      // parsing decodes the percent encoded triplets, including unreserved chars
+      val parsed = Uri.parse(uriStr)
+      parsed match {
+        case url: Url =>
+          // lowercase schema
+          val schemeNormalized = url.schemeOption.map(_.toLowerCase())
 
-        val percentEncodingNormalized = tripletRegex.replaceAllIn(
-          pathSegmentNormalized,
-          m => {
-            val encoded = m.group(0)
-            // check if a triplet is encoded character that does not need to be encoded,
-            // if it is, decode and replace, otherwise leave it as it is
-            val decoded = URLDecoder.decode(encoded, "UTF-8")
+          // lowercase host if not IP
+          val hostNormalized = url.hostOption.map(_.normalize)
 
-            if (unreservedRegex.matches(decoded)) decoded
-            else encoded
+          // removes dot segments and extra //
+          val pathNormalized = url.path.normalize(removeEmptyParts = true)
+
+          // remove unneeded ports
+          val portNormalized = url.port.flatMap { port: Int =>
+            schemeNormalized match {
+              case Some(scheme) =>
+                scheme match {
+                  case "http" => if (port == 80) None else Some(port)
+                  case "https" => if (port == 443) None else Some(port)
+                }
+              case None => Some(port)
+            }
           }
-        )
 
-        val uri = new URI(percentEncodingNormalized)
+          val queryNormalized = {
+            // filter duplicate keys (last one stays) and sort alphabetically (by key)
+            val filtered = url.query.params.toMap.toVector.sortBy(_._1)
+            QueryString(filtered)
+          }
 
-        val scheme = uri.getScheme.toLowerCase
-        val host = uri.getHost.toLowerCase
+          // construction of the instance encodes all special characters that are disallowed in path and query
+          val urlNormalized = Url(
+            scheme = schemeNormalized.orNull,
+            user = url.user.orNull,
+            password = url.password.orNull,
+            host = hostNormalized.map(_.toString).orNull,
+            port = portNormalized.getOrElse(-1),
+            path = pathNormalized.toString,
+            query = queryNormalized,
+            fragment = url.fragment.orNull
+          )
 
-        val port = scheme match {
-          case "http" =>
-            if (uri.getPort == -1 || uri.getPort == 80) -1 else uri.getPort
-          case "https" =>
-            if (uri.getPort == -1 || uri.getPort == 443) -1 else uri.getPort
-          case _ => uri.getPort
-        }
+          Some(urlNormalized.toString)
 
-        val path = "/+".r.replaceAllIn(uri.getPath, "/")
-
-        val query = Option(uri.getQuery).map { q =>
-          q.split('&')
-            .collect { kv =>
-              kv.split("=", 2) match {
-                case Array(k, v) => k -> v
-                case Array(k) => k -> ""
-              }
-            }
-            .toMap // remove duplicates
-            .toArray
-            .sortBy(_._1) // sort alphabetically by key
-            .map { case (k, v) =>
-              s"$k=$v"
-            }
-            .mkString("&")
-        }
-
-        val normalized = new URI(
-          scheme,
-          uri.getUserInfo,
-          host,
-          port,
-          path,
-          query.orNull,
-          uri.getFragment
-        ).toString
-
-        Some(normalized)
-
-      } else None
-
+        case urn: Urn =>
+          Some(urn.toString.toLowerCase)
+      }
     } catch {
-      case m: Exception => Some(m.getMessage)
+      case _: Exception => None
     }
   }
 
