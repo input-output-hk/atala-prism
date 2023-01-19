@@ -10,4 +10,4 @@ out
 mill
 client-storage.txt
 .bsp
-
+*.sc

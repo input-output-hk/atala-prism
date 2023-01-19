@@ -114,7 +114,8 @@ object PrismBuild {
               diffx,
               flyway,
               typesafeConfig,
-              fs2
+              fs2,
+              scalaUri
             ) ++
             prismDependencies ++
             scalapbDependencies,

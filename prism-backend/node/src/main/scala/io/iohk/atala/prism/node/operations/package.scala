@@ -19,8 +19,6 @@ import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolV
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
-import scala.util.matching.Regex
-
 package object operations {
 
   /** Error during parsing of an encoded operation
@@ -344,14 +342,4 @@ package object operations {
           parseOperationWithMockedLedger(op).toOption
         }
       }
-
-  def isValidUri(uri: String): Boolean = {
-
-    val regex: Regex =
-      """^\w+:(\/?\/?)[^\s]+$""".r
-
-    regex.findFirstMatchIn(uri).nonEmpty
-
-  }
-
 }
