@@ -136,11 +136,12 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
                 InLedger
               )
 
-            // Validate AtalaObject and if invalid, do not process
-            _ <- Monad[F].pure(validateObj(obj, notification.transaction))
+            // validate the object
+            errOrUnit = validateObj(obj, notification.transaction)
+            // if the object is valid
             // Retrieve all operations from the object and apply them to the state.
             // After this method every operation should have either APPROVED_AND_APPLIED or APPROVED_AND_REJECTED status.
-            transaction <- Monad[F].pure(processObject(obj))
+            transaction = errOrUnit.flatMap(_ => processObject(obj))
             // Save the error if processObject failed
             result <- transaction flatTraverse {
               _.logSQLErrorsV2("saving object").attemptSql

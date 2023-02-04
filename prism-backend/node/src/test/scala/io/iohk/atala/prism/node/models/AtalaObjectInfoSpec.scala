@@ -24,11 +24,13 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
       ops: Seq[SignedAtalaOperation],
       status: AtalaObjectStatus = AtalaObjectStatus.Pending
   ) = {
+    val block = node_internal.AtalaBlock(ops)
     val blockContent = node_internal
       .AtalaObject(
         blockOperationCount = ops.size
       )
-      .withBlockContent(node_internal.AtalaBlock(operations = ops))
+      .withBlockContent(block)
+      .withBlockByteLength(block.toByteArray.length)
     AtalaObjectInfo(
       objectId = AtalaObjectId.of(blockContent),
       blockContent.toByteArray,
