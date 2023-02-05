@@ -15,10 +15,10 @@ import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.AtalaOperationsDAO
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
-
-import scala.collection.BuildFrom
+import scala.util.chaining._
 import scala.util.control.NonFatal
 
 // This service syncs Node state with the underlying ledger
@@ -51,95 +51,114 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
 
-    // parse serialized operations using the ledger data into Operation structure
-    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) { case (signedOperation, osn) =>
+    final case class ParsedOperations(
+        valid: List[(SignedAtalaOperation, Operation)] = List.empty,
+        invalid: List[(SignedAtalaOperation, ValidationError)] = List.empty
+    )
+
+    val parsedOperations = operationsWithSeqNumbers.foldRight(ParsedOperations()) { (v, acc) =>
+      val (signedOperation, index) = v
       parseOperation(
         signedOperation,
-        LedgerData(
-          transactionId,
-          ledger,
-          new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, osn)
-        )
-      ).left
-        .map(err => (signedOperation, err))
+        LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, index))
+      ) match {
+        case Left(err) => acc.copy(invalid = (signedOperation, err) :: acc.invalid)
+        case Right(parsed) => acc.copy(valid = (signedOperation, parsed) :: acc.valid)
+      }
     }
 
-    parsedOperationsEither match {
-      case Left((signedOperation, error)) =>
-        logger.warn(
-          s"Occurred invalid operation; ignoring whole block as invalid:\n${error.render}\nOperation:\n${signedOperation.toProtoString}"
-        )
+    val rejectInvalidOps = parsedOperations.invalid.pipe { invalidOps =>
+      if (invalidOps.isEmpty) connection.unit
+      else {
+        val errMsg =
+          s"""
+             | Found invalid operations in txId: $transactionId, ledger: ${ledger.toString}
+             | Operations:
+             |    ${invalidOps
+              .map { case (op, err) => s"${err.render};\n\t${op.toProtoString.split("\n").mkString("\t\n")}" }
+              .mkString(";\n\n\t")}
+             |""".stripMargin
+
+        logger.warn(errMsg)
+
         AtalaOperationsDAO
           .updateAtalaOperationStatusBatch(
-            operations.map(AtalaOperationId.of),
+            invalidOps.map { case (op, _) => AtalaOperationId.of(op) },
             AtalaOperationStatus.REJECTED
           )
-          .as(false)
-      case Right(
-            parsedOperations
-          ) => // iterate over the list of parsed operations, and update Node's databases representing the Node state
-        (parsedOperations zip operations)
-          .traverse { case (parsedOperation, protoOperation) =>
-            val atalaOperationId = AtalaOperationId.of(protoOperation)
-            val result: ConnectionIO[Unit] = for {
-              // we want operations to be atomic - either it is applied correctly or the state is not modified
-              // we are using SQL savepoints for that, which can be used to do subtransactions
-              savepoint <- connection.setSavepoint
-              atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(
-                atalaOperationId
-              )
-              // verify signature, validate operation, and update the Node state by applied the operation
-              // see BlockProcessingServiceImpl.processOperation for more details
-              _ <- processOperation(
-                parsedOperation,
-                protoOperation,
-                atalaOperationId
-              )
-                .flatMap {
-                  case Right(_) =>
-                    logRequestWithContext(
-                      methodName,
-                      s"Operation applied:\n${parsedOperation.digest}",
-                      atalaOperationId.toString,
-                      protoOperation
-                    )
-                    OperationsCounters.countOperationApplied(protoOperation)
-                    connection.releaseSavepoint(savepoint)
-                  case Left(err) =>
-                    logger.warn(
-                      s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
-                    )
-                    OperationsCounters.countOperationRejected(
-                      protoOperation,
-                      err
-                    )
-                    logRequestWithContext(
-                      methodName,
-                      s"Operation was not applied:\n${err.toString}",
-                      atalaOperationId.toString,
-                      protoOperation
-                    )
-                    // atomically rollback the operation
-                    connection
-                      .rollback(savepoint)
-                      .flatMap { _ =>
-                        if ( // check that this operation wasn't applied before (so this is a duplicate)
-                          atalaOperationInfo.exists(
-                            _.operationStatus != AtalaOperationStatus.APPLIED
-                          )
-                        ) {
-                          AtalaOperationsDAO
-                            .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED, err.toString)
-                        } else {
-                          connection.unit
-                        }
-                      }
-                }
-            } yield ()
-            result
-          }
-          .as(true)
+      }
     }
+
+    val processValidOps = parsedOperations.valid.traverse { case (protoOperation, parsedOperation) =>
+      val atalaOperationId = AtalaOperationId.of(protoOperation)
+      val result: ConnectionIO[Unit] = for {
+        // we want operations to be atomic - either it is applied correctly or the state is not modified
+        // we are using SQL savepoints for that, which can be used to do subtransactions
+        savepoint <- connection.setSavepoint
+        atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(
+          atalaOperationId
+        )
+        // verify signature, validate operation, and update the Node state by applied the operation
+        // see BlockProcessingServiceImpl.processOperation for more details
+        _ <- processOperation(
+          parsedOperation,
+          protoOperation,
+          atalaOperationId
+        )
+          .flatMap {
+            case Right(_) =>
+              logRequestWithContext(
+                methodName,
+                s"Operation applied:\n${parsedOperation.digest}",
+                atalaOperationId.toString,
+                protoOperation
+              )
+              OperationsCounters.countOperationApplied(protoOperation)
+              connection.releaseSavepoint(savepoint)
+            case Left(err) =>
+              logger.warn(
+                s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
+              )
+              OperationsCounters.countOperationRejected(
+                protoOperation,
+                err
+              )
+              logRequestWithContext(
+                methodName,
+                s"Operation was not applied:\n${err.toString}",
+                atalaOperationId.toString,
+                protoOperation
+              )
+              // atomically rollback the operation
+              connection
+                .rollback(savepoint)
+                .flatMap { _ =>
+                  if ( // check that this operation wasn't applied before (so this is a duplicate)
+                    atalaOperationInfo.exists(
+                      _.operationStatus != AtalaOperationStatus.APPLIED
+                    )
+                  ) {
+                    AtalaOperationsDAO
+                      .updateAtalaOperationStatus(atalaOperationId, AtalaOperationStatus.REJECTED, err.toString)
+                  } else {
+                    connection.unit
+                  }
+                }
+          }
+      } yield ()
+      result
+    }
+
+    for {
+      _ <- rejectInvalidOps
+      _ <- processValidOps
+    } yield {
+      // If some (at least one) operations have been processed, we consider the block processed
+      // If all operations in the block ware invalid or the block was empty, then block was not processed
+      if (operations.isEmpty || parsedOperations.valid.isEmpty) false
+      else true
+    }
+
   }
 
   // Apply operation and update the status of this operation
@@ -226,40 +245,5 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
     logger.info(
       s"methodName:$methodName, \n  $message \n operationId = $operationId \n request = \n ${request.toProtoString}"
     )
-  }
-
-  /** Applies function to all sequence elements, up to the point error occurs
-    *
-    * @param in
-    *   input sequence
-    * @param f
-    *   function to be applied to elements of the sequence
-    * @tparam A
-    *   type of input sequence element
-    * @tparam L
-    *   left alternative of Either returned by f
-    * @tparam R
-    *   right alternative of Either returned by f
-    * @tparam M
-    *   the input sequence type
-    * @return
-    *   Left with underlying L type containing first error occurred, Right with M[R] underlying type if there are no
-    *   errors
-    */
-  private def eitherTraverse[A, L, R, M[X] <: IterableOnce[X]](
-      in: M[A]
-  )(
-      f: A => Either[L, R]
-  )(implicit cbf: BuildFrom[M[A], R, M[R]]): Either[L, M[R]] = {
-    val builder = cbf.newBuilder(in)
-
-    in.iterator
-      .foldLeft(Either.right[L, builder.type](builder)) { (eitherBuilder, el) =>
-        for {
-          b <- eitherBuilder
-          elResult <- f(el)
-        } yield b.+=(elResult)
-      }
-      .map(_.result())
   }
 }
