@@ -128,6 +128,8 @@ private class SubmissionServiceImpl[F[_]: Monad](
         atalaObjectsTransactionsRepository.getNotPublishedObjects
       )
       // merge AtalaObjects into bigger AtalaObjects in order to reduce amount of created transactions
+      // several AtalaObjects will be merged into one based on their byte size
+      // one AtalaObject needs to fit into underlying ledger transaction metadata byte limit
       atalaObjectsMerged <- EitherT.right(mergeAtalaObjects(atalaObjects))
       // deserialize resulting AtalaObjects from bytes
       atalaObjectsWithParsedContent = atalaObjectsMerged.map { obj =>
@@ -259,11 +261,12 @@ private class SubmissionServiceImpl[F[_]: Monad](
       newSubmissionStatus: AtalaObjectTransactionSubmissionStatus,
       transactionE: Either[NodeError, AtalaObjectTransactionSubmission]
   )
-
   private def mergeAtalaObjects(
       atalaObjects: List[AtalaObjectInfo]
   ): F[List[AtalaObjectInfo]] = {
     // Iterate over objects and merge when the size of the resulting object fits into transaction metadata
+    // atalaObjectsMerged is a list of tuples, every tuple is AtalaObject and list of AtalaObjects,
+    // inside tuple, first is the final merged object, and second is list of objects the first one was composed from (the old ones)
     val atalaObjectsMerged =
       atalaObjects
         .foldRight(

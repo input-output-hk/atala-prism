@@ -279,6 +279,7 @@ object DataPreparation {
         blockOperationCount = opsCount
       )
       .withBlockContent(block)
+      .withBlockByteLength(block.toByteArray.length)
 
   def setAtalaObjectTransactionSubmissionStatus(
       transaction: TransactionInfo,

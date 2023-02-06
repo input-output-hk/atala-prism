@@ -51,10 +51,10 @@ case class AtalaObjectInfo(
       val mergedBlock =
         node_internal.AtalaBlock(thisBlock.operations ++ thatBlock.operations)
       val obj = node_internal
-        .AtalaObject(
-          blockOperationCount = mergedBlock.operations.size
-        )
+        .AtalaObject()
         .withBlockContent(mergedBlock)
+        .withBlockOperationCount(mergedBlock.operations.size)
+        .withBlockByteLength(mergedBlock.toByteArray.length)
       AtalaObjectInfo(
         AtalaObjectId.of(obj),
         obj.toByteArray,

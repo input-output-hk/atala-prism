@@ -92,7 +92,39 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
   def saveObject(
       notification: AtalaObjectNotification
   ): F[Either[SaveObjectError, Boolean]] = {
-    val applyTransaction = (objMaybe: Option[AtalaObjectInfo]) =>
+
+    def validateObj(obj: AtalaObjectInfo, tx: TransactionInfo): Either[SaveObjectError, Unit] = {
+      val errMetadata =
+        s"objId: ${obj.objectId.toString}, ledger: ${tx.ledger} txId: ${tx.transactionId}".stripMargin
+      node_internal.AtalaObject
+        .validate(obj.byteContent)
+        .toEither
+        .leftMap(err => SaveObjectError(s"""
+             | Could not parse AtalaObject protobuff, got error: ${err.getMessage}
+             | $errMetadata
+             | """.stripMargin))
+        .flatMap { parsedObj =>
+          val mbBlock = parsedObj.blockContent
+          val expectedOpCount = parsedObj.blockOperationCount
+          val expectedBlockByteLength = parsedObj.blockByteLength
+          mbBlock.fold[Either[SaveObjectError, Unit]](Left(SaveObjectError(s"""
+               | AtalaObject does not have AtalaBlock.
+               | $errMetadata
+               |""".stripMargin))) { block =>
+            if (block.operations.size != expectedOpCount) Left(SaveObjectError(s"""
+                 | Expected operations count - $expectedOpCount, got - ${block.operations.size}
+                 | $errMetadata
+                 |""".stripMargin))
+            else if (block.toByteArray.length != expectedBlockByteLength) Left(SaveObjectError(s"""
+                 | Expected block byte length - $expectedBlockByteLength, got - ${block.toByteArray.length}
+                 | $errMetadata
+                 |""".stripMargin))
+            else Right(()).withLeft[SaveObjectError]
+          }
+        }
+    }
+
+    def applyTransaction(objMaybe: Option[AtalaObjectInfo]): F[Either[SaveObjectError, Boolean]] = {
       objMaybe match {
         case Some(obj) =>
           for {
@@ -103,9 +135,13 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
                 obj.transaction.get.transactionId,
                 InLedger
               )
+
+            // validate the object
+            errOrUnit = validateObj(obj, notification.transaction)
+            // if the object is valid
             // Retrieve all operations from the object and apply them to the state.
-            // After this method every operation should have whether APPROVED_AND_APPLIED or APPROVED_AND_REJECTED status.
-            transaction <- Monad[F].pure(processObject(obj))
+            // After this method every operation should have either APPROVED_AND_APPLIED or APPROVED_AND_REJECTED status.
+            transaction = errOrUnit.flatMap(_ => processObject(obj))
             // Save the error if processObject failed
             result <- transaction flatTraverse {
               _.logSQLErrorsV2("saving object").attemptSql
@@ -121,6 +157,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
             ).asLeft[Boolean]
           )
       }
+    }
 
     val updateAction = for {
       objectInfoMaybe <- atalaObjectsTransactionsRepository.setObjectTransactionDetails(notification)
@@ -147,6 +184,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
   def scheduleAtalaOperations(
       ops: node_models.SignedAtalaOperation*
   ): F[List[Either[NodeError, AtalaOperationId]]] = {
+    // creates one AtalaObject per operation
     val opsWithObjects = ops.toList.map { op =>
       (op, ObjectManagementService.createAtalaObject(List(op)))
     }
@@ -157,6 +195,10 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
           case Right(_) =>
             val objBytes = obj.toByteArray
             atalaOperationsRepository
+              // inserts AtalaObject (with status - Scheduled) and AtalaOperation (with status - Received)
+              // AtalaObject has AtalaBlock with only one AtalaOperation inside of it.
+              // AtalaOperation will have object_id in db, which is associated with an object
+              // that has that operation
               .insertOperation(
                 AtalaObjectId.of(objBytes),
                 objBytes,
@@ -329,8 +371,10 @@ object ObjectManagementService {
   ): node_internal.AtalaObject = {
     val block = node_internal.AtalaBlock(ops)
     node_internal
-      .AtalaObject(blockOperationCount = block.operations.size)
+      .AtalaObject()
       .withBlockContent(block)
+      .withBlockOperationCount(block.operations.size)
+      .withBlockByteLength(block.toByteArray.length)
   }
 
   def make[I[_]: Functor, F[_]: MonadCancelThrow](

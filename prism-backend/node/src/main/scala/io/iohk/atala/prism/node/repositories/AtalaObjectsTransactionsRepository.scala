@@ -97,9 +97,7 @@ object AtalaObjectsTransactionsRepository {
       mid attach new AtalaObjectsTransactionsRepositoryImpl[F](transactor)
     }
 
-  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[
-      _
-  ]: Applicative: Functor](
+  def resource[F[_]: MonadCancelThrow: TimeMeasureMetric, R[_]: Applicative: Functor](
       transactor: Transactor[F],
       logs: Logs[R, F]
   ): Resource[R, AtalaObjectsTransactionsRepository[F]] =
