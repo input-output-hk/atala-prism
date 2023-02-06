@@ -216,26 +216,29 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       atalaOperationInfo must be(expectedAtalaOperationInfo)
     }
 
-    "ignore block when it contains invalid operations" in {
+    "ignore invalid operations in the block and process valid ones" in {
       val invalidOperation =
         updateDidOperation.update(_.updateDid.actions(0).addKey.key.id := "")
       val signedInvalidOperation =
         signOperation(invalidOperation, "master", masterKeys.getPrivateKey)
 
-      val invalidBlock = node_internal.AtalaBlock(
-        operations = Seq(signedInvalidOperation)
+      val signedValidOperation = signOperation(createDidOperation, "master", masterKeys.getPrivateKey)
+
+      val block = node_internal.AtalaBlock(
+        operations = Seq(signedInvalidOperation, signedValidOperation)
       )
       val (objId, opIds) = DataPreparation.insertOperationStatuses(
-        List(signedInvalidOperation),
+        List(signedInvalidOperation, signedValidOperation),
         AtalaOperationStatus.RECEIVED
       )
 
-      opIds.size must be(1)
-      val atalaOperationId = opIds.head
+      opIds.size must be(2)
+      val validOperationId = AtalaOperationId.of(signedValidOperation)
+      val invalidOperationId = AtalaOperationId.of(signedInvalidOperation)
 
       val result = service
         .processBlock(
-          invalidBlock,
+          block,
           dummyTransactionId,
           dummyLedger,
           dummyTimestamp,
@@ -245,18 +248,32 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         .unsafeToFuture()
         .futureValue
 
-      result mustBe false
+      // the block is processed, because at least one operation inside of it is processed.
+      result mustBe true
 
-      val atalaOperationInfo =
-        DataPreparation.getOperationInfo(atalaOperationId).value
-      val expectedAtalaOperationInfo = AtalaOperationInfo(
-        atalaOperationId,
+      // invalid op should be rejected
+      val invalidAtalaOperationInfo =
+        DataPreparation.getOperationInfo(invalidOperationId).value
+      val expectedInvalidAtalaOperationInfo = AtalaOperationInfo(
+        invalidOperationId,
         objId,
         AtalaOperationStatus.REJECTED,
         "",
         None
       )
-      atalaOperationInfo must be(expectedAtalaOperationInfo)
+      invalidAtalaOperationInfo must be(expectedInvalidAtalaOperationInfo)
+
+      // valid op should be applied
+      val validAtalaOperationInfo =
+        DataPreparation.getOperationInfo(validOperationId).value
+      val expectedValidAtalaOperationInfo = AtalaOperationInfo(
+        validOperationId,
+        objId,
+        AtalaOperationStatus.APPLIED,
+        "",
+        None
+      )
+      validAtalaOperationInfo must be(expectedValidAtalaOperationInfo)
     }
 
     "apply correct operations even though there are incorrect ones in the block" in {
