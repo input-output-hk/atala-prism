@@ -170,8 +170,24 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           "version",
           "effectiveSince"
         )
-        message mustBe "Negative effectiveSince"
+        message mustBe "Negative or zero effectiveSince"
       }
+    }
+  }
+
+  "return error when effectiveSince is zero" in {
+    val invalidOperation = protocolUpdateOperation(
+      ProtocolVersionInfo(ProtocolVersion(3, 3), None, 0)
+    )
+    inside(
+      ProtocolVersionUpdateOperation.parse(invalidOperation, dummyLedgerData)
+    ) { case Left(ValidationError.InvalidValue(path, _, message)) =>
+      path.path mustBe Vector(
+        "protocolVersionUpdate",
+        "version",
+        "effectiveSince"
+      )
+      message mustBe "Negative or zero effectiveSince"
     }
   }
 

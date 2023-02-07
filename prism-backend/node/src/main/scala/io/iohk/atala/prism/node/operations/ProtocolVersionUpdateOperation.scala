@@ -159,7 +159,7 @@ object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolV
       effectiveSince <-
         versionInfo
           .child(_.effectiveSince, "effectiveSince")
-          .parse(e => Either.cond(e >= 0, e, "Negative effectiveSince"))
+          .parse(e => Either.cond(e > 0, e, "Negative or zero effectiveSince"))
     } yield ProtocolVersionUpdateOperation(
       versionName,
       ProtocolVersion(major, minor),
