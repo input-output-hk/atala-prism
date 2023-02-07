@@ -85,6 +85,8 @@ object ParsingUtils {
   ): Either[ValidationError, ECPublicKey] = {
     if (ecData(_.data.toByteArray.isEmpty)) {
       Left(ecData.child(_.data, "compressedData").missing())
+    } else if (ecData(_.curve) != ECConfig.getCURVE_NAME) {
+      Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
     } else {
       Try(
         EC.toPublicKeyFromCompressed(ecData(_.data.toByteArray))
