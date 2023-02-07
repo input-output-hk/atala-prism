@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.operations
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.Inside._
-
+import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import com.google.protobuf.ByteString
 import javax.xml.bind.DatatypeConverter
 
@@ -51,6 +51,31 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
         explanation mustBe "Unable to initialize the key: ECPoint corresponding to a public key doesn't belong to Secp256k1 curve"
       // explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve" // Error before ATL-974
       }
+    }
+
+    "fail parseCompressedECKey when curve in provided argument does mot match curve in EC config" in {
+
+      val keyPair = EC.generateKeyPair()
+      val pk = keyPair.getPublicKey
+      val validData = ByteString.copyFrom(pk.getEncodedCompressed)
+
+      val invalidCompressedKey = node_models.CompressedECKeyData(
+        curve = "InvalidCurve", // some random string that is not ECConfig.getCURVE_NAME
+        data = validData
+      )
+
+      inside(
+        ParsingUtils.parseCompressedECKey(
+          ValueAtPath(
+            invalidCompressedKey,
+            Path(Vector.empty)
+          )
+        )
+      ) {
+        case Left(err) => err.explanation mustBe "Unsupported curve"
+        case Right(_) => fail("parseCompressedECKey did not fail with invalid curve provided")
+      }
+
     }
   }
 
