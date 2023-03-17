@@ -231,6 +231,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
             OperationsCounters
               .failedToStoreToDbAtalaOperations(List(atalaOperation), err)
             AtalaOperationId.of(atalaOperation).asRight[NodeError]
+          // success case
           case ((atalaOperation, _), Right(_)) =>
             OperationsCounters
               .countReceivedAtalaOperations(List(atalaOperation))

@@ -31,12 +31,17 @@ object OperationsCounters {
   private val REVOKE_CREDENTIALS_TAG_VALUE = "revoke-credentials"
   private val CREATE_DID_TAG_VALUE = "create-did"
   private val ISSUE_CREDENTIAL_BATCH_TAG_VALUE = "issue-credential-batch"
+  private val PROTOCOL_VERSION_UPDATE_OPERATION_VALUE = "protocol-version-update"
   private val UPDATE_DID_OPERATION_TAG_VALUE = "did-update"
+  private val DEACTIVATE_DID_TAG_VALUE = "deactivate-did"
 
   // Values for atala update did operations
   private val EMPTY_ACTION_TAG_VALUE = "empty-did-update"
   private val ADD_KEY_ACTION_TAG_VALUE = "add-key"
   private val REMOVE_KEY_ACTION_TAG_VALUE = "remove-key"
+  private val ADD_SERVICE_ACTION_TAG_VALUE = "add-service"
+  private val REMOVE_SERVICE_ACTION_TAG_VALUE = "remove-service"
+  private val UPDATE_SERVICE_ACTION_TAG_VALUE = "update-service"
 
   private lazy val receivedObjectsCounter: Metric.Counter =
     Kamon.counter(RECEIVED_OPERATION_METRIC_NAME)
@@ -47,7 +52,7 @@ object OperationsCounters {
   private lazy val failedToProcessBlocksCounter =
     Kamon.counter(FAILED_TO_PROCESS_BLOCKS_METRIC_NAME)
 
-  def countReceivedAtalaOperations(in: List[SignedAtalaOperation]): Unit =
+  def countReceivedAtalaOperations(in: List[SignedAtalaOperation]): Either[Throwable, Unit]  =
     increaseOperationsOccurrencesCounter(
       in,
       receivedObjectsCounter,
@@ -57,7 +62,7 @@ object OperationsCounters {
   def failedToStoreToDbAtalaOperations(
       in: List[SignedAtalaOperation],
       error: NodeError
-  ): Unit =
+  ): Either[Throwable, Unit]  =
     increaseOperationsOccurrencesCounter(
       in,
       failedToStoreObjectsCounter,
@@ -97,14 +102,18 @@ object OperationsCounters {
       in: List[SignedAtalaOperation],
       counter: Metric.Counter,
       tagSetBuilder: TagSet.Builder
-  ): Unit =
-    Try {
+  ): Either[Throwable, Unit] = {
+    val res = Try {
       val operationAndOccurrences =
         in.map(_.getOperation).groupBy(_.operation).view.mapValues(_.size)
       operationAndOccurrences.foreach { case (operation, occurrences) =>
         countAtalaDidOperations(operation, occurrences, counter, tagSetBuilder)
       }
-    }.toEither.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error))
+    }.toEither
+
+    res.left.foreach(error => logger.error(s"${counter.name} counter just blew up", error))
+    res
+  }
 
   private def countAtalaDidOperations(
       in: AtalaOperation.Operation,
@@ -165,6 +174,8 @@ object OperationsCounters {
     case AtalaOperation.Operation.RevokeCredentials(_) =>
       REVOKE_CREDENTIALS_TAG_VALUE
     case AtalaOperation.Operation.CreateDid(_) => CREATE_DID_TAG_VALUE
+    case AtalaOperation.Operation.DeactivateDid(_) => DEACTIVATE_DID_TAG_VALUE
+    case AtalaOperation.Operation.ProtocolVersionUpdate(_) => PROTOCOL_VERSION_UPDATE_OPERATION_VALUE
     case AtalaOperation.Operation.IssueCredentialBatch(_) =>
       ISSUE_CREDENTIAL_BATCH_TAG_VALUE
     // Just in case, must be impossible
@@ -175,6 +186,9 @@ object OperationsCounters {
     case Action.Empty => EMPTY_ACTION_TAG_VALUE
     case Action.AddKey(_) => ADD_KEY_ACTION_TAG_VALUE
     case Action.RemoveKey(_) => REMOVE_KEY_ACTION_TAG_VALUE
+    case Action.AddService(_) => ADD_SERVICE_ACTION_TAG_VALUE
+    case Action.RemoveService(_) => REMOVE_SERVICE_ACTION_TAG_VALUE
+    case Action.UpdateService(_) => UPDATE_SERVICE_ACTION_TAG_VALUE
   }
 
 }
