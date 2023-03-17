@@ -7,8 +7,6 @@ import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperat
 import org.scalatest.EitherValues._
 import org.scalatest.matchers.must.Matchers
 
-
-
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
   UpdateDIDOperationSpec,
