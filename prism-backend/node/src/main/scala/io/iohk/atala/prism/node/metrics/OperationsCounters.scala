@@ -52,7 +52,7 @@ object OperationsCounters {
   private lazy val failedToProcessBlocksCounter =
     Kamon.counter(FAILED_TO_PROCESS_BLOCKS_METRIC_NAME)
 
-  def countReceivedAtalaOperations(in: List[SignedAtalaOperation]): Either[Throwable, Unit]  =
+  def countReceivedAtalaOperations(in: List[SignedAtalaOperation]): Either[Throwable, Unit] =
     increaseOperationsOccurrencesCounter(
       in,
       receivedObjectsCounter,
@@ -62,7 +62,7 @@ object OperationsCounters {
   def failedToStoreToDbAtalaOperations(
       in: List[SignedAtalaOperation],
       error: NodeError
-  ): Either[Throwable, Unit]  =
+  ): Either[Throwable, Unit] =
     increaseOperationsOccurrencesCounter(
       in,
       failedToStoreObjectsCounter,
