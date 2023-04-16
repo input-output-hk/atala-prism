@@ -72,7 +72,7 @@ object ProtoCodecs {
       .Service()
       .withId(nodeStateService.id)
       .withType(nodeStateService.`type`)
-      .withServiceEndpoint(nodeStateService.serviceEndpoints.map(_.url))
+      .withServiceEndpoint(nodeStateService.serviceEndpoints)
       .withAddedOn(toLedgerData(nodeStateService.addedOn))
 
     nodeStateService.revokedOn

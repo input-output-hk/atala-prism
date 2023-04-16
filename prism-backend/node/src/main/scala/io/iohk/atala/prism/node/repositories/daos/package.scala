@@ -12,13 +12,7 @@ import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.models.nodeState.{
-  CredentialBatchState,
-  DIDPublicKeyState,
-  DIDServiceEndpointState,
-  DIDServiceWithEndpoint,
-  LedgerData
-}
+import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, DIDServiceState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
 
@@ -176,12 +170,13 @@ package object daos extends BaseDAO {
     }
   }
 
-  implicit val didServiceWithEndpointRead: Read[DIDServiceWithEndpoint] = {
+  implicit val didServiceWithEndpointRead: Read[DIDServiceState] = {
     Read[
       (
           IdType,
           String,
           DidSuffix,
+          String,
           String,
           TransactionId,
           Instant,
@@ -191,10 +186,7 @@ package object daos extends BaseDAO {
           Option[Instant],
           Option[Int],
           Option[Int],
-          Ledger,
-          Option[IdType],
-          Option[Int],
-          Option[String]
+          Ledger
       )
     ].map {
       case (
@@ -202,6 +194,7 @@ package object daos extends BaseDAO {
             id,
             didSuffix,
             serviceType,
+            serviceEndpoints,
             aTransactionId,
             aTimestamp,
             aABSN,
@@ -211,9 +204,6 @@ package object daos extends BaseDAO {
             maybeRANSN,
             maybeROSN,
             ledger,
-            maybeServiceEndpointId,
-            maybeUrlIndex,
-            maybeUrl
           ) =>
         val addLedgerData = LedgerData(
           transactionId = aTransactionId,
@@ -232,19 +222,12 @@ package object daos extends BaseDAO {
             timestampInfo = new TimestampInfo(timestamp.toEpochMilli, absn, osn)
           )
 
-        val serviceEndpoint =
-          for {
-            serviceEndpointId <- maybeServiceEndpointId
-            urlIndex <- maybeUrlIndex
-            url <- maybeUrl
-          } yield DIDServiceEndpointState(serviceEndpointId, urlIndex, serviceId, url)
-
-        DIDServiceWithEndpoint(
+        DIDServiceState(
           serviceId = serviceId,
           id = id,
           didSuffix = didSuffix,
           `type` = serviceType,
-          serviceEndpoint = serviceEndpoint,
+          serviceEndpoints = serviceEndpoints,
           addedOn = addLedgerData,
           revokedOn = revokeLedgerData
         )
