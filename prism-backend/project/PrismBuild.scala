@@ -166,11 +166,6 @@ object PrismBuild {
           }
         },
         docker / imageNames := generateImageNames(name, version.value),
-        docker / buildOptions := BuildOptions(
-          removeIntermediateContainers = BuildOptions.Remove.Always,
-          pullBaseImage = BuildOptions.Pull.Always,
-          platforms = List("linux/amd64", "linux/arm64"),
-        ),
         libraryDependencies ++= circeDependencies ++ enumeratumDependencies ++ doobieDependencies ++
           grpcDependencies ++ logbackDependencies ++
           sttpDependencies ++
