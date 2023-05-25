@@ -115,7 +115,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       data: ValueAtPath[proto.CreateDIDOperation.DIDCreationData],
       didSuffix: DidSuffix,
       servicesLimit: Int,
-      serviceEndpointCharLimit: Int
+      serviceEndpointCharLimit: Int,
+      serviceTypeCharLimit: Int
   ): Either[ValidationError, List[DIDService]] = {
     val servicesValue = data.child(_.services, "services")
     val services = servicesValue(identity)
@@ -134,7 +135,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
               .parseService(
                 ValueAtPath(service, servicesValue.path / index.toString),
                 didSuffix,
-                serviceEndpointCharLimit
+                serviceEndpointCharLimit,
+                serviceTypeCharLimit
               )
           }
 
@@ -150,6 +152,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     val globalConfig: Config = ConfigFactory.load()
     val servicesLimit = Try(globalConfig.getInt("didServicesLimit")).toOption.getOrElse(50)
     val serviceEndpointCharLenLimit = Try(globalConfig.getInt("didServiceEndpointCharLimit")).toOption.getOrElse(300)
+    val serviceTypeCharLimit = Try(globalConfig.getInt("didServiceTypeCharLimit")).toOption.getOrElse(100)
 
     val operationDigest = Sha256.compute(operation.toByteArray)
     val didSuffix = DidSuffix(operationDigest.getHexValue)
@@ -158,7 +161,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     for {
       data <- createOperation.childGet(_.didData, "didData")
       keys <- parseKeysFromData(data, didSuffix)
-      services <- parseServicesFromData(data, didSuffix, servicesLimit, serviceEndpointCharLenLimit)
+      services <- parseServicesFromData(data, didSuffix, servicesLimit, serviceEndpointCharLenLimit, serviceTypeCharLimit)
     } yield CreateDIDOperation(didSuffix, keys, services, servicesLimit, operationDigest, ledgerData)
   }
 }

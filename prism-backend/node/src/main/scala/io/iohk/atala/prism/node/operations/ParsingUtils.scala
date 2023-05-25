@@ -130,7 +130,6 @@ object ParsingUtils {
       serviceEndpointCharLimit: Int,
       canBeEmpty: Boolean = false
   ): Either[ValidationError, String] = {
-    // TODO: if service endpoints can be empty and it is empty, no validations should be done
     for {
       // check for an empty string
       _ <- serviceEndpoints.parse { str =>
@@ -146,7 +145,7 @@ object ParsingUtils {
         Either.cond(
           str.length < serviceEndpointCharLimit,
           (),
-          s"Exceeded character limit for a service with id - $serviceId, max - $serviceEndpointCharLimit, got - ${str.length}"
+          s"Exceeded service endpoint character limit for a service with id - $serviceId, max - $serviceEndpointCharLimit, got - ${str.length}"
         )
       }
       rawServiceEndpoints = serviceEndpoints(identity)
@@ -165,13 +164,17 @@ object ParsingUtils {
       parsedServiceEndpoints <- parseJson(rawServiceEndpoints) match {
         case Left(_) =>
           // Not a JSON string, but could be a regular Uri string, if so, normalize it
-          UriUtils
-            .normalizeUri(rawServiceEndpoints)
-            .toRight(
-              serviceEndpoints.invalid(
-                s"Service endpoint - $rawServiceEndpoints of service with id - $serviceId is not a valid URI"
+          // First, make sure it is not empty, when canBeEmpty is true
+          if (rawServiceEndpoints.isEmpty && canBeEmpty) rawServiceEndpoints.asRight
+          else
+            UriUtils
+              // This function returns None for empty strings
+              .normalizeUri(rawServiceEndpoints)
+              .toRight(
+                serviceEndpoints.invalid(
+                  s"Service endpoint - $rawServiceEndpoints of service with id - $serviceId is not a valid URI"
+                )
               )
-            )
         case Right(json) =>
           // is a JSON string, but must be either array or object
           json.asArray match {
@@ -184,7 +187,7 @@ object ParsingUtils {
               // first check for empty array
               for {
                 _ <- Either.cond(
-                  endpoints.nonEmpty || canBeEmpty,
+                  endpoints.nonEmpty || canBeEmpty, // empty JSON array is valid if canBeEmpty is true
                   (),
                   serviceEndpoints.invalid(s"Service with id - $serviceId must have at least one service endpoint")
                 )
@@ -239,7 +242,8 @@ object ParsingUtils {
 
   def parseServiceType(
       serviceType: ValueAtPath[String],
-      canBeEmpty: Boolean = false
+      canBeEmpty: Boolean = false,
+      serviceTypeCharLimit: Int
   ): Either[ValidationError, String] = {
     /*
      * type string can be either
@@ -249,78 +253,94 @@ object ParsingUtils {
      *     can be only a JSON array, where each element is a string, every string
      *       MUST not start nor end with whitespaces, and MUST have at least a non whitespace character
      */
-    // TODO: add max type char length
-    // TODO: if type can be empty, then other validations on JSOn should not be done
-    for {
-      _ <- Either.cond(
-        serviceType(tp => tp.trim.nonEmpty || canBeEmpty),
-        (),
-        serviceType.missing()
-      )
-      rawType = serviceType(identity)
-      parsedType <- parseJson(rawType) match {
-        case Left(_) =>
-          // Not a JSON string, validate that it has at least one non whitespace character and no whitespaces around
-          if (rawType.trim.length == rawType.length) rawType.asRight
-          else
-            serviceType
-              .invalid(
-                "type must not start nor end with whitespaces, and must have at least a non whitespace character"
-              )
-              .asLeft
-        case Right(jsonValue) =>
-          // Is a JSON, validate that it is an array of valid strings
-          jsonValue.asArray match {
-            case Some(types) =>
-              // Is an array, validate an array
-            for {
-                _ <- Either.cond(
-                  types.nonEmpty || canBeEmpty,
-                  (),
-                  serviceType.missing()
-                )
-                // If at least one element in an array is invalid, the whole thing is invalid
-                validated <- types.zipWithIndex
-                  // Find invalid one
-                  .find { case (elm, _) =>
-                    val valid = elm.isString && {
-                      val str = elm.toString
-                      str.trim.length == str.length
-                    }
-                    !valid
-                  }
-                  .map { case (_, index) =>
-                    InvalidValue(
-                      serviceType.path / index.toString,
-                      rawType,
-                      s"every value in type JSON array must not start nor end with whitespaces, and must have at least one non whitespace character"
-                    )
-                  }
-                  // Get the original raw type string as "right"
-                  .toLeft(rawType)
-              } yield validated
 
-            case None =>
+    /**
+      * I can start with an if statement, if it is empty and can be empty, i just return Right(string) otherwise a fire
+      * a validation logic below
+      */
+    val rawType = serviceType(identity)
+    if (rawType.isEmpty && canBeEmpty) rawType.asRight[ValidationError]
+    else
+      for {
+        _ <- Either.cond(
+          serviceType(tp => tp.trim.nonEmpty),
+          (),
+          serviceType.missing()
+        )
+        _ <- serviceType.parse { str =>
+          Either.cond(
+            str.length < serviceTypeCharLimit,
+            (),
+            s"Exceeded type character limit for a service, max - $serviceTypeCharLimit, got - ${str.length}"
+          )
+        }
+        parsedType <- parseJson(rawType) match {
+          case Left(_) =>
+            // Not a JSON string, validate that it has at least one non whitespace character and no whitespaces around
+            if (rawType.trim.length == rawType.length) rawType.asRight
+            else
               serviceType
                 .invalid(
-                  s"type must be a JSON array or regular string"
+                  "type must not start nor end with whitespaces, and must have at least a non whitespace character"
                 )
                 .asLeft
-          }
-      }
-    } yield parsedType
+          case Right(jsonValue) =>
+            // Is a JSON, validate that it is an array of valid strings
+            jsonValue.asArray match {
+              case Some(types) =>
+                // Is an array, validate an array, empty array of json is valid as long as canBeEmpty is true
+                for {
+                  _ <- Either.cond(
+                    types.nonEmpty || canBeEmpty,
+                    (),
+                    serviceType.missing()
+                  )
+                  // If at least one element in an array is invalid, the whole thing is invalid
+                  validated <- types.zipWithIndex
+                    // Find invalid one
+                    .find { case (elm, _) =>
+                      val valid = elm.isString && {
+                        val str = elm.toString
+                        str.trim.length == str.length
+                      }
+                      !valid
+                    }
+                    .map { case (_, index) =>
+                      InvalidValue(
+                        serviceType.path / index.toString,
+                        rawType,
+                        s"every value in type JSON array must not start nor end with whitespaces, and must have at least one non whitespace character"
+                      )
+                    }
+                    // Get the original raw type string as "right"
+                    .toLeft(rawType)
+                } yield validated
+
+              case None =>
+                serviceType
+                  .invalid(
+                    s"type must be a JSON array or regular string"
+                  )
+                  .asLeft
+            }
+        }
+      } yield parsedType
 
   }
 
   def parseService(
       service: ValueAtPath[node_models.Service],
       didSuffix: DidSuffix,
-      serviceEndpointCharLimit: Int
+      serviceEndpointCharLimit: Int,
+      serviceTypeCharLimit: Int
   ): Either[ValidationError, DIDService] = {
 
     for {
       id <- parseServiceId(service.child(_.id, "id"))
-      serviceType <- parseServiceType(service.child(_.`type`, "type"))
+      serviceType <- parseServiceType(
+        serviceType = service.child(_.`type`, "type"),
+        serviceTypeCharLimit = serviceTypeCharLimit
+      )
       parsedServiceEndpoints <- parseServiceEndpoints(
         service.child(_.serviceEndpoint, "serviceEndpoint"),
         id,
