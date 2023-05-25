@@ -8,13 +8,15 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage, nodeState}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
+import com.typesafe.config.{Config, ConfigFactory}
+import scala.util.Try
 
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
@@ -23,8 +25,7 @@ case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
 // id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
-case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: List[DIDServiceEndpoint])
-    extends UpdateDIDAction
+case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: String) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
@@ -104,7 +105,7 @@ case class UpdateDIDOperation(
           id = x.id,
           didSuffix = x.didSuffix,
           `type` = x.`type`,
-          serviceEndpoints = x.serviceEndpoints.map(s => DIDServiceEndpoint(s.urlIndex, s.url))
+          serviceEndpoints = x.serviceEndpoints
         )
       )
     } yield didService
@@ -227,6 +228,10 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       didSuffix: DidSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
 
+    val globalConfig: Config = ConfigFactory.load()
+    val serviceEndpointCharLenLimit = Try(globalConfig.getInt("didServiceEndpointCharLimit")).toOption.getOrElse(300)
+    val serviceTypeCharLimit = Try(globalConfig.getInt("didServiceTypeCharLimit")).toOption.getOrElse(100)
+
     action { uda =>
       uda.action match {
         case Action.AddKey(value) =>
@@ -250,7 +255,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.service
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
-            .flatMap(ParsingUtils.parseService(_, didSuffix))
+            .flatMap(ParsingUtils.parseService(_, didSuffix, serviceEndpointCharLenLimit, serviceTypeCharLimit))
             .map(AddServiceAction)
 
         case Action.RemoveService(value) =>
@@ -268,12 +273,17 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             id <- ParsingUtils.parseServiceId(
               ValueAtPath(value.serviceId, path / "serviceId")
             )
-            serviceType =
-              if (value.`type`.trim.isEmpty) None else Some(value.`type`.trim) // if empty then do not update
+
+            serviceType <- ParsingUtils.parseServiceType(
+              serviceType = ValueAtPath(value.`type`, path / "type"),
+              canBeEmpty = true,
+              serviceTypeCharLimit = serviceTypeCharLimit
+            )
             serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
-              ValueAtPath(value.serviceEndpoints.toList, path / "serviceEndpoints"),
-              id,
-              canBeEmpty = true
+              serviceEndpoints = ValueAtPath(value.serviceEndpoints, path / "serviceEndpoints"),
+              serviceId = id,
+              canBeEmpty = true,
+              serviceEndpointCharLimit = serviceEndpointCharLenLimit
             )
             _ <-
               if (serviceType.isEmpty && serviceEndpoints.isEmpty) {
@@ -283,7 +293,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
                   MissingAtLeastOneValue(NonEmptyList(typePath, List(serviceEndpointsPath)))
                 )
               } else Right(())
-          } yield UpdateServiceAction(id, serviceType, serviceEndpoints)
+          } yield UpdateServiceAction(id, Some(serviceType), serviceEndpoints)
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 
