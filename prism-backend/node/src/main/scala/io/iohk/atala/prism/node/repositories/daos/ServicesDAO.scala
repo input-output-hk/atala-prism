@@ -20,7 +20,7 @@ object ServicesDAO {
          |SELECT s.service_id, s.id, s.did_suffix, s.type, s.service_endpoints,
          |       s.added_on_transaction_id, s.added_on, s.added_on_absn, s.added_on_osn,
          |       s.revoked_on_transaction_id, s.revoked_on, s.revoked_on_absn, s.revoked_on_osn,
-         |       s.ledger,
+         |       s.ledger
          |FROM services AS s
          |WHERE did_suffix = $suffix AND s.revoked_on is NULL
        """.stripMargin.query[DIDServiceState].to[List]
@@ -54,7 +54,7 @@ object ServicesDAO {
     sql"""
             |INSERT INTO services (service_id, id, did_suffix, type, service_endpoints,
             |    added_on_transaction_id, added_on, added_on_absn, added_on_osn, ledger)
-            |VALUES ($newServiceId, ${service.id}, ${service.didSuffix}, ${service.`type`}, ${service.serviceEndpoints}
+            |VALUES ($newServiceId, ${service.id}, ${service.didSuffix}, ${service.`type`}, ${service.serviceEndpoints},
             |    ${ledgerData.transactionId}, ${addedOn.getAtalaBlockTimestamp.toInstant},
             |    ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
             |    ${ledgerData.ledger})
