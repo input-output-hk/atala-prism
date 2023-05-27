@@ -132,7 +132,7 @@ object CreateDIDOperationSpec {
               node_models.Service(
                 id = serviceId2,
                 `type` = "didCom-chat-message-exchange",
-                serviceEndpoint = """{"uri": "https://baz.example.com/"}""",
+                serviceEndpoint = """{"uri":"https://baz.example.com/"}""",
                 addedOn = None,
                 deletedOn = None
               )
@@ -225,6 +225,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val services = parsed.services
+      services.foreach(println(_))
       services.size mustBe 2
 
       services.head.id mustBe serviceId1

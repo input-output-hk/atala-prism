@@ -703,7 +703,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .transact(database)
         .unsafeRunSync()
 
-      val expectedServiceEndpoints = "https://foo.example.com"
+      val expectedServiceEndpoints = "https://foo.example.com/"
 
       service.nonEmpty mustBe true
       service.get.id mustBe "linked-domain-added-via-update-did"
@@ -808,7 +808,6 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
       serviceAfterUpdate.nonEmpty mustBe true
       serviceAfterUpdate.value.`type` mustBe "didCom-credential-exchange-updated"
-      serviceAfterUpdate.value.serviceEndpoints.size mustBe 1
       serviceAfterUpdate.value.serviceEndpoints mustBe "https://qux.example.com/"
     }
 
