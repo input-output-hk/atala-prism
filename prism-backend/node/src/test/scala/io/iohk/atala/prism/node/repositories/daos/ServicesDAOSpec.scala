@@ -8,8 +8,8 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.models.nodeState.{DIDServiceEndpointState, DIDServiceState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage}
+import io.iohk.atala.prism.node.models.nodeState.{DIDServiceState, LedgerData}
+import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, DIDService, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{didSuffixFromDigest, digestGen}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import org.scalatest.OptionValues._
@@ -55,31 +55,17 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
       id = serviceId1,
       didSuffix = didSuffix,
       `type` = "didCom-credential-exchange",
-      serviceEndpoints = List(
-        DIDServiceEndpoint(
-          url = "https://foo.example.com",
-          urlIndex = 0
-        ),
-        DIDServiceEndpoint(
-          url = "https://bar.example.com",
-          urlIndex = 1
-        )
-      )
+      serviceEndpoints = """
+          |["https://foo.example.com", "https://bar.example.com"]
+          |""".stripMargin
     ),
     DIDService(
       id = serviceId2,
       didSuffix = didSuffix,
       `type` = "didCom-chat-message-exchange",
-      serviceEndpoints = List(
-        DIDServiceEndpoint(
-          url = "https://baz.example.com",
-          urlIndex = 0
-        ),
-        DIDServiceEndpoint(
-          url = "https://qux.example.com",
-          urlIndex = 1
-        )
-      )
+      serviceEndpoints = """
+          |["https://baz.example.com", "https://quz.example.com"]
+          |""".stripMargin
     )
   )
 
@@ -93,7 +79,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     dummyTimestamp
   )
 
-  private def validateStandardSelection(expected: List[DIDService], got: List[DIDServiceState]): Unit = {
+  private def validateStandardSelection(expected: List[DIDService], got: List[DIDServiceState]) = {
     expected.size mustBe 2
 
     val first = got.find(_.id == serviceId1).value
@@ -102,23 +88,14 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     first.id mustBe expected.head.id
     first.didSuffix mustBe expected.head.didSuffix
     first.`type` mustBe expected.head.`type`
-    first.serviceEndpoints.size mustBe expected.head.serviceEndpoints.size
-    first.serviceEndpoints.head.serviceId mustBe first.serviceId
-    first.serviceEndpoints.zipWithIndex.foreach { case (se, index) =>
-      se.urlIndex mustBe expected.head.serviceEndpoints(index).urlIndex
-      se.url mustBe expected.head.serviceEndpoints(index).url
-    }
+    first.serviceEndpoints.length mustBe expected.head.serviceEndpoints.length
+    first.serviceEndpoints mustBe expected.head.serviceEndpoints
 
     second.id mustBe expected.last.id
     second.didSuffix mustBe expected.last.didSuffix
     second.`type` mustBe expected.last.`type`
-    second.serviceEndpoints.size mustBe expected.last.serviceEndpoints.size
-    second.serviceEndpoints.last.serviceId mustBe second.serviceId
-    second.serviceEndpoints.zipWithIndex.foreach { seAndIndex: (DIDServiceEndpointState, Int) =>
-      val (se, index) = seAndIndex
-      se.urlIndex mustBe expected.last.serviceEndpoints(index).urlIndex
-      se.url mustBe expected.last.serviceEndpoints(index).url
-    }
+    second.serviceEndpoints.length mustBe expected.last.serviceEndpoints.length
+    second.serviceEndpoints mustBe expected.last.serviceEndpoints
 
   }
 
@@ -141,7 +118,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
         id = "did:prism:123#linked-domain0",
         didSuffix = didSuffix,
         `type` = "no-service-endpoints",
-        serviceEndpoints = Nil
+        serviceEndpoints = ""
       ) :: services
 
       val xa = implicitly[Transactor[IO]]
@@ -222,7 +199,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
     }
 
-    "ServicesDAO.insert should insert a record in services table and records in service endpoints table" in {
+    "ServicesDAO.insert should insert a record in services table" in {
       val xa = implicitly[Transactor[IO]]
 
       val didData = DIDData(didSuffix, keys, Nil, operationDigest)
@@ -240,10 +217,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
       receivedServiceAfterInsertion.id mustBe services.head.id
       receivedServiceAfterInsertion.`type` mustBe services.head.`type`
-      receivedServiceAfterInsertion.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
-        services.head.serviceEndpoints(urlIndex).url mustBe url
-      }
-
+      receivedServiceAfterInsertion.serviceEndpoints mustBe services.head.serviceEndpoints
     }
 
     "ServicesDAO.insert should not insert a record if associated did does not exist in db beforehand" in {

@@ -9,8 +9,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
-import io.iohk.atala.prism.node.models.nodeState.DIDServiceEndpointState
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.repositories.daos.{PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
@@ -75,10 +74,7 @@ object UpdateDIDOperationSpec {
           node_models.Service(
             id = "linked-domain-added-via-update-did",
             `type` = "didCom-credential-exchange",
-            serviceEndpoint = List(
-              "https://foo.example.com",
-              "https://baz.example.com"
-            ),
+            serviceEndpoint = "https://foo.example.com",
             addedOn = None,
             deletedOn = None
           )
@@ -99,9 +95,7 @@ object UpdateDIDOperationSpec {
       node_models.UpdateServiceAction(
         serviceId = "linked-domain-added-via-update-did",
         `type` = "didCom-credential-exchange-updated",
-        serviceEndpoints = List(
-          "https://qux.example.com"
-        )
+        serviceEndpoints = "https://qux.example.com"
       )
     )
   )
@@ -244,7 +238,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
           .actions(2)
           .addService
           .service
-          .modify(_.copy(serviceEndpoint = List("https://foo.example.com", "not valid URI"))),
+          .modify(_.copy(serviceEndpoint = """["https://foo.example.com", "not valid URI"]""")),
         Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint", "1"),
         "not valid URI"
       )
@@ -267,7 +261,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
           .actions(2)
           .addService
           .service
-          .modify(_.copy(serviceEndpoint = Nil)),
+          .modify(_.copy(serviceEndpoint = "[]")),
         Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint"),
         "List()"
       )
@@ -297,7 +291,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         _.updateDid
           .actions(4)
           .updateService
-          .modify(_.copy(`type` = "", serviceEndpoints = Nil)),
+          .modify(_.copy(`type` = "", serviceEndpoints = "")),
         NonEmptyList(
           Vector("updateDid", "actions", "4", "updateService", "type"),
           List(Vector("updateDid", "actions", "4", "updateService", "serviceEndpoints"))
@@ -311,7 +305,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         _.updateDid
           .actions(4)
           .updateService
-          .modify(_.copy(serviceEndpoints = Nil))
+          .modify(_.copy(serviceEndpoints = ""))
       )
 
       val signed = BlockProcessingServiceSpec.signOperation(
@@ -709,17 +703,12 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .transact(database)
         .unsafeRunSync()
 
-      val expectedServiceEndpoints = List(
-        "https://foo.example.com/",
-        "https://baz.example.com/"
-      )
+      val expectedServiceEndpoints = "https://foo.example.com"
 
       service.nonEmpty mustBe true
       service.get.id mustBe "linked-domain-added-via-update-did"
       service.get.`type` mustBe "didCom-credential-exchange"
-      service.get.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
-        expectedServiceEndpoints(urlIndex) mustBe url
-      }
+      service.get.serviceEndpoints mustBe expectedServiceEndpoints
 
     }
 
@@ -736,9 +725,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
             id = "linked-domain-added-via-update-did",
             didSuffix = createDidOperation.id,
             `type` = "to-be-revoked",
-            serviceEndpoints = List(
-              DIDServiceEndpoint(0, "https://foo.example.com")
-            )
+            serviceEndpoints = "https://foo.example.com"
           ),
           dummyLedgerData
         )
@@ -786,7 +773,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
             id = "linked-domain-added-via-update-did",
             didSuffix = createDidOperation.id,
             `type` = "to-be-updated",
-            serviceEndpoints = Nil
+            serviceEndpoints = ""
           ),
           dummyLedgerData
         )
@@ -822,7 +809,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       serviceAfterUpdate.nonEmpty mustBe true
       serviceAfterUpdate.value.`type` mustBe "didCom-credential-exchange-updated"
       serviceAfterUpdate.value.serviceEndpoints.size mustBe 1
-      serviceAfterUpdate.value.serviceEndpoints.head.url mustBe "https://qux.example.com/"
+      serviceAfterUpdate.value.serviceEndpoints mustBe "https://qux.example.com/"
     }
 
   }
