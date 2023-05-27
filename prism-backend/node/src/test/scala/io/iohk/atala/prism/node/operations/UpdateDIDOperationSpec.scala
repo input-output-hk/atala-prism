@@ -240,7 +240,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
           .service
           .modify(_.copy(serviceEndpoint = """["https://foo.example.com", "not valid URI"]""")),
         Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint", "1"),
-        "not valid URI"
+        """["https://foo.example.com", "not valid URI"]"""
       )
     }
 
@@ -263,7 +263,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
           .service
           .modify(_.copy(serviceEndpoint = "[]")),
         Vector("updateDid", "actions", "2", "addService", "service", "serviceEndpoint"),
-        "List()"
+        "[]"
       )
     }
 
