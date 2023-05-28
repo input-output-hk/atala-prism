@@ -200,7 +200,7 @@ object ParsingUtils {
                     else if (jsonVal.isString) {
                       // normalize a string, if succeed, append to final list, if not, fail the whole thing
                       val strNormalized = UriUtils
-                        .normalizeUri(jsonVal.toString)
+                        .normalizeUri(jsonVal.asString.get) // Should not fail because of .isString check above
                         .map(Json.fromString)
                         .toRight(
                           InvalidValue(
@@ -299,8 +299,9 @@ object ParsingUtils {
                     // Find invalid one
                     .find { case (elm, _) =>
                       val valid = elm.isString && {
-                        val str = elm.toString
-                        str.trim.length == str.length
+                        val str = elm.asString.get // Will not fail because of check above
+                        val vld = str.trim.nonEmpty && str.trim.length == str.length
+                        vld
                       }
                       !valid
                     }
