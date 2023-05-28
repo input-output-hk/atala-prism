@@ -124,7 +124,9 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       _ <- Either.cond(
         services.size < servicesLimit,
         (),
-        servicesValue.invalid(s"Exceeded number of services while creating a DID, max - $servicesLimit, got - ${services.size}")
+        servicesValue.invalid(
+          s"Exceeded number of services while creating a DID, max - $servicesLimit, got - ${services.size}"
+        )
       )
       eitherErrOrServices <- servicesValue { services =>
         type EitherValidationError[B] = Either[ValidationError, B]
@@ -161,7 +163,13 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     for {
       data <- createOperation.childGet(_.didData, "didData")
       keys <- parseKeysFromData(data, didSuffix)
-      services <- parseServicesFromData(data, didSuffix, servicesLimit, serviceEndpointCharLenLimit, serviceTypeCharLimit)
+      services <- parseServicesFromData(
+        data,
+        didSuffix,
+        servicesLimit,
+        serviceEndpointCharLenLimit,
+        serviceTypeCharLimit
+      )
     } yield CreateDIDOperation(didSuffix, keys, services, servicesLimit, operationDigest, ledgerData)
   }
 }

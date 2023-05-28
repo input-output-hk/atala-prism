@@ -203,7 +203,7 @@ package object daos extends BaseDAO {
             maybeRTimestamp,
             maybeRANSN,
             maybeROSN,
-            ledger,
+            ledger
           ) =>
         val addLedgerData = LedgerData(
           transactionId = aTransactionId,

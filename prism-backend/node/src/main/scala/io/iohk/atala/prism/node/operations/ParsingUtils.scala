@@ -254,8 +254,7 @@ object ParsingUtils {
      *       MUST not start nor end with whitespaces, and MUST have at least a non whitespace character
      */
 
-    /**
-      * I can start with an if statement, if it is empty and can be empty, i just return Right(string) otherwise a fire
+    /** I can start with an if statement, if it is empty and can be empty, i just return Right(string) otherwise a fire
       * a validation logic below
       */
     val rawType = serviceType(identity)

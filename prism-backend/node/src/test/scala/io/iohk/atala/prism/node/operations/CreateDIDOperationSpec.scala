@@ -298,7 +298,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       }
 
-
     }
 
     "fail to parse services if one of the services has invalid id" in {
