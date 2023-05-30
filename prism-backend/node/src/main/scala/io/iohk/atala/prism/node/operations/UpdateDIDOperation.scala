@@ -25,7 +25,8 @@ case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
 // id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
-case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: String) extends UpdateDIDAction
+case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: Option[String])
+    extends UpdateDIDAction
 
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
@@ -176,7 +177,7 @@ case class UpdateDIDOperation(
             if (serviceType.nonEmpty) serviceType.get
             else service.`type` // use old type if new is not provided (no update)
           newServiceEndpoints =
-            if (serviceEndpoints.nonEmpty) serviceEndpoints
+            if (serviceEndpoints.nonEmpty) serviceEndpoints.get
             else service.serviceEndpoints // use old service endpoints if new ones are not provided
           newService = DIDService(id, didSuffix, newServiceType, newServiceEndpoints)
           _ <- createService(newService, ledgerData)
@@ -268,6 +269,19 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
         case Action.UpdateService(value) =>
           val path = action.path / "updateService"
+          import io.circe.parser.{parse => parseJson}
+
+          def isEmpty(str: String): Boolean = {
+            val isEmptyJsonArray = parseJson(str)
+              .map(
+                _.asArray
+                  .map(_.isEmpty)
+                  .fold(false)(identity)
+              )
+              .fold(_ => false, identity)
+
+            str.isEmpty || isEmptyJsonArray
+          }
 
           for {
             id <- ParsingUtils.parseServiceId(
@@ -285,15 +299,21 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
               canBeEmpty = true,
               serviceEndpointCharLimit = serviceEndpointCharLenLimit
             )
+            serviceTypeIsEmpty = isEmpty(serviceType)
+            serviceEndpointsIsEmpty = isEmpty(serviceEndpoints)
             _ <-
-              if (serviceType.isEmpty && serviceEndpoints.isEmpty) {
+              if (serviceTypeIsEmpty && serviceEndpointsIsEmpty) {
                 val typePath = path / "type"
                 val serviceEndpointsPath = path / "serviceEndpoints"
                 Left(
                   MissingAtLeastOneValue(NonEmptyList(typePath, List(serviceEndpointsPath)))
                 )
               } else Right(())
-          } yield UpdateServiceAction(id, Some(serviceType), serviceEndpoints)
+          } yield UpdateServiceAction(
+            id,
+            if (serviceTypeIsEmpty) None else Some(serviceType),
+            if (serviceEndpointsIsEmpty) None else Some(serviceEndpoints)
+          )
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 
