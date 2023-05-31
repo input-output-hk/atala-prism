@@ -245,6 +245,12 @@ object ParsingUtils {
       canBeEmpty: Boolean = false,
       serviceTypeCharLimit: Int
   ): Either[ValidationError, String] = {
+
+    def isValidTypeString(str: String): Boolean = {
+      val pattern = """^[A-Za-z0-9\-_]+(\s[A-Za-z0-9\-_]+)*$""".r
+      str.trim.nonEmpty && str.trim.length == str.length && pattern.findFirstMatchIn(str).isDefined
+    }
+
     /*
      * type string can be either
      *   regular string
@@ -276,11 +282,11 @@ object ParsingUtils {
         parsedType <- parseJson(rawType) match {
           case Left(_) =>
             // Not a JSON string, validate that it has at least one non whitespace character and no whitespaces around
-            if (rawType.trim.length == rawType.length) rawType.asRight
+            if (isValidTypeString(rawType)) rawType.asRight
             else
               serviceType
                 .invalid(
-                  "type must not start nor end with whitespaces, and must have at least a non whitespace character"
+                  "Invalid type string"
                 )
                 .asLeft
           case Right(jsonValue) =>
@@ -300,7 +306,7 @@ object ParsingUtils {
                     .find { case (elm, _) =>
                       val valid = elm.isString && {
                         val str = elm.asString.get // Will not fail because of check above
-                        val vld = str.trim.nonEmpty && str.trim.length == str.length
+                        val vld = isValidTypeString(str)
                         vld
                       }
                       !valid
@@ -309,7 +315,7 @@ object ParsingUtils {
                       InvalidValue(
                         serviceType.path / index.toString,
                         rawType,
-                        s"every value in type JSON array must not start nor end with whitespaces, and must have at least one non whitespace character"
+                        s"Invalid type string"
                       )
                     }
                     // Get the original raw type string as "right"

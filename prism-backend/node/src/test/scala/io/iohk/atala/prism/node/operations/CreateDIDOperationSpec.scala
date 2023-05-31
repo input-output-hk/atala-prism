@@ -371,6 +371,29 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
+    "fail to parse type if it is valid JSON but one of the types contains chars that are not allowed" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """["valid type", "hello world!"]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "type", "1")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
+    }
+
     "fail to parse services if one of the service endpoints of any service is not a valid URI" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
