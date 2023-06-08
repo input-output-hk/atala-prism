@@ -408,8 +408,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       )
 
       val parsed = CreateDIDOperation
-        .parse(updated, dummyLedgerData).value
-
+        .parse(updated, dummyLedgerData)
+        .value
 
       val services = parsed.services
       services.length mustBe 1
@@ -431,7 +431,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       )
 
       val parsed = CreateDIDOperation
-        .parse(updated, dummyLedgerData).value
+        .parse(updated, dummyLedgerData)
+        .value
 
       val services = parsed.services
       services.length mustBe 1
