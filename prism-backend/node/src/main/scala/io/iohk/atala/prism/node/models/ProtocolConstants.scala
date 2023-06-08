@@ -12,7 +12,9 @@ object ProtocolConstants {
   private val defaultServiceTypeCharLength = 100
 
   val servicesLimit: Int = Try(globalConfig.getInt("didServicesLimit")).toOption.getOrElse(defaultServiceLimit)
-  val serviceEndpointCharLenLimit: Int = Try(globalConfig.getInt("didServiceEndpointCharLimit")).toOption.getOrElse(defaultServiceEndpointCharLength)
-  val serviceTypeCharLimit: Int = Try(globalConfig.getInt("didServiceTypeCharLimit")).toOption.getOrElse(defaultServiceTypeCharLength)
+  val serviceEndpointCharLenLimit: Int =
+    Try(globalConfig.getInt("didServiceEndpointCharLimit")).toOption.getOrElse(defaultServiceEndpointCharLength)
+  val serviceTypeCharLimit: Int =
+    Try(globalConfig.getInt("didServiceTypeCharLimit")).toOption.getOrElse(defaultServiceTypeCharLength)
 
 }
