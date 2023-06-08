@@ -8,16 +8,13 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, nodeState}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
-import com.typesafe.config.{Config, ConfigFactory}
-import scala.util.Try
-
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
@@ -229,9 +226,8 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       didSuffix: DidSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
 
-    val globalConfig: Config = ConfigFactory.load()
-    val serviceEndpointCharLenLimit = Try(globalConfig.getInt("didServiceEndpointCharLimit")).toOption.getOrElse(300)
-    val serviceTypeCharLimit = Try(globalConfig.getInt("didServiceTypeCharLimit")).toOption.getOrElse(100)
+    val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
+    val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
 
     action { uda =>
       uda.action match {

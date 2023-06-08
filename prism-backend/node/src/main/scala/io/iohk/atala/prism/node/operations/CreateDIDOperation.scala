@@ -7,21 +7,18 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService}
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
-import com.typesafe.config.{Config, ConfigFactory}
-import scala.util.Try
 
 case class CreateDIDOperation(
     id: DidSuffix,
     keys: List[DIDPublicKey],
     services: List[DIDService],
-    servicesLimit: Int,
     digest: Sha256Digest,
     ledgerData: LedgerData
 ) extends Operation {
@@ -151,10 +148,10 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       operation: proto.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
-    val globalConfig: Config = ConfigFactory.load()
-    val servicesLimit = Try(globalConfig.getInt("didServicesLimit")).toOption.getOrElse(50)
-    val serviceEndpointCharLenLimit = Try(globalConfig.getInt("didServiceEndpointCharLimit")).toOption.getOrElse(300)
-    val serviceTypeCharLimit = Try(globalConfig.getInt("didServiceTypeCharLimit")).toOption.getOrElse(100)
+
+    val servicesLimit = ProtocolConstants.servicesLimit
+    val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
+    val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
 
     val operationDigest = Sha256.compute(operation.toByteArray)
     val didSuffix = DidSuffix(operationDigest.getHexValue)
@@ -170,6 +167,6 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
         serviceEndpointCharLenLimit,
         serviceTypeCharLimit
       )
-    } yield CreateDIDOperation(didSuffix, keys, services, servicesLimit, operationDigest, ledgerData)
+    } yield CreateDIDOperation(didSuffix, keys, services, operationDigest, ledgerData)
   }
 }
