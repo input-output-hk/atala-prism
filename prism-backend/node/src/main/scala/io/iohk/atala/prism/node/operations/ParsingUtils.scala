@@ -291,44 +291,52 @@ object ParsingUtils {
                 .asLeft
           case Right(jsonValue) =>
             // Is a JSON, validate that it is an array of valid strings
-            jsonValue.asArray match {
-              case Some(types) =>
-                // Is an array, validate an array, empty array of json is valid as long as canBeEmpty is true
-                for {
-                  _ <- Either.cond(
-                    types.nonEmpty || canBeEmpty,
-                    (),
-                    serviceType.missing()
-                  )
-                  // If at least one element in an array is invalid, the whole thing is invalid
-                  validated <- types.zipWithIndex
-                    // Find invalid one
-                    .find { case (elm, _) =>
-                      val valid = elm.isString && {
-                        val str = elm.asString.get // Will not fail because of check above
-                        val vld = isValidTypeString(str)
-                        vld
-                      }
-                      !valid
-                    }
-                    .map { case (_, index) =>
-                      InvalidValue(
-                        serviceType.path / index.toString,
-                        rawType,
-                        s"Invalid type string"
-                      )
-                    }
-                    // Get the original raw type string as "right"
-                    .toLeft(rawType)
-                } yield validated
 
-              case None =>
-                serviceType
-                  .invalid(
-                    s"type must be a JSON array or regular string"
-                  )
-                  .asLeft
-            }
+            if (jsonValue.isNull || jsonValue.isBoolean || jsonValue.isString || jsonValue.isObject)
+              serviceType
+                .invalid(
+                  s"type must be a JSON array or regular string"
+                )
+                .asLeft
+            else if (jsonValue.isArray) {
+              val types = jsonValue.asArray.get
+              // Is an array, validate an array, empty array of json is valid as long as canBeEmpty is true
+              for {
+                _ <- Either.cond(
+                  types.nonEmpty || canBeEmpty,
+                  (),
+                  serviceType.missing()
+                )
+                // If at least one element in an array is invalid, the whole thing is invalid
+                validated <- types.zipWithIndex
+                  // Find invalid one
+                  .find { case (elm, _) =>
+                    val validStr = elm.isString && {
+                      val str = elm.asString.get // Will not fail because of check above
+                      val vld = isValidTypeString(str)
+                      vld
+                    }
+                    val validNum = elm.isNumber
+                    !(validStr || validNum) // Must be either valid string or number
+                  }
+                  .map { case (_, index) =>
+                    InvalidValue(
+                      serviceType.path / index.toString,
+                      rawType,
+                      s"Invalid type string"
+                    )
+                  }
+                  // Get the original raw type string as "right"
+                  .toLeft(rawType)
+              } yield validated
+            } else if (jsonValue.isNumber) jsonValue.noSpaces.asRight
+            else
+              serviceType
+                .invalid(
+                  "Invalid type string"
+                )
+                .asLeft
+
         }
       } yield parsedType
 

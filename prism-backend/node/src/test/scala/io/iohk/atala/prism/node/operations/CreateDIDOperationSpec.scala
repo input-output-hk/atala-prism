@@ -394,6 +394,50 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
+    "parse the type correctly when it is a one character numeric string" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "3",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData).value
+
+
+      val services = parsed.services
+      services.length mustBe 1
+      services.head.`type` mustBe "3"
+
+    }
+
+    "parse the type correctly when it is a JSON array and one of the elements is one character numeric string" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """["valid type", 3]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData).value
+
+      val services = parsed.services
+      services.length mustBe 1
+      services.head.`type` mustBe """["valid type", 3]"""
+    }
+
     "fail to parse services if one of the service endpoints of any service is not a valid URI" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
