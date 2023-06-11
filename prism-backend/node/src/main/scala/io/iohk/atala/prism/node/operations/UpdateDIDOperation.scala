@@ -265,19 +265,6 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
         case Action.UpdateService(value) =>
           val path = action.path / "updateService"
-          import io.circe.parser.{parse => parseJson}
-
-          def isEmpty(str: String): Boolean = {
-            val isEmptyJsonArray = parseJson(str)
-              .map(
-                _.asArray
-                  .map(_.isEmpty)
-                  .fold(false)(identity)
-              )
-              .fold(_ => false, identity)
-
-            str.isEmpty || isEmptyJsonArray
-          }
 
           for {
             id <- ParsingUtils.parseServiceId(
@@ -295,8 +282,8 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
               canBeEmpty = true,
               serviceEndpointCharLimit = serviceEndpointCharLenLimit
             )
-            serviceTypeIsEmpty = isEmpty(serviceType)
-            serviceEndpointsIsEmpty = isEmpty(serviceEndpoints)
+            serviceTypeIsEmpty = serviceType.isEmpty
+            serviceEndpointsIsEmpty = serviceEndpoints.isEmpty
             _ <-
               if (serviceTypeIsEmpty && serviceEndpointsIsEmpty) {
                 val typePath = path / "type"

@@ -187,9 +187,9 @@ object ParsingUtils {
               // first check for empty array
               for {
                 _ <- Either.cond(
-                  endpoints.nonEmpty || canBeEmpty, // empty JSON array is valid if canBeEmpty is true
+                  endpoints.nonEmpty, // empty JSON array is invalid
                   (),
-                  serviceEndpoints.invalid(s"Service with id - $serviceId must have at least one service endpoint")
+                  serviceEndpoints.invalid(s"Service with id - $serviceId invalid service endpoints - empty JSON array")
                 )
                 jsonArrValidated <- endpoints.zipWithIndex
                   .foldRight(Either.right[ValidationError, List[Json]](List.empty)) { (v, acc) =>
@@ -300,12 +300,12 @@ object ParsingUtils {
                 .asLeft
             else if (jsonValue.isArray) {
               val types = jsonValue.asArray.get
-              // Is an array, validate an array, empty array of json is valid as long as canBeEmpty is true
+              // Is an array, validate an array, empty array of json is invalid
               for {
                 _ <- Either.cond(
-                  types.nonEmpty || canBeEmpty,
+                  types.nonEmpty,
                   (),
-                  serviceType.missing()
+                  serviceType.invalid("Type must be a non empty JSON array")
                 )
                 // If at least one element in an array is invalid, the whole thing is invalid
                 validated <- types.zipWithIndex

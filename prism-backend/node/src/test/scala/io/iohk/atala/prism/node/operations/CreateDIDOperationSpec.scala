@@ -371,6 +371,29 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
+    "fail to parse type if it is valid JSON array but empty" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """[]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "type")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
+    }
+
     "fail to parse type if it is valid JSON but one of the types contains chars that are not allowed" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
@@ -487,6 +510,29 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       inside(parsed) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint", "1")
+        case Right(_) => fail("Failed to validate invalid service endpoint")
+      }
+    }
+
+    "fail to parse services when JSON is valid but is an empty array" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = "[]",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint")
         case Right(_) => fail("Failed to validate invalid service endpoint")
       }
     }
