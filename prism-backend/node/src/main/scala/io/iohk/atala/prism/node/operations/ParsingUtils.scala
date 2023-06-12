@@ -184,6 +184,7 @@ object ParsingUtils {
               // if not a string, then must be an object, no validations on objects
               // if neither string or an object, fail the whole thing.
 
+              type EitherValidationError[B] = Either[ValidationError, B]
               // first check for empty array
               for {
                 _ <- Either.cond(
@@ -192,11 +193,8 @@ object ParsingUtils {
                   serviceEndpoints.invalid(s"Service with id - $serviceId invalid service endpoints - empty JSON array")
                 )
                 jsonArrValidated <- endpoints.zipWithIndex
-                  .foldRight(Either.right[ValidationError, List[Json]](List.empty)) { (v, acc) =>
-                    val (jsonVal, index) = v
-
-                    if (jsonVal.isObject)
-                      acc.map(jsonVal :: _) // We don't validate objets because there is no expected shape
+                  .traverse[EitherValidationError, Json] { case (jsonVal, index) =>
+                    if (jsonVal.isObject) jsonVal.asRight // We don't validate objets because there is no expected shape
                     else if (jsonVal.isString) {
                       // normalize a string, if succeed, append to final list, if not, fail the whole thing
                       val strNormalized = UriUtils
@@ -209,10 +207,7 @@ object ParsingUtils {
                             s"Service endpoint - ${jsonVal.toString} inside $rawServiceEndpoints of service with id - $serviceId is not a valid URI"
                           )
                         )
-
-                      acc.flatMap { ls =>
-                        strNormalized.map(_ :: ls)
-                      }
+                      strNormalized
                     } else {
                       // If Json is neither an object nor string, fail the whole thing
                       InvalidValue(
@@ -221,7 +216,6 @@ object ParsingUtils {
                         s"Service endpoints of service with id - $serviceId must be an array of either valid URI strings or objects "
                       ).asLeft
                     }
-
                   }
                   .map(Json.arr(_: _*).noSpaces)
               } yield jsonArrValidated
