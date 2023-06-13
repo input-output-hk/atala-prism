@@ -462,6 +462,28 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       services.head.`type` mustBe """["valid type", 3]"""
     }
 
+    "parse the type correctly when string is several space separated words with multiply spaces" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """abc   abc abc abc""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+        .value
+
+      val services = parsed.services
+      services.length mustBe 1
+      services.head.`type` mustBe """abc   abc abc abc"""
+    }
+
     "fail to parse services if one of the service endpoints of any service is not a valid URI" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(

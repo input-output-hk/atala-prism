@@ -241,7 +241,7 @@ object ParsingUtils {
   ): Either[ValidationError, String] = {
 
     def isValidTypeString(str: String): Boolean = {
-      val pattern = """^[A-Za-z0-9\-_]+(\s[A-Za-z0-9\-_]+)*$""".r
+      val pattern = """^[A-Za-z0-9\-_]+(\s*[A-Za-z0-9\-_])*$""".r
       str.trim.nonEmpty && str.trim.length == str.length && pattern.findFirstMatchIn(str).isDefined
     }
 
