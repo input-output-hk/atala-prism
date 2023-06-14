@@ -286,7 +286,7 @@ object ParsingUtils {
           case Right(jsonValue) =>
             // Is a JSON, validate that it is an array of valid strings
 
-            if (jsonValue.isNull || jsonValue.isBoolean || jsonValue.isString || jsonValue.isObject)
+            if (jsonValue.isString || jsonValue.isObject)
               serviceType
                 .invalid(
                   s"type must be a JSON array or regular string"
@@ -323,7 +323,7 @@ object ParsingUtils {
                   // Get the original raw type string as "right"
                   .toLeft(rawType)
               } yield validated
-            } else if (jsonValue.isNumber) jsonValue.noSpaces.asRight
+            } else if (jsonValue.isNumber || jsonValue.isNull || jsonValue.isBoolean) jsonValue.noSpaces.asRight
             else
               serviceType
                 .invalid(

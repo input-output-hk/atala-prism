@@ -417,6 +417,67 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
+    "parse type string correctly when it is null, true or false" in {
+      val updated1 = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """null""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val updated2 = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """false""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val updated3 = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """true""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed1 = CreateDIDOperation
+        .parse(updated1, dummyLedgerData)
+        .value
+      val parsed2 = CreateDIDOperation
+        .parse(updated2, dummyLedgerData)
+        .value
+      val parsed3 = CreateDIDOperation
+        .parse(updated3, dummyLedgerData)
+        .value
+
+      val services1 = parsed1.services
+      services1.length mustBe 1
+      services1.head.`type` mustBe """null"""
+
+      val services2 = parsed2.services
+      services2.length mustBe 1
+      services2.head.`type` mustBe """false"""
+
+      val services3 = parsed3.services
+      services3.length mustBe 1
+      services3.head.`type` mustBe """true"""
+
+    }
+
     "parse the type correctly when it is a one character numeric string" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
