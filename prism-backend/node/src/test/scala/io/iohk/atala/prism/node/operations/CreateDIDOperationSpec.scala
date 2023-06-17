@@ -237,9 +237,9 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       services.last.serviceEndpoints mustBe exampleOperation.operation.createDid.value.didData.value.services.last.serviceEndpoint
     }
 
-    "normalize service endpoints" in {
+    "should parse normalized and non normalize URIs as long as they are valid" in {
 
-      val testCases = List(
+      val nonNormalized = Vector(
         "https://example.com/home///about",
         "HTTP://EXAMPLE.CoM/home/about",
         "https://example.com/home/about/../services",
@@ -254,7 +254,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         "https://example.com/ho me"
       )
 
-      val expectedCases = Vector(
+      val normalized = Vector(
         "https://example.com/home/about",
         "http://example.com/home/about",
         "https://example.com/home/services",
@@ -268,6 +268,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         "https://example.com/home/about?cartoon=tom%20jerry",
         "https://example.com/ho%20me"
       )
+
+      val allUris = nonNormalized ++ normalized
 
       def createUpdatedOperation(uri: String): AtalaOperation = {
         exampleOperation.update(
@@ -283,19 +285,13 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         )
       }
 
-      for { (testCase, index) <- testCases.zipWithIndex } {
+      for { testCase <- allUris } {
         val op = createUpdatedOperation(testCase)
 
         val parsed = CreateDIDOperation
           .parse(op, dummyLedgerData)
-          .toOption
-          .value
-          .services
-          .head
-          .serviceEndpoints
 
-        parsed mustBe expectedCases(index)
-
+        parsed mustBe a[Right[_, _]]
       }
 
     }

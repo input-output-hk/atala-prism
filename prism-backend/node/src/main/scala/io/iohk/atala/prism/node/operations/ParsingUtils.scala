@@ -166,15 +166,15 @@ object ParsingUtils {
           // Not a JSON string, but could be a regular Uri string, if so, normalize it
           // First, make sure it is not empty, when canBeEmpty is true
           if (rawServiceEndpoints.isEmpty && canBeEmpty) rawServiceEndpoints.asRight
-          else
-            UriUtils
-              // This function returns None for empty strings
-              .normalizeUri(rawServiceEndpoints)
-              .toRight(
-                serviceEndpoints.invalid(
+          else {
+            if (UriUtils.isValidUriString(rawServiceEndpoints)) rawServiceEndpoints.asRight
+            else
+              serviceEndpoints
+                .invalid(
                   s"Service endpoint - $rawServiceEndpoints of service with id - $serviceId is not a valid URI"
                 )
-              )
+                .asLeft
+          }
         case Right(json) =>
           // is a JSON string, but must be either array or object
           json.asArray match {
@@ -195,26 +195,27 @@ object ParsingUtils {
                 jsonArrValidated <- endpoints.zipWithIndex
                   .traverse[EitherValidationError, Json] { case (jsonVal, index) =>
                     if (jsonVal.isObject) jsonVal.asRight // We don't validate objets because there is no expected shape
-                    else if (jsonVal.isString) {
-                      // normalize a string, if succeed, append to final list, if not, fail the whole thing
-                      val strNormalized = UriUtils
-                        .normalizeUri(jsonVal.asString.get) // Should not fail because of .isString check above
-                        .map(Json.fromString)
+                    else {
+                      val strValidated = jsonVal.asString
+                        .map(str => (str, UriUtils.isValidUriString(str)))
+                        .map { case (str, isValidUri) =>
+                          if (isValidUri) Json.fromString(str).asRight
+                          else
+                            InvalidValue(
+                              serviceEndpoints.path / index.toString,
+                              rawServiceEndpoints,
+                              s"Service endpoint - ${jsonVal.noSpaces} inside $rawServiceEndpoints of service with id - $serviceId is not a valid URI"
+                            ).asLeft
+                        }
                         .toRight(
                           InvalidValue(
                             serviceEndpoints.path / index.toString,
                             rawServiceEndpoints,
-                            s"Service endpoint - ${jsonVal.toString} inside $rawServiceEndpoints of service with id - $serviceId is not a valid URI"
+                            s"Service endpoints of service with id - $serviceId must be an array of either valid URI strings or objects "
                           )
                         )
-                      strNormalized
-                    } else {
-                      // If Json is neither an object nor string, fail the whole thing
-                      InvalidValue(
-                        serviceEndpoints.path / index.toString,
-                        rawServiceEndpoints,
-                        s"Service endpoints of service with id - $serviceId must be an array of either valid URI strings or objects "
-                      ).asLeft
+                        .flatten
+                      strValidated
                     }
                   }
                   .map(Json.arr(_: _*).noSpaces)

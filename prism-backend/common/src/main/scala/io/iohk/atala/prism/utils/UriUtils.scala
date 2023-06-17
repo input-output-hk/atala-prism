@@ -1,11 +1,13 @@
 package io.iohk.atala.prism.utils
 
-import io.lemonlabs.uri.{Uri, Url, Urn, QueryString}
 import io.lemonlabs.uri.config.UriConfig
-import io.lemonlabs.uri.encoding.PercentEncoder
 import io.lemonlabs.uri.decoding.UriDecodeException
+import io.lemonlabs.uri.encoding.PercentEncoder
+import io.lemonlabs.uri.{QueryString, Uri, Url, Urn}
 
 object UriUtils {
+
+  private implicit val uriConfig: UriConfig = UriConfig.default.copy(queryEncoder = PercentEncoder())
 
   /** Normalized URI according to <a
     * href="https://www.rfc-editor.org/rfc/rfc3986#section-6">RFC&nbsp;3986,&nbsp;section-6</a>
@@ -40,7 +42,6 @@ object UriUtils {
      *
      * URL without a scheme is treated as invalid
      */
-    implicit val config: UriConfig = UriConfig.default.copy(queryEncoder = PercentEncoder())
 
     try {
       // parsing decodes the percent encoded triplets, including unreserved chars
@@ -97,6 +98,18 @@ object UriUtils {
       }
     } catch {
       case _: Exception => None
+    }
+  }
+
+  def isValidUriString(str: String): Boolean = {
+
+    try {
+      Uri.parse(str) match {
+        case url: Url => url.schemeOption.nonEmpty
+        case Urn(_) => true
+      }
+    } catch {
+      case _: Exception => false
     }
   }
 
