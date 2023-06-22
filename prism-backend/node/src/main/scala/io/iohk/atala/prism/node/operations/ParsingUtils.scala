@@ -143,7 +143,7 @@ object ParsingUtils {
       // NOTE: this check does account for spaces as well in case service endpoint is a JSON with spaces.
       _ <- serviceEndpoints.parse { str =>
         Either.cond(
-          str.length < serviceEndpointCharLimit,
+          str.length <= serviceEndpointCharLimit,
           (),
           s"Exceeded service endpoint character limit for a service with id - $serviceId, max - $serviceEndpointCharLimit, got - ${str.length}"
         )
@@ -269,7 +269,7 @@ object ParsingUtils {
         )
         _ <- serviceType.parse { str =>
           Either.cond(
-            str.length < serviceTypeCharLimit,
+            str.length <= serviceTypeCharLimit,
             (),
             s"Exceeded type character limit for a service, max - $serviceTypeCharLimit, got - ${str.length}"
           )

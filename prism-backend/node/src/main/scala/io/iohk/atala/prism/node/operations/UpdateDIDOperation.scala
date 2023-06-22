@@ -170,12 +170,10 @@ case class UpdateDIDOperation(
             case None => Left(StateError.EntityMissing("service", s"${didSuffix.getValue} - $id"): StateError)
           }
           _ <- revokeService(didSuffix, id, ledgerData)
-          newServiceType =
-            if (serviceType.nonEmpty) serviceType.get
-            else service.`type` // use old type if new is not provided (no update)
-          newServiceEndpoints =
-            if (serviceEndpoints.nonEmpty) serviceEndpoints.get
-            else service.serviceEndpoints // use old service endpoints if new ones are not provided
+          newServiceType = serviceType.getOrElse(service.`type`) // use old type if new is not provided (no update)
+          newServiceEndpoints = serviceEndpoints.getOrElse(
+            service.serviceEndpoints
+          ) // use old service endpoints if new ones are not provided
           newService = DIDService(id, didSuffix, newServiceType, newServiceEndpoints)
           _ <- createService(newService, ledgerData)
         } yield ()
