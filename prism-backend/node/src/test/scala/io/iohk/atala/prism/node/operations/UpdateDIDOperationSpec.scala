@@ -255,7 +255,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       )
     }
 
-    "return error when service endpoints in AddServiceAction of the service is empty" in {
+    "return error when service endpoints in AddServiceAction of the service is an empty array" in {
       invalidValueTest(
         _.updateDid
           .actions(2)

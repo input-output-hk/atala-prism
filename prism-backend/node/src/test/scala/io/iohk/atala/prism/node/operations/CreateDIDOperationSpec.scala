@@ -225,7 +225,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val services = parsed.services
-      services.foreach(println(_))
       services.size mustBe 2
 
       services.head.id mustBe serviceId1
@@ -547,10 +546,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
           node_models.Service(
             id = serviceId1,
             `type` = "didCom-credential-exchange",
-            serviceEndpoint = """
-              ["https://foo.example.com",
-              "not a valid URI"]
-            """,
+            serviceEndpoint = """["https://foo.example.com","not a valid URI"]""",
             addedOn = None,
             deletedOn = None
           )
