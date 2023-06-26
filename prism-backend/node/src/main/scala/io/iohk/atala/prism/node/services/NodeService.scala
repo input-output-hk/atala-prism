@@ -102,7 +102,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   private def getDidDocumentByDid(canon: CanonicalPrismDid): F[Either[GettingDidError, DidDocument]] = {
     val getDidResultF: F[Either[GettingDidError, Option[(DIDData, Sha256Digest)]]] =
       didDataRepository
-        .findByDid(canon, Some(didPublicKeysLimit))
+        .findByDid(canon, Some(didPublicKeysLimit)) // TODO: Add services limit as well
         .map(_.bimap(GettingCanonicalPrismDidError, toDidDataProto(_, canon)))
 
     for {

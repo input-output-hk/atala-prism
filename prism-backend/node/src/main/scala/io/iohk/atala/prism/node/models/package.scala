@@ -56,12 +56,7 @@ package object models {
       id: String,
       didSuffix: DidSuffix,
       `type`: String,
-      serviceEndpoints: List[DIDServiceEndpoint]
-  )
-
-  case class DIDServiceEndpoint(
-      urlIndex: Int,
-      url: String
+      serviceEndpoints: String
   )
 
   case class DIDData(
@@ -161,29 +156,12 @@ package object models {
         revokedOn: Option[LedgerData]
     )
 
-    case class DIDServiceEndpointState(
-        serviceEndpointId: IdType,
-        urlIndex: Int,
-        serviceId: IdType,
-        url: String
-    )
-
     case class DIDServiceState(
         serviceId: IdType,
         id: String,
         didSuffix: DidSuffix,
         `type`: String,
-        serviceEndpoints: List[DIDServiceEndpointState],
-        addedOn: LedgerData,
-        revokedOn: Option[LedgerData]
-    )
-
-    case class DIDServiceWithEndpoint(
-        serviceId: IdType,
-        id: String,
-        didSuffix: DidSuffix,
-        `type`: String,
-        serviceEndpoint: Option[DIDServiceEndpointState],
+        serviceEndpoints: String,
         addedOn: LedgerData,
         revokedOn: Option[LedgerData]
     )

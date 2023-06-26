@@ -9,14 +9,14 @@ import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, DIDServiceEndpointState}
+import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
 import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.ServicesDAO
 import io.iohk.atala.prism.node.{DataPreparation, models}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, ECKeyData}
+import io.iohk.atala.prism.protos.node_models.{AtalaOperation, CompressedECKeyData, ECKeyData}
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
@@ -125,20 +125,14 @@ object CreateDIDOperationSpec {
               node_models.Service(
                 id = serviceId1,
                 `type` = "didCom-credential-exchange",
-                serviceEndpoint = List(
-                  "https://foo.example.com/",
-                  "https://baz.example.com/"
-                ),
+                serviceEndpoint = "https://baz.example.com/",
                 addedOn = None,
                 deletedOn = None
               ),
               node_models.Service(
                 id = serviceId2,
                 `type` = "didCom-chat-message-exchange",
-                serviceEndpoint = List(
-                  "https://baz.example.com/",
-                  "https://qux.example.com/"
-                ),
+                serviceEndpoint = """{"uri":"https://baz.example.com/"}""",
                 addedOn = None,
                 deletedOn = None
               )
@@ -231,71 +225,74 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .value
 
       val services = parsed.services
+      services.foreach(println(_))
       services.size mustBe 2
 
       services.head.id mustBe serviceId1
       services.head.`type` mustBe "didCom-credential-exchange"
-      services.head.serviceEndpoints.zipWithIndex.foreach { case (ep, index) =>
-        ep.url mustBe exampleOperation.operation.createDid.value.didData.value.services.head.serviceEndpoint(index)
-      }
+      services.head.serviceEndpoints mustBe exampleOperation.operation.createDid.value.didData.value.services.head.serviceEndpoint
 
       services.last.id mustBe serviceId2
       services.last.`type` mustBe "didCom-chat-message-exchange"
-      services.last.serviceEndpoints.zipWithIndex.foreach { epAndIndex =>
-        val (ep, index) = epAndIndex
-        ep.url mustBe exampleOperation.operation.createDid.value.didData.value.services.last.serviceEndpoint(index)
-      }
-
+      services.last.serviceEndpoints mustBe exampleOperation.operation.createDid.value.didData.value.services.last.serviceEndpoint
     }
 
-    "normalize service endpoints" in {
+    "should parse normalized and non normalize URIs as long as they are valid" in {
 
-      val updated = exampleOperation.update(
-        _.createDid.didData.services := List(
-          node_models.Service(
-            id = serviceId1,
-            `type` = "didCom-credential-exchange",
-            serviceEndpoint = List(
-              "https://example.com/home///about",
-              "HTTP://EXAMPLE.CoM/home/about",
-              "https://example.com/home/about/../services",
-              "https://example.com/home/about/../../about",
-              "https://example.com/home/././about",
-              "telnet://example.com",
-              "data:text/plain,Hello%20world!",
-              "https://example.com/home/about?a=a1&b=b1",
-              "https://example.com/home/about?b=b1&a=a1",
-              "https://example.com/home/about?cartoon=tom%26jerry",
-              "https://example.com/home/about?cartoon=tom jerry",
-              "https://example.com/ho me"
-            ),
-            addedOn = None,
-            deletedOn = None
-          )
-        )
+      val nonNormalized = Vector(
+        "https://example.com/home///about",
+        "HTTP://EXAMPLE.CoM/home/about",
+        "https://example.com/home/about/../services",
+        "https://example.com/home/about/../../about",
+        "https://example.com/home/././about",
+        "telnet://example.com",
+        "data:text/plain,Hello%20world!",
+        "https://example.com/home/about?a=a1&b=b1",
+        "https://example.com/home/about?b=b1&a=a1",
+        "https://example.com/home/about?cartoon=tom%26jerry",
+        "https://example.com/home/about?cartoon=tom jerry",
+        "https://example.com/ho me"
       )
 
-      val parsed = CreateDIDOperation
-        .parse(updated, dummyLedgerData)
-        .toOption
-        .value
-        .services
-        .head
-        .serviceEndpoints
-        .map(_.url)
+      val normalized = Vector(
+        "https://example.com/home/about",
+        "http://example.com/home/about",
+        "https://example.com/home/services",
+        "https://example.com/about",
+        "https://example.com/home/about",
+        "telnet://example.com/",
+        "data:text%2Fplain,Hello%20world!",
+        "https://example.com/home/about?a=a1&b=b1",
+        "https://example.com/home/about?a=a1&b=b1",
+        "https://example.com/home/about?cartoon=tom%26jerry",
+        "https://example.com/home/about?cartoon=tom%20jerry",
+        "https://example.com/ho%20me"
+      )
 
-      parsed(0) mustBe "https://example.com/home/about"
-      parsed(1) mustBe "http://example.com/home/about"
-      parsed(2) mustBe "https://example.com/home/services"
-      parsed(3) mustBe "https://example.com/about"
-      parsed(4) mustBe "https://example.com/home/about"
-      parsed(5) mustBe "telnet://example.com/"
-      parsed(6) mustBe "data:text%2Fplain,Hello%20world!"
-      parsed(7) mustBe "https://example.com/home/about?a=a1&b=b1"
-      parsed(8) mustBe "https://example.com/home/about?a=a1&b=b1"
-      parsed(9) mustBe "https://example.com/home/about?cartoon=tom%26jerry"
-      parsed(10) mustBe "https://example.com/home/about?cartoon=tom%20jerry"
-      parsed(11) mustBe "https://example.com/ho%20me"
+      val allUris = nonNormalized ++ normalized
+
+      def createUpdatedOperation(uri: String): AtalaOperation = {
+        exampleOperation.update(
+          _.createDid.didData.services := List(
+            node_models.Service(
+              id = serviceId1,
+              `type` = "didCom-credential-exchange",
+              serviceEndpoint = uri,
+              addedOn = None,
+              deletedOn = None
+            )
+          )
+        )
+      }
+
+      for { testCase <- allUris } {
+        val op = createUpdatedOperation(testCase)
+
+        val parsed = CreateDIDOperation
+          .parse(op, dummyLedgerData)
+
+        parsed mustBe a[Right[_, _]]
+      }
 
     }
 
@@ -303,12 +300,9 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
-            id = "not a valid URI",
+            id = "not a valid URI fragment",
             `type` = "didCom-credential-exchange",
-            serviceEndpoint = List(
-              "https://foo.example.com",
-              "https://baz.example.com"
-            ),
+            serviceEndpoint = "https://baz.example.com",
             addedOn = None,
             deletedOn = None
           )
@@ -332,10 +326,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
           node_models.Service(
             id = s" $serviceId1",
             `type` = "didCom-credential-exchange",
-            serviceEndpoint = List(
-              "https://foo.example.com",
-              "https://baz.example.com"
-            ),
+            serviceEndpoint = "https://baz.example.com",
             addedOn = None,
             deletedOn = None
           )
@@ -353,16 +344,213 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     }
 
+    "fail to parse type if it is valid JSON but one of the types is empty" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """["valid type", ""]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "type", "1")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
+    }
+
+    "fail to parse type if it is valid JSON array but empty" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """[]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "type")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
+    }
+
+    "fail to parse type if it is valid JSON but one of the types contains chars that are not allowed" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """["valid type", "hello world!"]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "type", "1")
+        case Right(_) => fail("Failed to validate invalid service type")
+      }
+    }
+
+    "parse type string correctly when it is null, true or false" in {
+      val updated1 = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """null""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val updated2 = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """false""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val updated3 = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """true""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed1 = CreateDIDOperation
+        .parse(updated1, dummyLedgerData)
+        .value
+      val parsed2 = CreateDIDOperation
+        .parse(updated2, dummyLedgerData)
+        .value
+      val parsed3 = CreateDIDOperation
+        .parse(updated3, dummyLedgerData)
+        .value
+
+      val services1 = parsed1.services
+      services1.length mustBe 1
+      services1.head.`type` mustBe """null"""
+
+      val services2 = parsed2.services
+      services2.length mustBe 1
+      services2.head.`type` mustBe """false"""
+
+      val services3 = parsed3.services
+      services3.length mustBe 1
+      services3.head.`type` mustBe """true"""
+
+    }
+
+    "parse the type correctly when it is a one character numeric string" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "3",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+        .value
+
+      val services = parsed.services
+      services.length mustBe 1
+      services.head.`type` mustBe "3"
+
+    }
+
+    "parse the type correctly when it is a JSON array and one of the elements is one character numeric string" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """["valid type", 3]""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+        .value
+
+      val services = parsed.services
+      services.length mustBe 1
+      services.head.`type` mustBe """["valid type", 3]"""
+    }
+
+    "parse the type correctly when string is several space separated words with multiply spaces" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = """abc   abc abc abc""",
+            serviceEndpoint = "https://foo.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+        .value
+
+      val services = parsed.services
+      services.length mustBe 1
+      services.head.`type` mustBe """abc   abc abc abc"""
+    }
+
     "fail to parse services if one of the service endpoints of any service is not a valid URI" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
             id = serviceId1,
             `type` = "didCom-credential-exchange",
-            serviceEndpoint = List(
-              "https://foo.example.com",
-              "not a valid URI"
-            ),
+            serviceEndpoint = """
+              ["https://foo.example.com",
+              "not a valid URI"]
+            """,
             addedOn = None,
             deletedOn = None
           )
@@ -379,16 +567,16 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       }
     }
 
-    "fail to parse services if one of the service endpoints of any service is not valid but has whitespace" in {
+    "fail to parse services if one of the service endpoints of any service is valid but has whitespace" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
           node_models.Service(
             id = serviceId1,
             `type` = "didCom-credential-exchange",
-            serviceEndpoint = List(
-              "https://foo.example.com",
-              " https://bar.example.com"
-            ),
+            serviceEndpoint = """
+              ["https://foo.example.com",
+              " https://bar.example.com"]
+            """,
             addedOn = None,
             deletedOn = None
           )
@@ -401,6 +589,29 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
       inside(parsed) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>
           path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint", "1")
+        case Right(_) => fail("Failed to validate invalid service endpoint")
+      }
+    }
+
+    "fail to parse services when JSON is valid but is an empty array" in {
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1,
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = "[]",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "serviceEndpoint")
         case Right(_) => fail("Failed to validate invalid service endpoint")
       }
     }
@@ -414,10 +625,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
             node_models.Service(
               id = serviceId1,
               `type` = tp,
-              serviceEndpoint = List(
-                "https://foo.example.com",
-                "https://baz.example.com"
-              ),
+              serviceEndpoint = "https://baz.example.com",
               addedOn = None,
               deletedOn = None
             )
@@ -444,7 +652,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
           node_models.Service(
             id = serviceId1,
             `type` = "some type",
-            serviceEndpoint = Nil,
+            serviceEndpoint = "",
             addedOn = None,
             deletedOn = None
           )
@@ -673,17 +881,12 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       foundService.nonEmpty mustBe true
 
-      val expectedServiceEndpoints = List(
-        "https://foo.example.com/",
-        "https://baz.example.com/"
-      )
+      val expectedServiceEndpoints = "https://baz.example.com/"
 
       foundService.nonEmpty mustBe true
       foundService.get.id mustBe serviceId1
       foundService.get.`type` mustBe "didCom-credential-exchange"
-      foundService.get.serviceEndpoints.foreach { case DIDServiceEndpointState(_, urlIndex, _, url) =>
-        expectedServiceEndpoints(urlIndex) mustBe url
-      }
+      foundService.get.serviceEndpoints mustBe expectedServiceEndpoints
     }
 
     "return error when given DID already exists" in {

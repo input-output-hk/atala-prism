@@ -7,9 +7,9 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService}
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
@@ -110,23 +110,37 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
 
   def parseServicesFromData(
       data: ValueAtPath[proto.CreateDIDOperation.DIDCreationData],
-      didSuffix: DidSuffix
+      didSuffix: DidSuffix,
+      servicesLimit: Int,
+      serviceEndpointCharLimit: Int,
+      serviceTypeCharLimit: Int
   ): Either[ValidationError, List[DIDService]] = {
     val servicesValue = data.child(_.services, "services")
+    val services = servicesValue(identity)
+    for {
+      _ <- Either.cond(
+        services.size < servicesLimit,
+        (),
+        servicesValue.invalid(
+          s"Exceeded number of services while creating a DID, max - $servicesLimit, got - ${services.size}"
+        )
+      )
+      eitherErrOrServices <- servicesValue { services =>
+        type EitherValidationError[B] = Either[ValidationError, B]
 
-    servicesValue { services =>
-      type EitherValidationError[B] = Either[ValidationError, B]
+        services.zipWithIndex.toList
+          .traverse[EitherValidationError, DIDService] { case (service, index) =>
+            ParsingUtils
+              .parseService(
+                ValueAtPath(service, servicesValue.path / index.toString),
+                didSuffix,
+                serviceEndpointCharLimit,
+                serviceTypeCharLimit
+              )
+          }
 
-      services.zipWithIndex.toList
-        .traverse[EitherValidationError, DIDService] { case (service, index) =>
-          ParsingUtils
-            .parseService(
-              ValueAtPath(service, servicesValue.path / index.toString),
-              didSuffix
-            )
-        }
-
-    }
+      }
+    } yield eitherErrOrServices
 
   }
 
@@ -134,6 +148,11 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       operation: proto.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, CreateDIDOperation] = {
+
+    val servicesLimit = ProtocolConstants.servicesLimit
+    val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
+    val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
+
     val operationDigest = Sha256.compute(operation.toByteArray)
     val didSuffix = DidSuffix(operationDigest.getHexValue)
     val createOperation =
@@ -141,7 +160,13 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     for {
       data <- createOperation.childGet(_.didData, "didData")
       keys <- parseKeysFromData(data, didSuffix)
-      services <- parseServicesFromData(data, didSuffix)
+      services <- parseServicesFromData(
+        data,
+        didSuffix,
+        servicesLimit,
+        serviceEndpointCharLenLimit,
+        serviceTypeCharLimit
+      )
     } yield CreateDIDOperation(didSuffix, keys, services, operationDigest, ledgerData)
   }
 }

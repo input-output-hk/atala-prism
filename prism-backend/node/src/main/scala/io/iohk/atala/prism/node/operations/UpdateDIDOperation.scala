@@ -8,14 +8,13 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DIDServiceEndpoint, KeyUsage, nodeState}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
-
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
@@ -23,7 +22,7 @@ case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
 // id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
-case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: List[DIDServiceEndpoint])
+case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: Option[String])
     extends UpdateDIDAction
 
 case class UpdateDIDOperation(
@@ -104,7 +103,7 @@ case class UpdateDIDOperation(
           id = x.id,
           didSuffix = x.didSuffix,
           `type` = x.`type`,
-          serviceEndpoints = x.serviceEndpoints.map(s => DIDServiceEndpoint(s.urlIndex, s.url))
+          serviceEndpoints = x.serviceEndpoints
         )
       )
     } yield didService
@@ -171,12 +170,10 @@ case class UpdateDIDOperation(
             case None => Left(StateError.EntityMissing("service", s"${didSuffix.getValue} - $id"): StateError)
           }
           _ <- revokeService(didSuffix, id, ledgerData)
-          newServiceType =
-            if (serviceType.nonEmpty) serviceType.get
-            else service.`type` // use old type if new is not provided (no update)
-          newServiceEndpoints =
-            if (serviceEndpoints.nonEmpty) serviceEndpoints
-            else service.serviceEndpoints // use old service endpoints if new ones are not provided
+          newServiceType = serviceType.getOrElse(service.`type`) // use old type if new is not provided (no update)
+          newServiceEndpoints = serviceEndpoints.getOrElse(
+            service.serviceEndpoints
+          ) // use old service endpoints if new ones are not provided
           newService = DIDService(id, didSuffix, newServiceType, newServiceEndpoints)
           _ <- createService(newService, ledgerData)
         } yield ()
@@ -227,6 +224,9 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       didSuffix: DidSuffix
   ): Either[ValidationError, UpdateDIDAction] = {
 
+    val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
+    val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
+
     action { uda =>
       uda.action match {
         case Action.AddKey(value) =>
@@ -250,7 +250,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.service
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
-            .flatMap(ParsingUtils.parseService(_, didSuffix))
+            .flatMap(ParsingUtils.parseService(_, didSuffix, serviceEndpointCharLenLimit, serviceTypeCharLimit))
             .map(AddServiceAction)
 
         case Action.RemoveService(value) =>
@@ -268,22 +268,33 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             id <- ParsingUtils.parseServiceId(
               ValueAtPath(value.serviceId, path / "serviceId")
             )
-            serviceType =
-              if (value.`type`.trim.isEmpty) None else Some(value.`type`.trim) // if empty then do not update
-            serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
-              ValueAtPath(value.serviceEndpoints.toList, path / "serviceEndpoints"),
-              id,
-              canBeEmpty = true
+
+            serviceType <- ParsingUtils.parseServiceType(
+              serviceType = ValueAtPath(value.`type`, path / "type"),
+              canBeEmpty = true,
+              serviceTypeCharLimit = serviceTypeCharLimit
             )
+            serviceEndpoints <- ParsingUtils.parseServiceEndpoints(
+              serviceEndpoints = ValueAtPath(value.serviceEndpoints, path / "serviceEndpoints"),
+              serviceId = id,
+              canBeEmpty = true,
+              serviceEndpointCharLimit = serviceEndpointCharLenLimit
+            )
+            serviceTypeIsEmpty = serviceType.isEmpty
+            serviceEndpointsIsEmpty = serviceEndpoints.isEmpty
             _ <-
-              if (serviceType.isEmpty && serviceEndpoints.isEmpty) {
+              if (serviceTypeIsEmpty && serviceEndpointsIsEmpty) {
                 val typePath = path / "type"
                 val serviceEndpointsPath = path / "serviceEndpoints"
                 Left(
                   MissingAtLeastOneValue(NonEmptyList(typePath, List(serviceEndpointsPath)))
                 )
               } else Right(())
-          } yield UpdateServiceAction(id, serviceType, serviceEndpoints)
+          } yield UpdateServiceAction(
+            id,
+            if (serviceTypeIsEmpty) None else Some(serviceType),
+            if (serviceEndpointsIsEmpty) None else Some(serviceEndpoints)
+          )
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 
