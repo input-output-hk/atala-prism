@@ -367,17 +367,18 @@ object ParsingUtils {
       contextStringCharLimit: Int
   ): Either[ValidationError, List[String]] = {
 
-    for {
+    for { // InvalidValue(path, value.toString, message)
       // Validate each context string is withing char limit and is a valid URI
       contextStringsUriAndLimitValidated <- context { contextStrs =>
-        contextStrs.traverse[EitherValidationError, String] { str =>
-          if (!UriUtils.isValidUriString(str)) context.invalid(s"\"$str\" is not a valid URI").asLeft[String]
+        contextStrs.zipWithIndex.traverse[EitherValidationError, String] { case (str, index) =>
+          if (!UriUtils.isValidUriString(str))
+            InvalidValue(context.path / index.toString, str, s"\"$str\" is not a valid URI").asLeft[String]
           else if (str.length > contextStringCharLimit)
-            context
-              .invalid(
-                s"Exceeded type character limit for a context string, max - $contextStringCharLimit, got - ${str.length}"
-              )
-              .asLeft[String]
+            InvalidValue(
+              context.path / index.toString,
+              str,
+              s"Exceeded type character limit for a context string, max - $contextStringCharLimit, got - ${str.length}"
+            ).asLeft[String]
           else str.asRight[ValidationError]
         }
       }
