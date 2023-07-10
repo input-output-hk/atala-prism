@@ -28,17 +28,17 @@ case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
 
 case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: Option[String])
-  extends UpdateDIDAction
+    extends UpdateDIDAction
 
 case class PatchContextAction(context: List[String]) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
-                               didSuffix: DidSuffix,
-                               actions: List[UpdateDIDAction],
-                               previousOperation: Sha256Digest,
-                               digest: Sha256Digest,
-                               ledgerData: nodeState.LedgerData
-                             ) extends Operation {
+    didSuffix: DidSuffix,
+    actions: List[UpdateDIDAction],
+    previousOperation: Sha256Digest,
+    digest: Sha256Digest,
+    ledgerData: nodeState.LedgerData
+) extends Operation {
   override val metricCounterName: String = UpdateDIDOperation.metricCounterName
 
   override def linkedPreviousOperation: Option[Sha256Digest] = Some(
@@ -46,9 +46,7 @@ case class UpdateDIDOperation(
   )
 
   /** Fetches key and possible previous operation reference from database */
-  override def getCorrectnessData(
-                                   keyId: String
-                                 ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
       lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
         DIDDataDAO
@@ -117,8 +115,8 @@ case class UpdateDIDOperation(
   }
 
   protected def applyAction(
-                             action: UpdateDIDAction
-                           ): EitherT[ConnectionIO, StateError, Unit] = {
+      action: UpdateDIDAction
+  ): EitherT[ConnectionIO, StateError, Unit] = {
     action match {
       case AddKeyAction(key) =>
         EitherT {
@@ -186,16 +184,12 @@ case class UpdateDIDOperation(
         } yield ()
 
       case PatchContextAction(context) =>
+        // Processing PatchContextAction If the DID to update has an empty context associated to it in the map:
+        // * the field context MUST NOT be empty and MUST NOT contain repeated values Update of the internal map
+        //
+        // If context is empty, the DID removes the previous context list associated to it.
+        // If context is not empty, the DID replaces the old list for the new one on its map.
 
-        /**
-         * @formatter:off
-          * Processing PatchContextAction If the DID to update has an empty context associated to it in the map:
-          * * the field context MUST NOT be empty and MUST NOT contain repeated values Update of the internal map
-          *
-          * If context is empty, the DID removes the previous context list associated to it.
-          * If context is not empty, the DID replaces the old list for the new one on its map.
-          * @formatter:on
-         */
         type ConnectionIOEitherTError[T] = EitherT[ConnectionIO, StateError, T]
 
         for {
@@ -211,8 +205,9 @@ case class UpdateDIDOperation(
           // If context is empty, won't insert anything, which is the goal
           _ <- context.traverse[ConnectionIOEitherTError, Unit] { contextStr: String =>
             EitherT {
-              ContextDAO.insert(contextStr, didSuffix, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-                EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
+              ContextDAO.insert(contextStr, didSuffix, ledgerData).attemptSomeSqlState {
+                case sqlstate.class23.UNIQUE_VIOLATION =>
+                  EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
               }
             }
           }
@@ -222,9 +217,9 @@ case class UpdateDIDOperation(
   }
 
   /** Applies operation to the state
-   *
-   * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
-   */
+    *
+    * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
+    */
   override def applyStateImpl(_config: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit] = {
     // type lambda T => EitherT[ConnectionIO, StateError, T]
     // in .traverse we need to express what Monad is to be used
@@ -261,9 +256,9 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
   val metricCounterName: String = "number_of_did_updates"
 
   protected def parseAction(
-                             action: ValueAtPath[node_models.UpdateDIDAction],
-                             didSuffix: DidSuffix
-                           ): Either[ValidationError, UpdateDIDAction] = {
+      action: ValueAtPath[node_models.UpdateDIDAction],
+      didSuffix: DidSuffix
+  ): Either[ValidationError, UpdateDIDAction] = {
 
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
@@ -351,18 +346,18 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
   }
 
   /** Parses the protobuf representation of operation
-   *
-   * @param operation
-   * operation, needs to be of the type compatible with the called companion object
-   * @param ledgerData
-   * ledger information provided by the caller, needed to instantiate the operation objects
-   * @return
-   * parsed operation or ValidationError signifying the operation is invalid
-   */
+    *
+    * @param operation
+    *   operation, needs to be of the type compatible with the called companion object
+    * @param ledgerData
+    *   ledger information provided by the caller, needed to instantiate the operation objects
+    * @return
+    *   parsed operation or ValidationError signifying the operation is invalid
+    */
   override def parse(
-                      operation: node_models.AtalaOperation,
-                      ledgerData: LedgerData
-                    ): Either[ValidationError, UpdateDIDOperation] = {
+      operation: node_models.AtalaOperation,
+      ledgerData: LedgerData
+  ): Either[ValidationError, UpdateDIDOperation] = {
     val operationDigest = Sha256.compute(operation.toByteArray)
     val updateOperation =
       ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")

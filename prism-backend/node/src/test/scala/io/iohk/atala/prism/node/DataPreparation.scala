@@ -20,7 +20,17 @@ import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
-import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO, AtalaOperationsDAO, ContextDAO, CredentialBatchesDAO, DIDDataDAO, KeyValuesDAO, PublicKeysDAO, ServicesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{
+  AtalaObjectTransactionSubmissionsDAO,
+  AtalaObjectsDAO,
+  AtalaOperationsDAO,
+  ContextDAO,
+  CredentialBatchesDAO,
+  DIDDataDAO,
+  KeyValuesDAO,
+  PublicKeysDAO,
+  ServicesDAO
+}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

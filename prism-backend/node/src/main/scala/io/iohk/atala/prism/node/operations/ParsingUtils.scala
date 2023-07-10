@@ -373,7 +373,7 @@ object ParsingUtils {
         contextStrs,
         "List of context strings contains duplicates"
       )
-      //TODO: verify each string being a URI and max length of 100, also strings non empty
+    // TODO: verify each string being a URI and max length of 100, also strings non empty
     }
   }
 
