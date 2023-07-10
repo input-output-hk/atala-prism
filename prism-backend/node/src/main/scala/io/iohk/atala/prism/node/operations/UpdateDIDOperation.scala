@@ -194,7 +194,7 @@ case class UpdateDIDOperation(
 
         for {
           contextFromDb <- EitherT.right[StateError](ContextDAO.getAllActiveByDidSuffix(didSuffix))
-          // if he context provided is empty AND context in db is also empty, return an error
+          // if the context provided is empty AND context in db is also empty, return an error
           _ <- EitherT.fromEither[ConnectionIO] {
             if (contextFromDb.isEmpty && context.isEmpty)
               Left(StateError.EntityMissing("context", s"${didSuffix.getValue}"))
@@ -262,6 +262,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
+    val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
 
     action { uda =>
       uda.action match {
@@ -336,7 +337,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           val path = action.path / "patchContext"
 
           ParsingUtils
-            .parseContext(ValueAtPath(value.context.toList, path / "context"))
+            .parseContext(ValueAtPath(value.context.toList, path / "context"), contextStringCharLimit)
             .map(PatchContextAction(_))
 
         case Action.Empty => Left(action.child(_.action, "action").missing())

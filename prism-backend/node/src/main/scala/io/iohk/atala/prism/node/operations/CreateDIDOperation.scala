@@ -161,6 +161,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     val servicesLimit = ProtocolConstants.servicesLimit
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
+    val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
 
     val operationDigest = Sha256.compute(operation.toByteArray)
     val didSuffix = DidSuffix(operationDigest.getHexValue)
@@ -176,7 +177,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
         serviceEndpointCharLenLimit,
         serviceTypeCharLimit
       )
-      context <- ParsingUtils.parseContext(data.child(_.context.toList, "context"))
+      context <- ParsingUtils.parseContext(data.child(_.context.toList, "context"), contextStringCharLimit)
     } yield CreateDIDOperation(didSuffix, keys, services, context, operationDigest, ledgerData)
   }
 }
