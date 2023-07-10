@@ -364,6 +364,19 @@ object ParsingUtils {
 
   }
 
+  def parseContext(
+      context: ValueAtPath[List[String]]
+  ): Either[ValidationError, List[String]] = {
+    context.parse { contextStrs =>
+      Either.cond(
+        contextStrs.distinct.size == contextStrs.size,
+        contextStrs,
+        "List of context strings contains duplicates"
+      )
+
+    }
+  }
+
   def parseKey(
       key: ValueAtPath[node_models.PublicKey],
       didSuffix: DidSuffix

@@ -22,8 +22,11 @@ case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
 // id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
+
 case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: Option[String])
     extends UpdateDIDAction
+
+case class PatchContextAction(context: List[String]) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
@@ -177,6 +180,24 @@ case class UpdateDIDOperation(
           newService = DIDService(id, didSuffix, newServiceType, newServiceEndpoints)
           _ <- createService(newService, ledgerData)
         } yield ()
+
+      case PatchContextAction(context) =>
+
+      /**
+       * Processing PatchContextAction
+       * If the DID to update has an empty context associated to it in the map:
+       *
+       * the field context MUST NOT be empty and MUST NOT contain repeated values
+       * Update of the internal map
+       *
+       * If context is empty, the DID removes the previous context list associated to it.
+       * It context is not empty, the DID replaces the old list for the new one on its map.
+       *
+       *
+       * TODO: get all context strings of the did, if empty and context is also empty, fail!
+       *    revoke all current context strings
+       *    insert all provided context strings
+       */
     }
   }
 
@@ -295,6 +316,12 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             if (serviceTypeIsEmpty) None else Some(serviceType),
             if (serviceEndpointsIsEmpty) None else Some(serviceEndpoints)
           )
+
+        case Action.PatchContext(value) =>
+          val path = action.path / "patchContext"
+
+          ParsingUtils.parseContext(ValueAtPath(value.context.toList, path / "context"))
+            .map(PatchContextAction(_))
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 

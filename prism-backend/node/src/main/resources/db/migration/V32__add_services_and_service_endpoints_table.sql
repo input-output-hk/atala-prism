@@ -8,9 +8,9 @@ CREATE TABLE services
     added_on_transaction_id   TRANSACTION_ID           NOT NULL,
     added_on                  TIMESTAMP WITH TIME ZONE NOT NULL,
     added_on_absn             INTEGER                  NOT NULL,
-    --^ Atala Block Sequence Number (absn) of the operation that added the key
+    --^ Atala Block Sequence Number (absn) of the operation that added the service
     added_on_osn              INTEGER                  NOT NULL,
-    --^ Operation Sequence Number (osn) of the operation that added the key
+    --^ Operation Sequence Number (osn) of the operation that added the service
 
     revoked_on_transaction_id TRANSACTION_ID           NULL,
     revoked_on                TIMESTAMP WITH TIME ZONE NULL,

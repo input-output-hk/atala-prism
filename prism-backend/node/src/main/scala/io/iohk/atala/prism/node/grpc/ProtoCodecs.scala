@@ -64,6 +64,7 @@ object ProtoCodecs {
         )
       )
       .withServices(didDataState.services.map(toProtoService))
+      .withContext(didDataState.context)
   }
 
   def toProtoService(nodeStateService: models.nodeState.DIDServiceState): node_models.Service = {

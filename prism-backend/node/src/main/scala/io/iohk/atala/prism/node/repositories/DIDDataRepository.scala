@@ -17,7 +17,7 @@ import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, DIDServiceState}
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO, ContextDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics
 import io.iohk.atala.prism.utils.syntax.DBConnectionOps
@@ -91,12 +91,21 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
       )
     }
 
+    def fetchContextStrings(): EitherT[ConnectionIO, NodeError, List[String]] = {
+      EitherT(
+        ContextDAO
+          .getAllActiveByDidSuffix(canonicalSuffix)
+          .map(_.asRight[NodeError])
+      )
+    }
+
     val query = for {
       lastOperationMaybe <- EitherT.liftF(DIDDataDAO.getLastOperation(canonicalSuffix))
       keys <- fetchKeys()
       services <- fetchServices()
+      context <- fetchContextStrings()
     } yield lastOperationMaybe map { lastOperation =>
-      DIDDataState(canonicalSuffix, keys, services, lastOperation)
+      DIDDataState(canonicalSuffix, keys, services, context, lastOperation)
     }
 
     query.value

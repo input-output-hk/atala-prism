@@ -38,7 +38,7 @@ package object models {
       operation: SignedAtalaOperation
   ): Either[ValidationError, OperationOutput] =
     parseOperationWithMockedLedger(operation).map {
-      case CreateDIDOperation(id, _, _, _, _) =>
+      case CreateDIDOperation(id, _, _, _, _, _) =>
         OperationOutput(
           OperationOutput.Result.CreateDidOutput(
             node_models.CreateDIDOutput(id.getValue)
