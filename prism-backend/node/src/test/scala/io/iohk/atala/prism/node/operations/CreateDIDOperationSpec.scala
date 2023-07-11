@@ -905,6 +905,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         toDIDPublicKey
       ) must contain theSameElementsAs parsedOperation.keys
 
+      didState.context.sorted mustBe parsedOperation.context.sorted
+
       for (key <- parsedOperation.keys) {
         val keyState =
           DataPreparation.findKey(parsedOperation.id, key.keyId).value
