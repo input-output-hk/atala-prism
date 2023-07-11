@@ -102,7 +102,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
   "ServicesDAO" should {
     "ServicesDAO.getAllActiveByDidSuffix should retrieve all inserted services" in {
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
@@ -122,7 +122,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
       ) :: services
 
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, services1, operationDigest)
+      val didData = DIDData(didSuffix, keys, services1, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
@@ -142,7 +142,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
     "ServicesDAO.getAllActiveByDidSuffix should not retrieve revoked services" in {
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       ServicesDAO.revokeService(didSuffix, serviceId1, dummyLedgerData).transact(xa).unsafeRunSync()
@@ -160,7 +160,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
     "ServicesDAO.getAllActiveByDidSuffix should return an empty list if there are not services for a did" in {
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, Nil, operationDigest)
+      val didData = DIDData(didSuffix, keys, Nil, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
@@ -170,7 +170,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
     "ServicesDAO.get should return a single service by didSuffix and id" in {
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedService = ServicesDAO.get(didSuffix, serviceId1).transact(xa).unsafeRunSync()
@@ -181,7 +181,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
     "ServicesDAO.get should return None if service with specified id and didSuffix does not exist" in {
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedService = ServicesDAO.get(didSuffix, "whatever").transact(xa).unsafeRunSync()
@@ -190,7 +190,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
 
     "ServicesDAO.get should not retrieve revoked service" in {
       val xa = implicitly[Transactor[IO]]
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       ServicesDAO.revokeService(didSuffix, serviceId1, dummyLedgerData).transact(xa).unsafeRunSync()
@@ -202,7 +202,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     "ServicesDAO.insert should insert a record in services table" in {
       val xa = implicitly[Transactor[IO]]
 
-      val didData = DIDData(didSuffix, keys, Nil, operationDigest)
+      val didData = DIDData(didSuffix, keys, Nil, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
@@ -233,7 +233,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     "ServicesDAO.revokeAllServices should revoke all services of the did" in {
       val xa = implicitly[Transactor[IO]]
 
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       val receivedServices = ServicesDAO.getAllActiveByDidSuffix(didSuffix).transact(xa).unsafeRunSync()
@@ -249,7 +249,7 @@ class ServicesDAOSpec extends AtalaWithPostgresSpec {
     "ServicesDAO.revokeService should revoke a specific service of a DID by id" in {
       val xa = implicitly[Transactor[IO]]
 
-      val didData = DIDData(didSuffix, keys, services, operationDigest)
+      val didData = DIDData(didSuffix, keys, services, Nil, operationDigest)
       DataPreparation.createDID(didData, dummyLedgerData)(xa)
 
       ServicesDAO.revokeService(didSuffix, serviceId1, dummyLedgerData).transact(xa).unsafeRunSync()

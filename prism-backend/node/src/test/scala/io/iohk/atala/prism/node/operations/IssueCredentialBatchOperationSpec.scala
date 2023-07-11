@@ -148,6 +148,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
             issuerDIDSuffix,
             issuerDidKeys,
             Nil,
+            Nil,
             issuerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -174,6 +175,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             issuerDIDSuffix,
             issuerDidKeys,
+            Nil,
             Nil,
             issuerCreateDIDOperation.digest
           ),
@@ -203,6 +205,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
             issuerDIDSuffix,
             issuerDidKeys,
             Nil,
+            Nil,
             issuerCreateDIDOperation.digest
           ),
           dummyLedgerData
@@ -229,6 +232,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             issuerDIDSuffix,
             issuerDidKeys,
+            Nil,
             Nil,
             issuerCreateDIDOperation.digest
           ),
@@ -287,6 +291,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
           DIDData(
             issuerDIDSuffix,
             issuerDidKeys,
+            Nil,
             Nil,
             issuerCreateDIDOperation.digest
           ),

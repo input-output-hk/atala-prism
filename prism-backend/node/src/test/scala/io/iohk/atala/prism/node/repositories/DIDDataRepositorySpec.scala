@@ -54,7 +54,7 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
     )
   )
 
-  val didData = DIDData(didSuffix, keys, Nil, operationDigest)
+  val didData = DIDData(didSuffix, keys, Nil, Nil, operationDigest)
   val dummyTimestamp =
     new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   val dummyLedgerData = LedgerData(
