@@ -11,7 +11,7 @@ import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
-import io.iohk.atala.prism.node.repositories.daos.{PublicKeysDAO, ServicesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
@@ -100,6 +100,19 @@ object UpdateDIDOperationSpec {
     )
   )
 
+  val examplePatchContextAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.PatchContext(
+      node_models.PatchContextAction(
+        context = List(
+          "https://www.w3.org/ns/did/v1",
+          "https://w3id.org/security/suites/jws-2020/v1",
+          "https://didcomm.org/messaging/contexts/v2",
+          "https://identity.foundation/.well-known/did-configuration/v1"
+        )
+      )
+    )
+  )
+
   val exampleAddServiceOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
@@ -146,7 +159,20 @@ object UpdateDIDOperationSpec {
           exampleRemoveKeyAction,
           exampleAddServiceAction,
           exampleRemoveServiceAction,
-          exampleUpdateServiceAction
+          exampleUpdateServiceAction,
+          examplePatchContextAction
+        )
+      )
+    )
+  )
+
+  val examplePatchContextOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          examplePatchContextAction
         )
       )
     )
@@ -809,6 +835,123 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       serviceAfterUpdate.nonEmpty mustBe true
       serviceAfterUpdate.value.`type` mustBe "didCom-credential-exchange-updated"
       serviceAfterUpdate.value.serviceEndpoints mustBe "https://qux.example.com"
+    }
+
+    "update list of context strings when PatchContextAction is used" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val expectedContext = List(
+        "https://www.w3.org/ns/did/v2",
+        "https://w3id.org/security/suites/jws-2021/v2"
+      )
+
+      val patchContextAction = examplePatchContextAction.update(
+        _.patchContext.context.modify(_ => expectedContext)
+      )
+
+      val patchContextOperation = examplePatchContextOperation.update(
+        _.updateDid.actions.modify { _ => List(patchContextAction) }
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(patchContextOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val contextFromDb = ContextDAO
+        .getAllActiveByDidSuffix(createDidOperation.id)
+        .transact(database)
+        .unsafeRunSync()
+
+      expectedContext.sorted mustBe contextFromDb.sorted
+
+    }
+
+    "remove list of context strings when PatchContextAction is used with empty context" in {
+      createDidOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val patchContextAction = examplePatchContextAction.update(
+        _.patchContext.context.modify(_ => Nil)
+      )
+
+      val patchContextOperation = examplePatchContextOperation.update(
+        _.updateDid.actions.modify { _ => List(patchContextAction) }
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(patchContextOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      val contextFromDb = ContextDAO
+        .getAllActiveByDidSuffix(createDidOperation.id)
+        .transact(database)
+        .unsafeRunSync()
+
+      contextFromDb.isEmpty mustBe true
+
+    }
+
+    "return error when trying to use PatchContextAction with empty context when DID has empty context already" in {
+      val createDIDOperationWithoutContext = CreateDIDOperation
+        .parse(
+          CreateDIDOperationSpec.exampleOperation.update(
+            _.createDid.didData.context.modify(_ => Nil)
+          ),
+          dummyLedgerData
+        )
+        .toOption
+        .value
+
+      createDIDOperationWithoutContext
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val patchContextAction = examplePatchContextAction.update(
+        _.patchContext.context.modify(_ => Nil)
+      )
+
+      val patchContextOperation = examplePatchContextOperation.update(
+        _.updateDid.actions.modify { _ => List(patchContextAction) }
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(patchContextOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      val res = parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      res mustBe a[Left[StateError, _]]
     }
 
   }
