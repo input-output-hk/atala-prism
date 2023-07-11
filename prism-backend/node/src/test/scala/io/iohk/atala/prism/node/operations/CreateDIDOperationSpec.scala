@@ -836,7 +836,6 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     "return error when context contains duplicate strings" in {
 
-
       val invalidOperation = exampleOperation
         .update(
           _.createDid.didData.context.modify(current => current.head +: current)
