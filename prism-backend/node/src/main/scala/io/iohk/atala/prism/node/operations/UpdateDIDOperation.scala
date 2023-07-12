@@ -12,18 +12,25 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.StateError.EntityExists
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
+
 sealed trait UpdateDIDAction
+
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
+
 case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
+
 case class AddServiceAction(service: DIDService) extends UpdateDIDAction
 
 // id, not to be confused with internal service_id in db, this is service.id
 case class RemoveServiceAction(id: String) extends UpdateDIDAction
+
 case class UpdateServiceAction(id: String, `type`: Option[String], serviceEndpoints: Option[String])
     extends UpdateDIDAction
+
+case class PatchContextAction(context: List[String]) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
@@ -39,9 +46,7 @@ case class UpdateDIDOperation(
   )
 
   /** Fetches key and possible previous operation reference from database */
-  override def getCorrectnessData(
-      keyId: String
-  ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
       lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
         DIDDataDAO
@@ -177,6 +182,37 @@ case class UpdateDIDOperation(
           newService = DIDService(id, didSuffix, newServiceType, newServiceEndpoints)
           _ <- createService(newService, ledgerData)
         } yield ()
+
+      case PatchContextAction(context) =>
+        // Processing PatchContextAction If the DID to update has an empty context associated to it in the map:
+        // * the field context MUST NOT be empty and MUST NOT contain repeated values Update of the internal map
+        //
+        // If context is empty, the DID removes the previous context list associated to it.
+        // If context is not empty, the DID replaces the old list for the new one on its map.
+
+        type ConnectionIOEitherTError[T] = EitherT[ConnectionIO, StateError, T]
+
+        for {
+          contextFromDb <- EitherT.right[StateError](ContextDAO.getAllActiveByDidSuffix(didSuffix))
+          // if the context provided is empty AND context in db is also empty, return an error
+          _ <- EitherT.fromEither[ConnectionIO] {
+            if (contextFromDb.isEmpty && context.isEmpty)
+              Left(StateError.EntityMissing("context", s"${didSuffix.getValue}"))
+            else Right(())
+          }
+          _ <- EitherT.right[StateError](ContextDAO.revokeAllContextStrings(didSuffix, ledgerData))
+
+          // If context is empty, won't insert anything, which is the goal
+          _ <- context.traverse[ConnectionIOEitherTError, Unit] { contextStr: String =>
+            EitherT {
+              ContextDAO.insert(contextStr, didSuffix, ledgerData).attemptSomeSqlState {
+                case sqlstate.class23.UNIQUE_VIOLATION =>
+                  EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
+              }
+            }
+          }
+        } yield ()
+
     }
   }
 
@@ -226,6 +262,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
+    val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
 
     action { uda =>
       uda.action match {
@@ -295,6 +332,13 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
             if (serviceTypeIsEmpty) None else Some(serviceType),
             if (serviceEndpointsIsEmpty) None else Some(serviceEndpoints)
           )
+
+        case Action.PatchContext(value) =>
+          val path = action.path / "patchContext"
+
+          ParsingUtils
+            .parseContext(ValueAtPath(value.context.toList, path / "context"), contextStringCharLimit)
+            .map(PatchContextAction(_))
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 

@@ -42,6 +42,7 @@ object OperationsCounters {
   private val ADD_SERVICE_ACTION_TAG_VALUE = "add-service"
   private val REMOVE_SERVICE_ACTION_TAG_VALUE = "remove-service"
   private val UPDATE_SERVICE_ACTION_TAG_VALUE = "update-service"
+  private val PATH_CONTEXT_ACTION_TAG_VALUE = "path-context"
 
   private lazy val receivedObjectsCounter: Metric.Counter =
     Kamon.counter(RECEIVED_OPERATION_METRIC_NAME)
@@ -189,6 +190,7 @@ object OperationsCounters {
     case Action.AddService(_) => ADD_SERVICE_ACTION_TAG_VALUE
     case Action.RemoveService(_) => REMOVE_SERVICE_ACTION_TAG_VALUE
     case Action.UpdateService(_) => UPDATE_SERVICE_ACTION_TAG_VALUE
+    case Action.PatchContext(_) => PATH_CONTEXT_ACTION_TAG_VALUE
   }
 
 }

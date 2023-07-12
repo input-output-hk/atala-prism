@@ -7,7 +7,7 @@ import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO, ContextDAO}
 import io.iohk.atala.prism.protos.node_models.AtalaOperation
 
 case class DeactivateDIDOperation(
@@ -70,6 +70,8 @@ case class DeactivateDIDOperation(
       _ <- EitherT.right[StateError](PublicKeysDAO.revokeAllKeys(didSuffix, ledgerData))
 
       _ <- EitherT.right[StateError](ServicesDAO.revokeAllServices(didSuffix, ledgerData))
+
+      _ <- EitherT.right[StateError](ContextDAO.revokeAllContextStrings(didSuffix, ledgerData))
     } yield ()
   }
 }

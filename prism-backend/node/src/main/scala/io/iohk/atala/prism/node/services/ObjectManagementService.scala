@@ -339,7 +339,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       }
       .flatMap(op =>
         op match {
-          case CreateDIDOperation(_, keys, _, _, _) if keys.size > didPublicKeysLimit =>
+          case CreateDIDOperation(_, keys, _, _, _, _) if keys.size > didPublicKeysLimit =>
             Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, Some(keys.size)))
           case UpdateDIDOperation(_, actions, _, _, _) if actions.size > didPublicKeysLimit =>
             Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, Some(actions.size)))

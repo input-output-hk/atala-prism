@@ -63,6 +63,7 @@ package object models {
       didSuffix: DidSuffix,
       keys: List[DIDPublicKey],
       services: List[DIDService],
+      context: List[String],
       lastOperation: Sha256Digest
   )
 
@@ -170,6 +171,7 @@ package object models {
         didSuffix: DidSuffix,
         keys: List[DIDPublicKeyState],
         services: List[DIDServiceState],
+        context: List[String],
         lastOperation: Sha256Digest
     )
 

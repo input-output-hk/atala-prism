@@ -20,6 +20,8 @@ import scala.util.Try
 
 object ParsingUtils {
 
+  private type EitherValidationError[B] = Either[ValidationError, B]
+
   def parseDate(
       date: ValueAtPath[common_models.Date]
   ): Either[ValidationError, LocalDate] = {
@@ -184,7 +186,6 @@ object ParsingUtils {
               // if not a string, then must be an object, no validations on objects
               // if neither string or an object, fail the whole thing.
 
-              type EitherValidationError[B] = Either[ValidationError, B]
               // first check for empty array
               for {
                 _ <- Either.cond(
@@ -255,9 +256,6 @@ object ParsingUtils {
      *       MUST not start nor end with whitespaces, and MUST have at least a non whitespace character
      */
 
-    /** I can start with an if statement, if it is empty and can be empty, i just return Right(string) otherwise a fire
-      * a validation logic below
-      */
     val rawType = serviceType(identity)
     if (rawType.isEmpty && canBeEmpty) rawType.asRight[ValidationError]
     else
@@ -362,6 +360,36 @@ object ParsingUtils {
       serviceEndpoints = parsedServiceEndpoints
     )
 
+  }
+
+  def parseContext(
+      context: ValueAtPath[List[String]],
+      contextStringCharLimit: Int
+  ): Either[ValidationError, List[String]] = {
+
+    for { // InvalidValue(path, value.toString, message)
+      // Validate each context string is withing char limit and is a valid URI
+      contextStringsUriAndLimitValidated <- context { contextStrs =>
+        contextStrs.zipWithIndex.traverse[EitherValidationError, String] { case (str, index) =>
+          if (!UriUtils.isValidUriString(str))
+            InvalidValue(context.path / index.toString, str, s"\"$str\" is not a valid URI").asLeft[String]
+          else if (str.length > contextStringCharLimit)
+            InvalidValue(
+              context.path / index.toString,
+              str,
+              s"Exceeded type character limit for a context string, max - $contextStringCharLimit, got - ${str.length}"
+            ).asLeft[String]
+          else str.asRight[ValidationError]
+        }
+      }
+      // validate context includes only unique context strings
+      uniqueValidated <- Either.cond(
+        contextStringsUriAndLimitValidated.distinct.size == contextStringsUriAndLimitValidated.size,
+        contextStringsUriAndLimitValidated,
+        context.invalid("List of context strings contains duplicates")
+      )
+
+    } yield uniqueValidated
   }
 
   def parseKey(

@@ -12,13 +12,14 @@ import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO}
+import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO, ContextDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
 case class CreateDIDOperation(
     id: DidSuffix,
     keys: List[DIDPublicKey],
     services: List[DIDService],
+    context: List[String],
     digest: Sha256Digest,
     ledgerData: LedgerData
 ) extends Operation {
@@ -70,8 +71,16 @@ case class CreateDIDOperation(
             EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
           }
         }
-
       }
+
+      _ <- context.traverse[ConnectionIOEitherTError, Unit] { contextStr: String =>
+        EitherT {
+          ContextDAO.insert(contextStr, id, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("context string", s"${id.getValue} - $contextStr"): StateError
+          }
+        }
+      }
+
     } yield ()
   }
 }
@@ -152,6 +161,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     val servicesLimit = ProtocolConstants.servicesLimit
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
+    val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
 
     val operationDigest = Sha256.compute(operation.toByteArray)
     val didSuffix = DidSuffix(operationDigest.getHexValue)
@@ -167,6 +177,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
         serviceEndpointCharLenLimit,
         serviceTypeCharLimit
       )
-    } yield CreateDIDOperation(didSuffix, keys, services, operationDigest, ledgerData)
+      context <- ParsingUtils.parseContext(data.child(_.context.toList, "context"), contextStringCharLimit)
+    } yield CreateDIDOperation(didSuffix, keys, services, context, operationDigest, ledgerData)
   }
 }

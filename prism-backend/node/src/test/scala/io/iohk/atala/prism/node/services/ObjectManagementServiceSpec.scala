@@ -591,6 +591,7 @@ class ObjectManagementServiceSpec
           proposerDIDSuffix,
           proposerDidKeys,
           Nil,
+          Nil,
           proposerCreateDIDOperation.digest
         ),
         dummyLedgerData

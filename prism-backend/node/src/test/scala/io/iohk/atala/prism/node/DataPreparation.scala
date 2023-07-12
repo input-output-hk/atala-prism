@@ -24,6 +24,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   AtalaObjectTransactionSubmissionsDAO,
   AtalaObjectsDAO,
   AtalaOperationsDAO,
+  ContextDAO,
   CredentialBatchesDAO,
   DIDDataDAO,
   KeyValuesDAO,
@@ -164,6 +165,9 @@ object DataPreparation {
       )
       _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, ledgerData))
       _ <- didData.services.traverse((service: DIDService) => ServicesDAO.insert(service, ledgerData))
+      _ <- didData.context.traverse((contextStr: String) =>
+        ContextDAO.insert(contextStr, didData.didSuffix, ledgerData)
+      )
     } yield ()
 
     query
@@ -178,7 +182,8 @@ object DataPreparation {
       maybeLastOperation <- DIDDataDAO.getLastOperation(didSuffix)
       keys <- PublicKeysDAO.findAll(didSuffix)
       services <- ServicesDAO.getAllActiveByDidSuffix(didSuffix)
-    } yield DIDDataState(didSuffix, keys, services, maybeLastOperation.value)
+      context <- ContextDAO.getAllActiveByDidSuffix(didSuffix)
+    } yield DIDDataState(didSuffix, keys, services, context, maybeLastOperation.value)
 
     query
       .transact(xa)

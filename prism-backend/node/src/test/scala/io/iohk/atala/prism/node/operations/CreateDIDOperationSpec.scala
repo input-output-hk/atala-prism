@@ -10,7 +10,7 @@ import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey}
+import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.ServicesDAO
@@ -136,6 +136,12 @@ object CreateDIDOperationSpec {
                 addedOn = None,
                 deletedOn = None
               )
+            ),
+            context = List(
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/suites/jws-2020/v1",
+              "https://didcomm.org/messaging/contexts/v2",
+              "https://identity.foundation/.well-known/did-configuration/v1"
             )
           )
         )
@@ -792,6 +798,58 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
           )
       }
     }
+
+    "return error when some of the context strings are not valid URIs" in {
+      val invalidOperation = exampleOperation
+        .update(
+          _.createDid.didData.context.modify(current => "invalid URI" +: current)
+        )
+
+      val parsedOperation = CreateDIDOperation.parse(invalidOperation, dummyLedgerData)
+
+      inside(parsedOperation) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "context", "0")
+        case Right(_) => fail("Failed to validate invalid context strings")
+      }
+    }
+
+    "return error when some of the context strings length is over allowed limit" in {
+
+      val charLimit = ProtocolConstants.contextStringCharLimit
+      // valid URI that is longer them max char limit
+      val invalidLengthUri = "https://www.example.com/" + "a" * (charLimit - 23)
+
+      val invalidOperation = exampleOperation
+        .update(
+          _.createDid.didData.context.modify(current => invalidLengthUri +: current)
+        )
+
+      val parsedOperation = CreateDIDOperation.parse(invalidOperation, dummyLedgerData)
+
+      inside(parsedOperation) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "context", "0")
+        case Right(_) => fail("Failed to validate invalid context strings")
+      }
+    }
+
+    "return error when context contains duplicate strings" in {
+
+      val invalidOperation = exampleOperation
+        .update(
+          _.createDid.didData.context.modify(current => current.head +: current)
+        )
+
+      val parsedOperation = CreateDIDOperation.parse(invalidOperation, dummyLedgerData)
+
+      inside(parsedOperation) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "context")
+        case Right(_) => fail("Failed to validate invalid context strings")
+      }
+    }
+
   }
 
   "CreateDIDOperation.getCorrectnessData" should {
@@ -846,6 +904,8 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         toDIDPublicKey
       ) must contain theSameElementsAs parsedOperation.keys
 
+      didState.context.sorted mustBe parsedOperation.context.sorted
+
       for (key <- parsedOperation.keys) {
         val keyState =
           DataPreparation.findKey(parsedOperation.id, key.keyId).value
@@ -893,7 +953,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       DataPreparation
         .createDID(
-          DIDData(parsedOperation.id, Nil, Nil, parsedOperation.digest),
+          DIDData(parsedOperation.id, Nil, Nil, Nil, parsedOperation.digest),
           dummyLedgerData
         )
 
