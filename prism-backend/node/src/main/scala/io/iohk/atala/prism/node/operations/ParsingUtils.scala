@@ -5,10 +5,9 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
@@ -61,8 +60,12 @@ object ParsingUtils {
   def parseECKey(
       ecData: ValueAtPath[node_models.ECKeyData]
   ): Either[ValidationError, ECPublicKey] = {
-    if (ecData(_.curve) != ECConfig.getCURVE_NAME) {
-      Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
+
+    val supportedCurves = ProtocolConstants.supportedEllipticCurves
+    val curve = ecData(_.curve)
+
+    if (!supportedCurves.contains(curve)) {
+      Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else if (ecData(_.x.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "x").missing())
     } else if (ecData(_.y.toByteArray.isEmpty)) {
@@ -87,10 +90,14 @@ object ParsingUtils {
   def parseCompressedECKey(
       ecData: ValueAtPath[node_models.CompressedECKeyData]
   ): Either[ValidationError, ECPublicKey] = {
+
+    val supportedCurves = ProtocolConstants.supportedEllipticCurves
+    val curve = ecData(_.curve)
+
     if (ecData(_.data.toByteArray.isEmpty)) {
       Left(ecData.child(_.data, "compressedData").missing())
-    } else if (ecData(_.curve) != ECConfig.getCURVE_NAME) {
-      Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
+    } else if (!supportedCurves.contains(curve)) {
+      Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else {
       Try(
         EC.toPublicKeyFromCompressed(ecData(_.data.toByteArray))
