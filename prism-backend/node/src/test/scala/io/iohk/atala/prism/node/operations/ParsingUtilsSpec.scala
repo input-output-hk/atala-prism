@@ -5,9 +5,10 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.Inside._
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import com.google.protobuf.ByteString
-import javax.xml.bind.DatatypeConverter
+import io.iohk.atala.prism.node.models.ProtocolConstants
 
-import io.iohk.atala.prism.node.operations.path.{ValueAtPath, Path}
+import javax.xml.bind.DatatypeConverter
+import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.protos.node_models
 
 class ParsingUtilsSpec extends AnyWordSpec with Matchers {
@@ -72,10 +73,43 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
           )
         )
       ) {
-        case Left(err) => err.explanation mustBe "Unsupported curve"
+        case Left(err) => err.explanation mustBe "Unsupported curve - InvalidCurve"
         case Right(_) => fail("parseCompressedECKey did not fail with invalid curve provided")
       }
 
+    }
+
+    "parse key successfully with valid key curves" in {
+
+      val keyPair = EC.generateKeyPair()
+
+      val xByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getCurvePoint.getX.bytes)
+      val yByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getCurvePoint.getY.bytes)
+
+      val pks = ProtocolConstants.supportedEllipticCurves.map { curve =>
+        new node_models.ECKeyData(
+          curve,
+          xByteString,
+          yByteString
+        )
+      }
+
+      pks.foreach { pk =>
+        val parsed = ParsingUtils.parseECKey(
+          ValueAtPath(
+            pk,
+            Path(Vector.empty)
+          )
+        )
+        inside(parsed) {
+          case Left(value) =>
+            fail(value.explanation)
+          case Right(value) =>
+            val curvePoint = value.getCurvePoint
+            curvePoint.getX.bytes.sameElements(pk.x.toByteArray) mustBe true
+            curvePoint.getY.bytes.sameElements(pk.y.toByteArray) mustBe true
+        }
+      }
     }
   }
 
