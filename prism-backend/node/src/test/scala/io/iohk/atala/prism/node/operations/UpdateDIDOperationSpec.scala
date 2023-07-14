@@ -8,9 +8,15 @@ import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.DataPreparation
-import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{randomCompressedECKeyData, randomECKeyData}
+import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
+import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
+  issuingEcKeyData,
+  masterEcKeyData,
+  randomCompressedECKeyData,
+  randomECKeyData
+}
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
@@ -120,6 +126,18 @@ object UpdateDIDOperationSpec {
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddServiceAction
+        )
+      )
+    )
+  )
+
+  val exampleAddKeyOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleAddKeyAction
         )
       )
     )
@@ -952,6 +970,119 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .futureValue
 
       res mustBe a[Left[StateError, _]]
+    }
+
+    "return error when trying to add key to a DID that already has max amount of keys allowed" in {
+      val publicKeysLimit = ProtocolConstants.publicKeysLimit
+
+      val pks =
+        node_models.PublicKey(
+          "master",
+          node_models.KeyUsage.MASTER_KEY,
+          Some(
+            node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+          ),
+          None,
+          node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+        ) :: Array
+          .tabulate(publicKeysLimit - 1) { index =>
+            node_models.PublicKey(
+              "issuing" + index.toString,
+              node_models.KeyUsage.ISSUING_KEY,
+              Some(
+                node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+              ),
+              None,
+              node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
+            )
+          }
+          .toList
+
+      val createDIDOperationWithMaxKeys = CreateDIDOperation
+        .parse(
+          CreateDIDOperationSpec.exampleOperation.update(
+            _.createDid.didData.publicKeys := pks
+          ),
+          dummyLedgerData
+        )
+        .toOption
+        .value
+
+      createDIDOperationWithMaxKeys
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val addKeyOperation = exampleAddKeyOperation.update(
+        _.updateDid.id := createDIDOperationWithMaxKeys.id.getValue
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(addKeyOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      val res = parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      res mustBe a[Left[StateError.ExceededPublicKeyLimit, _]]
+
+    }
+
+    "return error when trying to add a service to a DID that already has max amount of services allowed" in {
+      val servicesLimit = ProtocolConstants.servicesLimit
+
+      val services = Array
+        .tabulate(servicesLimit) { index =>
+          node_models.Service(
+            id = "linked-domain1" + index.toString,
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = "https://baz.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        }
+        .toList
+
+      val createDIDOperationWithMaxServices = CreateDIDOperation
+        .parse(
+          CreateDIDOperationSpec.exampleOperation.update(
+            _.createDid.didData.services := services
+          ),
+          dummyLedgerData
+        )
+        .toOption
+        .value
+
+      createDIDOperationWithMaxServices
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+
+      val addKeyOperation = exampleAddServiceOperation.update(
+        _.updateDid.id := createDIDOperationWithMaxServices.id.getValue
+      )
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(addKeyOperation, dummyLedgerData)
+        .toOption
+        .value
+
+      val res = parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeToFuture()
+        .futureValue
+
+      res mustBe a[Left[StateError.ExceededServicesLimit, _]]
+
     }
 
   }
