@@ -90,10 +90,22 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
 
   def parseKeysFromData(
       data: ValueAtPath[proto.CreateDIDOperation.DIDCreationData],
-      didSuffix: DidSuffix
+      didSuffix: DidSuffix,
+      publicKeysLimit: Int,
+      idCharLenLimit: Int
   ): Either[ValidationError, List[DIDPublicKey]] = {
+
     val keysValue = data.child(_.publicKeys, "publicKeys")
+    val keys = keysValue(identity)
     for {
+      _ <- Either.cond(
+        keys.size <= publicKeysLimit,
+        (),
+        keysValue.invalid(
+          s"Exceeded number of services while creating a DID, max - $publicKeysLimit, got - ${keys.size}"
+        )
+      )
+
       reversedKeys <- keysValue { keys =>
         keys.zipWithIndex.foldLeft(
           Either.right[ValidationError, List[DIDPublicKey]](List.empty)
@@ -103,7 +115,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
             ParsingUtils
               .parseKey(
                 ValueAtPath(key, keysValue.path / i.toString),
-                didSuffix
+                didSuffix,
+                idCharLenLimit
               )
               .map(_ :: list)
           )
@@ -122,13 +135,14 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       didSuffix: DidSuffix,
       servicesLimit: Int,
       serviceEndpointCharLimit: Int,
-      serviceTypeCharLimit: Int
+      serviceTypeCharLimit: Int,
+      idCharLenLimit: Int
   ): Either[ValidationError, List[DIDService]] = {
     val servicesValue = data.child(_.services, "services")
     val services = servicesValue(identity)
     for {
       _ <- Either.cond(
-        services.size < servicesLimit,
+        services.size <= servicesLimit,
         (),
         servicesValue.invalid(
           s"Exceeded number of services while creating a DID, max - $servicesLimit, got - ${services.size}"
@@ -144,7 +158,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
                 ValueAtPath(service, servicesValue.path / index.toString),
                 didSuffix,
                 serviceEndpointCharLimit,
-                serviceTypeCharLimit
+                serviceTypeCharLimit,
+                idCharLenLimit
               )
           }
 
@@ -159,6 +174,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
   ): Either[ValidationError, CreateDIDOperation] = {
 
     val servicesLimit = ProtocolConstants.servicesLimit
+    val publicKeysLimit = ProtocolConstants.publicKeysLimit
+    val idCharLenLimit = ProtocolConstants.idCharLenLimit
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
     val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
@@ -169,13 +186,14 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")
-      keys <- parseKeysFromData(data, didSuffix)
+      keys <- parseKeysFromData(data, didSuffix, publicKeysLimit, idCharLenLimit)
       services <- parseServicesFromData(
         data,
         didSuffix,
         servicesLimit,
         serviceEndpointCharLenLimit,
-        serviceTypeCharLimit
+        serviceTypeCharLimit,
+        idCharLenLimit
       )
       context <- ParsingUtils.parseContext(data.child(_.context.toList, "context"), contextStringCharLimit)
     } yield CreateDIDOperation(didSuffix, keys, services, context, operationDigest, ledgerData)

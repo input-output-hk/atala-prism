@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.operations.StateError.EntityExists
+import io.iohk.atala.prism.node.operations.StateError
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, DIDDataDAO, PublicKeysDAO, ServicesDAO}
@@ -92,9 +92,9 @@ case class UpdateDIDOperation(
   }
 
   private def createService(service: DIDService, ledgerData: LedgerData) = {
-    EitherT.apply {
+    EitherT {
       ServicesDAO.insert(service, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-        EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
+        StateError.EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
       }
     }
   }
@@ -119,11 +119,28 @@ case class UpdateDIDOperation(
   ): EitherT[ConnectionIO, StateError, Unit] = {
     action match {
       case AddKeyAction(key) =>
-        EitherT {
-          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID suffix", didSuffix.getValue): StateError
+        val publicKeysLimit = ProtocolConstants.publicKeysLimit
+        // get amount if existing keys for this DID, make sure the the one you are inserting does no go over the limit, then insert
+        // otherwise return error
+        for {
+          keys <- EitherT.right[StateError](PublicKeysDAO.listAllLimited(didSuffix, None))
+          _ <- EitherT.fromEither[ConnectionIO] {
+            if ((keys.length + 1) > publicKeysLimit)
+              Left(
+                StateError.ExceededPublicKeyLimit(
+                  s"Trying to add a key to a DID that already has maximum amount of keys allowed - $publicKeysLimit"
+                )
+              )
+            else Right(())
           }
-        }
+          _ <- EitherT {
+            PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+              StateError.EntityExists("DID suffix", didSuffix.getValue): StateError
+            }
+          }
+
+        } yield ()
+
       case RevokeKeyAction(keyId) =>
         for {
           _ <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
@@ -149,7 +166,26 @@ case class UpdateDIDOperation(
               )
             }
         } yield ()
-      case AddServiceAction(service) => createService(service, ledgerData)
+      case AddServiceAction(service) =>
+        val servicesLimit = ProtocolConstants.servicesLimit
+
+        // get amount of existing services for the DID, make sure adding this one does not go over the limit, then insert
+        // otherwise return an error
+
+        for {
+          services <- EitherT.right[StateError](ServicesDAO.getAllActiveByDidSuffix(didSuffix))
+          _ <- EitherT.fromEither[ConnectionIO] {
+            if ((services.length + 1) > servicesLimit)
+              Left(
+                StateError.ExceededServicesLimit(
+                  s"Trying to add a service to a DID that already has maximum amount of services allowed - $servicesLimit"
+                )
+              )
+            else Right(())
+          }
+          _ <- createService(service, ledgerData)
+
+        } yield ()
 
       case RemoveServiceAction(id) => revokeService(didSuffix, id, ledgerData)
 
@@ -207,7 +243,7 @@ case class UpdateDIDOperation(
             EitherT {
               ContextDAO.insert(contextStr, didSuffix, ledgerData).attemptSomeSqlState {
                 case sqlstate.class23.UNIQUE_VIOLATION =>
-                  EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
+                  StateError.EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
               }
             }
           }
@@ -263,6 +299,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
     val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
+    val idCharLenLimit = ProtocolConstants.idCharLenLimit
 
     action { uda =>
       uda.action match {
@@ -271,14 +308,15 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.key
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
-            .flatMap(ParsingUtils.parseKey(_, didSuffix))
+            .flatMap(ParsingUtils.parseKey(_, didSuffix, idCharLenLimit))
             .map(AddKeyAction)
 
         case Action.RemoveKey(value) =>
           val path = action.path / "removeKey" / "keyId"
           ParsingUtils
             .parseKeyId(
-              ValueAtPath(value.keyId, path)
+              ValueAtPath(value.keyId, path),
+              idCharLenLimit
             )
             .map(RevokeKeyAction)
 
@@ -287,14 +325,17 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.service
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
-            .flatMap(ParsingUtils.parseService(_, didSuffix, serviceEndpointCharLenLimit, serviceTypeCharLimit))
+            .flatMap(
+              ParsingUtils.parseService(_, didSuffix, serviceEndpointCharLenLimit, serviceTypeCharLimit, idCharLenLimit)
+            )
             .map(AddServiceAction)
 
         case Action.RemoveService(value) =>
           val path = action.path / "removeService" / "serviceId"
           ParsingUtils
             .parseServiceId(
-              ValueAtPath(value.serviceId, path)
+              ValueAtPath(value.serviceId, path),
+              idCharLenLimit
             )
             .map(RemoveServiceAction)
 
@@ -303,7 +344,8 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
           for {
             id <- ParsingUtils.parseServiceId(
-              ValueAtPath(value.serviceId, path / "serviceId")
+              ValueAtPath(value.serviceId, path / "serviceId"),
+              idCharLenLimit
             )
 
             serviceType <- ParsingUtils.parseServiceType(
@@ -338,7 +380,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
           ParsingUtils
             .parseContext(ValueAtPath(value.context.toList, path / "context"), contextStringCharLimit)
-            .map(PatchContextAction(_))
+            .map(PatchContextAction)
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 

@@ -163,6 +163,14 @@ package object operations {
     final case class CannotUpdateMetric(err: String) extends StateError {
       override def name: String = "cannot-update-metric"
     }
+
+    final case class ExceededPublicKeyLimit(err: String) extends StateError {
+      override def name: String = "exceeded-public-key-limit"
+    }
+
+    final case class ExceededServicesLimit(err: String) extends StateError {
+      override def name: String = "exceeded-service-limit"
+    }
   }
 
   /** Data required to verify the correctness of the operation */

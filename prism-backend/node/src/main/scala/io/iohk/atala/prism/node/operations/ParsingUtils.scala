@@ -112,26 +112,45 @@ object ParsingUtils {
     }
   }
 
-  def parseKeyId(keyId: ValueAtPath[String]): Either[ValidationError, String] = {
-    keyId.parse { id =>
-      Either.cond(
-        UriUtils.isValidUriFragment(id),
-        id,
-        s"Key id: \"$id\" is not a valid URI fragment"
+  def parseKeyId(keyId: ValueAtPath[String], idCharLenLimit: Int): Either[ValidationError, String] = {
+    val keyIdValue = keyId(identity)
+    for {
+      idAsValidUriFragment <- Either.cond(
+        UriUtils.isValidUriFragment(keyIdValue),
+        keyIdValue,
+        keyId.invalid(s"Public key id: \"$keyIdValue\" is not a valid URI fragment")
       )
-    }
+      idWithValidLength <- Either.cond(
+        idAsValidUriFragment.length <= idCharLenLimit,
+        idAsValidUriFragment,
+        keyId.invalid(
+          s"Exceeded public key id character limit for a key with id - $keyIdValue, max - $idCharLenLimit, got - ${idAsValidUriFragment.length}"
+        )
+      )
+    } yield idWithValidLength
   }
 
   def parseServiceId(
-      serviceId: ValueAtPath[String]
-  ): Either[ValidationError, String] =
-    serviceId.parse { id =>
-      Either.cond(
-        UriUtils.isValidUriFragment(id),
-        id,
-        s"Service id: \"$id\" is not a valid URI fragment"
+      serviceId: ValueAtPath[String],
+      idCharLenLimit: Int
+  ): Either[ValidationError, String] = {
+    val serviceIdValue = serviceId(identity)
+    for {
+      idAsValidUriFragment <- Either.cond(
+        UriUtils.isValidUriFragment(serviceIdValue),
+        serviceIdValue,
+        serviceId.invalid(s"Service id: \"$serviceIdValue\" is not a valid URI fragment")
       )
-    }
+      idWithValidLength <- Either.cond(
+        idAsValidUriFragment.length <= idCharLenLimit,
+        idAsValidUriFragment,
+        serviceId.invalid(
+          s"Exceeded service id character limit for a service with id - $serviceIdValue, max - $idCharLenLimit, got - ${idAsValidUriFragment.length}"
+        )
+      )
+    } yield idWithValidLength
+
+  }
 
   def parseServiceEndpoints(
       serviceEndpoints: ValueAtPath[String],
@@ -346,11 +365,12 @@ object ParsingUtils {
       service: ValueAtPath[node_models.Service],
       didSuffix: DidSuffix,
       serviceEndpointCharLimit: Int,
-      serviceTypeCharLimit: Int
+      serviceTypeCharLimit: Int,
+      idCharLenLimit: Int
   ): Either[ValidationError, DIDService] = {
 
     for {
-      id <- parseServiceId(service.child(_.id, "id"))
+      id <- parseServiceId(service.child(_.id, "id"), idCharLenLimit)
       serviceType <- parseServiceType(
         serviceType = service.child(_.`type`, "type"),
         serviceTypeCharLimit = serviceTypeCharLimit
@@ -401,7 +421,8 @@ object ParsingUtils {
 
   def parseKey(
       key: ValueAtPath[node_models.PublicKey],
-      didSuffix: DidSuffix
+      didSuffix: DidSuffix,
+      idCharLenLimit: Int
   ): Either[ValidationError, DIDPublicKey] = {
     for {
       keyUsage <- key.child(_.usage, "usage").parse {
@@ -419,7 +440,7 @@ object ParsingUtils {
           Right(KeyUsage.CapabilityDelegationKey)
         case _ => Left("Unknown value")
       }
-      keyId <- parseKeyId(key.child(_.id, "id"))
+      keyId <- parseKeyId(key.child(_.id, "id"), idCharLenLimit)
       _ <- Either.cond(
         key(_.keyData.isDefined),
         (),
