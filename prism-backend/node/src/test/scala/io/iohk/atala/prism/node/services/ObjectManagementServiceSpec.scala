@@ -493,56 +493,6 @@ class ObjectManagementServiceSpec
       atalaObject.status mustBe AtalaObjectStatus.Processed
     }
 
-    "not process the block when operation_count in atala block don't match actual operation count" in {
-      doReturn(connection.pure(true))
-        .when(blockProcessing)
-        .processBlock(*, anyTransactionIdMatcher, *, *, *)
-
-      val block = createBlock() // contains one operation
-      val obj = node_internal
-        .AtalaObject(
-          blockContent = Some(block),
-          blockOperationCount = 2 // false, should be 1
-        )
-
-      val res = objectManagementService
-        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .futureValue
-
-      res.isLeft mustBe true
-      res.left.value.msg.contains("Expected operations count - 2, got - 1") mustBe true
-
-      verifyNoMoreInteractions(blockProcessing) // process block should not be called
-    }
-
-    "not process the block when byte_size in atala block don't match actual byte size" in {
-      doReturn(connection.pure(true))
-        .when(blockProcessing)
-        .processBlock(*, anyTransactionIdMatcher, *, *, *)
-
-      val block = createBlock() // contains one operation
-      val obj = node_internal
-        .AtalaObject(
-          blockContent = Some(block),
-          blockOperationCount = 1,
-          blockByteLength = 123 // false, should be block.toByteArray.length
-        )
-
-      val res = objectManagementService
-        .saveObject(AtalaObjectNotification(obj, dummyTransactionInfo))
-        .run(TraceId.generateYOLO)
-        .unsafeToFuture()
-        .futureValue
-
-      res.isLeft mustBe true
-      println(res.left.value.msg)
-      res.left.value.msg.contains(s"Expected block byte length - 123, got - ${block.toByteArray.length}") mustBe true
-
-      verifyNoMoreInteractions(blockProcessing) // process block should not be called
-    }
-
     "ignore block when current protocol version isn't supported by node" in {
       doReturn(connection.pure(true))
         .when(blockProcessing)
