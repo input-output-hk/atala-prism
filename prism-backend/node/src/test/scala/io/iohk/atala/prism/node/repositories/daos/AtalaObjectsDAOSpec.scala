@@ -144,7 +144,8 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
         // value is irrelevant in this case, we just need to make sure we can distinguish objects some how (by index in this case)
         val fieldSet = UnknownFieldSet.empty.withField(count, UnknownFieldSet.Field(fixed32 = Seq(count)))
         val objId = AtalaObjectId.of(
-          node_internal.AtalaObject()
+          node_internal
+            .AtalaObject()
             .withUnknownFields(fieldSet)
         )
         insert(objId, byteContent)
@@ -191,7 +192,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
 
       retrieved.size mustBe scheduledObjects.length
       retrieved.zip(scheduledObjects.reverse).foreach { case (objInfo, obj) =>
-          objInfo.objectId mustBe AtalaObjectId.of(obj)
+        objInfo.objectId mustBe AtalaObjectId.of(obj)
       }
     }
   }
