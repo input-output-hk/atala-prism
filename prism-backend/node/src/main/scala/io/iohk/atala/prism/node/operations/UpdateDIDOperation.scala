@@ -119,27 +119,11 @@ case class UpdateDIDOperation(
   ): EitherT[ConnectionIO, StateError, Unit] = {
     action match {
       case AddKeyAction(key) =>
-        val publicKeysLimit = ProtocolConstants.publicKeysLimit
-        // get amount if existing keys for this DID, make sure the the one you are inserting does no go over the limit, then insert
-        // otherwise return error
-        for {
-          keys <- EitherT.right[StateError](PublicKeysDAO.listAllLimited(didSuffix, None))
-          _ <- EitherT.fromEither[ConnectionIO] {
-            if ((keys.length + 1) > publicKeysLimit)
-              Left(
-                StateError.ExceededPublicKeyLimit(
-                  s"Trying to add a key to a DID that already has maximum amount of keys allowed - $publicKeysLimit"
-                )
-              )
-            else Right(())
+        EitherT {
+          PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            StateError.EntityExists("DID suffix", didSuffix.getValue): StateError
           }
-          _ <- EitherT {
-            PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-              StateError.EntityExists("DID suffix", didSuffix.getValue): StateError
-            }
-          }
-
-        } yield ()
+        }
 
       case RevokeKeyAction(keyId) =>
         for {
@@ -166,26 +150,7 @@ case class UpdateDIDOperation(
               )
             }
         } yield ()
-      case AddServiceAction(service) =>
-        val servicesLimit = ProtocolConstants.servicesLimit
-
-        // get amount of existing services for the DID, make sure adding this one does not go over the limit, then insert
-        // otherwise return an error
-
-        for {
-          services <- EitherT.right[StateError](ServicesDAO.getAllActiveByDidSuffix(didSuffix))
-          _ <- EitherT.fromEither[ConnectionIO] {
-            if ((services.length + 1) > servicesLimit)
-              Left(
-                StateError.ExceededServicesLimit(
-                  s"Trying to add a service to a DID that already has maximum amount of services allowed - $servicesLimit"
-                )
-              )
-            else Right(())
-          }
-          _ <- createService(service, ledgerData)
-
-        } yield ()
+      case AddServiceAction(service) => createService(service, ledgerData)
 
       case RemoveServiceAction(id) => revokeService(didSuffix, id, ledgerData)
 
@@ -273,6 +238,32 @@ case class UpdateDIDOperation(
         StateError.EntityMissing("DID Suffix", didSuffix.getValue)
       )
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
+
+      publicKeysLimit = ProtocolConstants.publicKeysLimit
+      servicesLimit = ProtocolConstants.servicesLimit
+
+      keys <- EitherT.right[StateError](PublicKeysDAO.listAllLimited(didSuffix, None))
+      _ <- EitherT.fromEither[ConnectionIO] {
+        if (keys.length > publicKeysLimit)
+          Left(
+            StateError.ExceededPublicKeyLimit(
+              s"Trying to add a key to a DID that already has maximum amount of keys allowed - $publicKeysLimit"
+            )
+          )
+        else Right(())
+      }
+
+      services <- EitherT.right[StateError](ServicesDAO.getAllActiveByDidSuffix(didSuffix))
+      _ <- EitherT.fromEither[ConnectionIO] {
+        if (services.length > servicesLimit)
+          Left(
+            StateError.ExceededServicesLimit(
+              s"Trying to add a service to a DID that already has maximum amount of services allowed - $servicesLimit"
+            )
+          )
+        else Right(())
+      }
+
       _ <- EitherT[ConnectionIO, StateError, Unit](
         PublicKeysDAO
           .findAll(didSuffix)
