@@ -9,7 +9,7 @@ import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.operations.StateError.EntityExists
+import io.iohk.atala.prism.node.operations.StateError
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, DIDDataDAO, PublicKeysDAO, ServicesDAO}
@@ -92,9 +92,9 @@ case class UpdateDIDOperation(
   }
 
   private def createService(service: DIDService, ledgerData: LedgerData) = {
-    EitherT.apply {
+    EitherT {
       ServicesDAO.insert(service, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-        EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
+        StateError.EntityExists("service", s"${service.didSuffix.getValue} - ${service.id}"): StateError
       }
     }
   }
@@ -121,9 +121,10 @@ case class UpdateDIDOperation(
       case AddKeyAction(key) =>
         EitherT {
           PublicKeysDAO.insert(key, ledgerData).attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-            EntityExists("DID suffix", didSuffix.getValue): StateError
+            StateError.EntityExists("DID suffix", didSuffix.getValue): StateError
           }
         }
+
       case RevokeKeyAction(keyId) =>
         for {
           _ <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
@@ -207,7 +208,7 @@ case class UpdateDIDOperation(
             EitherT {
               ContextDAO.insert(contextStr, didSuffix, ledgerData).attemptSomeSqlState {
                 case sqlstate.class23.UNIQUE_VIOLATION =>
-                  EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
+                  StateError.EntityExists("context string", s"${didSuffix.getValue} - $contextStr"): StateError
               }
             }
           }
@@ -237,6 +238,32 @@ case class UpdateDIDOperation(
         StateError.EntityMissing("DID Suffix", didSuffix.getValue)
       )
       _ <- actions.traverse[ConnectionIOEitherTError, Unit](applyAction)
+
+      publicKeysLimit = ProtocolConstants.publicKeysLimit
+      servicesLimit = ProtocolConstants.servicesLimit
+
+      keys <- EitherT.right[StateError](PublicKeysDAO.listAllNonRevoked(didSuffix))
+      _ <- EitherT.fromEither[ConnectionIO] {
+        if (keys.length > publicKeysLimit)
+          Left(
+            StateError.ExceededPublicKeyLimit(
+              s"Trying to add a key to a DID that already has maximum amount of keys allowed - $publicKeysLimit"
+            )
+          )
+        else Right(())
+      }
+
+      services <- EitherT.right[StateError](ServicesDAO.getAllActiveByDidSuffix(didSuffix))
+      _ <- EitherT.fromEither[ConnectionIO] {
+        if (services.length > servicesLimit)
+          Left(
+            StateError.ExceededServicesLimit(
+              s"Trying to add a service to a DID that already has maximum amount of services allowed - $servicesLimit"
+            )
+          )
+        else Right(())
+      }
+
       _ <- EitherT[ConnectionIO, StateError, Unit](
         PublicKeysDAO
           .findAll(didSuffix)
@@ -263,6 +290,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     val serviceEndpointCharLenLimit = ProtocolConstants.serviceEndpointCharLenLimit
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
     val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
+    val idCharLenLimit = ProtocolConstants.idCharLenLimit
 
     action { uda =>
       uda.action match {
@@ -271,14 +299,15 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.key
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
-            .flatMap(ParsingUtils.parseKey(_, didSuffix))
+            .flatMap(ParsingUtils.parseKey(_, didSuffix, idCharLenLimit))
             .map(AddKeyAction)
 
         case Action.RemoveKey(value) =>
           val path = action.path / "removeKey" / "keyId"
           ParsingUtils
             .parseKeyId(
-              ValueAtPath(value.keyId, path)
+              ValueAtPath(value.keyId, path),
+              idCharLenLimit
             )
             .map(RevokeKeyAction)
 
@@ -287,14 +316,17 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.service
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
-            .flatMap(ParsingUtils.parseService(_, didSuffix, serviceEndpointCharLenLimit, serviceTypeCharLimit))
+            .flatMap(
+              ParsingUtils.parseService(_, didSuffix, serviceEndpointCharLenLimit, serviceTypeCharLimit, idCharLenLimit)
+            )
             .map(AddServiceAction)
 
         case Action.RemoveService(value) =>
           val path = action.path / "removeService" / "serviceId"
           ParsingUtils
             .parseServiceId(
-              ValueAtPath(value.serviceId, path)
+              ValueAtPath(value.serviceId, path),
+              idCharLenLimit
             )
             .map(RemoveServiceAction)
 
@@ -303,7 +335,8 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
           for {
             id <- ParsingUtils.parseServiceId(
-              ValueAtPath(value.serviceId, path / "serviceId")
+              ValueAtPath(value.serviceId, path / "serviceId"),
+              idCharLenLimit
             )
 
             serviceType <- ParsingUtils.parseServiceType(
@@ -338,7 +371,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
           ParsingUtils
             .parseContext(ValueAtPath(value.context.toList, path / "context"), contextStringCharLimit)
-            .map(PatchContextAction(_))
+            .map(PatchContextAction)
 
         case Action.Empty => Left(action.child(_.action, "action").missing())
 

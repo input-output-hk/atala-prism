@@ -325,6 +325,59 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
     }
 
+    "fail to parse services if one of the services id char length is over the limit" in {
+      val idCharLenLimit = ProtocolConstants.idCharLenLimit
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := List(
+          node_models.Service(
+            id = serviceId1 + ("a" * idCharLenLimit),
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = "https://baz.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        )
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services", "0", "id")
+        case Right(_) => fail("Failed to validate invalid service id")
+      }
+    }
+
+    "fail to parse services if the amount of services is over the limit" in {
+      val servicesLimit = ProtocolConstants.servicesLimit
+      val services = Array
+        .tabulate(servicesLimit + 1) { index =>
+          node_models.Service(
+            id = serviceId1 + index.toString,
+            `type` = "didCom-credential-exchange",
+            serviceEndpoint = "https://baz.example.com",
+            addedOn = None,
+            deletedOn = None
+          )
+        }
+        .toList
+
+      val updated = exampleOperation.update(
+        _.createDid.didData.services := services
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "services")
+        case Right(_) => fail("Failed to validate invalid service id")
+      }
+
+    }
+
     "fail to parse services if one of the services has valid id but with whitespace" in {
       val updated = exampleOperation.update(
         _.createDid.didData.services := List(
@@ -848,6 +901,57 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
           path.path mustBe Vector("createDid", "didData", "context")
         case Right(_) => fail("Failed to validate invalid context strings")
       }
+    }
+
+    "return error when one of the keys id char length is over the limit" in {
+      val idCharLenLimit = ProtocolConstants.idCharLenLimit
+
+      val updated = exampleOperation
+        .update(
+          _.createDid.didData
+            .publicKeys(0)
+            .id := "issuing" + ("a" * idCharLenLimit)
+        )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "publicKeys", "0", "id")
+        case Right(_) => fail("Failed to validate invalid service id")
+      }
+    }
+
+    "return error when the amount of public keys is over the limit" in {
+      val publicKeysLimit = ProtocolConstants.publicKeysLimit
+      val pks = Array
+        .tabulate(publicKeysLimit + 1) { index =>
+          node_models.PublicKey(
+            "issuing" + index.toString,
+            node_models.KeyUsage.ISSUING_KEY,
+            Some(
+              node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
+            ),
+            None,
+            node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+          )
+        }
+        .toList
+
+      val updated = exampleOperation.update(
+        _.createDid.didData.publicKeys := pks
+      )
+
+      val parsed = CreateDIDOperation
+        .parse(updated, dummyLedgerData)
+
+      inside(parsed) {
+        case Left(ValidationError.InvalidValue(path, _, _)) =>
+          path.path mustBe Vector("createDid", "didData", "publicKeys")
+        case Right(_) => fail("Failed to validate invalid service id")
+      }
+
     }
 
   }

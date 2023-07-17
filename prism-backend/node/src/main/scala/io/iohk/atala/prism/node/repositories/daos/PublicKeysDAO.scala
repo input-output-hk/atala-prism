@@ -46,14 +46,25 @@ object PublicKeysDAO {
 
   def listAllLimited(didSuffix: DidSuffix, limit: Option[Int]): ConnectionIO[List[DIDPublicKeyState]] = {
     val baseFr = sql"""
-         |SELECT did_suffix, key_id, key_usage, curve, compressed,
-         |       added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
-         |       revoked_on, revoked_on_absn, revoked_on_osn, revoked_on_transaction_id, ledger
-         |FROM public_keys
-         |WHERE did_suffix = $didSuffix""".stripMargin
+                      |SELECT did_suffix, key_id, key_usage, curve, compressed,
+                      |       added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
+                      |       revoked_on, revoked_on_absn, revoked_on_osn, revoked_on_transaction_id, ledger
+                      |FROM public_keys
+                      |WHERE did_suffix = $didSuffix
+                      |""".stripMargin
 
     val limitFr = limit.fold(Fragment.empty)(l => fr"LIMIT $l")
     (baseFr ++ limitFr).query[DIDPublicKeyState].to[List]
+  }
+
+  def listAllNonRevoked(didSuffix: DidSuffix): ConnectionIO[List[DIDPublicKeyState]] = {
+    sql"""
+           |SELECT did_suffix, key_id, key_usage, curve, compressed,
+           |       added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
+           |       revoked_on, revoked_on_absn, revoked_on_osn, revoked_on_transaction_id, ledger
+           |FROM public_keys
+           |WHERE did_suffix = $didSuffix AND revoked_on is NULL
+           |""".stripMargin.query[DIDPublicKeyState].to[List]
   }
 
   def revoke(
