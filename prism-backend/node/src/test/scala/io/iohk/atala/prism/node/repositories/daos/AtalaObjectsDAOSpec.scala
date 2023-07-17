@@ -6,10 +6,11 @@ import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Scheduled, Pending, Merged, Processed}
+import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Merged, Pending, Processed, Scheduled}
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
+import scalapb.UnknownFieldSet
 
 import java.time.Instant
 import scala.util.Random
@@ -140,8 +141,12 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
     "return object ids in the correct order" in {
       val N = 10
       (0 until N).foreach { count =>
+        // value is irrelevant in this case, we just need to make sure we can distinguish objects some how (by index in this case)
+        val fieldSet = UnknownFieldSet.empty.withField(count, UnknownFieldSet.Field(fixed32 = Seq(count)))
         val objId = AtalaObjectId.of(
-          node_internal.AtalaObject(blockOperationCount = count)
+          node_internal
+            .AtalaObject()
+            .withUnknownFields(fieldSet)
         )
         insert(objId, byteContent)
       }
@@ -155,8 +160,9 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       retrieved.size mustBe N
       retrieved.zipWithIndex.foreach { case (objInfo, ind) =>
         withClue(s"Index $ind:") {
+          val fieldSet = UnknownFieldSet.empty.withField(ind, UnknownFieldSet.Field(fixed32 = Seq(ind)))
           objInfo.objectId mustBe AtalaObjectId.of(
-            node_internal.AtalaObject(blockOperationCount = ind)
+            node_internal.AtalaObject().withUnknownFields(fieldSet)
           )
         }
       }
@@ -172,7 +178,8 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       var scheduledObjects = List[node_internal.AtalaObject]()
 
       (0 until N).foreach { count =>
-        val obj = node_internal.AtalaObject(blockOperationCount = count)
+        val fieldSet = UnknownFieldSet.empty.withField(count, UnknownFieldSet.Field(fixed32 = Seq(count)))
+        val obj = node_internal.AtalaObject().withUnknownFields(fieldSet)
         val objId = AtalaObjectId.of(obj)
         val status = generatedStatuses(count)
         insert(objId, byteContent, generatedStatuses(count))
@@ -185,9 +192,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
 
       retrieved.size mustBe scheduledObjects.length
       retrieved.zip(scheduledObjects.reverse).foreach { case (objInfo, obj) =>
-        withClue(s"Index ${obj.blockOperationCount}:") {
-          objInfo.objectId mustBe AtalaObjectId.of(obj)
-        }
+        objInfo.objectId mustBe AtalaObjectId.of(obj)
       }
     }
   }

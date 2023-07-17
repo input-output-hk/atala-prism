@@ -530,8 +530,7 @@ class SubmissionServiceSpec
     atalaOperations.reverse.foreach { op =>
       val nextAccOps = op +: accOps
       val curObj = createAtalaObject(
-        block = node_internal.AtalaBlock(operations = nextAccOps),
-        opsCount = nextAccOps.size
+        block = node_internal.AtalaBlock(operations = nextAccOps)
       )
 
       if (estimateTxMetadataSize(curObj) >= cardano.TX_METADATA_MAX_SIZE) {

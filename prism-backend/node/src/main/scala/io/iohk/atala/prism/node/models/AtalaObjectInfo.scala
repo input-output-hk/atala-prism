@@ -53,8 +53,6 @@ case class AtalaObjectInfo(
       val obj = node_internal
         .AtalaObject()
         .withBlockContent(mergedBlock)
-        .withBlockOperationCount(mergedBlock.operations.size)
-        .withBlockByteLength(mergedBlock.toByteArray.length)
       AtalaObjectInfo(
         AtalaObjectId.of(obj),
         obj.toByteArray,

@@ -276,16 +276,11 @@ object DataPreparation {
   }
 
   def createAtalaObject(
-      block: node_internal.AtalaBlock = createBlock(),
-      opsCount: Int = 1
+      block: node_internal.AtalaBlock = createBlock()
   ): node_internal.AtalaObject =
     node_internal
-      .AtalaObject(
-        blockOperationCount = opsCount
-      )
+      .AtalaObject()
       .withBlockContent(block)
-      .withBlockByteLength(block.toByteArray.length)
-
   def setAtalaObjectTransactionSubmissionStatus(
       transaction: TransactionInfo,
       status: AtalaObjectTransactionSubmissionStatus
@@ -324,9 +319,7 @@ object DataPreparation {
   )(implicit xa: Transactor[IO]): (AtalaObjectId, List[AtalaOperationId]) = {
     val block = node_internal.AtalaBlock(atalaOperations)
     val obj = node_internal
-      .AtalaObject(
-        blockOperationCount = atalaOperations.size
-      )
+      .AtalaObject()
       .withBlockContent(block)
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)

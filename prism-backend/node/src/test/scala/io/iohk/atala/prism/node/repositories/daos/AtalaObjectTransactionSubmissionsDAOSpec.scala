@@ -19,6 +19,7 @@ import io.iohk.atala.prism.node.models.{
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_internal
 import org.scalatest.OptionValues._
+import scalapb.UnknownFieldSet
 
 import java.time.{Duration, Instant}
 
@@ -26,8 +27,16 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   private val ONE_SECOND = Duration.ofSeconds(1)
 
   private val atalaObjectId = AtalaObjectId.of(node_internal.AtalaObject())
+
   private val atalaObjectId2 =
-    AtalaObjectId.of(node_internal.AtalaObject(blockOperationCount = 2))
+    AtalaObjectId.of(
+      node_internal
+        .AtalaObject()
+        .withUnknownFields(
+          // something to differentiate one object from another
+          UnknownFieldSet.empty.withField(2, UnknownFieldSet.Field(fixed32 = Seq(2)))
+        )
+    )
   private val byteContent = "byteContent".getBytes
   private val ledger = Ledger.InMemory
   private val transactionId1 =

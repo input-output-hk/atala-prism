@@ -93,37 +93,6 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       notification: AtalaObjectNotification
   ): F[Either[SaveObjectError, Boolean]] = {
 
-    def validateObj(obj: AtalaObjectInfo, tx: TransactionInfo): Either[SaveObjectError, Unit] = {
-      val errMetadata =
-        s"objId: ${obj.objectId.toString}, ledger: ${tx.ledger} txId: ${tx.transactionId}".stripMargin
-      node_internal.AtalaObject
-        .validate(obj.byteContent)
-        .toEither
-        .leftMap(err => SaveObjectError(s"""
-             | Could not parse AtalaObject protobuff, got error: ${err.getMessage}
-             | $errMetadata
-             | """.stripMargin))
-        .flatMap { parsedObj =>
-          val mbBlock = parsedObj.blockContent
-          val expectedOpCount = parsedObj.blockOperationCount
-          val expectedBlockByteLength = parsedObj.blockByteLength
-          mbBlock.fold[Either[SaveObjectError, Unit]](Left(SaveObjectError(s"""
-               | AtalaObject does not have AtalaBlock.
-               | $errMetadata
-               |""".stripMargin))) { block =>
-            if (block.operations.size != expectedOpCount) Left(SaveObjectError(s"""
-                 | Expected operations count - $expectedOpCount, got - ${block.operations.size}
-                 | $errMetadata
-                 |""".stripMargin))
-            else if (block.toByteArray.length != expectedBlockByteLength) Left(SaveObjectError(s"""
-                 | Expected block byte length - $expectedBlockByteLength, got - ${block.toByteArray.length}
-                 | $errMetadata
-                 |""".stripMargin))
-            else Right(()).withLeft[SaveObjectError]
-          }
-        }
-    }
-
     def applyTransaction(objMaybe: Option[AtalaObjectInfo]): F[Either[SaveObjectError, Boolean]] = {
       objMaybe match {
         case Some(obj) =>
@@ -136,12 +105,9 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
                 InLedger
               )
 
-            // validate the object
-            errOrUnit = validateObj(obj, notification.transaction)
-            // if the object is valid
             // Retrieve all operations from the object and apply them to the state.
             // After this method every operation should have either APPROVED_AND_APPLIED or APPROVED_AND_REJECTED status.
-            transaction = errOrUnit.flatMap(_ => processObject(obj))
+            transaction <- Monad[F].pure(processObject(obj))
             // Save the error if processObject failed
             result <- transaction flatTraverse {
               _.logSQLErrorsV2("saving object").attemptSql
@@ -374,8 +340,6 @@ object ObjectManagementService {
     node_internal
       .AtalaObject()
       .withBlockContent(block)
-      .withBlockOperationCount(block.operations.size)
-      .withBlockByteLength(block.toByteArray.length)
   }
 
   def make[I[_]: Functor, F[_]: MonadCancelThrow](

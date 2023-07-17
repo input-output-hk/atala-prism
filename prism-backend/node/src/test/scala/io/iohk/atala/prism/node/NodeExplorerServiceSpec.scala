@@ -179,8 +179,6 @@ class NodeExplorerServiceSpec
       def toAtalaObject(ops: List[node_models.AtalaOperation]): node_internal.AtalaObject = {
         val block = node_internal.AtalaBlock(ops.map(sign))
         node_internal.AtalaObject(
-          blockOperationCount = ops.size,
-          blockByteLength = block.toByteArray.length,
           blockContent = Some(block)
         )
       }

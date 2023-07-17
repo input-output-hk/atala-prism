@@ -33,7 +33,7 @@ object versions {
   val typesafeConfig = "1.4.2"
   val fs2 = "3.2.5"
   val scalaUri = "4.0.0"
-  val prismSdk = "v1.4.1-snapshot-1688767440-4554608" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
+  val prismSdk = "v1.4.1-snapshot-1688975371-7541fd2" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 
