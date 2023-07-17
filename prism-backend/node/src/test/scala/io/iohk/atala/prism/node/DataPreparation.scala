@@ -319,9 +319,7 @@ object DataPreparation {
   )(implicit xa: Transactor[IO]): (AtalaObjectId, List[AtalaOperationId]) = {
     val block = node_internal.AtalaBlock(atalaOperations)
     val obj = node_internal
-      .AtalaObject(
-        blockOperationCount = atalaOperations.size
-      )
+      .AtalaObject()
       .withBlockContent(block)
     val objBytes = obj.toByteArray
     val objId = AtalaObjectId.of(objBytes)
