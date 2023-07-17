@@ -242,7 +242,7 @@ case class UpdateDIDOperation(
       publicKeysLimit = ProtocolConstants.publicKeysLimit
       servicesLimit = ProtocolConstants.servicesLimit
 
-      keys <- EitherT.right[StateError](PublicKeysDAO.listAllLimited(didSuffix, None))
+      keys <- EitherT.right[StateError](PublicKeysDAO.findAll(didSuffix))
       _ <- EitherT.fromEither[ConnectionIO] {
         if (keys.length > publicKeysLimit)
           Left(

@@ -50,7 +50,7 @@ object PublicKeysDAO {
          |       added_on, added_on_absn, added_on_osn, added_on_transaction_id, ledger,
          |       revoked_on, revoked_on_absn, revoked_on_osn, revoked_on_transaction_id, ledger
          |FROM public_keys
-         |WHERE did_suffix = $didSuffix""".stripMargin
+         |WHERE did_suffix = $didSuffix AND revoked_on is NULL""".stripMargin
 
     val limitFr = limit.fold(Fragment.empty)(l => fr"LIMIT $l")
     (baseFr ++ limitFr).query[DIDPublicKeyState].to[List]
