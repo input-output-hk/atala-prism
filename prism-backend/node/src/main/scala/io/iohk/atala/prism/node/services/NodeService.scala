@@ -90,7 +90,7 @@ trait NodeService[F[_]] {
 private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
     objectManagement: ObjectManagementService[F],
-    credentialBatchesRepository: CredentialBatchesRepository[F],
+    credentialBatchesRepository: CredentialBatchesRepository[F]
 ) extends NodeService[F] {
   override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
     Try(PrismDid.canonicalFromString(didStr)).fold(
@@ -222,7 +222,7 @@ object NodeService {
       mid attach new NodeServiceImpl[F](
         didDataRepository,
         objectManagement,
-        credentialBatchesRepository,
+        credentialBatchesRepository
       )
     }
   }

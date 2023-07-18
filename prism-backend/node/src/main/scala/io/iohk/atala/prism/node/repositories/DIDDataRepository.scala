@@ -65,7 +65,7 @@ private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor
     getByCanonicalSuffix(DidSuffix(did.getSuffix))
 
   private def getByCanonicalSuffix(
-      canonicalSuffix: DidSuffix,
+      canonicalSuffix: DidSuffix
   ): F[Either[NodeError, Option[DIDDataState]]] = {
 
     def fetchKeys(): EitherT[ConnectionIO, NodeError, List[DIDPublicKeyState]] = {

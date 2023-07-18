@@ -14,7 +14,11 @@ import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
-import io.iohk.atala.prism.node.errors.NodeError.{TooManyDidPublicKeysAccessAttempt, UnsupportedProtocolVersion}
+import io.iohk.atala.prism.node.errors.NodeError.{
+  TooManyDidPublicKeysAccessAttempt,
+  UnsupportedProtocolVersion,
+  TooManyServiceCreationAttempt
+}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
@@ -28,11 +32,7 @@ import io.iohk.atala.prism.node.repositories.{
   KeyValuesRepository,
   ProtocolVersionRepository
 }
-import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec.{
-  createDidOperation,
-  signOperation,
-  updateDidOperation
-}
+import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec.{createDidOperation, signOperation}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
@@ -100,6 +100,7 @@ class ObjectManagementServiceSpec
       logs
     )
   private val publicKeysLimit = 4
+  private val servicesLimit = 4
 
   private implicit lazy val submissionService: SubmissionService[IOWithTraceIdContext] =
     SubmissionService.unsafe(
@@ -117,6 +118,7 @@ class ObjectManagementServiceSpec
       protocolVersionRepository,
       blockProcessing,
       publicKeysLimit,
+      servicesLimit,
       dbLiftedToTraceIdIO,
       logs
     )
@@ -352,21 +354,32 @@ class ObjectManagementServiceSpec
       val result =
         publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
 
-      result.left.value must be(TooManyDidPublicKeysAccessAttempt(4, Some(5)))
+      result.left.value must be(TooManyDidPublicKeysAccessAttempt(4, 5))
     }
 
-    "fail scheduling when UpdateDID contains too much actions with public keys" in {
-      val updateOperation = updateDidOperation.update(
-        _.updateDid.actions.modify(act => act ++ act ++ act)
+    "fail scheduling when createDID contains too much services" in {
+      val createOperation = createDidOperation.update(
+        _.createDid.didData.services :++= Array
+          .tabulate(5) { index =>
+            node_models.Service(
+              id = "linked-domain" + index,
+              `type` = "didCom-credential-exchange",
+              serviceEndpoint = "https://baz.example.com/",
+              addedOn = None,
+              deletedOn = None
+            )
+          }
+          .toList
       )
-      val signedUpdateDidOperation =
-        signOperation(updateOperation, "master", masterKeys.getPrivateKey)
+      val signedCreateDidOperation =
+        signOperation(createOperation, "master", masterKeys.getPrivateKey)
 
       val result =
-        publishSingleOperationAndFlush(signedUpdateDidOperation).futureValue
+        publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
 
-      result.left.value must be(TooManyDidPublicKeysAccessAttempt(4, Some(6)))
+      result.left.value must be(TooManyServiceCreationAttempt(4, 7))
     }
+
   }
 
   // needed because mockito doesn't interact too nicely with value classes
