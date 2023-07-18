@@ -83,7 +83,7 @@ package object errors {
       override def name: String = "unsupported-protocol-version"
     }
 
-    case class TooManyDidPublicKeysAccessAttempt(limit: Int, keySize: Int) extends NodeError {
+    case class TooManyDidPublicKeysCreationAttempt(limit: Int, keySize: Int) extends NodeError {
       override def toStatus: Status = Status.ABORTED.withDescription(
         s"Attempting to create an operation with $keySize public keys, limit is $limit"
       )

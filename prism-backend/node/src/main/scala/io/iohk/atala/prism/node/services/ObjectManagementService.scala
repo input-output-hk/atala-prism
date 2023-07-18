@@ -307,7 +307,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       .flatMap {
         case CreateDIDOperation(_, keys, services, _, _, _) =>
           if (keys.size > didPublicKeysLimit)
-            Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, keys.size))
+            Left(NodeError.TooManyDidPublicKeysCreationAttempt(didPublicKeysLimit, keys.size))
           else if (services.size > didServicesLimit)
             Left(NodeError.TooManyServiceCreationAttempt(didPublicKeysLimit, services.size))
           else Right(())

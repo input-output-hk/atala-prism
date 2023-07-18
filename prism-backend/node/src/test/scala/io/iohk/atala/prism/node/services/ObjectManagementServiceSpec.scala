@@ -15,7 +15,7 @@ import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.errors.NodeError.{
-  TooManyDidPublicKeysAccessAttempt,
+  TooManyDidPublicKeysCreationAttempt,
   UnsupportedProtocolVersion,
   TooManyServiceCreationAttempt
 }
@@ -354,7 +354,7 @@ class ObjectManagementServiceSpec
       val result =
         publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
 
-      result.left.value must be(TooManyDidPublicKeysAccessAttempt(4, 5))
+      result.left.value must be(TooManyDidPublicKeysCreationAttempt(4, 5))
     }
 
     "fail scheduling when createDID contains too much services" in {
