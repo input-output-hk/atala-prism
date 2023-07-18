@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.In
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
 import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
-import io.iohk.atala.prism.node.operations.{CreateDIDOperation, UpdateDIDOperation, parseOperationWithMockedLedger}
+import io.iohk.atala.prism.node.operations.{CreateDIDOperation, parseOperationWithMockedLedger}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
@@ -85,6 +85,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     protocolVersionsRepository: ProtocolVersionRepository[F],
     blockProcessing: BlockProcessingService,
     didPublicKeysLimit: Int,
+    didServicesLimit: Int,
     xa: Transactor[F]
 ) extends ObjectManagementService[F] {
 
@@ -303,15 +304,15 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       .map { validationError =>
         NodeError.UnableToParseSignedOperation(validationError.explanation): NodeError
       }
-      .flatMap(op =>
-        op match {
-          case CreateDIDOperation(_, keys, _, _, _, _) if keys.size > didPublicKeysLimit =>
-            Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, Some(keys.size)))
-          case UpdateDIDOperation(_, actions, _, _, _) if actions.size > didPublicKeysLimit =>
-            Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, Some(actions.size)))
-          case _ => Right(())
-        }
-      )
+      .flatMap {
+        case CreateDIDOperation(_, keys, services, _, _, _) =>
+          if (keys.size > didPublicKeysLimit)
+            Left(NodeError.TooManyDidPublicKeysAccessAttempt(didPublicKeysLimit, keys.size))
+          else if (services.size > didServicesLimit)
+            Left(NodeError.TooManyServiceCreationAttempt(didPublicKeysLimit, services.size))
+          else Right(())
+        case _ => Right(())
+      }
   }
 }
 
@@ -349,6 +350,7 @@ object ObjectManagementService {
       protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService,
       didPublicKeysLimit: Int,
+      didServicesLimit: Int,
       xa: Transactor[F],
       logs: Logs[I, F]
   ): I[ObjectManagementService[F]] = {
@@ -367,6 +369,7 @@ object ObjectManagementService {
         protocolVersionsRepository,
         blockProcessing,
         didPublicKeysLimit,
+        didServicesLimit,
         xa
       )
     }
@@ -379,6 +382,7 @@ object ObjectManagementService {
       protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService,
       didPublicKeysLimit: Int,
+      didServicesLimit: Int,
       xa: Transactor[F],
       logs: Logs[I, F]
   ): Resource[I, ObjectManagementService[F]] = Resource.eval(
@@ -390,6 +394,7 @@ object ObjectManagementService {
         protocolVersionsRepository,
         blockProcessing,
         didPublicKeysLimit,
+        didServicesLimit,
         xa,
         logs
       )
@@ -402,6 +407,7 @@ object ObjectManagementService {
       protocolVersionsRepository: ProtocolVersionRepository[F],
       blockProcessing: BlockProcessingService,
       didPublicKeysLimit: Int,
+      didServicesLimit: Int,
       xa: Transactor[F],
       logs: Logs[I, F]
   ): ObjectManagementService[F] =
@@ -413,6 +419,7 @@ object ObjectManagementService {
         protocolVersionsRepository,
         blockProcessing,
         didPublicKeysLimit,
+        didServicesLimit,
         xa,
         logs
       )
