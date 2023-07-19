@@ -90,8 +90,7 @@ trait NodeService[F[_]] {
 private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
     objectManagement: ObjectManagementService[F],
-    credentialBatchesRepository: CredentialBatchesRepository[F],
-    didPublicKeysLimit: Int
+    credentialBatchesRepository: CredentialBatchesRepository[F]
 ) extends NodeService[F] {
   override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
     Try(PrismDid.canonicalFromString(didStr)).fold(
@@ -102,7 +101,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   private def getDidDocumentByDid(canon: CanonicalPrismDid): F[Either[GettingDidError, DidDocument]] = {
     val getDidResultF: F[Either[GettingDidError, Option[(DIDData, Sha256Digest)]]] =
       didDataRepository
-        .findByDid(canon, Some(didPublicKeysLimit)) // TODO: Add services limit as well
+        .findByDid(canon)
         .map(_.bimap(GettingCanonicalPrismDidError, toDidDataProto(_, canon)))
 
     for {
@@ -212,7 +211,6 @@ object NodeService {
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
-      didPublicKeysLimit: Int,
       logs: Logs[I, F]
   ): I[NodeService[F]] = {
     for {
@@ -224,8 +222,7 @@ object NodeService {
       mid attach new NodeServiceImpl[F](
         didDataRepository,
         objectManagement,
-        credentialBatchesRepository,
-        didPublicKeysLimit
+        credentialBatchesRepository
       )
     }
   }
@@ -234,24 +231,21 @@ object NodeService {
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
-      didPublicKeysLimit: Int,
       logs: Logs[I, F]
   ): Resource[I, NodeService[F]] = Resource.eval(
-    make(didDataRepository, objectManagement, credentialBatchesRepository, didPublicKeysLimit, logs)
+    make(didDataRepository, objectManagement, credentialBatchesRepository, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
       credentialBatchesRepository: CredentialBatchesRepository[F],
-      didPublicKeysLimit: Int,
       logs: Logs[I, F]
   ): NodeService[F] =
     make(
       didDataRepository,
       objectManagement,
       credentialBatchesRepository,
-      didPublicKeysLimit,
       logs
     ).extract
 

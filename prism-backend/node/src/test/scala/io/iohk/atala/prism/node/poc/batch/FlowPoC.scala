@@ -54,6 +54,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
     _
   protected var protocolVersionsRepository: ProtocolVersionRepository[IOWithTraceIdContext] = _
   private val publicKeysLimit = 10
+  private val servicesLimit = 10
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -90,6 +91,7 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
       protocolVersionsRepository,
       blockProcessingService,
       publicKeysLimit,
+      servicesLimit,
       dbLiftedToTraceIdIO,
       flowPocTestLogs
     )
@@ -112,7 +114,6 @@ class FlowPoC extends AtalaWithPostgresSpec with BeforeAndAfterEach {
                 didDataRepository,
                 objectManagementService,
                 credentialBatchesRepository,
-                publicKeysLimit,
                 flowPocTestLogs
               )
             ),

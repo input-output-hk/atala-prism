@@ -15,7 +15,6 @@ import io.iohk.atala.prism.identity.{CanonicalPrismDid => DID}
 import io.iohk.atala.prism.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.errors.NodeError.TooManyDidPublicKeysAccessAttempt
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, DIDServiceState}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO, ContextDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
@@ -27,7 +26,7 @@ import tofu.syntax.monoid.TofuSemigroupOps
 
 @derive(applyK)
 trait DIDDataRepository[F[_]] {
-  def findByDid(did: DID, publicKeysLimit: Option[Int]): F[Either[NodeError, Option[DIDDataState]]]
+  def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]]
 }
 
 object DIDDataRepository {
@@ -62,25 +61,19 @@ object DIDDataRepository {
 }
 
 private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
-  def findByDid(did: DID, publicKeysLimit: Option[Int]): F[Either[NodeError, Option[DIDDataState]]] =
-    getByCanonicalSuffix(DidSuffix(did.getSuffix), publicKeysLimit)
+  def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
+    getByCanonicalSuffix(DidSuffix(did.getSuffix))
 
   private def getByCanonicalSuffix(
-      canonicalSuffix: DidSuffix,
-      publicKeysLimit: Option[Int]
+      canonicalSuffix: DidSuffix
   ): F[Either[NodeError, Option[DIDDataState]]] = {
 
-    def fetchKeys(): EitherT[ConnectionIO, NodeError, List[DIDPublicKeyState]] = publicKeysLimit match {
-      case None => EitherT.liftF(PublicKeysDAO.listAllLimited(canonicalSuffix, None))
-      case Some(lim) =>
-        for {
-          keys <- EitherT.liftF(PublicKeysDAO.listAllLimited(canonicalSuffix, Some(lim + 1)))
-          _ <- EitherT.cond[ConnectionIO](
-            keys.size <= lim,
-            (),
-            TooManyDidPublicKeysAccessAttempt(lim, None): NodeError
-          )
-        } yield keys
+    def fetchKeys(): EitherT[ConnectionIO, NodeError, List[DIDPublicKeyState]] = {
+      EitherT(
+        PublicKeysDAO
+          .findAll(canonicalSuffix)
+          .map(_.asRight[NodeError])
+      )
     }
 
     def fetchServices(): EitherT[ConnectionIO, NodeError, List[DIDServiceState]] = {

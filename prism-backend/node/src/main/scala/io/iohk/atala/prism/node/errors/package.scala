@@ -83,11 +83,17 @@ package object errors {
       override def name: String = "unsupported-protocol-version"
     }
 
-    case class TooManyDidPublicKeysAccessAttempt(limit: Int, accesses: Option[Int]) extends NodeError {
+    case class TooManyDidPublicKeysCreationAttempt(limit: Int, keySize: Int) extends NodeError {
       override def toStatus: Status = Status.ABORTED.withDescription(
-        accesses.fold(s"More than $limit public keys accessed during request to a DID.")(am =>
-          s"$am public keys accessed during request to a DID, though a limit is $limit."
-        ) + " Such API request prohibited for now."
+        s"Attempting to create an operation with $keySize public keys, limit is $limit"
+      )
+
+      override def name: String = "did-public-keys-limit-exceeded"
+    }
+
+    case class TooManyServiceCreationAttempt(limit: Int, servicesSize: Int) extends NodeError {
+      override def toStatus: Status = Status.ABORTED.withDescription(
+        s"Attempting to create an operation with $servicesSize services, limit is $limit"
       )
 
       override def name: String = "did-public-keys-limit-exceeded"
