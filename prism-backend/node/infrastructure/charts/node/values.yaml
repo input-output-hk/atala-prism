@@ -22,7 +22,6 @@ server:
     repository: ghcr.io
     pullPolicy: IfNotPresent
     tag: input-output-hk/prism-node
-    version: v2.1.1
   resources:
     limits:
       cpu: 500m
