@@ -9,7 +9,7 @@ spec:
   teamId: "{{ .Values.database.postgres.managingTeam }}"
   volume:
     size: "{{ .Values.database.postgres.databaseSize }}"
-  numberOfInstances: "{{ .Values.database.postgres.numberOfInstances }}"
+  numberOfInstances: {{ .Values.database.postgres.numberOfInstances }}
   users:
     prism-admin:
       - superuser
