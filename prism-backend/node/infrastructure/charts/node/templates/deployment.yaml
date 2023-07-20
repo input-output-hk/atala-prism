@@ -21,7 +21,7 @@ spec:
       initContainers:
       - name: wait-postgress-ready
         image: busybox
-        command: ['sh', '-c', "until nc -z {{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.{{.Release.Namespace}} 5432; do echo waiting for postgress-operator; sleep 2; done;"]
+        command: ['sh', '-c', "until nc -z {{ .Values.database.postgres.managingTeam }}-prism-node-postgres-cluster.{{.Release.Namespace}} 5432; do echo waiting for postgress-operator; sleep 2; done;"]
       containers:
       - name: prism-node
         image: "{{ .Values.server.image.repository }}/{{ .Values.server.image.tag }}: {{ .Values.server.image.version }} | default .Chart.AppVersion }}"
@@ -85,25 +85,25 @@ spec:
           - name: NODE_CARDANO_DB_SYNC_DATABASE
             value: "cardano"
           - name: NODE_CARDANO_DB_SYNC_HOST
-            value: "{{ .Values.vdr.cardanoNode }}-postgres-cluster.{{ .Values.cardanoNamespace }}.svc.cluster.local"
+            value: "{{ .Values.vdr.cardanoNode }}-postgres-cluster.{{ .Values.cardanoNamespace }}"
           {{- end }}
           # Prism Node Variables
           - name: NODE_PSQL_USERNAME
             valueFrom:
               secretKeyRef:
-                name: prism-admin.{{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.credentials.postgresql.acid.zalan.do
+                name: prism-admin.{{ .Values.database.postgres.managingTeam }}-prism-node-postgres-cluster.credentials.postgresql.acid.zalan.do
                 key: username
                 optional: false
           - name: NODE_PSQL_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: prism-admin.{{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.credentials.postgresql.acid.zalan.do
+                name: prism-admin.{{ .Values.database.postgres.managingTeam }}-prism-node-postgres-cluster.credentials.postgresql.acid.zalan.do
                 key: password
                 optional: false
           - name: NODE_PSQL_DATABASE
             value: "prism"
           - name: NODE_PSQL_HOST
-            value: "{{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.{{.Release.Namespace}}:5432"
+            value: "{{ .Values.database.postgres.managingTeam }}-prism-node-postgres-cluster.{{.Release.Namespace}}:5432"
           # Prometheus Variables
           - name: PROMETHEUS_PORT
             value: "9095"
