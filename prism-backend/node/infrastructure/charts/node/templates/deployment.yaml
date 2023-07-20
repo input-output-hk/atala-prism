@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prism-node-server
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+      {{ template "labels.common" . }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prism-node-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prism-node-server
+        {{ template "labels.common" . }}
+    spec:
+      imagePullSecrets:
+      - name: atala-prism-dev-deployments-github-docker-registry-key
+      initContainers:
+      - name: wait-postgress-ready
+        image: busybox
+        command: ['sh', '-c', "until nc -z {{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.{{.Release.Namespace}} 5432; do echo waiting for postgress-operator; sleep 2; done;"]
+      containers:
+      - name: prism-node
+        image: "{{ .Values.server.image.repository }}/{{ .Values.server.image.tag }}: {{ .Values.server.image.version }} | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+        resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+        ports:
+        - containerPort: 50053
+        - containerPort: 9095
+#        readinessProbe:
+#          exec:
+#            command: [ "psql", "-w", "-U", "$(NODE_PSQL_USERNAME)", "-d", "$(NODE_PSQL_DATABASE)", "-p", "$(NODE_PSQL_PASSWORD)" -c", "SELECT 1" ]
+#          initialDelaySeconds: 15
+#          timeoutSeconds: 2
+        env:
+          - name: NODE_LEDGER
+            value: {{ .Values.server.ledger | quote }}
+          - name: NODE_CARDANO_PRISM_GENESIS_BLOCK
+            value: {{ .Values.server.genesisBlock | quote }}
+          - name: NODE_MOVE_SCHEDULED_TO_PENDING_PERIOD
+            value: {{ .Values.server.moveScheduledToPendingPeriod | quote }}
+          - name: NODE_REFRESH_AND_SUBMIT_PERIOD
+            value: {{ .Values.server.refereshAndSubmitPeriod | quote }}
+          - name: NODE_CARDANO_CONFIRMATION_BLOCKS
+            value: {{ .Values.server.confirmationBlocks | quote }}
+          - name: NODE_CARDANO_WALLET_API_HOST
+            value: "{{ .Values.vdr.cardanoNode }}.{{ .Values.cardanoNamespace }}"
+          - name: NODE_CARDANO_WALLET_ID
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
+                key: wallet_id
+                optional: false
+          - name: NODE_CARDANO_WALLET_PASSPHRASE
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
+                key: passphrase
+                optional: false
+          - name: NODE_CARDANO_WALLET_API_PORT
+            value: "8090"
+          - name: NODE_CARDANO_PAYMENT_ADDRESS
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
+                key: address
+                optional: false
+          {{- if eq "cardano" .Values.server.ledger }}
+          - name: NODE_CARDANO_DB_SYNC_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: "prism-stack.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
+                key: username
+                optional: false
+          - name: NODE_CARDANO_DB_SYNC_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "prism-stack.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
+                key: password
+                optional: false
+          - name: NODE_CARDANO_DB_SYNC_DATABASE
+            value: "cardano"
+          - name: NODE_CARDANO_DB_SYNC_HOST
+            value: "{{ .Values.vdr.cardanoNode }}-postgres-cluster.{{ .Values.cardanoNamespace }}.svc.cluster.local"
+          {{- end }}
+          # Prism Node Variables
+          - name: NODE_PSQL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: prism-admin.{{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.credentials.postgresql.acid.zalan.do
+                key: username
+                optional: false
+          - name: NODE_PSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: prism-admin.{{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.credentials.postgresql.acid.zalan.do
+                key: password
+                optional: false
+          - name: NODE_PSQL_DATABASE
+            value: "prism"
+          - name: NODE_PSQL_HOST
+            value: "{{ .Values.database.postgres.managingTeam }}-prism-stack-postgres-cluster.{{.Release.Namespace}}:5432"
+          # Prometheus Variables
+          - name: PROMETHEUS_PORT
+            value: "9095"
+          - name: PROMETHEUS_ENDPOINT
+            value: "15s:/metrics"
+          - name: PROMETHEUS
+            value: "true"

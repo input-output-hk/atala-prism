@@ -1,0 +1,21 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: "{{ .Values.database.postgres.managingTeam }}-prism-node-postgres-cluster"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{ template "labels.common" . }}
+spec:
+  teamId: "{{ .Values.database.postgres.managingTeam }}"
+  volume:
+    size: "{{ .Values.database.postgres.databaseSize }}"
+  numberOfInstances: "{{ .Values.database.postgres.numberOfInstances }}"
+  users:
+    prism-admin:
+      - superuser
+      - createdb
+    prism-application-user: []
+  databases:
+    prism: prism-admin
+  postgresql:
+    version: "14"
