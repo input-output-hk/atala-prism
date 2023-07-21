@@ -70,7 +70,7 @@ jobs:
         run: ../.github/generate_cardano_variables.sh
 
       - name: Compile and test prism-backend components
-        run: sbt compile test:compile coverage test pushRemoteCache
+        run: sbt compile test:compile coverage test
         env:
           POSTGRES_TEST_HOST: localhost:5432
           POSTGRES_TEST_DB: postgres

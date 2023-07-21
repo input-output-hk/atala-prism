@@ -5,7 +5,6 @@ import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport.*
 import sbtghpackages.GitHubPackagesPlugin.autoImport.*
 import sbtprotoc.ProtocPlugin.autoImport.PB
-import scoverage.ScoverageKeys.*
 
 inThisBuild(
   Seq(
