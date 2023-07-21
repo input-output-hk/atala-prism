@@ -9,7 +9,7 @@ metadata:
     {{ template "labels.common" . }}
 spec:
   selector:
-    app.kubernetes.io/name: prism-node
+    app.kubernetes.io/name: prism-node-server
   ports:
     - name: "backend"
       protocol: "TCP"
