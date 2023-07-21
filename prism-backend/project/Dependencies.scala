@@ -31,7 +31,7 @@ object versions {
   val tofuDerevo = "0.13.0"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
-  val fs2 = "3.2.5"
+  val fs2 = "3.7.0"
   val scalaUri = "4.0.0"
   val prismSdk = "v1.4.1-snapshot-1688975371-7541fd2" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
   val vaultSdk = "0.1.0-build-2-96cc137d"
