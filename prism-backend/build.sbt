@@ -310,7 +310,7 @@ lazy val node =
         )
     )
     .enablePlugins(BuildInfoPlugin, DockerPlugin)
-    .dependsOn(common)
+    .dependsOn(common % "compile->compile;test->test")
 
 lazy val root = project
   .in(file("."))
