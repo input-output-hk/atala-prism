@@ -73,13 +73,13 @@ spec:
           - name: NODE_CARDANO_DB_SYNC_USERNAME
             valueFrom:
               secretKeyRef:
-                name: "prism-stack.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
+                name: "{{ .Release.Namespace }}.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
                 key: username
                 optional: false
           - name: NODE_CARDANO_DB_SYNC_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: "prism-stack.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
+                name: "{{ .Release.Namespace }}.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
                 key: password
                 optional: false
           - name: NODE_CARDANO_DB_SYNC_DATABASE
