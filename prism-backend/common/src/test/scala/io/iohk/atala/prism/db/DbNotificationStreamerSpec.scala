@@ -7,7 +7,6 @@ import cats.effect.unsafe.implicits.global
 import doobie.HC
 import doobie.implicits._
 import doobie.postgres._
-import fs2.INothing
 import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.db.DbNotificationStreamer.DbNotification
 import org.scalatest.{Assertion, Assertions}
@@ -52,13 +51,13 @@ class DbNotificationStreamerSpec extends AtalaWithPostgresSpec {
 
   private def streamAll[A](
       dbNotificationStreamer: DbNotificationStreamer
-  )(f: IO[OutcomeIO[List[INothing]]] => IO[A]): IO[A] =
+  )(f: IO[OutcomeIO[List[Nothing]]] => IO[A]): IO[A] =
     dbNotificationStreamer.stream.drain
       .timeout(5.seconds)
       .compile
       .toList
       .background
-      .use(streamOutcomeIo => IO.sleep(2.seconds) *> f(streamOutcomeIo))
+      .use { streamOutcomeIo: IO[OutcomeIO[List[Nothing]]] => IO.sleep(2.seconds) *> f(streamOutcomeIo) }
 
   private implicit class OutcomeIOOps[A](outcomeIO: OutcomeIO[A]) {
     def mustBeIO(a: A): IO[Assertion] =
