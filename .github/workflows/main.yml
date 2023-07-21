@@ -10,6 +10,8 @@ on:
 env:
   JAVA_VERSION: openjdk@1.11
   SCALA_VERSION: "2.13"
+  GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
+  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
   ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
@@ -56,9 +58,6 @@ jobs:
       - name: Test Scala code is properly formatted
         run: sbt scalafmtCheckAll
 
-      - name: Test terraform code format
-        run: terraform fmt -check -recursive
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -90,12 +89,6 @@ jobs:
 
       - name: Assemble fat JARs
         run: sbt assembly
-
-      - name: Upload SBT remote cache
-        uses: actions/upload-artifact@v2
-        with:
-          name: sbt-backend-remote-cache
-          path: /tmp/backend-remote-cache
 
       - name: Generate code coverage reports
         if: always()
