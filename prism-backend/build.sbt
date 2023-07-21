@@ -45,7 +45,7 @@ lazy val versions = new {
   val scalapb = "0.11.6"
   val sttp = "3.5.1"
   val slf4j = "1.7.36"
-  val tofu = "0.10.8"
+  val tofu = "0.12.0.1"
   val tofuDerevo = "0.13.0"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
@@ -292,7 +292,7 @@ lazy val node =
       Docker / dockerUsername := Some("input-output-hk"),
       Docker / dockerRepository := Some("ghcr.io"),
       Docker / packageName := "prism-node",
-      dockerExposedPorts := Seq(8080),
+      dockerExposedPorts := Seq(5432),
       dockerBaseImage := "openjdk:11",
       libraryDependencies ++= Dependencies.circeDependencies ++ Dependencies.enumeratumDependencies ++ Dependencies.doobieDependencies ++
         Dependencies.grpcDependencies ++ Dependencies.logbackDependencies ++
