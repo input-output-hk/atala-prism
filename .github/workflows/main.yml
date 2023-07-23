@@ -12,11 +12,9 @@ env:
   SCALA_VERSION: "2.13"
   GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-  ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
-  ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
 jobs:
-  build-prism-backend:
+  build-and-test:
     name: "Build Prism Backend"
     runs-on: ubuntu-latest
     defaults:
@@ -34,37 +32,8 @@ jobs:
       - name: Test Scala code is properly formatted
         run: sbt scalafmtCheckAll
 
-#      - name: Configure AWS Credentials
-#        uses: aws-actions/configure-aws-credentials@v1
-#        with:
-#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-
-#      - name: Obtain Cardano db sync and wallet endpoints config
-#        id: cardano
-#        run: ../.github/generate_cardano_variables.sh
-
       - name: Compile and test prism-backend components
-        run: sbt compile test:compile coverage test
-#        env:
-#          POSTGRES_TEST_HOST: localhost:5432
-#          POSTGRES_TEST_DB: postgres
-#          POSTGRES_TEST_USER: postgres
-#          POSTGRES_TEST_PASSWORD: postgres
-#          NODE_CARDANO_DB_SYNC_HOST: ${{ steps.cardano.outputs.db-sync-host }}
-#          NODE_CARDANO_DB_SYNC_DATABASE: ${{ steps.cardano.outputs.db-sync-database }}
-#          NODE_CARDANO_DB_SYNC_USERNAME: ${{ steps.cardano.outputs.db-sync-username }}
-#          NODE_CARDANO_DB_SYNC_PASSWORD: ${{ steps.cardano.outputs.db-sync-password }}
-#          NODE_CARDANO_WALLET_API_HOST: ${{ steps.cardano.outputs.wallet-api-host }}
-#          NODE_CARDANO_WALLET_API_PORT: ${{ steps.cardano.outputs.wallet-api-port }}
-#          NODE_CARDANO_WALLET_ID: ${{ secrets.NODE_CARDANO_WALLET_ID }}
-#          NODE_CARDANO_WALLET_PASSPHRASE: ${{ secrets.NODE_CARDANO_WALLET_PASSPHRASE }}
-#          NODE_CARDANO_CONFIRMATION_BLOCKS: ${{ secrets.NODE_CARDANO_CONFIRMATION_BLOCKS }}
-#          NODE_CARDANO_PAYMENT_ADDRESS: ${{ secrets.NODE_CARDANO_PAYMENT_ADDRESS }}
-
-#      - name: Assemble fat JARs
-#        run: sbt assembly
+        run: sbt coverage test
 
       - name: Generate code coverage reports
         if: always()

@@ -180,6 +180,7 @@ lazy val Dependencies = new {
 publish / skip := true
 
 lazy val commonSettings = Seq(
+  publish / skip := true,
   buildInfoPackage := "io.iohk.atala.prism",
   scalacOptions ~= (options =>
     options.filterNot(
@@ -192,7 +193,7 @@ lazy val commonSettings = Seq(
     ),
   scalacOptions += "-Ymacro-annotations",
   javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-  githubTokenSource := TokenSource.Environment("ATALA_GITHUB_TOKEN"),
+  githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
   resolvers += Resolver
     .githubPackages("input-output-hk", "atala-prism-sdk"),
   // Needed for Kotlin coroutines that support new memory management mode
@@ -307,7 +308,7 @@ lazy val node =
           Dependencies.typesafeConfig
         )
     )
-    .enablePlugins(BuildInfoPlugin, DockerPlugin)
+    .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
     .dependsOn(common % "compile->compile;test->test")
 
 lazy val root = project
