@@ -9,13 +9,13 @@ on:
       release-branch:
         required: false
         type: string
-        default: "prism-1.4-extension"
+        default: "main"
   workflow_dispatch:
     inputs:
       release-branch:
         description: "Branch to release from"
         required: false
-        default: "prism-1.4-extension"
+        default: "main"
 
 jobs:
   release:

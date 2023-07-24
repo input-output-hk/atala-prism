@@ -21,7 +21,7 @@
   "release": {
     "branches": [
       {
-        "name": "prism-1.4-extension"
+        "name": "main"
       },
       {
         "name": "prerelease/*",

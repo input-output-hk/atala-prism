@@ -4,7 +4,7 @@ on:
     tags:
       - "**"
     branches:
-      - node-1.4-extension
+      - main
   pull_request:
 
 env:
