@@ -34,4 +34,4 @@ jobs:
           author-email: ${{ steps.import_gpg.outputs.email }}
           author-name: ${{ steps.import_gpg.outputs.name }}
           github-repository: input-output-hk/atala-prism
-          branches: master
+          branches: prism-v1.4-extension

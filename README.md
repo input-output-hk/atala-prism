@@ -63,7 +63,7 @@ See the instructions on how to set up all the necessary dependencies to run the 
 Run the Postgres server inside docker container
 
 ```bash
-docker run -it --rm -e POSTGRES_DB=connector_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres
+docker run -it --rm -e POSTGRES_DB=node_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres
 ```
 
 This command will start the Postgres service on port 5432. It will also create a database "connector_db" if does not exist.
@@ -87,27 +87,15 @@ You will also need to create another database with the name "node_db" (and optio
 
 
 ```bash
-$ psql connector_db \
+$ psql node_db \
       -U postgres \
       -h localhost \
       -p 5432
 ```
 
-and then
-
-```
-connector_db=# CREATE DATABASE node_db;
-```
-
-If you are setting up backend for prism-management-console-web app, then create the "management_console_db" too
-
-```
-connector_db=# CREATE DATABASE management_console_db;
-```
-
 ### Back-end
 
-See the instructions on how to set up all the necessary dependencies to run the backend in dedicated [readme](prism-backend/README.md)
+See the instructions on how to set up all the necessary dependencies to run the backend in dedicated [readme](prism-backend/PRISM_BACKEND_README.md)
 
 ### Envoy
 
