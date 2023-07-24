@@ -26,10 +26,10 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Test Scala code is properly formatted
+      - name: Check formatting
         run: sbt scalafmtCheckAll
 
-      - name: Compile and test prism-backend components
+      - name: Compile and test
         run: sbt coverage test
 
       - name: Generate code coverage reports
@@ -50,5 +50,5 @@ jobs:
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v1
         with:
-          files: "prism-backend/target/test-reports/**/TEST-*.xml"
+          files: "target/test-reports/**/TEST-*.xml"
           check_run_annotations_branch: "*"
