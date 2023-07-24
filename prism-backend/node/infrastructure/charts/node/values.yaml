@@ -1,0 +1,42 @@
+ingress:
+  enabled: true
+  applicationUrls:
+  - chart-base-prism-stack.atalaprism.io
+  platformIngressUrl: chart-base-platform-ingress.atalaprism.io
+  cors:
+    enabled: true
+    allow_origins: "*"
+  consumers: []
+
+secrets:
+  secretStore: chart-base-secretstore
+  dockerRegistryToken: chart-base-docker-registry-token
+
+server:
+  ledger: "in-memory"
+  genesisBlock: 424661
+  moveScheduledToPendingPeriod: 3s
+  refereshAndSubmitPeriod: 3s
+  confirmationBlocks: 1
+  image:
+    repository: ghcr.io
+    pullPolicy: IfNotPresent
+    tag: input-output-hk/prism-node
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+database:
+  postgres:
+    managingTeam: atala
+    databaseSize: 4Gi
+    numberOfInstances: 2
+
+vdr:
+  cardanoNode: atala-cardano-dev-preprod
+  cardanoNamespace: cardano-stack
+  cardanoWallet: dev-k8s-cardano-wallet
