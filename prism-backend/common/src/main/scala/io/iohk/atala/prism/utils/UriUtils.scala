@@ -9,8 +9,8 @@ object UriUtils {
 
   private implicit val uriConfig: UriConfig = UriConfig.default.copy(queryEncoder = PercentEncoder())
 
-  /** Normalized URI according to
-    * <a href="https://www.rfc-editor.org/rfc/rfc3986#section-6">RFC&nbsp;3986,&nbsp;section-6</a>
+  /** Normalized URI according to <a
+    * href="https://www.rfc-editor.org/rfc/rfc3986#section-6">RFC&nbsp;3986,&nbsp;section-6</a>
     *
     * @param uri
     * @return
