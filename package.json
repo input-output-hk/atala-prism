@@ -47,7 +47,7 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "docker buildx build --platform=linux/arm64,linux/amd64 --push -t ghcr.io/input-output-hk/prism-node:${nextRelease.version} ./node/target/docker/stage/Dockerfile"
+          "prepareCmd": "docker buildx build --platform=linux/arm64,linux/amd64 --push -t ghcr.io/input-output-hk/prism-node:${nextRelease.version} ./node/target/docker/stage"
         }
       ],
       [
