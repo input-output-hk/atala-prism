@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-service
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app.kubernetes.io/name: prism-node-server
+    app.kubernetes.io/service: prism-node-server-main
+    {{ template "labels.common" . }}
+spec:
+  selector:
+    app.kubernetes.io/name: prism-node-server
+  ports:
+    - name: "backend"
+      protocol: "TCP"
+      port: 50053
+      targetPort: 50053
+    - name: "prometheus"
+      protocol: "TCP"
+      port: 9095
+      targetPort: 9095
+  type: ClusterIP
+
+---
+
+{{- if .Values.ingress.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name:  node-domain-name-fake-service
+  namespace: "{{ .Release.Namespace }}"
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "{{ join ", " .Values.ingress.applicationUrls }}"
+  labels:
+    app.kubernetes.io/name: prism-node-server
+    app.kubernetes.io/service: prism-node-server-domain-name-fake-service
+    {{ template "labels.common" . }}
+spec:
+  type: ExternalName
+  externalName: {{ .Values.ingress.platformIngressUrl }}
+{{- end }}

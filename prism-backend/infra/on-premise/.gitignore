@@ -1,4 +1,0 @@
-config/aws/credentials
-.vagrant
-certs/*.pem
-certs/*.csr

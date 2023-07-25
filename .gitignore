@@ -24,3 +24,14 @@ prism-interactive-demo-web/src/protos/intdemo
 *.aux 
 *.toc
 *.pdf
+.idea_modules
+.cvpwallet
+.node
+.terraform/
+*.tfstate*
+*.tfstate.backup
+*.tfvars
+mill
+client-storage.txt
+.bsp
+*.sc

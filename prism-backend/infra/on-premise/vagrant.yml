@@ -1,3 +1,0 @@
----
-- import_playbook: consul.yml
-- import_playbook: nomad.yml

@@ -1,0 +1,54 @@
+name: "Build and unit tests"
+on:
+  push:
+    tags:
+      - "**"
+    branches:
+      - main
+  pull_request:
+
+env:
+  JAVA_VERSION: openjdk@1.11
+  SCALA_VERSION: "2.13"
+  GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
+  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+
+jobs:
+  build-and-test:
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v11
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Check formatting
+        run: sbt scalafmtCheckAll
+
+      - name: Compile and test
+        run: sbt coverage test
+
+      - name: Generate code coverage reports
+        if: always()
+        run: sbt coverageReport coverageAggregate
+
+      - name: Aggregate test reports
+        if: always()
+        run: |
+          for reports in `find -name test-reports`; do
+            project=${reports%/target/*}
+            dest=target/test-reports/$project
+            mkdir -p $dest
+            cp $reports/* $dest
+          done
+
+      - name: Publish Backend Unit Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: "target/test-reports/**/TEST-*.xml"
+          check_run_annotations_branch: "*"

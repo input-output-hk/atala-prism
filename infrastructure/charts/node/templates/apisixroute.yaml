@@ -1,0 +1,32 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: node-route
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    {{ template "labels.common" . }}
+spec:
+  http:
+  - name: node-rule
+    match:
+      hosts:
+      {{- range .Values.applicationUrls }}
+        - {{ . }}
+      {{- end }}
+      paths:
+      - /prism-node/*
+    backends:
+       - serviceName: node-service
+         servicePort: 50053
+    authentication:
+      enable: true
+      type: keyAuth
+    plugins:
+    - name: proxy-rewrite
+      enable: true
+      config:
+        regex_uri: ["^/prism-node/(.*)","/$1"]
+    {{ template "cors" . }}
+    {{ template "consumer-restriction" . }}
+{{- end -}}
