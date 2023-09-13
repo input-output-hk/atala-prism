@@ -39,6 +39,7 @@ spec:
         env:
           - name: NODE_LEDGER
             value: {{ .Values.server.ledger | quote }}
+          {{- if eq "cardano" .Values.server.ledger }}
           - name: NODE_CARDANO_PRISM_GENESIS_BLOCK
             value: {{ .Values.server.genesisBlock | quote }}
           - name: NODE_MOVE_SCHEDULED_TO_PENDING_PERIOD
@@ -69,7 +70,6 @@ spec:
                 name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
                 key: address
                 optional: false
-          {{- if eq "cardano" .Values.server.ledger }}
           - name: NODE_CARDANO_DB_SYNC_USERNAME
             valueFrom:
               secretKeyRef:
