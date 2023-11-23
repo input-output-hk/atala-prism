@@ -111,3 +111,7 @@ spec:
             value: "15s:/metrics"
           - name: PROMETHEUS
             value: "true"
+          {{- range $key, $value := .Values.server.additionalEnvVariables }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
