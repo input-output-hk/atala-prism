@@ -48,7 +48,7 @@ spec:
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
           - name: NODE_CARDANO_WALLET_API_HOST
-            value: "{{ .Values.vdr.cardanoNode }}.{{ .Values.cardanoNamespace }}"
+            value: "{{ .Values.vdr.cardanoNode }}.{{ .Values.vdr.cardanoNamespace }}"
           - name: NODE_CARDANO_WALLET_ID
             valueFrom:
               secretKeyRef:
