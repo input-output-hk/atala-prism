@@ -1,4 +1,4 @@
-{{- if and (.Values.ingress.enabled) (not .Values.server.legacyMode) }}
+{{- if and (.Values.ingress.enabled) (.Values.server.legacyMode) }}
 apiVersion: apisix.apache.org/v2
 kind: ApisixRoute
 metadata:
@@ -11,22 +11,18 @@ spec:
   - name: node-rule
     match:
       hosts:
-      {{- range .Values.applicationUrls }}
+        {{- range .Values.ingress.applicationUrls }}
         - {{ . }}
       {{- end }}
       paths:
-      - /prism-node/*
+      - /*
     backends:
        - serviceName: node-service
          servicePort: 50053
-    authentication:
-      enable: true
-      type: keyAuth
+         resolveGranularity: service
     plugins:
-    - name: proxy-rewrite
-      enable: true
-      config:
-        regex_uri: ["^/prism-node/(.*)","/$1"]
-    {{ template "cors" . }}
-    {{ template "consumer-restriction" . }}
+        - name: redirect
+          enable: true
+          config:
+            http_to_https: true
 {{- end -}}

@@ -18,6 +18,7 @@ server:
   moveScheduledToPendingPeriod: 3s
   refereshAndSubmitPeriod: 3s
   confirmationBlocks: 1
+  legacyMode: false
   image:
     repository: ghcr.io
     pullPolicy: IfNotPresent
