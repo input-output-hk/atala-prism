@@ -1,0 +1,11 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: apisix.apache.org/v2
+kind: ApisixUpstream
+metadata:
+  name: node-service
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  portLevelSettings:
+    - port: 50053
+      scheme: grpc
+{{- end }}
