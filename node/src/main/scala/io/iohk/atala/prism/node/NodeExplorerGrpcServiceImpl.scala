@@ -19,9 +19,7 @@ import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
   AnyOperationType,
   CreateDidOperationOperationType,
-  IssueCredentialBatchOperationType,
   ProtocolVersionUpdateOperationType,
-  RevokeCredentialsOperationType,
   UpdateDidOperationOperationType
 }
 import io.iohk.atala.prism.protos.node_api._
@@ -102,10 +100,6 @@ class NodeExplorerGrpcServiceImpl(
                     o.operation.isDefined && o.operation.get.operation.isCreateDid
                   case UpdateDidOperationOperationType =>
                     o.operation.isDefined && o.operation.get.operation.isUpdateDid
-                  case IssueCredentialBatchOperationType =>
-                    o.operation.isDefined && o.operation.get.operation.isIssueCredentialBatch
-                  case RevokeCredentialsOperationType =>
-                    o.operation.isDefined && o.operation.get.operation.isRevokeCredentials
                   case ProtocolVersionUpdateOperationType =>
                     o.operation.isDefined && o.operation.get.operation.isProtocolVersionUpdate
                   case _ => false

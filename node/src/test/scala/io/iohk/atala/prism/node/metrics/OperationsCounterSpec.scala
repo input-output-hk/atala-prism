@@ -10,8 +10,6 @@ import org.scalatest.matchers.must.Matchers
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperationSpec,
   UpdateDIDOperationSpec,
-  IssueCredentialBatchOperationSpec,
-  RevokeCredentialsOperationSpec,
   ProtocolVersionUpdateOperationSpec,
   DeactivateDIDOperationSpec
 }
@@ -31,8 +29,6 @@ class OperationsCounterSpec extends AnyWordSpec with Matchers {
 
       // Includes all type of update actions
       val updateDidOperation = sign(UpdateDIDOperationSpec.exampleAllActionsOperation)
-      val issueCredentialBatchOperation = sign(IssueCredentialBatchOperationSpec.exampleOperation)
-      val revokeCredentialsOperation = sign(RevokeCredentialsOperationSpec.revokeFullBatchOperation)
       val protocolVersionUpdateOperation = sign(
         ProtocolVersionUpdateOperationSpec.protocolUpdateOperation(
           ProtocolVersionUpdateOperationSpec.protocolVersionInfo1
@@ -43,8 +39,6 @@ class OperationsCounterSpec extends AnyWordSpec with Matchers {
       val operations = List(
         createDidOperation,
         updateDidOperation,
-        issueCredentialBatchOperation,
-        revokeCredentialsOperation,
         protocolVersionUpdateOperation,
         deactivateDIDOperation
       )

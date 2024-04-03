@@ -320,10 +320,6 @@ package object operations {
         CreateDIDOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.UpdateDid =>
         UpdateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
-        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
-        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
         ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.DeactivateDid =>
@@ -334,6 +330,14 @@ package object operations {
             Path.root,
             empty.getClass.getSimpleName,
             "Empty operation"
+          )
+        )
+      case op => // we need to discard unrecognized operations
+        Left(
+          InvalidValue(
+            Path.root,
+            op.getClass.getSimpleName,
+            s"Unsupported ${op.getClass.getSimpleName}"
           )
         )
     }
