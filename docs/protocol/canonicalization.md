@@ -208,7 +208,7 @@ different proposals to get canonical JSON serialization, none of which seems to 
 
 ### JCS
 
-[JCS (IETF Draft 17)](https://tools.ietf.org/html/draft-rundgren-json-canonicalization-scheme-17) is a canonization 
+[JCS](https://datatracker.ietf.org/doc/html/rfc8785) is a canonization 
 proposal for JSON texts. The JCS specification defines how to create a canonical representation of JSON data by building
 on the strict serialization methods for JSON primitives defined by ECMAScript, constraining JSON data to the I-JSON 
 [RFC7493](https://www.rfc-editor.org/rfc/rfc7493.html) subset, and by using deterministic property sorting. 
