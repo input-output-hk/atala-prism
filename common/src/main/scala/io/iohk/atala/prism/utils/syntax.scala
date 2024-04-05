@@ -7,19 +7,11 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Instant
 import scala.concurrent.Future
-import scala.util.Try
 import io.iohk.atala.prism.repositories.ConnectionIOErrorHandlers
 
 object syntax {
 
   lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  implicit class SyntaxOps[A](exp: => A) {
-
-    /** returns a Future containing the value without creating a new thread
-      */
-    def tryF: Future[A] = Future.fromTry(Try { exp })
-  }
 
   implicit class InstantToTimestampOps(val value: Instant) extends AnyVal {
 

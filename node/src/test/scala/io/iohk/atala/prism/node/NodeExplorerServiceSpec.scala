@@ -40,7 +40,6 @@ import io.iohk.atala.prism.protos.node_api.NodeExplorerServiceGrpc.NodeExplorerS
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
-import io.iohk.atala.prism.utils.IOUtils.ioComonad
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._

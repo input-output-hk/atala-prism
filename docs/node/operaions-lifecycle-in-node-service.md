@@ -3,7 +3,7 @@
 ## How PRISM Node processes operations
 
 User issues new operations using one of these gRPC calls:
-1. Every operation has its corresponding gRPC call: `CreateDID`, `UpdateDID`, `IssueCredentialBatch`, `RevokeCredentials`.
+1. Every operation has its corresponding gRPC call: `CreateDID`, `UpdateDID`, `ProtocolVersionUpdateOperationType`.
 2. In addition to this, we have a gRPC call for sending several operations at once: `PublishAsABlock`.
 
 After receiving operations in any of these calls, Node service forwards them to the `objectManagementService.sendAtalaOperations` method.

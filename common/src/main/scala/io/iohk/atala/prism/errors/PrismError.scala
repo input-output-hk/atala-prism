@@ -18,7 +18,3 @@ trait PrismError {
     AtalaMessage().withAtalaErrorMessage(atalaErrorMessage)
   }
 }
-
-trait PrismServerError extends PrismError {
-  def cause: Throwable
-}
