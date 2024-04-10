@@ -29,31 +29,10 @@ where:
   time the schema evolves.
   - `CONTENT`: The array of bytes to store. There are no limits on the size of
   arrays, so it gets restricted only by the maximum transaction size. Such bytes
-  represent an `AtalaObject` (see
-  [proto](https://github.com/input-output-hk/atala/blob/91f36aa93986fb2df23618b62b9281a55a3ea3c0/prism-sdk/protos/node_internal.proto#L19).
+  represent an `AtalaObject`
 
 **NOTE**: The maximum size of the metadata is based on the size of the transaction
 and the maximum size of any transaction, which is an updatable protocol param
 (currently 16 kb, see
 [maxTxSize](https://github.com/input-output-hk/cardano-node/blob/master/configuration/cardano/mainnet-shelley-genesis.json#L13)).
 
-## Alternative Options
-
-Other schema options that were contemplated but ended up not being used:
-
-  - `version` without a field name, like `PRISM_INDEX`: it takes less space but
-  the difference is so minimal, readability is preferred.
-  - A `vendor` field: there are great chances that some deployments want to
-  only sync their data, or want to fork Cardano and ignore any previous objects,
-  but for now not having it is just easier and could just be embedded in
-  `content` instead.
-  - A `type` field: this information should be embedded in `content` already.
-  - `content` as a bytestring instead of an array of bytes: there is a 64 byte
-  limit on bytestrings, which restricts the field unnecessarily.
-  - Simplifying all field names to one letter (e.g., use `v` instead of
-  `version`): this becomes problematic with clashes, like `version` and `vendor`.
-  - Not having string keys, only integer keys: this is just premature
-  optimization, having something readable by humans is preferred.
-
-A fee analysis is [here](metadata-schema-fee.md), where schema variations are
-compared.

@@ -4,12 +4,11 @@ This document was created to give you some insight into backend logging.
 
 ## Tools
 
-The preferable tool used in this project is [Tofu logging](https://docs.tofu.tf/docs/tofu.logging.home)
+The preferable tool used in this project is [Tofu logging](https://github.com/tofu-tf/tofu)
 which have nice syntax and produces effectual log `F[Unit]`
 
 In general, Tofu in our project produces structured and contextual logs.
-That means every logged value will be reflected as a structure in the log output (we use
-[ELKLayout](https://docs.tofu.tf/docs/tofu.logging.layouts#layouts) in every service)
+That means every logged value will be reflected as a structure in the log output in every service)
 together with `trace-id`.
 
 `trace-id` itself is a string that will be generated on a request or will be parsed from the response header (grpc metadata)
