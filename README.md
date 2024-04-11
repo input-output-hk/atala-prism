@@ -1,62 +1,22 @@
-# Prism
+# PRISM Node
 
-Prism is a Self-Sovereign Identity (SSI), and Verifiable Credentials (VC) platform.
-
-[![CircleCI](https://circleci.com/gh/input-output-hk/atala/tree/develop.svg?style=svg&circle-token=1a9dcf544cec8cb581fa377d8524d2854cfb10e9)](https://circleci.com/gh/input-output-hk/cardano-enterprise/tree/develop)
-
-## Branches, deployment, and stability
-
-Three main branches will be maintained:
-
-* `develop`
-* `qa`
-* `master`
-
-All development happens against `develop`, which contains the latest version of the code that runs all the tests (unit and some integration tests). Integration tests don't test all the integrations. Hence, any version in `develop` might have bugs when deployed for an end-to-end test.
-
-The `qa` branch is where we can guarantee that code is stable end-to-end, meaning that all components can work flawlessly together when deployed. Periodically, `qa` is rebased onto `develop` and a series of tests (contained in [`atala-qa-automation`](https://github.com/input-output-hk/atala-qa-automation/)) that take all components into account are executed.
-
-The `master` branch contains milestones that have been tested end-to-end and have been demonstrated to work properly. The idea is to be able to create PRISM releases out of `master` and also be able to create demo environments. We expect that milestones and, especially, releases will be represented by git tags. For instance, [vAlpha-01](https://github.com/input-output-hk/atala/tree/vAlpha-01) and [vAlpha-02](https://github.com/input-output-hk/atala/tree/vAlpha-02) are existing tags that represent milestones.
+This project represents a reference implementation of the PRISM Node described in the PRISM DID method specification.
+This code is not recommended for production environments. The project supports:
+- the indexing of the blockchain
+- The interpretation of the DID method events (Creation, updates and deactivation)
+- batch submission for DID PRISM operations
 
 ### Flow of commits
 
 Commits land on `develop` from Pull Requests, as soon as they are approved. There is no coordination happening there.
 
-Commits land on `qa` from `develop` periodically, currently once in a day. This is an automated process.
-
-Commits land on `master` from `qa` manually, according to the PRISM roadmap, when we have to represent a stable milestone or cut a release.
-
-### Working assumptions
-
-The current situation regarding the engineering & QA flows and processes has the following characteristics:
-
-* Running the QA pipeline is costly. Given the fact that our Pull Requests can evolve `develop` very frequently, it means that running the QA pipeline against `develop` can be ineffective: while in the middle of the QA pipeline, a new commit can appear in `develop` and, as a consequence, the so far QA work can be wasted.
-
-* Launching deployments is costly. Our CircleCI configuration declares precisely under which circumstances a deployment is created and updated.
-
-* Periodically rebasing `qa` onto `develop` almost cancels out the volatility present in the latter, so we expect QA results with less interference between changing features.
-
-* _Some_ manual testing may still be needed in `qa`.
-
-* Commits flow from `develop` to `qa` periodically in an automated way but we may choose to manually cherry-pick a few latest commits from `develop`, in case a hot fix is needed to stabilize `qa`. In any case, we may move to a full manual process when bringing patches from `develop` in `qa`.
 
 #### Future investigations
 
-As a consequence of the above, we may want to look into ways to make:
-
-* Deployments lighter-weight.
-* The QA pipeline lighter-weight.
-* The QA pipeline even more automatic.
-
-These could bring more QA automation into `develop`, could ease testing the Pull Requests, and probably bridge the gap between `develop` and `master`.
-
-
-
 ## How to run
 
-### Front-end
-
-See the instructions on how to set up all the necessary dependencies to run the frontend management console in dedicated [readme](prism-management-console-web/README.md)
+This implementation relays on a Postgres database, a Cardano wallet and an instance of db-sync.
+For development and illustration purposes, the node supports an "in memory" mode that doesn't interact with db-sync nor wallet.
 
 ### Database
 
@@ -83,8 +43,8 @@ docker run \
 
 This command will bind volume to `.docker-volumes/postgres/data`, so all your database date will be stored there.
 
-You will also need to create another database with the name "node_db" (and optionally additional one named "management_console_db"). You can connect to the database through your favorite RDBMS, like DataGrip for example, and create it, or use command line tool `psql` if you prefer this way 
-
+You can connect to the database through your favorite RDBMS, like DataGrip for example, or use command line tool `psql` if you prefer this way.
+For psql, you can run. Note that the tables are created by the node on its first run, so be sure to first run the node (see below) in order to find data in the database.
 
 ```bash
 $ psql node_db \
@@ -93,37 +53,42 @@ $ psql node_db \
       -p 5432
 ```
 
-### Back-end
+### Running the node
 
-See the instructions on how to set up all the necessary dependencies to run the backend in dedicated [readme](prism-backend/PRISM_BACKEND_README.md)
+In the top folder of this project just run:
 
-### Envoy
-
-You need to have envoy proxy server running to proxy the grpc-web calls to the backend services, if you don't have it set up, refer to [Install Envoy](prism-management-console-web/README.md#Install-Envoy)
-
-### Chrome extension
-
-A chrome extension wallet which is necessary to log into web management console.
-
-Compile the chrome extension
-```bash
-atala$ cd prism-web-wallet
-prism-web-wallet$ sbt chromeUnpackedFast
+```
+$ sbt node/run
 ```
 
-In order to install the wallet on chrome. Open chrome and go to [chrome://extensions/](chrome://extensions/)
+This will start the node server. You can interact with it using gRPC calls at port 50053.
+By default, the node is running on "in memory" mode, which means that any operation submitted to it will be instantly confirmed and processed.
+Alternatively, you can configure to run it against a Cardano network by setting values for the db-sync and Cardano wallet services.
 
-Activate the developer mode (top right corner of the page) and click on `Load unpacked` (top left visible in developer
-mode), in the dialog opened go to `atala/prism-web-wallet/target/chrome`, select `unpacked-fast`
-folder and click `Open`. Now the wallet should be found in your extensions.
+```bash
+export NODE_CARDANO_DB_SYNC_HOST="db-sync-instance.example.com"
+export NODE_CARDANO_DB_SYNC_DATABASE="db name"
+export NODE_CARDANO_DB_SYNC_USERNAME="the username"
+export NODE_CARDANO_DB_SYNC_PASSWORD="your password"
 
-At this point, you have all the needed components up to run the wallet locally.
+export NODE_CARDANO_WALLET_API_HOST="cardanowallet.example.com"
+export NODE_CARDANO_WALLET_API_PORT="port number"
+
+export NODE_CARDANO_PAYMENT_ADDRESS="wallet address"
+export NODE_CARDANO_WALLET_ID="a wallet id"
+export NODE_CARDANO_WALLET_PASSPHRASE="wallet pathphrase"
+```
+
+For development purposes, you may want to reduce the number of blocks to wait for confirmations. Note that this parameter is fixed for mainnet. Hence, only modify then for tests if needed.
+
+```
+export NODE_CARDANO_CONFIRMATION_BLOCKS="1"
+export NODE_LEDGER="cardano"
+```
+
+For more configuration options, please refer to `node/src/main/resources/application.conf`. Note that environment values override the configuration values. You can change locally the `application.conf` instead of exporting environment variables as we did above.
 
 ## Working with the codebase
-
-This is a monorepo and each of the `prism-XYZ` folders refers to a different part of the platform. Check the specific READMEs for more details.
-
-Be sure to follow our [contributing guidelines](CONTRIBUTING.md).
 
 In order to keep the code format consistent, we use scalafmt and git hooks, follow these steps to configure it accordingly (otherwise, your changes are going to be rejected by CircleCI):
 
@@ -135,7 +100,6 @@ In order to keep the code format consistent, we use scalafmt and git hooks, foll
    ```
 - `cp pre-commit .git/hooks/pre-commit`
 
-## More docs
+## Known limitations
 
-* Documentation about operational aspects of the team and the services we use can be found in [Confluence](https://input-output.atlassian.net/wiki/spaces/CE/pages/606371843/Code+and+Infrastructure+Setup).
-* The general guideline and ultimate goal is to have the [repository](prism-backend/docs/README.md) as the source of truth for all technical documentation.
+- This reference implementation does not support Cardano rollbacks' management
