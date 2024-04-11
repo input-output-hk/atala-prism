@@ -7,15 +7,15 @@ import cats.syntax.functor._
 import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.api.CredentialBatches
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.credentials.json.JsonBasedCredential
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.poc.CredVerification.VerificationError._
 import io.iohk.atala.prism.node.poc.{GenericCredentialsSDK, Wallet}
@@ -24,11 +24,10 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.{DataPreparation, NodeGrpcServiceImpl, UnderlyingLedger}
 import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.utils.IOUtils._
-import io.iohk.atala.prism.utils.NodeClientUtils._
+import io.iohk.atala.prism.node.utils.IOUtils._
+import io.iohk.atala.prism.node.utils.NodeClientUtils._
 import org.scalatest.BeforeAndAfterEach
 import tofu.logging.Logs
-
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._

@@ -4,11 +4,10 @@ import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.models.Ledger.InMemory
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
-import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.Ledger.InMemory
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.{InLedger, Pending}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectId,

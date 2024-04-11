@@ -7,8 +7,8 @@ import cats.syntax.functor._
 import cats.{Applicative, Comonad, Functor}
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Lovelace, Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.api.ApiClient
 import io.iohk.atala.prism.node.cardano.wallet.logs.CardanoWalletApiClientLogs

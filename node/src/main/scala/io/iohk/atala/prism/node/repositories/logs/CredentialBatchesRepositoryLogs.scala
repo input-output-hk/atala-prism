@@ -8,7 +8,7 @@ import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models.nodeState
 import io.iohk.atala.prism.node.repositories.CredentialBatchesRepository
-import io.iohk.atala.prism.logging.GeneralLoggableInstances._
+import io.iohk.atala.prism.node.logging.GeneralLoggableInstances._
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._

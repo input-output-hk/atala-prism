@@ -4,10 +4,9 @@ import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.models.{DidSuffix, IdType}
-import io.iohk.atala.prism.node.models.DIDService
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{DIDServiceState, LedgerData}
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.node.utils.syntax._
 
 object ServicesDAO {
 

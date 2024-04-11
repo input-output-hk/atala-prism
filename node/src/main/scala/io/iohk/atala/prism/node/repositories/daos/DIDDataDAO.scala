@@ -5,9 +5,9 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import cats.syntax.functor._
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.node.utils.syntax._
 
 object DIDDataDAO {
   def insert(

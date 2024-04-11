@@ -8,7 +8,7 @@ import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations.StateError.{CannotUpdateMetric, UnsupportedOperation}

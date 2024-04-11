@@ -2,8 +2,7 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
-
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 
 class MetricsCountersDAOSpec extends AtalaWithPostgresSpec {
 

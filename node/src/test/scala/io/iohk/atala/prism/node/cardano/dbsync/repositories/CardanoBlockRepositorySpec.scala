@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.scalatest.EitherMatchers._
 import io.circe.Json
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models._
 import tofu.logging.Logging.Make

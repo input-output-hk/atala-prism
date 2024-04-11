@@ -3,20 +3,18 @@ package io.iohk.atala.prism.node.cardano
 import cats.{Comonad, Functor}
 import cats.effect.Resource
 import cats.syntax.comonad._
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.models.{TransactionDetails, TransactionId, WalletDetails}
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import io.iohk.atala.prism.node.models.WalletDetails
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monadic._
 import cats.syntax.either._
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
 import tofu.higherKind.Mid
-
 import cats.MonadThrow
 import cats.effect.kernel.Async
 

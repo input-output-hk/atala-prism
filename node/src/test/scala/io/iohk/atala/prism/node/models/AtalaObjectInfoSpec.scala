@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.models
 
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

@@ -12,14 +12,14 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.identity.{CanonicalPrismDid => DID}
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, DIDServiceState}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO, ContextDAO}
 import io.iohk.atala.prism.node.repositories.logs.DIDDataRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.DIDDataRepositoryMetrics
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps

@@ -1,9 +1,9 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
 import cats.effect.MonadCancelThrow
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.node.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.{

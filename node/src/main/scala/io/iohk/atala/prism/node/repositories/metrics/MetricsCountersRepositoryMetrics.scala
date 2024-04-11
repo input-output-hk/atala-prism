@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
 import cats.effect.MonadCancelThrow
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.node.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.node.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.node.repositories.MetricsCountersRepository
 import tofu.higherKind.Mid
 

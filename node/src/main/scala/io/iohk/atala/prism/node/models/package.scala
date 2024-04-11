@@ -7,7 +7,6 @@ import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix, IdType, Ledger, TransactionId}
 import io.iohk.atala.prism.protos.node_models
 import tofu.logging.derivation.loggable
 

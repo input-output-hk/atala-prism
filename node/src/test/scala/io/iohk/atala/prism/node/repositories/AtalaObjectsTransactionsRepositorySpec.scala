@@ -2,13 +2,13 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import io.iohk.atala.prism.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.DataPreparation
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.node.utils.IOUtils._
 import org.scalatest.OptionValues.convertOptionToValuable
 import tofu.logging.Logs
 

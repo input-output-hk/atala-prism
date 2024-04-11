@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.services
 
 import cats.implicits._
 import derevo.derive
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.operations.{
   CreateDIDOperation,

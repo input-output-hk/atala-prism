@@ -6,7 +6,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.protos.node_models
 
 object EncodedSizes {

@@ -11,10 +11,10 @@ import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.utils.IOUtils._
 import org.scalatest.Ignore
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -128,7 +128,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   }
 
   /** Returns whether Cardano Integration tests should run because it's running in CI, or it's locally configured.
-    */
+   */
   private def shouldTestCardanoIntegration(): Boolean = {
     // Return true when CI="true" (environment is expected to be configured), or NODE_CARDANO_WALLET_ID is defined
     // (any other Cardano variable could be used, this one is arbitrary)

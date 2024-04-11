@@ -5,7 +5,7 @@ import cats.effect.{Async, Resource}
 import sttp.client3._
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{

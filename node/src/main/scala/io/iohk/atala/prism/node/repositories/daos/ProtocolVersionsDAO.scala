@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.repositories.daos
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.ProtocolVersion.InitialProtocolVersion
 import io.iohk.atala.prism.node.models.ProtocolVersionInfo.InitialProtocolVersionInfo
 import io.iohk.atala.prism.node.models.nodeState.LedgerData

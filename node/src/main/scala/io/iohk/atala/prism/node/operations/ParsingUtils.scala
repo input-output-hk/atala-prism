@@ -6,12 +6,12 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.{common_models, node_models}
-import io.iohk.atala.prism.utils.UriUtils
+import io.iohk.atala.prism.node.utils.UriUtils
 import io.circe.parser.{parse => parseJson}
 import io.circe.Json
 

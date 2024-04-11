@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node
 
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.CredentialId
 
 package object repositories {

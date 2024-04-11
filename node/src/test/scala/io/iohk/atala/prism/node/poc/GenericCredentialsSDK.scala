@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.poc
 
 import io.iohk.atala.prism.credentials.content.CredentialContent
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import kotlinx.serialization.json.JsonElementKt.JsonPrimitive
 import kotlinx.serialization.json.JsonObject
 

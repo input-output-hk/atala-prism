@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node
 
 import derevo.derive
 import io.grpc.Status
-import io.iohk.atala.prism.models.AtalaOperationId
+import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import tofu.logging.derivation.loggable
 import io.iohk.atala.prism.node.models.ProtocolVersion

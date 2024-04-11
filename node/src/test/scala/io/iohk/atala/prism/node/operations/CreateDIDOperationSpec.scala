@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.operations
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
@@ -14,7 +13,7 @@ import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, ProtocolConstants
 import io.iohk.atala.prism.node.operations.StateError.UnsupportedOperation
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.ServicesDAO
-import io.iohk.atala.prism.node.{DataPreparation, models}
+import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation, models}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{AtalaOperation, CompressedECKeyData, ECKeyData}
 import org.scalatest.EitherValues._

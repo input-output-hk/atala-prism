@@ -6,18 +6,18 @@ import cats.implicits.toFunctorOps
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.atala.prism.auth.WhitelistedAuthenticatorF
-import io.iohk.atala.prism.auth.grpc.{
+import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
+import io.iohk.atala.prism.node.auth.grpc.{
   GrpcAuthenticatorInterceptor,
   TraceExposeInterceptor,
   TraceReadInterceptor
 }
-import io.iohk.atala.prism.auth.utils.DidWhitelistLoader
+import io.iohk.atala.prism.node.auth.utils.DidWhitelistLoader
 import io.iohk.atala.prism.identity.PrismDid
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.metrics.UptimeReporter
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.metrics.UptimeReporter
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.metrics.NodeReporter
 import io.iohk.atala.prism.node.operations.ApplyOperationConfig
@@ -26,8 +26,8 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoBlockHandle
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.repositories.{SchemaMigrations, TransactorFactory}
-import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.node.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.atala.prism.node.utils.IOUtils._
 import kamon.Kamon
 import kamon.module.Module
 import org.slf4j.LoggerFactory

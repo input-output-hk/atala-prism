@@ -7,13 +7,13 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.stub.MetadataUtils
 import io.grpc.{ManagedChannel, Server, StatusRuntimeException}
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.auth.WhitelistedAuthenticatorF
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticatorInterceptor
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
+import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticatorInterceptor
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, Lovelace}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Pending, Scheduled}
@@ -30,7 +30,7 @@ import io.iohk.atala.prism.node.services.{
   ObjectManagementService,
   StatisticsService
 }
-import io.iohk.atala.prism.nonce.{ClientHelper, RequestAuthenticator}
+import io.iohk.atala.prism.node.nonce.{ClientHelper, RequestAuthenticator}
 import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
   AnyOperationType,
   CreateDidOperationOperationType,
@@ -40,6 +40,7 @@ import io.iohk.atala.prism.protos.node_api.NodeExplorerServiceGrpc.NodeExplorerS
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
+import io.iohk.atala.prism.node.utils.IOUtils.ioComonad
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.OptionValues._

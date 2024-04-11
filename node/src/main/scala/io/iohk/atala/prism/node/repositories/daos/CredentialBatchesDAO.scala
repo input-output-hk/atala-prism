@@ -5,15 +5,15 @@ import cats.syntax.functor._
 import doobie.Update
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.MerkleRoot
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos._
-import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.interop.implicits._
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.node.interop.implicits._
+import io.iohk.atala.prism.node.utils.syntax._
 
 object CredentialBatchesDAO {
   case class CreateCredentialBatchData(

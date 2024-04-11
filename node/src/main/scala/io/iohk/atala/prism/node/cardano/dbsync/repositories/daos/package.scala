@@ -5,8 +5,8 @@ import java.time.Instant
 import doobie.{Get, Read}
 import doobie.implicits.legacy.instant._
 import io.circe.Json
-import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.models.TransactionId
+import io.iohk.atala.prism.node.repositories.daos.BaseDAO
+import io.iohk.atala.prism.node.models.TransactionId
 import io.iohk.atala.prism.node.cardano.models.{BlockHash, BlockHeader, Transaction, TransactionMetadata}
 
 package object daos extends BaseDAO {

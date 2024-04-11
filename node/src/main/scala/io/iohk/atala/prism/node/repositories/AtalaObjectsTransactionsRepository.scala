@@ -8,8 +8,8 @@ import derevo.tagless.applyK
 import doobie.free.connection
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo, TransactionStatus}
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models._
@@ -19,7 +19,7 @@ import io.iohk.atala.prism.node.repositories.logs.AtalaObjectsTransactionsReposi
 import io.iohk.atala.prism.node.repositories.metrics.AtalaObjectsTransactionsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps

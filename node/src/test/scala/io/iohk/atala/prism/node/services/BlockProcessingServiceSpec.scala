@@ -3,13 +3,12 @@ package io.iohk.atala.prism.node.services
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
-import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
 import io.iohk.atala.prism.node.operations.{
   ApplyOperationConfig,

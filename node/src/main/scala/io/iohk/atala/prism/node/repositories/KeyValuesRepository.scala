@@ -7,8 +7,8 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
 import io.iohk.atala.prism.node.repositories.logs.KeyValuesRepositoryLogs

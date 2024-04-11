@@ -4,7 +4,7 @@ import cats.MonadThrow
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.Balance

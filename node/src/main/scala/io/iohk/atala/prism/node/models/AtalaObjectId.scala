@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.models
 
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.utils.BytesOps
+import io.iohk.atala.prism.node.utils.BytesOps
 import tofu.logging.{DictLoggable, LogRenderer}
 
 case class AtalaObjectId(value: Vector[Byte]) {

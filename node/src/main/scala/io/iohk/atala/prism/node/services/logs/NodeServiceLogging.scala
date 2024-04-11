@@ -6,7 +6,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.models.AtalaOperationId
+import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.ProtocolVersion
