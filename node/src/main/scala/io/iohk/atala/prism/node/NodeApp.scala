@@ -7,11 +7,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import doobie.hikari.HikariTransactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
-import io.iohk.atala.prism.node.auth.grpc.{
-  GrpcAuthenticatorInterceptor,
-  TraceExposeInterceptor,
-  TraceReadInterceptor
-}
+import io.iohk.atala.prism.node.auth.grpc.{GrpcAuthenticatorInterceptor, TraceExposeInterceptor, TraceReadInterceptor}
 import io.iohk.atala.prism.node.auth.utils.DidWhitelistLoader
 import io.iohk.atala.prism.identity.PrismDid
 import io.iohk.atala.prism.node.logging.TraceId
@@ -255,7 +251,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def startServer(
       nodeService: NodeGrpcServiceImpl,
-      nodeExplorerService: NodeExplorerGrpcServiceImpl,
+      nodeExplorerService: NodeExplorerGrpcServiceImpl
   ): Resource[IO, Server] =
     Resource.make[IO, Server](IO {
       logger.info("Starting server")

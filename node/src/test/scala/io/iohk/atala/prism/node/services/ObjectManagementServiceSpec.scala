@@ -78,7 +78,7 @@ object ObjectManagementServiceSpec {
 }
 
 class ObjectManagementServiceSpec
-  extends AtalaWithPostgresSpec
+    extends AtalaWithPostgresSpec
     with MockitoSugar
     with ResetMocksAfterEachTest
     with BeforeAndAfterEach {
@@ -537,8 +537,8 @@ class ObjectManagementServiceSpec
   }
 
   private def queryTransactionSubmissions(
-                                           status: AtalaObjectTransactionSubmissionStatus
-                                         ): List[AtalaObjectTransactionSubmission] = {
+      status: AtalaObjectTransactionSubmissionStatus
+  ): List[AtalaObjectTransactionSubmission] = {
     // Query into the future to return all of them
     AtalaObjectTransactionSubmissionsDAO
       .getBy(Instant.now.plus(Duration.ofSeconds(1)), status, ledger.getType)

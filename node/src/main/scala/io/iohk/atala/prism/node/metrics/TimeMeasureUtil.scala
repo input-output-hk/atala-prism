@@ -13,7 +13,6 @@ import TimeMeasureUtil._
 import scala.util.Try
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 
-
 trait TimeMeasureMetric[F[_]] {
   def startTimer(timer: DomainTimer): F[Try[StartedDomainTimer]]
   def stopTimer(timer: StartedDomainTimer): F[Try[Unit]]

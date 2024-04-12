@@ -42,7 +42,6 @@ import tofu.syntax.monadic._
 
 import java.time.Instant
 
-
 @derive(applyK)
 trait ObjectManagementService[F[_]] {
   def saveObject(

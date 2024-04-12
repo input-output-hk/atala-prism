@@ -7,7 +7,6 @@ import scala.collection.compat.immutable.ArraySeq
 import scala.util.matching.Regex
 import io.iohk.atala.prism.node.utils.BytesOps
 
-
 trait HashValue extends Any {
 
   def value: ArraySeq[Byte]

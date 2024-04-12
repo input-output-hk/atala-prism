@@ -24,16 +24,16 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
 /** Estimates the Cardano fees to pay for a given deployment simulation.
- *
- * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list. In order to
- * do so, make sure you have set the proper environment variables, as suggested <a
- * href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
- */
+  *
+  * <p>You can run the estimator with `sbt node/test:run` and choosing `CardanoFeeEstimator` from the list. In order to
+  * do so, make sure you have set the proper environment variables, as suggested <a
+  * href="https://github.com/input-output-hk/atala/blob/develop/prism-backend/docs/cardano/use-cardano.md">here</a>.
+  */
 class CardanoFeeEstimator(
-                           walletId: WalletId,
-                           paymentAddress: Address,
-                           cardanoWalletApiClient: CardanoWalletApiClient[IO]
-                         ) {
+    walletId: WalletId,
+    paymentAddress: Address,
+    cardanoWalletApiClient: CardanoWalletApiClient[IO]
+) {
   // Max number of credentials that can be issued in the same transaction
   private val MAX_CREDENTIAL_BATCH_SIZE = 2048
 
@@ -121,16 +121,16 @@ class CardanoFeeEstimator(
   }
 
   private def createAtalaObject(
-                                 operations: SignedAtalaOperation*
-                               ): AtalaObject = {
+      operations: SignedAtalaOperation*
+  ): AtalaObject = {
     val block = node_internal.AtalaBlock(operations)
     AtalaObject().withBlockContent(block)
   }
 
   private def signOperation(
-                             atalaOperation: AtalaOperation,
-                             privateKey: ECPrivateKey
-                           ): SignedAtalaOperation = {
+      atalaOperation: AtalaOperation,
+      privateKey: ECPrivateKey
+  ): SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
       signedWith = DID.getDEFAULT_MASTER_KEY_ID,
       operation = Some(atalaOperation),
@@ -165,10 +165,10 @@ class CardanoFeeEstimator(
   }
 
   private def addIssuingKeyOperation(
-                                      did: Canonical,
-                                      publicKey: ECPublicKey,
-                                      lastOperation: AtalaOperation
-                                    ): AtalaOperation = {
+      did: Canonical,
+      publicKey: ECPublicKey,
+      lastOperation: AtalaOperation
+  ): AtalaOperation = {
     val createDIDOp = node_models.UpdateDIDOperation(
       previousOperationHash = ByteString.copyFrom(Sha256.compute(lastOperation.toByteArray).getValue),
       id = did.getSuffix,
@@ -195,9 +195,9 @@ class CardanoFeeEstimator(
   }
 
   private def issueCredentialBatchOperation(
-                                             merkleRoot: MerkleRoot,
-                                             issuerDid: Canonical
-                                           ): AtalaOperation = {
+      merkleRoot: MerkleRoot,
+      issuerDid: Canonical
+  ): AtalaOperation = {
     val issueCredentialOp = node_models.IssueCredentialBatchOperation(
       credentialBatchData = Some(
         node_models.CredentialBatchData(
@@ -239,9 +239,9 @@ object CardanoFeeEstimator {
   }
 
   case class TotalEstimation(
-                              didCreation: Estimation,
-                              credentialIssuing: Estimation
-                            ) extends EstimationFormat {
+      didCreation: Estimation,
+      credentialIssuing: Estimation
+  ) extends EstimationFormat {
     override val transactions: Int =
       didCreation.transactions + credentialIssuing.transactions
     override val fees: Lovelace = Lovelace(
