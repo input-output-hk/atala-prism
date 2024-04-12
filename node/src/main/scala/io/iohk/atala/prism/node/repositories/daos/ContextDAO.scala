@@ -4,9 +4,9 @@ import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import io.iohk.atala.prism.models.{DidSuffix, IdType}
+import io.iohk.atala.prism.node.models.{DidSuffix, IdType}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.node.utils.syntax._
 
 object ContextDAO {
 

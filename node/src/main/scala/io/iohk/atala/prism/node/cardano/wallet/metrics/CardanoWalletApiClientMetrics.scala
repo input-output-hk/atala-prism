@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.cardano.wallet.metrics
 
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
+import io.iohk.atala.prism.node.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.node.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.{Payment, TransactionMetadata, WalletId}
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.Result

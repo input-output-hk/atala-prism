@@ -12,7 +12,7 @@ import cats.syntax.flatMap._
 import cats.syntax.option._
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.models.{TransactionInfo, TransactionStatus}
+import io.iohk.atala.prism.node.models.{TransactionInfo, TransactionStatus}
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode}
 import io.iohk.atala.prism.node.errors.NodeError

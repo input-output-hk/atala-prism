@@ -3,14 +3,14 @@ package io.iohk.atala.prism.node
 import cats.effect.unsafe.IORuntime
 import cats.syntax.traverse._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.auth.WhitelistedAuthenticatorF
-import io.iohk.atala.prism.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
+import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
+import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
 import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.metrics.RequestMeasureUtil
-import io.iohk.atala.prism.metrics.RequestMeasureUtil.measureRequestFuture
-import io.iohk.atala.prism.models.TransactionId
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.metrics.RequestMeasureUtil
+import io.iohk.atala.prism.node.metrics.RequestMeasureUtil.measureRequestFuture
+import io.iohk.atala.prism.node.models.TransactionId
 import io.iohk.atala.prism.node.NodeExplorerGrpcServiceImpl.{countAndThrowNodeError, serviceName}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.metrics.StatisticsCounters
@@ -25,8 +25,8 @@ import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.Operati
   UpdateDidOperationOperationType
 }
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.tracing.Tracing.trace
-import io.iohk.atala.prism.utils.FutureEither.FutureEitherOps
+import io.iohk.atala.prism.node.tracing.Tracing.trace
+import io.iohk.atala.prism.node.utils.FutureEither.FutureEitherOps
 import scalapb.GeneratedMessage
 
 import scala.concurrent.{ExecutionContext, Future}

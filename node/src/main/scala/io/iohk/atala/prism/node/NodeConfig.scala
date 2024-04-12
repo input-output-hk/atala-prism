@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.services.CardanoLedgerService
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.node.repositories.TransactorFactory
 import sttp.model.Header
 
 import scala.util.Try

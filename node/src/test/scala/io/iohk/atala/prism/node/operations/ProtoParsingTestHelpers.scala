@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 
 import java.time.Instant
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models

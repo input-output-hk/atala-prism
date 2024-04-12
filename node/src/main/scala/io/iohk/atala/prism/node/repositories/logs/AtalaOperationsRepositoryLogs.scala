@@ -11,7 +11,7 @@ import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
 import cats.MonadThrow
-import io.iohk.atala.prism.models.AtalaOperationId
+import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 
 private[repositories] final class AtalaOperationsRepositoryLogs[F[

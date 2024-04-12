@@ -4,7 +4,7 @@ import cats.effect.Resource
 import cats.implicits._
 import cats.{Applicative, Comonad, Functor, MonadThrow}
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode, Lovelace}
 import io.iohk.atala.prism.node.models.Balance
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs

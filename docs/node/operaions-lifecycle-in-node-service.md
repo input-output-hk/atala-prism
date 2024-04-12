@@ -3,7 +3,7 @@
 ## How PRISM Node processes operations
 
 User issues new operations using one of these gRPC calls:
-1. Every operation has its corresponding gRPC call: `CreateDID`, `UpdateDID`, `IssueCredentialBatch`, `RevokeCredentials`.
+1. Every operation has its corresponding gRPC call: `CreateDID`, `UpdateDID`, `ProtocolVersionUpdateOperationType`.
 2. In addition to this, we have a gRPC call for sending several operations at once: `PublishAsABlock`.
 
 After receiving operations in any of these calls, Node service forwards them to the `objectManagementService.sendAtalaOperations` method.
@@ -13,8 +13,8 @@ After receiving operations in any of these calls, Node service forwards them to 
 `sendAtalaOperations(op: node_models.SignedAtalaOperation*): Future[List[AtalaOperationId]]`
 
 This method does the following:
-- Accepts a list of [SignedAtalaOperation](https://github.com/input-output-hk/atala-prism-sdk/blob/master/protosLib/src/main/proto/node_models.proto#L147)
-- Creates a new [AtalaObject](https://github.com/input-output-hk/atala-prism-sdk/blob/master/protosLib/src/main/proto/node_internal.proto#L18)
+- Accepts a list of `SignedAtalaOperation`
+- Creates a new `AtalaObject`
 - Serializes the `AtalaObject` into an array of bytes using protobuf
 - Stores `(objectId, objectBytes)` into `atala_objects` database table
 - Stores every operation into `atala_operations` table with a new status `RECEIVED`

@@ -7,9 +7,9 @@ import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import doobie.postgres.circe.json.implicits.jsonPut
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.utils.DoobieImplicits._
+import io.iohk.atala.prism.node.utils.DoobieImplicits._
 
 import scala.util.Random
 

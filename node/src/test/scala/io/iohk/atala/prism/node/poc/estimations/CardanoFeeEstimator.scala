@@ -19,7 +19,7 @@ import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
 import tofu.logging.Logs
-
+import io.iohk.atala.prism.node.utils.IOUtils._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
@@ -301,17 +301,16 @@ object CardanoFeeEstimator {
       estimator.estimate(List(nationalExamCertBody) ++ schoolIssuers)
 
     println(s"""Ethiopia estimation:
-         |  Initial setup (DID creation):
-         |${estimation.didCreation.toString("    - ")}
-         |  Yearly (credential issuing):
-         |${estimation.credentialIssuing.toString("    - ")}
-         |  Total:
-         |${estimation.toString("    - ")}
-         |""".stripMargin)
+               |  Initial setup (DID creation):
+               |${estimation.didCreation.toString("    - ")}
+               |  Yearly (credential issuing):
+               |${estimation.credentialIssuing.toString("    - ")}
+               |  Total:
+               |${estimation.toString("    - ")}
+               |""".stripMargin)
   }
 
   private def createCardanoFeeEstimator(): CardanoFeeEstimator = {
-    import io.iohk.atala.prism.utils.IOUtils._
 
     val clientConfig =
       NodeConfig.cardanoConfig(ConfigFactory.load().getConfig("cardano"))

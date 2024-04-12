@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.cardano.models
 
 import io.circe.{ACursor, Json}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.utils.BytesOps
+import io.iohk.atala.prism.node.utils.BytesOps
 
 import scala.util.Try
 

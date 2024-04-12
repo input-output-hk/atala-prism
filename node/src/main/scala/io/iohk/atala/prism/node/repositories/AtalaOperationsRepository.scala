@@ -12,8 +12,8 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectsDAO, AtalaOperationsDAO}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.repositories.logs.AtalaOperationsRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.AtalaOperationsRepositoryMetrics
 import io.iohk.atala.prism.node.repositories.utils.connectionIOSafe
@@ -22,7 +22,7 @@ import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps
 import cats.effect.MonadCancelThrow
-import io.iohk.atala.prism.models.AtalaOperationId
+import io.iohk.atala.prism.node.models.AtalaOperationId
 
 @derive(applyK)
 trait AtalaOperationsRepository[F[_]] {

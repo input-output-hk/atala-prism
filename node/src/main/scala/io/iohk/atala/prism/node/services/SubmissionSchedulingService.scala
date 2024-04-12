@@ -4,9 +4,9 @@ import cats.Id
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
 import cats.syntax.functor._
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.services.SubmissionSchedulingService.Config
-import io.iohk.atala.prism.tracing.Tracing._
+import io.iohk.atala.prism.node.tracing.Tracing._
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}

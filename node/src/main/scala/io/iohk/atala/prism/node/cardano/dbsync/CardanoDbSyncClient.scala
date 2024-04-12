@@ -2,8 +2,8 @@ package io.iohk.atala.prism.node.cardano.dbsync
 
 import cats.Comonad
 import cats.effect.{Async, Resource}
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
-import io.iohk.atala.prism.repositories.TransactorFactory
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.repositories.TransactorFactory
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
 import tofu.logging.Logs

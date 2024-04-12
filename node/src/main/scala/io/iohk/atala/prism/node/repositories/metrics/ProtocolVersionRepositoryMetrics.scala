@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.MeasureOps
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.node.metrics.TimeMeasureUtil.MeasureOps
+import io.iohk.atala.prism.node.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
 import io.iohk.atala.prism.node.repositories.ProtocolVersionRepository
 import tofu.higherKind.Mid

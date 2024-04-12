@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.node.cardano.dbsync.repositories.metrics
 
 import cats.effect.kernel.MonadCancel
-import io.iohk.atala.prism.metrics.{TimeMeasureMetric, TimeMeasureUtil}
-import io.iohk.atala.prism.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
+import io.iohk.atala.prism.node.metrics.{TimeMeasureMetric, TimeMeasureUtil}
+import io.iohk.atala.prism.node.metrics.TimeMeasureUtil.{DomainTimer, MeasureOps}
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.atala.prism.node.cardano.models.{Block, BlockError}
 import tofu.higherKind.Mid

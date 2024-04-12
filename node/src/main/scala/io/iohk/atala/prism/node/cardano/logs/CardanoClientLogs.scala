@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.cardano.logs
 import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionId}
+import io.iohk.atala.prism.node.models.{TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.models.WalletDetails

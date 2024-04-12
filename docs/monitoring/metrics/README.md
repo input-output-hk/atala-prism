@@ -6,9 +6,8 @@ These services use Kamon + Kanela agent for publishing metrics.
 The default endpoint for metrics is `/metrics` on `9095` port.
 
 ## Basic available metrics
-Following metrics by name available for collection (both in [Prometheus](http://3.141.27.100:9090/) and [Grafana](http://3.141.27.100:3000/) `admin/iohk4Ever`).
 
-They contain basic tags such as job/instance and custom tags which are special for every custom metric.
+Metrics contain basic tags such as job/instance and custom tags which are special for every custom metric.
 
 Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metrics can be turned off in the Kamon config.
 
@@ -140,9 +139,4 @@ Also, you can find basic JVM metrics in the Prometheus/Grafana. Basic JVM metric
   
 ### Note: After restarting the service, all of these metrics will be reset.
 
-# How to add metrics to the scala backend service
-1. Make your module depends on common (common already have Kamon dependency).
-2. Add `Kamon.init()` to your module init.
-3. Add metrics into your code using utils from [prism-backend/common/src/main/scala/io/iohk/atala/prism/metrics/](https://github.com/input-output-hk/atala-tobearchived/tree/develop/prism-backend/common/src/main/scala/io/iohk/atala/prism/metrics).
-   
 For the full manual, you can check [Kamon official doc](https://kamon.io/docs/latest/guides/).

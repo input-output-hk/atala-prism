@@ -4,10 +4,10 @@ import cats.data.ReaderT
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import io.circe.Json
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -21,11 +21,10 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandl
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.protos.node_internal
-import io.iohk.atala.prism.utils.BytesOps
-import io.iohk.atala.prism.utils.IOUtils._
+import io.iohk.atala.prism.node.utils.BytesOps
+import io.iohk.atala.prism.node.utils.IOUtils._
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
-
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet

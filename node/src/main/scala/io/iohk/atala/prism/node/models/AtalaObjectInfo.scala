@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.models
 
-import io.iohk.atala.prism.models.TransactionInfo
+import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.TX_METADATA_MAX_SIZE
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.operations.{Operation, parseOperationsFromByteContent}

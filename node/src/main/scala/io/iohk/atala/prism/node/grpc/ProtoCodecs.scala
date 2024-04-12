@@ -6,13 +6,13 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.models.{DidSuffix, Ledger}
+import io.iohk.atala.prism.node.models.{DidSuffix, Ledger}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage._
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.node.utils.syntax._
 
 import java.time.Instant
 

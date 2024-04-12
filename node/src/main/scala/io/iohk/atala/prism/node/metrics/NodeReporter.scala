@@ -2,11 +2,11 @@ package io.iohk.atala.prism.node.metrics
 
 import cats.effect.unsafe.IORuntime
 import com.typesafe.config.Config
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.models.WalletId
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO}
 import io.iohk.atala.prism.node.services.{CardanoLedgerService, KeyValueService}
-import io.iohk.atala.prism.tracing.Tracing._
+import io.iohk.atala.prism.node.tracing.Tracing._
 import kamon.Kamon
 import kamon.metric.{Gauge, PeriodSnapshot}
 import kamon.module.MetricReporter

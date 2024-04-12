@@ -9,12 +9,10 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
-import io.iohk.atala.prism.daos.BaseDAO
-import io.iohk.atala.prism.models._
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, DIDServiceState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.utils.syntax._
+import io.iohk.atala.prism.node.utils.syntax._
 
 import java.time.Instant
 

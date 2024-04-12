@@ -2,11 +2,10 @@ package io.iohk.atala.prism.node.cardano.wallet.api
 
 import io.circe._
 import io.circe.generic.semiauto._
-import io.iohk.atala.prism.models.{TransactionDetails, TransactionId, TransactionStatus}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.models.{Address, Lovelace, _}
 import io.iohk.atala.prism.node.cardano.modeltags
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient.{CardanoWalletError, EstimatedFee}
-import io.iohk.atala.prism.node.models.{Balance, WalletDetails, WalletState}
 import shapeless.tag
 import shapeless.tag.@@
 

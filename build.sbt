@@ -50,7 +50,8 @@ lazy val versions = new {
   val typesafeConfig = "1.4.2"
   val fs2 = "3.2.5"
   val scalaUri = "4.0.0"
-  val prismSdk = "v1.4.1-snapshot-1688975371-7541fd2" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
+  val prismSdk =
+    "v1.4.1-snapshot-1688975371-7541fd2" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 
@@ -108,9 +109,9 @@ lazy val Dependencies = new {
   // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
   val prismCredentials =
-  "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(
-    organization = "org.bouncycastle"
-  )
+    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(
+      organization = "org.bouncycastle"
+    )
   val prismProtos =
     "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
   val vaultProtos =
@@ -190,7 +191,7 @@ lazy val commonSettings = Seq(
         "-Ywarn-dead-code"
       )
     )
-    ),
+  ),
   scalacOptions += "-Ymacro-annotations",
   javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
   githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
@@ -243,43 +244,43 @@ lazy val commonSettings = Seq(
   }
 )
 
-lazy val common = project
-  .in(file("common"))
-  .settings(
-    commonSettings,
-    // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
-    // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
-    Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
-      case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") =>
-        externalSrc / "proto"
-      case other => other
-    },
-    resolvers += Resolver.mavenLocal,
-    resolvers += Resolver.jcenterRepo,
-    resolvers += Resolver.mavenCentral,
-    libraryDependencies ++=
-      Dependencies.doobieDependencies ++
-        Dependencies.dockerDependencies ++
-        Dependencies.bouncyDependencies ++
-        Dependencies.grpcDependencies ++
-        Dependencies.mockitoDependencies ++
-        Dependencies.kamonDependencies ++
-        Dependencies.circeDependencies ++
-        Dependencies.enumeratumDependencies ++
-        Dependencies.tofuDependencies ++
-        Seq(
-          Dependencies.diffx,
-          Dependencies.flyway,
-          Dependencies.typesafeConfig,
-          Dependencies.fs2,
-          Dependencies.scalaUri
-        ) ++
-        Dependencies.prismDependencies ++
-        Dependencies.scalapbDependencies,
-    Compile / PB.targets := Seq(
-      scalapb.gen() -> (Compile / sourceManaged).value / "proto"
-    )
-  )
+//lazy val common = project
+//  .in(file("common"))
+//  .settings(
+//    commonSettings,
+//    // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
+//    // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
+//    Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
+//      case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") =>
+//        externalSrc / "proto"
+//      case other => other
+//    },
+//    resolvers += Resolver.mavenLocal,
+//    resolvers += Resolver.jcenterRepo,
+//    resolvers += Resolver.mavenCentral,
+//    libraryDependencies ++=
+//      Dependencies.doobieDependencies ++
+//        Dependencies.dockerDependencies ++
+//        Dependencies.bouncyDependencies ++
+//        Dependencies.grpcDependencies ++
+//        Dependencies.mockitoDependencies ++
+//        Dependencies.kamonDependencies ++
+//        Dependencies.circeDependencies ++
+//        Dependencies.enumeratumDependencies ++
+//        Dependencies.tofuDependencies ++
+//        Seq(
+//          Dependencies.diffx,
+//          Dependencies.flyway,
+//          Dependencies.typesafeConfig,
+//          Dependencies.fs2,
+//          Dependencies.scalaUri
+//        ) ++
+//        Dependencies.prismDependencies ++
+//        Dependencies.scalapbDependencies,
+//    Compile / PB.targets := Seq(
+//      scalapb.gen() -> (Compile / sourceManaged).value / "proto"
+//    )
+//  )
 
 lazy val node =
   project
@@ -288,32 +289,58 @@ lazy val node =
       commonSettings,
       name := "node",
       Compile / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
+      // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
+      // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
+      Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
+        case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") =>
+          externalSrc / "proto"
+        case other => other
+      },
+      Compile / PB.targets := Seq(
+        scalapb.gen() -> (Compile / sourceManaged).value / "proto"
+      ),
+      resolvers += Resolver.mavenLocal,
+      resolvers += Resolver.jcenterRepo,
+      resolvers += Resolver.mavenCentral,
       Docker / maintainer := "atala-coredid@iohk.io",
       Docker / dockerUsername := Some("input-output-hk"),
       Docker / dockerRepository := Some("ghcr.io"),
       Docker / packageName := "prism-node",
       dockerExposedPorts := Seq(5432),
       dockerBaseImage := "openjdk:11",
-      libraryDependencies ++= Dependencies.circeDependencies ++ Dependencies.enumeratumDependencies ++ Dependencies.doobieDependencies ++
-        Dependencies.grpcDependencies ++ Dependencies.logbackDependencies ++
-        Dependencies.sttpDependencies ++
-        Dependencies.prismDependencies ++
-        Dependencies.mockitoDependencies ++
-        Seq(
-          Dependencies.chimney,
-          Dependencies.flyway,
-          Dependencies.postgresql,
-          Dependencies.scalapbRuntimeGrpc,
-          Dependencies.slf4j,
-          Dependencies.typesafeConfig
-        )
+      libraryDependencies
+        ++= Dependencies.circeDependencies
+          ++ Dependencies.tofuDependencies
+          ++ Dependencies.kamonDependencies
+          ++ Dependencies.dockerDependencies
+          ++ Dependencies.bouncyDependencies
+          ++ Dependencies.enumeratumDependencies
+          ++ Dependencies.doobieDependencies
+          ++ Dependencies.grpcDependencies
+          ++ Dependencies.logbackDependencies
+          ++ Dependencies.sttpDependencies
+          ++ Dependencies.prismDependencies
+          ++ Dependencies.mockitoDependencies
+          ++ Dependencies.prismDependencies
+          ++ Dependencies.scalapbDependencies
+          ++ Seq(
+            Dependencies.chimney,
+            Dependencies.diffx,
+            Dependencies.flyway,
+            Dependencies.typesafeConfig,
+            Dependencies.postgresql,
+            Dependencies.scalapbRuntimeGrpc,
+            Dependencies.slf4j,
+            Dependencies.typesafeConfig,
+            Dependencies.fs2,
+            Dependencies.scalaUri
+          )
     )
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
-    .dependsOn(common % "compile->compile;test->test")
 
 lazy val root = project
   .in(file("."))
-  .aggregate(common, node)
+  .aggregate(node)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 

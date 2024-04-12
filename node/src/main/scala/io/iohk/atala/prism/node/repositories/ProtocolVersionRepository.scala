@@ -7,13 +7,13 @@ import derevo.derive
 import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
 import io.iohk.atala.prism.node.operations.protocolVersion.ifNodeSupportsProtocolVersion
 import io.iohk.atala.prism.node.repositories.daos.ProtocolVersionsDAO
 import io.iohk.atala.prism.node.repositories.logs.ProtocolVersionRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.ProtocolVersionRepositoryMetrics
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps

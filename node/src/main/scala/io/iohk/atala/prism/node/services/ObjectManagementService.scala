@@ -11,9 +11,7 @@ import derevo.tagless.applyK
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import enumeratum.EnumEntry.Snakecase
-import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{AtalaOperationId, TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.models.{AtalaOperationId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.errors.NodeError.{InvalidArgument, UnsupportedProtocolVersion}
@@ -35,7 +33,7 @@ import io.iohk.atala.prism.node.services.logs.ObjectManagementServiceLogs
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
 import tofu.logging.{Logs, ServiceLogging}
@@ -43,9 +41,6 @@ import tofu.syntax.feither._
 import tofu.syntax.monadic._
 
 import java.time.Instant
-
-private class DuplicateAtalaBlock extends Exception
-private class DuplicateAtalaOperation extends Exception
 
 @derive(applyK)
 trait ObjectManagementService[F[_]] {
@@ -317,20 +312,6 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
 }
 
 object ObjectManagementService {
-  sealed trait AtalaObjectTransactionStatus extends EnumEntry with Snakecase
-  object AtalaObjectTransactionStatus extends Enum[AtalaObjectTransactionStatus] {
-    val values: IndexedSeq[AtalaObjectTransactionStatus] = findValues
-
-    case object Pending extends AtalaObjectTransactionStatus
-    case object InLedger extends AtalaObjectTransactionStatus
-    case object Confirmed extends AtalaObjectTransactionStatus
-  }
-
-  case class AtalaObjectTransactionInfo(
-      transaction: TransactionInfo,
-      status: AtalaObjectTransactionStatus
-  )
-
   @derive(loggable)
   final case class SaveObjectError(msg: String)
 

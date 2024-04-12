@@ -9,7 +9,7 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.models.{AtalaOperationId, Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{AtalaOperationId, Ledger, TransactionId}
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
 import io.iohk.atala.prism.node.models.nodeState.LedgerData

@@ -9,7 +9,7 @@ import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.{Applicative, Comonad, Functor, Monad}
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models._
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}

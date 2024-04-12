@@ -5,7 +5,7 @@ import derevo.derive
 import java.time.Instant
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import tofu.logging.derivation.loggable
 
 import scala.collection.immutable.IndexedSeq

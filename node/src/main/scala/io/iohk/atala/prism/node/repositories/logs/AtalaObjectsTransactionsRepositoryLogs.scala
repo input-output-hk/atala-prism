@@ -4,21 +4,14 @@ import cats.syntax.apply._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
-import io.iohk.atala.prism.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.PublicationInfo
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.{
-  AtalaObjectInfo,
-  AtalaObjectStatus,
-  AtalaObjectTransactionSubmission,
-  AtalaObjectTransactionSubmissionStatus
-}
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.AtalaObjectsTransactionsRepository
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
-
 import java.time.Duration
 import cats.MonadThrow
 

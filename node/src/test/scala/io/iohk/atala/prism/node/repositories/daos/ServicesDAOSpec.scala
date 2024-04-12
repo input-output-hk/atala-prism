@@ -4,10 +4,9 @@ import doobie.util.transactor.Transactor
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.models.{Ledger, TransactionId}
-import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
+import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.nodeState.{DIDServiceState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, DIDService, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{didSuffixFromDigest, digestGen}

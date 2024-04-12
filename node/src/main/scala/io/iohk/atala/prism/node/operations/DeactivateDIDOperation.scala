@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.operations
 import cats.data.EitherT
 import doobie.free.connection.{ConnectionIO, unit}
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{KeyUsage, nodeState}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}

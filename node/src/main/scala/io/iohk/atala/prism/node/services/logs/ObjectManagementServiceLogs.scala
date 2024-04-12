@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.services.logs
 import cats.MonadThrow
 import cats.syntax.applicativeError._
 import cats.syntax.traverse._
-import io.iohk.atala.prism.models.{AtalaOperationId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.services.ObjectManagementService

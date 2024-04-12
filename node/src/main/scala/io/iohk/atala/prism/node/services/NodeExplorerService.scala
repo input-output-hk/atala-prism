@@ -5,7 +5,7 @@ import cats.implicits._
 import cats.{Comonad, Functor, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.models.{TransactionId, TransactionInfo}
+import io.iohk.atala.prism.node.models.{TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.UnderlyingLedger
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.errors.NodeError

@@ -5,7 +5,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.models.DidSuffix
+import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState._

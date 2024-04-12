@@ -14,10 +14,10 @@ import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, LedgerData}
 import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO
-import io.iohk.atala.prism.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.repositories.logs.CredentialBatchesRepositoryLogs
 import io.iohk.atala.prism.node.repositories.metrics.CredentialBatchesRepositoryMetrics
-import io.iohk.atala.prism.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.monoid.TofuSemigroupOps

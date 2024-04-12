@@ -3,10 +3,9 @@ package io.iohk.atala.prism.node.operations
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.models.DidSuffix
+import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec

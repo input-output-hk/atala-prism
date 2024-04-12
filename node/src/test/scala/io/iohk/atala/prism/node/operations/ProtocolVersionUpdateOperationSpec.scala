@@ -2,11 +2,10 @@ package io.iohk.atala.prism.node.operations
 
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
-import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.logging.TraceId
-import io.iohk.atala.prism.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.models.DidSuffix
-import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.models.DidSuffix
+import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
 import io.iohk.atala.prism.node.models.ProtocolVersion.InitialProtocolVersion

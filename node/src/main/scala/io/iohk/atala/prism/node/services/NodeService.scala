@@ -9,7 +9,7 @@ import derevo.tagless.applyK
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
-import io.iohk.atala.prism.models.AtalaOperationId
+import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
