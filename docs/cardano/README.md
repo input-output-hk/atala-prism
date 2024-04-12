@@ -16,9 +16,6 @@ Atala Prism integrates with:
   [Cardano Wallet Backend API](https://input-output-hk.github.io/cardano-wallet/api/edge/)
   simplifies submitting transactions to Cardano.
 
-The schema used to store Atala PRISM objects in Cardano is
-[here](metadata-schema.md).
-
 For more context around the plan used for integration, please read the
 [Cardano in Atala Prism](cardano-in-atala-prism.md)
 document.
