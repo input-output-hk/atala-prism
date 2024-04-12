@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 class DbConfigDaoSpec extends AtalaWithPostgresSpec {
 
   override protected def migrationScriptsLocation: String =
-    "common/db/migration"
+    "db/testmigration"
 
   "DbConfigDao" should {
     "return None if a key doesn't exist" in {

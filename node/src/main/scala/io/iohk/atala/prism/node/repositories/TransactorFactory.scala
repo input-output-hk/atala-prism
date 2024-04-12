@@ -57,7 +57,6 @@ object TransactorFactory {
     hikariConfig.setLeakDetectionThreshold(300000) // 5 mins
     hikariConfig.setMinimumIdle(poolSize)
     hikariConfig.setMaximumPoolSize(poolSize) // Both Pool size amd Minimum Idle should same and is recommended
-
     for {
       // Resource yielding a transactor configured with a bounded connect EC and an unbounded
       // transaction EC. Everything will be closed and shut down cleanly after use.

@@ -63,7 +63,7 @@ abstract class PostgresRepositorySpec[F[_]]
     }
   }
 
-  lazy val (database, releaseDatabase) =
+  val (database, releaseDatabase) =
     TransactorFactory.transactor[IO](transactorConfig).allocated.unsafeRunSync()
 
   lazy val databaseForStreaming = {
