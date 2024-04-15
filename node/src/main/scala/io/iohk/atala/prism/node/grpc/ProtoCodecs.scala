@@ -16,7 +16,6 @@ import io.iohk.atala.prism.utils.syntax._
 
 import java.time.Instant
 // import io.iohk.atala.prism.apollo.utils.KMMECPoint // REMVOE
-import identus.apollo.MyPublicKey
 
 object ProtoCodecs {
   def toTimeStampInfoProto(
@@ -110,7 +109,7 @@ object ProtoCodecs {
   //     .withY(ByteString.copyFrom(point.getY.bytes()))
   // }
 
-  def toECKeyData(key: MyPublicKey): node_models.ECKeyData = {
+  def toECKeyData(key: identus.apollo.PublicKey): node_models.ECKeyData = {
     val point = key.toCurvePoint
     node_models
       .ECKeyData()

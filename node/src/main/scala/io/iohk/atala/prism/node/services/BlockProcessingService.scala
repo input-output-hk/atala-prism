@@ -19,7 +19,7 @@ import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 import scala.util.chaining._
 import scala.util.control.NonFatal
-import identus.apollo.MyPublicKey
+import identus.apollo.PublicKey
 
 // This service syncs Node state with the underlying ledger
 trait BlockProcessingService {
@@ -195,7 +195,7 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
   }
 
   def verifySignature(
-      key: MyPublicKey, // FIXME it's only works for Signature
+      key: PublicKey, // FIXME it's only works for Signature
       protoOperation: node_models.SignedAtalaOperation
   ): Either[StateError, Unit] = {
     try {

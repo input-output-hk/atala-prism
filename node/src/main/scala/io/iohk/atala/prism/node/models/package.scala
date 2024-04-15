@@ -13,7 +13,7 @@ import tofu.logging.derivation.loggable
 import java.time.Instant
 import scala.util.matching.Regex
 // import io.iohk.atala.prism.apollo.utils.KMMECPoint
-import identus.apollo.MyPublicKey
+import identus.apollo.PublicKey
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
@@ -50,7 +50,7 @@ package object models {
       didSuffix: DidSuffix,
       keyId: String,
       keyUsage: KeyUsage,
-      key: MyPublicKey
+      key: PublicKey
   )
 
   case class DIDService(
@@ -153,7 +153,7 @@ package object models {
         didSuffix: DidSuffix,
         keyId: String,
         keyUsage: KeyUsage,
-        key: MyPublicKey,
+        key: PublicKey,
         addedOn: LedgerData,
         revokedOn: Option[LedgerData]
     )

@@ -13,7 +13,7 @@ import io.iohk.atala.prism.utils.UriUtils
 import io.circe.parser.{parse => parseJson}
 import io.circe.Json
 // import io.iohk.atala.prism.apollo.utils.KMMECPoint
-import identus.apollo.MyPublicKey
+import identus.apollo.PublicKey
 
 import scala.util.Try
 
@@ -49,7 +49,7 @@ object ParsingUtils {
     */
   def parseKeyData(
       keyData: ValueAtPath[node_models.PublicKey]
-  ): Either[ValidationError, MyPublicKey] = {
+  ): Either[ValidationError, PublicKey] = {
     if (keyData(_.keyData.isEcKeyData)) {
       // this path is here for legacy reason.
       parseECKey(keyData.child(_.getEcKeyData, "ecKeyData"))
@@ -64,7 +64,7 @@ object ParsingUtils {
 
   def parseECKey(
       ecData: ValueAtPath[node_models.ECKeyData]
-  ): Either[ValidationError, MyPublicKey] = {
+  ): Either[ValidationError, PublicKey] = {
 
     val supportedCurves = ProtocolConstants.supportedEllipticCurves
     val curve = ecData(_.curve)
@@ -77,7 +77,7 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "y").missing())
     } else {
       Try(
-        MyPublicKey(
+        PublicKey(
           ecData(_.curve.toString),
           ecData(_.x.toByteArray),
           ecData(_.y.toByteArray)
@@ -96,7 +96,7 @@ object ParsingUtils {
   def parseCompressedECKey(
       // FIXME need key type
       ecData: ValueAtPath[node_models.CompressedECKeyData]
-  ): Either[ValidationError, MyPublicKey] = {
+  ): Either[ValidationError, PublicKey] = {
 
     val supportedCurves = ProtocolConstants.supportedEllipticCurves
     val curve = ecData(_.curve)
@@ -106,7 +106,7 @@ object ParsingUtils {
     } else if (!supportedCurves.contains(curve)) {
       Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else {
-      Try { MyPublicKey(ecData(_.curve), ecData(_.data.toByteArray)) }.toEither.left
+      Try { PublicKey(ecData(_.curve), ecData(_.data.toByteArray)) }.toEither.left
         .map(ex =>
           InvalidValue(
             ecData.path,

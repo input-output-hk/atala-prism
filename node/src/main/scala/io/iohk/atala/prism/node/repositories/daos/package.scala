@@ -13,7 +13,7 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, DIDServiceState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
-import identus.apollo.MyPublicKey
+import identus.apollo.PublicKey
 
 import java.time.Instant
 
@@ -157,7 +157,7 @@ package object daos extends BaseDAO {
           didSuffix,
           keyId,
           keyUsage,
-          MyPublicKey(curve = curveId, data = compressed),
+          PublicKey(curve = curveId, data = compressed),
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,

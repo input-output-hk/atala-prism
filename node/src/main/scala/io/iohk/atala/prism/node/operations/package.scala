@@ -17,8 +17,7 @@ import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolVersionsDAO}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-// import io.iohk.atala.prism.apollo.utils.KMMECPoint
-import identus.apollo.MyPublicKey
+import identus.apollo.PublicKey
 
 package object operations {
 
@@ -176,7 +175,7 @@ package object operations {
 
   /** Data required to verify the correctness of the operation */
   case class CorrectnessData(
-      key: MyPublicKey,
+      key: PublicKey,
       previousOperation: Option[Sha256Digest]
   )
 

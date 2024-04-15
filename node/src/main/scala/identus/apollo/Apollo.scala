@@ -40,12 +40,8 @@ trait Verifiable {
   def verify(data: Array[Byte], signature: Array[Byte]): Try[Unit]
 }
 
-trait PublicKey extends Encodable
-trait PrivateKey extends Encodable {
-  type Pub <: PublicKey
-  def toPublicKey: Pub
-  override final def toString(): String = "<REDACTED>"
-
+/** Note this is a EC Public key */
+trait PublicKey extends Encodable {
   def curveName: String
   def toCurvePoint: CurvePoint // FIXME
   def getX: Array[Byte] = toCurvePoint.x
@@ -57,10 +53,86 @@ trait PrivateKey extends Encodable {
   // TODO rename this
   def getEncodedCompressed: Array[Byte] = ???
   def getEncodedCompressedAsByteString = ByteString.copyFrom(getEncodedCompressed)
+
+  def toJavaPublicKey: java.security.interfaces.ECPublicKey = {
+    val point = toCurvePoint
+    val x = BigInt(point.x).bigInteger
+    val y = BigInt(point.y).bigInteger
+    val keyFactory = KeyFactory.getInstance("EC", new BouncyCastleProvider())
+    val ecParameterSpec = ECNamedCurveTable.getParameterSpec(curveName)
+    val ecNamedCurveSpec = new ECNamedCurveSpec(
+      ecParameterSpec.getName(),
+      ecParameterSpec.getCurve(),
+      ecParameterSpec.getG(),
+      ecParameterSpec.getN()
+    )
+    val ecPublicKeySpec =
+      new ECPublicKeySpec(new java.security.spec.ECPoint(x, y), ecNamedCurveSpec)
+    keyFactory.generatePublic(ecPublicKeySpec).asInstanceOf[java.security.interfaces.ECPublicKey]
+  }
 }
+
+/** Note this is a EC Public key */
+trait PrivateKey extends Encodable {
+  type Pub <: PublicKey
+  def toPublicKey: Pub
+  override final def toString(): String = "<REDACTED>"
+
+  def curveName: String
+  def getEncodedCompressed: Array[Byte] = ???
+
+  def toJavaPrivateKey: java.security.interfaces.ECPrivateKey = {
+    val bytes = getEncodedCompressed
+    val keyFactory = KeyFactory.getInstance("EC", new BouncyCastleProvider())
+    val ecParameterSpec = ECNamedCurveTable.getParameterSpec(curveName)
+    val ecNamedCurveSpec = new ECNamedCurveSpec(
+      ecParameterSpec.getName(),
+      ecParameterSpec.getCurve(),
+      ecParameterSpec.getG(),
+      ecParameterSpec.getN()
+    )
+    val ecPrivateKeySpec = new ECPrivateKeySpec(new java.math.BigInteger(1, bytes), ecNamedCurveSpec)
+    keyFactory.generatePrivate(ecPrivateKeySpec).asInstanceOf[java.security.interfaces.ECPrivateKey]
+  }
+}
+
+object PublicKey {
+  def apply(curve: String, x: Array[Byte], y: Array[Byte]): PublicKey = ???
+  def apply(curve: String, data: Array[Byte]): PublicKey = {
+    curve match {
+      case "secp256k1" =>
+        val companion = new io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey.Companion
+        val secp256k1PublicKey = companion.secp256k1FromBytes(data)
+        val point = secp256k1PublicKey.getCurvePoint()
+        PublicKey(curve, point.getX, point.getY)
+      case "ed25519" => ??? // FIXME TODO
+      case "x25519" => ??? // FIXME TODO
+      case _ => ???
+    }
+  }
+}
+
+object PrivateKey {}
+
 trait MyKeyPair {
   def publicKey: PublicKey
   def privateKey: PrivateKey
+}
+
+object MyKeyPair {
+  def fromECKeyPair(pair: io.iohk.atala.prism.crypto.keys.ECKeyPair) = new MyKeyPair {
+    def publicKey: PublicKey = {
+      val p = pair.getPublicKey().getCurvePoint()
+      PublicKey(
+        io.iohk.atala.prism.crypto.ECConfig.INSTANCE.getCURVE_NAME(),
+        p.getX().bytes(),
+        p.getY().bytes()
+      )
+    }
+    def privateKey: PrivateKey = {
+      ??? // FIXME
+    }
+  }
 }
 
 case class CurvePoint(x: Array[Byte], y: Array[Byte])
@@ -80,7 +152,8 @@ trait Secp256k1PublicKey extends PublicKey with Verifiable {
 
   def getEncodedUncompressed: Array[Byte]
 
-  def getECPoint: ECPoint
+  def toCurvePoint: identus.apollo.CurvePoint
+  // def getECPoint: ECPoint
 
   override final def hashCode(): Int = HexString.fromByteArray(getEncoded).hashCode()
 
@@ -90,22 +163,6 @@ trait Secp256k1PublicKey extends PublicKey with Verifiable {
     case _ => false
   }
 
-  def toJavaPublicKey: java.security.interfaces.ECPublicKey = {
-    val point = getECPoint
-    val x = point.x
-    val y = point.y
-    val keyFactory = KeyFactory.getInstance("EC", new BouncyCastleProvider())
-    val ecParameterSpec = ECNamedCurveTable.getParameterSpec("secp256k1")
-    val ecNamedCurveSpec = new ECNamedCurveSpec(
-      ecParameterSpec.getName(),
-      ecParameterSpec.getCurve(),
-      ecParameterSpec.getG(),
-      ecParameterSpec.getN()
-    )
-    val ecPublicKeySpec =
-      new ECPublicKeySpec(new java.security.spec.ECPoint(x.bigInteger, y.bigInteger), ecNamedCurveSpec)
-    keyFactory.generatePublic(ecPublicKeySpec).asInstanceOf[java.security.interfaces.ECPublicKey]
-  }
 }
 trait Secp256k1PrivateKey extends PrivateKey with Signable {
   type Pub = Secp256k1PublicKey
@@ -116,20 +173,6 @@ trait Secp256k1PrivateKey extends PrivateKey with Signable {
     case otherPK: Secp256k1PrivateKey =>
       HexString.fromByteArray(this.getEncoded) == HexString.fromByteArray(otherPK.getEncoded)
     case _ => false
-  }
-
-  def toJavaPrivateKey: java.security.interfaces.ECPrivateKey = {
-    val bytes = getEncoded
-    val keyFactory = KeyFactory.getInstance("EC", new BouncyCastleProvider())
-    val ecParameterSpec = ECNamedCurveTable.getParameterSpec("secp256k1")
-    val ecNamedCurveSpec = new ECNamedCurveSpec(
-      ecParameterSpec.getName(),
-      ecParameterSpec.getCurve(),
-      ecParameterSpec.getG(),
-      ecParameterSpec.getN()
-    )
-    val ecPrivateKeySpec = new ECPrivateKeySpec(new java.math.BigInteger(1, bytes), ecNamedCurveSpec)
-    keyFactory.generatePrivate(ecPrivateKeySpec).asInstanceOf[java.security.interfaces.ECPrivateKey]
   }
 }
 trait Secp256k1KeyOps {

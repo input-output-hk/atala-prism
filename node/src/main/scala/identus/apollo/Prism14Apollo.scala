@@ -17,14 +17,20 @@ final case class Prism14Secp256k1PublicKey(publicKey: io.iohk.atala.prism.crypto
 
   override def getEncodedCompressed: Array[Byte] = publicKey.getEncodedCompressed()
 
-  override def getECPoint: ECPoint = {
-    // import KmpCompatUtil._
-    // val point = publicKey.getCurvePoint
-    // val x = point.getX.getCoordinate.toScalaBigInt
-    // val y = point.getY.getCoordinate.toScalaBigInt
-    // ECPoint(x, y)
-    ???
-  }
+  override def curveName: String = io.iohk.atala.prism.crypto.ECConfig.INSTANCE.getCURVE_NAME()
+  override def toCurvePoint: identus.apollo.CurvePoint = CurvePoint(
+    x = publicKey.getCurvePoint().getX().bytes(),
+    y = publicKey.getCurvePoint().getY().bytes()
+  )
+
+  // override def getECPoint: ECPoint = {
+  //   // import KmpCompatUtil._
+  //   // val point = publicKey.getCurvePoint
+  //   // val x = point.getX.getCoordinate.toScalaBigInt
+  //   // val y = point.getY.getCoordinate.toScalaBigInt
+  //   // ECPoint(x, y)
+  //   ???
+  // }
 
   override def verify(data: Array[Byte], signature: Array[Byte]): Try[Unit] = Try {
     val sig = EC.INSTANCE.toSignatureFromBytes(signature)
