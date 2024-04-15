@@ -299,6 +299,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
           value.key
             .toRight(MissingValue(path))
             .map(ValueAtPath(_, path))
+            // FIXME !!!!!!!!!!!!!!!!!!!!!!!!!!! We Should only validade the Master Key!
             .flatMap(ParsingUtils.parseKey(_, didSuffix, idCharLenLimit))
             .map(AddKeyAction)
 

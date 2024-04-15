@@ -12,7 +12,7 @@ object ProtocolConstants {
   private val defaultServiceEndpointCharLength = 300
   private val defaultServiceTypeCharLength = 100
   private val defaultContextStringCharLength = 100
-  private val defaultIdCharLimit = 50
+  private val defaultIdCharLimit = 50 // Name of the key
 
   val servicesLimit: Int = Try(globalConfig.getInt("didServicesLimit")).toOption.getOrElse(defaultServiceLimit)
   val publicKeysLimit: Int = Try(globalConfig.getInt("didPublicKeysLimit")).toOption.getOrElse(defaultPublicKeysLimit)
@@ -24,6 +24,10 @@ object ProtocolConstants {
   val contextStringCharLimit: Int =
     Try(globalConfig.getInt("contextStringCharLimit")).toOption.getOrElse(defaultContextStringCharLength)
 
+  /** Keys oficial suported by the DID Prism Method
+    * @see
+    *   https://github.com/input-output-hk/atala-prism-docs
+    */
   val supportedEllipticCurves: Seq[String] = List("secp256k1", "Ed25519", "X25519")
 
 }

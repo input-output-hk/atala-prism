@@ -11,6 +11,7 @@ import javax.xml.bind.DatatypeConverter
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.protos.node_models
 
+/** node/testOnly io.iohk.atala.prism.node.operations.ParsingUtilsSpec */
 class ParsingUtilsSpec extends AnyWordSpec with Matchers {
   "ParsingUtils" should {
     "missing values" in {
@@ -79,9 +80,9 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
 
     }
 
-    "parse key successfully with valid key curves" in {
+    "parse secp256k1 key successfully with valid key curves" in {
 
-      val keyPair = EC.generateKeyPair()
+      val keyPair = EC.generateKeyPair() // key of the type secp256k1
 
       val xByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getCurvePoint.getX.bytes)
       val yByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getCurvePoint.getY.bytes)
@@ -111,6 +112,8 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
         }
       }
     }
+
+    "FIXME TEST other types of keys"
   }
 
 }

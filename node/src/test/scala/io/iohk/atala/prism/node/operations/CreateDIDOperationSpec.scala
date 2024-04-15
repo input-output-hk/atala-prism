@@ -20,24 +20,22 @@ import io.iohk.atala.prism.protos.node_models.{AtalaOperation, CompressedECKeyDa
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
+import identus.apollo._
 
 object CreateDIDOperationSpec {
-  def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
-    val point = key.getCurvePoint
-
+  def protoECKeyDataFromPublicKey(key: PublicKey): ECKeyData =
     node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
+      curve = key.curveName,
+      x = key.getXAsByteString,
+      y = key.getYAsByteString
     )
-  }
 
   def protoCompressedECKeyDataFromPublicKey(
-      key: ECPublicKey
+      key: PublicKey
   ): CompressedECKeyData =
     node_models.CompressedECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      data = ByteString.copyFrom(key.getEncodedCompressed)
+      curve = key.curveName,
+      data = key.getEncodedCompressedAsByteString
     )
 
   def randomECKeyData: ECKeyData = {
@@ -50,13 +48,12 @@ object CreateDIDOperationSpec {
     protoCompressedECKeyDataFromPublicKey(keyPair.getPublicKey)
   }
 
-  val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    masterKeys.getPublicKey
-  )
-  val masterCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
+  // Secp256k1KeyPair
+  val masterKeys: MyKeyPair = ??? // EC.generateKeyPair() FIXME
+  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(masterKeys.publicKey)
+  val masterCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(masterKeys.publicKey)
 
+  // MyKeyPair
   val issuingKeys: ECKeyPair = EC.generateKeyPair()
   val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
     issuingKeys.getPublicKey

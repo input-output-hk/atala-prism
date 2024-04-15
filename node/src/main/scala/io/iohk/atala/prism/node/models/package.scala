@@ -5,7 +5,6 @@ import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix, IdType, Ledger, TransactionId}
 import io.iohk.atala.prism.protos.node_models
@@ -13,6 +12,8 @@ import tofu.logging.derivation.loggable
 
 import java.time.Instant
 import scala.util.matching.Regex
+// import io.iohk.atala.prism.apollo.utils.KMMECPoint
+import identus.apollo.MyPublicKey
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
@@ -49,7 +50,7 @@ package object models {
       didSuffix: DidSuffix,
       keyId: String,
       keyUsage: KeyUsage,
-      key: ECPublicKey
+      key: MyPublicKey
   )
 
   case class DIDService(
@@ -152,7 +153,7 @@ package object models {
         didSuffix: DidSuffix,
         keyId: String,
         keyUsage: KeyUsage,
-        key: ECPublicKey,
+        key: MyPublicKey,
         addedOn: LedgerData,
         revokedOn: Option[LedgerData]
     )

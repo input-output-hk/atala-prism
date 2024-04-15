@@ -9,7 +9,7 @@ import sbtprotoc.ProtocPlugin.autoImport.PB
 inThisBuild(
   Seq(
     organization := "io.iohk.atala",
-    scalaVersion := "2.13.7",
+    scalaVersion := "2.13.12", // "2.13.7",
     fork := true,
     run / connectInput := true,
     versionScheme := Some("semver-spec"),
@@ -50,7 +50,10 @@ lazy val versions = new {
   val typesafeConfig = "1.4.2"
   val fs2 = "3.2.5"
   val scalaUri = "4.0.0"
-  val prismSdk = "v1.4.1-snapshot-1688975371-7541fd2" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
+  val prismSdk = "v1.4.1-snapshot-1688975371-7541fd2"
+  // From the repo atala-prism-sdk https://github.com/input-output-hk/atala-prism-sdk/tree/node-1.4-extension-sdk
+  // deployed to github packages from sdk branch "node-1.4-extension-sdk"
+  // Also see https://github.com/input-output-hk/atala-prism-sdk/packages/920243
   val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 
@@ -108,9 +111,9 @@ lazy val Dependencies = new {
   // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
   val prismCredentials =
-  "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(
-    organization = "org.bouncycastle"
-  )
+    "io.iohk.atala" % "prism-credentials-jvm" % versions.prismSdk excludeAll ExclusionRule(organization =
+      "org.bouncycastle"
+    )
   val prismProtos =
     "io.iohk.atala" % "prism-protos-jvm" % versions.prismSdk % "protobuf-src" intransitive ()
   val vaultProtos =
@@ -162,7 +165,7 @@ lazy val Dependencies = new {
   val sttpDependencies = Seq(sttpCore, sttpCE2)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
   val prismDependencies =
-    Seq(prismCredentials, prismProtos, prismApi, vaultProtos)
+    Seq(prismCredentials, prismProtos, prismApi, vaultProtos, "io.iohk.atala.prism.apollo" % "apollo-jvm" % "1.2.13")
   val scalapbDependencies = Seq(
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
@@ -190,10 +193,9 @@ lazy val commonSettings = Seq(
         "-Ywarn-dead-code"
       )
     )
-    ),
+  ),
   scalacOptions += "-Ymacro-annotations",
   javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-  githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
   resolvers += Resolver
     .githubPackages("input-output-hk", "atala-prism-sdk"),
   // Needed for Kotlin coroutines that support new memory management mode

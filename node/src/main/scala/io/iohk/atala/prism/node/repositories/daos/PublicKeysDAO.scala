@@ -15,7 +15,12 @@ import java.time.Instant
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, ledgerData: LedgerData): ConnectionIO[Unit] = {
     val curveName = ECConfig.getCURVE_NAME
-    val compressed = key.key.getEncodedCompressed
+
+    // The Master key must be of the type Secp256k1
+    val companion = new io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey.Companion
+    val secp256k1PublicKey = companion.secp256k1FromByteCoordinates(key.key.getX, key.key.getY)
+
+    val compressed = secp256k1PublicKey.getCompressed()
 
     val addedOn = ledgerData.timestampInfo
     sql"""

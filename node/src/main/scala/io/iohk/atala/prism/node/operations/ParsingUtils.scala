@@ -3,8 +3,6 @@ package io.iohk.atala.prism.node.operations
 import java.time.LocalDate
 import cats.implicits._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
@@ -14,6 +12,8 @@ import io.iohk.atala.prism.protos.{common_models, node_models}
 import io.iohk.atala.prism.utils.UriUtils
 import io.circe.parser.{parse => parseJson}
 import io.circe.Json
+// import io.iohk.atala.prism.apollo.utils.KMMECPoint
+import identus.apollo.MyPublicKey
 
 import scala.util.Try
 
@@ -43,10 +43,15 @@ object ParsingUtils {
     } yield parsedDate
   }
 
+  /** This method is used to parse the Master Key only.
+    *
+    * The Master key is of the type secp256k1
+    */
   def parseKeyData(
       keyData: ValueAtPath[node_models.PublicKey]
-  ): Either[ValidationError, ECPublicKey] = {
+  ): Either[ValidationError, MyPublicKey] = {
     if (keyData(_.keyData.isEcKeyData)) {
+      // this path is here for legacy reason.
       parseECKey(keyData.child(_.getEcKeyData, "ecKeyData"))
     } else if (keyData(_.keyData.isCompressedEcKeyData)) {
       parseCompressedECKey(
@@ -59,7 +64,7 @@ object ParsingUtils {
 
   def parseECKey(
       ecData: ValueAtPath[node_models.ECKeyData]
-  ): Either[ValidationError, ECPublicKey] = {
+  ): Either[ValidationError, MyPublicKey] = {
 
     val supportedCurves = ProtocolConstants.supportedEllipticCurves
     val curve = ecData(_.curve)
@@ -72,7 +77,8 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "y").missing())
     } else {
       Try(
-        EC.toPublicKeyFromByteCoordinates(
+        MyPublicKey(
+          ecData(_.curve.toString),
           ecData(_.x.toByteArray),
           ecData(_.y.toByteArray)
         )
@@ -88,8 +94,9 @@ object ParsingUtils {
   }
 
   def parseCompressedECKey(
+      // FIXME need key type
       ecData: ValueAtPath[node_models.CompressedECKeyData]
-  ): Either[ValidationError, ECPublicKey] = {
+  ): Either[ValidationError, MyPublicKey] = {
 
     val supportedCurves = ProtocolConstants.supportedEllipticCurves
     val curve = ecData(_.curve)
@@ -99,9 +106,7 @@ object ParsingUtils {
     } else if (!supportedCurves.contains(curve)) {
       Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else {
-      Try(
-        EC.toPublicKeyFromCompressed(ecData(_.data.toByteArray))
-      ).toEither.left
+      Try { MyPublicKey(ecData(_.curve), ecData(_.data.toByteArray)) }.toEither.left
         .map(ex =>
           InvalidValue(
             ecData.path,
@@ -419,6 +424,7 @@ object ParsingUtils {
     } yield uniqueValidated
   }
 
+  /** FIXME question is this only used to parse the Master Key? */
   def parseKey(
       key: ValueAtPath[node_models.PublicKey],
       didSuffix: DidSuffix,
@@ -426,8 +432,10 @@ object ParsingUtils {
   ): Either[ValidationError, DIDPublicKey] = {
     for {
       keyUsage <- key.child(_.usage, "usage").parse {
-        case node_models.KeyUsage.MASTER_KEY => Right(KeyUsage.MasterKey)
-        case node_models.KeyUsage.ISSUING_KEY => Right(KeyUsage.IssuingKey)
+        case node_models.KeyUsage.MASTER_KEY =>
+          Right(KeyUsage.MasterKey)
+        case node_models.KeyUsage.ISSUING_KEY =>
+          Right(KeyUsage.IssuingKey)
         case node_models.KeyUsage.KEY_AGREEMENT_KEY =>
           Right(KeyUsage.KeyAgreementKey)
         case node_models.KeyUsage.REVOCATION_KEY =>
@@ -446,7 +454,8 @@ object ParsingUtils {
         (),
         MissingValue(key.path / "keyData")
       )
-      publicKey <- parseKeyData(key)
+      publicKey <- parseKeyData(key) // FIXME all types of keys are validated ...
+      // FIXME !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     } yield DIDPublicKey(didSuffix, keyId, keyUsage, publicKey)
   }
 

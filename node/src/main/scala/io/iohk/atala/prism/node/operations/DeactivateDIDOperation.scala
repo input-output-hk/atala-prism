@@ -40,6 +40,7 @@ case class DeactivateDIDOperation(
         PublicKeysDAO
           .find(didSuffix, keyId)
           .map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
+
       }.subflatMap { didKey =>
         Either.cond(
           didKey.keyUsage == KeyUsage.MasterKey,
