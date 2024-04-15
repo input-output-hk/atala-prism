@@ -28,9 +28,6 @@ CREATE DOMAIN public.blockhash_type AS BYTEA CONSTRAINT blockhash_type_check CHE
 CREATE DOMAIN public.content_hash AS BYTEA CONSTRAINT content_hash_check CHECK (length(VALUE) = 32);
 
 
-CREATE DOMAIN public.credential_hash AS BYTEA CONSTRAINT credential_hash_check CHECK (length(VALUE) = 32);
-
-
 CREATE DOMAIN public.did AS text COLLATE "default" CONSTRAINT did_check CHECK (VALUE ~ '^did:[a-z0-9]+:[a-zA-Z0-9._-]*(:[a-zA-Z0-9._-]*)*$'::text);
 
 
@@ -212,52 +209,6 @@ CREATE TABLE public.atala_operations
     CONSTRAINT signed_atala_operation_id_pk PRIMARY KEY (signed_atala_operation_id),
     CONSTRAINT atala_object_id_fk
         FOREIGN KEY (atala_object_id) REFERENCES public.atala_objects (atala_object_id)
-);
-
-
-CREATE TABLE public.credential_batches
-(
-    batch_id                  public.id_type        NOT NULL,
-    last_operation            public.operation_hash NOT NULL,
-    issuer_did_suffix         public.id_type        NOT NULL,
-    merkle_root               public.merkle_root    NOT NULL,
-    issued_on                 timestamptz           NOT NULL,
-    issued_on_absn            int4                  NOT NULL,
-    issued_on_osn             int4                  NOT NULL,
-    revoked_on                timestamptz           NULL,
-    revoked_on_absn           int4                  NULL,
-    revoked_on_osn            int4                  NULL,
-    issued_on_transaction_id  public.transaction_id NOT NULL,
-    revoked_on_transaction_id public.transaction_id NULL,
-    ledger                    varchar(32)           NOT NULL,
-    CONSTRAINT credential_batches_pk PRIMARY KEY (batch_id),
-    CONSTRAINT revoke_on_check CHECK ((((revoked_on IS NULL)
-        AND (revoked_on_absn IS NULL)
-        AND (revoked_on_osn IS NULL))
-        OR ((revoked_on IS NOT NULL)
-            AND (revoked_on_absn IS NOT NULL)
-            AND (revoked_on_osn IS NOT NULL)))),
-    CONSTRAINT credential_batches_issuer_did_suffix_fk
-        FOREIGN KEY (issuer_did_suffix) REFERENCES public.did_data (did_suffix)
-);
-
-
-CREATE INDEX credential_batches_issuer_did_suffix_index ON public.credential_batches USING btree (issuer_did_suffix);
-
-
-CREATE TABLE public.revoked_credentials
-(
-    batch_id        public.id_type         NOT NULL,
-    credential_id   public.credential_hash NOT NULL,
-    revoked_on      timestamptz            NOT NULL,
-    revoked_on_absn int4                   NOT NULL,
-    revoked_on_osn  int4                   NOT NULL,
-    transaction_id  public.transaction_id  NOT NULL,
-    ledger          varchar(32)            NOT NULL,
-    CONSTRAINT revoked_credentials_pk PRIMARY KEY (batch_id,
-                                                   credential_id),
-    CONSTRAINT revoked_credentials_batch_id_fk
-        FOREIGN KEY (batch_id) REFERENCES public.credential_batches (batch_id)
 );
 
 
