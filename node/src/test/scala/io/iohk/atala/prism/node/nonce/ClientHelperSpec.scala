@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.nonce
 import io.iohk.atala.prism.node.DIDUtil
 import io.iohk.atala.prism.node.auth.utils.DIDUtils
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.protos.connector_api
+import io.iohk.atala.prism.protos.common_models
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.matchers.must.Matchers._
@@ -21,7 +21,7 @@ class ClientHelperSpec extends AnyWordSpec {
         did,
         keyPair.getPrivateKey
       )
-      val request = connector_api
+      val request = common_models
         .ConnectionsStatusRequest()
         .withConnectionTokens("a b c".split(" ").toList)
       val header = requestSigner(request)

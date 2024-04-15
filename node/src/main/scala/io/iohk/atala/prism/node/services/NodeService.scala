@@ -6,15 +6,14 @@ import cats.{Applicative, Comonad, Functor, MonadThrow}
 import com.google.protobuf.ByteString
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDDataState, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
-import io.iohk.atala.prism.node.repositories.{CredentialBatchesRepository, DIDDataRepository}
+import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
 import io.iohk.atala.prism.protos.node_models
@@ -37,26 +36,6 @@ trait NodeService[F[_]] {
     *   Decentralized Identifier following PRISM protocol
     */
   def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]]
-
-  /** Get information about credentials batch identified by `batchId`. See `BatchData` for the details.
-    *
-    * @param batchId
-    *   identifier of the credentials batch.
-    */
-  def getBatchState(batchId: String): F[Either[NodeError, BatchData]]
-
-  /** Retrieves information on credential revocation.
-    *
-    * @param batchId
-    *   batch containing the credential.
-    * @param credentialHash
-    *   hash represents the credential inside the batch.
-    * @return
-    */
-  def getCredentialRevocationData(
-      batchId: String,
-      credentialHash: ByteString
-  ): F[Either[NodeError, CredentialRevocationTime]]
 
   /** Schedules a list of operations for further publication to the underlying ledger.
     *
@@ -89,8 +68,7 @@ trait NodeService[F[_]] {
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
-    objectManagement: ObjectManagementService[F],
-    credentialBatchesRepository: CredentialBatchesRepository[F]
+    objectManagement: ObjectManagementService[F]
 ) extends NodeService[F] {
   override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
     Try(PrismDid.canonicalFromString(didStr)).fold(
@@ -113,56 +91,6 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
 
   private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[(DIDData, Sha256Digest)] =
     in.map(didDataState => (ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState), didDataState.lastOperation))
-
-  override def getBatchState(batchIdStr: String): F[Either[NodeError, BatchData]] = {
-    // NOTE: CredentialBatchId.fromString returns null and doesn't throw an error when string wasn't successfully parsed
-    Option(CredentialBatchId.fromString(batchIdStr))
-      .fold(
-        Applicative[F].pure((NodeError.InvalidArgument(s"Invalid batch id: $batchIdStr"): NodeError).asLeft[BatchData])
-      )(batchId => getBatchState(batchId))
-  }
-
-  private def getBatchState(batchId: CredentialBatchId): F[Either[NodeError, BatchData]] =
-    for {
-      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-      maybeBatchStateE <- credentialBatchesRepository.getBatchState(batchId)
-      batchData = maybeBatchStateE.map(BatchData(_, lastSyncedTimestamp))
-    } yield batchData
-
-  override def getCredentialRevocationData(
-      batchIdStr: String,
-      credentialHashBS: ByteString
-  ): F[Either[NodeError, CredentialRevocationTime]] = {
-    // NOTE: CredentialBatchId.fromString returns null and doesn't throw an error when string wasn't successfully parsed
-    Option(CredentialBatchId.fromString(batchIdStr))
-      .fold(
-        Applicative[F].pure(
-          (NodeError.InvalidArgument(s"Invalid batch id: $batchIdStr"): NodeError).asLeft[CredentialRevocationTime]
-        )
-      )(batchId =>
-        Try(Sha256Digest.fromBytes(credentialHashBS.toByteArray)).fold(
-          _ =>
-            Applicative[F].pure(
-              NodeError
-                .InvalidArgument(
-                  s"The given byte array does not correspond to a SHA256 hash. It must have exactly 32 bytes: ${credentialHashBS.toByteArray.map("%02X" format _).mkString}"
-                )
-                .asLeft
-            ),
-          credentialHash => getCredentialRevocationData(batchId, credentialHash)
-        )
-      )
-  }
-
-  private def getCredentialRevocationData(
-      batchId: CredentialBatchId,
-      credentialHash: Sha256Digest
-  ): F[Either[NodeError, CredentialRevocationTime]] =
-    for {
-      lastSyncedTimestamp <- objectManagement.getLastSyncedTimestamp
-      maybeTime <- credentialBatchesRepository.getCredentialRevocationTime(batchId, credentialHash)
-      credentialRevocationTime = maybeTime.map(CredentialRevocationTime(_, lastSyncedTimestamp))
-    } yield credentialRevocationTime
 
   override def parseOperations(ops: Seq[SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]] =
     Applicative[F].pure {
@@ -210,7 +138,6 @@ object NodeService {
   def make[I[_]: Functor, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
-      credentialBatchesRepository: CredentialBatchesRepository[F],
       logs: Logs[I, F]
   ): I[NodeService[F]] = {
     for {
@@ -221,8 +148,7 @@ object NodeService {
       val mid: NodeService[Mid[F, *]] = logs
       mid attach new NodeServiceImpl[F](
         didDataRepository,
-        objectManagement,
-        credentialBatchesRepository
+        objectManagement
       )
     }
   }
@@ -230,30 +156,23 @@ object NodeService {
   def resource[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
-      credentialBatchesRepository: CredentialBatchesRepository[F],
       logs: Logs[I, F]
   ): Resource[I, NodeService[F]] = Resource.eval(
-    make(didDataRepository, objectManagement, credentialBatchesRepository, logs)
+    make(didDataRepository, objectManagement, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
-      credentialBatchesRepository: CredentialBatchesRepository[F],
       logs: Logs[I, F]
   ): NodeService[F] =
     make(
       didDataRepository,
       objectManagement,
-      credentialBatchesRepository,
       logs
     ).extract
 
 }
-
-final case class BatchData(maybeBatchState: Option[CredentialBatchState], lastSyncedTimestamp: Instant)
-
-final case class CredentialRevocationTime(maybeLedgerData: Option[LedgerData], lastSyncedTimestamp: Instant)
 
 final case class DidDocument(
     maybeData: Option[DIDData],

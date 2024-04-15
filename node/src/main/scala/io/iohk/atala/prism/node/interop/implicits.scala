@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node.interop
 
 import cats.data.NonEmptyList
 import doobie.{Get, Meta, Read, Write}
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.protos.models.TimestampInfo
@@ -36,13 +35,6 @@ object implicits {
     Get[String].tmap { Ledger.withNameInsensitive }
   implicit val ledgerRead: Read[Ledger] =
     Read[String].map { Ledger.withNameInsensitive }
-
-  implicit val credentialBatchIdRead: Read[CredentialBatchId] =
-    Read[String].map { CredentialBatchId.fromString }
-  implicit val credentialBatchIdGet: Get[CredentialBatchId] =
-    Get[String].map { CredentialBatchId.fromString }
-  implicit val credentialBatchIdWrite: Write[CredentialBatchId] =
-    Write[String].contramap(_.getId)
 
   implicit val Sha256DigestWrite: Write[Sha256Digest] =
     Write[Array[Byte]].contramap(_.getValue)

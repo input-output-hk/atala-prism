@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.logging
 
 import io.grpc.Status
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
@@ -43,18 +42,6 @@ object GeneralLoggableInstances {
       }
 
       override def logShow(a: DidSuffix): String = s"{DIDSuffix=${a.value}}"
-    }
-
-  implicit val credentialBatchIdLoggable: DictLoggable[CredentialBatchId] =
-    new DictLoggable[CredentialBatchId] {
-      override def fields[I, V, R, S](a: CredentialBatchId, i: I)(implicit
-          r: LogRenderer[I, V, R, S]
-      ): R = {
-        r.addString("CredentialBatchId", a.getId, i)
-      }
-
-      override def logShow(a: CredentialBatchId): String =
-        s"{CredentialBatchId=$a}"
     }
 
   implicit val ecPublicKeyLoggable: DictLoggable[ECPublicKey] =

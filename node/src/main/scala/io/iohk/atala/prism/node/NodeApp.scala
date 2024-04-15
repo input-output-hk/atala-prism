@@ -125,13 +125,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         ),
         submissionService
       )
-      credentialBatchesRepository <-
-        CredentialBatchesRepository.resource(liftedTransactor, logs)
       metricsCountersRepository <- MetricsCountersRepository.resource(liftedTransactor, logs)
       nodeService <- NodeService.resource(
         didDataRepository,
         objectManagementService,
-        credentialBatchesRepository,
         logs
       )
       nodeStatisticsService <- StatisticsService.resource(atalaOperationsRepository, metricsCountersRepository, logs)

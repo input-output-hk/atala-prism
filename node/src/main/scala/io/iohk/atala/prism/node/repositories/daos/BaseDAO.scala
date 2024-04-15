@@ -3,7 +3,6 @@ package io.iohk.atala.prism.node.repositories.daos
 import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.{Sha256Digest => SHA256Digest}
@@ -63,14 +62,6 @@ trait BaseDAO {
   ): Meta[T] = {
     Meta[UUID].timap(builder.apply)(_.uuid)
   }
-
-  implicit val credentialBatchId: Meta[CredentialBatchId] =
-    Meta[String].timap(x =>
-      Option(
-        CredentialBatchId
-          .fromString(x)
-      ).getOrElse(throw new RuntimeException(s"Invalid batch id: $x"))
-    )(_.getId)
 }
 
 object BaseDAO extends BaseDAO

@@ -31,31 +31,6 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       .onError(errorCause"encountered an error while $description" (_))
   }
 
-  override def getBatchState(batchId: String): Mid[F, Either[errors.NodeError, BatchData]] = in =>
-    info"getting batch state $batchId" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while getting batch $batchId state: $err",
-          _ => info"getting batch $batchId state - successfully done"
-        )
-      )
-      .onError(errorCause"encountered an error while getting batch state" (_))
-
-  override def getCredentialRevocationData(
-      batchIdStr: String,
-      credentialHashBS: ByteString
-  ): Mid[F, Either[errors.NodeError, CredentialRevocationTime]] = { in =>
-    val credentialHashHex = credentialHashBS.toByteArray.map("%02X" format _).mkString
-    info"getting credential revocation data [batchId=$batchIdStr, credentialHash=$credentialHashHex]" *> in
-      .flatTap(
-        _.fold(
-          err => error"encountered an error while getting credential revocation data for $credentialHashHex: $err",
-          _ => info"getting credential revocation data for $credentialHashHex - successfully done"
-        )
-      )
-      .onError(errorCause"encountered an error while getting credential revocation data " (_))
-  }
-
   override def scheduleAtalaOperations(
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] = in =>
