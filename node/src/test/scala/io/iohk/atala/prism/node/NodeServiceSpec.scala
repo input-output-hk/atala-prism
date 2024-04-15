@@ -469,7 +469,7 @@ class NodeServiceSpec
       val invalidOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation
           .update(
-            _.createDid.didData.context := Seq("abc"),
+            _.createDid.didData.context := Seq("abc")
           ),
         "master",
         CreateDIDOperationSpec.masterKeys.getPrivateKey

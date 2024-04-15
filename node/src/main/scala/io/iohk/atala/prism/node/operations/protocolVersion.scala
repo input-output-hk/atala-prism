@@ -27,8 +27,8 @@ package object protocolVersion {
       (protocolV, operation) match {
         case (
               ProtocolVersion1_0,
-              _: CreateDIDOperation | _: UpdateDIDOperation |
-              _: ProtocolVersionUpdateOperation | _: DeactivateDIDOperation
+              _: CreateDIDOperation | _: UpdateDIDOperation | _: ProtocolVersionUpdateOperation |
+              _: DeactivateDIDOperation
             ) =>
           true
         case _ => false
