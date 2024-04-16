@@ -23,13 +23,13 @@ object IssueCredentialBatchOperationSpec {
       issuerDIDSuffix,
       "master",
       KeyUsage.MasterKey,
-      masterKeys.getPublicKey
+      masterKeys.publicKey
     ),
     DIDPublicKey(
       issuerDIDSuffix,
       "issuing",
       KeyUsage.IssuingKey,
-      issuingKeys.getPublicKey
+      issuingKeys.publicKey
     )
   )
 
@@ -166,7 +166,7 @@ class IssueCredentialBatchOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe issuingKeys.getPublicKey
+      key mustBe issuingKeys.publicKey
       previousOperation mustBe None
     }
     "return state error when there are used different key than issuing key" in {

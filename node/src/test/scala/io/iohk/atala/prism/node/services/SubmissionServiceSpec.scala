@@ -515,7 +515,7 @@ class SubmissionServiceSpec
       BlockProcessingServiceSpec.signOperation(
         DataPreparation.exampleOperation,
         s"master$masterId",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
     }
 

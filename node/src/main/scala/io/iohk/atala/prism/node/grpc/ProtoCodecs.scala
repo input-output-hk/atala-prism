@@ -1,11 +1,9 @@
 package io.iohk.atala.prism.node.grpc
 
-import java.security.PublicKey
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-// import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig} // REMVOE
 import io.iohk.atala.prism.models.{DidSuffix, Ledger}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
@@ -15,6 +13,7 @@ import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
 
 import java.time.Instant
+import java.security.PublicKey
 // import io.iohk.atala.prism.apollo.utils.KMMECPoint // REMVOE
 
 object ProtoCodecs {

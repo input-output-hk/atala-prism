@@ -133,6 +133,11 @@ object MyKeyPair {
       ??? // FIXME
     }
   }
+
+  def generateKeyPair: MyKeyPair = ??? // FIXME  EC.generateKeyPair()
+// import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+// import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
+// import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 }
 
 case class CurvePoint(x: Array[Byte], y: Array[Byte])

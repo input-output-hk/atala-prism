@@ -15,6 +15,7 @@ import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.protos.models.TimestampInfo
 
 import java.time.Instant
+import identus.apollo.MyKeyPair
 
 class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with BaseDAO {
 
@@ -34,22 +35,18 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
       didSuffix,
       "master",
       KeyUsage.MasterKey,
-      EC.generateKeyPair().getPublicKey
+      MyKeyPair.generateKeyPair.publicKey
     )
 
   private def insertPublicKey(key: DIDPublicKey, ledgerData: LedgerData) = {
     val curveName = ECConfig.getCURVE_NAME
-    val point = key.key.getCurvePoint
-
-    val xBytes = point.getX.bytes()
-    val yBytes = point.getY.bytes()
-
+    val point = key.key.toCurvePoint
     val addedOn = ledgerData.timestampInfo
     sql"""
          |INSERT INTO public_keys (did_suffix, key_id, key_usage, curve, x, y,
          |   added_on, added_on_absn, added_on_osn,
          |   added_on_transaction_id, ledger)
-         |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes,
+         |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, ${point.x}, ${point.y},
          |   ${Instant
         .ofEpochMilli(
           addedOn.getAtalaBlockTimestamp
@@ -69,10 +66,11 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
     },
     afterApplied = {
       val inDB = selectPublicKeyCompressed(didPublicKey)
+      val curvePoint = didPublicKey.key.toCurvePoint
       val expected = EC
         .toPublicKeyFromByteCoordinates(
-          didPublicKey.key.getCurvePoint.getX.bytes(),
-          didPublicKey.key.getCurvePoint.getY.bytes()
+          curvePoint.x,
+          curvePoint.y
         )
         .getEncodedCompressed
       inDB mustBe expected

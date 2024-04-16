@@ -56,7 +56,7 @@ object ProtocolVersionUpdateOperationSpec {
       proposerDIDSuffix,
       "master",
       KeyUsage.MasterKey,
-      masterKeys.getPublicKey
+      masterKeys.publicKey
     )
   )
 
@@ -214,7 +214,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           .toOption
           .value
 
-      key mustBe masterKeys.getPublicKey
+      key mustBe masterKeys.publicKey
       previousOperation mustBe None
     }
 

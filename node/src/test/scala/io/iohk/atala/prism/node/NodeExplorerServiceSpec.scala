@@ -174,7 +174,7 @@ class NodeExplorerServiceSpec
   "NodeExplorerService.getScheduledAtalaOperations" should {
     "return scheduled operations in correct order" in {
       def sign(op: node_models.AtalaOperation): SignedAtalaOperation =
-        BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
+        BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.privateKey)
 
       def toAtalaObject(ops: List[node_models.AtalaOperation]): node_internal.AtalaObject = {
         val block = node_internal.AtalaBlock(ops.map(sign))

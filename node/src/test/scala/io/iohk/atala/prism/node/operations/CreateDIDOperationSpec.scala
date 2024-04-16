@@ -4,9 +4,6 @@ import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
@@ -39,36 +36,28 @@ object CreateDIDOperationSpec {
     )
 
   def randomECKeyData: ECKeyData = {
-    val keyPair = EC.generateKeyPair()
-    protoECKeyDataFromPublicKey(keyPair.getPublicKey)
+    val keyPair = MyKeyPair.generateKeyPair
+    protoECKeyDataFromPublicKey(keyPair.publicKey)
   }
 
   def randomCompressedECKeyData: CompressedECKeyData = {
-    val keyPair = EC.generateKeyPair()
-    protoCompressedECKeyDataFromPublicKey(keyPair.getPublicKey)
+    val keyPair = MyKeyPair.generateKeyPair
+    protoCompressedECKeyDataFromPublicKey(keyPair.publicKey)
   }
 
   // Secp256k1KeyPair
-  val masterKeys: MyKeyPair = ??? // EC.generateKeyPair() FIXME
+  val masterKeys: MyKeyPair = MyKeyPair.generateKeyPair
   val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(masterKeys.publicKey)
   val masterCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(masterKeys.publicKey)
 
-  // MyKeyPair
-  val issuingKeys: ECKeyPair = EC.generateKeyPair()
-  val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    issuingKeys.getPublicKey
-  )
-  val issuingCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(issuingKeys.getPublicKey)
+  // KeyPair
+  val issuingKeys: MyKeyPair = MyKeyPair.generateKeyPair
+  val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(issuingKeys.publicKey)
+  val issuingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(issuingKeys.publicKey)
 
-  val revokingKeys: ECKeyPair = EC.generateKeyPair()
-  val revokingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    revokingKeys.getPublicKey
-  )
-  val revokingCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(
-      revokingKeys.getPublicKey
-    )
+  val revokingKeys: MyKeyPair = MyKeyPair.generateKeyPair
+  val revokingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(revokingKeys.publicKey)
+  val revokingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(revokingKeys.publicKey)
 
   private val serviceId1 = "linked-domain1"
   private val serviceId2 = "linked-domain2"
@@ -967,7 +956,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe masterKeys.getPublicKey
+      key mustBe masterKeys.publicKey
       previousOperation mustBe None
     }
   }
