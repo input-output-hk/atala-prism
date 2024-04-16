@@ -8,6 +8,7 @@ import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.dummyLedgerData
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.models.ProtocolVersion.InitialProtocolVersion
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
@@ -55,7 +56,7 @@ object ProtocolVersionUpdateOperationSpec {
       proposerDIDSuffix,
       "master",
       KeyUsage.MasterKey,
-      masterKeys.getPublicKey
+      CryptoTestUtils.toPublicKeyData(masterKeys.getPublicKey)
     )
   )
 
@@ -213,7 +214,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           .toOption
           .value
 
-      key mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
       previousOperation mustBe None
     }
 

@@ -7,6 +7,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, ProtocolConstants}
@@ -969,7 +970,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
       previousOperation mustBe None
     }
   }
@@ -1003,21 +1004,28 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       didState.didSuffix mustBe parsedOperation.id
       didState.lastOperation mustBe parsedOperation.digest
-      didState.keys.map(
-        toDIDPublicKey
-      ) must contain theSameElementsAs parsedOperation.keys
+
+      val foundDIDs = didState.keys.map(toDIDPublicKey).sortBy(_.keyId)
+      val originalKeys = parsedOperation.keys.sortBy(_.keyId)
+
+      foundDIDs.lazyZip(originalKeys).foreach { case (d1, d2) =>
+        CryptoTestUtils.compareDIDPubKeys(d1, d2) mustBe true
+      }
 
       didState.context.sorted mustBe parsedOperation.context.sorted
 
       for (key <- parsedOperation.keys) {
         val keyState =
           DataPreparation.findKey(parsedOperation.id, key.keyId).value
-        DIDPublicKey(
-          keyState.didSuffix,
-          keyState.keyId,
-          keyState.keyUsage,
-          keyState.key
-        ) mustBe key
+        CryptoTestUtils.compareDIDPubKeys(
+          DIDPublicKey(
+            keyState.didSuffix,
+            keyState.keyId,
+            keyState.keyUsage,
+            keyState.key
+          ),
+          key
+        ) mustBe true
         keyState.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
         keyState.revokedOn mustBe None
       }

@@ -10,6 +10,7 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
@@ -121,7 +122,7 @@ class NodeServiceSpec
         didSuffix,
         "master",
         KeyUsage.MasterKey,
-        CreateDIDOperationSpec.masterKeys.getPublicKey
+        CryptoTestUtils.toPublicKeyData(CreateDIDOperationSpec.masterKeys.getPublicKey)
       )
       PublicKeysDAO
         .insert(key, dummyLedgerData)
@@ -145,9 +146,9 @@ class NodeServiceSpec
       publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey.revokedOn mustBe empty
 
-      ParsingUtils.parseECKey(
-        ValueAtPath(publicKey.getEcKeyData, Path.root)
-      ) must beRight(key.key)
+      ParsingUtils.parseCompressedECKey(
+        ValueAtPath(publicKey.getCompressedEcKeyData, Path.root)
+      ).map(_.compressedKey.toVector) must beRight(key.key.compressedKey.toVector)
 
       response.lastSyncedBlockTimestamp must be(
         Some(dummySyncTimestamp.toProtoTimestamp)

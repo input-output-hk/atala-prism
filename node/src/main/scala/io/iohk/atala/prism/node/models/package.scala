@@ -4,7 +4,7 @@ import derevo.derive
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models
 import tofu.logging.derivation.loggable
@@ -46,7 +46,7 @@ package object models {
       didSuffix: DidSuffix,
       keyId: String,
       keyUsage: KeyUsage,
-      key: ECPublicKey
+      key: PublicKeyData
   )
 
   case class DIDService(
@@ -117,13 +117,36 @@ package object models {
       ProtocolVersionInfo(ProtocolVersion.InitialProtocolVersion, None, 0)
   }
 
+  trait PublicKeyData {
+    def curveName: String
+    def compressedKey: Array[Byte]
+  }
+
+  // According to the spec, the only uncompressed keys we support
+  // are secp keys. Hence this class assumes we will manage that
+  // type of key
+  case class SecpPublicKeyData(
+      secpKey: SecpPublicKey
+  ) extends PublicKeyData {
+    override def curveName: String = ProtocolConstants.secpCurveName
+
+    override def compressedKey: Array[Byte] = {
+      secpKey.compressed
+    }
+  }
+
+  case class CompressedPublicKeyData(
+      curveName: String,
+      compressedKey: Array[Byte]
+  ) extends PublicKeyData
+
   object nodeState {
 
     case class DIDPublicKeyState(
         didSuffix: DidSuffix,
         keyId: String,
         keyUsage: KeyUsage,
-        key: ECPublicKey,
+        key: PublicKeyData,
         addedOn: LedgerData,
         revokedOn: Option[LedgerData]
     )

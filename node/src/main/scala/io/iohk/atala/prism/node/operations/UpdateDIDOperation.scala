@@ -6,15 +6,18 @@ import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.node.crypto.CryptoUtils
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.operations.StateError
+import io.iohk.atala.prism.node.operations.StateError.IllegalSecp256k1Key
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
+
+import scala.util.Try
 
 sealed trait UpdateDIDAction
 
@@ -57,7 +60,7 @@ case class UpdateDIDOperation(
             )
           )
       }
-      key <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
+      keyData <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO
           .find(didSuffix, keyId)
           .map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
@@ -74,7 +77,14 @@ case class UpdateDIDOperation(
           StateError.KeyAlreadyRevoked()
         )
       }.map(_.key)
-    } yield CorrectnessData(key, Some(lastOperation))
+      secpKey <- EitherT.fromEither[ConnectionIO] {
+        val tryKey = Try {
+          CryptoUtils.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
+        }
+        tryKey.toOption
+          .toRight(IllegalSecp256k1Key(keyId): StateError)
+      }
+    } yield CorrectnessData(secpKey, Some(lastOperation))
   }
 
   private def revokeService(didSuffix: DidSuffix, id: String, ledgerData: LedgerData) = {

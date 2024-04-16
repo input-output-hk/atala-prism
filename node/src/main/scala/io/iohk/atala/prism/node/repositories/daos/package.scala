@@ -4,9 +4,6 @@ import cats.data.NonEmptyList
 import doobie._
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, DIDServiceState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
@@ -76,8 +73,8 @@ package object daos extends BaseDAO {
           Option[Int]
       )
     ].contramap { key =>
-      val curveName = ECConfig.getCURVE_NAME
-      val compressed = key.key.getEncodedCompressed
+      val curveName = key.key.curveName
+      val compressed = key.key.compressedKey
       (
         key.didSuffix,
         key.keyId,
@@ -131,9 +128,10 @@ package object daos extends BaseDAO {
             rTransactionId,
             rLedger
           ) =>
-        assert(curveId == ECConfig.getCURVE_NAME)
-        val javaPublicKey: ECPublicKey =
-          EC.toPublicKeyFromCompressed(compressed)
+        val publicKeyData: PublicKeyData = CompressedPublicKeyData(
+          curveId,
+          compressed
+        )
         val revokeLedgerData =
           for (
             transactionId <- rTransactionId; ledger <- rLedger; t <- rTimestamp;
@@ -148,7 +146,7 @@ package object daos extends BaseDAO {
           didSuffix,
           keyId,
           keyUsage,
-          javaPublicKey,
+          publicKeyData,
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,

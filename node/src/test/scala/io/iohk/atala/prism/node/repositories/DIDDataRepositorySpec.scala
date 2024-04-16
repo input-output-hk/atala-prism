@@ -2,14 +2,15 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import org.scalatest.OptionValues._
+
 import java.time.Instant
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import tofu.logging.Logging.Make
@@ -28,25 +29,25 @@ class DIDDataRepositorySpec extends AtalaWithPostgresSpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "keyAgreement",
       keyUsage = KeyUsage.KeyAgreementKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     )
   )
 

@@ -2,17 +2,24 @@ package io.iohk.atala.prism.node.operations
 
 import cats.implicits._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.node.models.DidSuffix
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
+import io.iohk.atala.prism.node.models.{
+  CompressedPublicKeyData,
+  DIDPublicKey,
+  DIDService,
+  DidSuffix,
+  KeyUsage,
+  ProtocolConstants,
+  PublicKeyData,
+  SecpPublicKeyData
+}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.UriUtils
 import io.circe.parser.{parse => parseJson}
 import io.circe.Json
+import io.iohk.atala.prism.node.crypto.CryptoUtils
 
 import scala.util.Try
 
@@ -22,7 +29,7 @@ object ParsingUtils {
 
   def parseKeyData(
       keyData: ValueAtPath[node_models.PublicKey]
-  ): Either[ValidationError, ECPublicKey] = {
+  ): Either[ValidationError, PublicKeyData] = {
     if (keyData(_.keyData.isEcKeyData)) {
       parseECKey(keyData.child(_.getEcKeyData, "ecKeyData"))
     } else if (keyData(_.keyData.isCompressedEcKeyData)) {
@@ -34,26 +41,27 @@ object ParsingUtils {
     }
   }
 
+  // We only accept Secp256k1 keys in uncompressed format
   def parseECKey(
       ecData: ValueAtPath[node_models.ECKeyData]
-  ): Either[ValidationError, ECPublicKey] = {
+  ): Either[ValidationError, PublicKeyData] = {
 
-    val supportedCurves = ProtocolConstants.supportedEllipticCurves
     val curve = ecData(_.curve)
 
-    if (!supportedCurves.contains(curve)) {
+    if (ecData(_.curve) != ProtocolConstants.secpCurveName) {
       Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else if (ecData(_.x.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "x").missing())
     } else if (ecData(_.y.toByteArray.isEmpty)) {
       Left(ecData.child(_.curve, "y").missing())
     } else {
-      Try(
-        EC.toPublicKeyFromByteCoordinates(
+      Try {
+        val key = CryptoUtils.unsafeToSecpPublicKeyFromByteCoordinates(
           ecData(_.x.toByteArray),
           ecData(_.y.toByteArray)
         )
-      ).toEither.left
+        SecpPublicKeyData(key)
+      }.toEither.left
         .map(ex =>
           InvalidValue(
             ecData.path,
@@ -66,7 +74,7 @@ object ParsingUtils {
 
   def parseCompressedECKey(
       ecData: ValueAtPath[node_models.CompressedECKeyData]
-  ): Either[ValidationError, ECPublicKey] = {
+  ): Either[ValidationError, PublicKeyData] = {
 
     val supportedCurves = ProtocolConstants.supportedEllipticCurves
     val curve = ecData(_.curve)
@@ -76,16 +84,9 @@ object ParsingUtils {
     } else if (!supportedCurves.contains(curve)) {
       Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else {
-      Try(
-        EC.toPublicKeyFromCompressed(ecData(_.data.toByteArray))
-      ).toEither.left
-        .map(ex =>
-          InvalidValue(
-            ecData.path,
-            "",
-            s"Unable to initialize the key: ${ex.getMessage}"
-          )
-        )
+      Right(
+        CompressedPublicKeyData(curve, ecData(_.data.toByteArray))
+      )
     }
   }
 

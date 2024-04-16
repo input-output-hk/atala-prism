@@ -7,6 +7,7 @@ import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
@@ -87,7 +88,7 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
 
-      key mustBe DeactivateDIDOperationSpec.masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe DeactivateDIDOperationSpec.masterKeys.getPublicKey
       previousOperation mustBe Some(DeactivateDIDOperationSpec.createDidOperation.digest)
     }
 

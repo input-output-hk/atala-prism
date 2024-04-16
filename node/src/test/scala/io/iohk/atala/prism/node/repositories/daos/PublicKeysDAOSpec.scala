@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.repositories.daos
 
 import java.time.Instant
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
@@ -20,25 +20,25 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "keyAgreement",
       keyUsage = KeyUsage.KeyAgreementKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     )
   )
 
@@ -58,12 +58,16 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       DataPreparation.createDID(didData, dummyLedgerData)
       val result = DataPreparation.findKey(didSuffix, "issuing").value
 
-      DIDPublicKey(
-        result.didSuffix,
-        result.keyId,
-        result.keyUsage,
-        result.key
-      ) mustBe keys.tail.head
+      CryptoTestUtils.compareDIDPubKeys(
+        DIDPublicKey(
+          result.didSuffix,
+          result.keyId,
+          result.keyUsage,
+          result.key
+        ),
+        keys.tail.head
+      ) mustBe true
+
       result.addedOn mustBe dummyLedgerData
       result.revokedOn mustBe None
     }
@@ -88,7 +92,7 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       DataPreparation.createDID(didData, dummyLedgerData)
       val results = DataPreparation.findByDidSuffix(didSuffix).keys
 
-      results
+      val resultDIDKeys = results
         .map(didPublicKeyState =>
           DIDPublicKey(
             didPublicKeyState.didSuffix,
@@ -97,7 +101,13 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
             didPublicKeyState.key
           )
         )
-        .sortWith((l, r) => l.keyId < r.keyId) mustBe keys.sortWith((l, r) => l.keyId < r.keyId)
+        .sortWith((l, r) => l.keyId < r.keyId)
+
+      val originalDIDKeysSorted = keys.sortWith((l, r) => l.keyId < r.keyId)
+
+      resultDIDKeys.lazyZip(originalDIDKeysSorted).foreach { case (x, y) =>
+        CryptoTestUtils.compareDIDPubKeys(x, y) mustBe true
+      }
 
       results.foreach(didPublicKeyState => didPublicKeyState.addedOn mustBe dummyLedgerData)
       results.foreach(didPublicKeyState => didPublicKeyState.revokedOn mustBe None)

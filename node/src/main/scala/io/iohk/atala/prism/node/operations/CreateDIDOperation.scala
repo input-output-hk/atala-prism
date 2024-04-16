@@ -6,14 +6,17 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.node.crypto.CryptoUtils
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, ProtocolConstants}
-import io.iohk.atala.prism.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
+import io.iohk.atala.prism.node.operations.StateError.{EntityExists, IllegalSecp256k1Key, InvalidKeyUsed, UnknownKey}
 import io.iohk.atala.prism.node.operations.path._
-import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, ServicesDAO, ContextDAO}
+import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
+
+import scala.util.Try
 
 case class CreateDIDOperation(
     id: DidSuffix,
@@ -30,14 +33,21 @@ case class CreateDIDOperation(
   ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     val keyOpt = keys.find(_.keyId == keyId)
     for {
-      _ <- EitherT.fromEither[ConnectionIO] {
+      key <- EitherT.fromEither[ConnectionIO] {
         keyOpt
           .filter(_.keyUsage == MasterKey)
           .toRight(InvalidKeyUsed("master key"))
       }
+      secpKey <- EitherT.fromEither[ConnectionIO] {
+        val tryKey = Try {
+          CryptoUtils.unsafeToSecpPublicKeyFromCompressed(key.key.compressedKey)
+        }
+        tryKey.toOption
+          .toRight(IllegalSecp256k1Key(key.keyId))
+      }
       data <- EitherT.fromEither[ConnectionIO] {
         keyOpt
-          .map(didKey => CorrectnessData(didKey.key, None))
+          .map(_ => CorrectnessData(secpKey, None))
           .toRight(UnknownKey(id, keyId): StateError)
       }
     } yield data

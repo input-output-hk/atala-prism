@@ -8,14 +8,10 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
-import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
-  issuingEcKeyData,
-  masterEcKeyData,
-  randomCompressedECKeyData,
-  randomECKeyData
-}
+import io.iohk.atala.prism.node.models.{DIDService, KeyUsage, ProtocolConstants}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData, randomCompressedECKeyData, randomECKeyData}
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
@@ -495,7 +491,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .toOption
         .value
 
-      key mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
       previousOperation mustBe Some(createDidOperation.digest)
     }
 
@@ -554,14 +550,16 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
       newKey.keyUsage mustBe KeyUsage.MasterKey
       newKey.didSuffix mustBe createDidOperation.id
-      DIDPublicKey(
-        newKey.didSuffix,
-        newKey.keyId,
-        newKey.keyUsage,
-        newKey.key
-      ) mustBe parsedOperation.actions.head
+
+      val actionKey = parsedOperation.actions.head
         .asInstanceOf[AddKeyAction]
         .key
+
+      newKey.didSuffix mustBe actionKey.didSuffix
+      newKey.keyId mustBe actionKey.keyId
+      newKey.keyUsage mustBe actionKey.keyUsage
+      newKey.key.compressedKey mustBe actionKey.key.compressedKey
+
       newKey.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
       didInfo.lastOperation mustBe Sha256.compute(

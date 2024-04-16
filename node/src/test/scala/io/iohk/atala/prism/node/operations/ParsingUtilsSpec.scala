@@ -10,6 +10,7 @@ import io.iohk.atala.prism.node.models.ProtocolConstants
 import javax.xml.bind.DatatypeConverter
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models.CompressedECKeyData
 
 class ParsingUtilsSpec extends AnyWordSpec with Matchers {
   "ParsingUtils" should {
@@ -49,7 +50,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
       ) { case Left(ValidationError.InvalidValue(path, value, explanation)) =>
         path.path mustBe Vector()
         value mustBe ""
-        explanation mustBe "Unable to initialize the key: ECPoint corresponding to a public key doesn't belong to Secp256k1 curve"
+        explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve"
       // explanation mustBe "Unable to initialize the key: invalid KeySpec: Point not on curve" // Error before ATL-974
       }
     }
@@ -83,19 +84,17 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
 
       val keyPair = EC.generateKeyPair()
 
-      val xByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getCurvePoint.getX.bytes)
-      val yByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getCurvePoint.getY.bytes)
+      val dataByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getEncodedCompressed)
 
       val pks = ProtocolConstants.supportedEllipticCurves.map { curve =>
-        new node_models.ECKeyData(
+        new CompressedECKeyData(
           curve,
-          xByteString,
-          yByteString
+          dataByteString
         )
       }
 
       pks.foreach { pk =>
-        val parsed = ParsingUtils.parseECKey(
+        val parsed = ParsingUtils.parseCompressedECKey(
           ValueAtPath(
             pk,
             Path(Vector.empty)
@@ -105,9 +104,8 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
           case Left(value) =>
             fail(value.explanation)
           case Right(value) =>
-            val curvePoint = value.getCurvePoint
-            curvePoint.getX.bytes.sameElements(pk.x.toByteArray) mustBe true
-            curvePoint.getY.bytes.sameElements(pk.y.toByteArray) mustBe true
+            pk.curve mustBe value.curveName
+            pk.data.toByteArray.sameElements(dataByteString.toByteArray) mustBe true
         }
       }
     }

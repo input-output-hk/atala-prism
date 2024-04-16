@@ -5,8 +5,7 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.node.models.{DidSuffix, Ledger}
+import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, PublicKeyData}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
 import io.iohk.atala.prism.node.models.KeyUsage._
@@ -56,7 +55,7 @@ object ProtoCodecs {
         didDataState.keys.map(key =>
           toProtoPublicKey(
             key.keyId,
-            toECKeyData(key.key),
+            toCompressedECKeyData(key.key),
             toProtoKeyUsage(key.keyUsage),
             toLedgerData(key.addedOn),
             key.revokedOn map toLedgerData
@@ -83,7 +82,7 @@ object ProtoCodecs {
 
   def toProtoPublicKey(
       id: String,
-      ecKeyData: node_models.ECKeyData,
+      compressedEcKeyData: node_models.CompressedECKeyData,
       keyUsage: node_models.KeyUsage,
       addedOn: node_models.LedgerData,
       revokedOn: Option[node_models.LedgerData]
@@ -91,20 +90,18 @@ object ProtoCodecs {
     val withoutRevKey = node_models
       .PublicKey()
       .withId(id)
-      .withEcKeyData(ecKeyData)
+      .withCompressedEcKeyData(compressedEcKeyData)
       .withUsage(keyUsage)
       .withAddedOn(addedOn)
 
     revokedOn.fold(withoutRevKey)(revTime => withoutRevKey.withRevokedOn(revTime))
   }
 
-  def toECKeyData(key: ECPublicKey): node_models.ECKeyData = {
-    val point = key.getCurvePoint
+  def toCompressedECKeyData(key: PublicKeyData): node_models.CompressedECKeyData = {
     node_models
-      .ECKeyData()
-      .withCurve(ECConfig.getCURVE_NAME)
-      .withX(ByteString.copyFrom(point.getX.bytes()))
-      .withY(ByteString.copyFrom(point.getY.bytes()))
+      .CompressedECKeyData()
+      .withCurve(key.curveName)
+      .withData(ByteString.copyFrom(key.compressedKey))
   }
 
   def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {
