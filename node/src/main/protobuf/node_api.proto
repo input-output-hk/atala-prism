@@ -12,7 +12,7 @@ import "google/protobuf/timestamp.proto";
 
 /**
  * Service for PRISM Node API. Provides a way to store, retrieve and update
- * Decentralized identifiers (DIDs), and Credentials' commitments into/from the underlying blockchain.
+ * Decentralized identifiers (DIDs) into/from the underlying blockchain.
  */
 service NodeService {
     /**
@@ -188,69 +188,6 @@ message GetNodeNetworkProtocolInfoResponse {
 }
 
 /**
- * Request to get the credential's batch state.
- * See NodeService.GetBatchState for more information.
- */
-message GetBatchStateRequest {
-    string batch_id = 1; // The batch ID.
-}
-/**
- * Response with the credential's batch state.
- * See NodeService.GetBatchState for more information.
- */
-message GetBatchStateResponse {
-    /**
-     * DID suffix used to sign the IssueCredentialBatch operation.
-     */
-    string issuer_did = 1;
-
-    /**
-     * The Merkle root used for the IssueCredential operation.
-     */
-    bytes merkle_root = 2;
-
-    /**
-     * Underlying blockchain data that refers to the transaction that
-     * contains the IssueCredential operation associated with the credential.
-     */
-    LedgerData publication_ledger_data = 3;
-
-    /**
-     * Underlying blockchain data that refers to the transaction that
-     * contains the RevokeCredential operation associated with the credential.
-     * This is optional.
-     */
-    LedgerData revocation_ledger_data = 4;
-
-    /**
-     * Timestamp of the latest synchronized block.
-     */
-    google.protobuf.Timestamp last_synced_block_timestamp = 5;
-
-    /**
-     * The hash of the credential to query about.
-     */
-    bytes issuance_hash = 6;
-}
-
-/**
- * Request to get the credential's revocation time.
- * See NodeService.GetCredentialRevocationTime for more information.
- */
-message GetCredentialRevocationTimeRequest {
-    string batch_id = 1; // The ID corresponding to the credential to query about.
-    bytes credential_hash = 2; // The hash of the credential to query about.
-}
-/**
- * Response with the credential's revocation time.
- * See NodeService.GetCredentialRevocationTime for more information.
- */
-message GetCredentialRevocationTimeResponse {
-    LedgerData revocation_ledger_data = 1; // The ledger data when the credential was revoked. This is optional.
-    google.protobuf.Timestamp last_synced_block_timestamp = 2; // Timestamp of the latest synchronized block.
-}
-
-/**
  * Request to get the operation status.
  * See NodeService.GetOperationInfo for more information.
  */
@@ -318,8 +255,6 @@ message GetScheduledOperationsRequest {
         AnyOperationType = 0; // Any operation
         CreateDidOperationOperationType = 1;
         UpdateDidOperationOperationType = 2;
-        IssueCredentialBatchOperationType = 3;
-        RevokeCredentialsOperationType = 4;
         ProtocolVersionUpdateOperationType = 5;
     }
 }
@@ -352,3 +287,27 @@ message GetWalletBalanceRequest {
 message GetWalletBalanceResponse {
     bytes balance = 1;
 }
+
+// Used to encode the responses of the operations issued in an AtalaBlock.
+message OperationOutput {
+    oneof result {
+        // Represents the response provided by IssueCredentialBatchOperation.
+        CreateDIDOutput create_did_output = 2;
+        // Represents the response provided by UpdateDIDOperation.
+        UpdateDIDOutput update_did_output = 3;
+        // Represents the response provided by ProtocolVersionUpdateOperation.
+        ProtocolVersionUpdateOutput protocol_version_update_output = 7;
+        DeactivateDIDOutput deactivate_did_output = 8;
+    }
+    oneof operation_maybe {
+        bytes operation_id = 5; // Operation identifier.
+        string error = 6; // Error description if PRISM Node service haven't scheduled the operation.
+    }
+}
+
+message CreateDIDOutput {
+    string did_suffix = 1;
+}
+message UpdateDIDOutput {}
+message ProtocolVersionUpdateOutput {}
+message DeactivateDIDOutput {}

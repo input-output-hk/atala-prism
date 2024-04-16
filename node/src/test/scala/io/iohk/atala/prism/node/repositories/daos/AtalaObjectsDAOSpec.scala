@@ -8,7 +8,7 @@ import io.iohk.atala.prism.node.models.{BlockInfo, Ledger, TransactionId, Transa
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Merged, Pending, Processed, Scheduled}
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._
 import scalapb.UnknownFieldSet
 
@@ -16,7 +16,7 @@ import java.time.Instant
 import scala.util.Random
 
 class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
-  private val objectId = AtalaObjectId.of(node_internal.AtalaObject())
+  private val objectId = AtalaObjectId.of(node_models.AtalaObject())
   private val byteContent = "byteContent".getBytes
   private val transactionInfo = TransactionInfo(
     transactionId = TransactionId
@@ -144,7 +144,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
         // value is irrelevant in this case, we just need to make sure we can distinguish objects some how (by index in this case)
         val fieldSet = UnknownFieldSet.empty.withField(count, UnknownFieldSet.Field(fixed32 = Seq(count)))
         val objId = AtalaObjectId.of(
-          node_internal
+          node_models
             .AtalaObject()
             .withUnknownFields(fieldSet)
         )
@@ -162,7 +162,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
         withClue(s"Index $ind:") {
           val fieldSet = UnknownFieldSet.empty.withField(ind, UnknownFieldSet.Field(fixed32 = Seq(ind)))
           objInfo.objectId mustBe AtalaObjectId.of(
-            node_internal.AtalaObject().withUnknownFields(fieldSet)
+            node_models.AtalaObject().withUnknownFields(fieldSet)
           )
         }
       }
@@ -175,11 +175,11 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
       val random = Random
       val statuses = List(Scheduled, Pending, Merged, Processed)
       val generatedStatuses = (0 until N).map(_ => statuses(random.nextInt(4)))
-      var scheduledObjects = List[node_internal.AtalaObject]()
+      var scheduledObjects = List[node_models.AtalaObject]()
 
       (0 until N).foreach { count =>
         val fieldSet = UnknownFieldSet.empty.withField(count, UnknownFieldSet.Field(fixed32 = Seq(count)))
-        val obj = node_internal.AtalaObject().withUnknownFields(fieldSet)
+        val obj = node_models.AtalaObject().withUnknownFields(fieldSet)
         val objId = AtalaObjectId.of(obj)
         val status = generatedStatuses(count)
         insert(objId, byteContent, generatedStatuses(count))

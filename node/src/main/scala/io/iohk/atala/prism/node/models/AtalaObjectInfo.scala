@@ -4,13 +4,13 @@ import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.cardano.TX_METADATA_MAX_SIZE
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata
 import io.iohk.atala.prism.node.operations.{Operation, parseOperationsFromByteContent}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 
 case class AtalaObjectInfo(
     objectId: AtalaObjectId,
     byteContent: Array[
       Byte
-    ], // Serialization of a io.iohk.atala.prism.protos.node_internal.AtalaObject
+    ], // Serialization of a io.iohk.atala.prism.protos.node_models.AtalaObject
     operations: List[Operation], // List of parsed operations
     status: AtalaObjectStatus, // Status of an object may be processed (e.g. DIDs were recognized and stored in DB), merged (e.g. merged with another object) or pending
     transaction: Option[
@@ -31,10 +31,10 @@ case class AtalaObjectInfo(
       transaction
     )
 
-  lazy val getAndValidateAtalaObject: Option[node_internal.AtalaObject] =
-    node_internal.AtalaObject.validate(byteContent).toOption
+  lazy val getAndValidateAtalaObject: Option[node_models.AtalaObject] =
+    node_models.AtalaObject.validate(byteContent).toOption
 
-  lazy val getAtalaBlock: Option[node_internal.AtalaBlock] = {
+  lazy val getAtalaBlock: Option[node_models.AtalaBlock] = {
     for {
       atalaObject <- getAndValidateAtalaObject
       atalaBlock <- atalaObject.blockContent
@@ -49,8 +49,8 @@ case class AtalaObjectInfo(
       thatBlock <- that.getAtalaBlock
     } yield {
       val mergedBlock =
-        node_internal.AtalaBlock(thisBlock.operations ++ thatBlock.operations)
-      val obj = node_internal
+        node_models.AtalaBlock(thisBlock.operations ++ thatBlock.operations)
+      val obj = node_models
         .AtalaObject()
         .withBlockContent(mergedBlock)
       AtalaObjectInfo(

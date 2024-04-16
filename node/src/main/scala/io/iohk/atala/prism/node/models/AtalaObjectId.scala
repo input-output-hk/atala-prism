@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.models
 
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.BytesOps
 import tofu.logging.{DictLoggable, LogRenderer}
 
@@ -32,7 +32,7 @@ object AtalaObjectId {
     new AtalaObjectId(digestUnsafe.toVector)
   }
 
-  def of(atalaObject: node_internal.AtalaObject): AtalaObjectId = {
+  def of(atalaObject: node_models.AtalaObject): AtalaObjectId = {
     of(atalaObject.toByteArray)
   }
 

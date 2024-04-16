@@ -6,7 +6,7 @@ import cats.syntax.flatMap._
 import io.iohk.atala.prism.node.models.{AtalaOperationId, Ledger, TransactionDetails, TransactionId}
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
-import io.iohk.atala.prism.protos.node_internal.AtalaObject
+import io.iohk.atala.prism.protos.node_models.AtalaObject
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._

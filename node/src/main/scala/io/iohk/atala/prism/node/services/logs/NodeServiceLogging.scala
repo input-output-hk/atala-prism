@@ -11,7 +11,8 @@ import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.protos.node_models.{OperationOutput, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import io.iohk.atala.prism.protos.node_api.OperationOutput
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._

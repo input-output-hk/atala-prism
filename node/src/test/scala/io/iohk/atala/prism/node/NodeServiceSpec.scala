@@ -8,7 +8,6 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.logging.TraceId
@@ -25,7 +24,7 @@ import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.protos.node_models.OperationOutput
+import io.iohk.atala.prism.protos.node_api.OperationOutput
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 import io.iohk.atala.prism.node.utils.IOUtils._
 import io.iohk.atala.prism.node.utils.syntax._
@@ -525,7 +524,7 @@ class NodeServiceSpec
       response.outputs.head.operationMaybe.error mustBe None
 
       response.outputs.last.result mustBe OperationOutput.Result
-        .UpdateDidOutput(node_models.UpdateDIDOutput())
+        .UpdateDidOutput(node_api.UpdateDIDOutput())
       response.outputs.last.operationMaybe.operationId.value mustEqual updateOperationId.toProtoByteString
       response.outputs.last.operationMaybe.error mustBe None
 

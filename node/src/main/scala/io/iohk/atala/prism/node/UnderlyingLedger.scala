@@ -5,14 +5,14 @@ import derevo.tagless.applyK
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.models.Balance
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 
 @derive(applyK)
 trait UnderlyingLedger[F[_]] {
   def getType: Ledger
 
   def publish(
-      obj: node_internal.AtalaObject
+      obj: node_models.AtalaObject
   ): F[Either[CardanoWalletError, PublicationInfo]]
 
   def getTransactionDetails(

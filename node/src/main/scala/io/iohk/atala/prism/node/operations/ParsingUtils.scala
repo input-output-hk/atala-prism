@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.operations
 
-import java.time.LocalDate
 import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
@@ -10,7 +9,7 @@ import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
-import io.iohk.atala.prism.protos.{common_models, node_models}
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.UriUtils
 import io.circe.parser.{parse => parseJson}
 import io.circe.Json
@@ -20,28 +19,6 @@ import scala.util.Try
 object ParsingUtils {
 
   private type EitherValidationError[B] = Either[ValidationError, B]
-
-  def parseDate(
-      date: ValueAtPath[common_models.Date]
-  ): Either[ValidationError, LocalDate] = {
-    for {
-      year <- date.child(_.year, "year").parse { year =>
-        Either
-          .cond(year > 0, year, "Year needs to be specified as positive value")
-      }
-      month <- date.child(_.month, "month").parse { month =>
-        Either.cond(
-          month >= 1 && month <= 12,
-          month,
-          "Month has to be specified and between 1 and 12"
-        )
-      }
-      parsedDate <- date.child(_.day, "day").parse { day =>
-        Try(LocalDate.of(year, month, day)).toEither.left
-          .map(_ => "Day has to be specified and a proper day in the month")
-      }
-    } yield parsedDate
-  }
 
   def parseKeyData(
       keyData: ValueAtPath[node_models.PublicKey]

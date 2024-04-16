@@ -16,7 +16,7 @@ import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolVersionsDAO}
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object operations {
@@ -346,7 +346,7 @@ package object operations {
   def parseOperationsFromByteContent(
       byteContent: Array[Byte]
   ): List[Operation] =
-    node_internal.AtalaObject
+    node_models.AtalaObject
       .validate(byteContent)
       .toOption
       .fold(List[Operation]()) { obj =>

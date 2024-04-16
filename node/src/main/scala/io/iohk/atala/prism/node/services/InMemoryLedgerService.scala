@@ -10,7 +10,7 @@ import io.iohk.atala.prism.node.models.Balance
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 
@@ -25,7 +25,7 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](
   override def getType: Ledger = Ledger.InMemory
 
   override def publish(
-      obj: node_internal.AtalaObject
+      obj: node_models.AtalaObject
   ): F[Either[CardanoWalletError, PublicationInfo]] = {
     val publcationInfoF = for {
       objectBytes <- obj.toByteArray.pure[F]

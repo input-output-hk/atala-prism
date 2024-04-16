@@ -11,7 +11,7 @@ import java.io.File
 import scala.concurrent.blocking
 import io.grpc.stub.AbstractStub
 import io.iohk.atala.prism.protos.node_api.ScheduleOperationsResponse
-import io.iohk.atala.prism.protos.node_models.OperationOutput
+import io.iohk.atala.prism.protos.node_api.OperationOutput
 
 object GrpcUtils {
 

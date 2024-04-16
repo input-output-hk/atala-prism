@@ -32,7 +32,7 @@ import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 import io.iohk.atala.prism.node.services.logs.ObjectManagementServiceLogs
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
@@ -263,7 +263,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       // Deserialize object
       protobufObject <-
         Either
-          .fromTry(node_internal.AtalaObject.validate(obj.byteContent))
+          .fromTry(node_models.AtalaObject.validate(obj.byteContent))
           .leftMap(err => SaveObjectError(err.getMessage))
       block = protobufObject.blockContent.get
       // Retrieve transaction info (transaction identifier, name of the ledger)
@@ -317,9 +317,9 @@ object ObjectManagementService {
 
   def createAtalaObject(
       ops: List[SignedAtalaOperation]
-  ): node_internal.AtalaObject = {
-    val block = node_internal.AtalaBlock(ops)
-    node_internal
+  ): node_models.AtalaObject = {
+    val block = node_models.AtalaBlock(ops)
+    node_models
       .AtalaObject()
       .withBlockContent(block)
   }

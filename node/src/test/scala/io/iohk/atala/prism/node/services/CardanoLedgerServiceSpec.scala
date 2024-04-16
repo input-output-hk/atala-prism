@@ -20,7 +20,7 @@ import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.BytesOps
 import io.iohk.atala.prism.node.utils.IOUtils._
 import org.scalatest.OptionValues._
@@ -53,9 +53,9 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   }
 
   "publish" should {
-    val atalaObject = node_internal
+    val atalaObject = node_models
       .AtalaObject()
-      .withBlockContent(node_internal.AtalaBlock())
+      .withBlockContent(node_models.AtalaBlock())
     val expectedWalletApiPath = s"v2/wallets/$walletId/transactions"
 
     "publish an object" in {
@@ -213,10 +213,10 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
 
       blocksWithNotifications.map { blockWithNotification =>
         val block = allBlocks(blockWithNotification)
-        val atalaObject = node_internal
+        val atalaObject = node_models
           .AtalaObject()
           .withBlockContent(
-            node_internal.AtalaBlock(operations = Seq())
+            node_models.AtalaBlock(operations = Seq())
           )
         val blockIndex = block.transactions.size
         val transaction = Transaction(
@@ -247,7 +247,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
     // AtalaObjectMetadata.toTransactionMetadata cannot be used as the format received by cardano-db-sync is not
     // compatible
     def toTransactionMetadata(
-        atalaObject: node_internal.AtalaObject
+        atalaObject: node_models.AtalaObject
     ): TransactionMetadata = {
       TransactionMetadata(
         Json.obj(

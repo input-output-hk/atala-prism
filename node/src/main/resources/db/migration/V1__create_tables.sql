@@ -37,9 +37,6 @@ CREATE DOMAIN public.id_type AS text COLLATE "default" CONSTRAINT id_type_check 
 CREATE TYPE public.key_usage AS ENUM ('MASTER_KEY', 'ISSUING_KEY', 'KEY_AGREEMENT_KEY', 'AUTHENTICATION_KEY', 'REVOCATION_KEY', 'CAPABILITY_INVOCATION_KEY', 'CAPABILITY_DELEGATION_KEY');
 
 
-CREATE DOMAIN public.merkle_root AS BYTEA CONSTRAINT merkle_root_check CHECK (length(VALUE) = 32);
-
-
 CREATE DOMAIN public.non_negative_int_type AS integer CONSTRAINT non_negative_int_type_check CHECK (VALUE >= 0);
 
 

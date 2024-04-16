@@ -17,7 +17,8 @@ import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.{DIDData, OperationOutput, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_models.{DIDData, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_api.OperationOutput
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
 import tofu.logging.{Logs, ServiceLogging}

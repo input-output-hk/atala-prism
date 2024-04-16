@@ -34,7 +34,7 @@ import io.iohk.atala.prism.node.repositories.{
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec.{createDidOperation, signOperation}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.IOUtils._
 import org.mockito
 import org.mockito.captor.ArgCaptor
@@ -250,7 +250,7 @@ class ObjectManagementServiceSpec
 
       returnedOperationId mustBe BlockProcessingServiceSpec.signedCreateDidOperationId
       // Verify published AtalaObject
-      val atalaObjectCaptor = ArgCaptor[node_internal.AtalaObject]
+      val atalaObjectCaptor = ArgCaptor[node_models.AtalaObject]
       verify(ledger).publish(atalaObjectCaptor)
       val atalaObject = atalaObjectCaptor.value
       val atalaBlock = atalaObject.blockContent.value
@@ -486,7 +486,7 @@ class ObjectManagementServiceSpec
         .unsafeToFuture()
         .futureValue
 
-      val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
+      val blockCaptor = ArgCaptor[node_models.AtalaBlock]
       verify(blockProcessing).processBlock(
         blockCaptor,
         // mockito hates value classes, so we cannot test equality to this argument
@@ -527,7 +527,7 @@ class ObjectManagementServiceSpec
       atalaObject mustBe None
     }
 
-    def queryAtalaObject(obj: node_internal.AtalaObject): AtalaObjectInfo = {
+    def queryAtalaObject(obj: node_models.AtalaObject): AtalaObjectInfo = {
       AtalaObjectsDAO
         .get(AtalaObjectId.of(obj))
         .transact(database)

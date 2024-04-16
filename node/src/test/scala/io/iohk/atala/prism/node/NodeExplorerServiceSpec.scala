@@ -7,7 +7,6 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.stub.MetadataUtils
 import io.grpc.{ManagedChannel, Server, StatusRuntimeException}
-import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticatorInterceptor
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
@@ -38,7 +37,7 @@ import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.Operati
 import io.iohk.atala.prism.protos.node_api.NodeExplorerServiceGrpc.NodeExplorerServiceBlockingClient
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.node.utils.IOUtils.ioComonad
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
@@ -175,9 +174,9 @@ class NodeExplorerServiceSpec
       def sign(op: node_models.AtalaOperation): SignedAtalaOperation =
         BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
 
-      def toAtalaObject(ops: List[node_models.AtalaOperation]): node_internal.AtalaObject = {
-        val block = node_internal.AtalaBlock(ops.map(sign))
-        node_internal.AtalaObject(
+      def toAtalaObject(ops: List[node_models.AtalaOperation]): node_models.AtalaObject = {
+        val block = node_models.AtalaBlock(ops.map(sign))
+        node_models.AtalaObject(
           blockContent = Some(block)
         )
       }
