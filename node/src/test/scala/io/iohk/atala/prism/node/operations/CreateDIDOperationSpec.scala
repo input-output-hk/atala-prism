@@ -1004,28 +1004,21 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
 
       didState.didSuffix mustBe parsedOperation.id
       didState.lastOperation mustBe parsedOperation.digest
-
-      val foundDIDs = didState.keys.map(toDIDPublicKey).sortBy(_.keyId)
-      val originalKeys = parsedOperation.keys.sortBy(_.keyId)
-
-      foundDIDs.lazyZip(originalKeys).foreach { case (d1, d2) =>
-        CryptoTestUtils.compareDIDPubKeys(d1, d2) mustBe true
-      }
+      didState.keys.map(
+        toDIDPublicKey
+      ) must contain theSameElementsAs parsedOperation.keys
 
       didState.context.sorted mustBe parsedOperation.context.sorted
 
       for (key <- parsedOperation.keys) {
         val keyState =
           DataPreparation.findKey(parsedOperation.id, key.keyId).value
-        CryptoTestUtils.compareDIDPubKeys(
-          DIDPublicKey(
-            keyState.didSuffix,
-            keyState.keyId,
-            keyState.keyUsage,
-            keyState.key
-          ),
-          key
-        ) mustBe true
+        DIDPublicKey(
+          keyState.didSuffix,
+          keyState.keyId,
+          keyState.keyUsage,
+          keyState.key
+        ) mustBe key
         keyState.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
         keyState.revokedOn mustBe None
       }

@@ -146,9 +146,11 @@ class NodeServiceSpec
       publicKey.addedOn.value mustBe ProtoCodecs.toLedgerData(dummyLedgerData)
       publicKey.revokedOn mustBe empty
 
-      ParsingUtils.parseCompressedECKey(
-        ValueAtPath(publicKey.getCompressedEcKeyData, Path.root)
-      ).map(_.compressedKey.toVector) must beRight(key.key.compressedKey.toVector)
+      ParsingUtils
+        .parseCompressedECKey(
+          ValueAtPath(publicKey.getCompressedEcKeyData, Path.root)
+        )
+        .map(_.compressedKey.toVector) must beRight(key.key.compressedKey.toVector)
 
       response.lastSyncedBlockTimestamp must be(
         Some(dummySyncTimestamp.toProtoTimestamp)

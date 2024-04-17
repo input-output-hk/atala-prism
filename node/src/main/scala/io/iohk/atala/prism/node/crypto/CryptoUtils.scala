@@ -56,8 +56,8 @@ object CryptoUtils {
   def checkECDSASignature(msg: Array[Byte], sig: Array[Byte], pubKey: SecpPublicKey): Boolean = {
     val ecdsaVerify = Signature.getInstance("SHA256withECDSA", provider)
     ecdsaVerify.initVerify(pubKey.publicKey)
-    ecdsaVerify.update(msg)
-    ecdsaVerify.verify(sig)
+    ecdsaVerify.update(msg.toArray)
+    ecdsaVerify.verify(sig.toArray)
   }
 
   def unsafeToSecpPublicKeyFromByteCoordinates(x: Array[Byte], y: Array[Byte]): SecpPublicKey = {
@@ -88,12 +88,12 @@ object CryptoUtils {
     SecpPublicKey.fromPublicKey(fact.generatePublic(keySpec))
   }
 
-  def unsafeToSecpPublicKeyFromCompressed(com: Array[Byte]): SecpPublicKey = {
+  def unsafeToSecpPublicKeyFromCompressed(com: Vector[Byte]): SecpPublicKey = {
     val params = ECNamedCurveTable.getParameterSpec("secp256k1")
     val fact = KeyFactory.getInstance("ECDSA", provider)
     val curve = params.getCurve
     val ellipticCurve = EC5Util.convertCurve(curve, params.getSeed)
-    val point = ECPointUtil.decodePoint(ellipticCurve, com)
+    val point = ECPointUtil.decodePoint(ellipticCurve, com.toArray)
     val params2 = EC5Util.convertSpec(ellipticCurve, params)
     val keySpec = new ECPublicKeySpec(point, params2)
     SecpPublicKey.fromPublicKey(fact.generatePublic(keySpec))

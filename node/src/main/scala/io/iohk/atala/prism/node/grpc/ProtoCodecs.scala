@@ -101,7 +101,7 @@ object ProtoCodecs {
     node_models
       .CompressedECKeyData()
       .withCurve(key.curveName)
-      .withData(ByteString.copyFrom(key.compressedKey))
+      .withData(ByteString.copyFrom(key.compressedKey.toArray))
   }
 
   def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {

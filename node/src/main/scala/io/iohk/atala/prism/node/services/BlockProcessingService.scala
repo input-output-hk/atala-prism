@@ -195,8 +195,8 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
   }
 
   def verifySignature(
-       key: SecpPublicKey,
-       protoOperation: node_models.SignedAtalaOperation
+      key: SecpPublicKey,
+      protoOperation: node_models.SignedAtalaOperation
   ): Either[StateError, Unit] = {
     try {
       Either.cond(

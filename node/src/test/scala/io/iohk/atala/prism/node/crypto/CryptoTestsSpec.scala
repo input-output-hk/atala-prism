@@ -10,7 +10,7 @@ class CryptoTestsSpec extends AnyWordSpec {
     "Must generate the same key from different encodings" in {
       val pair = EC.INSTANCE.generateKeyPair()
       val compressedPub = pair.getPublicKey.getEncodedCompressed
-      val secpKeyFromCompressed = CryptoUtils.unsafeToSecpPublicKeyFromCompressed(compressedPub)
+      val secpKeyFromCompressed = CryptoUtils.unsafeToSecpPublicKeyFromCompressed(compressedPub.toVector)
       val x = secpKeyFromCompressed.x
       val y = secpKeyFromCompressed.y
       val secpFromCoordinates = CryptoUtils.unsafeToSecpPublicKeyFromByteCoordinates(x, y)

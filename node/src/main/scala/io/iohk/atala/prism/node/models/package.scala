@@ -117,8 +117,8 @@ package object models {
   }
 
   case class PublicKeyData(
-    curveName: String,
-    compressedKey: Array[Byte]
+      curveName: String,
+      compressedKey: Vector[Byte]
   )
 
   object nodeState {

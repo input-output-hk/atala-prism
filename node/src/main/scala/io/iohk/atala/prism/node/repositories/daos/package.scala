@@ -74,7 +74,7 @@ package object daos extends BaseDAO {
       )
     ].contramap { key =>
       val curveName = key.key.curveName
-      val compressed = key.key.compressedKey
+      val compressed = key.key.compressedKey.toArray
       (
         key.didSuffix,
         key.keyId,
@@ -130,7 +130,7 @@ package object daos extends BaseDAO {
           ) =>
         val publicKeyData: PublicKeyData = PublicKeyData(
           curveId,
-          compressed
+          compressed.toVector
         )
         val revokeLedgerData =
           for (
