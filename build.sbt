@@ -9,7 +9,7 @@ import sbtprotoc.ProtocPlugin.autoImport.PB
 inThisBuild(
   Seq(
     organization := "io.iohk.atala",
-    scalaVersion := "2.13.7",
+    scalaVersion := "2.13.13",
     fork := true,
     run / connectInput := true,
     versionScheme := Some("semver-spec"),
@@ -193,7 +193,7 @@ lazy val commonSettings = Seq(
     "JetBrains Space Maven Repository" at "https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven",
   libraryDependencies ++= Dependencies.scalatestDependencies,
   addCompilerPlugin(
-    "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
+    "org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full
   ),
   Test / fork := true,
   Test / parallelExecution := false,
