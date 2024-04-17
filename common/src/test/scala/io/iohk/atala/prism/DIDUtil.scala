@@ -4,8 +4,6 @@ import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.SignedRpcRequest
 import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
@@ -14,22 +12,25 @@ import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
 import org.mockito.IdiomaticMockito._
 import scalapb.GeneratedMessage
+import identus.apollo.PublicKey
 
 import scala.concurrent.Future
+import identus.apollo.MyKeyPair
+import identus.apollo.Secp256k1KeyPair
 
 trait DIDUtil {
   protected def nodeMock: NodeService
 
-  private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
-    val point = key.getCurvePoint
+  private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
+    val point = key.toCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
+      curve = key.curveName,
+      x = ByteString.copyFrom(point.x),
+      y = ByteString.copyFrom(point.y)
     )
   }
 
-  def generateDid(masterPublicKey: ECPublicKey): DID = {
+  def generateDid(masterPublicKey: PublicKey): DID = {
     val publicKey = node_models.PublicKey(
       id = masterKeyId,
       usage = node_models.KeyUsage.MASTER_KEY,
@@ -65,22 +66,22 @@ trait DIDUtil {
 
   def prepareSignedRequest[R <: GeneratedMessage](
       request: R
-  ): (ECPublicKey, SignedRpcRequest[R]) = {
-    val keys = EC.generateKeyPair()
-    val did = generateDid(keys.getPublicKey)
-    (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
+  ): (PublicKey, SignedRpcRequest[R]) = {
+    val keys = Secp256k1KeyPair.generateKeyPair
+    val did = generateDid(keys.publicKey)
+    (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
   def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](
       request: R
-  ): (ECPublicKey, SignedRpcRequest[R]) = {
-    val keys = EC.generateKeyPair()
-    val did = DID.buildLongFormFromMasterPublicKey(keys.getPublicKey)
-    (keys.getPublicKey, SignedRpcRequest.generate(keys, did, request))
+  ): (PublicKey, SignedRpcRequest[R]) = {
+    val keys = MyKeyPair.generateKeyPair
+    val did = DID.buildLongFormFromMasterPublicKey(keys.publicKey)
+    (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
-  def createDid: (ECKeyPair, DID) = {
-    val keyPair = EC.generateKeyPair()
+  def createDid: (KeyPair, DID) = {
+    val keyPair = MyKeyPair.generateKeyPair
     val publicKey = keyPair.getPublicKey
     val did = generateDid(publicKey)
     (keyPair, did)

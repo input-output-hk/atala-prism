@@ -86,14 +86,12 @@ package object daos extends BaseDAO {
           Option[Int]
       )
     ].contramap { key =>
-      val curveName = ECConfig.getCURVE_NAME
-      val compressed = key.key.getEncodedCompressed
       (
         key.didSuffix,
         key.keyId,
         key.keyUsage,
-        curveName,
-        compressed,
+        key.key.curveName,
+        key.key.getEncodedCompressed,
         key.addedOn.timestampInfo.getAtalaBlockTimestamp.toInstant,
         key.addedOn.timestampInfo.getAtalaBlockSequenceNumber,
         key.addedOn.timestampInfo.getOperationSequenceNumber,

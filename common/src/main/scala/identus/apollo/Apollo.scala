@@ -152,6 +152,10 @@ final case class ECPoint(x: BigInt, y: BigInt)
 
 // secp256k1
 final case class Secp256k1KeyPair(publicKey: Secp256k1PublicKey, privateKey: Secp256k1PrivateKey) extends MyKeyPair
+
+object Secp256k1KeyPair {
+  def generateKeyPair: Secp256k1KeyPair = ???
+}
 trait Secp256k1PublicKey extends PublicKey with Verifiable {
   def getEncodedCompressed: Array[Byte]
 

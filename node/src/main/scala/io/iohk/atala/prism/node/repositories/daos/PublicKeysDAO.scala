@@ -14,7 +14,7 @@ import java.time.Instant
 
 object PublicKeysDAO {
   def insert(key: DIDPublicKey, ledgerData: LedgerData): ConnectionIO[Unit] = {
-    val curveName = ECConfig.getCURVE_NAME
+    val curveName = ECConfig.getCURVE_NAME // FIXME
 
     // The Master key must be of the type Secp256k1
     val companion = new io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey.Companion

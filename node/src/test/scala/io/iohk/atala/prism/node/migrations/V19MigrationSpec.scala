@@ -39,7 +39,7 @@ class V19MigrationSpec extends PostgresMigrationSpec("db.migration.V19") with Ba
     )
 
   private def insertPublicKey(key: DIDPublicKey, ledgerData: LedgerData) = {
-    val curveName = ECConfig.getCURVE_NAME
+    val curveName = key.key.curveName
     val point = key.key.toCurvePoint
     val addedOn = ledgerData.timestampInfo
     sql"""
