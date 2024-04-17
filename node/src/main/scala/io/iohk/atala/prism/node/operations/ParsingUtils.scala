@@ -4,14 +4,12 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.models.{
-  CompressedPublicKeyData,
+  PublicKeyData,
   DIDPublicKey,
   DIDService,
   DidSuffix,
   KeyUsage,
   ProtocolConstants,
-  PublicKeyData,
-  SecpPublicKeyData
 }
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
@@ -60,7 +58,7 @@ object ParsingUtils {
           ecData(_.x.toByteArray),
           ecData(_.y.toByteArray)
         )
-        SecpPublicKeyData(key)
+        PublicKeyData(key.curveName, key.compressed)
       }.toEither.left
         .map(ex =>
           InvalidValue(
@@ -85,7 +83,7 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "curve").invalid(s"Unsupported curve - $curve"))
     } else {
       Right(
-        CompressedPublicKeyData(curve, ecData(_.data.toByteArray))
+        PublicKeyData(curve, ecData(_.data.toByteArray))
       )
     }
   }

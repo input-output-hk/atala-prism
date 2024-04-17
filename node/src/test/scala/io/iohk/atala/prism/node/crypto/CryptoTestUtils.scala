@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.crypto
 import io.iohk.atala.prism.crypto.EC
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
-import io.iohk.atala.prism.node.models.{DIDPublicKey, PublicKeyData, SecpPublicKeyData}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, PublicKeyData}
 
 object CryptoTestUtils {
 
@@ -21,9 +21,12 @@ object CryptoTestUtils {
   }
 
   def getUnderlyingKey(secpKey: SecpPublicKey): ECPublicKey = EC.INSTANCE.toPublicKeyFromCompressed(secpKey.compressed)
-  def toPublicKeyData(ecKey: ECPublicKey): PublicKeyData =
-    SecpPublicKeyData(
-      CryptoUtils
-        .unsafeToSecpPublicKeyFromCompressed(ecKey.getEncodedCompressed)
+
+  def toPublicKeyData(ecKey: ECPublicKey): PublicKeyData = {
+    val ecK = CryptoUtils.unsafeToSecpPublicKeyFromCompressed(ecKey.getEncodedCompressed)
+    PublicKeyData(
+      ecK.curveName,
+      ecK.compressed
     )
+  }
 }

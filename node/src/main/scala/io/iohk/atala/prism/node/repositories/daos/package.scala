@@ -128,7 +128,7 @@ package object daos extends BaseDAO {
             rTransactionId,
             rLedger
           ) =>
-        val publicKeyData: PublicKeyData = CompressedPublicKeyData(
+        val publicKeyData: PublicKeyData = PublicKeyData(
           curveId,
           compressed
         )
