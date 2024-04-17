@@ -7,7 +7,6 @@ import com.google.protobuf.ByteString
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.stub.MetadataUtils
 import io.grpc.{ManagedChannel, Server, StatusRuntimeException}
-import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticatorInterceptor
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
@@ -33,13 +32,12 @@ import io.iohk.atala.prism.node.services.{
 import io.iohk.atala.prism.node.nonce.{ClientHelper, RequestAuthenticator}
 import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
   AnyOperationType,
-  CreateDidOperationOperationType,
-  IssueCredentialBatchOperationType
+  CreateDidOperationOperationType
 }
 import io.iohk.atala.prism.protos.node_api.NodeExplorerServiceGrpc.NodeExplorerServiceBlockingClient
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import io.iohk.atala.prism.node.utils.IOUtils.ioComonad
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
 import org.scalatest.BeforeAndAfterEach
@@ -176,9 +174,9 @@ class NodeExplorerServiceSpec
       def sign(op: node_models.AtalaOperation): SignedAtalaOperation =
         BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
 
-      def toAtalaObject(ops: List[node_models.AtalaOperation]): node_internal.AtalaObject = {
-        val block = node_internal.AtalaBlock(ops.map(sign))
-        node_internal.AtalaObject(
+      def toAtalaObject(ops: List[node_models.AtalaOperation]): node_models.AtalaObject = {
+        val block = node_models.AtalaBlock(ops.map(sign))
+        node_models.AtalaObject(
           blockContent = Some(block)
         )
       }
@@ -196,7 +194,6 @@ class NodeExplorerServiceSpec
 
       val ops2 = List[node_models.AtalaOperation](
         UpdateDIDOperationSpec.exampleRemoveOperation,
-        IssueCredentialBatchOperationSpec.exampleOperation,
         CreateDIDOperationSpec.exampleOperationWithCompressedKeys
       )
 
@@ -205,13 +202,10 @@ class NodeExplorerServiceSpec
           CreateDIDOperationSpec.exampleOperation,
           UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
           UpdateDIDOperationSpec.exampleRemoveOperation,
-          IssueCredentialBatchOperationSpec.exampleOperation,
           CreateDIDOperationSpec.exampleOperationWithCompressedKeys
         )
       val opsCreation: List[node_models.AtalaOperation] =
         List(CreateDIDOperationSpec.exampleOperation, CreateDIDOperationSpec.exampleOperationWithCompressedKeys)
-
-      val opsIssuance: List[node_models.AtalaOperation] = List(IssueCredentialBatchOperationSpec.exampleOperation)
 
       val obj1 = toAtalaObject(ops1)
       val obj2 = toAtalaObject(ops2)
@@ -229,12 +223,9 @@ class NodeExplorerServiceSpec
         withNonce(service).getScheduledOperations(GetScheduledOperationsRequest(AnyOperationType))
       val responseCreation =
         withNonce(service).getScheduledOperations(GetScheduledOperationsRequest(CreateDidOperationOperationType))
-      val responseIssuance =
-        withNonce(service).getScheduledOperations(GetScheduledOperationsRequest(IssueCredentialBatchOperationType))
 
       responseAny.scheduledOperations.map(_.operation.get) must be(allOps)
       responseCreation.scheduledOperations.map(_.operation.get) must be(opsCreation)
-      responseIssuance.scheduledOperations.map(_.operation.get) must be(opsIssuance)
     }
   }
 }

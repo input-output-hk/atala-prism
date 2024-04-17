@@ -22,7 +22,7 @@ import io.iohk.atala.prism.node.repositories.{
   ProtocolVersionRepository
 }
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.node.utils.IOUtils._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
@@ -505,8 +505,8 @@ class SubmissionServiceSpec
       numOps: Int,
       numPubsAdditional: Int = 0
   ): (
-      List[node_internal.AtalaObject],
-      List[node_internal.AtalaObject],
+      List[node_models.AtalaObject],
+      List[node_models.AtalaObject],
       List[PublicationInfo],
       List[SignedAtalaOperation]
   ) = {
@@ -526,19 +526,19 @@ class SubmissionServiceSpec
 
     // Calculate atala objects merged in a naive way
     var accOps = List.empty[SignedAtalaOperation]
-    var oldObj: node_internal.AtalaObject = null
+    var oldObj: node_models.AtalaObject = null
     val atalaObjectsMerged =
-      collection.mutable.ArrayBuffer.empty[node_internal.AtalaObject]
+      collection.mutable.ArrayBuffer.empty[node_models.AtalaObject]
     atalaOperations.reverse.foreach { op =>
       val nextAccOps = op +: accOps
       val curObj = createAtalaObject(
-        block = node_internal.AtalaBlock(operations = nextAccOps)
+        block = node_models.AtalaBlock(operations = nextAccOps)
       )
 
       if (estimateTxMetadataSize(curObj) >= cardano.TX_METADATA_MAX_SIZE) {
         assert(oldObj != null)
         atalaObjectsMerged.append(oldObj)
-        oldObj = createAtalaObject(block = node_internal.AtalaBlock(operations = List(op)))
+        oldObj = createAtalaObject(block = node_models.AtalaBlock(operations = List(op)))
         accOps = List(op)
       } else {
         oldObj = curObj

@@ -12,8 +12,6 @@ object StatisticsCounters {
 
     case object NumberOfPendingOperations extends MetricCounter
     case object NumberOfPublishedDids extends MetricCounter
-    case object NumberOfIssuedCredentialBatches extends MetricCounter
-    case object NumberOfCredentialsRevoked extends MetricCounter
     case object NumberOfAppliedTransactions extends MetricCounter
     case object NumberOfRejectedTransactions extends MetricCounter
   }

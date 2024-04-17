@@ -6,8 +6,7 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256, Sha256Digest}
+import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
@@ -18,13 +17,11 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.ApplyOperationConfig
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData}
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
-import io.iohk.atala.prism.node.repositories.daos.CredentialBatchesDAO.CreateCredentialBatchData
 import io.iohk.atala.prism.node.repositories.daos.{
   AtalaObjectTransactionSubmissionsDAO,
   AtalaObjectsDAO,
   AtalaOperationsDAO,
   ContextDAO,
-  CredentialBatchesDAO,
   DIDDataDAO,
   KeyValuesDAO,
   PublicKeysDAO,
@@ -33,7 +30,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{node_api, node_internal, node_models}
+import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
 
 import java.time.Instant
@@ -208,76 +205,25 @@ object DataPreparation {
   }
 
   // ***************************************
-  // Credential batches (slayer 0.3)
-  // ***************************************
-
-  def createBatch(
-      batchId: CredentialBatchId,
-      lastOperation: Sha256Digest,
-      issuerDIDSuffix: DidSuffix,
-      merkleRoot: MerkleRoot,
-      issuedOn: LedgerData
-  )(implicit database: Transactor[IO]): Unit = {
-    CredentialBatchesDAO
-      .insert(
-        CreateCredentialBatchData(
-          batchId = batchId,
-          lastOperation = lastOperation,
-          issuerDIDSuffix = issuerDIDSuffix,
-          merkleRoot = merkleRoot,
-          ledgerData = issuedOn
-        )
-      )
-      .transact(database)
-      .unsafeRunSync()
-  }
-
-  def revokeCredentialBatch(
-      batchId: CredentialBatchId,
-      revocationLedgerData: LedgerData
-  )(implicit database: Transactor[IO]): Unit = {
-    CredentialBatchesDAO
-      .revokeEntireBatch(batchId, revocationLedgerData)
-      .transact(database)
-      .unsafeRunSync()
-    ()
-  }
-
-  def revokeCredentials(
-      batchId: CredentialBatchId,
-      credentialHashes: List[Sha256Digest],
-      revocationLedgerData: LedgerData
-  )(implicit database: Transactor[IO]): Unit = {
-    CredentialBatchesDAO
-      .revokeCredentials(
-        batchId,
-        credentialHashes,
-        revocationLedgerData
-      )
-      .transact(database)
-      .unsafeRunSync()
-  }
-
-  // ***************************************
   // Other useful methods
   // ***************************************
 
   def createBlock(
       signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-  ): node_internal.AtalaBlock = {
-    node_internal.AtalaBlock(operations = Seq(signedOperation))
+  ): node_models.AtalaBlock = {
+    node_models.AtalaBlock(operations = Seq(signedOperation))
   }
 
   def createBlock(
       signedOperations: List[node_models.SignedAtalaOperation]
-  ): node_internal.AtalaBlock = {
-    node_internal.AtalaBlock(operations = signedOperations)
+  ): node_models.AtalaBlock = {
+    node_models.AtalaBlock(operations = signedOperations)
   }
 
   def createAtalaObject(
-      block: node_internal.AtalaBlock = createBlock()
-  ): node_internal.AtalaObject =
-    node_internal
+      block: node_models.AtalaBlock = createBlock()
+  ): node_models.AtalaObject =
+    node_models
       .AtalaObject()
       .withBlockContent(block)
   def setAtalaObjectTransactionSubmissionStatus(
@@ -316,8 +262,8 @@ object DataPreparation {
       atalaOperations: List[SignedAtalaOperation],
       status: AtalaOperationStatus
   )(implicit xa: Transactor[IO]): (AtalaObjectId, List[AtalaOperationId]) = {
-    val block = node_internal.AtalaBlock(atalaOperations)
-    val obj = node_internal
+    val block = node_models.AtalaBlock(atalaOperations)
+    val obj = node_models
       .AtalaObject()
       .withBlockContent(block)
     val objBytes = obj.toByteArray

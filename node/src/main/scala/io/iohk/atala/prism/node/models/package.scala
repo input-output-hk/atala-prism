@@ -3,15 +3,13 @@ package io.iohk.atala.prism.node
 import derevo.derive
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
-import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
+import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models
 import tofu.logging.derivation.loggable
 
 import java.time.Instant
-import scala.util.matching.Regex
 
 package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
@@ -65,23 +63,6 @@ package object models {
       context: List[String],
       lastOperation: Sha256Digest
   )
-
-  class CredentialId private (val id: String) extends AnyVal
-
-  object CredentialId {
-    def apply(id: String): CredentialId = {
-      require(
-        CREDENTIAL_ID_RE.pattern.matcher(id).matches(),
-        s"invalid credential id: $id"
-      )
-
-      new CredentialId(id)
-    }
-
-    def apply(digest: Sha256Digest): CredentialId = apply(digest.getHexValue)
-
-    val CREDENTIAL_ID_RE: Regex = "^[0-9a-f]{64}$".r
-  }
 
   @derive(loggable)
   case class AtalaOperationInfo(
@@ -137,15 +118,6 @@ package object models {
   }
 
   object nodeState {
-
-    case class CredentialBatchState(
-        batchId: CredentialBatchId,
-        issuerDIDSuffix: DidSuffix,
-        merkleRoot: MerkleRoot,
-        issuedOn: LedgerData,
-        revokedOn: Option[LedgerData] = None,
-        lastOperation: Sha256Digest
-    )
 
     case class DIDPublicKeyState(
         didSuffix: DidSuffix,

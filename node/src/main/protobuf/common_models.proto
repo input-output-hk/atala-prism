@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.iohk.atala.prism.protos";
+
+package io.iohk.atala.prism.protos;
+
+import "status.proto";
+import "google/protobuf/timestamp.proto";
+
+/**
+ * A request that can be used to check service health.
+ * All PRISM services expose an RPC that accepts this message as request.
+ */
+message HealthCheckRequest {}
+
+/**
+ * A response that represents service health.
+ * Status code 0 with empty response represents a healthy and reachable service,
+ * while all other status codes represent issues with the service.
+ */
+message HealthCheckResponse {}
+
+/**
+ * The supported ledger types. Specifies which chain is used for storing transactions.
+ */
+enum Ledger {
+    reserved 2; // Removed BITCOIN_TESTNET
+    reserved "BITCOIN_TESTNET";
+    reserved 3; // Removed BITCOIN_MAINNET
+    reserved "BITCOIN_MAINNET";
+
+    UNKNOWN_LEDGER = 0; // Invalid default value.
+    IN_MEMORY = 1; // Store transactions in memory instead of blockchain, used only for development.
+    CARDANO_TESTNET = 4; // Cardano testnet, used for testing.
+    CARDANO_MAINNET = 5; // Cardano mainnet, used in production.
+}
+
+/**
+ * Information about a ledger block.
+ * See Ledger documentation for details on which ledgers are possible.
+ */
+message BlockInfo {
+    reserved 2; // Removed timestamp_deprecated field
+    reserved "timestamp_deprecated";
+
+    int32 number = 1; // Number of the block in the ledger.
+    int32 index = 3; // Index of the transaction within the block.
+    google.protobuf.Timestamp timestamp = 4; // Timestamp when the block was created.
+}
+
+/**
+ * Information about a ledger transaction and the block that the transaction is included in.
+ */
+message TransactionInfo {
+    string transaction_id = 1; // Transaction ID.
+    Ledger ledger = 2; // Ledger the transaction was published to.
+    BlockInfo block = 3; // Block the transaction was included in.
+}
+
+/**
+ * The status of an Atala operation.
+ */
+enum OperationStatus {
+    UNKNOWN_OPERATION = 0; // The operation hasn't been received by the node service yet.
+    PENDING_SUBMISSION = 1; // The transaction containing this operation hasn't been published to the chain yet.
+    AWAIT_CONFIRMATION = 2; // The transaction containing this operation has been published to the chain, but hasn't been processed by PRISM yet.
+    CONFIRMED_AND_APPLIED = 3; // The operation has been successfully applied to the PRISM.
+    CONFIRMED_AND_REJECTED = 4; // The operation has been processed by PRISM, but rejected because of some error.
+}
+
+message AtalaErrorMessage {
+    google.rpc.Status status = 1;
+}
+
+message AtalaMessage {
+    oneof message {
+        AtalaErrorMessage atala_error_message = 9;
+    }
+}
+
+message ConnectionsStatusRequest {
+  repeated string connection_tokens = 1;
+}

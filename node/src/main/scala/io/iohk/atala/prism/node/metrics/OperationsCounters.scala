@@ -28,9 +28,7 @@ object OperationsCounters {
 
   // Values for operations tags
   private val EMPTY_OPERATION_TAG_VALUE = "empty"
-  private val REVOKE_CREDENTIALS_TAG_VALUE = "revoke-credentials"
   private val CREATE_DID_TAG_VALUE = "create-did"
-  private val ISSUE_CREDENTIAL_BATCH_TAG_VALUE = "issue-credential-batch"
   private val PROTOCOL_VERSION_UPDATE_OPERATION_VALUE = "protocol-version-update"
   private val UPDATE_DID_OPERATION_TAG_VALUE = "did-update"
   private val DEACTIVATE_DID_TAG_VALUE = "deactivate-did"
@@ -172,13 +170,9 @@ object OperationsCounters {
 
   private def atalaOperationToTagString: PartialFunction[AtalaOperation.Operation, String] = {
     case AtalaOperation.Operation.Empty => EMPTY_OPERATION_TAG_VALUE
-    case AtalaOperation.Operation.RevokeCredentials(_) =>
-      REVOKE_CREDENTIALS_TAG_VALUE
     case AtalaOperation.Operation.CreateDid(_) => CREATE_DID_TAG_VALUE
     case AtalaOperation.Operation.DeactivateDid(_) => DEACTIVATE_DID_TAG_VALUE
     case AtalaOperation.Operation.ProtocolVersionUpdate(_) => PROTOCOL_VERSION_UPDATE_OPERATION_VALUE
-    case AtalaOperation.Operation.IssueCredentialBatch(_) =>
-      ISSUE_CREDENTIAL_BATCH_TAG_VALUE
     // Just in case, must be impossible
     case AtalaOperation.Operation.UpdateDid(_) => UPDATE_DID_OPERATION_TAG_VALUE
   }

@@ -19,7 +19,7 @@ import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandl
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
 import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import tofu.higherKind.Mid
 import tofu.lift.Lift
 import tofu.logging.{Logs, ServiceLogging}
@@ -86,7 +86,7 @@ class CardanoLedgerService[F[_]] private[services] (
   /** Publishes AtalaObject containing a list of operations inside.
     */
   override def publish(
-      obj: node_internal.AtalaObject
+      obj: node_models.AtalaObject
   ): F[Either[CardanoWalletError, PublicationInfo]] = {
     val metadata = AtalaObjectMetadata.toTransactionMetadata(obj)
 

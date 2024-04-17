@@ -4,13 +4,11 @@ import cats.data.NonEmptyList
 import doobie._
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import io.iohk.atala.prism.credentials.CredentialBatchId
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, DIDServiceState, LedgerData}
+import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, DIDServiceState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.utils.syntax._
 
@@ -61,13 +59,6 @@ package object daos extends BaseDAO {
 
   implicit val IdTypePut: Put[IdType] = Put[String].contramap(_.getValue)
   implicit val IdTypeGet: Get[IdType] = Get[String].map(IdType.apply)
-
-  implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
-  implicit val credentialIdGet: Get[CredentialId] =
-    Get[String].map(CredentialId(_))
-
-  implicit val credentialBatchIdMeta: Meta[CredentialBatchId] =
-    Meta[String].timap(CredentialBatchId.fromString)(_.getId)
 
   implicit val didPublicKeyWrite: Write[DIDPublicKeyState] = {
     Write[
@@ -343,76 +334,6 @@ package object daos extends BaseDAO {
           new TimestampInfo(abt.toEpochMilli, absn, osn)
         )
       }
-
-  implicit val CredentialBatchStateRead: Read[CredentialBatchState] = {
-    Read[
-      (
-          String,
-          String,
-          Array[Byte],
-          Array[Byte],
-          String,
-          Instant,
-          Int,
-          Int,
-          Option[Array[Byte]],
-          Option[String],
-          Option[Instant],
-          Option[Int],
-          Option[Int],
-          Array[Byte]
-      )
-    ].map {
-      case (
-            batchId,
-            suffix,
-            root,
-            issTxId,
-            issLedger,
-            issABT,
-            issABSN,
-            issOSN,
-            revTxIdOp,
-            revLedgerOp,
-            revABTOp,
-            revABSNOp,
-            revOSNOp,
-            sha
-          ) =>
-        val issuedOn = LedgerData(
-          TransactionId.from(issTxId).get,
-          Ledger.withNameInsensitive(issLedger),
-          new TimestampInfo(issABT.toEpochMilli, issABSN, issOSN)
-        )
-        val revokedOn = {
-          (revTxIdOp, revLedgerOp, revABTOp, revABSNOp, revOSNOp) match {
-            case (
-                  Some(rTrId),
-                  Some(rLedger),
-                  Some(rAbt),
-                  Some(rAbsn),
-                  Some(rOsn)
-                ) =>
-              Some(
-                LedgerData(
-                  TransactionId.from(rTrId).get,
-                  Ledger.withNameInsensitive(rLedger),
-                  new TimestampInfo(rAbt.toEpochMilli, rAbsn, rOsn)
-                )
-              )
-            case _ => None
-          }
-        }
-        CredentialBatchState(
-          CredentialBatchId.fromString(batchId),
-          DidSuffix(suffix),
-          new MerkleRoot(Sha256Digest.fromBytes(root)),
-          issuedOn,
-          revokedOn,
-          Sha256Digest.fromBytes(sha)
-        )
-    }
-  }
 
   implicit val protocolVersionRead: Read[ProtocolVersion] =
     Read[(Int, Int)]

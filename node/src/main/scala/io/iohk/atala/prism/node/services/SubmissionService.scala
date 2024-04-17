@@ -26,7 +26,7 @@ import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository
 import io.iohk.atala.prism.node.services.SubmissionService.Config
 import io.iohk.atala.prism.node.services.logs.SubmissionServiceLogs
 import io.iohk.atala.prism.node.services.models.RefreshTransactionStatusesResult
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import tofu.higherKind.Mid
 import tofu.logging.{Logs, ServiceLogging}
 
@@ -191,7 +191,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
 
   private def publishObjectsAndRecordTransaction(
       atalaObjectsWithParsedContent: List[
-        (AtalaObjectInfo, node_internal.AtalaObject)
+        (AtalaObjectInfo, node_models.AtalaObject)
       ]
   ): F[List[TransactionInfo]] = {
     def justKeep(
@@ -318,7 +318,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
 
   private def parseObjectContent(
       atalaObjectInfo: AtalaObjectInfo
-  ): node_internal.AtalaObject =
+  ): node_models.AtalaObject =
     atalaObjectInfo.getAndValidateAtalaObject.getOrElse {
       throw new RuntimeException(
         s"Can't extract AtalaObject content for objectId=${atalaObjectInfo.objectId}"
@@ -327,7 +327,7 @@ private class SubmissionServiceImpl[F[_]: Monad](
 
   private def publishAndRecordTransaction(
       atalaObjectInfo: AtalaObjectInfo,
-      atalaObject: node_internal.AtalaObject
+      atalaObject: node_models.AtalaObject
   ): F[Either[NodeError, TransactionInfo]] = {
     val publicationEitherT = for {
       // Publish object to the blockchain

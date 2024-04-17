@@ -19,7 +19,7 @@ import io.iohk.atala.prism.node.operations.{
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._
 
 import java.time.Instant
@@ -48,7 +48,7 @@ object BlockProcessingServiceSpec {
   val signedUpdateDidOperation: SignedAtalaOperation =
     signOperation(updateDidOperation, "master", masterKeys.getPrivateKey)
 
-  val exampleBlock = node_internal.AtalaBlock(
+  val exampleBlock = node_models.AtalaBlock(
     operations = Seq(signedCreateDidOperation)
   )
 
@@ -144,7 +144,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       opIds.size must be(1)
       val atalaOperationId = opIds.head
 
-      val atalaBlock = node_internal.AtalaBlock(
+      val atalaBlock = node_models.AtalaBlock(
         operations = Seq(signedUpdateDidOperation)
       )
 
@@ -185,7 +185,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       opIds.size must be(1)
       val atalaOperationId = opIds.head
 
-      val invalidSignatureBlock = node_internal.AtalaBlock(
+      val invalidSignatureBlock = node_models.AtalaBlock(
         operations = Seq(invalidSignatureOperation)
       )
 
@@ -223,7 +223,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
       val signedValidOperation = signOperation(createDidOperation, "master", masterKeys.getPrivateKey)
 
-      val block = node_internal.AtalaBlock(
+      val block = node_models.AtalaBlock(
         operations = Seq(signedInvalidOperation, signedValidOperation)
       )
       val (objId, opIds) = DataPreparation.insertOperationStatuses(
@@ -316,7 +316,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val signedOperation3 =
         signOperation(operation3, "rootkey", operation3Keys.getPrivateKey)
 
-      val block = node_internal.AtalaBlock(
+      val block = node_models.AtalaBlock(
         operations = Seq(signedOperation1, incorrectlySignedOperation2, signedOperation3)
       )
 
@@ -416,7 +416,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val updateDidSignedOperation2 =
         signOperation(updateDidOperation2, "master", masterKeys.getPrivateKey)
 
-      val block = node_internal.AtalaBlock(
+      val block = node_models.AtalaBlock(
         operations = Seq(
           createDidSignedOperation,
           updateDidSignedOperation1,
@@ -518,15 +518,15 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val signedOperation3 =
         signOperation(operation3, "rootkey", operation3Keys.getPrivateKey)
 
-      val block1 = node_internal
+      val block1 = node_models
         .AtalaBlock( // first block contains 1 valid and 1 invalid operation
           operations = Seq(signedOperation1, incorrectlySignedOperation2)
         )
-      val block2 = node_internal
+      val block2 = node_models
         .AtalaBlock( // second block contains 1 valid operation, and two duplications
           operations = Seq(signedOperation3, signedOperation1, signedOperation3)
         )
-      val block3 = node_internal
+      val block3 = node_models
         .AtalaBlock( // third block contains 1 duplicate operation and 1 invalid
           operations = Seq(signedOperation1, incorrectlySignedOperation2)
         )

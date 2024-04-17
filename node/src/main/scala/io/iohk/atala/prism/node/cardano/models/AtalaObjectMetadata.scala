@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.cardano.models
 
 import io.circe.{ACursor, Json}
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.BytesOps
 
 import scala.util.Try
@@ -29,7 +29,7 @@ object AtalaObjectMetadata {
 
   def fromTransactionMetadata(
       metadata: TransactionMetadata
-  ): Option[node_internal.AtalaObject] = {
+  ): Option[node_models.AtalaObject] = {
     val prismMetadata = metadata.json.hcursor
       .downField(METADATA_PRISM_INDEX.toString)
 
@@ -44,7 +44,7 @@ object AtalaObjectMetadata {
 
   private def fromTransactionMetadataV1(
       prismMetadata: ACursor
-  ): Option[node_internal.AtalaObject] = {
+  ): Option[node_models.AtalaObject] = {
     val bytes = prismMetadata
       .downField(CONTENT_KEY)
       .focus
@@ -56,7 +56,7 @@ object AtalaObjectMetadata {
       // Either the content does not exist, is not the right type, or is truly empty
       None
     } else {
-      node_internal.AtalaObject.validate(bytes).toOption
+      node_models.AtalaObject.validate(bytes).toOption
     }
   }
 
@@ -68,7 +68,7 @@ object AtalaObjectMetadata {
   }
 
   def toTransactionMetadata(
-      atalaObject: node_internal.AtalaObject
+      atalaObject: node_models.AtalaObject
   ): TransactionMetadata = {
     TransactionMetadata(
       Json.obj(
@@ -101,7 +101,7 @@ object AtalaObjectMetadata {
     )
   }
 
-  def estimateTxMetadataSize(atalaObject: node_internal.AtalaObject): Int = {
+  def estimateTxMetadataSize(atalaObject: node_models.AtalaObject): Int = {
     toTransactionMetadata(atalaObject).json.noSpaces.length
   }
 }

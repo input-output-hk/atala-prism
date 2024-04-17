@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.circe.{Json, parser}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -42,10 +42,10 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
     )
   )
 
-  private val atalaObjectWithVersion = node_internal
+  private val atalaObjectWithVersion = node_models
     .AtalaObject()
     .withBlockContent(
-      node_internal.AtalaBlock(
+      node_models.AtalaBlock(
         operations = atalaOperations,
         // Unknown field corresponding to a deprecated field "version", equal to "1"
         unknownFields = UnknownFieldSet.empty.withField(
@@ -59,10 +59,10 @@ class AtalaObjectMetadataSpec extends AnyWordSpec {
         )
       )
     )
-  private val atalaObjectWithoutVersion = node_internal
+  private val atalaObjectWithoutVersion = node_models
     .AtalaObject()
     .withBlockContent(
-      node_internal.AtalaBlock(
+      node_models.AtalaBlock(
         operations = atalaOperations
       )
     )

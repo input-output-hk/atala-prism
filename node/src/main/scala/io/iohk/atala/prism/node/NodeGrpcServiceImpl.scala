@@ -9,7 +9,6 @@ import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
@@ -54,48 +53,6 @@ class NodeGrpcServiceImpl(
       }
     }
 
-  }
-
-  override def getBatchState(
-      request: GetBatchStateRequest
-  ): Future[GetBatchStateResponse] = {
-    val methodName = "getBatchState"
-
-    measureRequestFuture(serviceName, methodName) {
-      trace { traceId =>
-        val query = for {
-          batchState <- nodeService.getBatchState(request.batchId)
-        } yield batchState.fold(
-          countAndThrowNodeError(methodName, _),
-          toGetBatchResponse
-        )
-        query.run(traceId).unsafeToFuture()
-      }
-    }
-  }
-
-  override def getCredentialRevocationTime(
-      request: GetCredentialRevocationTimeRequest
-  ): Future[GetCredentialRevocationTimeResponse] = {
-    val methodName = "getCredentialRevocationTime"
-
-    measureRequestFuture(serviceName, methodName) {
-      trace { traceId =>
-        for {
-          revocationTimeEither <-
-            nodeService
-              .getCredentialRevocationData(request.batchId, request.credentialHash)
-              .run(traceId)
-              .unsafeToFuture()
-        } yield revocationTimeEither match {
-          case Left(error) => countAndThrowNodeError(methodName, error)
-          case Right(ledgerData) =>
-            GetCredentialRevocationTimeResponse(
-              revocationLedgerData = ledgerData.maybeLedgerData.map(ProtoCodecs.toLedgerData)
-            ).withLastSyncedBlockTimestamp(ledgerData.lastSyncedTimestamp.toProtoTimestamp)
-        }
-      }
-    }
   }
 
   override def scheduleOperations(
@@ -280,23 +237,6 @@ object NodeGrpcServiceImpl {
 
   def countAndThrowNodeError(methodName: String, error: NodeError): Nothing =
     RequestMeasureUtil.countAndThrowNodeError(serviceName)(methodName, error.toStatus)
-
-  private def toGetBatchResponse(
-      in: BatchData
-  ) = {
-    val response = in.maybeBatchState.fold(GetBatchStateResponse()) { state =>
-      val revocationLedgerData = state.revokedOn.map(ProtoCodecs.toLedgerData)
-      val responseBase = GetBatchStateResponse()
-        .withIssuerDid(state.issuerDIDSuffix.getValue)
-        .withMerkleRoot(ByteString.copyFrom(state.merkleRoot.getHash.getValue))
-        .withIssuanceHash(ByteString.copyFrom(state.lastOperation.getValue))
-        .withPublicationLedgerData(ProtoCodecs.toLedgerData(state.issuedOn))
-      revocationLedgerData.fold(responseBase)(
-        responseBase.withRevocationLedgerData
-      )
-    }
-    response.withLastSyncedBlockTimestamp(in.lastSyncedTimestamp.toProtoTimestamp)
-  }
 
   private def countAndThrowGetDidDocumentError[I](
       methodName: String,

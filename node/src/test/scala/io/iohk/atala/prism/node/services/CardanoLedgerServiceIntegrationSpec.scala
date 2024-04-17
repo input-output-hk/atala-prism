@@ -10,7 +10,7 @@ import io.iohk.atala.prism.node.cardano.models.{Address, WalletId}
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
@@ -88,9 +88,9 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         .unsafeRunSync()
 
       // Publish random object
-      val atalaObject = node_internal
+      val atalaObject = node_models
         .AtalaObject()
-        .withBlockContent(node_internal.AtalaBlock(operations = Seq()))
+        .withBlockContent(node_models.AtalaBlock(operations = Seq()))
       val transaction = cardanoLedgerService
         .publish(atalaObject)
         .run(TraceId.generateYOLO)
@@ -102,7 +102,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         s"AtalaObject published in transaction ${transaction.transactionId} on ${transaction.ledger}"
       )
 
-      def notifiedAtalaObjects: Seq[node_internal.AtalaObject] = {
+      def notifiedAtalaObjects: Seq[node_models.AtalaObject] = {
         notificationHandler.receivedNotifications.map(_.atalaObject).toSeq
       }
 

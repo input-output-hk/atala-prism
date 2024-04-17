@@ -10,18 +10,12 @@ import io.iohk.atala.prism.node.errors
 import io.iohk.atala.prism.node.metrics.StatisticsCounters
 import io.iohk.atala.prism.node.metrics.StatisticsCounters.MetricCounter.{
   NumberOfAppliedTransactions,
-  NumberOfCredentialsRevoked,
-  NumberOfIssuedCredentialBatches,
   NumberOfPendingOperations,
   NumberOfPublishedDids,
   NumberOfRejectedTransactions
 }
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
-import io.iohk.atala.prism.node.operations.{
-  CreateDIDOperation,
-  IssueCredentialBatchOperation,
-  RevokeCredentialsOperation
-}
+import io.iohk.atala.prism.node.operations.CreateDIDOperation
 import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, MetricsCountersRepository}
 import io.iohk.atala.prism.node.services.logs.StatisticsServiceLogs
 import tofu.higherKind.Mid
@@ -53,10 +47,6 @@ private final class StatisticsServiceImpl[F[_]: Applicative](
           getAtalaOperationsCountByStatus(AtalaOperationStatus.RECEIVED)
         case NumberOfPublishedDids =>
           metricsCountersRepository.getCounter(CreateDIDOperation.metricCounterName).map(Right(_))
-        case NumberOfIssuedCredentialBatches =>
-          metricsCountersRepository.getCounter(IssueCredentialBatchOperation.metricCounterName).map(Right(_))
-        case NumberOfCredentialsRevoked =>
-          metricsCountersRepository.getCounter(RevokeCredentialsOperation.metricCounterName).map(Right(_))
         case NumberOfAppliedTransactions =>
           getAtalaOperationsCountByStatus(AtalaOperationStatus.APPLIED)
         case NumberOfRejectedTransactions =>

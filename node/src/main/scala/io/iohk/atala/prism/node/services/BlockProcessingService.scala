@@ -16,7 +16,7 @@ import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.AtalaOperationsDAO
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import org.slf4j.LoggerFactory
 import scala.util.chaining._
 import scala.util.control.NonFatal
@@ -27,7 +27,7 @@ trait BlockProcessingService {
   // Iterates over transactions in the Cardano block, retrieves operations from transaction metadata,
   // applies every operation to the Node state (e.g. update DID Document stored in the database)
   def processBlock(
-      block: node_internal.AtalaBlock,
+      block: node_models.AtalaBlock,
       transactionId: TransactionId,
       ledger: Ledger,
       blockTimestamp: Instant,
@@ -41,7 +41,7 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
   override def processBlock(
-      block: node_internal.AtalaBlock,
+      block: node_models.AtalaBlock,
       transactionId: TransactionId,
       ledger: Ledger,
       blockTimestamp: Instant,

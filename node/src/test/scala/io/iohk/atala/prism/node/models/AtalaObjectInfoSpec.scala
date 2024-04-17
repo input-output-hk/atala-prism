@@ -4,7 +4,7 @@ import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.node_internal
+import io.iohk.atala.prism.protos.node_models
 
 import org.scalatest.OptionValues._
 
@@ -24,8 +24,8 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
       ops: Seq[SignedAtalaOperation],
       status: AtalaObjectStatus = AtalaObjectStatus.Pending
   ) = {
-    val block = node_internal.AtalaBlock(ops)
-    val blockContent = node_internal
+    val block = node_models.AtalaBlock(ops)
+    val blockContent = node_models
       .AtalaObject()
       .withBlockContent(block)
 

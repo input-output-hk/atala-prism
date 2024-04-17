@@ -16,7 +16,7 @@ import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolVersionsDAO}
-import io.iohk.atala.prism.protos.{node_internal, node_models}
+import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 
 package object operations {
@@ -320,10 +320,6 @@ package object operations {
         CreateDIDOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.UpdateDid =>
         UpdateDIDOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.IssueCredentialBatch =>
-        IssueCredentialBatchOperation.parse(signedOperation, ledgerData)
-      case _: node_models.AtalaOperation.Operation.RevokeCredentials =>
-        RevokeCredentialsOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.ProtocolVersionUpdate =>
         ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.DeactivateDid =>
@@ -336,13 +332,21 @@ package object operations {
             "Empty operation"
           )
         )
+      case op => // we need to discard unrecognized operations
+        Left(
+          InvalidValue(
+            Path.root,
+            op.getClass.getSimpleName,
+            s"Unsupported ${op.getClass.getSimpleName}"
+          )
+        )
     }
   }
 
   def parseOperationsFromByteContent(
       byteContent: Array[Byte]
   ): List[Operation] =
-    node_internal.AtalaObject
+    node_models.AtalaObject
       .validate(byteContent)
       .toOption
       .fold(List[Operation]()) { obj =>
