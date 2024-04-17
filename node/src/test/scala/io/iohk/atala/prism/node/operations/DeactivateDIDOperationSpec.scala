@@ -88,7 +88,7 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
 
-      key mustBe DeactivateDIDOperationSpec.masterKeys.getPublicKey
+      key mustBe DeactivateDIDOperationSpec.masterKeys.publicKey
       previousOperation mustBe Some(DeactivateDIDOperationSpec.createDidOperation.digest)
     }
 

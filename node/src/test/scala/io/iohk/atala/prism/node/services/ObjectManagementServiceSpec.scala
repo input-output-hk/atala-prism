@@ -60,7 +60,7 @@ object ObjectManagementServiceSpec {
             usage = node_models.KeyUsage.AUTHENTICATION_KEY,
             keyData = node_models.PublicKey.KeyData.EcKeyData(
               CreateDIDOperationSpec.protoECKeyDataFromPublicKey(
-                keyPair.getPublicKey
+                keyPair.publicKey
               )
             )
           )
@@ -73,7 +73,7 @@ object ObjectManagementServiceSpec {
       BlockProcessingServiceSpec.signOperation(
         operation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
     }
 }
@@ -349,7 +349,7 @@ class ObjectManagementServiceSpec
         )
       )
       val signedCreateDidOperation =
-        signOperation(createOperation, "master", masterKeys.getPrivateKey)
+        signOperation(createOperation, "master", masterKeys.privateKey)
 
       val result =
         publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
@@ -372,7 +372,7 @@ class ObjectManagementServiceSpec
           .toList
       )
       val signedCreateDidOperation =
-        signOperation(createOperation, "master", masterKeys.getPrivateKey)
+        signOperation(createOperation, "master", masterKeys.privateKey)
 
       val result =
         publishSingleOperationAndFlush(signedCreateDidOperation).futureValue

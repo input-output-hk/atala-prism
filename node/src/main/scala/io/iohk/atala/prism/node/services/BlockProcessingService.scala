@@ -7,7 +7,6 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.models.{AtalaOperationId, Ledger, TransactionId}
 import io.iohk.atala.prism.node.metrics.OperationsCounters
@@ -20,6 +19,7 @@ import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 import scala.util.chaining._
 import scala.util.control.NonFatal
+import identus.apollo.PublicKey
 
 // This service syncs Node state with the underlying ledger
 trait BlockProcessingService {
@@ -195,14 +195,14 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
   }
 
   def verifySignature(
-      key: ECPublicKey,
+      key: PublicKey, // FIXME it's only works for Signature
       protoOperation: node_models.SignedAtalaOperation
   ): Either[StateError, Unit] = {
     try {
       Either.cond(
         EC.verifyBytes(
           protoOperation.getOperation.toByteArray,
-          key,
+          { println(key); ??? }, // FIXME //key,
           new ECSignature(protoOperation.signature.toByteArray)
         ),
         (),

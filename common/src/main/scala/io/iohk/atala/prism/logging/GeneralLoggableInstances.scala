@@ -12,7 +12,7 @@ import tofu.syntax.monoid.TofuSemigroupOps
   */
 object GeneralLoggableInstances {
 
-  implicit val statusLoggable = new DictLoggable[Status] {
+  implicit val statusLoggable: DictLoggable[Status] = new DictLoggable[Status] {
     override def fields[I, V, R, S](a: Status, i: I)(implicit r: LogRenderer[I, V, R, S]): R = {
       r.addString("grpc_status", a.toString, i)
     }

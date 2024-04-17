@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.node.metrics
 
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import org.scalatest.wordspec.AnyWordSpec
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation}
@@ -15,12 +14,13 @@ import io.iohk.atala.prism.node.operations.{
   ProtocolVersionUpdateOperationSpec,
   DeactivateDIDOperationSpec
 }
+import identus.apollo.MyKeyPair
 
 class OperationsCounterSpec extends AnyWordSpec with Matchers {
   "countReceivedAtalaOperations" should {
     "count all types of operations" in {
       val signingKeyId = "master"
-      val signingKey = EC.generateKeyPair().getPrivateKey
+      val signingKey = MyKeyPair.generateKeyPair.privateKey
       def sign(op: AtalaOperation): SignedAtalaOperation = BlockProcessingServiceSpec.signOperation(
         op,
         signingKeyId,

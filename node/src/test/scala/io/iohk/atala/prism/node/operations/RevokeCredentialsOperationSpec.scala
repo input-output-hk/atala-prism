@@ -184,7 +184,7 @@ class RevokeCredentialsOperationSpec extends AtalaWithPostgresSpec {
 
       val CorrectnessData(key, previousOperation) = corrDataE.toOption.value
 
-      key mustBe revokingKeys.getPublicKey
+      key mustBe revokingKeys.publicKey
       previousOperation mustBe Some(credentialIssueBatchOperation.digest)
     }
     "return state error when there are used different key than revocation key" in {

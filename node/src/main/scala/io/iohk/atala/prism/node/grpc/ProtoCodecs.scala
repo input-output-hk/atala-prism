@@ -1,11 +1,9 @@
 package io.iohk.atala.prism.node.grpc
 
-import java.security.PublicKey
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.models.{DidSuffix, Ledger}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
@@ -15,6 +13,8 @@ import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.utils.syntax._
 
 import java.time.Instant
+import java.security.PublicKey
+// import io.iohk.atala.prism.apollo.utils.KMMECPoint // REMVOE
 
 object ProtoCodecs {
   def toTimeStampInfoProto(
@@ -98,13 +98,23 @@ object ProtoCodecs {
     revokedOn.fold(withoutRevKey)(revTime => withoutRevKey.withRevokedOn(revTime))
   }
 
-  def toECKeyData(key: ECPublicKey): node_models.ECKeyData = {
-    val point = key.getCurvePoint
+  // TODO REMOVE
+  // def toECKeyData(key: ECPublicKey): node_models.ECKeyData = {
+  //   // val point = key.getCurvePoint
+  //   node_models
+  //     .ECKeyData()
+  //     .withCurve(ECConfig.getCURVE_NAME)
+  //     .withX(ByteString.copyFrom(point.getX.bytes()))
+  //     .withY(ByteString.copyFrom(point.getY.bytes()))
+  // }
+
+  def toECKeyData(key: identus.apollo.PublicKey): node_models.ECKeyData = {
+    val point = key.toCurvePoint
     node_models
       .ECKeyData()
-      .withCurve(ECConfig.getCURVE_NAME)
-      .withX(ByteString.copyFrom(point.getX.bytes()))
-      .withY(ByteString.copyFrom(point.getY.bytes()))
+      .withCurve(key.curveName)
+      .withX(ByteString.copyFrom(point.x))
+      .withY(ByteString.copyFrom(point.y))
   }
 
   def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {

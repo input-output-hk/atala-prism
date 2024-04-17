@@ -4,9 +4,7 @@ import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.Sha256
-import io.iohk.atala.prism.crypto.keys.ECPrivateKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.DataPreparation
@@ -22,8 +20,10 @@ import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import org.scalatest.OptionValues._
+import identus.apollo.PrivateKey
 
 import java.time.Instant
+import identus.apollo.MyKeyPair
 
 object BlockProcessingServiceSpec {
   import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.masterKeys
@@ -33,21 +33,20 @@ object BlockProcessingServiceSpec {
   def signOperation(
       operation: node_models.AtalaOperation,
       keyId: String,
-      key: ECPrivateKey
+      key: PrivateKey // FIXME ECPrivateKey
   ): node_models.SignedAtalaOperation = {
     node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
-      signature = ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
+      signature = { key; ??? } // FIXME ByteString.copyFrom(EC.signBytes(operation.toByteArray, key).getData)
     )
   }
 
-  val signedCreateDidOperation =
-    signOperation(createDidOperation, "master", masterKeys.getPrivateKey)
+  val signedCreateDidOperation = signOperation(createDidOperation, "master", masterKeys.privateKey)
   val signedCreateDidOperationId = AtalaOperationId.of(signedCreateDidOperation)
 
   val signedUpdateDidOperation: SignedAtalaOperation =
-    signOperation(updateDidOperation, "master", masterKeys.getPrivateKey)
+    signOperation(updateDidOperation, "master", masterKeys.privateKey)
 
   val exampleBlock = node_internal.AtalaBlock(
     operations = Seq(signedCreateDidOperation)
@@ -220,9 +219,9 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
       val invalidOperation =
         updateDidOperation.update(_.updateDid.actions(0).addKey.key.id := "")
       val signedInvalidOperation =
-        signOperation(invalidOperation, "master", masterKeys.getPrivateKey)
+        signOperation(invalidOperation, "master", masterKeys.privateKey)
 
-      val signedValidOperation = signOperation(createDidOperation, "master", masterKeys.getPrivateKey)
+      val signedValidOperation = signOperation(createDidOperation, "master", masterKeys.privateKey)
 
       val block = node_internal.AtalaBlock(
         operations = Seq(signedInvalidOperation, signedValidOperation)
@@ -289,16 +288,16 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               keyData = node_models.PublicKey.KeyData
                 .EcKeyData(
                   CreateDIDOperationSpec.protoECKeyDataFromPublicKey(
-                    EC.generateKeyPair().getPublicKey
+                    MyKeyPair.generateKeyPair.publicKey
                   )
                 )
             )
           )
         )
       val incorrectlySignedOperation2 =
-        signOperation(operation2, "master", masterKeys.getPrivateKey)
+        signOperation(operation2, "master", masterKeys.privateKey)
 
-      val operation3Keys = EC.generateKeyPair()
+      val operation3Keys = MyKeyPair.generateKeyPair
       val operation3 = createDidOperation
         .copy()
         .update(
@@ -309,13 +308,13 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               keyData = node_models.PublicKey.KeyData
                 .EcKeyData(
                   CreateDIDOperationSpec
-                    .protoECKeyDataFromPublicKey(operation3Keys.getPublicKey)
+                    .protoECKeyDataFromPublicKey(operation3Keys.publicKey)
                 )
             )
           )
         )
       val signedOperation3 =
-        signOperation(operation3, "rootkey", operation3Keys.getPrivateKey)
+        signOperation(operation3, "rootkey", operation3Keys.privateKey)
 
       val block = node_internal.AtalaBlock(
         operations = Seq(signedOperation1, incorrectlySignedOperation2, signedOperation3)
@@ -401,7 +400,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         )
       )
       val updateDidSignedOperation1 =
-        signOperation(updateDidOperation1, "master", masterKeys.getPrivateKey)
+        signOperation(updateDidOperation1, "master", masterKeys.privateKey)
 
       val updateDidOperation2 = node_models.AtalaOperation(
         operation = node_models.AtalaOperation.Operation.UpdateDid(
@@ -415,7 +414,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         )
       )
       val updateDidSignedOperation2 =
-        signOperation(updateDidOperation2, "master", masterKeys.getPrivateKey)
+        signOperation(updateDidOperation2, "master", masterKeys.privateKey)
 
       val block = node_internal.AtalaBlock(
         operations = Seq(
@@ -491,16 +490,16 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               keyData = node_models.PublicKey.KeyData
                 .EcKeyData(
                   CreateDIDOperationSpec.protoECKeyDataFromPublicKey(
-                    EC.generateKeyPair().getPublicKey
+                    MyKeyPair.generateKeyPair.publicKey
                   )
                 )
             )
           )
         )
       val incorrectlySignedOperation2 =
-        signOperation(operation2, "master", masterKeys.getPrivateKey)
+        signOperation(operation2, "master", masterKeys.privateKey)
 
-      val operation3Keys = EC.generateKeyPair()
+      val operation3Keys = MyKeyPair.generateKeyPair
       val operation3 = createDidOperation
         .copy()
         .update(
@@ -511,13 +510,13 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
               keyData = node_models.PublicKey.KeyData
                 .EcKeyData(
                   CreateDIDOperationSpec
-                    .protoECKeyDataFromPublicKey(operation3Keys.getPublicKey)
+                    .protoECKeyDataFromPublicKey(operation3Keys.publicKey)
                 )
             )
           )
         )
       val signedOperation3 =
-        signOperation(operation3, "rootkey", operation3Keys.getPrivateKey)
+        signOperation(operation3, "rootkey", operation3Keys.privateKey)
 
       val block1 = node_internal
         .AtalaBlock( // first block contains 1 valid and 1 invalid operation

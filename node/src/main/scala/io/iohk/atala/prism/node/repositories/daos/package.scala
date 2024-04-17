@@ -5,9 +5,7 @@ import doobie._
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import io.iohk.atala.prism.credentials.CredentialBatchId
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import io.iohk.atala.prism.daos.BaseDAO
 import io.iohk.atala.prism.models._
@@ -15,6 +13,7 @@ import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{CredentialBatchState, DIDPublicKeyState, DIDServiceState, LedgerData}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.utils.syntax._
+import identus.apollo.PublicKey
 
 import java.time.Instant
 
@@ -87,14 +86,12 @@ package object daos extends BaseDAO {
           Option[Int]
       )
     ].contramap { key =>
-      val curveName = ECConfig.getCURVE_NAME
-      val compressed = key.key.getEncodedCompressed
       (
         key.didSuffix,
         key.keyId,
         key.keyUsage,
-        curveName,
-        compressed,
+        key.key.curveName,
+        key.key.getEncodedCompressed,
         key.addedOn.timestampInfo.getAtalaBlockTimestamp.toInstant,
         key.addedOn.timestampInfo.getAtalaBlockSequenceNumber,
         key.addedOn.timestampInfo.getOperationSequenceNumber,
@@ -111,8 +108,8 @@ package object daos extends BaseDAO {
           DidSuffix,
           String,
           KeyUsage,
-          String,
-          Array[Byte],
+          String, // Public key curve name
+          Array[Byte], // Public key encoded
           Instant,
           Int,
           Int,
@@ -142,9 +139,7 @@ package object daos extends BaseDAO {
             rTransactionId,
             rLedger
           ) =>
-        assert(curveId == ECConfig.getCURVE_NAME)
-        val javaPublicKey: ECPublicKey =
-          EC.toPublicKeyFromCompressed(compressed)
+        // assert(curveId == ECConfig.getCURVE_NAME) //FIXME
         val revokeLedgerData =
           for (
             transactionId <- rTransactionId; ledger <- rLedger; t <- rTimestamp;
@@ -155,11 +150,12 @@ package object daos extends BaseDAO {
               ledger = ledger,
               timestampInfo = new TimestampInfo(t.toEpochMilli, absn, osn)
             )
+
         DIDPublicKeyState(
           didSuffix,
           keyId,
           keyUsage,
-          javaPublicKey,
+          PublicKey(curve = curveId, data = compressed),
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,

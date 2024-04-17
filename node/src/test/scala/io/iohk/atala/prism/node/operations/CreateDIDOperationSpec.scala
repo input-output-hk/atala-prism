@@ -4,9 +4,6 @@ import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
@@ -20,58 +17,47 @@ import io.iohk.atala.prism.protos.node_models.{AtalaOperation, CompressedECKeyDa
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
+import identus.apollo._
 
 object CreateDIDOperationSpec {
-  def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
-    val point = key.getCurvePoint
-
+  def protoECKeyDataFromPublicKey(key: PublicKey): ECKeyData =
     node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
+      curve = key.curveName,
+      x = key.getXAsByteString,
+      y = key.getYAsByteString
     )
-  }
 
   def protoCompressedECKeyDataFromPublicKey(
-      key: ECPublicKey
+      key: PublicKey
   ): CompressedECKeyData =
     node_models.CompressedECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      data = ByteString.copyFrom(key.getEncodedCompressed)
+      curve = key.curveName,
+      data = key.getEncodedCompressedAsByteString
     )
 
   def randomECKeyData: ECKeyData = {
-    val keyPair = EC.generateKeyPair()
-    protoECKeyDataFromPublicKey(keyPair.getPublicKey)
+    val keyPair = MyKeyPair.generateKeyPair
+    protoECKeyDataFromPublicKey(keyPair.publicKey)
   }
 
   def randomCompressedECKeyData: CompressedECKeyData = {
-    val keyPair = EC.generateKeyPair()
-    protoCompressedECKeyDataFromPublicKey(keyPair.getPublicKey)
+    val keyPair = MyKeyPair.generateKeyPair
+    protoCompressedECKeyDataFromPublicKey(keyPair.publicKey)
   }
 
-  val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    masterKeys.getPublicKey
-  )
-  val masterCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
+  // Secp256k1KeyPair
+  val masterKeys: MyKeyPair = MyKeyPair.generateKeyPair
+  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(masterKeys.publicKey)
+  val masterCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(masterKeys.publicKey)
 
-  val issuingKeys: ECKeyPair = EC.generateKeyPair()
-  val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    issuingKeys.getPublicKey
-  )
-  val issuingCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(issuingKeys.getPublicKey)
+  // KeyPair
+  val issuingKeys: MyKeyPair = MyKeyPair.generateKeyPair
+  val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(issuingKeys.publicKey)
+  val issuingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(issuingKeys.publicKey)
 
-  val revokingKeys: ECKeyPair = EC.generateKeyPair()
-  val revokingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    revokingKeys.getPublicKey
-  )
-  val revokingCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(
-      revokingKeys.getPublicKey
-    )
+  val revokingKeys: MyKeyPair = MyKeyPair.generateKeyPair
+  val revokingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(revokingKeys.publicKey)
+  val revokingCompressedEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(revokingKeys.publicKey)
 
   private val serviceId1 = "linked-domain1"
   private val serviceId2 = "linked-domain2"
@@ -970,7 +956,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe masterKeys.getPublicKey
+      key mustBe masterKeys.publicKey
       previousOperation mustBe None
     }
   }

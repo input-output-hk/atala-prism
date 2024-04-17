@@ -2,12 +2,11 @@ package io.iohk.atala.prism.node.poc
 
 import java.util.Base64
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.models.DidSuffix
 import io.iohk.atala.prism.protos.node_models
+import identus.apollo.MyKeyPair
+import identus.apollo.PublicKey
 
 object EncodedSizes {
   def main(args: Array[String]): Unit = {
@@ -18,9 +17,9 @@ object EncodedSizes {
 
     val data = for {
       _ <- 1 to n
-      masterPublicKey1 = EC.generateKeyPair().getPublicKey
-      masterPublicKey2 = EC.generateKeyPair().getPublicKey
-      masterPublicKey3 = EC.generateKeyPair().getPublicKey
+      masterPublicKey1 = MyKeyPair.generateKeyPair.publicKey
+      masterPublicKey2 = MyKeyPair.generateKeyPair.publicKey
+      masterPublicKey3 = MyKeyPair.generateKeyPair.publicKey
       did = createDID(
         List(masterPublicKey1, masterPublicKey2, masterPublicKey3)
       )
@@ -40,8 +39,8 @@ object EncodedSizes {
 
   }
 
-  def createDID(masterPublicKeys: List[ECPublicKey]): String = {
-    def keyElement(publicKey: ECPublicKey, index: Int): node_models.PublicKey =
+  def createDID(masterPublicKeys: List[PublicKey]): String = {
+    def keyElement(publicKey: PublicKey, index: Int): node_models.PublicKey =
       node_models.PublicKey(
         id = s"master$index",
         usage = node_models.KeyUsage.MASTER_KEY,
@@ -68,12 +67,12 @@ object EncodedSizes {
     s"did:prism:${didSuffix.getValue}:$encodedOperation"
   }
 
-  private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
-    val point = key.getCurvePoint
+  private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
+    val point = key.toCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
+      curve = key.curveName,
+      x = ByteString.copyFrom(point.x),
+      y = ByteString.copyFrom(point.y)
     )
   }
 }

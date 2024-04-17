@@ -52,6 +52,7 @@ object DIDUtils {
     }
   }
 
+  // FIXME ECConfig.getCURVE_NAME
   private def verifyPublicKey(
       curve: String,
       publicKey: ECPublicKey

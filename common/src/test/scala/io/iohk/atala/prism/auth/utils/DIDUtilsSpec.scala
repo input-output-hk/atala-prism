@@ -2,8 +2,6 @@ package io.iohk.atala.prism.auth.utils
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.auth.errors.UnknownPublicKeyId
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{CompressedECKeyData, DIDData, ECKeyData}
 import org.scalatest.matchers.must.Matchers
@@ -12,12 +10,12 @@ import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import identus.apollo.PublicKey
+import identus.apollo.MyKeyPair
 
 class DIDUtilsSpec extends AnyWordSpec with Matchers {
-  val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    masterKeys.getPublicKey
-  )
+  val masterKeys: MyKeyPair = MyKeyPair.generateKeyPair
+  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(masterKeys.publicKey)
   val masterEcKeyDataPublicKey = node_models
     .PublicKey(
       "master",
@@ -29,7 +27,7 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
       node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
     )
   val masterCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
+    protoCompressedECKeyDataFromPublicKey(masterKeys.publicKey)
   val masterCompressedEcKeyDataPublicKey = node_models
     .PublicKey(
       "master",
@@ -43,21 +41,20 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
       )
     )
 
-  def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
-    val point = key.getCurvePoint
-
+  def protoECKeyDataFromPublicKey(key: PublicKey): ECKeyData = {
+    val point = key.toCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
+      curve = key.curveName,
+      x = ByteString.copyFrom(point.x),
+      y = ByteString.copyFrom(point.y)
     )
   }
 
   def protoCompressedECKeyDataFromPublicKey(
-      key: ECPublicKey
+      key: PublicKey
   ): CompressedECKeyData =
     node_models.CompressedECKeyData(
-      curve = ECConfig.getCURVE_NAME,
+      curve = key.curveName,
       data = ByteString.copyFrom(key.getEncodedCompressed)
     )
 
@@ -66,14 +63,14 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
       val didData =
         DIDData(publicKeys = Seq(masterCompressedEcKeyDataPublicKey))
       DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
-        masterKeys.getPublicKey
+        masterKeys.publicKey
       )
     }
 
     "return key given publicKey contains not compressed dKeyData" in {
       val didData = DIDData(publicKeys = Seq(masterEcKeyDataPublicKey))
       DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
-        masterKeys.getPublicKey
+        masterKeys.publicKey
       )
     }
 
@@ -96,7 +93,7 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
         )
       val didData = DIDData(publicKeys = Seq(compressedAsUncompressedKey))
       DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
-        masterKeys.getPublicKey
+        masterKeys.publicKey
       )
     }
   }

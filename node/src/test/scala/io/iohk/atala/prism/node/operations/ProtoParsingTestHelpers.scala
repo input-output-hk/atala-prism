@@ -32,7 +32,7 @@ trait ProtoParsingTestHelpers {
 
   protected def signingKeyId = "master"
 
-  protected def signingKey = CreateDIDOperationSpec.masterKeys.getPrivateKey
+  protected def signingKey = CreateDIDOperationSpec.masterKeys.privateKey
 
   protected def missingAtLeastOneValueTest(
       mutation: Lens[

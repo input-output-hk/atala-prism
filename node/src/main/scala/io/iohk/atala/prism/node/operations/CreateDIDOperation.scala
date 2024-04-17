@@ -113,7 +113,7 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
           val (key, i) = keyi
           acc.flatMap(list =>
             ParsingUtils
-              .parseKey(
+              .parseKey( // We should only validade the Master Key
                 ValueAtPath(key, keysValue.path / i.toString),
                 didSuffix,
                 idCharLenLimit

@@ -212,12 +212,12 @@ class CardanoFeeEstimator(
     )
   }
 
-  private def publicKeyToProto(key: ECPublicKey): node_models.ECKeyData = {
-    val point = key.getCurvePoint
+  private def publicKeyToProto(key: PublicKey): node_models.ECKeyData = {
+    val point = key.toCurvePoint
     node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
+      curve = key.curveName,
+      x = ByteString.copyFrom(point.x),
+      y = ByteString.copyFrom(point.y)
     )
   }
 }

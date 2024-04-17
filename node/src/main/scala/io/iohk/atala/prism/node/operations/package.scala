@@ -5,7 +5,6 @@ import cats.data.{EitherT, NonEmptyList}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.models.{DidSuffix, Ledger, TransactionId}
@@ -18,6 +17,7 @@ import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.{MetricsCountersDAO, ProtocolVersionsDAO}
 import io.iohk.atala.prism.protos.{node_internal, node_models}
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import identus.apollo.PublicKey
 
 package object operations {
 
@@ -175,7 +175,7 @@ package object operations {
 
   /** Data required to verify the correctness of the operation */
   case class CorrectnessData(
-      key: ECPublicKey,
+      key: PublicKey,
       previousOperation: Option[Sha256Digest]
   )
 
