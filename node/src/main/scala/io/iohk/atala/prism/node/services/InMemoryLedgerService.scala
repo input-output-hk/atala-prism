@@ -3,9 +3,9 @@ package io.iohk.atala.prism.node.services
 import cats.effect.Resource
 import cats.implicits._
 import cats.{Applicative, Comonad, Functor, MonadThrow}
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, CardanoWalletErrorCode, Lovelace}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.models.Balance
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
 import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
@@ -30,9 +30,9 @@ private final class InMemoryLedgerService[F[_]: MonadThrow](
     val publcationInfoF = for {
       objectBytes <- obj.toByteArray.pure[F]
       // Use a hash of the bytes as their in-memory transaction ID
-      hash = Sha256.compute(objectBytes)
+      hash = Sha256Hash.compute(objectBytes)
       transactionId = TransactionId
-        .from(hash.getValue)
+        .from(hash.bytes)
         .getOrElse(throw new RuntimeException("Unexpected invalid hash"))
       transactionInfo = TransactionInfo(
         transactionId = transactionId,

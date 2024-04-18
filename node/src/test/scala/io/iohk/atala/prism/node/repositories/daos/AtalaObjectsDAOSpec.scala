@@ -3,9 +3,9 @@ package io.iohk.atala.prism.node.repositories.daos
 import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Merged, Pending, Processed, Scheduled}
 import io.iohk.atala.prism.node.models.{AtalaObjectId, AtalaObjectInfo, AtalaObjectStatus}
 import io.iohk.atala.prism.protos.node_models
@@ -20,7 +20,7 @@ class AtalaObjectsDAOSpec extends AtalaWithPostgresSpec {
   private val byteContent = "byteContent".getBytes
   private val transactionInfo = TransactionInfo(
     transactionId = TransactionId
-      .from(Sha256.compute("transactionId".getBytes).getValue)
+      .from(Sha256Hash.compute("transactionId".getBytes).bytes)
       .value,
     ledger = Ledger.InMemory,
     block = Some(

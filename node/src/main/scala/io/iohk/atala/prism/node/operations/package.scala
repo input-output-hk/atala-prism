@@ -5,8 +5,7 @@ import cats.data.{EitherT, NonEmptyList}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.ProtocolVersion
@@ -176,7 +175,7 @@ package object operations {
   /** Data required to verify the correctness of the operation */
   case class CorrectnessData(
       key: SecpPublicKey,
-      previousOperation: Option[Sha256Digest]
+      previousOperation: Option[Sha256Hash]
   )
 
   case class ApplyOperationConfig(trustedProposer: DidSuffix)
@@ -229,9 +228,9 @@ package object operations {
         _ <- incrementMetricsCounter()
       } yield ()
 
-    def digest: Sha256Digest
+    def digest: Sha256Hash
 
-    def linkedPreviousOperation: Option[Sha256Digest] = None
+    def linkedPreviousOperation: Option[Sha256Hash] = None
 
     def ledgerData: LedgerData
   }

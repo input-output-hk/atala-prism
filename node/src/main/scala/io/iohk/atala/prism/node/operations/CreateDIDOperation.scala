@@ -5,8 +5,7 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.node.crypto.CryptoUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -23,7 +22,7 @@ case class CreateDIDOperation(
     keys: List[DIDPublicKey],
     services: List[DIDService],
     context: List[String],
-    digest: Sha256Digest,
+    digest: Sha256Hash,
     ledgerData: LedgerData
 ) extends Operation {
   val metricCounterName: String = CreateDIDOperation.metricCounterName
@@ -40,7 +39,7 @@ case class CreateDIDOperation(
       }
       secpKey <- EitherT.fromEither[ConnectionIO] {
         val tryKey = Try {
-          CryptoUtils.unsafeToSecpPublicKeyFromCompressed(key.key.compressedKey)
+          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(key.key.compressedKey)
         }
         tryKey.toOption
           .toRight(IllegalSecp256k1Key(key.keyId))
@@ -190,8 +189,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     val serviceTypeCharLimit = ProtocolConstants.serviceTypeCharLimit
     val contextStringCharLimit = ProtocolConstants.contextStringCharLimit
 
-    val operationDigest = Sha256.compute(operation.toByteArray)
-    val didSuffix = DidSuffix(operationDigest.getHexValue)
+    val operationDigest = Sha256Hash.compute(operation.toByteArray)
+    val didSuffix = DidSuffix(operationDigest.hexEncoded)
     val createOperation =
       ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {

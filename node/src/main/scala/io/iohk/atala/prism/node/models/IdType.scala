@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.models
 
-import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
@@ -26,5 +26,5 @@ object IdType {
       )
   }
 
-  def random: IdType = IdType(value = Sha256.compute(java.util.UUID.randomUUID.toString.getBytes).getHexValue)
+  def random: IdType = IdType(value = Sha256Hash.compute(java.util.UUID.randomUUID.toString.getBytes).hexEncoded)
 }

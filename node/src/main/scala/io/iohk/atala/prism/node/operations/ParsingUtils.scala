@@ -2,15 +2,14 @@ package io.iohk.atala.prism.node.operations
 
 import cats.implicits._
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.crypto.Sha256Digest
-import io.iohk.atala.prism.node.models.{PublicKeyData, DIDPublicKey, DIDService, DidSuffix, KeyUsage, ProtocolConstants}
+import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, DidSuffix, KeyUsage, ProtocolConstants, PublicKeyData}
 import io.iohk.atala.prism.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path.ValueAtPath
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.UriUtils
 import io.circe.parser.{parse => parseJson}
 import io.circe.Json
-import io.iohk.atala.prism.node.crypto.CryptoUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 
 import scala.util.Try
 
@@ -47,7 +46,7 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "y").missing())
     } else {
       Try {
-        val key = CryptoUtils.unsafeToSecpPublicKeyFromByteCoordinates(
+        val key = SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
           ecData(_.x.toByteArray),
           ecData(_.y.toByteArray)
         )
@@ -421,19 +420,19 @@ object ParsingUtils {
 
   def parseHash(
       hash: ValueAtPath[ByteString]
-  ): Either[ValidationError, Sha256Digest] = {
+  ): Either[ValidationError, Sha256Hash] = {
     hash.parse { hash =>
-      Try(Sha256Digest.fromBytes(hash.toByteArray)).toEither.left
+      Try(Sha256Hash.fromBytes(hash.toByteArray)).toEither.left
         .map(_.getMessage)
     }
   }
 
   def parseHashList(
       hashesV: ValueAtPath[Seq[ByteString]]
-  ): Either[ValidationError, List[Sha256Digest]] = {
+  ): Either[ValidationError, List[Sha256Hash]] = {
     hashesV.parse { hashes =>
       hashes.toList.traverse(h =>
-        Try(Sha256Digest.fromBytes(h.toByteArray)).toEither.left
+        Try(Sha256Hash.fromBytes(h.toByteArray)).toEither.left
           .map(_.getMessage)
       )
     }

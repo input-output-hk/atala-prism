@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.models
 
-import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
@@ -15,7 +15,7 @@ object DidSuffix {
 
   def didFromStringSuffix(in: String): String = "did:prism:" + in
 
-  def fromDigest(in: Sha256Digest): DidSuffix = DidSuffix(in.getHexValue)
+  def fromDigest(in: Sha256Hash): DidSuffix = DidSuffix(in.hexEncoded)
 
   def fromString(string: String): Try[DidSuffix] = {
     if (string.nonEmpty && suffixRegex.pattern.matcher(string).matches())

@@ -2,8 +2,7 @@ package io.iohk.atala.prism.node.operations
 
 import cats.data.EitherT
 import doobie.free.connection.{ConnectionIO, unit}
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.node.crypto.CryptoUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{KeyUsage, nodeState}
@@ -16,13 +15,13 @@ import scala.util.Try
 
 case class DeactivateDIDOperation(
     didSuffix: DidSuffix,
-    previousOperation: Sha256Digest,
-    digest: Sha256Digest,
+    previousOperation: Sha256Hash,
+    digest: Sha256Hash,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
   override val metricCounterName: String = DeactivateDIDOperation.metricCounterName
 
-  override def linkedPreviousOperation: Option[Sha256Digest] = Some(
+  override def linkedPreviousOperation: Option[Sha256Hash] = Some(
     previousOperation
   )
 
@@ -31,7 +30,7 @@ case class DeactivateDIDOperation(
       keyId: String
   ): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
+      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Hash] {
         DIDDataDAO
           .getLastOperation(didSuffix)
           .map(
@@ -59,7 +58,7 @@ case class DeactivateDIDOperation(
       }.map(_.key)
       secpKey <- EitherT.fromEither[ConnectionIO] {
         val tryKey = Try {
-          CryptoUtils.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
+          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
         }
         tryKey.toOption
           .toRight(IllegalSecp256k1Key(keyId): StateError)
@@ -94,7 +93,7 @@ object DeactivateDIDOperation extends OperationCompanion[DeactivateDIDOperation]
       operation: AtalaOperation,
       ledgerData: nodeState.LedgerData
   ): Either[ValidationError, DeactivateDIDOperation] = {
-    val operationDigest = Sha256.compute(operation.toByteArray)
+    val operationDigest = Sha256Hash.compute(operation.toByteArray)
     val deactivateOperation =
       ValueAtPath(operation, Path.root).child(_.getDeactivateDid, "deactivateDid")
 

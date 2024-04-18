@@ -4,7 +4,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
 import cats.syntax.functor._
-import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.utils.syntax._
@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.utils.syntax._
 object DIDDataDAO {
   def insert(
       didSuffix: DidSuffix,
-      lastOperation: Sha256Digest,
+      lastOperation: Sha256Hash,
       ledgerData: LedgerData
   ): ConnectionIO[Unit] = {
     val publishedOn = ledgerData.timestampInfo
@@ -33,16 +33,16 @@ object DIDDataDAO {
 
   def getLastOperation(
       didSuffix: DidSuffix
-  ): ConnectionIO[Option[Sha256Digest]] = {
+  ): ConnectionIO[Option[Sha256Hash]] = {
     sql"""
          |SELECT last_operation FROM did_data
          |WHERE did_suffix = $didSuffix
-       """.stripMargin.query[Sha256Digest].option
+       """.stripMargin.query[Sha256Hash].option
   }
 
   def updateLastOperation(
       didSuffix: DidSuffix,
-      newLastOperation: Sha256Digest
+      newLastOperation: Sha256Hash
   ): ConnectionIO[Int] = {
     sql"""
          |UPDATE did_data

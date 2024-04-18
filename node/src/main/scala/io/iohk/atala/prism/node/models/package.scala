@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node
 import derevo.derive
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
-import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models
 import tofu.logging.derivation.loggable
@@ -60,7 +60,7 @@ package object models {
       keys: List[DIDPublicKey],
       services: List[DIDService],
       context: List[String],
-      lastOperation: Sha256Digest
+      lastOperation: Sha256Hash
   )
 
   @derive(loggable)
@@ -147,7 +147,7 @@ package object models {
         keys: List[DIDPublicKeyState],
         services: List[DIDServiceState],
         context: List[String],
-        lastOperation: Sha256Digest
+        lastOperation: Sha256Hash
     )
 
     case class LedgerData(

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.models
 
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.BytesOps
 import tofu.logging.{DictLoggable, LogRenderer}
@@ -25,11 +25,9 @@ object AtalaObjectId {
     }
 
   def apply(value: Vector[Byte]): AtalaObjectId = {
-    // temporary replace for require(value.length == SHA256Digest.getBYTE_LENGTH)
-    // rewrite to safe version pls
-    // will throw an error if something is wrong with the value
-    val digestUnsafe = Sha256Digest.fromBytes(value.toArray).getValue
-    new AtalaObjectId(digestUnsafe.toVector)
+    // This will throw an error if something is wrong with the value
+    val digestUnsafe = Sha256Hash.fromBytes(value.toArray).bytes
+    new AtalaObjectId(digestUnsafe)
   }
 
   def of(atalaObject: node_models.AtalaObject): AtalaObjectId = {
@@ -37,7 +35,7 @@ object AtalaObjectId {
   }
 
   def of(bytes: Array[Byte]): AtalaObjectId = {
-    val hash = Sha256.compute(bytes)
-    AtalaObjectId(hash.getValue.toVector)
+    val hash = Sha256Hash.compute(bytes)
+    AtalaObjectId(hash.bytes)
   }
 }

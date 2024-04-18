@@ -3,11 +3,11 @@ package io.iohk.atala.prism.node.operations
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.Sha256Digest
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models
@@ -28,7 +28,7 @@ object DeactivateDIDOperationSpec {
   val exampleOperation: AtalaOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.DeactivateDid(
       value = node_models.DeactivateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue
       )
     )
@@ -56,7 +56,7 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
       result.didSuffix mustBe DidSuffix(exampleOperation.getDeactivateDid.id)
-      result.previousOperation mustBe Sha256Digest.fromBytes(
+      result.previousOperation mustBe Sha256Hash.fromBytes(
         exampleOperation.getDeactivateDid.previousOperationHash.toByteArray
       )
     }

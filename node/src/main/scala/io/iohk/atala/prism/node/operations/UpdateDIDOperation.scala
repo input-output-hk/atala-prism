@@ -5,8 +5,7 @@ import cats.implicits._
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
-import io.iohk.atala.prism.node.crypto.CryptoUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
@@ -38,20 +37,20 @@ case class PatchContextAction(context: List[String]) extends UpdateDIDAction
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
     actions: List[UpdateDIDAction],
-    previousOperation: Sha256Digest,
-    digest: Sha256Digest,
+    previousOperation: Sha256Hash,
+    digest: Sha256Hash,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
   override val metricCounterName: String = UpdateDIDOperation.metricCounterName
 
-  override def linkedPreviousOperation: Option[Sha256Digest] = Some(
+  override def linkedPreviousOperation: Option[Sha256Hash] = Some(
     previousOperation
   )
 
   /** Fetches key and possible previous operation reference from database */
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
+      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Hash] {
         DIDDataDAO
           .getLastOperation(didSuffix)
           .map(
@@ -79,7 +78,7 @@ case class UpdateDIDOperation(
       }.map(_.key)
       secpKey <- EitherT.fromEither[ConnectionIO] {
         val tryKey = Try {
-          CryptoUtils.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
+          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
         }
         tryKey.toOption
           .toRight(IllegalSecp256k1Key(keyId): StateError)
@@ -402,7 +401,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
-    val operationDigest = Sha256.compute(operation.toByteArray)
+    val operationDigest = Sha256Hash.compute(operation.toByteArray)
     val updateOperation =
       ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
 

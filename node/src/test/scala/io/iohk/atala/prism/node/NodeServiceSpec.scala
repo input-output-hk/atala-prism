@@ -8,9 +8,9 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
@@ -112,8 +112,8 @@ class NodeServiceSpec
 
   "NodeService.getDidDocument" should {
     "return DID document from data in the database" in {
-      val didDigest = Sha256.compute("test".getBytes())
-      val didSuffix: DidSuffix = DidSuffix(didDigest.getHexValue)
+      val didDigest = Sha256Hash.compute("test".getBytes())
+      val didSuffix: DidSuffix = DidSuffix(didDigest.hexEncoded)
       DIDDataDAO
         .insert(didSuffix, didDigest, dummyLedgerData)
         .transact(database)
@@ -157,7 +157,7 @@ class NodeServiceSpec
       )
 
       response.lastUpdateOperation must be(
-        ByteString.copyFrom(didDigest.getValue)
+        ByteString.copyFrom(didDigest.bytes.toArray)
       )
     }
 
@@ -195,9 +195,9 @@ class NodeServiceSpec
         .head
 
       val expectedDIDSuffix =
-        Sha256
+        Sha256Hash
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
-          .getHexValue
+          .hexEncoded
 
       response.getCreateDidOutput.didSuffix must be(expectedDIDSuffix)
       response.getOperationId mustEqual operationId.toProtoByteString
@@ -222,11 +222,11 @@ class NodeServiceSpec
         .head
 
       val expectedDIDSuffix =
-        Sha256
+        Sha256Hash
           .compute(
             CreateDIDOperationSpec.exampleOperationWithCompressedKeys.toByteArray
           )
-          .getHexValue
+          .hexEncoded
 
       response.getCreateDidOutput.didSuffix must be(expectedDIDSuffix)
       response.getOperationId mustEqual operationId.toProtoByteString
@@ -517,9 +517,9 @@ class NodeServiceSpec
       )
 
       val expectedDIDSuffix =
-        Sha256
+        Sha256Hash
           .compute(CreateDIDOperationSpec.exampleOperation.toByteArray)
-          .getHexValue
+          .hexEncoded
 
       response.outputs.size mustBe (2)
       response.outputs.head.getCreateDidOutput.didSuffix mustBe expectedDIDSuffix
