@@ -38,26 +38,55 @@ object CryptoUtils {
 
   Security.addProvider(provider)
 
-  def hash(bArray: Array[Byte]): Vector[Byte] = {
-    MessageDigest
-      .getInstance("SHA-256")
-      .digest(bArray)
-      .toVector
+  trait Sha256Hash {
+    def bytes: Vector[Byte]
+  }
+
+  private[crypto] case class Sha256HashImpl(bytes: Vector[Byte]) extends Sha256Hash {
+    require(bytes.size == 32)
+  }
+
+  def sha256Hash(bArray: Array[Byte]): Sha256Hash = {
+    Sha256HashImpl(
+      MessageDigest
+        .getInstance("SHA-256")
+        .digest(bArray)
+        .toVector
+    )
   }
 
   def bytesToHex(bytes: Vector[Byte]): String = {
     bytes.map(byte => f"${byte & 0xff}%02x").mkString
   }
 
-  def hexedHash(bArray: Array[Byte]): String = {
-    bytesToHex(hash(bArray))
+  def hexToBytes(hex: String): Vector[Byte] = {
+    val HEX_ARRAY = "0123456789abcdef".toCharArray
+    for {
+      pair <- hex.grouped(2).toVector
+      firstIndex = HEX_ARRAY.indexOf(pair(0))
+      secondIndex = HEX_ARRAY.indexOf(pair(1))
+      octet = firstIndex << 4 | secondIndex
+    } yield octet.toByte
+  }
+
+  def hexedHash(hash: Sha256Hash): String = {
+    bytesToHex(hash.bytes)
+  }
+
+  def fromHex(hexedBytes: String): Sha256Hash = {
+    val HEX_STRING_RE = "^[0-9a-fA-F]{64}$".r
+    if (HEX_STRING_RE.matches(hexedBytes)) Sha256HashImpl(hexToBytes(hexedBytes))
+    else
+      throw new IllegalArgumentException(
+        "The given hex string doesn't correspond to a valid SHA-256 hash encoded as string"
+      )
   }
 
   def checkECDSASignature(msg: Array[Byte], sig: Array[Byte], pubKey: SecpPublicKey): Boolean = {
     val ecdsaVerify = Signature.getInstance("SHA256withECDSA", provider)
     ecdsaVerify.initVerify(pubKey.publicKey)
-    ecdsaVerify.update(msg.toArray)
-    ecdsaVerify.verify(sig.toArray)
+    ecdsaVerify.update(msg)
+    ecdsaVerify.verify(sig)
   }
 
   def unsafeToSecpPublicKeyFromByteCoordinates(x: Array[Byte], y: Array[Byte]): SecpPublicKey = {
