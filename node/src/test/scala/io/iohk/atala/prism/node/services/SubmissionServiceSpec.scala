@@ -5,7 +5,6 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.models.{Ledger, TransactionDetails, TransactionId, TransactionStatus}
@@ -15,6 +14,7 @@ import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger, cardano}
 import io.iohk.atala.prism.node.DataPreparation._
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.repositories.{
   AtalaObjectsTransactionsRepository,
   AtalaOperationsRepository,
@@ -319,7 +319,7 @@ class SubmissionServiceSpec
 
     "refresh old transactions and resubmit" in {
       val dummyTransactionId2 =
-        TransactionId.from(Sha256.compute("id2".getBytes).getValue).value
+        TransactionId.from(Sha256Hash.compute("id2".getBytes).bytes).value
       val dummyTransactionInfo2 =
         dummyTransactionInfo.copy(transactionId = dummyTransactionId2)
       val dummyPublicationInfo2 =
@@ -555,7 +555,7 @@ class SubmissionServiceSpec
       (0 until (atalaOperations.size + atalaObjectsMerged.size + numPubsAdditional))
         .map { index =>
           TransactionId
-            .from(Sha256.compute(s"id$index".getBytes).getValue)
+            .from(Sha256Hash.compute(s"id$index".getBytes).bytes)
             .value
         }
     val dummyTransactionInfos = dummyTransactionIds.map { transactionId =>

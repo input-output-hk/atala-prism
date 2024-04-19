@@ -2,12 +2,13 @@ package io.iohk.atala.prism.node
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.auth.SignedRpcRequest
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.protos.node_api.{GetDidDocumentRequest, GetDidDocumentResponse}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
@@ -48,9 +49,9 @@ trait DIDUtil {
 
     val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val operationBytes = atalaOp.toByteArray
-    val operationHash = Sha256.compute(operationBytes)
-    val didCanonicalSuffix = operationHash.getHexValue
-    val did = DID.buildCanonical(Sha256Digest.fromHex(didCanonicalSuffix))
+    val operationHash = Sha256Hash.compute(operationBytes)
+    val didCanonicalSuffix = operationHash.hexEncoded
+    val did = CryptoTestUtils.buildCanonicalDID(Sha256Hash.fromHex(didCanonicalSuffix))
 
     nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
       Future.successful(

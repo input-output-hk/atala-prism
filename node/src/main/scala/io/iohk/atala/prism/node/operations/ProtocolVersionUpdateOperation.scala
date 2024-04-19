@@ -4,9 +4,9 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.node.models.KeyUsage.MasterKey
 import io.iohk.atala.prism.node.models.nodeState._
 import io.iohk.atala.prism.node.models.{ProtocolVersion, ProtocolVersionInfo}
@@ -15,12 +15,14 @@ import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{KeyValuesDAO, ProtocolVersionsDAO, PublicKeysDAO}
 import io.iohk.atala.prism.protos.{node_models => proto}
 
+import scala.util.Try
+
 case class ProtocolVersionUpdateOperation(
     versionName: Option[String],
     protocolVersion: ProtocolVersion,
     effectiveSinceBlockIndex: Int,
     proposerDID: DidSuffix,
-    override val digest: Sha256Digest,
+    override val digest: Sha256Hash,
     override val ledgerData: LedgerData
 ) extends Operation {
   override val metricCounterName: String = ProtocolVersionUpdateOperation.metricCounterName
@@ -35,6 +37,14 @@ case class ProtocolVersionUpdateOperation(
           .map(_.toRight(StateError.UnknownKey(proposerDID, keyId)))
       }
 
+      secpKey <- EitherT.fromEither[ConnectionIO] {
+        val tryKey = Try {
+          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(keyState.key.compressedKey)
+        }
+        tryKey.toOption
+          .toRight(IllegalSecp256k1Key(keyId))
+      }
+
       _ <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
           keyState.revokedOn.isEmpty,
@@ -46,7 +56,7 @@ case class ProtocolVersionUpdateOperation(
       data <- EitherT.fromEither[ConnectionIO] {
         Either.cond(
           keyState.keyUsage == MasterKey,
-          CorrectnessData(keyState.key, None),
+          CorrectnessData(secpKey, None),
           StateError.InvalidKeyUsed(
             s"The key type expected is Master key. Type used: ${keyState.keyUsage}"
           ): StateError
@@ -130,7 +140,7 @@ object ProtocolVersionUpdateOperation extends SimpleOperationCompanion[ProtocolV
       operation: proto.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, ProtocolVersionUpdateOperation] = {
-    val operationDigest = Sha256.compute(operation.toByteArray)
+    val operationDigest = Sha256Hash.compute(operation.toByteArray)
     val updateProtocolOperation =
       ValueAtPath(operation, Path.root)
         .child(_.getProtocolVersionUpdate, "protocolVersionUpdate")

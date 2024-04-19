@@ -7,6 +7,7 @@ import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, ProtocolConstants}
@@ -969,7 +970,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      key mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
       previousOperation mustBe None
     }
   }

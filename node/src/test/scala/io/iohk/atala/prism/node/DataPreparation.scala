@@ -6,10 +6,10 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.{LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.{DIDDataState, DIDPublicKeyState, LedgerData}
@@ -132,7 +132,7 @@ object DataPreparation {
   val dummyABSequenceNumber: Int = dummyTime.getAtalaBlockSequenceNumber
   val dummyTransactionInfo: TransactionInfo =
     TransactionInfo(
-      transactionId = TransactionId.from(Sha256.compute("id".getBytes).getValue).value,
+      transactionId = TransactionId.from(Sha256Hash.compute("id".getBytes).bytes).value,
       ledger = Ledger.InMemory,
       block = Some(
         BlockInfo(

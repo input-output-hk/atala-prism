@@ -5,8 +5,7 @@ import cats.data.{EitherT, NonEmptyList}
 import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.Sha256Digest
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.ProtocolVersion
@@ -121,9 +120,9 @@ package object operations {
       override def name: String = "key-already-revoked"
     }
 
-    // Error signifying that the associated batch is already revoked
-    final case class BatchAlreadyRevoked(batchId: String) extends StateError {
-      override def name: String = "batch-already-revoked"
+    // Error signifying that the associated key could not be instanced as a Secp256K1 key
+    final case class IllegalSecp256k1Key(keyId: String) extends StateError {
+      override def name: String = "unable-to-parse-key"
     }
 
     final case class DuplicateOperation() extends StateError {
@@ -175,8 +174,8 @@ package object operations {
 
   /** Data required to verify the correctness of the operation */
   case class CorrectnessData(
-      key: ECPublicKey,
-      previousOperation: Option[Sha256Digest]
+      key: SecpPublicKey,
+      previousOperation: Option[Sha256Hash]
   )
 
   case class ApplyOperationConfig(trustedProposer: DidSuffix)
@@ -229,9 +228,9 @@ package object operations {
         _ <- incrementMetricsCounter()
       } yield ()
 
-    def digest: Sha256Digest
+    def digest: Sha256Hash
 
-    def linkedPreviousOperation: Option[Sha256Digest] = None
+    def linkedPreviousOperation: Option[Sha256Hash] = None
 
     def ledgerData: LedgerData
   }

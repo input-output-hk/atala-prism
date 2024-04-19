@@ -3,9 +3,9 @@ package io.iohk.atala.prism.node.repositories
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.models.{BlockInfo, Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.DataPreparation
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.utils.IOUtils._
@@ -97,9 +97,9 @@ class AtalaObjectsTransactionsRepositorySpec extends AtalaWithPostgresSpec {
   private def setObjectTransactionDetails3Objects(differentBlocks: Boolean = true): List[TransactionInfo] = {
     val epochMillis: List[Long] = List(10, 20, 30)
     val txIds = List(
-      Sha256.compute("id1".getBytes).getValue,
-      Sha256.compute("id2".getBytes).getValue,
-      Sha256.compute("id3".getBytes).getValue
+      Sha256Hash.compute("id1".getBytes).bytes,
+      Sha256Hash.compute("id2".getBytes).bytes,
+      Sha256Hash.compute("id3".getBytes).bytes
     ).map(TransactionId.from(_).value)
 
     val blockInfos =

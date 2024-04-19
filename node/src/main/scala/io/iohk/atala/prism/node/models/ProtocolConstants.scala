@@ -24,6 +24,10 @@ object ProtocolConstants {
   val contextStringCharLimit: Int =
     Try(globalConfig.getInt("contextStringCharLimit")).toOption.getOrElse(defaultContextStringCharLength)
 
-  val supportedEllipticCurves: Seq[String] = List("secp256k1", "Ed25519", "X25519")
+  val secpCurveName = "secp256k1"
+  val ed25519CurveName = "Ed25519"
+  val x25519CurveName = "X25519"
+
+  val supportedEllipticCurves: Seq[String] = List(secpCurveName, ed25519CurveName, x25519CurveName)
 
 }

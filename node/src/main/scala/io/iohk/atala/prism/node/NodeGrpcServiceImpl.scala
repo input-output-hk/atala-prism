@@ -127,7 +127,7 @@ class NodeGrpcServiceImpl(
         node_api
           .GetDidDocumentResponse(document = didData.maybeData)
           .withLastUpdateOperation(
-            didData.maybeOperation.map(a => ByteString.copyFrom(a.getValue)).getOrElse(ByteString.EMPTY)
+            didData.maybeOperation.map(a => ByteString.copyFrom(a.bytes.toArray)).getOrElse(ByteString.EMPTY)
           )
           .withLastSyncedBlockTimestamp(didData.lastSyncedTimeStamp.toProtoTimestamp)
     )

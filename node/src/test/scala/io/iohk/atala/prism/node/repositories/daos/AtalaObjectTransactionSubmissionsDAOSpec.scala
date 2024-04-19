@@ -4,7 +4,7 @@ import cats.effect.unsafe.implicits.global
 import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.Sha256
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.models.Ledger.InMemory
 import io.iohk.atala.prism.node.models.{Ledger, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
@@ -39,9 +39,9 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
   private val byteContent = "byteContent".getBytes
   private val ledger = Ledger.InMemory
   private val transactionId1 =
-    TransactionId.from(Sha256.compute("transactionId1".getBytes).getValue).value
+    TransactionId.from(Sha256Hash.compute("transactionId1".getBytes).bytes).value
   private val transactionId2 =
-    TransactionId.from(Sha256.compute("transactionId2".getBytes).getValue).value
+    TransactionId.from(Sha256Hash.compute("transactionId2".getBytes).bytes).value
   private val submissionTimestamp = Instant.now
 
   "AtalaObjectTransactionSubmissionsDAO.insert" should {
@@ -372,7 +372,7 @@ class AtalaObjectTransactionSubmissionsDAOSpec extends AtalaWithPostgresSpec {
       statuses: List[AtalaObjectTransactionSubmissionStatus] = List(Pending, InLedger, InLedger)
   ): List[TransactionInfo] = {
     val txIds = (1 to objectIds.size)
-      .map(idx => TransactionId.from(Sha256.compute(s"transactionId${idx + 1}".getBytes).getValue).value)
+      .map(idx => TransactionId.from(Sha256Hash.compute(s"transactionId${idx + 1}".getBytes).bytes).value)
       .toList
 
     objectIds.zip(statuses).zipWithIndex.zip(txIds).foreach { case (((objId, st), idx), txId) =>

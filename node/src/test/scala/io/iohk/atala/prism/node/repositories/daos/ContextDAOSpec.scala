@@ -4,7 +4,7 @@ import doobie.util.transactor.Transactor
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
@@ -25,25 +25,25 @@ class ContextDAOSpec extends AtalaWithPostgresSpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "keyAgreement",
       keyUsage = KeyUsage.KeyAgreementKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     )
   )
 

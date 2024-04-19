@@ -2,8 +2,8 @@ package io.iohk.atala.prism.node.interop
 
 import cats.data.NonEmptyList
 import doobie.{Get, Meta, Read, Write}
-import io.iohk.atala.prism.crypto.{MerkleRoot, Sha256Digest}
 import doobie.implicits.legacy.instant._
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.utils.DoobieImplicits.byteArraySeqMeta
@@ -12,12 +12,6 @@ import java.time.Instant
 import scala.collection.compat.immutable.ArraySeq
 
 object implicits {
-  implicit val merkleRootMeta: Meta[MerkleRoot] =
-    Meta[Array[Byte]].timap(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))(
-      _.getHash.getValue
-    )
-  implicit val merkleRootRead: Read[MerkleRoot] =
-    Read[Array[Byte]].map(arr => new MerkleRoot(Sha256Digest.fromBytes(arr)))
 
   implicit val didSuffixMeta: Meta[DidSuffix] =
     Meta[String].timap { DidSuffix.apply }(_.value)
@@ -36,12 +30,12 @@ object implicits {
   implicit val ledgerRead: Read[Ledger] =
     Read[String].map { Ledger.withNameInsensitive }
 
-  implicit val Sha256DigestWrite: Write[Sha256Digest] =
-    Write[Array[Byte]].contramap(_.getValue)
-  implicit val Sha256DigestRead: Read[Sha256Digest] =
-    Read[Array[Byte]].map(Sha256Digest.fromBytes)
-  implicit val Sha256DigestGet: Get[Sha256Digest] =
-    Get[Array[Byte]].map(Sha256Digest.fromBytes)
+  implicit val Sha256DigestWrite: Write[Sha256Hash] =
+    Write[Array[Byte]].contramap(_.bytes.toArray)
+  implicit val Sha256HashRead: Read[Sha256Hash] =
+    Read[Array[Byte]].map(Sha256Hash.fromBytes)
+  implicit val Sha256HashGet: Get[Sha256Hash] =
+    Get[Array[Byte]].map(Sha256Hash.fromBytes)
 
   implicit val timestampInfoRead: Read[TimestampInfo] =
     Read[(Instant, Int, Int)].map { case (abt, absn, osn) =>

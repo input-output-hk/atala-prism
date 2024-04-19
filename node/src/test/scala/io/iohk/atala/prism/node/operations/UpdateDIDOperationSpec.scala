@@ -5,9 +5,10 @@ import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.Sha256
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
@@ -121,7 +122,7 @@ object UpdateDIDOperationSpec {
   val exampleAddServiceOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddServiceAction
@@ -133,7 +134,7 @@ object UpdateDIDOperationSpec {
   val exampleAddKeyOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddKeyAction
@@ -145,7 +146,7 @@ object UpdateDIDOperationSpec {
   val exampleRemoveServiceOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleRemoveServiceAction
@@ -157,7 +158,7 @@ object UpdateDIDOperationSpec {
   val exampleUpdateServiceOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleUpdateServiceAction
@@ -169,7 +170,7 @@ object UpdateDIDOperationSpec {
   val exampleAllActionsOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddKeyAction,
@@ -186,7 +187,7 @@ object UpdateDIDOperationSpec {
   val examplePatchContextOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           examplePatchContextAction
@@ -198,7 +199,7 @@ object UpdateDIDOperationSpec {
   val exampleAddAndRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddKeyAction,
@@ -211,7 +212,7 @@ object UpdateDIDOperationSpec {
   val exampleRemoveOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(exampleRemoveKeyAction)
       )
@@ -221,7 +222,7 @@ object UpdateDIDOperationSpec {
   val exampleOperationWithCompressedKeys = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
       value = node_models.UpdateDIDOperation(
-        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue.toArray),
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
         id = createDidOperation.id.getValue,
         actions = Seq(exampleAddKeyActionWithCompressedKeys, exampleRemoveKeyAction)
       )
@@ -495,7 +496,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .toOption
         .value
 
-      key mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
       previousOperation mustBe Some(createDidOperation.digest)
     }
 
@@ -554,6 +555,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
 
       newKey.keyUsage mustBe KeyUsage.MasterKey
       newKey.didSuffix mustBe createDidOperation.id
+
       DIDPublicKey(
         newKey.didSuffix,
         newKey.keyId,
@@ -562,9 +564,10 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       ) mustBe parsedOperation.actions.head
         .asInstanceOf[AddKeyAction]
         .key
+
       newKey.addedOn.timestampInfo mustBe dummyLedgerData.timestampInfo
       newKey.revokedOn mustBe None
-      didInfo.lastOperation mustBe Sha256.compute(
+      didInfo.lastOperation mustBe Sha256Hash.compute(
         UpdateDIDOperationSpec.exampleAddAndRemoveOperation.toByteArray
       )
     }
@@ -649,7 +652,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       val revokeTheMaster = node_models.AtalaOperation(
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
-            previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue),
+            previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
             id = createDidOperation.id.getValue,
             actions = Seq(
               node_models.UpdateDIDAction(
@@ -691,7 +694,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       val replaceTheMaster = node_models.AtalaOperation(
         operation = node_models.AtalaOperation.Operation.UpdateDid(
           value = node_models.UpdateDIDOperation(
-            previousOperationHash = ByteString.copyFrom(createDidOperation.digest.getValue),
+            previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
             id = createDidOperation.id.getValue,
             actions = Seq(
               exampleAddKeyAction,

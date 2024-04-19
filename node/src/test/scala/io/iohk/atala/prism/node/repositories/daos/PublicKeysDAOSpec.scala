@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.repositories.daos
 
 import java.time.Instant
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
@@ -20,25 +20,25 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
       didSuffix = didSuffix,
       keyId = "master",
       keyUsage = KeyUsage.MasterKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "issuing",
       keyUsage = KeyUsage.IssuingKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "authentication",
       keyUsage = KeyUsage.AuthenticationKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     ),
     DIDPublicKey(
       didSuffix = didSuffix,
       keyId = "keyAgreement",
       keyUsage = KeyUsage.KeyAgreementKey,
-      key = EC.generateKeyPair().getPublicKey
+      key = CryptoTestUtils.generatePublicKeyData()
     )
   )
 
@@ -64,6 +64,7 @@ class PublicKeysDAOSpec extends AtalaWithPostgresSpec {
         result.keyUsage,
         result.key
       ) mustBe keys.tail.head
+
       result.addedOn mustBe dummyLedgerData
       result.revokedOn mustBe None
     }

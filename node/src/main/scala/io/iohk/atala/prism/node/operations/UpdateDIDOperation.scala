@@ -5,16 +5,18 @@ import cats.implicits._
 import doobie.free.connection.{ConnectionIO, unit}
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.atala.prism.crypto.{Sha256, Sha256Digest}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, LedgerData}
 import io.iohk.atala.prism.node.models._
-import io.iohk.atala.prism.node.operations.StateError
+import io.iohk.atala.prism.node.operations.StateError.IllegalSecp256k1Key
 import io.iohk.atala.prism.node.operations.ValidationError.{MissingAtLeastOneValue, MissingValue}
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, DIDDataDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.UpdateDIDAction.Action
+
+import scala.util.Try
 
 sealed trait UpdateDIDAction
 
@@ -35,20 +37,20 @@ case class PatchContextAction(context: List[String]) extends UpdateDIDAction
 case class UpdateDIDOperation(
     didSuffix: DidSuffix,
     actions: List[UpdateDIDAction],
-    previousOperation: Sha256Digest,
-    digest: Sha256Digest,
+    previousOperation: Sha256Hash,
+    digest: Sha256Hash,
     ledgerData: nodeState.LedgerData
 ) extends Operation {
   override val metricCounterName: String = UpdateDIDOperation.metricCounterName
 
-  override def linkedPreviousOperation: Option[Sha256Digest] = Some(
+  override def linkedPreviousOperation: Option[Sha256Hash] = Some(
     previousOperation
   )
 
   /** Fetches key and possible previous operation reference from database */
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
     for {
-      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Digest] {
+      lastOperation <- EitherT[ConnectionIO, StateError, Sha256Hash] {
         DIDDataDAO
           .getLastOperation(didSuffix)
           .map(
@@ -57,7 +59,7 @@ case class UpdateDIDOperation(
             )
           )
       }
-      key <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
+      keyData <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO
           .find(didSuffix, keyId)
           .map(_.toRight(StateError.UnknownKey(didSuffix, keyId)))
@@ -74,7 +76,14 @@ case class UpdateDIDOperation(
           StateError.KeyAlreadyRevoked()
         )
       }.map(_.key)
-    } yield CorrectnessData(key, Some(lastOperation))
+      secpKey <- EitherT.fromEither[ConnectionIO] {
+        val tryKey = Try {
+          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
+        }
+        tryKey.toOption
+          .toRight(IllegalSecp256k1Key(keyId): StateError)
+      }
+    } yield CorrectnessData(secpKey, Some(lastOperation))
   }
 
   private def revokeService(didSuffix: DidSuffix, id: String, ledgerData: LedgerData) = {
@@ -392,7 +401,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       operation: node_models.AtalaOperation,
       ledgerData: LedgerData
   ): Either[ValidationError, UpdateDIDOperation] = {
-    val operationDigest = Sha256.compute(operation.toByteArray)
+    val operationDigest = Sha256Hash.compute(operation.toByteArray)
     val updateOperation =
       ValueAtPath(operation, Path.root).child(_.getUpdateDid, "updateDid")
 
