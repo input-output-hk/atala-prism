@@ -11,9 +11,10 @@ ingress:
 secrets:
   secretStore: chart-base-secretstore
   dockerRegistryToken: chart-base-docker-registry-token
+  cardanoSecret: demeter-preprod-v2
 
 server:
-  ledger: "in-memory"
+  ledger: "cardano"
   genesisBlock: 424661
   moveScheduledToPendingPeriod: 3s
   refereshAndSubmitPeriod: 3s

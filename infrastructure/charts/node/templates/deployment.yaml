@@ -48,46 +48,59 @@ spec:
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
           - name: NODE_CARDANO_WALLET_API_HOST
-            value: "{{ .Values.vdr.cardanoNode }}.{{ .Values.vdr.cardanoNamespace }}"
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: wallet_api_host
+                optional: false
           - name: NODE_CARDANO_WALLET_ID
             valueFrom:
               secretKeyRef:
-                name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
                 key: wallet_id
                 optional: false
           - name: NODE_CARDANO_WALLET_PASSPHRASE
             valueFrom:
               secretKeyRef:
-                name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
-                key: passphrase
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: wallet_passphrase
                 optional: false
           - name: NODE_CARDANO_WALLET_API_PORT
-            value: "8090"
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: wallet_api_port
+                optional: false
           - name: NODE_CARDANO_PAYMENT_ADDRESS
             valueFrom:
               secretKeyRef:
-                name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
-                key: address
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: payment_address
                 optional: false
-          {{- if eq "cardano" .Values.server.ledger }}
           - name: NODE_CARDANO_DB_SYNC_USERNAME
             valueFrom:
               secretKeyRef:
-                name: "{{ .Release.Namespace }}.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
-                key: username
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: db_sync_username
                 optional: false
           - name: NODE_CARDANO_DB_SYNC_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: "{{ .Release.Namespace }}.cardano.{{ .Values.vdr.cardanoNode }}-postgres-cluster.credentials.postgresql.acid.zalan.do"
-                key: password
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: db_sync_password
                 optional: false
           - name: NODE_CARDANO_DB_SYNC_DATABASE
-            value: "cardano"
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: db_sync_database
+                optional: false
           - name: NODE_CARDANO_DB_SYNC_HOST
-            value: "{{ .Values.vdr.cardanoNode }}-postgres-cluster.{{ .Values.vdr.cardanoNamespace }}"
-          {{- end }}
-          # Prism Node Variables
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+                key: db_sync_host
+                optional: false
           - name: NODE_PSQL_USERNAME
             valueFrom:
               secretKeyRef:
