@@ -56,7 +56,7 @@ object ProtocolVersionUpdateOperationSpec {
       proposerDIDSuffix,
       "master",
       KeyUsage.MasterKey,
-      CryptoTestUtils.toPublicKeyData(masterKeys.getPublicKey)
+      CryptoTestUtils.toPublicKeyData(masterKeys.publicKey)
     )
   )
 
@@ -214,7 +214,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           .toOption
           .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.publicKey
       previousOperation mustBe None
     }
 

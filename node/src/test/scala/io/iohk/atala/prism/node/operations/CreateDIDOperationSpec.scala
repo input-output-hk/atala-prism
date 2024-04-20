@@ -3,11 +3,10 @@ package io.iohk.atala.prism.node.operations
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, ProtocolConstants}
@@ -16,61 +15,51 @@ import io.iohk.atala.prism.node.operations.protocolVersion.SupportedOperations
 import io.iohk.atala.prism.node.repositories.daos.ServicesDAO
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation, models}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.protos.node_models.{AtalaOperation, CompressedECKeyData, ECKeyData}
+import io.iohk.atala.prism.protos.node_models.{AtalaOperation, CompressedECKeyData}
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 import org.scalatest.OptionValues._
 
 object CreateDIDOperationSpec {
-  def protoECKeyDataFromPublicKey(key: ECPublicKey): ECKeyData = {
-    val point = key.getCurvePoint
-
-    node_models.ECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      x = ByteString.copyFrom(point.getX.bytes()),
-      y = ByteString.copyFrom(point.getY.bytes())
-    )
-  }
-
   def protoCompressedECKeyDataFromPublicKey(
-      key: ECPublicKey
+      key: SecpPublicKey
   ): CompressedECKeyData =
     node_models.CompressedECKeyData(
-      curve = ECConfig.getCURVE_NAME,
-      data = ByteString.copyFrom(key.getEncodedCompressed)
+      curve = key.curveName,
+      data = ByteString.copyFrom(key.compressed)
     )
 
-  def randomECKeyData: ECKeyData = {
-    val keyPair = EC.generateKeyPair()
-    protoECKeyDataFromPublicKey(keyPair.getPublicKey)
+  def randomECKeyData: CompressedECKeyData = {
+    val keyPair = CryptoTestUtils.generateKeyPair()
+    protoCompressedECKeyDataFromPublicKey(keyPair.publicKey)
   }
 
   def randomCompressedECKeyData: CompressedECKeyData = {
-    val keyPair = EC.generateKeyPair()
-    protoCompressedECKeyDataFromPublicKey(keyPair.getPublicKey)
+    val keyPair = CryptoTestUtils.generateKeyPair()
+    protoCompressedECKeyDataFromPublicKey(keyPair.publicKey)
   }
 
-  val masterKeys: ECKeyPair = EC.generateKeyPair()
-  val masterEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    masterKeys.getPublicKey
+  val masterKeys: SecpPair = CryptoTestUtils.generateKeyPair()
+  val masterEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(
+    masterKeys.publicKey
   )
   val masterCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(masterKeys.getPublicKey)
+    protoCompressedECKeyDataFromPublicKey(masterKeys.publicKey)
 
-  val issuingKeys: ECKeyPair = EC.generateKeyPair()
-  val issuingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    issuingKeys.getPublicKey
+  val issuingKeys: SecpPair = CryptoTestUtils.generateKeyPair()
+  val issuingEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(
+    issuingKeys.publicKey
   )
   val issuingCompressedEcKeyData: CompressedECKeyData =
-    protoCompressedECKeyDataFromPublicKey(issuingKeys.getPublicKey)
+    protoCompressedECKeyDataFromPublicKey(issuingKeys.publicKey)
 
-  val revokingKeys: ECKeyPair = EC.generateKeyPair()
-  val revokingEcKeyData: ECKeyData = protoECKeyDataFromPublicKey(
-    revokingKeys.getPublicKey
+  val revokingKeys: SecpPair = CryptoTestUtils.generateKeyPair()
+  val revokingEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(
+    revokingKeys.publicKey
   )
   val revokingCompressedEcKeyData: CompressedECKeyData =
     protoCompressedECKeyDataFromPublicKey(
-      revokingKeys.getPublicKey
+      revokingKeys.publicKey
     )
 
   private val serviceId1 = "linked-domain1"
@@ -89,7 +78,7 @@ object CreateDIDOperationSpec {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+                node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
               ),
               node_models
                 .PublicKey(
@@ -99,7 +88,7 @@ object CreateDIDOperationSpec {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
+                  node_models.PublicKey.KeyData.CompressedEcKeyData(issuingEcKeyData)
                 ),
               node_models
                 .PublicKey(
@@ -109,7 +98,7 @@ object CreateDIDOperationSpec {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(revokingEcKeyData)
+                  node_models.PublicKey.KeyData.CompressedEcKeyData(revokingEcKeyData)
                 ),
               node_models.PublicKey(
                 "authentication",
@@ -118,7 +107,7 @@ object CreateDIDOperationSpec {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
+                node_models.PublicKey.KeyData.CompressedEcKeyData(randomECKeyData)
               )
             ),
             services = List(
@@ -163,7 +152,7 @@ object CreateDIDOperationSpec {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+                  node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
                 ),
                 node_models
                   .PublicKey(
@@ -934,7 +923,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
               node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
             ),
             None,
-            node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+            node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
           )
         }
         .toList
@@ -970,7 +959,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.publicKey
       previousOperation mustBe None
     }
   }

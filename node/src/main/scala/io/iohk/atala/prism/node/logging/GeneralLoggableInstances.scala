@@ -2,8 +2,8 @@ package io.iohk.atala.prism.node.logging
 
 import io.grpc.Status
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.node.models.DidSuffix
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import tofu.logging._
 import tofu.syntax.monoid.TofuSemigroupOps
 
@@ -44,20 +44,20 @@ object GeneralLoggableInstances {
       override def logShow(a: DidSuffix): String = s"{DIDSuffix=${a.value}}"
     }
 
-  implicit val ecPublicKeyLoggable: DictLoggable[ECPublicKey] =
-    new DictLoggable[ECPublicKey] {
-      override def fields[I, V, R, S](a: ECPublicKey, i: I)(implicit
+  implicit val ecPublicKeyLoggable: DictLoggable[SecpPublicKey] =
+    new DictLoggable[SecpPublicKey] {
+      override def fields[I, V, R, S](a: SecpPublicKey, i: I)(implicit
           r: LogRenderer[I, V, R, S]
       ): R = {
-        r.addString("x", a.getCurvePoint.getX.toString, i) |+| r.addString(
+        r.addString("x", a.x.mkString, i) |+| r.addString(
           "y",
-          a.getCurvePoint.getY.toString,
+          a.y.mkString,
           i
         )
       }
 
-      override def logShow(a: ECPublicKey): String =
-        s"{ECPublicKey={x=${a.getCurvePoint.getX.toString}, y=${a.getCurvePoint.getY.toString}"
+      override def logShow(a: SecpPublicKey): String =
+        s"{ECPublicKey={x=${a.x.mkString}, y=${a.y.mkString}"
     }
 
 }

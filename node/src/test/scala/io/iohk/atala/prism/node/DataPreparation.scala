@@ -62,7 +62,7 @@ object DataPreparation {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
+                node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
               ),
               node_models
                 .PublicKey(
@@ -72,7 +72,7 @@ object DataPreparation {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
+                  node_models.PublicKey.KeyData.CompressedEcKeyData(issuingEcKeyData)
                 )
             )
           )

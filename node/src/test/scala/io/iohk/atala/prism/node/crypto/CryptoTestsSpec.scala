@@ -8,6 +8,13 @@ import org.scalatest.wordspec.AnyWordSpec
 class CryptoTestsSpec extends AnyWordSpec {
 
   "crypto library" should {
+    "encoded uncompressed should be the same as SDK" in {
+      val pair = EC.INSTANCE.generateKeyPair()
+      val compressedPub = pair.getPublicKey.getEncodedCompressed
+      val secpKeyFromCompressed = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(compressedPub.toVector)
+      pair.getPublicKey.getEncoded.toVector mustBe secpKeyFromCompressed.unCompressed.toVector
+    }
+
     "Must generate the same key from different encodings" in {
       val pair = EC.INSTANCE.generateKeyPair()
       val compressedPub = pair.getPublicKey.getEncodedCompressed

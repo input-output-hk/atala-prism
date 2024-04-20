@@ -9,31 +9,19 @@ import io.grpc.stub.MetadataUtils
 import io.grpc.{ManagedChannel, Server, StatusRuntimeException}
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticatorInterceptor
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, Lovelace}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Pending, Scheduled}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.{
-  AtalaOperationsRepository,
-  MetricsCountersRepository,
-  RequestNoncesRepository
-}
-import io.iohk.atala.prism.node.services.{
-  BlockProcessingServiceSpec,
-  NodeExplorerService,
-  ObjectManagementService,
-  StatisticsService
-}
+import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, MetricsCountersRepository, RequestNoncesRepository}
+import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeExplorerService, ObjectManagementService, StatisticsService}
 import io.iohk.atala.prism.node.nonce.{ClientHelper, RequestAuthenticator}
-import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
-  AnyOperationType,
-  CreateDidOperationOperationType
-}
+import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{AnyOperationType, CreateDidOperationOperationType}
 import io.iohk.atala.prism.protos.node_api.NodeExplorerServiceGrpc.NodeExplorerServiceBlockingClient
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
@@ -60,8 +48,10 @@ class NodeExplorerServiceSpec
   private val objectManagementService =
     mock[ObjectManagementService[IOWithTraceIdContext]]
 
-  private val masterKeyPair = EC.generateKeyPair()
-  private val whitelistedDid = DID.buildLongFormFromMasterPublicKey(masterKeyPair.getPublicKey)
+  private val masterKeyPair = CryptoTestUtils.generateKeyPair()
+  private val whitelistedDid = DID.buildLongFormFromMasterPublicKey(
+    CryptoTestUtils.getUnderlyingKey(masterKeyPair.publicKey)
+  )
 
   private val metricsCountersRepository = mock[MetricsCountersRepository[IOWithTraceIdContext]]
 
@@ -110,7 +100,7 @@ class NodeExplorerServiceSpec
     val requestSigner = ClientHelper.requestSigner(
       requestAuthenticator,
       whitelistedDid,
-      masterKeyPair.getPrivateKey
+      masterKeyPair.privateKey
     )
 
     def addAuthHeader(
@@ -172,7 +162,7 @@ class NodeExplorerServiceSpec
   "NodeExplorerService.getScheduledAtalaOperations" should {
     "return scheduled operations in correct order" in {
       def sign(op: node_models.AtalaOperation): SignedAtalaOperation =
-        BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.getPrivateKey)
+        BlockProcessingServiceSpec.signOperation(op, "master", CreateDIDOperationSpec.masterKeys.privateKey)
 
       def toAtalaObject(ops: List[node_models.AtalaOperation]): node_models.AtalaObject = {
         val block = node_models.AtalaBlock(ops.map(sign))

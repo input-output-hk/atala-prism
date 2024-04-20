@@ -7,6 +7,7 @@ import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
@@ -16,8 +17,8 @@ import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 object DeactivateDIDOperationSpec {
-  val masterKeys = CreateDIDOperationSpec.masterKeys
-  val issuingKeys = CreateDIDOperationSpec.issuingKeys
+  val masterKeys: SecpPair = CreateDIDOperationSpec.masterKeys
+  val issuingKeys: SecpPair = CreateDIDOperationSpec.issuingKeys
 
   val createDidOperation: CreateDIDOperation =
     CreateDIDOperation
@@ -88,7 +89,7 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe DeactivateDIDOperationSpec.masterKeys.getPublicKey
+      CryptoTestUtils.getUnderlyingKey(key) mustBe DeactivateDIDOperationSpec.masterKeys.publicKey
       previousOperation mustBe Some(DeactivateDIDOperationSpec.createDidOperation.digest)
     }
 

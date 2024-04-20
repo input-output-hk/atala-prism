@@ -16,7 +16,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
     BlockProcessingServiceSpec.signOperation(
       dummyAtalaOperation,
       s"master$masterId",
-      CreateDIDOperationSpec.masterKeys.getPrivateKey
+      CreateDIDOperationSpec.masterKeys.privateKey
     )
   }
 
@@ -51,7 +51,7 @@ class AtalaObjectInfoSpec extends AtalaWithPostgresSpec {
         BlockProcessingServiceSpec.signOperation(
           BlockProcessingServiceSpec.createDidOperation,
           s"master$masterId",
-          CreateDIDOperationSpec.masterKeys.getPrivateKey
+          CreateDIDOperationSpec.masterKeys.privateKey
         )
       }
       val atalaObject1 = createAtalaObject(atalaOperations.take(10))
