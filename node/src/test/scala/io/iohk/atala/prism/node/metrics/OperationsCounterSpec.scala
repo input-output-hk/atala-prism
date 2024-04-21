@@ -38,7 +38,6 @@ class OperationsCounterSpec extends AnyWordSpec with Matchers {
       )
 
       OperationsCounters.countReceivedAtalaOperations(operations).value mustBe ()
-
     }
   }
 }

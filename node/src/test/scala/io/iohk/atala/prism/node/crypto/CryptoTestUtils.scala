@@ -13,7 +13,7 @@ object CryptoTestUtils {
   object SecpPair {
     def fromECPair(ecPair: ECKeyPair): SecpPair = {
       SecpPair(
-        SecpPublicKey.unsafetoPublicKeyFromUncompressed(ecPair.getPublicKey.getEncodedCompressed),
+        SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(ecPair.getPublicKey.getEncodedCompressed.toVector),
         SecpPrivateKey.unsafefromBytesCompressed(ecPair.getPrivateKey.getEncoded)
       )
     }

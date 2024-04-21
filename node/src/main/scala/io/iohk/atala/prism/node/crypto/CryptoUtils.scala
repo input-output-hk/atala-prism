@@ -2,13 +2,15 @@ package io.iohk.atala.prism.node.crypto
 
 import io.iohk.atala.prism.node.models.ProtocolConstants
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
-import org.bouncycastle.jce.interfaces.ECPublicKey
+import org.bouncycastle.jce.interfaces.{ECPrivateKey, ECPublicKey}
 
 import java.security.{KeyFactory, MessageDigest, PrivateKey, PublicKey, Security, Signature}
 import org.bouncycastle.jce.{ECNamedCurveTable, ECPointUtil}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 
-import java.security.spec.{ECPoint, ECPublicKeySpec}
+import java.math.BigInteger
+import java.security.spec.{ECParameterSpec, ECPoint, ECPrivateKeySpec, ECPublicKeySpec}
 
 object CryptoUtils {
   def isSecp256k1(key: SecpPublicKey): Boolean = {
@@ -53,18 +55,37 @@ object CryptoUtils {
   }
 
   trait SecpPrivateKey {
+    private[crypto] def bytes: Array[Byte]
     private[crypto] def privateLey: PrivateKey
+    def getEncoded: Array[Byte]
   }
   private[crypto] case class SecpPrivateKeyImpl(bytes: Array[Byte]) extends SecpPrivateKey {
+    override def getEncoded: Array[Byte] = {
+      // val PRIVATE_KEY_BYTE_SIZE = 32
+      // val byteList = privateLey.asInstanceOf[ECPrivateKey].getD.toByteArray
+      // val padding = Array.fill[Byte](PRIVATE_KEY_BYTE_SIZE - byteList.size) { 0 }
+      // padding ++ byteList
+      // The SDK was adding a padding that seems to later not be able to parse according to tests
+
+      privateLey
+        .asInstanceOf[ECPrivateKey]
+        .getD
+        .toByteArray
+        .dropWhile(_ == 0)
+    }
+
     override def privateLey: PrivateKey = {
-      val params = ECNamedCurveTable.getParameterSpec("secp256k1")
-      val fact = KeyFactory.getInstance("ECDSA", provider)
-      val curve = params.getCurve
-      val ellipticCurve = EC5Util.convertCurve(curve, params.getSeed)
-      val point = ECPointUtil.decodePoint(ellipticCurve, bytes)
-      val params2 = EC5Util.convertSpec(ellipticCurve, params)
-      val keySpec = new ECPublicKeySpec(point, params2)
-      fact.generatePrivate(keySpec)
+      val ecParameterSpec = ECNamedCurveTable.getParameterSpec("secp256k1")
+      val ecNamedCurveSpec: ECParameterSpec = new ECNamedCurveSpec(
+        ecParameterSpec.getName,
+        ecParameterSpec.getCurve,
+        ecParameterSpec.getG,
+        ecParameterSpec.getN
+      )
+      val bigInt = new BigInteger(1, bytes)
+      val spec = new ECPrivateKeySpec(bigInt, ecNamedCurveSpec)
+      val keyFactory = KeyFactory.getInstance("EC", provider)
+      keyFactory.generatePrivate(spec)
     }
   }
 
@@ -131,7 +152,21 @@ object CryptoUtils {
       SecpPublicKey.fromPublicKey(fact.generatePublic(keySpec))
     }
 
-    def unsafetoPublicKeyFromUncompressed(bytes: Array[Byte]): SecpPublicKey = ???
+    def unsafetoPublicKeyFromUncompressed(bytes: Array[Byte]): SecpPublicKey = {
+      val PRIVATE_KEY_BYTE_SIZE: Int = 32
+      val pointSize = PRIVATE_KEY_BYTE_SIZE * 2  + 1
+      require(bytes.length == pointSize, s"Invalid public key bytes length, ${bytes.length}")
+
+      val uncompressedPrefix = bytes.head
+      require(uncompressedPrefix == 0x04.toByte, "Invalid uncompressed public key prefix")
+
+      val xBytes = bytes.slice(1, pointSize / 2 + 1)
+      val yBytes = bytes.slice(pointSize / 2 + 1, pointSize + 1)
+
+      val x = new BigInteger(1, xBytes)
+      val y = new BigInteger(1, yBytes)
+      unsafeToSecpPublicKeyFromBigIntegerCoordinates(x, y)
+    }
   }
 
   private val provider = new BouncyCastleProvider()
