@@ -9,7 +9,12 @@ import io.iohk.atala.prism.protos.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
-import io.iohk.atala.prism.node.operations.{ApplyOperationConfig, CreateDIDOperation, CreateDIDOperationSpec, UpdateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.{
+  ApplyOperationConfig,
+  CreateDIDOperation,
+  CreateDIDOperationSpec,
+  UpdateDIDOperationSpec
+}
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

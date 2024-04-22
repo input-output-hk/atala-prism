@@ -11,11 +11,15 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec
 
 import java.math.BigInteger
 import java.security.spec.{ECParameterSpec, ECPoint, ECPrivateKeySpec, ECPublicKeySpec}
+import scala.util.Try
 
 object CryptoUtils {
   def isSecp256k1(key: SecpPublicKey): Boolean = {
-    val t = key
-    t == t
+    val params = ECNamedCurveTable.getParameterSpec("secp256k1")
+    val curve = params.getCurve
+    val x = new BigInteger(1, key.x)
+    val y = new BigInteger(1, key.y)
+    Try(curve.validatePoint(x, y)).isSuccess
   }
 
   trait SecpPublicKey {
@@ -56,12 +60,6 @@ object CryptoUtils {
   }
   private[crypto] case class SecpPrivateKeyImpl(bytes: Array[Byte]) extends SecpPrivateKey {
     override def getEncoded: Array[Byte] = {
-      // val PRIVATE_KEY_BYTE_SIZE = 32
-      // val byteList = privateLey.asInstanceOf[ECPrivateKey].getD.toByteArray
-      // val padding = Array.fill[Byte](PRIVATE_KEY_BYTE_SIZE - byteList.size) { 0 }
-      // padding ++ byteList
-      // The SDK was adding a padding that seems to later not be able to parse according to tests
-
       privateLey
         .asInstanceOf[ECPrivateKey]
         .getD
@@ -149,7 +147,7 @@ object CryptoUtils {
 
     def unsafetoPublicKeyFromUncompressed(bytes: Array[Byte]): SecpPublicKey = {
       val PRIVATE_KEY_BYTE_SIZE: Int = 32
-      val pointSize = PRIVATE_KEY_BYTE_SIZE * 2  + 1
+      val pointSize = PRIVATE_KEY_BYTE_SIZE * 2 + 1
       require(bytes.length == pointSize, s"Invalid public key bytes length, ${bytes.length}")
 
       val uncompressedPrefix = bytes.head

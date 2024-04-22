@@ -11,7 +11,12 @@ import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
-import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterEcKeyData, randomCompressedECKeyData, randomECKeyData}
+import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{
+  issuingEcKeyData,
+  masterEcKeyData,
+  randomCompressedECKeyData,
+  randomECKeyData
+}
 import io.iohk.atala.prism.node.repositories.daos.{ContextDAO, PublicKeysDAO, ServicesDAO}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models

@@ -18,10 +18,22 @@ import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.models.AtalaObjectStatus.{Pending, Scheduled}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations._
-import io.iohk.atala.prism.node.repositories.{AtalaOperationsRepository, MetricsCountersRepository, RequestNoncesRepository}
-import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeExplorerService, ObjectManagementService, StatisticsService}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaOperationsRepository,
+  MetricsCountersRepository,
+  RequestNoncesRepository
+}
+import io.iohk.atala.prism.node.services.{
+  BlockProcessingServiceSpec,
+  NodeExplorerService,
+  ObjectManagementService,
+  StatisticsService
+}
 import io.iohk.atala.prism.node.nonce.{ClientHelper, RequestAuthenticator}
-import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{AnyOperationType, CreateDidOperationOperationType}
+import io.iohk.atala.prism.protos.node_api.GetScheduledOperationsRequest.OperationType.{
+  AnyOperationType,
+  CreateDidOperationOperationType
+}
 import io.iohk.atala.prism.protos.node_api.NodeExplorerServiceGrpc.NodeExplorerServiceBlockingClient
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation

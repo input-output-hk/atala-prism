@@ -13,7 +13,11 @@ import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
-import io.iohk.atala.prism.node.errors.NodeError.{TooManyDidPublicKeysCreationAttempt, TooManyServiceCreationAttempt, UnsupportedProtocolVersion}
+import io.iohk.atala.prism.node.errors.NodeError.{
+  TooManyDidPublicKeysCreationAttempt,
+  TooManyServiceCreationAttempt,
+  UnsupportedProtocolVersion
+}
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
 import io.iohk.atala.prism.node.models._
@@ -21,7 +25,12 @@ import io.iohk.atala.prism.node.operations.{ApplyOperationConfig, CreateDIDOpera
 import io.iohk.atala.prism.node.operations.CreateDIDOperationSpec.{issuingEcKeyData, masterKeys}
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperationSpec._
 import io.iohk.atala.prism.node.repositories.daos.{AtalaObjectTransactionSubmissionsDAO, AtalaObjectsDAO}
-import io.iohk.atala.prism.node.repositories.{AtalaObjectsTransactionsRepository, AtalaOperationsRepository, KeyValuesRepository, ProtocolVersionRepository}
+import io.iohk.atala.prism.node.repositories.{
+  AtalaObjectsTransactionsRepository,
+  AtalaOperationsRepository,
+  KeyValuesRepository,
+  ProtocolVersionRepository
+}
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec.{createDidOperation, signOperation}
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.{DataPreparation, PublicationInfo, UnderlyingLedger}

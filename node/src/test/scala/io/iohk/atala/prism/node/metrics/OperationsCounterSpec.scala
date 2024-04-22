@@ -6,7 +6,12 @@ import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
 import io.iohk.atala.prism.protos.node_models.{AtalaOperation, SignedAtalaOperation}
 import org.scalatest.EitherValues._
 import org.scalatest.matchers.must.Matchers
-import io.iohk.atala.prism.node.operations.{CreateDIDOperationSpec, DeactivateDIDOperationSpec, ProtocolVersionUpdateOperationSpec, UpdateDIDOperationSpec}
+import io.iohk.atala.prism.node.operations.{
+  CreateDIDOperationSpec,
+  DeactivateDIDOperationSpec,
+  ProtocolVersionUpdateOperationSpec,
+  UpdateDIDOperationSpec
+}
 
 class OperationsCounterSpec extends AnyWordSpec with Matchers {
   "countReceivedAtalaOperations" should {

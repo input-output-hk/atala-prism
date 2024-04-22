@@ -22,7 +22,7 @@ import org.scalatest.OptionValues._
 
 object CreateDIDOperationSpec {
   def protoECKeyDataFromPublicKey(
-    key: SecpPublicKey
+      key: SecpPublicKey
   ): node_models.ECKeyData =
     node_models.ECKeyData(
       curve = key.curveName,
@@ -42,7 +42,6 @@ object CreateDIDOperationSpec {
     val keyPair = CryptoTestUtils.generateKeyPair()
     protoECKeyDataFromPublicKey(keyPair.publicKey)
   }
-
 
   def randomCompressedECKeyData: CompressedECKeyData = {
     val keyPair = CryptoTestUtils.generateKeyPair()

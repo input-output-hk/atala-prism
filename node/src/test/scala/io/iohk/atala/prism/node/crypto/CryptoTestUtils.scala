@@ -25,10 +25,8 @@ object CryptoTestUtils {
     )
   }
 
-  def generatePublicKey(): SecpPublicKey = generateKeyPair().publicKey
-
   def generatePublicKeyData(): PublicKeyData = toPublicKeyData(
-    generatePublicKey()
+    generateKeyPair().publicKey
   )
 
   def getUnderlyingKey(secpKey: SecpPublicKey): ECPublicKey = EC.INSTANCE.toPublicKeyFromCompressed(secpKey.compressed)
