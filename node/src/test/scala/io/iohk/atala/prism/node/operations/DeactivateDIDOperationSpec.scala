@@ -6,7 +6,6 @@ import doobie.implicits._
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
-import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.repositories.daos.PublicKeysDAO
@@ -89,7 +88,7 @@ class DeactivateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsing
         .toOption
         .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe DeactivateDIDOperationSpec.masterKeys.publicKey
+      key.compressed.toVector mustBe DeactivateDIDOperationSpec.masterKeys.publicKey.compressed.toVector
       previousOperation mustBe Some(DeactivateDIDOperationSpec.createDidOperation.digest)
     }
 

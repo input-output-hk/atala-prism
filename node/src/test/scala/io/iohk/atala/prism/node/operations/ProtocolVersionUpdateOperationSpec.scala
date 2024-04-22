@@ -214,7 +214,7 @@ class ProtocolVersionUpdateOperationSpec extends AtalaWithPostgresSpec {
           .toOption
           .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.publicKey
+      key.compressed.toVector mustBe masterKeys.publicKey.compressed.toVector
       previousOperation mustBe None
     }
 

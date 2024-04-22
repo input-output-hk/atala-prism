@@ -37,7 +37,7 @@ object UpdateDIDOperationSpec {
           node_models.PublicKey(
             id = "new_master",
             usage = node_models.KeyUsage.MASTER_KEY,
-            keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(randomECKeyData)
+            keyData = node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
           )
         )
       )
@@ -491,7 +491,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .toOption
         .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.publicKey
+      key.compressed.toVector mustBe masterKeys.publicKey.compressed.toVector
       previousOperation mustBe Some(createDidOperation.digest)
     }
 
@@ -980,7 +980,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
             node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
           ),
           None,
-          node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
+          node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
         ) :: Array
           .tabulate(publicKeysLimit - 1) { index =>
             node_models.PublicKey(

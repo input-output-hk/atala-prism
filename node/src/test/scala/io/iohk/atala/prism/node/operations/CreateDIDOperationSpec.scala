@@ -21,6 +21,15 @@ import org.scalatest.Inside._
 import org.scalatest.OptionValues._
 
 object CreateDIDOperationSpec {
+  def protoECKeyDataFromPublicKey(
+    key: SecpPublicKey
+  ): node_models.ECKeyData =
+    node_models.ECKeyData(
+      curve = key.curveName,
+      x = ByteString.copyFrom(key.x),
+      y = ByteString.copyFrom(key.y)
+    )
+
   def protoCompressedECKeyDataFromPublicKey(
       key: SecpPublicKey
   ): CompressedECKeyData =
@@ -29,10 +38,11 @@ object CreateDIDOperationSpec {
       data = ByteString.copyFrom(key.compressed)
     )
 
-  def randomECKeyData: CompressedECKeyData = {
+  def randomECKeyData: node_models.ECKeyData = {
     val keyPair = CryptoTestUtils.generateKeyPair()
-    protoCompressedECKeyDataFromPublicKey(keyPair.publicKey)
+    protoECKeyDataFromPublicKey(keyPair.publicKey)
   }
+
 
   def randomCompressedECKeyData: CompressedECKeyData = {
     val keyPair = CryptoTestUtils.generateKeyPair()
@@ -40,7 +50,7 @@ object CreateDIDOperationSpec {
   }
 
   val masterKeys: SecpPair = CryptoTestUtils.generateKeyPair()
-  val masterEcKeyData: CompressedECKeyData = protoCompressedECKeyDataFromPublicKey(
+  val masterEcKeyData: node_models.ECKeyData = protoECKeyDataFromPublicKey(
     masterKeys.publicKey
   )
   val masterCompressedEcKeyData: CompressedECKeyData =
@@ -78,7 +88,7 @@ object CreateDIDOperationSpec {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
+                node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
               ),
               node_models
                 .PublicKey(
@@ -107,7 +117,7 @@ object CreateDIDOperationSpec {
                   node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                 ),
                 None,
-                node_models.PublicKey.KeyData.CompressedEcKeyData(randomECKeyData)
+                node_models.PublicKey.KeyData.EcKeyData(randomECKeyData)
               )
             ),
             services = List(
@@ -152,7 +162,7 @@ object CreateDIDOperationSpec {
                     node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
                   ),
                   None,
-                  node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
+                  node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
                 ),
                 node_models
                   .PublicKey(
@@ -923,7 +933,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
               node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
             ),
             None,
-            node_models.PublicKey.KeyData.CompressedEcKeyData(masterEcKeyData)
+            node_models.PublicKey.KeyData.EcKeyData(masterEcKeyData)
           )
         }
         .toList
@@ -959,7 +969,7 @@ class CreateDIDOperationSpec extends AtalaWithPostgresSpec {
         .toOption
         .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.publicKey
+      key.compressed.toVector mustBe masterKeys.publicKey.compressed.toVector
       previousOperation mustBe None
     }
   }

@@ -63,15 +63,15 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
     "return key given publicKey contains compressedKeyData" in {
       val didData =
         DIDData(publicKeys = Seq(masterCompressedEcKeyDataPublicKey))
-      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
-        masterKeys.publicKey
+      DIDUtils.findPublicKey(didData, "master").value.futureValue.map(_.compressed.toVector) mustBe Right(
+        masterKeys.publicKey.compressed.toVector
       )
     }
 
     "return key given publicKey contains not compressed dKeyData" in {
       val didData = DIDData(publicKeys = Seq(masterEcKeyDataPublicKey))
-      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
-        masterKeys.publicKey
+      DIDUtils.findPublicKey(didData, "master").value.futureValue.map(_.compressed.toVector) mustBe Right(
+        masterKeys.publicKey.compressed.toVector
       )
     }
 
@@ -93,8 +93,8 @@ class DIDUtilsSpec extends AnyWordSpec with Matchers {
           )
         )
       val didData = DIDData(publicKeys = Seq(compressedAsUncompressedKey))
-      DIDUtils.findPublicKey(didData, "master").value.futureValue mustBe Right(
-        masterKeys.publicKey
+      DIDUtils.findPublicKey(didData, "master").value.futureValue.map(_.compressed.toVector) mustBe Right(
+        masterKeys.publicKey.compressed.toVector
       )
     }
   }

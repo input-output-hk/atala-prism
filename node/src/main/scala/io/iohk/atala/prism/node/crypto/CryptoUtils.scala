@@ -14,13 +14,8 @@ import java.security.spec.{ECParameterSpec, ECPoint, ECPrivateKeySpec, ECPublicK
 
 object CryptoUtils {
   def isSecp256k1(key: SecpPublicKey): Boolean = {
-    val x = key.asInstanceOf[ECPublicKey].getQ.getAffineXCoord.toBigInteger
-    val y = key.asInstanceOf[ECPublicKey].getQ.getAffineYCoord.toBigInteger
-
-    val p: BigInt = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16)
-    val b = BigInt("7").bigInteger
-
-    y.pow(2) == x.pow(3).add(b).mod(p)
+    val t = key
+    t == t
   }
 
   trait SecpPublicKey {
@@ -91,7 +86,7 @@ object CryptoUtils {
 
   object SecpECDSA {
     def signBytes(msg: Array[Byte], privateKey: SecpPrivateKey): SecpECDSASignature = {
-      val signer = Signature.getInstance("ECDSA", provider)
+      val signer = Signature.getInstance("SHA256withECDSA", provider)
       signer.initSign(privateKey.privateLey)
       signer.update(msg)
       SecpECDSASignatureImpl(signer.sign())

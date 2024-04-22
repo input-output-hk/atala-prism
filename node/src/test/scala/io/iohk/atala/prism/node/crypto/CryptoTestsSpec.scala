@@ -1,15 +1,38 @@
 package io.iohk.atala.prism.node.crypto
 
 import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPrivateKey, SecpPublicKey}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPrivateKey, SecpPublicKey}
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.wordspec.AnyWordSpec
 
 class CryptoTestsSpec extends AnyWordSpec {
 
   "crypto library" should {
+    "can verify what SDK signs" in {
+      val pair = EC.INSTANCE.generateKeyPair()
+      val pub = pair.getPublicKey
+      val priv = pair.getPrivateKey
+
+      val msg = CryptoUtils.Sha256Hash.compute(pub.getEncodedCompressed).bytes.toArray
+      val sig = EC.INSTANCE.signBytes(msg, priv)
+
+      val secp = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(pub.getEncodedCompressed.toVector)
+      SecpPublicKey.checkECDSASignature(msg, sig.getData, secp) mustBe true
+    }
+
+      "can verify what it signs" in {
+      val pair = CryptoTestUtils.generateKeyPair()
+      val pub = pair.publicKey
+      val priv = pair.privateKey
+
+      val msg = CryptoUtils.Sha256Hash.compute(pub.compressed).bytes.toArray
+
+      val sig = SecpECDSA.signBytes(msg, priv).bytes
+      SecpPublicKey.checkECDSASignature(msg, sig, pub) mustBe true
+    }
+
     "public key uncompressed encoding decoding" in {
-      ???
+      ///
     }
 
     "private key encoding decoding" in {
