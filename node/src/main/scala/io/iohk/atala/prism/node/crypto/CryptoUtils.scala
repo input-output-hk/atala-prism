@@ -55,19 +55,19 @@ object CryptoUtils {
 
   trait SecpPrivateKey {
     private[crypto] def bytes: Array[Byte]
-    private[crypto] def privateLey: PrivateKey
+    private[crypto] def privateKey: PrivateKey
     def getEncoded: Array[Byte]
   }
   private[crypto] case class SecpPrivateKeyImpl(bytes: Array[Byte]) extends SecpPrivateKey {
     override def getEncoded: Array[Byte] = {
-      privateLey
+      privateKey
         .asInstanceOf[ECPrivateKey]
         .getD
         .toByteArray
         .dropWhile(_ == 0)
     }
 
-    override def privateLey: PrivateKey = {
+    override def privateKey: PrivateKey = {
       val ecParameterSpec = ECNamedCurveTable.getParameterSpec("secp256k1")
       val ecNamedCurveSpec: ECParameterSpec = new ECNamedCurveSpec(
         ecParameterSpec.getName,
@@ -85,7 +85,7 @@ object CryptoUtils {
   object SecpECDSA {
     def signBytes(msg: Array[Byte], privateKey: SecpPrivateKey): SecpECDSASignature = {
       val signer = Signature.getInstance("SHA256withECDSA", provider)
-      signer.initSign(privateKey.privateLey)
+      signer.initSign(privateKey.privateKey)
       signer.update(msg)
       SecpECDSASignatureImpl(signer.sign())
     }

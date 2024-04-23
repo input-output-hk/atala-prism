@@ -14,10 +14,6 @@ import scala.util.Try
 // removed, then this tests should be deleted too
 class CryptoTestsSpec extends AnyWordSpec {
 
-  // public key encoding/decoding (compressed and uncompressed)
-  // private key encoding/decoding
-  // Signature validation
-
   "cryptoUtils library" should {
 
     // HASHING
@@ -88,7 +84,7 @@ class CryptoTestsSpec extends AnyWordSpec {
     }
 
     // PUBLIC KEY ENCODING / DECODING
-    "public key uncompressed encoding us compatible with SDK" in {
+    "public key uncompressed encoding / decoding is compatible with SDK" in {
       val secpPublicKey = CryptoTestUtils.generateKeyPair().publicKey
       val sdkPubKey = EC.INSTANCE.generateKeyPair().getPublicKey
 
@@ -104,20 +100,56 @@ class CryptoTestsSpec extends AnyWordSpec {
       uSecp.toVector mustBe parsedSecpKey.getEncoded.toVector
     }
 
-    "private key encoding decoding" in {
-      val pair = EC.INSTANCE.generateKeyPair()
-      val privK = pair.getPrivateKey
-      val encodedPvKey = privK.getEncoded
-      val secp = SecpPrivateKey.unsafefromBytesCompressed(encodedPvKey)
+    "public key compressed encoding / decoding is compatible with SDK" in {
+      val secpPublicKey = CryptoTestUtils.generateKeyPair().publicKey
+      val sdkPubKey = EC.INSTANCE.generateKeyPair().getPublicKey
 
-      encodedPvKey.toVector mustBe secp.getEncoded.toVector
+      val secp = secpPublicKey.compressed
+      val sdk = sdkPubKey.getEncodedCompressed
+
+      // we parse the keys in the opposite library
+      val parsedSDKKey = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(sdk.toVector)
+      val parsedSecpKey = EC.INSTANCE.toPublicKeyFromCompressed(secp)
+
+      // we compare the encodings
+      sdk.toVector mustBe parsedSDKKey.compressed.toVector
+      secp.toVector mustBe parsedSecpKey.getEncodedCompressed.toVector
     }
 
-    "encoded uncompressed should be the same as SDK" in {
-      val pair = EC.INSTANCE.generateKeyPair()
-      val compressedPub = pair.getPublicKey.getEncodedCompressed
-      val secpKeyFromCompressed = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(compressedPub.toVector)
-      pair.getPublicKey.getEncoded.toVector mustBe secpKeyFromCompressed.unCompressed.toVector
+    "public key coordinates encoding / decoding is compatible with SDK" in {
+      val secpPublicKey = CryptoTestUtils.generateKeyPair().publicKey
+      val sdkPubKey = EC.INSTANCE.generateKeyPair().getPublicKey
+
+      val secpX = secpPublicKey.x
+      val secpY = secpPublicKey.y
+      val sdkX = sdkPubKey.getCurvePoint.getX.bytes()
+      val sdkY = sdkPubKey.getCurvePoint.getY.bytes()
+
+      // we parse the keys in the opposite library
+      val parsedSDKKey = SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(sdkX, sdkY)
+      val parsedSecpKey = EC.INSTANCE.toPublicKeyFromByteCoordinates(secpX, secpY)
+
+      // we compare the encodings
+      sdkX.toVector mustBe parsedSDKKey.x.toVector
+      sdkY.toVector mustBe parsedSDKKey.y.toVector
+      secpX.toVector mustBe parsedSecpKey.getCurvePoint.getX.bytes().toVector
+      secpY.toVector mustBe parsedSecpKey.getCurvePoint.getY.bytes().toVector
+    }
+
+    "private key encoding / decoding is compatible with SDK" in {
+      val secpPrivateKey = CryptoTestUtils.generateKeyPair().privateKey
+      val sdkPrivate = EC.INSTANCE.generateKeyPair().getPrivateKey
+
+      val uSecp = secpPrivateKey.getEncoded
+      val uSdk = sdkPrivate.getEncoded
+
+      // we parse the keys in the opposite library
+      val parsedSDKKey = SecpPrivateKey.unsafefromBytesCompressed(uSdk)
+      val parsedSecpKey = EC.INSTANCE.toPrivateKeyFromBytes(uSecp)
+
+      // we compare the encodings
+      uSdk.toVector mustBe parsedSDKKey.getEncoded.toVector
+      uSecp.toVector mustBe parsedSecpKey.getEncoded.toVector
     }
 
     "Must generate the same key from different encodings" in {
