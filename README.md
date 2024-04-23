@@ -1,10 +1,35 @@
 # PRISM Node
 
-This project represents a reference implementation of the PRISM Node described in the PRISM DID method specification.
+This project represents a reference implementation of the PRISM Node described in the [PRISM DID method specification](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md).
 This code is not recommended for production environments. The project supports:
 - the indexing of the blockchain
 - The interpretation of the DID method events (Creation, updates and deactivation)
 - batch submission for DID PRISM operations
+
+## Dependencies
+
+### Install coursier
+
+Coursier is a package manager through which we will install all java/scala related dependencies. Follow the [instructions](https://get-coursier.io/docs/cli-installation.html) for your operating system
+
+### Install JDK 11
+
+```bash
+cs java --jvm adopt:1.11.0-11 --setup
+```
+after that `java -version` should yield
+
+```bash
+openjdk version "11.0.11" 2021-04-20
+OpenJDK Runtime Environment (build 11.0.11+9)
+OpenJDK 64-Bit Server VM (build 11.0.11+9, mixed mode)
+```
+
+### Install sbt
+
+```bash
+cs install sbt
+```
 
 ## How to run
 
@@ -182,8 +207,4 @@ If you encounter an error while importing the build, run "Metals: switch build s
 run "Metals: run doctor" to see if all sub-project builds have been imported
 
 run "Metals: restart build server" to restart the build server, if editor is acting weird.
-
-## Known limitations
-
-- This reference implementation does not support Cardano rollbacks' management
 
