@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.nonce
 
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.signature.ECSignature
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -15,11 +15,11 @@ abstract class RequestAuthenticatorSpecBase extends AnyWordSpec {
 
   "signConnectorRequest" should {
     "return the encoded signature and nonce" in {
-      val keyPair = EC.generateKeyPair()
+      val keyPair = CryptoTestUtils.generateKeyPair()
 
       val signedRequest = requestAuthenticator.signConnectorRequest(
         request,
-        keyPair.getPrivateKey
+        keyPair.privateKey
       )
 
       val signature =
@@ -29,23 +29,23 @@ abstract class RequestAuthenticatorSpecBase extends AnyWordSpec {
         Base64.getUrlDecoder.decode(signedRequest.encodedRequestNonce)
       signedRequest.requestNonce must contain theSameElementsInOrderAs requestNonce
       val requestWithNonce = requestNonce ++ request
-      EC.verifyBytes(
+      SecpPublicKey.checkECDSASignature(
         requestWithNonce,
-        keyPair.getPublicKey,
-        new ECSignature(signature)
+        signature,
+        keyPair.publicKey
       ) mustBe true
     }
 
     "return random nonces" in {
-      val keyPair = EC.generateKeyPair()
+      val keyPair = CryptoTestUtils.generateKeyPair()
 
       val signedRequest1 = requestAuthenticator.signConnectorRequest(
         request,
-        keyPair.getPrivateKey
+        keyPair.privateKey
       )
       val signedRequest2 = requestAuthenticator.signConnectorRequest(
         request,
-        keyPair.getPrivateKey
+        keyPair.privateKey
       )
 
       signedRequest1.encodedRequestNonce must not be signedRequest2.encodedRequestNonce

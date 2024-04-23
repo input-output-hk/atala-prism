@@ -3,8 +3,8 @@ package io.iohk.atala.prism.node.operations
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.Inside._
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import com.google.protobuf.ByteString
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.models.ProtocolConstants
 
 import javax.xml.bind.DatatypeConverter
@@ -57,9 +57,9 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
 
     "fail parseCompressedECKey when curve in provided argument does mot match curve in EC config" in {
 
-      val keyPair = EC.generateKeyPair()
-      val pk = keyPair.getPublicKey
-      val validData = ByteString.copyFrom(pk.getEncodedCompressed)
+      val keyPair = CryptoTestUtils.generateKeyPair()
+      val pk = keyPair.publicKey
+      val validData = ByteString.copyFrom(pk.compressed)
 
       val invalidCompressedKey = node_models.CompressedECKeyData(
         curve = "InvalidCurve", // some random string that is not ECConfig.getCURVE_NAME
@@ -82,9 +82,9 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
 
     "parse key successfully with valid key curves" in {
 
-      val keyPair = EC.generateKeyPair()
+      val keyPair = CryptoTestUtils.generateKeyPair()
 
-      val dataByteString: ByteString = ByteString.copyFrom(keyPair.getPublicKey.getEncodedCompressed)
+      val dataByteString: ByteString = ByteString.copyFrom(keyPair.publicKey.compressed)
 
       val pks = ProtocolConstants.supportedEllipticCurves.map { curve =>
         new CompressedECKeyData(

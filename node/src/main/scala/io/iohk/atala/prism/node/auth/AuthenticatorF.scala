@@ -9,12 +9,10 @@ import cats.{Applicative, Comonad, Functor, Monad, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.auth.errors._
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.node.auth.utils.DIDUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
 import io.iohk.atala.prism.protos.node_api
 import scalapb.GeneratedMessage
 import tofu.Execute
@@ -125,10 +123,10 @@ private[auth] class WhitelistedAuthenticatorFImpl[F[_]: Monad](burnAuth: Whiteli
 
   private def verifyRequestSignature(
       did: DID,
-      publicKey: ECPublicKey,
+      publicKey: SecpPublicKey,
       request: Array[Byte],
       requestNonce: model.RequestNonce,
-      signature: ECSignature
+      signature: SecpECDSASignature
   ): F[Either[AuthError, DID]] = {
     for {
       _ <- EitherT(verifyRequestSignature(publicKey, request, requestNonce, signature))
@@ -137,13 +135,13 @@ private[auth] class WhitelistedAuthenticatorFImpl[F[_]: Monad](burnAuth: Whiteli
   }.value
 
   protected def verifyRequestSignature(
-      publicKey: ECPublicKey,
+      publicKey: SecpPublicKey,
       request: Array[Byte],
       requestNonce: model.RequestNonce,
-      signature: ECSignature
+      signature: SecpECDSASignature
   ): F[Either[AuthError, Unit]] = {
     val payload = requestNonce.mergeWith(request).toArray
-    val isVerified = Try(EC.verifyBytes(payload, publicKey, signature)).getOrElse(false)
+    val isVerified = Try(SecpPublicKey.checkECDSASignature(payload, signature.bytes, publicKey)).getOrElse(false)
     Applicative[F].pure(
       Either
         .cond[AuthError, Unit](
@@ -169,10 +167,10 @@ private[auth] class AuthenticatorFImpl[Id, F[_]: Monad: Execute](
     */
   private def verifyRequestSignature(
       id: Id,
-      publicKey: ECPublicKey,
+      publicKey: SecpPublicKey,
       request: Array[Byte],
       requestNonce: model.RequestNonce,
-      signature: ECSignature
+      signature: SecpECDSASignature
   ): F[Either[AuthError, Id]] = {
     for {
       _ <- EitherT(verifyRequestSignature(publicKey, request, requestNonce, signature))

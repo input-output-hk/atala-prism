@@ -122,7 +122,7 @@ class NodeServiceSpec
         didSuffix,
         "master",
         KeyUsage.MasterKey,
-        CryptoTestUtils.toPublicKeyData(CreateDIDOperationSpec.masterKeys.getPublicKey)
+        CryptoTestUtils.toPublicKeyData(CreateDIDOperationSpec.masterKeys.publicKey)
       )
       PublicKeysDAO
         .insert(key, dummyLedgerData)
@@ -162,8 +162,10 @@ class NodeServiceSpec
     }
 
     "return error for a long form DID" in {
-      val masterKey = CreateDIDOperationSpec.masterKeys.getPublicKey
-      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
+      val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
+      val longFormDID = DID.buildLongFormFromMasterPublicKey(
+        CryptoTestUtils.getUnderlyingKey(masterKey)
+      )
       doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
         .getLastSyncedTimestamp
@@ -182,7 +184,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
       val operationId = AtalaOperationId.of(operation)
       mockOperationId(operationId)
@@ -209,7 +211,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperationWithCompressedKeys,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
       val operationId = AtalaOperationId.of(operation)
       mockOperationId(operationId)
@@ -240,7 +242,7 @@ class NodeServiceSpec
           _.updateDid.actions(0).addKey.key.id := ""
         ),
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -257,7 +259,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
         "master",
-        UpdateDIDOperationSpec.masterKeys.getPrivateKey
+        UpdateDIDOperationSpec.masterKeys.privateKey
       )
       val operationId = AtalaOperationId.of(operation)
       mockOperationId(operationId)
@@ -278,7 +280,7 @@ class NodeServiceSpec
       val operation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleOperationWithCompressedKeys,
         "master",
-        UpdateDIDOperationSpec.masterKeys.getPrivateKey
+        UpdateDIDOperationSpec.masterKeys.privateKey
       )
       val operationId = AtalaOperationId.of(operation)
       mockOperationId(operationId)
@@ -301,7 +303,7 @@ class NodeServiceSpec
           _.updateDid.id := "abc#@!"
         ),
         "master",
-        UpdateDIDOperationSpec.masterKeys.getPrivateKey
+        UpdateDIDOperationSpec.masterKeys.privateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -372,7 +374,7 @@ class NodeServiceSpec
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
       val operationId = AtalaOperationId.of(validOperation)
       val operationIdProto = operationId.toProtoByteString
@@ -406,7 +408,7 @@ class NodeServiceSpec
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
       val operationId = AtalaOperationId.of(validOperation)
       val operationIdProto = operationId.toProtoByteString
@@ -465,7 +467,7 @@ class NodeServiceSpec
       val validOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       val invalidOperation = BlockProcessingServiceSpec.signOperation(
@@ -474,7 +476,7 @@ class NodeServiceSpec
             _.createDid.didData.context := Seq("abc")
           ),
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
 
       val error = intercept[StatusRuntimeException] {
@@ -492,14 +494,14 @@ class NodeServiceSpec
       val createDIDOperation = BlockProcessingServiceSpec.signOperation(
         CreateDIDOperationSpec.exampleOperation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
       val createDIDOperationId = AtalaOperationId.of(createDIDOperation)
 
       val updateOperation = BlockProcessingServiceSpec.signOperation(
         UpdateDIDOperationSpec.exampleAddAndRemoveOperation,
         "master",
-        UpdateDIDOperationSpec.masterKeys.getPrivateKey
+        UpdateDIDOperationSpec.masterKeys.privateKey
       )
       val updateOperationId = AtalaOperationId.of(updateOperation)
 

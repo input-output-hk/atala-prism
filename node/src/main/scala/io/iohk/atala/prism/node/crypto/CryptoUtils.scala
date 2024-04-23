@@ -2,15 +2,26 @@ package io.iohk.atala.prism.node.crypto
 
 import io.iohk.atala.prism.node.models.ProtocolConstants
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
-import org.bouncycastle.jce.interfaces.ECPublicKey
+import org.bouncycastle.jce.interfaces.{ECPrivateKey, ECPublicKey}
 
-import java.security.{KeyFactory, MessageDigest, PublicKey, Security, Signature}
+import java.security.{KeyFactory, MessageDigest, PrivateKey, PublicKey, Security, Signature}
 import org.bouncycastle.jce.{ECNamedCurveTable, ECPointUtil}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 
-import java.security.spec.{ECPoint, ECPublicKeySpec}
+import java.math.BigInteger
+import java.security.spec.{ECParameterSpec, ECPoint, ECPrivateKeySpec, ECPublicKeySpec}
+import scala.util.Try
 
 object CryptoUtils {
+  def isSecp256k1(key: SecpPublicKey): Boolean = {
+    val params = ECNamedCurveTable.getParameterSpec("secp256k1")
+    val curve = params.getCurve
+    val x = new BigInteger(1, key.x)
+    val y = new BigInteger(1, key.y)
+    Try(curve.validatePoint(x, y)).isSuccess
+  }
+
   trait SecpPublicKey {
     private[crypto] def publicKey: PublicKey
     def curveName: String = ProtocolConstants.secpCurveName
@@ -20,10 +31,64 @@ object CryptoUtils {
       .getEncoded(true)
     def x: Array[Byte] = publicKey.asInstanceOf[ECPublicKey].getQ.getAffineXCoord.getEncoded
     def y: Array[Byte] = publicKey.asInstanceOf[ECPublicKey].getQ.getAffineYCoord.getEncoded
+    def unCompressed: Array[Byte] = {
+      (List[Byte](4) ++ x.toList ++ y.toList).toArray
+    }
   }
 
   private[crypto] class SecpPublicKeyImpl(pubKey: PublicKey) extends SecpPublicKey {
     override private[crypto] def publicKey: PublicKey = pubKey
+  }
+
+  trait SecpECDSASignature {
+    def bytes: Array[Byte]
+  }
+  private[crypto] case class SecpECDSASignatureImpl(bytes: Array[Byte]) extends SecpECDSASignature
+
+  object SecpECDSASignature {
+    def fromBytes(bytes: Array[Byte]): SecpECDSASignature = SecpECDSASignatureImpl(bytes)
+  }
+
+  object SecpPrivateKey {
+    def unsafefromBytesCompressed(bytes: Array[Byte]): SecpPrivateKey = SecpPrivateKeyImpl(bytes)
+  }
+
+  trait SecpPrivateKey {
+    private[crypto] def bytes: Array[Byte]
+    private[crypto] def privateKey: PrivateKey
+    def getEncoded: Array[Byte]
+  }
+  private[crypto] case class SecpPrivateKeyImpl(bytes: Array[Byte]) extends SecpPrivateKey {
+    override def getEncoded: Array[Byte] = {
+      privateKey
+        .asInstanceOf[ECPrivateKey]
+        .getD
+        .toByteArray
+        .dropWhile(_ == 0)
+    }
+
+    override def privateKey: PrivateKey = {
+      val ecParameterSpec = ECNamedCurveTable.getParameterSpec("secp256k1")
+      val ecNamedCurveSpec: ECParameterSpec = new ECNamedCurveSpec(
+        ecParameterSpec.getName,
+        ecParameterSpec.getCurve,
+        ecParameterSpec.getG,
+        ecParameterSpec.getN
+      )
+      val bigInt = new BigInteger(1, bytes)
+      val spec = new ECPrivateKeySpec(bigInt, ecNamedCurveSpec)
+      val keyFactory = KeyFactory.getInstance("EC", provider)
+      keyFactory.generatePrivate(spec)
+    }
+  }
+
+  object SecpECDSA {
+    def signBytes(msg: Array[Byte], privateKey: SecpPrivateKey): SecpECDSASignature = {
+      val signer = Signature.getInstance("SHA256withECDSA", provider)
+      signer.initSign(privateKey.privateKey)
+      signer.update(msg)
+      SecpECDSASignatureImpl(signer.sign())
+    }
   }
 
   // We define the constructor to SecpKeys private so that the only way to generate
@@ -33,6 +98,7 @@ object CryptoUtils {
 
     private[crypto] def fromPublicKey(key: PublicKey): SecpPublicKey = new SecpPublicKeyImpl(key)
 
+    // move to SecpECDSA object
     def checkECDSASignature(msg: Array[Byte], sig: Array[Byte], pubKey: SecpPublicKey): Boolean = {
       val ecdsaVerify = Signature.getInstance("SHA256withECDSA", provider)
       ecdsaVerify.initVerify(pubKey.publicKey)
@@ -77,6 +143,22 @@ object CryptoUtils {
       val params2 = EC5Util.convertSpec(ellipticCurve, params)
       val keySpec = new ECPublicKeySpec(point, params2)
       SecpPublicKey.fromPublicKey(fact.generatePublic(keySpec))
+    }
+
+    def unsafetoPublicKeyFromUncompressed(bytes: Array[Byte]): SecpPublicKey = {
+      val PRIVATE_KEY_BYTE_SIZE: Int = 32
+      val pointSize = PRIVATE_KEY_BYTE_SIZE * 2 + 1
+      require(bytes.length == pointSize, s"Invalid public key bytes length, ${bytes.length}")
+
+      val uncompressedPrefix = bytes.head
+      require(uncompressedPrefix == 0x04.toByte, "Invalid uncompressed public key prefix")
+
+      val xBytes = bytes.slice(1, pointSize / 2 + 1)
+      val yBytes = bytes.slice(pointSize / 2 + 1, pointSize + 1)
+
+      val x = new BigInteger(1, xBytes)
+      val y = new BigInteger(1, yBytes)
+      unsafeToSecpPublicKeyFromBigIntegerCoordinates(x, y)
     }
   }
 

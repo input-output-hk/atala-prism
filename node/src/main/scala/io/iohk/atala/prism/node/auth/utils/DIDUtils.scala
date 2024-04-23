@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.node.auth.utils
 
 import io.iohk.atala.prism.node.auth.errors._
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.identity.{LongFormPrismDid, PrismDid => DID}
+import io.iohk.atala.prism.node.crypto.CryptoUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.node.interop.toScalaProtos._
 import io.iohk.atala.prism.node.utils.FutureEither
 import io.iohk.atala.prism.protos.AtalaOperation.Operation.CreateDid
@@ -54,15 +53,15 @@ object DIDUtils {
 
   private def verifyPublicKey(
       curve: String,
-      publicKey: ECPublicKey
-  ): Option[ECPublicKey] =
+      publicKey: SecpPublicKey
+  ): Option[SecpPublicKey] =
     Option.when(
-      ECConfig.getCURVE_NAME == curve && EC.isSecp256k1(publicKey.getCurvePoint)
+      publicKey.curveName == curve && CryptoUtils.isSecp256k1(publicKey)
     )(publicKey)
 
   def findPublicKey(didData: node_models.DIDData, keyId: String)(implicit
       ec: ExecutionContext
-  ): FutureEither[AuthError, ECPublicKey] = {
+  ): FutureEither[AuthError, SecpPublicKey] = {
     Future {
       // TODO: Validate keyUsage and revocation
       // we haven't defined which keys can sign requests, and the model doesn't specify when a key is revoked
@@ -75,12 +74,12 @@ object DIDUtils {
             if (data.x.size() > 32)
               verifyPublicKey(
                 data.curve,
-                EC.toPublicKeyFromCompressed(data.x.toByteArray)
+                SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.x.toByteArray.toVector)
               )
             else
               verifyPublicKey(
                 data.curve,
-                EC.toPublicKeyFromByteCoordinates(
+                SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
                   data.x.toByteArray,
                   data.y.toByteArray
                 )
@@ -88,7 +87,7 @@ object DIDUtils {
           case CompressedEcKeyData(data) =>
             verifyPublicKey(
               data.curve,
-              EC.toPublicKeyFromCompressed(data.data.toByteArray)
+              SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.data.toByteArray.toVector)
             )
           case Empty => None
         }
@@ -97,7 +96,7 @@ object DIDUtils {
     }.toFutureEither
   }
 
-  def findPublicKeyEith(didData: node_models.DIDData, keyId: String): Either[AuthError, ECPublicKey] = {
+  def findPublicKeyEith(didData: node_models.DIDData, keyId: String): Either[AuthError, SecpPublicKey] = {
 
     // TODO: Validate keyUsage and revocation
     // we haven't defined which keys can sign requests, and the model doesn't specify when a key is revoked
@@ -110,12 +109,12 @@ object DIDUtils {
           if (data.x.size() > 32)
             verifyPublicKey(
               data.curve,
-              EC.toPublicKeyFromCompressed(data.x.toByteArray)
+              SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.x.toByteArray.toVector)
             )
           else
             verifyPublicKey(
               data.curve,
-              EC.toPublicKeyFromByteCoordinates(
+              SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
                 data.x.toByteArray,
                 data.y.toByteArray
               )
@@ -123,7 +122,7 @@ object DIDUtils {
         case CompressedEcKeyData(data) =>
           verifyPublicKey(
             data.curve,
-            EC.toPublicKeyFromCompressed(data.data.toByteArray)
+            SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.data.toByteArray.toVector)
           )
         case Empty => None
       }
