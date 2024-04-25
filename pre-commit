@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Define the location of the scalafmt executable
+SCALAFMT="scalafmt"
+
+# Define the files you want to format
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.scala$')
+
+# Check if any Scala files are staged for commit
+if [ -n "$FILES" ]; then
+    echo "Running scalafmt on staged Scala files..."
+    # Run scalafmt on staged Scala files
+    $SCALAFMT --test --non-interactive $FILES
+
+    # Check if scalafmt made any changes
+    if [ $? -ne 0 ]; then
+        echo "Scalafmt found formatting issues. Aborting commit."
+        exit 1
+    fi
+
+    echo "Scalafmt formatting check passed."
+fi
+
+# If no Scala files are staged, exit without doing anything
+exit 0

@@ -117,6 +117,7 @@ In order to keep the code format consistent, we use scalafmt and git hooks, foll
    cs install scalafmt
    ```
 - `cp pre-commit .git/hooks/pre-commit`
+- `chmod +x .git/hooks/pre-commit`
 
 
 ## IDE / Editor support
