@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.auth
 import io.iohk.atala.prism.node.auth.errors.AuthError
 import io.iohk.atala.prism.node.auth.model.RequestNonce
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 
 trait WhitelistedAuthHelper[F[_]] {
 

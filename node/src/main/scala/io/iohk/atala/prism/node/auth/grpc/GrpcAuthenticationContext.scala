@@ -5,7 +5,7 @@ import io.grpc.{Context, Metadata}
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.node.auth.model.{AuthToken, RequestNonce}
-import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.node.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.node.logging.TraceId
 

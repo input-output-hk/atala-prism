@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.logging
 
 import io.grpc.Status
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import tofu.logging._
@@ -27,7 +27,7 @@ object GeneralLoggableInstances {
     override def fields[I, V, R, S](a: DID, i: I)(implicit
         r: LogRenderer[I, V, R, S]
     ): R = {
-      r.addString("PrismDID", a.getValue, i)
+      r.addString("PrismDID", a.value, i)
     }
 
     override def logShow(a: DID): String = s"{PrismDID=$a}"

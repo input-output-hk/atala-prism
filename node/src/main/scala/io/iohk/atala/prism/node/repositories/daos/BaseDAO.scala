@@ -4,7 +4,7 @@ import doobie.util.invariant.InvalidEnum
 import doobie.{Get, Meta, Put}
 import io.circe.Json
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.models.{AtalaOperationId, Ledger, TransactionId, UUIDValue}
 
 import java.util.UUID
@@ -47,7 +47,7 @@ trait BaseDAO {
   implicit val didMeta: Meta[DID] = Meta[String].timap(DID.fromString) { did =>
     Option(did.asCanonical())
       .getOrElse(throw new RuntimeException(s"Invalid canonical DID: $did"))
-      .getValue
+      .value
   }
 
   protected def uuidValueMeta[T <: UUIDValue](

@@ -110,7 +110,6 @@ lazy val Dependencies = new {
   // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
   val prismIdentity =
     "io.iohk.atala" % "prism-identity-jvm" % versions.prismSdk
-
   // Test dependencies
   val catsScalatest =
     "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -233,44 +232,6 @@ lazy val commonSettings = Seq(
   }
 )
 
-//lazy val common = project
-//  .in(file("common"))
-//  .settings(
-//    commonSettings,
-//    // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
-//    // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
-//    Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
-//      case externalSrc if externalSrc.toPath.endsWith("protobuf_external_src") =>
-//        externalSrc / "proto"
-//      case other => other
-//    },
-//    resolvers += Resolver.mavenLocal,
-//    resolvers += Resolver.jcenterRepo,
-//    resolvers += Resolver.mavenCentral,
-//    libraryDependencies ++=
-//      Dependencies.doobieDependencies ++
-//        Dependencies.dockerDependencies ++
-//        Dependencies.bouncyDependencies ++
-//        Dependencies.grpcDependencies ++
-//        Dependencies.mockitoDependencies ++
-//        Dependencies.kamonDependencies ++
-//        Dependencies.circeDependencies ++
-//        Dependencies.enumeratumDependencies ++
-//        Dependencies.tofuDependencies ++
-//        Seq(
-//          Dependencies.diffx,
-//          Dependencies.flyway,
-//          Dependencies.typesafeConfig,
-//          Dependencies.fs2,
-//          Dependencies.scalaUri
-//        ) ++
-//        Dependencies.prismDependencies ++
-//        Dependencies.scalapbDependencies,
-//    Compile / PB.targets := Seq(
-//      scalapb.gen() -> (Compile / sourceManaged).value / "proto"
-//    )
-//  )
-
 lazy val node =
   project
     .in(file("node"))
@@ -310,7 +271,6 @@ lazy val node =
           ++ Dependencies.sttpDependencies
           ++ Dependencies.prismDependencies
           ++ Dependencies.mockitoDependencies
-          ++ Dependencies.prismDependencies
           ++ Dependencies.scalapbDependencies
           ++ Seq(
             Dependencies.chimney,

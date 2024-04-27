@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.auth.utils
 
 import com.typesafe.config.Config
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 import scala.util.Try

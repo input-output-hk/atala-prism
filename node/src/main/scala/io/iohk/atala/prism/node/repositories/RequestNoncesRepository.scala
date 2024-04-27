@@ -9,7 +9,7 @@ import derevo.tagless.applyK
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.node.auth.model.RequestNonce
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.repositories.daos.RequestNoncesDAO
 import io.iohk.atala.prism.node.repositories.logs.RequestNoncesRepositoryLogs
 import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps

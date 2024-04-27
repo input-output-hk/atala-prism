@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.repositories.metrics
 
-import io.iohk.atala.prism.identity.CanonicalPrismDid
+import io.iohk.atala.prism.node.identity.CanonicalPrismDid
 import io.iohk.atala.prism.node.metrics.TimeMeasureUtil.MeasureOps
 import io.iohk.atala.prism.node.metrics.{TimeMeasureMetric, TimeMeasureUtil}
 import io.iohk.atala.prism.node.errors.NodeError

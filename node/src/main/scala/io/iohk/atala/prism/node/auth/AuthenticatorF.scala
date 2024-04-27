@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.auth.errors._
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.crypto.signature.ECSignature
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.node.auth.utils.DIDUtils
 import io.iohk.atala.prism.protos.node_api
@@ -229,7 +229,7 @@ private[auth] class AuthenticatorFImpl[Id, F[_]: Monad: Execute](
           Execute[F].deferFuture(
             nodeClient
               .getDidDocument(
-                node_api.GetDidDocumentRequest(authenticationHeader.did.getValue)
+                node_api.GetDidDocumentRequest(authenticationHeader.did.value)
               )
           )
         )

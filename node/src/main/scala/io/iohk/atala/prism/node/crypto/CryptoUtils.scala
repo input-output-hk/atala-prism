@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.node.crypto
 
+import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.models.ProtocolConstants
+import io.iohk.atala.prism.protos.node_models.CompressedECKeyData
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
 import org.bouncycastle.jce.interfaces.ECPublicKey
 
@@ -11,6 +13,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.spec.{ECPoint, ECPublicKeySpec}
 
 object CryptoUtils {
+
+  implicit class SecpPublicKeyOps(pubKey: SecpPublicKey) {
+    def toProto: CompressedECKeyData =
+      CompressedECKeyData(curve = ProtocolConstants.secpCurveName, data = ByteString.copyFrom(pubKey.compressed))
+  }
+
   trait SecpPublicKey {
     private[crypto] def publicKey: PublicKey
     def curveName: String = ProtocolConstants.secpCurveName
@@ -88,6 +96,13 @@ object CryptoUtils {
   trait Sha256Hash {
     def bytes: Vector[Byte]
     def hexEncoded: String = bytesToHex(bytes)
+
+    override def equals(obj: Any): Boolean = obj match {
+      case other: Sha256Hash => bytes == other.bytes
+      case _ => false
+    }
+
+    override def hashCode(): Int = bytes.hashCode()
   }
 
   private[crypto] case class Sha256HashImpl(bytes: Vector[Byte]) extends Sha256Hash {

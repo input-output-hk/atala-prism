@@ -4,10 +4,9 @@ import io.iohk.atala.prism.node.auth.errors._
 import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.crypto.ECConfig.{INSTANCE => ECConfig}
 import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.identity.{LongFormPrismDid, PrismDid => DID}
-import io.iohk.atala.prism.node.interop.toScalaProtos._
+import io.iohk.atala.prism.node.identity.{LongFormPrismDid, PrismDid => DID}
 import io.iohk.atala.prism.node.utils.FutureEither
-import io.iohk.atala.prism.protos.AtalaOperation.Operation.CreateDid
+import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.CreateDid
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
 import io.iohk.atala.prism.protos.node_models.PublicKey.KeyData.{CompressedEcKeyData, EcKeyData, Empty}
@@ -20,13 +19,13 @@ object DIDUtils {
   def validateDid(did: DID): FutureEither[AuthError, DIDData] = {
     did match {
       case longFormDid: LongFormPrismDid =>
-        longFormDid.getInitialState.getOperation match {
+        longFormDid.initialState.operation match {
           case crd: CreateDid => {
-            val creationData = crd.getValue.getDidData.asScala
+            val creationData = crd.value.getDidData
             Future
               .successful(
                 Right(
-                  DIDData(longFormDid.getDid.toString, creationData.publicKeys)
+                  DIDData(longFormDid.did.toString, creationData.publicKeys)
                 )
               )
               .toFutureEither
@@ -41,10 +40,10 @@ object DIDUtils {
   def validateDidEith(did: DID): Either[AuthError, DIDData] = {
     did match {
       case longFormDid: LongFormPrismDid =>
-        longFormDid.getInitialState.getOperation match {
+        longFormDid.initialState.operation match {
           case crd: CreateDid =>
-            val creationData = crd.getValue.getDidData.asScala
-            Right(DIDData(longFormDid.getDid.toString, creationData.publicKeys))
+            val creationData = crd.value.getDidData
+            Right(DIDData(longFormDid.did.toString, creationData.publicKeys))
           case _ =>
             Left(NoCreateDidOperationError)
         }

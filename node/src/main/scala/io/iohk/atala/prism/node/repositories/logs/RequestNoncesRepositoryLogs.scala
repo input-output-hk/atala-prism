@@ -5,7 +5,7 @@ import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import io.iohk.atala.prism.node.auth.model
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.repositories.RequestNoncesRepository
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
@@ -19,7 +19,7 @@ private[repositories] class RequestNoncesRepositoryLogs[
 
   override def burn(did: DID, requestNonce: model.RequestNonce): Mid[F, Unit] =
     in =>
-      info"burning nonce ${did.getSuffix}" *> in
+      info"burning nonce ${did.suffix}" *> in
         .flatMap(_ => info"burning nonce - successfully done")
         .onError(errorCause"encountered an error while burning nonce" (_))
 }
