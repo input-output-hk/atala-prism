@@ -1,10 +1,8 @@
 package io.iohk.atala.prism.node.grpc
 
-import java.security.PublicKey
 import com.google.protobuf.ByteString
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, PublicKeyData}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
@@ -132,18 +130,15 @@ object ProtoCodecs {
     )
   }
 
-  def fromProtoKey(protoKey: node_models.PublicKey): Option[ECPublicKey] = {
+  def fromProtoKey(protoKey: node_models.PublicKey): Option[SecpPublicKey] = {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield EC.toPublicKeyFromByteCoordinates(
+    } yield SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
       maybeX.x.toByteArray,
       maybeY.y.toByteArray
     )
   }
-
-  def fromProtoKeyLegacy(protoKey: node_models.PublicKey): Option[PublicKey] =
-    fromProtoKey(protoKey).map(_.getKey$prism_crypto)
 
   def toLedgerData(ledgerData: LedgerData): node_models.LedgerData = {
     node_models.LedgerData(

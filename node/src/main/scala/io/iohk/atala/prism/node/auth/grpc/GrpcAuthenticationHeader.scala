@@ -2,10 +2,9 @@ package io.iohk.atala.prism.node.auth.grpc
 
 import java.util.Base64
 import io.grpc.Metadata
-import io.iohk.atala.prism.crypto.keys.ECPublicKey
-import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.node.auth.model.RequestNonce
 import io.iohk.atala.prism.node.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
 
 sealed trait GrpcAuthenticationHeader {
   import GrpcAuthenticationContext._
@@ -19,9 +18,9 @@ sealed trait GrpcAuthenticationHeader {
             signature
           ) =>
         val publicKeyStr =
-          Base64.getUrlEncoder.encodeToString(publicKey.getEncoded)
+          Base64.getUrlEncoder.encodeToString(publicKey.unCompressed)
         val signatureStr =
-          Base64.getUrlEncoder.encodeToString(signature.getData)
+          Base64.getUrlEncoder.encodeToString(signature.bytes)
         val requestNonceStr =
           Base64.getUrlEncoder.encodeToString(requestNonce.bytes.toArray)
         metadata.put(PublicKeyKeys.metadata, publicKeyStr)
@@ -30,7 +29,7 @@ sealed trait GrpcAuthenticationHeader {
 
       case didBased: GrpcAuthenticationHeader.DIDBased =>
         val signatureStr =
-          Base64.getUrlEncoder.encodeToString(didBased.signature.getData)
+          Base64.getUrlEncoder.encodeToString(didBased.signature.bytes)
         val requestNonceStr = Base64.getUrlEncoder.encodeToString(
           didBased.requestNonce.bytes.toArray
         )
@@ -48,25 +47,25 @@ object GrpcAuthenticationHeader {
 
   final case class PublicKeyBased(
       requestNonce: RequestNonce,
-      publicKey: ECPublicKey,
-      signature: ECSignature
+      publicKey: SecpPublicKey,
+      signature: SecpECDSASignature
   ) extends GrpcAuthenticationHeader
   sealed trait DIDBased extends GrpcAuthenticationHeader {
     val requestNonce: RequestNonce
     val did: DID
     val keyId: String
-    val signature: ECSignature
+    val signature: SecpECDSASignature
   }
   final case class PublishedDIDBased(
       requestNonce: RequestNonce,
       did: DID,
       keyId: String,
-      signature: ECSignature
+      signature: SecpECDSASignature
   ) extends DIDBased
   final case class UnpublishedDIDBased(
       requestNonce: RequestNonce,
       did: DID,
       keyId: String,
-      signature: ECSignature
+      signature: SecpECDSASignature
   ) extends DIDBased
 }

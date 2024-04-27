@@ -4,10 +4,10 @@ import cats.data.NonEmptyList
 import cats.effect.unsafe.implicits.global
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData, dummyTimestampInfo}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.{DIDPublicKey, DIDService, KeyUsage, ProtocolConstants}
@@ -24,10 +24,10 @@ import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 object UpdateDIDOperationSpec {
-  val masterKeys = CreateDIDOperationSpec.masterKeys
-  val issuingKeys = CreateDIDOperationSpec.issuingKeys
+  val masterKeys: SecpPair = CreateDIDOperationSpec.masterKeys
+  val issuingKeys: SecpPair = CreateDIDOperationSpec.issuingKeys
 
-  val newMasterKeys = EC.generateKeyPair()
+  val newMasterKeys: SecpPair = CryptoTestUtils.generateKeyPair()
 
   lazy val createDidOperation =
     CreateDIDOperation
@@ -496,7 +496,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .toOption
         .value
 
-      CryptoTestUtils.getUnderlyingKey(key) mustBe masterKeys.getPublicKey
+      key.compressed.toVector mustBe masterKeys.publicKey.compressed.toVector
       previousOperation mustBe Some(createDidOperation.digest)
     }
 
@@ -995,7 +995,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
                 node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
               ),
               None,
-              node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
+              node_models.PublicKey.KeyData.CompressedEcKeyData(issuingEcKeyData)
             )
           }
           .toList

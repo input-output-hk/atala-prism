@@ -2,10 +2,9 @@ package io.iohk.atala.prism.node.auth.grpc
 
 import java.util.Base64
 import io.grpc.{Context, Metadata}
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.node.auth.model.{AuthToken, RequestNonce}
 import io.iohk.atala.prism.node.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.node.logging.TraceId
 
@@ -132,11 +131,11 @@ private[grpc] object GrpcAuthenticationContext {
       ctx.getOpt(PublicKeyKeys)
     ) match {
       case (Some(requestNonce), Some(signature), Some(encodedPublicKey)) =>
-        val publicKey = EC.toPublicKeyFromBytes(encodedPublicKey)
+        val publicKey = SecpPublicKey.unsafetoPublicKeyFromUncompressed(encodedPublicKey)
         val header = GrpcAuthenticationHeader.PublicKeyBased(
           requestNonce = RequestNonce(requestNonce.toVector),
           publicKey = publicKey,
-          signature = new ECSignature(signature)
+          signature = SecpECDSASignature.fromBytes(signature)
         )
         Some(header)
 
@@ -193,7 +192,7 @@ private[grpc] object GrpcAuthenticationContext {
                     requestNonce = RequestNonce(requestNonce.toVector),
                     did = did,
                     keyId = keyId,
-                    signature = new ECSignature(signature)
+                    signature = SecpECDSASignature.fromBytes(signature)
                   )
                 )
               case _: LongFormPrismDid =>
@@ -202,7 +201,7 @@ private[grpc] object GrpcAuthenticationContext {
                     requestNonce = RequestNonce(requestNonce.toVector),
                     did = did,
                     keyId = keyId,
-                    signature = new ECSignature(signature)
+                    signature = SecpECDSASignature.fromBytes(signature)
                   )
                 )
               case _ =>

@@ -5,29 +5,30 @@ import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.atala.prism.node.auth.SignedRpcRequest
 import io.iohk.atala.prism.node.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
-import io.iohk.atala.prism.crypto.signature.ECSignature
 import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
+import io.iohk.atala.prism.node.crypto.CryptoUtils
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import org.scalatest.BeforeAndAfterEach
 import scalapb.GeneratedMessage
 import tofu.logging.Logs
+
 import _root_.java.util.concurrent.{Executor, TimeUnit}
 
 trait ApiTestHelper[STUB] {
   def apply[T](
       requestNonce: Vector[Byte],
-      signature: ECSignature,
-      publicKey: ECPublicKey,
+      signature: SecpECDSASignature,
+      publicKey: SecpPublicKey,
       traceId: TraceId
   )(
       f: STUB => T
   ): T
   def apply[T](
       requestNonce: Vector[Byte],
-      signature: ECSignature,
+      signature: SecpECDSASignature,
       did: DID,
       keyId: String,
       traceId: TraceId
@@ -36,12 +37,12 @@ trait ApiTestHelper[STUB] {
   ): T
   def apply[T](
       requestNonce: Vector[Byte],
-      keys: ECKeyPair,
+      keys: SecpPair,
       request: GeneratedMessage
   )(f: STUB => T): T = {
     val payload = auth.model.RequestNonce(requestNonce).mergeWith(request.toByteArray).toArray
-    val signature = EC.signBytes(payload.array, keys.getPrivateKey)
-    apply(requestNonce, signature, keys.getPublicKey, TraceId.generateYOLO)(f)
+    val signature = CryptoUtils.SecpECDSA.signBytes(payload.array, keys.privateKey)
+    apply(requestNonce, signature, keys.publicKey, TraceId.generateYOLO)(f)
   }
   def apply[T, R <: GeneratedMessage](
       rpcRequest: SignedRpcRequest[R]
@@ -130,8 +131,8 @@ abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach
 
       override def apply[T](
           requestNonce: Vector[Byte],
-          signature: ECSignature,
-          publicKey: ECPublicKey,
+          signature: SecpECDSASignature,
+          publicKey: SecpPublicKey,
           traceId: TraceId
       )(
           f: STUB => T
@@ -149,7 +150,7 @@ abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach
 
       override def apply[T](
           requestNonce: Vector[Byte],
-          signature: ECSignature,
+          signature: SecpECDSASignature,
           did: DID,
           keyId: String,
           traceId: TraceId

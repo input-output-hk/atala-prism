@@ -6,12 +6,12 @@ import cats.effect.unsafe.implicits.global
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
-import io.iohk.atala.prism.crypto.EC.{INSTANCE => EC}
-import io.iohk.atala.prism.crypto.keys.ECKeyPair
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.DataPreparation._
 import io.iohk.atala.prism.node.cardano.models.CardanoWalletError
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils
+import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.errors.NodeError.{
   TooManyDidPublicKeysCreationAttempt,
@@ -48,18 +48,18 @@ import tofu.logging.Logs
 import java.time.{Duration, Instant}
 
 object ObjectManagementServiceSpec {
-  private val newKeysPairs = List.fill(10) { EC.generateKeyPair() }
+  private val newKeysPairs = List.fill(10) { CryptoTestUtils.generateKeyPair() }
 
   val exampleOperations: Seq[node_models.AtalaOperation] =
-    newKeysPairs.zipWithIndex.map { case (keyPair: ECKeyPair, i) =>
+    newKeysPairs.zipWithIndex.map { case (keyPair: SecpPair, i) =>
       BlockProcessingServiceSpec.createDidOperation.update(
         _.createDid.didData.publicKeys.modify { keys =>
           keys :+ node_models.PublicKey(
             id = s"key$i",
             usage = node_models.KeyUsage.AUTHENTICATION_KEY,
-            keyData = node_models.PublicKey.KeyData.EcKeyData(
-              CreateDIDOperationSpec.protoECKeyDataFromPublicKey(
-                keyPair.getPublicKey
+            keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
+              CreateDIDOperationSpec.protoCompressedECKeyDataFromPublicKey(
+                keyPair.publicKey
               )
             )
           )
@@ -72,7 +72,7 @@ object ObjectManagementServiceSpec {
       BlockProcessingServiceSpec.signOperation(
         operation,
         "master",
-        CreateDIDOperationSpec.masterKeys.getPrivateKey
+        CreateDIDOperationSpec.masterKeys.privateKey
       )
     }
 }
@@ -344,11 +344,11 @@ class ObjectManagementServiceSpec
             node_models.LedgerData(timestampInfo = Some(ProtoCodecs.toTimeStampInfoProto(dummyTimestampInfo)))
           ),
           None,
-          node_models.PublicKey.KeyData.EcKeyData(issuingEcKeyData)
+          node_models.PublicKey.KeyData.CompressedEcKeyData(issuingEcKeyData)
         )
       )
       val signedCreateDidOperation =
-        signOperation(createOperation, "master", masterKeys.getPrivateKey)
+        signOperation(createOperation, "master", masterKeys.privateKey)
 
       val result =
         publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
@@ -371,7 +371,7 @@ class ObjectManagementServiceSpec
           .toList
       )
       val signedCreateDidOperation =
-        signOperation(createOperation, "master", masterKeys.getPrivateKey)
+        signOperation(createOperation, "master", masterKeys.privateKey)
 
       val result =
         publishSingleOperationAndFlush(signedCreateDidOperation).futureValue
