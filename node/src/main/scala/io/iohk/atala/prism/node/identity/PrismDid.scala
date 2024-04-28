@@ -125,7 +125,7 @@ object PrismDid {
         longFormMatchGroups match {
           case Some(groups) =>
             val List(stateHashHex, encodedStateBase64, _*) = groups
-            require(longFormMatchGroups.size == 2, "Invalid long form Prism DID")
+            require(groups.size == 2, "Invalid long form Prism DID")
             val stateHash = Sha256Hash.fromHex(stateHashHex)
             val encodedState = Base64Utils.decodeURL(encodedStateBase64)
             val atalaOperation = decodeState(stateHash, encodedState)
