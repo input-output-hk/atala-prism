@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.auth.utils
 
 import com.typesafe.config.ConfigFactory
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

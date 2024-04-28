@@ -163,7 +163,7 @@ object PrismDid {
 
   def buildLongForm(stateHash: Sha256Hash, encodedState: Array[Byte]): LongFormPrismDid = {
     val atalaOperation = decodeState(stateHash, encodedState)
-    val encodedStateBase64 = Base64Utils.encodeURL(encodedState)
+    val encodedStateBase64 = Base64Utils.encodeWithoutPadding(encodedState)
     val methodSpecificId = DidMethodSpecificId.fromSections(Array(stateHash.hexEncoded, encodedStateBase64))
     val did = Did(PRISM_METHOD, methodSpecificId)
 

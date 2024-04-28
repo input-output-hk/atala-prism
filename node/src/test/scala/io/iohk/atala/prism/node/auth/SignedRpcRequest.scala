@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.auth
 
 import io.iohk.atala.prism.node.auth
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpECDSASignature}
 import scalapb.GeneratedMessage
@@ -32,7 +32,7 @@ object SignedRpcRequest {
       nonce = requestNonce,
       signature = signature,
       did = did,
-      keyId = DID.getDEFAULT_MASTER_KEY_ID,
+      keyId = DID.DEFAULT_MASTER_KEY_ID,
       request = request
     )
   }

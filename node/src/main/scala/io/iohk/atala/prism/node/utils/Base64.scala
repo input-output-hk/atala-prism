@@ -8,6 +8,10 @@ object Base64Utils {
     Base64.getUrlEncoder.encodeToString(bytes)
   }
 
+  def encodeWithoutPadding(bytes: Array[Byte]): String = {
+    Base64.getEncoder.withoutPadding().encodeToString(bytes)
+  }
+
   def decodeUrlToString(encodedStr: String): String = {
     new String(Base64.getUrlDecoder.decode(encodedStr), StandardCharsets.UTF_8)
   }
