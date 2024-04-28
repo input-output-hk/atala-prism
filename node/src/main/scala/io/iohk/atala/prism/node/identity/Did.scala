@@ -12,7 +12,8 @@ object Did {
     // https://www.w3.org/TR/did-core/#did-syntax
     val didPattern = "did:([A-Za-z0-9]+):((?:[a-zA-Z0-9._-]|%[0-9A-Fa-f]{2})+)".r
     didStr match {
-      case didPattern(methodName, methodSpecificId) => Did(DidMethod.fromString(methodName), DidMethodSpecificId.fromString(methodSpecificId))
+      case didPattern(methodName, methodSpecificId) =>
+        Did(DidMethod.fromString(methodName), DidMethodSpecificId.fromString(methodSpecificId))
       case _ => throw new IllegalArgumentException(s"Invalid DID format: $didStr")
     }
   }

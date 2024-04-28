@@ -15,7 +15,6 @@ import scala.util.Try
 
 object CryptoUtils {
 
-
   implicit class SecpPublicKeyOps(pubKey: SecpPublicKey) {
     def toProto: CompressedECKeyData =
       CompressedECKeyData(curve = ProtocolConstants.secpCurveName, data = ByteString.copyFrom(pubKey.compressed))
