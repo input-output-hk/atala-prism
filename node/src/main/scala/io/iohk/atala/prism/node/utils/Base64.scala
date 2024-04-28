@@ -9,7 +9,7 @@ object Base64Utils {
   }
 
   def encodeWithoutPadding(bytes: Array[Byte]): String = {
-    Base64.getEncoder.withoutPadding().encodeToString(bytes)
+    Base64.getUrlEncoder.withoutPadding().encodeToString(bytes)
   }
 
   def decodeUrlToString(encodedStr: String): String = {
