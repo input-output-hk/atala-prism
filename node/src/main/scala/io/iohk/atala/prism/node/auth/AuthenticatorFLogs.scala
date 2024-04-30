@@ -4,7 +4,7 @@ import cats.MonadThrow
 import cats.syntax.applicativeError._
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.node.logging.GeneralLoggableInstances._
-import io.iohk.atala.prism.identity.PrismDid
+import io.iohk.atala.prism.node.identity.PrismDid
 import scalapb.GeneratedMessage
 import tofu.higherKind.Mid
 import tofu.logging.{Loggable, ServiceLogging}

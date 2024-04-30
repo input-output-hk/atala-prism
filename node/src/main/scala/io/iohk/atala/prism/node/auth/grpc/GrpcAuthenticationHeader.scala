@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.auth.grpc
 import java.util.Base64
 import io.grpc.Metadata
 import io.iohk.atala.prism.node.auth.model.RequestNonce
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
 
 sealed trait GrpcAuthenticationHeader {
@@ -33,7 +33,7 @@ sealed trait GrpcAuthenticationHeader {
         val requestNonceStr = Base64.getUrlEncoder.encodeToString(
           didBased.requestNonce.bytes.toArray
         )
-        metadata.put(DidKeys.metadata, didBased.did.getValue)
+        metadata.put(DidKeys.metadata, didBased.did.value)
         metadata.put(DidKeyIdKeys.metadata, didBased.keyId)
         metadata.put(DidSignatureKeys.metadata, signatureStr)
         metadata.put(RequestNonceKeys.metadata, requestNonceStr)

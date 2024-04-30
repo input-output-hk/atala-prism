@@ -8,7 +8,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.logging.TraceId
@@ -163,16 +163,14 @@ class NodeServiceSpec
 
     "return error for a long form DID" in {
       val masterKey = CreateDIDOperationSpec.masterKeys.publicKey
-      val longFormDID = DID.buildLongFormFromMasterPublicKey(
-        CryptoTestUtils.getUnderlyingKey(masterKey)
-      )
+      val longFormDID = DID.buildLongFormFromMasterPublicKey(masterKey)
       doReturn(fake[Instant](dummySyncTimestamp))
         .when(objectManagementService)
         .getLastSyncedTimestamp
 
       val error = intercept[StatusRuntimeException] {
         service.getDidDocument(
-          node_api.GetDidDocumentRequest(longFormDID.getValue)
+          node_api.GetDidDocumentRequest(longFormDID.value)
         )
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT

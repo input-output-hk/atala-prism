@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.repositories.daos
 
 import doobie.implicits._
 import io.iohk.atala.prism.node.auth.model.RequestNonce
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 
 object RequestNoncesDAO {
 

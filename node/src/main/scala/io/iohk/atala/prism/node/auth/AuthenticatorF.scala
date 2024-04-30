@@ -9,7 +9,7 @@ import cats.{Applicative, Comonad, Functor, Monad, MonadThrow}
 import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.auth.errors._
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.node.auth.utils.DIDUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
@@ -227,7 +227,7 @@ private[auth] class AuthenticatorFImpl[Id, F[_]: Monad: Execute](
           Execute[F].deferFuture(
             nodeClient
               .getDidDocument(
-                node_api.GetDidDocumentRequest(authenticationHeader.did.getValue)
+                node_api.GetDidDocumentRequest(authenticationHeader.did.value)
               )
           )
         )

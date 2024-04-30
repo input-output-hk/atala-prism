@@ -5,7 +5,7 @@ import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeaderParser.grpcHeader
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil

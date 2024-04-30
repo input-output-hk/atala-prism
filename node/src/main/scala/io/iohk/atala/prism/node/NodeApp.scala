@@ -9,7 +9,7 @@ import io.grpc.{Server, ServerBuilder}
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
 import io.iohk.atala.prism.node.auth.grpc.{GrpcAuthenticatorInterceptor, TraceExposeInterceptor, TraceReadInterceptor}
 import io.iohk.atala.prism.node.auth.utils.DidWhitelistLoader
-import io.iohk.atala.prism.identity.PrismDid
+import io.iohk.atala.prism.node.identity.PrismDid
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.metrics.UptimeReporter
@@ -166,7 +166,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       )
     } else {
       logger.info(
-        s"DID whitelist:\n${didWhitelist.map(_.getValue).map("- " + _).mkString("\n")}"
+        s"DID whitelist:\n${didWhitelist.map(_.value).map("- " + _).mkString("\n")}"
       )
     }
     didWhitelist

@@ -2,8 +2,8 @@ package io.iohk.atala.prism.node
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.auth.SignedRpcRequest
-import io.iohk.atala.prism.identity.{PrismDid => DID}
-import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.PrismDid.{DEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
@@ -50,7 +50,7 @@ trait DIDUtil {
     val didCanonicalSuffix = operationHash.hexEncoded
     val did = CryptoTestUtils.buildCanonicalDID(Sha256Hash.fromHex(didCanonicalSuffix))
 
-    nodeMock.getDidDocument(GetDidDocumentRequest(did.getValue)).returns {
+    nodeMock.getDidDocument(GetDidDocumentRequest(did.value)).returns {
       Future.successful(
         GetDidDocumentResponse(
           document = Some(DIDData(id = didCanonicalSuffix, publicKeys = Seq(publicKey)))
@@ -73,9 +73,7 @@ trait DIDUtil {
       request: R
   ): (SecpPublicKey, SignedRpcRequest[R]) = {
     val keys = CryptoTestUtils.generateKeyPair()
-    val did = DID.buildLongFormFromMasterPublicKey(
-      CryptoTestUtils.getUnderlyingKey(keys.publicKey)
-    )
+    val did = DID.buildLongFormFromMasterPublicKey(keys.publicKey)
     (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
@@ -91,10 +89,7 @@ trait DIDUtil {
 object DIDUtil {
   def createUnpublishedDid: (SecpPair, DID) = {
     val keyPair = CryptoTestUtils.generateKeyPair()
-    val publicKey = keyPair.publicKey
-    val did = DID.buildLongFormFromMasterPublicKey(
-      CryptoTestUtils.getUnderlyingKey(publicKey)
-    )
+    val did = DID.buildLongFormFromMasterPublicKey(keyPair.publicKey)
     (keyPair, did)
   }
 }

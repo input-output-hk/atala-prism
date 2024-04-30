@@ -11,7 +11,7 @@ import derevo.tagless.applyK
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.identity.{CanonicalPrismDid => DID}
+import io.iohk.atala.prism.node.identity.{CanonicalPrismDid => DID}
 import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
 import io.iohk.atala.prism.node.models.DidSuffix
 import io.iohk.atala.prism.node.errors.NodeError
@@ -62,7 +62,7 @@ object DIDDataRepository {
 
 private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
-    getByCanonicalSuffix(DidSuffix(did.getSuffix))
+    getByCanonicalSuffix(DidSuffix(did.suffix))
 
   private def getByCanonicalSuffix(
       canonicalSuffix: DidSuffix

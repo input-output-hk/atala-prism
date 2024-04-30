@@ -3,9 +3,8 @@ package io.iohk.atala.prism.node.auth.grpc
 import java.util.Base64
 import io.grpc.{Context, Metadata}
 import io.iohk.atala.prism.node.auth.model.{AuthToken, RequestNonce}
-import io.iohk.atala.prism.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
+import io.iohk.atala.prism.node.identity.{CanonicalPrismDid, LongFormPrismDid, PrismDid}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
-
 import scala.util.{Failure, Success, Try}
 import io.iohk.atala.prism.node.logging.TraceId
 

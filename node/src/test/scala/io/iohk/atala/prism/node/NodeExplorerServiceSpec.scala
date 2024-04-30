@@ -9,7 +9,7 @@ import io.grpc.stub.MetadataUtils
 import io.grpc.{ManagedChannel, Server, StatusRuntimeException}
 import io.iohk.atala.prism.node.auth.WhitelistedAuthenticatorF
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticatorInterceptor
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.cardano.models.{CardanoWalletError, Lovelace}
@@ -61,9 +61,7 @@ class NodeExplorerServiceSpec
     mock[ObjectManagementService[IOWithTraceIdContext]]
 
   private val masterKeyPair = CryptoTestUtils.generateKeyPair()
-  private val whitelistedDid = DID.buildLongFormFromMasterPublicKey(
-    CryptoTestUtils.getUnderlyingKey(masterKeyPair.publicKey)
-  )
+  private val whitelistedDid = DID.buildLongFormFromMasterPublicKey(masterKeyPair.publicKey)
 
   private val metricsCountersRepository = mock[MetricsCountersRepository[IOWithTraceIdContext]]
 

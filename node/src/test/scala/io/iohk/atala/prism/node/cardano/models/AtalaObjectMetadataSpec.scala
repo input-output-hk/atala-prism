@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.cardano.models
 
 import com.google.protobuf.ByteString
 import io.circe.{Json, parser}
-import io.iohk.atala.prism.identity.PrismDid.{getDEFAULT_MASTER_KEY_ID => masterKeyId}
+import io.iohk.atala.prism.node.identity.PrismDid.{DEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRISM_INDEX
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._

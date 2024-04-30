@@ -6,7 +6,7 @@ import cats.{Applicative, Comonad, Functor, MonadThrow}
 import com.google.protobuf.ByteString
 import derevo.derive
 import derevo.tagless.applyK
-import io.iohk.atala.prism.identity.{CanonicalPrismDid, PrismDid}
+import io.iohk.atala.prism.node.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
@@ -91,7 +91,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   }
 
   private def toDidDataProto(in: Option[DIDDataState], canon: CanonicalPrismDid): Option[(DIDData, Sha256Hash)] =
-    in.map(didDataState => (ProtoCodecs.toDIDDataProto(canon.getSuffix, didDataState), didDataState.lastOperation))
+    in.map(didDataState => (ProtoCodecs.toDIDDataProto(canon.suffix, didDataState), didDataState.lastOperation))
 
   override def parseOperations(ops: Seq[SignedAtalaOperation]): F[Either[NodeError, List[OperationOutput]]] =
     Applicative[F].pure {

@@ -5,7 +5,7 @@ import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.atala.prism.node.auth.SignedRpcRequest
 import io.iohk.atala.prism.node.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
-import io.iohk.atala.prism.identity.{PrismDid => DID}
+import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
 import io.iohk.atala.prism.node.crypto.CryptoUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}

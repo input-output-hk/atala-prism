@@ -1,25 +1,32 @@
 package io.iohk.atala.prism.node.crypto
 
+import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.models.ProtocolConstants
+import io.iohk.atala.prism.protos.node_models.CompressedECKeyData
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
 import org.bouncycastle.jce.interfaces.{ECPrivateKey, ECPublicKey}
-
 import java.security.{KeyFactory, MessageDigest, PrivateKey, PublicKey, Security, Signature}
 import org.bouncycastle.jce.{ECNamedCurveTable, ECPointUtil}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
-
 import java.math.BigInteger
 import java.security.spec.{ECParameterSpec, ECPoint, ECPrivateKeySpec, ECPublicKeySpec}
 import scala.util.Try
 
 object CryptoUtils {
+
+  implicit class SecpPublicKeyOps(pubKey: SecpPublicKey) {
+    def toProto: CompressedECKeyData =
+      CompressedECKeyData(curve = ProtocolConstants.secpCurveName, data = ByteString.copyFrom(pubKey.compressed))
+  }
+
   def isSecp256k1(key: SecpPublicKey): Boolean = {
     val params = ECNamedCurveTable.getParameterSpec("secp256k1")
     val curve = params.getCurve
     val x = new BigInteger(1, key.x)
     val y = new BigInteger(1, key.y)
     Try(curve.validatePoint(x, y)).isSuccess
+
   }
 
   trait SecpPublicKey {
@@ -170,6 +177,13 @@ object CryptoUtils {
   trait Sha256Hash {
     def bytes: Vector[Byte]
     def hexEncoded: String = bytesToHex(bytes)
+
+    override def equals(obj: Any): Boolean = obj match {
+      case other: Sha256Hash => bytes == other.bytes
+      case _ => false
+    }
+
+    override def hashCode(): Int = bytes.hashCode()
   }
 
   private[crypto] case class Sha256HashImpl(bytes: Vector[Byte]) extends Sha256Hash {
