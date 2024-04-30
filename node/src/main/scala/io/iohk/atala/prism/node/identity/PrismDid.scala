@@ -4,6 +4,7 @@ import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation
 import io.iohk.atala.prism.protos.node_models._
 import io.iohk.atala.prism.node.utils.Base64Utils
+import io.iohk.atala.prism.node.models.{KeyUsage => KeyUsageModel}
 
 sealed trait PrismDid {
 
@@ -52,7 +53,7 @@ object PrismDid {
     }
   }
 
-  private def safeLongFormDidFromAtalaOperation(
+  private def longFormDidFromAtalaOperation(
       did: Did,
       stateHash: Sha256Hash,
       atalaOperation: AtalaOperation
@@ -90,7 +91,7 @@ object PrismDid {
   private def createDidAtalaOperationFromMasterPublicKey(
       masterKey: SecpPublicKey
   ): AtalaOperation =
-    createDidAtalaOperation(List(DidPublicKey(DEFAULT_MASTER_KEY_ID, MasterKeyUsage, masterKey)))
+    createDidAtalaOperation(List(DidPublicKey(DEFAULT_MASTER_KEY_ID, KeyUsageModel.MasterKey, masterKey)))
 
   private def createExperimentalDidAtalaOperation(
       masterKey: SecpPublicKey,
@@ -99,9 +100,9 @@ object PrismDid {
   ): AtalaOperation =
     createDidAtalaOperation(
       List(
-        DidPublicKey(DEFAULT_MASTER_KEY_ID, MasterKeyUsage, masterKey),
-        DidPublicKey(DEFAULT_ISSUING_KEY_ID, IssuingKeyUsage, issuingKey),
-        DidPublicKey(DEFAULT_REVOCATION_KEY_ID, RevocationKeyUsage, revocationKey)
+        DidPublicKey(DEFAULT_MASTER_KEY_ID, KeyUsageModel.MasterKey, masterKey),
+        DidPublicKey(DEFAULT_ISSUING_KEY_ID, KeyUsageModel.IssuingKey, issuingKey),
+        DidPublicKey(DEFAULT_REVOCATION_KEY_ID, KeyUsageModel.RevocationKey, revocationKey)
       )
     )
 
@@ -129,7 +130,7 @@ object PrismDid {
             val stateHash = Sha256Hash.fromHex(stateHashHex)
             val encodedState = Base64Utils.decodeURL(encodedStateBase64)
             val atalaOperation = decodeState(stateHash, encodedState)
-            safeLongFormDidFromAtalaOperation(did, stateHash, atalaOperation)
+            longFormDidFromAtalaOperation(did, stateHash, atalaOperation)
           case None => throw UnrecognizedPrismDidException
         }
     }
@@ -163,11 +164,11 @@ object PrismDid {
 
   def buildLongForm(stateHash: Sha256Hash, encodedState: Array[Byte]): LongFormPrismDid = {
     val atalaOperation = decodeState(stateHash, encodedState)
-    val encodedStateBase64 = Base64Utils.encodeWithoutPadding(encodedState)
+    val encodedStateBase64 = Base64Utils.encodeURL(encodedState)
     val methodSpecificId = DidMethodSpecificId.fromSections(Array(stateHash.hexEncoded, encodedStateBase64))
     val did = Did(PRISM_METHOD, methodSpecificId)
 
-    safeLongFormDidFromAtalaOperation(did, stateHash, atalaOperation)
+    longFormDidFromAtalaOperation(did, stateHash, atalaOperation)
   }
 
   def buildCanonicalFromOperation(atalaOperation: AtalaOperation): CanonicalPrismDid = {

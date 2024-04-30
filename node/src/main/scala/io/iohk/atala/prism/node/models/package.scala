@@ -14,18 +14,48 @@ package object models {
   sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
     def canIssue: Boolean = this == KeyUsage.IssuingKey
     def canRevoke: Boolean = this == KeyUsage.RevocationKey
+
+    def toProto: node_models.KeyUsage
+
+    def derivationIndex: Int
+
+    def name: String =
+      if (toProto.name.nonEmpty) toProto.name else throw new IllegalStateException("Key usage must have name")
+
   }
 
   object KeyUsage extends Enum[KeyUsage] {
     val values = findValues
 
-    case object MasterKey extends KeyUsage
-    case object IssuingKey extends KeyUsage
-    case object KeyAgreementKey extends KeyUsage
-    case object RevocationKey extends KeyUsage
-    case object AuthenticationKey extends KeyUsage
-    case object CapabilityInvocationKey extends KeyUsage
-    case object CapabilityDelegationKey extends KeyUsage
+    case object MasterKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.MASTER_KEY
+      override def derivationIndex: Int = 0
+    }
+    case object IssuingKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.ISSUING_KEY
+      override def derivationIndex: Int = 1
+    }
+    case object KeyAgreementKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.KEY_AGREEMENT_KEY
+      override def derivationIndex: Int = 2
+    }
+    case object RevocationKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.REVOCATION_KEY
+      override def derivationIndex: Int = 3
+    }
+    case object AuthenticationKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.AUTHENTICATION_KEY
+      override def derivationIndex: Int = 4
+    }
+    case object CapabilityInvocationKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.CAPABILITY_INVOCATION_KEY
+      override def derivationIndex: Int = 5
+    }
+    case object CapabilityDelegationKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.CAPABILITY_DELEGATION_KEY
+      override def derivationIndex: Int = 6
+
+    }
 
   }
 
