@@ -3,59 +3,11 @@ package io.iohk.atala.prism.node
 import cats.effect.IO
 import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
-import io.iohk.atala.prism.node.auth.SignedRpcRequest
-import io.iohk.atala.prism.node.auth.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
-import io.iohk.atala.prism.node.identity.{PrismDid => DID}
-import io.iohk.atala.prism.node.crypto.CryptoTestUtils.SecpPair
-import io.iohk.atala.prism.node.crypto.CryptoUtils
-import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
-import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import org.scalatest.BeforeAndAfterEach
-import scalapb.GeneratedMessage
 import tofu.logging.Logs
 
-import _root_.java.util.concurrent.{Executor, TimeUnit}
-
-trait ApiTestHelper[STUB] {
-  def apply[T](
-      requestNonce: Vector[Byte],
-      signature: SecpECDSASignature,
-      publicKey: SecpPublicKey,
-      traceId: TraceId
-  )(
-      f: STUB => T
-  ): T
-  def apply[T](
-      requestNonce: Vector[Byte],
-      signature: SecpECDSASignature,
-      did: DID,
-      keyId: String,
-      traceId: TraceId
-  )(
-      f: STUB => T
-  ): T
-  def apply[T](
-      requestNonce: Vector[Byte],
-      keys: SecpPair,
-      request: GeneratedMessage
-  )(f: STUB => T): T = {
-    val payload = auth.model.RequestNonce(requestNonce).mergeWith(request.toByteArray).toArray
-    val signature = CryptoUtils.SecpECDSA.signBytes(payload.array, keys.privateKey)
-    apply(requestNonce, signature, keys.publicKey, TraceId.generateYOLO)(f)
-  }
-  def apply[T, R <: GeneratedMessage](
-      rpcRequest: SignedRpcRequest[R]
-  )(f: STUB => T): T =
-    apply(
-      rpcRequest.nonce,
-      rpcRequest.signature,
-      rpcRequest.did,
-      rpcRequest.keyId,
-      TraceId.generateYOLO
-    )(f)
-  def unlogged[T](f: STUB => T): T
-}
+import _root_.java.util.concurrent.TimeUnit
 
 abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach {
 
@@ -76,7 +28,6 @@ abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach
     val serverBuilderWithoutServices = InProcessServerBuilder
       .forName(serverName)
       .directExecutor()
-      .intercept(new GrpcAuthenticatorInterceptor)
 
     val serverBuilder = services.foldLeft(serverBuilderWithoutServices) { (builder, service) =>
       builder.addService(service)
@@ -99,74 +50,4 @@ abstract class RpcSpecBase extends AtalaWithPostgresSpec with BeforeAndAfterEach
 
     super.afterEach()
   }
-
-  def usingApiAsConstructor[STUB](
-      stubFactory: (ManagedChannel, CallOptions) => STUB
-  ): ApiTestHelper[STUB] =
-    new ApiTestHelper[STUB] {
-      override def unlogged[T](f: STUB => T): T = {
-        val blockingStub = stubFactory(channelHandle, CallOptions.DEFAULT)
-        f(blockingStub)
-      }
-
-      private def apply[T](metadata: Metadata)(f: STUB => T): T = {
-        val callOptions =
-          CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
-            override def applyRequestMetadata(
-                requestInfo: CallCredentials.RequestInfo,
-                appExecutor: Executor,
-                applier: CallCredentials.MetadataApplier
-            ): Unit = {
-              appExecutor.execute { () =>
-                applier.apply(metadata)
-              }
-            }
-
-            override def thisUsesUnstableApi(): Unit = ()
-          })
-
-        val blockingStub = stubFactory(channelHandle, callOptions)
-        f(blockingStub)
-      }
-
-      override def apply[T](
-          requestNonce: Vector[Byte],
-          signature: SecpECDSASignature,
-          publicKey: SecpPublicKey,
-          traceId: TraceId
-      )(
-          f: STUB => T
-      ): T = {
-        apply(
-          GrpcAuthenticationHeader
-            .PublicKeyBased(
-              auth.model.RequestNonce(requestNonce),
-              publicKey,
-              signature
-            )
-            .toMetadata
-        )(f)
-      }
-
-      override def apply[T](
-          requestNonce: Vector[Byte],
-          signature: SecpECDSASignature,
-          did: DID,
-          keyId: String,
-          traceId: TraceId
-      )(
-          f: STUB => T
-      ): T = {
-        apply(
-          GrpcAuthenticationHeader
-            .PublishedDIDBased(
-              auth.model.RequestNonce(requestNonce),
-              did,
-              keyId,
-              signature
-            )
-            .toMetadata
-        )(f)
-      }
-    }
 }
