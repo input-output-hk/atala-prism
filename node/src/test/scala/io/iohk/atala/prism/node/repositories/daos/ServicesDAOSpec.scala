@@ -10,7 +10,7 @@ import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.nodeState.{DIDServiceState, LedgerData}
 import io.iohk.atala.prism.node.models.{DIDData, DIDPublicKey, DIDService, KeyUsage}
 import io.iohk.atala.prism.node.repositories.{didSuffixFromDigest, digestGen}
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import org.scalatest.OptionValues._
 
 import java.time.Instant

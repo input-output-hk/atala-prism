@@ -36,8 +36,8 @@ object ContextDAO {
             |INSERT INTO contexts (context_id, did_suffix, context,
             |    added_on_transaction_id, added_on, added_on_absn, added_on_osn)
             |VALUES ($newContextId, $didSuffix, $contextStr,
-            |    ${ledgerData.transactionId}, ${addedOn.getAtalaBlockTimestamp.toInstant},
-            |    ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber})
+            |    ${ledgerData.transactionId}, ${addedOn.atalaBlockTimestamp.toInstant},
+            |    ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber})
       """.stripMargin.update.run.void
   }
 
@@ -50,9 +50,9 @@ object ContextDAO {
     val revokedOn = ledgerData.timestampInfo
     sql"""|
           |UPDATE contexts
-          |SET revoked_on = ${revokedOn.getAtalaBlockTimestamp.toInstant},
-          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
-          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+          |SET revoked_on = ${revokedOn.atalaBlockTimestamp.toInstant},
+          |    revoked_on_absn = ${revokedOn.atalaBlockSequenceNumber},
+          |    revoked_on_osn = ${revokedOn.operationSequenceNumber},
           |    revoked_on_transaction_id = ${ledgerData.transactionId}
           |WHERE did_suffix = $suffix AND revoked_on is NULL
           |""".stripMargin.update.run.map(_ > 0)

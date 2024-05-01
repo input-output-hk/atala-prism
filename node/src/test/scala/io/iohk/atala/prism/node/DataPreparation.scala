@@ -28,7 +28,7 @@ import io.iohk.atala.prism.node.repositories.daos.{
   ServicesDAO
 }
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, ObjectManagementService, SubmissionService}
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.{node_api, node_models}
 import org.scalatest.OptionValues._
@@ -41,7 +41,7 @@ import scala.concurrent.{ExecutionContext, Future}
 // We also use these tests to test DAOs (note that the methods not present here are
 // defined in corresponding repositories
 object DataPreparation {
-  val dummyTimestampInfo: TimestampInfo = new TimestampInfo(0, 1, 0)
+  val dummyTimestampInfo: TimestampInfo = TimestampInfo(0, 1, 0)
   lazy val dummyLedgerData: LedgerData = LedgerData(
     TransactionId
       .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
@@ -125,11 +125,11 @@ object DataPreparation {
     } yield ids
   }
 
-  val dummyTime: TimestampInfo = new TimestampInfo(0, 1, 0)
+  val dummyTime: TimestampInfo = TimestampInfo(0, 1, 0)
 
   val dummyTimestamp: Instant =
-    Instant.ofEpochMilli(dummyTime.getAtalaBlockTimestamp)
-  val dummyABSequenceNumber: Int = dummyTime.getAtalaBlockSequenceNumber
+    Instant.ofEpochMilli(dummyTime.atalaBlockTimestamp)
+  val dummyABSequenceNumber: Int = dummyTime.atalaBlockSequenceNumber
   val dummyTransactionInfo: TransactionInfo =
     TransactionInfo(
       transactionId = TransactionId.from(Sha256Hash.compute("id".getBytes).bytes).value,

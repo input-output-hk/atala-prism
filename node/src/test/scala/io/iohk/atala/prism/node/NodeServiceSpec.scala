@@ -23,7 +23,7 @@ import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_api.OperationOutput
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}

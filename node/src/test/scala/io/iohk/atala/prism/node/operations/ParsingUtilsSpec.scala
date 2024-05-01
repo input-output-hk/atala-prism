@@ -21,7 +21,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
         ParsingUtils.parseECKey(
           ValueAtPath(
             new node_models.ECKeyData(
-              /* curve =*/ io.iohk.atala.prism.crypto.ECConfig.INSTANCE.getCURVE_NAME,
+              /* curve =*/ ProtocolConstants.secpCurveName,
               /* x = */ xByteString,
               /* y = */ yByteString
             ),
@@ -40,7 +40,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
         ParsingUtils.parseECKey(
           ValueAtPath(
             new node_models.ECKeyData(
-              /* curve =*/ io.iohk.atala.prism.crypto.ECConfig.INSTANCE.getCURVE_NAME,
+              /* curve =*/ ProtocolConstants.secpCurveName,
               /* x = */ xByteString,
               /* y = */ yByteString
             ),

@@ -106,10 +106,6 @@ lazy val Dependencies = new {
 
   // SDK dependencies
 
-  // We have to exclude bouncycastle since for some reason bitcoinj depends on bouncycastle jdk15to18
-  // (i.e. JDK 1.5 to 1.8), but we are using JDK 11
-  val prismIdentity =
-    "io.iohk.atala" % "prism-identity-jvm" % versions.prismSdk
   // Test dependencies
   val catsScalatest =
     "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -150,8 +146,6 @@ lazy val Dependencies = new {
     Seq(scalatest, scalatestWordspec, scalatestplus, catsScalatest)
   val sttpDependencies = Seq(sttpCore, sttpCE2)
   val tofuDependencies = Seq(tofu, tofuLogging, tofuDerevoTagless)
-  val prismDependencies =
-    Seq(prismIdentity)
   val scalapbDependencies = Seq(
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
@@ -269,7 +263,6 @@ lazy val node =
           ++ Dependencies.grpcDependencies
           ++ Dependencies.logbackDependencies
           ++ Dependencies.sttpDependencies
-          ++ Dependencies.prismDependencies
           ++ Dependencies.mockitoDependencies
           ++ Dependencies.scalapbDependencies
           ++ Seq(
