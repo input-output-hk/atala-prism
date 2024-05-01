@@ -39,7 +39,7 @@ case class CreateDIDOperation(
       }
       secpKey <- EitherT.fromEither[ConnectionIO] {
         val tryKey = Try {
-          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(key.key.compressedKey)
+          SecpPublicKey.unsafeFromCompressed(key.key.compressedKey)
         }
         tryKey.toOption
           .toRight(IllegalSecp256k1Key(key.keyId))

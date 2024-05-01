@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.node.nonce
 
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
-import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpECDSA
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -29,7 +29,7 @@ abstract class RequestAuthenticatorSpecBase extends AnyWordSpec {
         Base64.getUrlDecoder.decode(signedRequest.encodedRequestNonce)
       signedRequest.requestNonce must contain theSameElementsInOrderAs requestNonce
       val requestWithNonce = requestNonce ++ request
-      SecpPublicKey.checkECDSASignature(
+      SecpECDSA.checkECDSASignature(
         requestWithNonce,
         signature,
         keyPair.publicKey

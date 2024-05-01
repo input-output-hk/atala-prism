@@ -12,7 +12,7 @@ import io.iohk.atala.prism.node.auth.errors._
 import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.auth.grpc.GrpcAuthenticationHeader
 import io.iohk.atala.prism.node.auth.utils.DIDUtils
-import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSASignature, SecpPublicKey}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpECDSASignature, SecpPublicKey}
 import io.iohk.atala.prism.protos.node_api
 import scalapb.GeneratedMessage
 import tofu.Execute
@@ -141,7 +141,7 @@ private[auth] class WhitelistedAuthenticatorFImpl[F[_]: Monad](burnAuth: Whiteli
       signature: SecpECDSASignature
   ): F[Either[AuthError, Unit]] = {
     val payload = requestNonce.mergeWith(request).toArray
-    val isVerified = Try(SecpPublicKey.checkECDSASignature(payload, signature.bytes, publicKey)).getOrElse(false)
+    val isVerified = Try(SecpECDSA.checkECDSASignature(payload, signature.bytes, publicKey)).getOrElse(false)
     Applicative[F].pure(
       Either
         .cond[AuthError, Unit](

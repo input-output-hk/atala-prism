@@ -134,7 +134,7 @@ object ProtoCodecs {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
+    } yield SecpPublicKey.unsafeFromByteCoordinates(
       maybeX.x.toByteArray,
       maybeY.y.toByteArray
     )

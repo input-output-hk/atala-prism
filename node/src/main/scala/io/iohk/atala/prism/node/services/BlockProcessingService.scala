@@ -6,7 +6,7 @@ import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPublicKey}
 import io.iohk.atala.prism.node.models.{AtalaOperationId, Ledger, TransactionId}
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
@@ -199,7 +199,7 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
   ): Either[StateError, Unit] = {
     try {
       Either.cond(
-        SecpPublicKey.checkECDSASignature(
+        SecpECDSA.checkECDSASignature(
           protoOperation.getOperation.toByteArray,
           protoOperation.signature.toByteArray,
           key

@@ -39,7 +39,7 @@ case class ProtocolVersionUpdateOperation(
 
       secpKey <- EitherT.fromEither[ConnectionIO] {
         val tryKey = Try {
-          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(keyState.key.compressedKey)
+          SecpPublicKey.unsafeFromCompressed(keyState.key.compressedKey)
         }
         tryKey.toOption
           .toRight(IllegalSecp256k1Key(keyId))

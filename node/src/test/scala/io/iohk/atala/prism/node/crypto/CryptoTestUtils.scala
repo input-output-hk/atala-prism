@@ -21,8 +21,8 @@ object CryptoTestUtils {
   object SecpPair {
     def fromECPair(publicCompressed: Array[Byte], privateEncoded: Array[Byte]): SecpPair = {
       SecpPair(
-        SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(publicCompressed.toVector),
-        SecpPrivateKey.unsafefromBytesCompressed(privateEncoded)
+        SecpPublicKey.unsafeFromCompressed(publicCompressed.toVector),
+        SecpPrivateKey.unsafeFromBytesCompressed(privateEncoded)
       )
     }
   }
@@ -52,7 +52,7 @@ object CryptoTestUtils {
   )
 
   def toPublicKeyData(ecKey: SecpPublicKey): PublicKeyData = {
-    val ecK = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(ecKey.compressed.toVector)
+    val ecK = SecpPublicKey.unsafeFromCompressed(ecKey.compressed.toVector)
     PublicKeyData(
       ecK.curveName,
       ecK.compressed.toVector

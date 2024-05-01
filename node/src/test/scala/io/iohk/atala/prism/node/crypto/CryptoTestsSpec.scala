@@ -62,8 +62,8 @@ class CryptoTestsSpec extends AnyWordSpec {
         -91, 126, 108, -61, -47, 19, 74, -98, 58, -42, 36, 8, 45, 2, 93, -102, 2, 32, 27, 91, -1, 57, -85, 60, -73, 85,
         -51, -54, -89, 30, -89, 27, -42, -10, 74, -65, 46, -77, -23, 20, 126, 16, -58, -21, 56, 36, 127, -65, -10, -62)
 
-      val secp = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(compressedPublicKey)
-      SecpPublicKey.checkECDSASignature(msg, sig, secp) mustBe true
+      val secp = SecpPublicKey.unsafeFromCompressed(compressedPublicKey)
+      SecpECDSA.checkECDSASignature(msg, sig, secp) mustBe true
     }
 
     "can verify what it signs" in {
@@ -74,13 +74,13 @@ class CryptoTestsSpec extends AnyWordSpec {
       val msg = CryptoUtils.Sha256Hash.compute(pub.compressed).bytes.toArray
 
       val sig = SecpECDSA.signBytes(msg, priv).bytes
-      SecpPublicKey.checkECDSASignature(msg, sig, pub) mustBe true
+      SecpECDSA.checkECDSASignature(msg, sig, pub) mustBe true
     }
 
     // PUBLIC KEY ENCODING / DECODING
     "public key uncompressed encoding / decoding works as expected" in {
       val originalUncompressed = CryptoTestUtils.generateKeyPair().publicKey.unCompressed
-      val secpPublicKey = SecpPublicKey.unsafetoPublicKeyFromUncompressed(originalUncompressed)
+      val secpPublicKey = SecpPublicKey.unsafeFromUncompressed(originalUncompressed)
 
       originalUncompressed.toVector mustBe secpPublicKey.unCompressed.toVector
 
@@ -88,21 +88,21 @@ class CryptoTestsSpec extends AnyWordSpec {
       val externalUncompressedKey = Array[Byte](4, -118, 38, -87, -93, -27, -9, 88, 11, 37, -118, 49, 87, 93, -101, 22,
         10, -51, -116, -89, 26, -58, -15, -21, 116, 82, 30, -13, 29, -75, 52, 2, -106, -83, 108, -58, 49, 30, 11, 43,
         -8, -61, 78, 1, 16, 70, 102, 101, -74, 120, 19, -41, 46, 45, -29, -82, -53, 97, 55, 79, 68, -16, -73, -82, -7)
-      val parsedKey = SecpPublicKey.unsafetoPublicKeyFromUncompressed(externalUncompressedKey)
+      val parsedKey = SecpPublicKey.unsafeFromUncompressed(externalUncompressedKey)
 
       externalUncompressedKey.toVector mustBe parsedKey.unCompressed.toVector
     }
 
     "public key compressed encoding / decoding works as expected" in {
       val originalCompressed = CryptoTestUtils.generateKeyPair().publicKey.compressed
-      val secpPublicKey = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(originalCompressed.toVector)
+      val secpPublicKey = SecpPublicKey.unsafeFromCompressed(originalCompressed.toVector)
 
       originalCompressed.toVector mustBe secpPublicKey.compressed.toVector
 
       // we test the same with an externally generated key
       val externalCompressedKey = Vector[Byte](3, -7, -57, -39, 107, 103, -70, -127, -67, 43, 41, 75, -74, 99, -122,
         -34, -67, -19, 10, -25, 36, -52, 47, 89, -52, 27, 3, 10, 27, 0, 3, 102, 122)
-      val parsedKey = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(externalCompressedKey)
+      val parsedKey = SecpPublicKey.unsafeFromCompressed(externalCompressedKey)
 
       externalCompressedKey mustBe parsedKey.compressed.toVector
     }
@@ -111,7 +111,7 @@ class CryptoTestsSpec extends AnyWordSpec {
       val originalSecpPublicKey = CryptoTestUtils.generateKeyPair().publicKey
       val originalX = originalSecpPublicKey.x
       val originalY = originalSecpPublicKey.y
-      val secpPublicKey = SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(originalX, originalY)
+      val secpPublicKey = SecpPublicKey.unsafeFromByteCoordinates(originalX, originalY)
 
       originalX.toVector mustBe secpPublicKey.x.toVector
       originalY.toVector mustBe secpPublicKey.y.toVector
@@ -121,7 +121,7 @@ class CryptoTestsSpec extends AnyWordSpec {
         69, 31, -114, 5, 81, 83, 77, -70, 116, 45, -12, -123, 49, 72)
       val externalY = Array[Byte](-92, 7, 60, 55, -100, -53, -96, -41, 112, -40, 50, 6, 93, -87, -58, -9, -5, -86, -20,
         94, -97, 106, -74, -53, 118, -37, 79, 119, -106, -21, -111, 45)
-      val parsedKey = SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(externalX, externalY)
+      val parsedKey = SecpPublicKey.unsafeFromByteCoordinates(externalX, externalY)
 
       externalX.toVector mustBe parsedKey.x.toVector
       externalY.toVector mustBe parsedKey.y.toVector
@@ -133,9 +133,9 @@ class CryptoTestsSpec extends AnyWordSpec {
       val unCompressed = publicKey.unCompressed
       val x = publicKey.x
       val y = publicKey.y
-      val secpKeyFromCompressed = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(compressed.toVector)
-      val secpKeyFromUncompressed = SecpPublicKey.unsafetoPublicKeyFromUncompressed(unCompressed)
-      val secpFromCoordinates = SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(x, y)
+      val secpKeyFromCompressed = SecpPublicKey.unsafeFromCompressed(compressed.toVector)
+      val secpKeyFromUncompressed = SecpPublicKey.unsafeFromUncompressed(unCompressed)
+      val secpFromCoordinates = SecpPublicKey.unsafeFromByteCoordinates(x, y)
 
       compressed.toVector mustBe secpKeyFromCompressed.compressed.toVector
       compressed.toVector mustBe secpKeyFromUncompressed.compressed.toVector
@@ -144,14 +144,14 @@ class CryptoTestsSpec extends AnyWordSpec {
 
     "private key encoding / decoding works as expected" in {
       val originalEncodedKey = CryptoTestUtils.generateKeyPair().privateKey.getEncoded
-      val secpPrivateKey = SecpPrivateKey.unsafefromBytesCompressed(originalEncodedKey)
+      val secpPrivateKey = SecpPrivateKey.unsafeFromBytesCompressed(originalEncodedKey)
 
       originalEncodedKey.toVector mustBe secpPrivateKey.getEncoded.toVector
 
       // we test the same with an externally generated key
       val externalEncodedKey = Array[Byte](27, 117, -8, -43, -76, 44, -64, -93, -97, 29, -106, 88, 43, 76, 1, -48, 114,
         -11, -4, 47, -100, -127, 31, -112, -51, -41, 102, -45, -64, 85, -126, -77)
-      val parsedSDKKey = SecpPrivateKey.unsafefromBytesCompressed(externalEncodedKey)
+      val parsedSDKKey = SecpPrivateKey.unsafeFromBytesCompressed(externalEncodedKey)
 
       externalEncodedKey.toVector mustBe parsedSDKKey.getEncoded.toVector
     }

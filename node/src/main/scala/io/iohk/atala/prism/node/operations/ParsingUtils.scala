@@ -46,7 +46,7 @@ object ParsingUtils {
       Left(ecData.child(_.curve, "y").missing())
     } else {
       Try {
-        val key = SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
+        val key = SecpPublicKey.unsafeFromByteCoordinates(
           ecData(_.x.toByteArray),
           ecData(_.y.toByteArray)
         )
