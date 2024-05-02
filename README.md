@@ -81,21 +81,7 @@ $ sbt node/run
 
 This will start the node server. You can interact with it using gRPC calls at port 50053.
 By default, the node is running on "in memory" mode, which means that any operation submitted to it will be instantly confirmed and processed.
-Alternatively, you can configure to run it against a Cardano network by setting values for the db-sync and Cardano wallet services.
-
-```bash
-export NODE_CARDANO_DB_SYNC_HOST="db-sync-instance.example.com"
-export NODE_CARDANO_DB_SYNC_DATABASE="db name"
-export NODE_CARDANO_DB_SYNC_USERNAME="the username"
-export NODE_CARDANO_DB_SYNC_PASSWORD="your password"
-
-export NODE_CARDANO_WALLET_API_HOST="cardanowallet.example.com"
-export NODE_CARDANO_WALLET_API_PORT="port number"
-
-export NODE_CARDANO_PAYMENT_ADDRESS="wallet address"
-export NODE_CARDANO_WALLET_ID="a wallet id"
-export NODE_CARDANO_WALLET_PASSPHRASE="wallet pathphrase"
-```
+Alternatively, you can configure to run it against a Cardano network by setting values for the db-sync and Cardano wallet services. See [this documentation](https://github.com/hyperledger/identus-cloud-agent/blob/main/docs/guides/deploying-node.md) for more details
 
 For development purposes, you may want to reduce the number of blocks to wait for confirmations. Note that this parameter is fixed for mainnet. Hence, only modify then for tests if needed.
 
