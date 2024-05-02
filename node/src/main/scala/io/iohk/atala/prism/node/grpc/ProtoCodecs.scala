@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.grpc
 
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, PublicKeyData}
 import io.iohk.atala.prism.protos.common_models
 import io.iohk.atala.prism.node.models
@@ -21,11 +21,11 @@ object ProtoCodecs {
       .TimestampInfo()
       .withBlockTimestamp(
         Instant
-          .ofEpochMilli(timestampInfo.getAtalaBlockTimestamp)
+          .ofEpochMilli(timestampInfo.atalaBlockTimestamp)
           .toProtoTimestamp
       )
-      .withBlockSequenceNumber(timestampInfo.getAtalaBlockSequenceNumber)
-      .withOperationSequenceNumber(timestampInfo.getOperationSequenceNumber)
+      .withBlockSequenceNumber(timestampInfo.atalaBlockSequenceNumber)
+      .withOperationSequenceNumber(timestampInfo.operationSequenceNumber)
   }
 
   def atalaOperationToDIDDataProto(
@@ -134,7 +134,7 @@ object ProtoCodecs {
     for {
       maybeX <- protoKey.keyData.ecKeyData
       maybeY <- protoKey.keyData.ecKeyData
-    } yield SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
+    } yield SecpPublicKey.unsafeFromByteCoordinates(
       maybeX.x.toByteArray,
       maybeY.y.toByteArray
     )

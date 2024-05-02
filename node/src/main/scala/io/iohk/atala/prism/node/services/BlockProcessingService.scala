@@ -5,8 +5,8 @@ import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.prism.protos.models.TimestampInfo
-import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
+import io.iohk.atala.prism.node.models.TimestampInfo
+import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPublicKey}
 import io.iohk.atala.prism.node.models.{AtalaOperationId, Ledger, TransactionId}
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
@@ -59,7 +59,7 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
       val (signedOperation, index) = v
       parseOperation(
         signedOperation,
-        LedgerData(transactionId, ledger, new TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, index))
+        LedgerData(transactionId, ledger, TimestampInfo(blockTimestamp.toEpochMilli, blockIndex, index))
       ) match {
         case Left(err) => acc.copy(invalid = (signedOperation, err) :: acc.invalid)
         case Right(parsed) => acc.copy(valid = (signedOperation, parsed) :: acc.valid)
@@ -199,7 +199,7 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
   ): Either[StateError, Unit] = {
     try {
       Either.cond(
-        SecpPublicKey.checkECDSASignature(
+        SecpECDSA.checkECDSASignature(
           protoOperation.getOperation.toByteArray,
           protoOperation.signature.toByteArray,
           key

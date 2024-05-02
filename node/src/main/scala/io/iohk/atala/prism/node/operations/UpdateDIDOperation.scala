@@ -78,7 +78,7 @@ case class UpdateDIDOperation(
       }.map(_.key)
       secpKey <- EitherT.fromEither[ConnectionIO] {
         val tryKey = Try {
-          SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(keyData.compressedKey)
+          SecpPublicKey.unsafeFromCompressed(keyData.compressedKey)
         }
         tryKey.toOption
           .toRight(IllegalSecp256k1Key(keyId): StateError)

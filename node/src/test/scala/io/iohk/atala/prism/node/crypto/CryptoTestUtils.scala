@@ -1,39 +1,58 @@
 package io.iohk.atala.prism.node.crypto
 
-import io.iohk.atala.prism.crypto.EC
-import io.iohk.atala.prism.crypto.keys.{ECKeyPair, ECPublicKey}
 import io.iohk.atala.prism.node.identity.{CanonicalPrismDid, PrismDid => DID}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPrivateKey, SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.node.models.PublicKeyData
+import org.bouncycastle.crypto.generators.ECKeyPairGenerator
+import org.bouncycastle.crypto.params.{
+  ECDomainParameters,
+  ECKeyGenerationParameters,
+  ECPrivateKeyParameters,
+  ECPublicKeyParameters
+}
+import org.bouncycastle.jce.ECNamedCurveTable
+
+import java.security.SecureRandom
 
 object CryptoTestUtils {
 
   case class SecpPair(publicKey: SecpPublicKey, privateKey: SecpPrivateKey)
 
   object SecpPair {
-    def fromECPair(ecPair: ECKeyPair): SecpPair = {
+    def fromECPair(publicCompressed: Array[Byte], privateEncoded: Array[Byte]): SecpPair = {
       SecpPair(
-        SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(ecPair.getPublicKey.getEncodedCompressed.toVector),
-        SecpPrivateKey.unsafefromBytesCompressed(ecPair.getPrivateKey.getEncoded)
+        SecpPublicKey.unsafeFromCompressed(publicCompressed.toVector),
+        SecpPrivateKey.unsafeFromBytesCompressed(privateEncoded)
       )
     }
   }
 
   def generateKeyPair(): SecpPair = {
-    SecpPair.fromECPair(
-      EC.INSTANCE.generateKeyPair()
-    )
+    val params = ECNamedCurveTable.getParameterSpec("secp256k1")
+    val curve = params.getCurve
+    val domainParams = new ECDomainParameters(curve, params.getG, params.getN, params.getH)
+    val secureRandom = new SecureRandom()
+    val keyParams = new ECKeyGenerationParameters(domainParams, secureRandom)
+
+    val generator = new ECKeyPairGenerator()
+    generator.init(keyParams)
+
+    val keyPair = generator.generateKeyPair()
+    val privateKeyParams = keyPair.getPrivate.asInstanceOf[ECPrivateKeyParameters]
+    val publicKeyParams = keyPair.getPublic.asInstanceOf[ECPublicKeyParameters]
+
+    val privateKeyBytes = privateKeyParams.getD.toByteArray
+    val publicKeyBytes = publicKeyParams.getQ.getEncoded(true)
+
+    SecpPair.fromECPair(publicKeyBytes, privateKeyBytes)
   }
 
   def generatePublicKeyData(): PublicKeyData = toPublicKeyData(
     generateKeyPair().publicKey
   )
 
-  // TODO: might need to be removed
-  def getUnderlyingKey(secpKey: SecpPublicKey): ECPublicKey = EC.INSTANCE.toPublicKeyFromCompressed(secpKey.compressed)
-
   def toPublicKeyData(ecKey: SecpPublicKey): PublicKeyData = {
-    val ecK = SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(ecKey.compressed.toVector)
+    val ecK = SecpPublicKey.unsafeFromCompressed(ecKey.compressed.toVector)
     PublicKeyData(
       ecK.curveName,
       ecK.compressed.toVector

@@ -18,8 +18,8 @@ object DIDDataDAO {
     val publishedOn = ledgerData.timestampInfo
     sql"""
          |INSERT INTO did_data (did_suffix, last_operation, published_on, published_on_absn, published_on_osn, transaction_id, ledger)
-         |VALUES ($didSuffix, $lastOperation, ${publishedOn.getAtalaBlockTimestamp.toInstant},
-         |  ${publishedOn.getAtalaBlockSequenceNumber}, ${publishedOn.getOperationSequenceNumber},
+         |VALUES ($didSuffix, $lastOperation, ${publishedOn.atalaBlockTimestamp.toInstant},
+         |  ${publishedOn.atalaBlockSequenceNumber}, ${publishedOn.operationSequenceNumber},
          |  ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.update.run.void
   }

@@ -6,7 +6,7 @@ import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.{DIDPublicKeyState, DIDServiceState, LedgerData}
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.utils.syntax._
 
 import java.time.Instant
@@ -81,12 +81,12 @@ package object daos extends BaseDAO {
         key.keyUsage,
         curveName,
         compressed,
-        key.addedOn.timestampInfo.getAtalaBlockTimestamp.toInstant,
-        key.addedOn.timestampInfo.getAtalaBlockSequenceNumber,
-        key.addedOn.timestampInfo.getOperationSequenceNumber,
-        key.revokedOn map (_.timestampInfo.getAtalaBlockTimestamp.toInstant),
-        key.revokedOn map (_.timestampInfo.getAtalaBlockSequenceNumber),
-        key.revokedOn map (_.timestampInfo.getOperationSequenceNumber)
+        key.addedOn.timestampInfo.atalaBlockTimestamp.toInstant,
+        key.addedOn.timestampInfo.atalaBlockSequenceNumber,
+        key.addedOn.timestampInfo.operationSequenceNumber,
+        key.revokedOn map (_.timestampInfo.atalaBlockTimestamp.toInstant),
+        key.revokedOn map (_.timestampInfo.atalaBlockSequenceNumber),
+        key.revokedOn map (_.timestampInfo.operationSequenceNumber)
       )
     }
   }
@@ -140,7 +140,7 @@ package object daos extends BaseDAO {
             yield LedgerData(
               transactionId = transactionId,
               ledger = ledger,
-              timestampInfo = new TimestampInfo(t.toEpochMilli, absn, osn)
+              timestampInfo = TimestampInfo(t.toEpochMilli, absn, osn)
             )
         DIDPublicKeyState(
           didSuffix,
@@ -150,7 +150,7 @@ package object daos extends BaseDAO {
           LedgerData(
             transactionId = aTransactionId,
             ledger = aLedger,
-            timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
+            timestampInfo = TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
           ),
           revokeLedgerData
         )
@@ -195,7 +195,7 @@ package object daos extends BaseDAO {
         val addLedgerData = LedgerData(
           transactionId = aTransactionId,
           ledger = ledger,
-          timestampInfo = new TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
+          timestampInfo = TimestampInfo(aTimestamp.toEpochMilli, aABSN, aOSN)
         )
         val revokeLedgerData =
           for {
@@ -206,7 +206,7 @@ package object daos extends BaseDAO {
           } yield LedgerData(
             transactionId = transactionId,
             ledger = ledger,
-            timestampInfo = new TimestampInfo(timestamp.toEpochMilli, absn, osn)
+            timestampInfo = TimestampInfo(timestamp.toEpochMilli, absn, osn)
           )
 
         DIDServiceState(
@@ -319,7 +319,7 @@ package object daos extends BaseDAO {
         LedgerData(
           TransactionId.from(tId).get,
           Ledger.withNameInsensitive(ledger),
-          new TimestampInfo(abt.toEpochMilli, absn, osn)
+          TimestampInfo(abt.toEpochMilli, absn, osn)
         )
       }
 
@@ -329,7 +329,7 @@ package object daos extends BaseDAO {
         LedgerData(
           TransactionId.from(tId).get,
           Ledger.withNameInsensitive(ledger),
-          new TimestampInfo(abt.toEpochMilli, absn, osn)
+          TimestampInfo(abt.toEpochMilli, absn, osn)
         )
       }
 

@@ -131,7 +131,7 @@ private[grpc] object GrpcAuthenticationContext {
       ctx.getOpt(PublicKeyKeys)
     ) match {
       case (Some(requestNonce), Some(signature), Some(encodedPublicKey)) =>
-        val publicKey = SecpPublicKey.unsafetoPublicKeyFromUncompressed(encodedPublicKey)
+        val publicKey = SecpPublicKey.unsafeFromUncompressed(encodedPublicKey)
         val header = GrpcAuthenticationHeader.PublicKeyBased(
           requestNonce = RequestNonce(requestNonce.toVector),
           publicKey = publicKey,

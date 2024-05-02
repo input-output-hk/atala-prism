@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPrivateKey, Sha256Hash}
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import io.iohk.atala.prism.node.models.{AtalaOperationInfo, AtalaOperationStatus}
@@ -63,12 +63,12 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
 
   val service = new BlockProcessingServiceImpl(ApplyOperationConfig(DidSuffix("012ae")))
   val dummyTimestamp =
-    Instant.ofEpochMilli(dummyTimestampInfo.getAtalaBlockTimestamp)
+    Instant.ofEpochMilli(dummyTimestampInfo.atalaBlockTimestamp)
   val dummyTransactionId = TransactionId
     .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))
     .value
   val dummyLedger = Ledger.InMemory
-  val dummyABSequenceNumber = dummyTimestampInfo.getAtalaBlockSequenceNumber
+  val dummyABSequenceNumber = dummyTimestampInfo.atalaBlockSequenceNumber
 
   "BlockProcessingService" should {
     "apply block in" in {

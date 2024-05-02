@@ -2,7 +2,7 @@ package io.iohk.atala.prism.node.nonce
 
 import io.iohk.atala.prism.node.DIDUtil
 import io.iohk.atala.prism.node.auth.utils.DIDUtils
-import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpECDSA
 import io.iohk.atala.prism.protos.common_models
 import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures._
@@ -37,7 +37,7 @@ class ClientHelperSpec extends AnyWordSpec {
         .toOption
         .value
 
-      val verified = SecpPublicKey.checkECDSASignature(payload, header.signature.bytes, publicKey)
+      val verified = SecpECDSA.checkECDSASignature(payload, header.signature.bytes, publicKey)
       verified must be(true)
     }
   }

@@ -6,7 +6,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits.toDoobieApplicativeErrorOps
 import doobie.postgres.sqlstate
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpPublicKey, Sha256Hash}
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.models.nodeState.LedgerData

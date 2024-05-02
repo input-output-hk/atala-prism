@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import doobie.{Get, Meta, Read, Write}
 import doobie.implicits.legacy.instant._
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{DidSuffix, Ledger, TransactionId}
 import io.iohk.atala.prism.node.utils.DoobieImplicits.byteArraySeqMeta
 
@@ -39,7 +39,7 @@ object implicits {
 
   implicit val timestampInfoRead: Read[TimestampInfo] =
     Read[(Instant, Int, Int)].map { case (abt, absn, osn) =>
-      new TimestampInfo(abt.toEpochMilli, absn, osn)
+      TimestampInfo(abt.toEpochMilli, absn, osn)
     }
   implicit val timestampInfoGet: Get[TimestampInfo] =
     Get.Advanced

@@ -2,7 +2,6 @@ package io.iohk.atala.prism.node.auth.utils
 
 import io.iohk.atala.prism.node.auth.errors._
 import io.iohk.atala.prism.node.identity.{LongFormPrismDid, PrismDid => DID}
-import io.iohk.atala.prism.node.crypto.CryptoUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.node.utils.FutureEither
 import io.iohk.atala.prism.protos.node_models.AtalaOperation.Operation.CreateDid
@@ -55,7 +54,7 @@ object DIDUtils {
       publicKey: SecpPublicKey
   ): Option[SecpPublicKey] =
     Option.when(
-      publicKey.curveName == curve && CryptoUtils.isSecp256k1(publicKey)
+      publicKey.curveName == curve && SecpPublicKey.isSecp256k1(publicKey)
     )(publicKey)
 
   def findPublicKey(didData: node_models.DIDData, keyId: String)(implicit
@@ -73,12 +72,12 @@ object DIDUtils {
             if (data.x.size() > 32)
               verifyPublicKey(
                 data.curve,
-                SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.x.toByteArray.toVector)
+                SecpPublicKey.unsafeFromCompressed(data.x.toByteArray.toVector)
               )
             else
               verifyPublicKey(
                 data.curve,
-                SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
+                SecpPublicKey.unsafeFromByteCoordinates(
                   data.x.toByteArray,
                   data.y.toByteArray
                 )
@@ -86,7 +85,7 @@ object DIDUtils {
           case CompressedEcKeyData(data) =>
             verifyPublicKey(
               data.curve,
-              SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.data.toByteArray.toVector)
+              SecpPublicKey.unsafeFromCompressed(data.data.toByteArray.toVector)
             )
           case Empty => None
         }
@@ -108,12 +107,12 @@ object DIDUtils {
           if (data.x.size() > 32)
             verifyPublicKey(
               data.curve,
-              SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.x.toByteArray.toVector)
+              SecpPublicKey.unsafeFromCompressed(data.x.toByteArray.toVector)
             )
           else
             verifyPublicKey(
               data.curve,
-              SecpPublicKey.unsafeToSecpPublicKeyFromByteCoordinates(
+              SecpPublicKey.unsafeFromByteCoordinates(
                 data.x.toByteArray,
                 data.y.toByteArray
               )
@@ -121,7 +120,7 @@ object DIDUtils {
         case CompressedEcKeyData(data) =>
           verifyPublicKey(
             data.curve,
-            SecpPublicKey.unsafeToSecpPublicKeyFromCompressed(data.data.toByteArray.toVector)
+            SecpPublicKey.unsafeFromCompressed(data.data.toByteArray.toVector)
           )
         case Empty => None
       }

@@ -10,7 +10,7 @@ import org.scalatest.OptionValues._
 import java.time.Instant
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.{AtalaWithPostgresSpec, DataPreparation}
 import tofu.logging.Logging.Make
 import tofu.logging.Logging

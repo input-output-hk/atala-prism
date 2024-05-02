@@ -22,7 +22,7 @@ object PublicKeysDAO {
          |   added_on, added_on_absn, added_on_osn,
          |   added_on_transaction_id, ledger)
          |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $compressed,
-         |   ${addedOn.getAtalaBlockTimestamp.toInstant}, ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
+         |   ${addedOn.atalaBlockTimestamp.toInstant}, ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber},
          |   ${ledgerData.transactionId}, ${ledgerData.ledger})
        """.stripMargin.update.run.void
   }
@@ -69,10 +69,10 @@ object PublicKeysDAO {
     sql"""
          |UPDATE public_keys
          |SET revoked_on = ${Instant.ofEpochMilli(
-        revokedOn.getAtalaBlockTimestamp
+        revokedOn.atalaBlockTimestamp
       )},
-         |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
-         |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+         |    revoked_on_absn = ${revokedOn.atalaBlockSequenceNumber},
+         |    revoked_on_osn = ${revokedOn.operationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE did_suffix = $didSuffix AND key_id = $keyId
          |""".stripMargin.update.run.map(_ > 0)
@@ -86,10 +86,10 @@ object PublicKeysDAO {
     sql"""
          |UPDATE public_keys
          |SET revoked_on = ${Instant.ofEpochMilli(
-        revokedOn.getAtalaBlockTimestamp
+        revokedOn.atalaBlockTimestamp
       )},
-         |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
-         |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+         |    revoked_on_absn = ${revokedOn.atalaBlockSequenceNumber},
+         |    revoked_on_osn = ${revokedOn.operationSequenceNumber},
          |    revoked_on_transaction_id = ${ledgerData.transactionId}
          |WHERE did_suffix = $didSuffix AND revoked_on is NULL
          |""".stripMargin.update.run.map(_ > 0)

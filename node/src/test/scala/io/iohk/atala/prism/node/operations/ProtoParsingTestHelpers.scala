@@ -3,7 +3,7 @@ package io.iohk.atala.prism.node.operations
 import cats.data.NonEmptyList
 
 import java.time.Instant
-import io.iohk.atala.prism.protos.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.node.models.{Ledger, TransactionId}
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.services.BlockProcessingServiceSpec
@@ -21,7 +21,7 @@ trait ProtoParsingTestHelpers {
   protected def operationCompanion: OperationCompanion[Repr]
 
   private val dummyTimestampInfo2 =
-    new TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
+    TimestampInfo(Instant.ofEpochMilli(0).toEpochMilli, 1, 0)
   private val dummyLedgerData2 = LedgerData(
     TransactionId
       .from(Array.fill[Byte](TransactionId.config.size.toBytes.toInt)(0))

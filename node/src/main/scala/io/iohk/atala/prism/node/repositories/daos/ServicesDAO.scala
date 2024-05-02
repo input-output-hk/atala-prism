@@ -54,8 +54,8 @@ object ServicesDAO {
             |INSERT INTO services (service_id, id, did_suffix, type, service_endpoints,
             |    added_on_transaction_id, added_on, added_on_absn, added_on_osn, ledger)
             |VALUES ($newServiceId, ${service.id}, ${service.didSuffix}, ${service.`type`}, ${service.serviceEndpoints},
-            |    ${ledgerData.transactionId}, ${addedOn.getAtalaBlockTimestamp.toInstant},
-            |    ${addedOn.getAtalaBlockSequenceNumber}, ${addedOn.getOperationSequenceNumber},
+            |    ${ledgerData.transactionId}, ${addedOn.atalaBlockTimestamp.toInstant},
+            |    ${addedOn.atalaBlockSequenceNumber}, ${addedOn.operationSequenceNumber},
             |    ${ledgerData.ledger})
       """.stripMargin.update.run.void
   }
@@ -69,9 +69,9 @@ object ServicesDAO {
     val revokedOn = ledgerData.timestampInfo
     sql"""|
           |UPDATE services
-          |SET revoked_on = ${revokedOn.getAtalaBlockTimestamp.toInstant},
-          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
-          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+          |SET revoked_on = ${revokedOn.atalaBlockTimestamp.toInstant},
+          |    revoked_on_absn = ${revokedOn.atalaBlockSequenceNumber},
+          |    revoked_on_osn = ${revokedOn.operationSequenceNumber},
           |    revoked_on_transaction_id = ${ledgerData.transactionId}
           |WHERE did_suffix = $suffix AND revoked_on is NULL
           |""".stripMargin.update.run.map(_ > 0)
@@ -89,9 +89,9 @@ object ServicesDAO {
 
     sql"""|
           |UPDATE services
-          |SET revoked_on = ${revokedOn.getAtalaBlockTimestamp.toInstant},
-          |    revoked_on_absn = ${revokedOn.getAtalaBlockSequenceNumber},
-          |    revoked_on_osn = ${revokedOn.getOperationSequenceNumber},
+          |SET revoked_on = ${revokedOn.atalaBlockTimestamp.toInstant},
+          |    revoked_on_absn = ${revokedOn.atalaBlockSequenceNumber},
+          |    revoked_on_osn = ${revokedOn.operationSequenceNumber},
           |    revoked_on_transaction_id = ${ledgerData.transactionId}
           |WHERE did_suffix = $suffix AND id = $id AND revoked_on is NULL
           |""".stripMargin.update.run.map(_ > 0)
