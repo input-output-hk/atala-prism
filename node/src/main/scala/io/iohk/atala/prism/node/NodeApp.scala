@@ -35,8 +35,6 @@ import scala.concurrent.duration.FiniteDuration
 
 object NodeApp extends IOApp {
 
-  private val port = 50053
-
   override def run(args: List[String]): IO[ExitCode] =
     new NodeApp(ExecutionContext.global).start().use(_ => IO.never)
 }
@@ -142,7 +140,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         nodeExplorerDids
       )
       nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
-      server <- startServer(nodeGrpcService, nodeExplorerGrpcService)
+      port = globalConfig.getInt("port")
+      server <- startServer(nodeGrpcService, nodeExplorerGrpcService, port)
     } yield (submissionSchedulingService, server)
   }
 
@@ -248,13 +247,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
   private def startServer(
       nodeService: NodeGrpcServiceImpl,
-      nodeExplorerService: NodeExplorerGrpcServiceImpl
+      nodeExplorerService: NodeExplorerGrpcServiceImpl,
+      port: Int
   ): Resource[IO, Server] =
     Resource.make[IO, Server](IO {
       logger.info("Starting server")
       import io.grpc.protobuf.services.ProtoReflectionService
       val server = ServerBuilder
-        .forPort(NodeApp.port)
+        .forPort(port)
         .intercept(new TraceExposeInterceptor)
         .intercept(new TraceReadInterceptor)
         .intercept(new GrpcAuthenticatorInterceptor)
@@ -266,10 +266,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         )
         .addService(
           ProtoReflectionService.newInstance()
-        ) // TODO: Decide before release if we should keep this (or guard it with a config flag)
+        )
         .build()
         .start()
-      logger.info("Server started, listening on " + NodeApp.port)
+      logger.info("Server started, listening on " + port)
       server
     })(server =>
       IO {
