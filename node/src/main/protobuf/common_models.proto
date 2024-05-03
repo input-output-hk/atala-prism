@@ -5,7 +5,6 @@ option java_package = "io.iohk.atala.prism.protos";
 
 package io.iohk.atala.prism.protos;
 
-import "status.proto";
 import "google/protobuf/timestamp.proto";
 
 /**
@@ -67,18 +66,4 @@ enum OperationStatus {
     AWAIT_CONFIRMATION = 2; // The transaction containing this operation has been published to the chain, but hasn't been processed by PRISM yet.
     CONFIRMED_AND_APPLIED = 3; // The operation has been successfully applied to the PRISM.
     CONFIRMED_AND_REJECTED = 4; // The operation has been processed by PRISM, but rejected because of some error.
-}
-
-message AtalaErrorMessage {
-    google.rpc.Status status = 1;
-}
-
-message AtalaMessage {
-    oneof message {
-        AtalaErrorMessage atala_error_message = 9;
-    }
-}
-
-message ConnectionsStatusRequest {
-  repeated string connection_tokens = 1;
 }
