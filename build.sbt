@@ -167,10 +167,6 @@ lazy val root =
       scalacOptions += "-Ymacro-annotations",
       javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
       githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
-      // Needed for Kotlin coroutines that support new memory management mode
-      // TODO: this was most likely added for SDK, it can be removed after SDK is removed
-      resolvers +=
-        "JetBrains Space Maven Repository" at "https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven",
       addCompilerPlugin(
         "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
       ),
