@@ -1,62 +1,40 @@
-# Prism
+# PRISM Node
 
-Prism is a Self-Sovereign Identity (SSI), and Verifiable Credentials (VC) platform.
+This project represents a reference implementation of the PRISM Node described in the [PRISM DID method specification](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md).
+This code is not recommended for production environments. The project supports:
+- the indexing of the blockchain
+- The interpretation of the DID method events (Creation, updates and deactivation)
+- batch submission for DID PRISM operations
 
-[![CircleCI](https://circleci.com/gh/input-output-hk/atala/tree/develop.svg?style=svg&circle-token=1a9dcf544cec8cb581fa377d8524d2854cfb10e9)](https://circleci.com/gh/input-output-hk/cardano-enterprise/tree/develop)
+## Dependencies
 
-## Branches, deployment, and stability
+### Install coursier
 
-Three main branches will be maintained:
+Coursier is a package manager through which we will install all java/scala related dependencies. Follow the [instructions](https://get-coursier.io/docs/cli-installation.html) for your operating system
 
-* `develop`
-* `qa`
-* `master`
+### Install JDK 11
 
-All development happens against `develop`, which contains the latest version of the code that runs all the tests (unit and some integration tests). Integration tests don't test all the integrations. Hence, any version in `develop` might have bugs when deployed for an end-to-end test.
+```bash
+cs java --jvm adopt:1.11.0-11 --setup
+```
+after that `java -version` should yield
 
-The `qa` branch is where we can guarantee that code is stable end-to-end, meaning that all components can work flawlessly together when deployed. Periodically, `qa` is rebased onto `develop` and a series of tests (contained in [`atala-qa-automation`](https://github.com/input-output-hk/atala-qa-automation/)) that take all components into account are executed.
+```bash
+openjdk version "11.0.11" 2021-04-20
+OpenJDK Runtime Environment (build 11.0.11+9)
+OpenJDK 64-Bit Server VM (build 11.0.11+9, mixed mode)
+```
 
-The `master` branch contains milestones that have been tested end-to-end and have been demonstrated to work properly. The idea is to be able to create PRISM releases out of `master` and also be able to create demo environments. We expect that milestones and, especially, releases will be represented by git tags. For instance, [vAlpha-01](https://github.com/input-output-hk/atala/tree/vAlpha-01) and [vAlpha-02](https://github.com/input-output-hk/atala/tree/vAlpha-02) are existing tags that represent milestones.
+### Install sbt
 
-### Flow of commits
-
-Commits land on `develop` from Pull Requests, as soon as they are approved. There is no coordination happening there.
-
-Commits land on `qa` from `develop` periodically, currently once in a day. This is an automated process.
-
-Commits land on `master` from `qa` manually, according to the PRISM roadmap, when we have to represent a stable milestone or cut a release.
-
-### Working assumptions
-
-The current situation regarding the engineering & QA flows and processes has the following characteristics:
-
-* Running the QA pipeline is costly. Given the fact that our Pull Requests can evolve `develop` very frequently, it means that running the QA pipeline against `develop` can be ineffective: while in the middle of the QA pipeline, a new commit can appear in `develop` and, as a consequence, the so far QA work can be wasted.
-
-* Launching deployments is costly. Our CircleCI configuration declares precisely under which circumstances a deployment is created and updated.
-
-* Periodically rebasing `qa` onto `develop` almost cancels out the volatility present in the latter, so we expect QA results with less interference between changing features.
-
-* _Some_ manual testing may still be needed in `qa`.
-
-* Commits flow from `develop` to `qa` periodically in an automated way but we may choose to manually cherry-pick a few latest commits from `develop`, in case a hot fix is needed to stabilize `qa`. In any case, we may move to a full manual process when bringing patches from `develop` in `qa`.
-
-#### Future investigations
-
-As a consequence of the above, we may want to look into ways to make:
-
-* Deployments lighter-weight.
-* The QA pipeline lighter-weight.
-* The QA pipeline even more automatic.
-
-These could bring more QA automation into `develop`, could ease testing the Pull Requests, and probably bridge the gap between `develop` and `master`.
-
-
+```bash
+cs install sbt
+```
 
 ## How to run
 
-### Front-end
-
-See the instructions on how to set up all the necessary dependencies to run the frontend management console in dedicated [readme](prism-management-console-web/README.md)
+This implementation relays on a Postgres database, a Cardano wallet and an instance of db-sync.
+For development and illustration purposes, the node supports an "in memory" mode that doesn't interact with db-sync nor wallet.
 
 ### Database
 
@@ -83,8 +61,8 @@ docker run \
 
 This command will bind volume to `.docker-volumes/postgres/data`, so all your database date will be stored there.
 
-You will also need to create another database with the name "node_db" (and optionally additional one named "management_console_db"). You can connect to the database through your favorite RDBMS, like DataGrip for example, and create it, or use command line tool `psql` if you prefer this way 
-
+You can connect to the database through your favorite RDBMS, like DataGrip for example, or use command line tool `psql` if you prefer this way.
+For psql, you can run. Note that the tables are created by the node on its first run, so be sure to first run the node (see below) in order to find data in the database.
 
 ```bash
 $ psql node_db \
@@ -93,37 +71,28 @@ $ psql node_db \
       -p 5432
 ```
 
-### Back-end
+### Running the node
 
-See the instructions on how to set up all the necessary dependencies to run the backend in dedicated [readme](prism-backend/PRISM_BACKEND_README.md)
+In the top folder of this project just run:
 
-### Envoy
-
-You need to have envoy proxy server running to proxy the grpc-web calls to the backend services, if you don't have it set up, refer to [Install Envoy](prism-management-console-web/README.md#Install-Envoy)
-
-### Chrome extension
-
-A chrome extension wallet which is necessary to log into web management console.
-
-Compile the chrome extension
-```bash
-atala$ cd prism-web-wallet
-prism-web-wallet$ sbt chromeUnpackedFast
+```
+$ sbt node/run
 ```
 
-In order to install the wallet on chrome. Open chrome and go to [chrome://extensions/](chrome://extensions/)
+This will start the node server. You can interact with it using gRPC calls at port 50053.
+By default, the node is running on "in memory" mode, which means that any operation submitted to it will be instantly confirmed and processed.
+Alternatively, you can configure to run it against a Cardano network by setting values for the db-sync and Cardano wallet services. See [this documentation](https://github.com/hyperledger/identus-cloud-agent/blob/main/docs/guides/deploying-node.md) for more details
 
-Activate the developer mode (top right corner of the page) and click on `Load unpacked` (top left visible in developer
-mode), in the dialog opened go to `atala/prism-web-wallet/target/chrome`, select `unpacked-fast`
-folder and click `Open`. Now the wallet should be found in your extensions.
+For development purposes, you may want to reduce the number of blocks to wait for confirmations. Note that this parameter is fixed for mainnet. Hence, only modify then for tests if needed.
 
-At this point, you have all the needed components up to run the wallet locally.
+```
+export NODE_CARDANO_CONFIRMATION_BLOCKS="1"
+export NODE_LEDGER="cardano"
+```
+
+For more configuration options, please refer to `node/src/main/resources/application.conf`. Note that environment values override the configuration values. You can change locally the `application.conf` instead of exporting environment variables as we did above.
 
 ## Working with the codebase
-
-This is a monorepo and each of the `prism-XYZ` folders refers to a different part of the platform. Check the specific READMEs for more details.
-
-Be sure to follow our [contributing guidelines](CONTRIBUTING.md).
 
 In order to keep the code format consistent, we use scalafmt and git hooks, follow these steps to configure it accordingly (otherwise, your changes are going to be rejected by CircleCI):
 
@@ -134,8 +103,95 @@ In order to keep the code format consistent, we use scalafmt and git hooks, foll
    cs install scalafmt
    ```
 - `cp pre-commit .git/hooks/pre-commit`
+- `chmod +x .git/hooks/pre-commit`
 
-## More docs
 
-* Documentation about operational aspects of the team and the services we use can be found in [Confluence](https://input-output.atlassian.net/wiki/spaces/CE/pages/606371843/Code+and+Infrastructure+Setup).
-* The general guideline and ultimate goal is to have the [repository](prism-backend/docs/README.md) as the source of truth for all technical documentation.
+## IDE / Editor support
+
+If you intend to work on scala code, you should set up build server
+
+first, generate bsp config
+
+```bash
+sbt -bsp
+```
+You can exit sbt as soon as you see `sbt:prism>` greeter.
+
+This will generate `.bsp/sbt.json`, it will look similar to this
+```json
+{
+  "name": "sbt",
+  "version": "1.4.2",
+  "bspVersion": "2.0.0-M5",
+  "languages": [
+    "scala"
+  ],
+  "argv": [
+    "/Users/shota/Library/Caches/Coursier/jvm/adopt@1.11.0-8/Contents/Home/bin/java",
+    "-Xms100m",
+    "-Xmx100m",
+    "-classpath",
+    "/Users/shota/Library/Application Support/Coursier/bin/sbt:/Users/shota/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/get-coursier/sbt/sbt-runner/0.2.0/sbt-runner-0.2.0.jar:/Users/shota/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt-launch/1.4.6/sbt-launch-1.4.6.jar",
+    "xsbt.boot.Boot",
+    "-bsp"
+  ]
+}
+```
+
+Once the file has been generated, edit `.bsp/sbt.json` and increase -Xmx setting to 4096m so it looks like this
+
+```json
+{
+  "name": "sbt",
+  "version": "1.4.2",
+  "bspVersion": "2.0.0-M5",
+  "languages": [
+    "scala"
+  ],
+  "argv": [
+    "/Users/shota/Library/Caches/Coursier/jvm/adopt@1.11.0-8/Contents/Home/bin/java",
+    "-Xms100m",
+    "-Xmx4096m",
+    "-classpath",
+    "/Users/shota/Library/Application Support/Coursier/bin/sbt:/Users/shota/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/get-coursier/sbt/sbt-runner/0.2.0/sbt-runner-0.2.0.jar:/Users/shota/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt-launch/1.4.6/sbt-launch-1.4.6.jar",
+    "xsbt.boot.Boot",
+    "-bsp"
+  ]
+}
+```
+
+### IntelliJ IDEA
+
+You can open the project with IntelliJ IDEA.
+
+When IntelliJ IDEA asks you what project configuration to use, pick "Open as BSP project". Once the project has been imported, make sure your project SDK is set to JDK 11.
+
+#### Troubleshooting
+
+If you get errors while the project gets imported by IntelliJ IDEA, try running IntelliJ from the terminal:
+- `./bin/idea.sh` from the IntelliJ directory, for Linux.
+- `open -a "IntelliJ IDEA"` or `open -a "IntelliJ IDEA CE"` for Mac.
+
+
+This occurs commonly when dealing with scalajs, because npm is required, and, sometimes IntelliJ fails to get the proper `PATH`, example error log:
+
+```bash
+[error] (ProjectRef(uri("file:/home/dell/iohk/repo/cardano-enterprise/prism-sdk/"), "sdkJS") / ssExtractDependencies) java.io.IOException: Cannot run program "npm" (in directory "/home/dell/iohk/repo/cardano-enterprise/prism-sdk/js/target/scala-2.13/scalajs-bundler/main"): error=2, No such file or directory
+```
+### VSCode
+
+If you use VSCode, you need to first install [metals](https://scalameta.org/metals/docs/editors/vscode.html#installation) extension.
+
+Metals by default uses bloop as its build server, sometimes bloop has a problem importing this projects build. if you encounter the problem with that, you can switch to bsp.
+
+1. Open the project with vscode (`build.sbt` has to be in the root of the project)
+2. Run "Metals: import build", this might take a minute or two, depending on your machine.
+
+#### Troubleshooting
+
+If you encounter an error while importing the build, run "Metals: switch build server", you will be given an option to choose between multiply build servers. choose `bsp`, then re-import the build.
+
+run "Metals: run doctor" to see if all sub-project builds have been imported
+
+run "Metals: restart build server" to restart the build server, if editor is acting weird.
+
