@@ -96,15 +96,6 @@ CREATE TABLE public.did_data
 );
 
 
-CREATE TABLE public.did_request_nonces
-(
-    request_nonce BYTEA      NOT NULL,
-    did           public.did NOT NULL,
-    CONSTRAINT did_request_nonces_pk PRIMARY KEY (request_nonce,
-                                                  did)
-);
-
-
 CREATE TABLE public.key_values
 (
     "key" varchar(64) NOT NULL,

@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node
 
 import com.google.protobuf.ByteString
-import io.iohk.atala.prism.node.auth.SignedRpcRequest
 import io.iohk.atala.prism.node.identity.{PrismDid => DID}
 import io.iohk.atala.prism.node.identity.PrismDid.{DEFAULT_MASTER_KEY_ID => masterKeyId}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
@@ -12,7 +11,6 @@ import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc.NodeService
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.DIDData
 import org.mockito.IdiomaticMockito._
-import scalapb.GeneratedMessage
 
 import scala.concurrent.Future
 
@@ -59,22 +57,6 @@ trait DIDUtil {
     }
 
     did
-  }
-
-  def prepareSignedRequest[R <: GeneratedMessage](
-      request: R
-  ): (SecpPublicKey, SignedRpcRequest[R]) = {
-    val keys = CryptoTestUtils.generateKeyPair()
-    val did = generateDid(keys.publicKey)
-    (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
-  }
-
-  def prepareSignedUnpublishedDidRequest[R <: GeneratedMessage](
-      request: R
-  ): (SecpPublicKey, SignedRpcRequest[R]) = {
-    val keys = CryptoTestUtils.generateKeyPair()
-    val did = DID.buildLongFormFromMasterPublicKey(keys.publicKey)
-    (keys.publicKey, SignedRpcRequest.generate(keys, did, request))
   }
 
   def createDid: (SecpPair, DID) = {
