@@ -148,9 +148,9 @@ lazy val Dependencies = new {
 
 publish / skip := true
 
-lazy val node =
+lazy val root =
   project
-    .in(file("node"))
+    .in(file("."))
     .settings(
       name := "node",
       Compile / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
@@ -255,14 +255,10 @@ lazy val node =
             Dependencies.slf4j,
             Dependencies.typesafeConfig,
             Dependencies.fs2,
-            Dependencies.scalaUri,
+            Dependencies.scalaUri
           )
     )
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
-
-lazy val root = project
-  .in(file("."))
-  .aggregate(node)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -276,6 +272,6 @@ releaseProcess := Seq[ReleaseStep](
   runClean,
   runTest,
   setReleaseVersion,
-  ReleaseStep(releaseStepTask(node / Docker / stage)),
+  ReleaseStep(releaseStepTask(root / Docker / stage)),
   setNextVersion
 )
