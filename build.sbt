@@ -48,7 +48,7 @@ lazy val versions = new {
   val tofuDerevo = "0.13.0"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
-  val fs2 = "3.2.5"
+  val fs2 = "3.8.0"
   val scalaUri = "4.0.0"
 }
 
