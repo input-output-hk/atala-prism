@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.node.identity
 
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.utils.Base64Utils
@@ -149,7 +149,8 @@ class PrismDidSpec extends AnyWordSpec {
         PrismDid.fromString(updateDid.did.toString())
       }
 
-      caught.getMessage mustBe "Provided initial state of long form Prism DID is UpdateDIDOperation(<ByteString@18e36d14 size=0 contents=\"\">,,Vector(),UnknownFieldSet(Map())), CreateDid Atala operation expected"
+      caught.getMessage must fullyMatch regex """Provided initial state of long form Prism DID is UpdateDIDOperation\(<ByteString@[a-zA-Z0-9]+ size=0 contents="">,,Vector\(\),UnknownFieldSet\(Map\(\)\)\), CreateDid Atala operation expected""".r
+      caught.getMessage
 
     }
 
