@@ -6,7 +6,7 @@ The Node is a level 2 proxy on top of the Cardano blockchain responsible for pub
 This documentation will not describe the gRPC API itself.
 :::
 
-The Open Enterprise Agent communicates with the Node, with all operations conducted through it. The following documentation will provide a high-level overview of how the Node functions and explain its usage, including the environment variables required and how to deploy it to the Cardano mainnet and testnet.
+The Identus cloud Agent communicates with the Node, and all operations are conducted through it. The following documentation will provide a high-level overview of how the Node functions and explain its usage, including the environment variables required and how to deploy it to the Cardano mainnet and testnet.
 
 # Node components
 
