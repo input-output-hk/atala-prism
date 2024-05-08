@@ -48,11 +48,8 @@ lazy val versions = new {
   val tofuDerevo = "0.13.0"
   val twirl = "1.5.1"
   val typesafeConfig = "1.4.2"
-  val fs2 = "3.2.5"
+  val fs2 = "3.8.0"
   val scalaUri = "4.0.0"
-  val prismSdk =
-    "v1.4.1-snapshot-1688975371-7541fd2" // deployed to github packages from sdk branch "node-1.4-extension-sdk"
-  val vaultSdk = "0.1.0-build-2-96cc137d"
 }
 
 lazy val Dependencies = new {
@@ -103,9 +100,6 @@ lazy val Dependencies = new {
   val typesafeConfig = "com.typesafe" % "config" % versions.typesafeConfig
   val fs2 = "co.fs2" %% "fs2-io" % versions.fs2
   val scalaUri = "io.lemonlabs" %% "scala-uri" % versions.scalaUri
-
-  // SDK dependencies
-
   // Test dependencies
   val catsScalatest =
     "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
@@ -150,89 +144,70 @@ lazy val Dependencies = new {
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
   )
-
-  // cardano-address library binary
-  val cardanoAddressBinaryUrl =
-    "https://github.com/input-output-hk/cardano-addresses/releases/download/3.2.0/cardano-addresses-3.2.0-linux64.tar.gz"
-
-  // sha512 checksum of untarred binary file,
-  val cardanoAddressBinaryChecksum =
-    "fc45eeb026ef3e6fda8fdb792c83bb5bd25946b011b75e6364931206b4b6037e5d8e6f1a78b92b17062b28ae2b6bbd617a8fe50831a00f6fc8758234d36e2db9"
 }
 
 publish / skip := true
 
-lazy val commonSettings = Seq(
-  publish / skip := true,
-  buildInfoPackage := "io.iohk.atala.prism",
-  scalacOptions ~= (options =>
-    options.filterNot(
-      Set(
-        "-Xlint:package-object-classes",
-        "-Wdead-code",
-        "-Ywarn-dead-code"
-      )
-    )
-  ),
-  scalacOptions += "-Ymacro-annotations",
-  javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-  githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
-  resolvers += Resolver
-    .githubPackages("input-output-hk", "atala-prism-sdk"),
-  // Needed for Kotlin coroutines that support new memory management mode
-  resolvers +=
-    "JetBrains Space Maven Repository" at "https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven",
-  libraryDependencies ++= Dependencies.scalatestDependencies,
-  addCompilerPlugin(
-    "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
-  ),
-  Test / fork := true,
-  Test / parallelExecution := false,
-  Test / testForkedParallel := false,
-  assembly / test := {},
-  commands += Command.args("testOnlyUntilFailed", "<testOnly params>") { (state, args) =>
-    val argsString = args.mkString(" ")
-    ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
-  },
-  assembly / assemblyExcludedJars := {
-    val cp = (assembly / fullClasspath).value
-
-    val excludeLibs =
-      Set(
-        "protobuf-javalite",
-        "kotlinx-coroutines-core",
-        "pbandk-protos",
-        "jakarta"
-      )
-
-    cp.filter { path =>
-      excludeLibs.exists(lib => path.data.getName.startsWith(lib))
-    }
-  },
-  assembly / assemblyMergeStrategy := {
-    // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
-    case PathList("META-INF", "services", _*) => MergeStrategy.concat
-    case PathList("META-INF", "io.netty.versions.properties") =>
-      MergeStrategy.concat
-    // It is safe to discard when building an uber-jar according to https://stackoverflow.com/a/55557287
-    case x if x.endsWith("module-info.class") => MergeStrategy.discard
-    case "logback.xml" => MergeStrategy.first
-    case "scala-collection-compat.properties" => MergeStrategy.last
-    // org.bitcoin classes are coming from both bitcoinj and fr.acinq.secp256k1-jni
-    case PathList("org", "bitcoin", _*) => MergeStrategy.last
-    case x =>
-      val oldStrategy = (assembly / assemblyMergeStrategy).value
-      oldStrategy(x)
-  }
-)
-
-lazy val node =
+lazy val root =
   project
-    .in(file("node"))
+    .in(file("."))
     .settings(
-      commonSettings,
       name := "node",
       Compile / mainClass := Some("io.iohk.atala.prism.node.NodeApp"),
+      buildInfoPackage := "io.iohk.atala.prism",
+      scalacOptions ~= (options =>
+        options.filterNot(
+          Set(
+            "-Xlint:package-object-classes",
+            "-Wdead-code",
+            "-Ywarn-dead-code"
+          )
+        )
+      ),
+      scalacOptions += "-Ymacro-annotations",
+      javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
+      githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
+      addCompilerPlugin(
+        "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
+      ),
+      Test / fork := true,
+      Test / parallelExecution := false,
+      Test / testForkedParallel := false,
+      assembly / test := {},
+      commands += Command.args("testOnlyUntilFailed", "<testOnly params>") { (state, args) =>
+        val argsString = args.mkString(" ")
+        ("testOnly " + argsString) :: ("testOnlyUntilFailed " + argsString) :: state
+      },
+      assembly / assemblyExcludedJars := {
+        val cp = (assembly / fullClasspath).value
+
+        val excludeLibs =
+          Set(
+            "protobuf-javalite",
+            "kotlinx-coroutines-core",
+            "pbandk-protos",
+            "jakarta"
+          )
+
+        cp.filter { path =>
+          excludeLibs.exists(lib => path.data.getName.startsWith(lib))
+        }
+      },
+      assembly / assemblyMergeStrategy := {
+        // Merge service files, otherwise GRPC client doesn't work: https://github.com/grpc/grpc-java/issues/5493
+        case PathList("META-INF", "services", _*) => MergeStrategy.concat
+        case PathList("META-INF", "io.netty.versions.properties") =>
+          MergeStrategy.concat
+        // It is safe to discard when building an uber-jar according to https://stackoverflow.com/a/55557287
+        case x if x.endsWith("module-info.class") => MergeStrategy.discard
+        case "logback.xml" => MergeStrategy.first
+        case "scala-collection-compat.properties" => MergeStrategy.last
+        // org.bitcoin classes are coming from both bitcoinj and fr.acinq.secp256k1-jni
+        case PathList("org", "bitcoin", _*) => MergeStrategy.last
+        case x =>
+          val oldStrategy = (assembly / assemblyMergeStrategy).value
+          oldStrategy(x)
+      },
       // Make ScalaPB compile protos relative to `protobuf_external_src/protos` directory.
       // Otherwise, it will assume that `protobuf_external_src` is the root directory for proto files.
       Compile / PB.protoSources := (Compile / PB.protoSources).value.map {
@@ -265,6 +240,7 @@ lazy val node =
           ++ Dependencies.sttpDependencies
           ++ Dependencies.mockitoDependencies
           ++ Dependencies.scalapbDependencies
+          ++ Dependencies.scalatestDependencies
           ++ Seq(
             Dependencies.chimney,
             Dependencies.diffx,
@@ -280,10 +256,6 @@ lazy val node =
     )
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
 
-lazy val root = project
-  .in(file("."))
-  .aggregate(node)
-
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 // ############################
@@ -296,6 +268,6 @@ releaseProcess := Seq[ReleaseStep](
   runClean,
   runTest,
   setReleaseVersion,
-  ReleaseStep(releaseStepTask(node / Docker / stage)),
+  ReleaseStep(releaseStepTask(root / Docker / stage)),
   setNextVersion
 )
