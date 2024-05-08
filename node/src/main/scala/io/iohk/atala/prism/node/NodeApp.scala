@@ -39,6 +39,7 @@ object NodeApp extends IOApp {
 
 class NodeApp(executionContext: ExecutionContext) { self =>
 
+
   implicit val implicitExecutionContext: ExecutionContext = executionContext
 
   implicit val runtime: IORuntime = IORuntime.global
