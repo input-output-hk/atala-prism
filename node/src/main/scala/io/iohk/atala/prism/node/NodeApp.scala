@@ -39,6 +39,7 @@ object NodeApp extends IOApp {
 
 class NodeApp(executionContext: ExecutionContext) { self =>
 
+  val tmp = "tmp"
 
   implicit val implicitExecutionContext: ExecutionContext = executionContext
 
