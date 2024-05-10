@@ -53,7 +53,7 @@ object FakeCardanoWalletApiClient {
     */
   object NotFound {
     def apply[F[_]: Async](): CardanoWalletApiClient[F] = {
-      val config = ApiClient.Config("localhost", 8090, Option.empty)
+      val config = ApiClient.Config("http", "localhost", 8090, Option.empty)
       val backend = AsyncHttpClientCatsBackend.stub
       new ApiClient(config, backend)
     }
@@ -66,7 +66,7 @@ object FakeCardanoWalletApiClient {
       responseBody: String,
       maybeRoutingHeader: Option[Header]
   ): CardanoWalletApiClient[F] = {
-    val config = ApiClient.Config("localhost", 8090, maybeRoutingHeader)
+    val config = ApiClient.Config("http", "localhost", 8090, maybeRoutingHeader)
     val backend = AsyncHttpClientCatsBackend.stub
       .whenRequestMatches(request =>
         request.uri.host.contains(config.host)

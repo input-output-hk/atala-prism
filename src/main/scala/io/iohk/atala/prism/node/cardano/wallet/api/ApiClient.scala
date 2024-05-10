@@ -80,7 +80,7 @@ private[wallet] class ApiClient[F[_]: Functor](
       .headers(config.routingHeader.toList: _*)
       .method(
         method.httpMethod,
-        Uri.apply(config.host, config.port).withWholePath(method.path)
+        Uri.apply(config.scheme, config.host, config.port).withWholePath(method.path)
       )
       .body(method.requestBody.map(_.noSpaces).getOrElse(""))
       .send(backend)
@@ -97,7 +97,7 @@ private[wallet] class ApiClient[F[_]: Functor](
 
 private[wallet] object ApiClient {
 
-  case class Config(host: String, port: Int, routingHeader: Option[Header])
+  case class Config(scheme:String, host: String, port: Int, routingHeader: Option[Header])
 
   private[wallet] def defaultBackend[F[_]: Async]: Resource[F, SttpBackend[F, Any]] =
     AsyncHttpClientCatsBackend.resource[F]()
