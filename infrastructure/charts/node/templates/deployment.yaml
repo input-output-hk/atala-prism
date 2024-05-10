@@ -48,11 +48,12 @@ spec:
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
           - name: NODE_CARDANO_WALLET_API_HOST
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
-                key: wallet_api_host
-                optional: false
+            value: "{{ .Release.Namespace }}-nginx"
+            # valueFrom:
+            #   secretKeyRef:
+            #     name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+            #     key: wallet_api_host
+            #     optional: false
           - name: NODE_CARDANO_WALLET_ID
             valueFrom:
               secretKeyRef:
