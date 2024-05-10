@@ -55,6 +55,9 @@ vdr:
   cardanoWallet: dev-k8s-cardano-wallet
 
 nginx:
+  nameOverride: "wallet"
+  service:
+    type: "ClusterIP"
   serverBlock: |-
     server {
       listen 8080;
