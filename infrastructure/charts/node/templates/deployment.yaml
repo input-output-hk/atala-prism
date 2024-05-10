@@ -48,7 +48,7 @@ spec:
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
           - name: NODE_CARDANO_WALLET_API_HOST
-            value: "{{ .Release.Name }}-nginx"
+            value: "{{ .Release.Name }}-wallet"
             # valueFrom:
             #   secretKeyRef:
             #     name: "{{ .Values.secrets.cardanoSecret }}-secrets"
