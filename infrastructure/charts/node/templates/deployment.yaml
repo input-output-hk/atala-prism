@@ -67,11 +67,12 @@ spec:
                 key: wallet_passphrase
                 optional: false
           - name: NODE_CARDANO_WALLET_API_PORT
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.secrets.cardanoSecret }}-secrets"
-                key: wallet_api_port
-                optional: false
+            value: 8080
+            # valueFrom:
+            #   secretKeyRef:
+            #     name: "{{ .Values.secrets.cardanoSecret }}-secrets"
+            #     key: wallet_api_port
+            #     optional: false
           - name: NODE_CARDANO_PAYMENT_ADDRESS
             valueFrom:
               secretKeyRef:
