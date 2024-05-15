@@ -143,8 +143,7 @@ CREATE TABLE public.public_keys
     ledger                    varchar(32)           NOT NULL,
     compressed                BYTEA                 NOT NULL,
     CONSTRAINT public_keys_pk PRIMARY KEY (did_suffix,
-                                           key_id),
-    CONSTRAINT x_compressed_length CHECK ((length(compressed) = 33))
+                                           key_id)
 );
 
 
