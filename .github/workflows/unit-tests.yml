@@ -36,16 +36,6 @@ jobs:
         if: always()
         run: sbt coverageReport coverageAggregate
 
-      - name: Aggregate test reports
-        if: always()
-        run: |
-          for reports in `find -name test-reports`; do
-            project=${reports%/target/*}
-            dest=target/test-reports/$project
-            mkdir -p $dest
-            cp $reports/* $dest
-          done
-
       - name: Publish Backend Unit Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v1
