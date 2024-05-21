@@ -40,6 +40,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: "3.12.2" # default is latest (stable)
+        id: install
       - uses: crazy-max/ghaction-import-gpg@v3
         id: import_gpg
         with:
