@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/input-output-hk/atala-prism/compare/v2.3.0...v2.4.0) (2024-05-22)
+
+
+### Features
+
+* Adding helm chart package setup ([#853](https://github.com/input-output-hk/atala-prism/issues/853)) ([80ebe2d](https://github.com/input-output-hk/atala-prism/commit/80ebe2d55ba24c56103bd8a6b5e0af1b8788fafa))
+
 # [2.3.0](https://github.com/input-output-hk/atala-prism/compare/v2.2.1...v2.3.0) (2024-05-17)
 
 
