@@ -1,3 +1,10 @@
+## [2.4.1](https://github.com/input-output-hk/atala-prism/compare/v2.4.0...v2.4.1) (2024-05-22)
+
+
+### Bug Fixes
+
+* Chart version bump ([#854](https://github.com/input-output-hk/atala-prism/issues/854)) ([8dba7da](https://github.com/input-output-hk/atala-prism/commit/8dba7da9f379df6dacc27a26bd5eb66e35d3c359))
+
 # [2.4.0](https://github.com/input-output-hk/atala-prism/compare/v2.3.0...v2.4.0) (2024-05-22)
 
 
