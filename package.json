@@ -57,6 +57,24 @@
         }
       ],
       [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "helm package -d infrastructure/charts -u infrastructure/charts/node"
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "helm repo index --url \"https://raw.githubusercontent.com/input-output-hk/atala-prism/main/infrastructure/charts\" --merge index.yaml infrastructure/charts"
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "yq -i -P infrastructure/charts/index.yaml"
+        }
+      ],
+      [
         "@semantic-release/changelog",
         {
           "changelogFile": "CHANGELOG.md"
@@ -70,7 +88,9 @@
             "CHANGELOG.md",
             "package.json",
             "package-lock.json",
-            "infrastructure/charts/node/Chart.yaml"
+            "infrastructure/charts/node/Chart.yaml",
+            "infrastructure/charts/index.yaml",
+            "infrastructure/charts/*.tgz"
           ],
           "message": "chore(release): cut prism node ${nextRelease.version} release\n\n${nextRelease.notes}"
         }
