@@ -53,7 +53,7 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "yq -i '.appVersion = \"${nextRelease.version}\"' ./infrastructure/charts/node/Chart.yaml"
+          "prepareCmd": "yq eval -i '.appVersion = \"${nextRelease.version}\" | .version = \"${nextRelease.version}\"' ./infrastructure/charts/node/Chart.yaml"
         }
       ],
       [
