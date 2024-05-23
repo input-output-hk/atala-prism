@@ -19,4 +19,8 @@ version: 2.4.1
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "2.4.1"
-dependencies: []
+dependencies:
+- name: nginx
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.0.7
+  condition: vdr.externalResources.wallet.tls

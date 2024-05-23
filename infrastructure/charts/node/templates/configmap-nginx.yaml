@@ -1,0 +1,15 @@
+{{- if .Values.vdr.externalResources.wallet.tls }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wallet-nginx-proxy
+data:
+  server-block.conf: |
+    server {
+      listen 8080;
+      location / {
+        resolver 8.8.8.8;
+        proxy_pass https://{{ .Values.vdr.externalResources.wallet.host }}$uri$is_args$args;
+      }
+    }
+{{- end }}
