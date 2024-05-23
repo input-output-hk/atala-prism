@@ -47,6 +47,26 @@ spec:
             value: {{ .Values.server.refereshAndSubmitPeriod | quote }}
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
+          {{- if and (eq "cardano" .Values.server.ledger) (not (empty .Values.vdr.externalResources.wallet.host)) }}
+          - name: NODE_CARDANO_WALLET_API_HOST
+            value: "{{ .Values.vdr.externalResources.wallet.host }}"
+          - name: NODE_CARDANO_WALLET_API_PORT
+            value: "{{ .Values.vdr.externalResources.wallet.port }}"
+          - name: NODE_CARDANO_WALLET_ID
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoWallet }}"
+                key: wallet_id
+                optional: false
+          - name: NODE_CARDANO_WALLET_PASSPHRASE
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoWallet }}"
+                key: passphrase
+                optional: false
+          - name: NODE_CARDANO_PAYMENT_ADDRESS
+            value: "{{ .Values.vdr.externalResources.wallet.payment_address }}"
+          {{- else if eq "cardano" .Values.server.ledger }}
           - name: NODE_CARDANO_WALLET_API_HOST
             value: "{{ .Values.vdr.cardanoNode }}.{{ .Values.vdr.cardanoNamespace }}"
           - name: NODE_CARDANO_WALLET_ID
@@ -69,7 +89,25 @@ spec:
                 name: "{{ .Values.vdr.cardanoNode }}-{{ .Values.vdr.cardanoWallet }}"
                 key: address
                 optional: false
-          {{- if eq "cardano" .Values.server.ledger }}
+          {{- end }}
+          {{- if and (eq "cardano" .Values.server.ledger) (not (empty .Values.vdr.externalResources.db_sync.host)) }}
+          - name: NODE_CARDANO_DB_SYNC_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoDbSync }}"
+                key: username
+                optional: false
+          - name: NODE_CARDANO_DB_SYNC_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.secrets.cardanoDbSync }}"
+                key: password
+                optional: false
+          - name: NODE_CARDANO_DB_SYNC_DATABASE
+            value: "{{ .Values.vdr.externalResources.db_sync.database }}"
+          - name: NODE_CARDANO_DB_SYNC_HOST
+            value: "{{ .Values.vdr.externalResources.db_sync.host }}"
+          {{- else if eq "cardano" .Values.server.ledger }}
           - name: NODE_CARDANO_DB_SYNC_USERNAME
             valueFrom:
               secretKeyRef:

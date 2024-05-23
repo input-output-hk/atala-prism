@@ -11,6 +11,8 @@ ingress:
 secrets:
   secretStore: chart-base-secretstore
   dockerRegistryToken: chart-base-docker-registry-token
+  # cardanoWallet: must contain wallet_id and passphrase
+  # cardanoDbSync: must contain username and password
 
 server:
   ledger: "in-memory"
@@ -39,6 +41,14 @@ database:
     numberOfInstances: 2
 
 vdr:
+  externalResources:
+    wallet:
+      host:
+      payment_address:
+      port: "443"
+    db_sync:
+      host:
+      database:
   cardanoNode: atala-cardano-dev-preprod
   cardanoNamespace: cardano-stack
   cardanoWallet: dev-k8s-cardano-wallet
