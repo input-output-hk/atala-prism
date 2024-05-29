@@ -45,8 +45,7 @@ vdr:
     wallet:
       host:
       payment_address:
-      # tls always true ATM
-      tls: true
+      tls: false
     db_sync:
       host:
       database:

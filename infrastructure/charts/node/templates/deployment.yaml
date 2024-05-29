@@ -48,8 +48,17 @@ spec:
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
           {{- if and (eq "cardano" .Values.server.ledger) (not (empty .Values.vdr.externalResources.wallet.host)) }}
+          {{- if .Values.vdr.externalResources.wallet.tls }}
           - name: NODE_CARDANO_WALLET_API_HOST
             value: "{{ .Release.Name }}-wallet"
+          - name: NODE_CARDANO_WALLET_API_PORT
+            value: "80"
+          {{- else }}
+          - name: NODE_CARDANO_WALLET_API_HOST
+            value: "{{ .Values.vdr.externalResources.wallet.host }}"
+          - name: NODE_CARDANO_WALLET_API_PORT
+            value: "{{ .Values.vdr.externalResources.wallet.port }}"
+          {{- end }}
           - name: NODE_CARDANO_WALLET_ID
             valueFrom:
               secretKeyRef:
@@ -62,8 +71,6 @@ spec:
                 name: "{{ .Values.secrets.cardanoWallet }}"
                 key: passphrase
                 optional: false
-          - name: NODE_CARDANO_WALLET_API_PORT
-            value: "80"
           - name: NODE_CARDANO_PAYMENT_ADDRESS
             value: "{{ .Values.vdr.externalResources.wallet.payment_address }}"
           {{- else if eq "cardano" .Values.server.ledger }}
