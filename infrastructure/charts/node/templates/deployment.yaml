@@ -63,7 +63,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: "{{ .Values.secrets.cardanoWallet }}"
-                key: id
+                key: wallet_id
                 optional: false
           - name: NODE_CARDANO_WALLET_PASSPHRASE
             valueFrom:
