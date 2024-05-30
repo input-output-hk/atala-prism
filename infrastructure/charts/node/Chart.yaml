@@ -23,4 +23,4 @@ dependencies:
 - name: nginx
   repository: https://charts.bitnami.com/bitnami
   version: 16.0.7
-  condition: vdr.externalResources.wallet.tls
+  condition: vdr.externalResources.wallet.tlsproxy

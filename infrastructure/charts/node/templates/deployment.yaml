@@ -48,7 +48,7 @@ spec:
           - name: NODE_CARDANO_CONFIRMATION_BLOCKS
             value: {{ .Values.server.confirmationBlocks | quote }}
           {{- if and (eq "cardano" .Values.server.ledger) (not (empty .Values.vdr.externalResources.wallet.host)) }}
-          {{- if .Values.vdr.externalResources.wallet.tls }}
+          {{- if .Values.vdr.externalResources.wallet.tlsproxy }}
           - name: NODE_CARDANO_WALLET_API_HOST
             value: "{{ .Release.Name }}-wallet"
           - name: NODE_CARDANO_WALLET_API_PORT

@@ -1,4 +1,4 @@
-{{- if and (.Values.vdr.externalResources.wallet.tls)
+{{- if and (.Values.vdr.externalResources.wallet.tlsproxy)
            (not (empty .Values.vdr.externalResources.db_sync.host)) }}
 apiVersion: v1
 kind: ConfigMap
