@@ -45,7 +45,7 @@ vdr:
     wallet:
       host:
       payment_address:
-      tls: false
+      tlsproxy: false
     db_sync:
       host:
       database:
