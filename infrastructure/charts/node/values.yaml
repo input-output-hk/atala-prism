@@ -46,6 +46,7 @@ vdr:
       host:
       payment_address:
       tlsproxy: false
+      port: 443
     db_sync:
       host:
       database:
