@@ -40,12 +40,13 @@ object NodeConfig {
   }
 
   def cardanoWalletConfig(config: Config): CardanoWalletApiClient.Config = {
+    val scheme = config.getString("scheme")
     val host = config.getString("host")
     val port = config.getInt("port")
     val routingHeaderName = Try("routingHeaderName").map(config.getString).toOption
     val routingHeaderValue = Try("routingHeaderValue").map(config.getString).toOption
     val routingHeader = Applicative[Option]
       .map2(routingHeaderName, routingHeaderValue)((headerName, headerValue) => Header(headerName, headerValue))
-    CardanoWalletApiClient.Config(host, port, routingHeader)
+    CardanoWalletApiClient.Config(scheme, host, port, routingHeader)
   }
 }
