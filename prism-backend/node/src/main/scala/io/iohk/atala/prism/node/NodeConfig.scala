@@ -47,6 +47,6 @@ object NodeConfig {
     val routingHeaderValue = Try("routingHeaderValue").map(config.getString).toOption
     val routingHeader = Applicative[Option]
       .map2(routingHeaderName, routingHeaderValue)((headerName, headerValue) => Header(headerName, headerValue))
-    CardanoWalletApiClient.Config(host, port, routingHeader)
+    CardanoWalletApiClient.Config(scheme, host, port, routingHeader)
   }
 }
