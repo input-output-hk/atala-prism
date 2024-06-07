@@ -49,6 +49,6 @@ vdr:
     db_sync:
       host:
       database:
-  # cardanoNode: atala-cardano-dev-preprod
+  cardanoNode: atala-cardano-dev-preprod
   cardanoNamespace: cardano-stack
   cardanoWallet: dev-k8s-cardano-wallet
