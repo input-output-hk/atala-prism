@@ -79,11 +79,12 @@ object DockerPostgresService extends DockerKit {
         container: DockerContainerState
     )(implicit
         dockerExecutor: DockerCommandExecutor,
-        ec: ExecutionContext
+        ec: ExecutionContext,
+        timeout: Duration
     ): Future[Boolean] = {
 
       container
-        .getPorts()(dockerExecutor, ec)
+        .getPorts()(dockerExecutor, ec, timeout)
         .map { _ =>
           try {
             Class.forName("org.postgresql.Driver")
