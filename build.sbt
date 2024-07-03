@@ -25,8 +25,6 @@ lazy val versions = new {
   val circe = "0.14.1"
   val circeOptics = "0.14.1"
   val diffx = "0.7.0"
-  val dockerClient = "8.16.0"
-  val dockerTestkit = "0.9.9"
   val doobie = "1.0.0-RC2"
   val enumeratum = "1.7.0"
   val enumeratumDoobie = "1.7.1"
@@ -50,6 +48,7 @@ lazy val versions = new {
   val typesafeConfig = "1.4.2"
   val fs2 = "3.8.0"
   val scalaUri = "4.0.0"
+  val testContainers = "0.41.4"
 }
 
 lazy val Dependencies = new {
@@ -105,12 +104,6 @@ lazy val Dependencies = new {
     "com.ironcorelabs" %% "cats-scalatest" % versions.catsScalatest % Test
   val diffx =
     "com.softwaremill.diffx" %% "diffx-scalatest-must" % versions.diffx % Test
-  val dockerClient =
-    "com.spotify" % "docker-client" % versions.dockerClient % Test
-  val dockerTestkitScalatest =
-    "com.whisk" %% "docker-testkit-scalatest" % versions.dockerTestkit % Test
-  val dockerTestkitSpotify =
-    "com.whisk" %% "docker-testkit-impl-spotify" % versions.dockerTestkit % Test
   val doobieScalatest =
     "org.tpolecat" %% "doobie-scalatest" % versions.doobie % Test
   val mockito = "org.mockito" %% "mockito-scala" % versions.mockito % Test
@@ -121,12 +114,16 @@ lazy val Dependencies = new {
     "org.scalatest" %% "scalatest-wordspec" % versions.scalatest % Test
   val scalatestplus =
     "org.scalatestplus" %% "scalacheck-1-15" % versions.scalatestplus % Test
+  val testContainersScalaTest =
+    "com.dimafeng" %% "testcontainers-scala-scalatest" % versions.testContainers % Test
+  val testContainersPSQL =
+    "com.dimafeng" %% "testcontainers-scala-postgresql" % versions.testContainers % Test
 
   val bouncyDependencies = Seq(bouncyBcpkix, bouncyBcprov)
   val circeDependencies =
     Seq(circeCore, circeGeneric, circeGenericExtras, circeParser, circeOptics)
   val dockerDependencies =
-    Seq(dockerClient, dockerTestkitScalatest, dockerTestkitSpotify)
+    Seq(testContainersScalaTest, testContainersPSQL)
   val doobieDependencies =
     Seq(doobieCore, doobiePostgresCirce, doobieHikari, doobieScalatest)
   val enumeratumDependencies =
