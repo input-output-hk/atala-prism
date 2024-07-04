@@ -23,7 +23,7 @@ jobs:
       GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
       GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
