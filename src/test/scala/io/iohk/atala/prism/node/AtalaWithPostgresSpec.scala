@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.node
 
 import cats.effect.IO
+import com.dimafeng.testcontainers.ContainerDef
 import doobie.util.transactor.Transactor
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.repositories.PostgresRepositorySpec
+import io.iohk.atala.prism.node.repositories.{DockerPostgresService, PostgresRepositorySpec}
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext
@@ -17,4 +18,5 @@ class AtalaWithPostgresSpec extends PostgresRepositorySpec[IO] with ScalaFutures
   val dbLiftedToTraceIdIO: Transactor[IOWithTraceIdContext] =
     db.mapK(TraceId.liftToIOWithTraceId)
 
+  override val containerDef: ContainerDef = DockerPostgresService.containerDef
 }

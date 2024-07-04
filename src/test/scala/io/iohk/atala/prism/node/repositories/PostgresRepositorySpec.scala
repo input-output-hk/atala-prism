@@ -2,6 +2,7 @@ package io.iohk.atala.prism.node.repositories
 
 import cats.effect.unsafe.implicits.global
 import cats.effect.IO
+import com.dimafeng.testcontainers.scalatest.TestContainerForAll
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
@@ -43,7 +44,8 @@ abstract class PostgresRepositorySpec[F[_]]
     extends AnyWordSpec
     with Matchers
     with BeforeAndAfterAll
-    with BeforeAndAfterEach {
+    with BeforeAndAfterEach
+    with TestContainerForAll {
 
   val POSTGRES_HOST_ENVNAME = "POSTGRES_TEST_HOST"
   val POSTGRES_DB_ENVNAME = "POSTGRES_TEST_DB"
