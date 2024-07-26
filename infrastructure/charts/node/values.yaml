@@ -39,6 +39,12 @@ database:
     managingTeam: atala
     databaseSize: 4Gi
     numberOfInstances: 2
+    metrics:
+      enabled: false
+      image:
+        repository: quay.io/prometheuscommunity
+        tag: postgres-exporter
+        version: v0.15.0
 
 vdr:
   externalResources:
