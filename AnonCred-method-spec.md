@@ -2,14 +2,14 @@
 
 ## Objective of this specification
 
-The primary goal of this document is to describe a way to identify and retrieve resources using the PRISM DID method as a building block.
-As a secondary set of goals we want our approach to be re-usable by other DID methods that share some basic functionalities. Finally, we will present a component we identify as useful in the interoperability of AnonCred Methods.
+The primary goal of this document is to describe a way to identify and retrieve resources using the [PRISM DID method](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md) as a building block.
+As a secondary set of goals we want our approach to be re-usable by other DID methods that share some basic functionalities. Finally, we will present a component we identify as useful in the interoperability of [AnonCred Methods](https://hyperledger.github.io/anoncreds-methods-registry/).
 
 ## Definitions
 
 In this section we will present a way to classify the resources we want to treat, and then define the properties we want to satisfy with our AnonCred method.
 
-Within the context of SSI, different resources are involved in the creation, sharing and verification of Verifiable Credentials (VCs). Some of these resources can be described as _static_ due to the fact that they do not change once associated to a VC. Examples of these resources are schema objects and credential definitions. Conversely, other resources could be described as _dynamic_ in nature, as VCs refer to them, but the resources per se are updated over time. Examples of these resources are status lists or revocation entries. This classification will help us later in this document to describe how to identify, retrieve and validate resources in accordance to this specification.
+Within the context of SSI, different resources are involved in the creation, sharing and verification of [Verifiable Credentials (VCs)](https://www.w3.org/TR/vc-data-model-2.0/) (including [AnonCreds](https://hyperledger.github.io/anoncreds-spec/)). Some of these resources can be described as _static_ due to the fact that they do not change once associated to a VC. Examples of these resources are schema objects and credential definitions. Conversely, other resources could be described as _dynamic_ in nature, as VCs refer to them, but the resources per se are updated over time. Examples of these resources are status lists or revocation entries. This classification will help us later in this document to describe how to identify, retrieve and validate resources in accordance to this specification.
 
 As a whole, this AnonCred method aims to provide:
 - Integrity assurance for static resources: When a user retrieves a resource based on its identifier, he can validate on his own that the resource hasn't been tampered with.
@@ -17,7 +17,7 @@ As a whole, this AnonCred method aims to provide:
 
 ### Underlying DID method properties
 
-As we mentioned in the objectives section, we will define the AnonCred method in terms of the PRISM DID method. However, the AnonCred method could be constructed on top of any DID method that simply supports for services.
+As we mentioned in the objectives section, we will define the AnonCred method in terms of the PRISM DID method. However, the AnonCred method could be constructed on top of any [DID method](https://www.w3.org/TR/did-core/) that simply supports for [services](https://www.w3.org/TR/did-core/#services).
 
 In the remaining of this document we will take the following conventions:
 
@@ -27,7 +27,6 @@ In the remaining of this document we will take the following conventions:
   + The `baseService` has `baseURL` as its only service endpoint.
   + The `baseService` has type `LinkedResourceV1`
 - The resource has an optional associated path `resourcePath` relative to its `baseURL`
-- The resource has an optional associated query parameter `resourceQuery`
 
 As an illustrative example we can show the following DID document where:
 - `userDID` is `did:prism:123...abc`
@@ -40,7 +39,7 @@ Based on those values, we can present the following DID document
 {
   "id" : "did:prism:123...abc",
   ...
-  service : [
+  "service" : [
     { 
       "id" : "did:prism:123...abc#service1",
       "type : "LinkedResourceV1",
@@ -68,8 +67,8 @@ Given a resource `r` with associated `userDID` and base service `baseService`, w
 
 ### Static resources
 
-For static resources, like a schema or a credential definition, we don't usually have an integrity check at application layer. For this reason, we add to identifiers a `resourceHash` section that will serve for integrity check.
-Hence, given a resource `r` with associated `userDID` and base service `baseService`, we can define `r` identifier as follows:
+For static resources, like a schema or a credential definition, we don't usually have an integrity check at application layer. For this reason, we add to identifiers a `resourceHash` section that will serve for this purpose. 
+Hence, given a resource `r` with associated `userDID` and base service `baseService`, we can define `r`'s identifier as follows:
 
 ```
   userDID ? resourceService= baseService & resourceHash = encoded_hash(r)
@@ -81,7 +80,7 @@ where `encoded_hash` is the hex encoded SHA256 hash of the base64URL encoded res
 
 We want to remark that, in practice, dynamic resources in SSI are signed by a key associated to the issuer of an associated VC. For this reason, this AnonCred method does not add any integrity nor authenticity check for dynamic resources, and leave it to the application layer. In this way, we avoid an overhead for a second authenticity/integrity check at this stage.
 
-On a related note, we want to point out that we are also not performing an authenticity checks for static resources inside the AnonCred method. The reason is that in the context of VCs, the identifiers we are generating are attached in signed objects (VCs). By attaching an integrity check to the identifier, we are inheriting the authenticity of the expected resource from the signature on the VC that contained the identifier in the first place. Future versions of this AnonCred method could add more flexibility by embedding a signature in the resource envelope. However, we argue that the relevant authenticity property is attached to the authenticity of the identifier, and not the authenticity of the indirect resource it represents (see Future Work section).
+On a related note, we want to point out that we are also not performing an authenticity checks for static resources inside the AnonCred method. The reason is that in the context of VCs, the identifiers we are generating are attached in signed objects (the VCs). By attaching an integrity check to the identifier, we are inheriting the authenticity of the expected resource from the signature on the VC that contained the identifier in the first place. Future versions of this AnonCred method could add more flexibility by embedding a signature in the resource envelope. However, we argue that the relevant authenticity property is attached to the authenticity of the identifier, and not the authenticity of the indirect resource it represents (see Future Work section).
 
 ### Sharing a common `baseURL`
 
@@ -90,18 +89,18 @@ There are situations where a user controlling multiple resources would prefer to
 If a user wants to share the same `resourceService` and consequently `baseURL` for multiple resources, they have the option to distinguish specific resources by relative path from the `baseURL`. The relative path is specified with the `resourcePath` query parameter. As an example, if we imagine resources `r1` and `r2` located at `https://example.com/resources/r1.txt` and `https://example.com/resources/r2.txt` respectively. We can use the `baseURL` `https://example.com` and relative paths `/resource/r1.txt` and `/resource/r2.txt` respectively to obtain the following identifiers.
 
 ```
-  userDID ?resourceService=resourceService & resourcePath = /resource/r1.txt
+  userDID ?resourceService= resourceService & resourcePath= /resource/r1.txt
 ```
 and 
 
 ```
-  userDID ?resourceService=resourceService & resourcePath = /resource/r2.txt
+  userDID ?resourceService= resourceService & resourcePath= /resource/r2.txt
 ```
 
 If the resources require a hash, the corresponding query parameter would also be included. Namely:
 
 ```
-  userDID ?resourceService=resourceService & resourcePath = /resource/r2.txt & resourceHash= encoded_hash(r2.txt)
+  userDID ?resourceService= resourceService & resourcePath= /resource/r2.txt & resourceHash= encoded_hash(r2.txt)
 ```
 
 where `encoded_hash`, once again, represents the hex encoded sha256 hash of the base64URL encodedresource.
@@ -188,3 +187,10 @@ For example, the resource identifier could have query parameters `signingKey` an
 In that way, the user would be able to validate expected source for the resource. We want to note that the information related to the signing key is added in the identifier, in order to avoid the server side of the resolution process to tamper the key. However, we also need to remark that the resource identifier itself is susceptible to be modified, meaning that a user trying to dereference an identifier needs to trust the identifier's source in the first place. This implies that the authenticity of the resource is strongly tight to the authenticity of the identifier, and this is why we consider that supporting an integrity check between an static resource and its identifier is enough for this AnonCred method. Adding the authenticity at resource level does not solve the more relevant identifier authenticity, which is the likely intended property to preserve. 
 
 For the case of dynamic resources, we remind the reader that existing SSI protocols already enforce a signature checks at application layer, but we would find it adequate to have an optional authenticity check for the case of dynamic resources in the future version of this AnonCred method.
+
+### Passing query parameters to the underlying server
+
+For the case of dynamic resources, some use cases could benefit from the addition of historical versions of a resource. If the underlying server hosting the resources keeps their historical changes and exposes them through query parametes in an API, we find it relevant to support in futuure versions of this method a mechanism to forward that query to the server. We point out, that this additional query string is part of the identifier per se, as each user may decide to specify different parameters. What would be needed are two main parts:
+- An standard query string to send to an underlying server. For instance, `resourceVersion`.
+- A way to indicate this AnonCred method that the query parameter should be attached to the final URL before making the resource request.
+
