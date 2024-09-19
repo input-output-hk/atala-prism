@@ -3,6 +3,7 @@ ingress:
   applicationUrls:
   - chart-base-prism-stack.atalaprism.io
   platformIngressUrl: chart-base-platform-ingress.atalaprism.io
+  universalResolver: false
   cors:
     enabled: true
     allow_origins: "*"
@@ -39,6 +40,7 @@ database:
     managingTeam: atala
     databaseSize: 4Gi
     numberOfInstances: 2
+    preventDeletion: false
     metrics:
       enabled: false
       image:

@@ -15,7 +15,11 @@ spec:
         - {{ . }}
       {{- end }}
       paths:
+      {{- if .Values.ingress.universalResolver }}
+      - /prism-node/did/*
+      {{- else }}
       - /prism-node/*
+      {{- end }}
     backends:
        - serviceName: node-service
          servicePort: 50053
@@ -23,6 +27,10 @@ spec:
       enable: true
       type: keyAuth
     plugins:
+    - limit-count:
+      count: 100,
+      time_window: 60,
+      rejected_code: 429
     - name: proxy-rewrite
       enable: true
       config:

@@ -1,0 +1,23 @@
+ingress:
+  enabled: true
+  applicationUrls:
+  - resolver-preprod.atalaprism.io
+  platformIngressUrl: internal-eucentral1-prt9a.atalaprism.io
+secrets:
+  secretStore: prism-v2-prt9a-eu-central-1-externalsecrets
+  dockerRegistryToken: prt9a-argocd-github-docker-registry-token
+  cardanoWallet: prt9a-demeter-preprod-v2-wallet
+  cardanoDbSync: prt9a-demeter-preprod-v2-dbsync
+server:
+  ledger: cardano
+  genesisBlock: 2705938
+  additionalEnvVariables:
+    NODE_CARDANO_WALLET_API_HTTP_SCHEME: https
+vdr:
+  externalResources:
+    db_sync:
+      host: dbsync-v3.demeter.run
+      database: dbsync-preprod
+    wallet:
+      host: 8090-cardano-wallet-preprod-bdj2f7.workloads-m1.demeter.run
+      payment_address: addr_test1qqshnes0l2h23yplkl5wscaqg40r26ga7zuezj3jrgp78dhdh0hp8gl3q4s9lzhfunyalzq4vea3jqwww4fk8gwk9xvqq6ndl0

@@ -3,6 +3,10 @@ kind: postgresql
 metadata:
   name: "{{ .Values.database.postgres.managingTeam }}-prism-node-postgres-cluster"
   namespace: {{ .Release.Namespace }}
+  annotation:
+    {{- if .Values.database.preventDeletion }}
+    argocd.argoproj.io/sync-options: Delete=false
+    {{- }}
   labels:
     {{ template "labels.common" . }}
 spec:
