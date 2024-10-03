@@ -3,9 +3,9 @@ ingress:
   applicationUrls:
   - chart-base-prism-stack.atalaprism.io
   platformIngressUrl: chart-base-platform-ingress.atalaprism.io
-  cors:
-    enabled: true
-    allow_origins: "*"
+  #cors:
+  #  enabled: true
+  #  allow_origins: "*"
   consumers: []
 
 secrets:
