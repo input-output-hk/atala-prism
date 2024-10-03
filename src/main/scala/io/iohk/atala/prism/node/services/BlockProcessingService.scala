@@ -169,7 +169,8 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
     val result = for {
       // Fetch key information and previous hash information
       correctnessData <- operation.getCorrectnessData(protoOperation.signedWith)
-      CorrectnessData(key, previousOperation) = correctnessData
+      key = correctnessData.key
+      previousOperation = correctnessData.previousOperation
       // Verify that operation has the correct hash of the previous operation
       _ <- EitherT.cond[ConnectionIO](
         operation.linkedPreviousOperation == previousOperation,
