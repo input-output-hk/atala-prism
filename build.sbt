@@ -9,7 +9,7 @@ import sbtprotoc.ProtocPlugin.autoImport.PB
 inThisBuild(
   Seq(
     organization := "io.iohk.atala",
-    scalaVersion := "2.13.7",
+    scalaVersion := "2.13.15",
     fork := true,
     run / connectInput := true,
     versionScheme := Some("semver-spec"),
@@ -165,7 +165,7 @@ lazy val root =
       javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
       githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
       addCompilerPlugin(
-        "org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full
+        "org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full
       ),
       Test / fork := true,
       Test / parallelExecution := false,
