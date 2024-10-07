@@ -120,14 +120,26 @@ object ProtoCodecs {
   def fromTimestampInfoProto(
       timestampInfoProto: node_models.TimestampInfo
   ): TimestampInfo = {
-    new TimestampInfo(
-      timestampInfoProto.blockTimestamp
-        .getOrElse(throw new RuntimeException("Missing timestamp"))
-        .toInstant
-        .toEpochMilli,
-      timestampInfoProto.blockSequenceNumber,
-      timestampInfoProto.operationSequenceNumber
-    )
+    val atalaBlockTimestamp = timestampInfoProto.blockTimestamp
+      .getOrElse(throw new RuntimeException("Missing timestamp"))
+      .toInstant
+
+    // https://beta.explorer.cardano.org/en/block/5f20df933584822601f9e3f8c024eb5eb252fe8cefb24d1317dc3d432e940ebb
+    val firstCardanoBlock = java.time.Instant.ofEpochSecond(1506203091) // -> 2017-09-23T21:44:51Z
+
+    val timestampEpochMilli =
+      if (!firstCardanoBlock.isAfter(atalaBlockTimestamp)) atalaBlockTimestamp.toEpochMilli
+      else throw new RuntimeException("TimestampInfo's atalaBlockTimestamp MUST NOT BE before the first Cardano Block")
+
+    val blockSequenceNumber =
+      if (timestampInfoProto.blockSequenceNumber >= 1) timestampInfoProto.blockSequenceNumber
+      else throw new RuntimeException("TimestampInfo's blockSequenceNumber MUST be equal or bigger than 1")
+
+    val operationSequenceNumber =
+      if (timestampInfoProto.operationSequenceNumber >= 0) timestampInfoProto.operationSequenceNumber
+      else throw new RuntimeException("TimestampInfo's operationSequenceNumber MUST be equal or bigger than 0")
+
+    new TimestampInfo(timestampEpochMilli, blockSequenceNumber, operationSequenceNumber)
   }
 
   def fromProtoKey(protoKey: node_models.PublicKey): Option[SecpPublicKey] = {
