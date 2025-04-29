@@ -1,25 +1,31 @@
 package io.iohk.atala.prism.node
 
+import cats.effect.ExitCode
+import cats.effect.IO
+import cats.effect.IOApp
+import cats.effect.Resource
 import cats.effect.unsafe.IORuntime
-import cats.effect.{ExitCode, IO, IOApp, Resource}
 import cats.implicits.toFunctorOps
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import doobie.hikari.HikariTransactor
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.Server
+import io.grpc.ServerBuilder
+import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.metrics.NodeReporter
 import io.iohk.atala.prism.node.metrics.UptimeReporter
 import io.iohk.atala.prism.node.models.DidSuffix
-import io.iohk.atala.prism.node.cardano.CardanoClient
-import io.iohk.atala.prism.node.metrics.NodeReporter
 import io.iohk.atala.prism.node.operations.ApplyOperationConfig
+import io.iohk.atala.prism.node.repositories.SchemaMigrations
+import io.iohk.atala.prism.node.repositories.TransactorFactory
 import io.iohk.atala.prism.node.repositories._
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoBlockHandler
 import io.iohk.atala.prism.node.services._
-import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.protos.node_api._
-import io.iohk.atala.prism.node.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.atala.prism.node.services.models.{AtalaObjectBulkNotificationHandler, AtalaObjectNotification}
 import io.iohk.atala.prism.node.utils.IOUtils._
+import io.iohk.atala.prism.protos.node_api._
 import kamon.Kamon
 import kamon.module.Module
 import org.slf4j.LoggerFactory
@@ -84,12 +90,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       )
       onCardanoBlock = onCardanoBlockOp(protocolVersionRepository)
       onAtalaObject = onAtalaObjectOp(objectManagementService)
+      onAtalaObjectBulk = onAtalaObjectBulkOp(objectManagementService)
       keyValueService <- KeyValueService.resource(keyValuesRepository, logs)
       ledger <- createLedger(
         globalConfig,
         keyValueService,
         onCardanoBlock,
         onAtalaObject,
+        onAtalaObjectBulk,
         logs
       )
       didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
@@ -145,6 +153,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       globalConfig: Config,
       onCardanoBlock: CardanoBlockHandler[IOWithTraceIdContext],
       onAtalaObject: AtalaObjectNotification => IOWithTraceIdContext[Unit],
+      onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext],
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
@@ -159,6 +168,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         keyValueService,
         onCardanoBlock,
         onAtalaObject,
+        onAtalaObjectBulk,
         logs
       )
     }
@@ -193,11 +203,18 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       .void
   }
 
+  private def onAtalaObjectBulkOp(
+      objectManagementService: ObjectManagementService[IOWithTraceIdContext]
+  ): AtalaObjectBulkNotificationHandler[IOWithTraceIdContext] = notifications => {
+    objectManagementService.saveObjects(notifications).void
+  }
+
   private def createLedger(
       config: Config,
       keyValueService: KeyValueService[IOWithTraceIdContext],
       onCardanoBlock: CardanoBlockHandler[IOWithTraceIdContext],
       onAtalaObject: AtalaObjectNotification => IOWithTraceIdContext[Unit],
+      onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext],
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] =
     config.getString("ledger") match {
@@ -207,6 +224,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
           config,
           onCardanoBlock,
           onAtalaObject,
+          onAtalaObjectBulk,
           logs
         )
       case "in-memory" =>

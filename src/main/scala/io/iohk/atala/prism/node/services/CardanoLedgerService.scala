@@ -1,28 +1,35 @@
 package io.iohk.atala.prism.node.services
 
-import cats.effect.{Resource, Temporal}
-import cats.syntax.applicative._
-import cats.syntax.applicativeError._
-import cats.syntax.comonad._
-import cats.syntax.flatMap._
-import cats.syntax.functor._
-import cats.syntax.traverse._
-import cats.{Applicative, Comonad, Functor, Monad}
-import enumeratum.{Enum, EnumEntry}
-import io.iohk.atala.prism.node.models._
+import cats.Applicative
+import cats.Comonad
+import cats.Functor
+import cats.Monad
+import cats.effect.Resource
+import cats.effect.Temporal
+import cats.syntax.all._
+import enumeratum.Enum
+import enumeratum.EnumEntry
+import io.iohk.atala.prism.node.PublicationInfo
+import io.iohk.atala.prism.node.UnderlyingLedger
+import io.iohk.atala.prism.node.cardano.CardanoClient
+import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_NO
+import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.cardano.models.Block.Canonical
 import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.node.cardano.{CardanoClient, LAST_SYNCED_BLOCK_NO, LAST_SYNCED_BLOCK_TIMESTAMP}
 import io.iohk.atala.prism.node.models.Balance
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.daos.KeyValuesDAO.KeyValue
-import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoBlockHandler
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
 import io.iohk.atala.prism.node.services.logs.UnderlyingLedgerLogs
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.node.{PublicationInfo, UnderlyingLedger}
+import io.iohk.atala.prism.node.services.models.AtalaObjectBulkNotificationHandler
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotificationHandler
 import io.iohk.atala.prism.protos.node_models
 import tofu.higherKind.Mid
 import tofu.lift.Lift
-import tofu.logging.{Logs, ServiceLogging}
+import tofu.logging.Logs
+import tofu.logging.ServiceLogging
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -61,7 +68,8 @@ class CardanoLedgerService[F[_]] private[services] (
     cardanoClient: CardanoClient[F],
     keyValueService: KeyValueService[F],
     onCardanoBlock: CardanoBlockHandler[F],
-    onAtalaObject: AtalaObjectNotificationHandler[F]
+    onAtalaObject: AtalaObjectNotificationHandler[F],
+    onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F]
 )(implicit
     timer: Temporal[F],
     liftToFuture: Lift[F, Future]
@@ -157,10 +165,23 @@ class CardanoLedgerService[F[_]] private[services] (
         maybeLastSyncedBlockNo,
         blockNumberSyncStart
       )
+
+      _ <-
+        if (lastSyncedBlockNo == (blockNumberSyncStart - 1)) {
+          bulkSyncBlocks()
+        } else {
+          Monad[F].pure(())
+        }
+      maybeLastSyncedBlockNo <- keyValueService.getInt(LAST_SYNCED_BLOCK_NO)
+      // Calculates the next block based on the initial `blockNumberSyncStart` and the latest synced block.
+      lastSyncedBlockNo = CardanoLedgerService.calculateLastSyncedBlockNo(
+        maybeLastSyncedBlockNo,
+        blockNumberSyncStart
+      )
       // Gets the latest block from the Cardano database.
-      latestBlock <- cardanoClient.getLatestBlock
+      latestBlockOpt <- cardanoClient.getLatestBlock
       // Calculates the latest confirmed block based on amount of required confirmations.
-      lastConfirmedBlockNo = latestBlock.map(
+      lastConfirmedBlockNo = latestBlockOpt.map(
         _.header.blockNo - blockConfirmationsToWait
       )
       syncStart = lastSyncedBlockNo + 1
@@ -173,6 +194,77 @@ class CardanoLedgerService[F[_]] private[services] (
     } yield lastConfirmedBlockNo
       .flatMap(last => syncEnd.map(last > _))
       .getOrElse(false)
+  }
+
+  private def bulkSyncBlocks(): F[Unit] = {
+    for {
+      blocksEit <- cardanoClient.getAllPrismIndexBlocksWithTransactions()
+      _ <- blocksEit.fold(
+        _ => Monad[F].pure(()),
+        blocks =>
+          for {
+            // Bulk process all Atala objects
+            _ <- bulkProcessAtalaObjects(blocks)
+            // Gets the latest block from the Cardano database.
+            latestBlockOpt <- cardanoClient.getLatestBlock
+            // Calculates the latest confirmed block based on amount of required confirmations.
+            lastConfirmedBlockNo = latestBlockOpt.map(
+              _.header.blockNo - blockConfirmationsToWait
+            )
+
+            _ <- lastConfirmedBlockNo match {
+              case Right(value) =>
+                cardanoClient.getFullBlock(value).flatMap {
+                  case Right(confirmedBlock) => {
+                    updateLastSyncedBlock(confirmedBlock)
+                  }
+                  case Left(_) => {
+                    updateLastSyncedBlock(blocks.last)
+                  }
+                }
+              case Left(_) => {
+                updateLastSyncedBlock(blocks.last)
+              }
+            }
+          } yield ()
+      )
+    } yield ()
+  }
+
+  private def bulkProcessAtalaObjects(blocks: List[Block.Full]): F[Unit] = {
+    // Collect all notifications from blocks
+    val notifications: List[AtalaObjectNotification] = blocks.flatMap { block =>
+      block.transactions.flatMap { transaction =>
+        transaction.metadata.flatMap { metadata =>
+          AtalaObjectMetadata.fromTransactionMetadata(metadata).map { atalaObject =>
+            AtalaObjectNotification(
+              atalaObject,
+              TransactionInfo(
+                transactionId = transaction.id,
+                ledger = getType,
+                block = Some(
+                  BlockInfo(
+                    number = block.header.blockNo,
+                    timestamp = block.header.time,
+                    index = transaction.blockIndex
+                  )
+                )
+              )
+            )
+          }
+        }
+      }
+    }
+
+    val batchSize = 5000 // TODO: make it configurable
+
+    // notifications.grouped(batchSize).toList.traverse_(onAtalaObjectBulk)
+    notifications.grouped(batchSize).toList.traverse_ { batch =>
+      println(
+        s"Processing ${batch.size} notifications in batches of size: ${batch.size}"
+      )
+      onAtalaObjectBulk(batch)
+    }
   }
 
   // Sync blocks in the given range.
@@ -290,6 +382,7 @@ object CardanoLedgerService {
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler[F],
       onAtalaObject: AtalaObjectNotificationHandler[F],
+      onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
       logs: Logs[R, F]
   ): R[UnderlyingLedger[F]] =
     for {
@@ -309,7 +402,8 @@ object CardanoLedgerService {
         cardanoClient,
         keyValueService,
         onCardanoBlock,
-        onAtalaObject
+        onAtalaObject,
+        onAtalaObjectBulk
       )
     }
 
@@ -319,6 +413,7 @@ object CardanoLedgerService {
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler[F],
       onAtalaObject: AtalaObjectNotificationHandler[F],
+      onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
       logs: Logs[R, F]
   ): Resource[R, UnderlyingLedger[F]] = {
     val walletId = WalletId
@@ -343,6 +438,7 @@ object CardanoLedgerService {
         keyValueService,
         onCardanoBlock,
         onAtalaObject,
+        onAtalaObjectBulk,
         logs
       )
     )
@@ -354,6 +450,7 @@ object CardanoLedgerService {
       keyValueService: KeyValueService[F],
       onCardanoBlock: CardanoBlockHandler[F],
       onAtalaObject: AtalaObjectNotificationHandler[F],
+      onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
       logs: Logs[R, F]
   ): UnderlyingLedger[F] = {
     val walletId = WalletId
@@ -377,6 +474,7 @@ object CardanoLedgerService {
       keyValueService,
       onCardanoBlock,
       onAtalaObject,
+      onAtalaObjectBulk,
       logs
     ).extract
   }

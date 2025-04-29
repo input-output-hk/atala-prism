@@ -1,11 +1,13 @@
 package io.iohk.atala.prism.node.repositories.daos
 
+import cats.syntax.functor._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import doobie.util.fragment.Fragment
-import cats.syntax.functor._
 import doobie.implicits.legacy.instant._
+import doobie.util.fragment.Fragment
+import doobie.util.update.Update
 import io.iohk.atala.prism.node.models._
+
 import java.time.Instant
 
 object AtalaObjectTransactionSubmissionsDAO {
@@ -63,7 +65,22 @@ object AtalaObjectTransactionSubmissionsDAO {
          |ORDER BY submission_timestamp ASC
        """.stripMargin.query[AtalaObjectTransactionSubmission].to[List]
   }
+  def updateStatusBatch(
+      updates: List[(Ledger, TransactionId, AtalaObjectTransactionSubmissionStatus)]
+  ): ConnectionIO[Int] = {
+    val sql = """
+      UPDATE atala_object_tx_submissions
+      SET status = ?
+      WHERE (ledger, transaction_id) = (?, ?)
+    """
 
+    Update[(AtalaObjectTransactionSubmissionStatus, Ledger, TransactionId)](sql)
+      .updateMany(
+        updates.map { case (ledger, txId, status) =>
+          (status, ledger, txId)
+        }
+      )
+  }
   def updateStatus(
       ledger: Ledger,
       transactionId: TransactionId,

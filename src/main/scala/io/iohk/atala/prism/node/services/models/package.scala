@@ -2,20 +2,18 @@ package io.iohk.atala.prism.node.services
 
 import cats.implicits._
 import derevo.derive
-import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.operations.{
-  CreateDIDOperation,
-  DeactivateDIDOperation,
-  ProtocolVersionUpdateOperation,
-  UpdateDIDOperation,
-  ValidationError,
-  parseOperationWithMockedLedger
-}
-import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.node.models.TransactionInfo
+import io.iohk.atala.prism.node.operations.CreateDIDOperation
+import io.iohk.atala.prism.node.operations.DeactivateDIDOperation
+import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperation
+import io.iohk.atala.prism.node.operations.UpdateDIDOperation
+import io.iohk.atala.prism.node.operations.ValidationError
+import io.iohk.atala.prism.node.operations.parseOperationWithMockedLedger
 import io.iohk.atala.prism.protos.node_api
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api.OperationOutput
+import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import tofu.logging.derivation.loggable
 
 package object models {
@@ -69,4 +67,5 @@ package object models {
     }
 
   type AtalaObjectNotificationHandler[F[_]] = AtalaObjectNotification => F[Unit]
+  type AtalaObjectBulkNotificationHandler[F[_]] = List[AtalaObjectNotification] => F[Unit]
 }

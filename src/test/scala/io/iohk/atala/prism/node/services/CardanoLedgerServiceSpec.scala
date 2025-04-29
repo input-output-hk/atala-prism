@@ -5,9 +5,6 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import io.iohk.atala.prism.node.AtalaWithPostgresSpec
-import io.iohk.atala.prism.node.logging.TraceId
-import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClientImpl
 import io.iohk.atala.prism.node.cardano.dbsync.repositories.CardanoBlockRepository
@@ -16,13 +13,19 @@ import io.iohk.atala.prism.node.cardano.models.AtalaObjectMetadata.METADATA_PRIS
 import io.iohk.atala.prism.node.cardano.models._
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.cardano.wallet.testing.FakeCardanoWalletApiClient
+import io.iohk.atala.prism.node.logging.TraceId
+import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
+import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.repositories.KeyValuesRepository
-import io.iohk.atala.prism.node.services.CardanoLedgerService.{CardanoBlockHandler, CardanoNetwork}
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoBlockHandler
+import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
+import io.iohk.atala.prism.node.services.models.AtalaObjectBulkNotificationHandler
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
+import io.iohk.atala.prism.node.services.models.AtalaObjectNotificationHandler
 import io.iohk.atala.prism.node.services.models.testing.TestAtalaHandlers
-import io.iohk.atala.prism.node.services.models.{AtalaObjectNotification, AtalaObjectNotificationHandler}
-import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.BytesOps
 import io.iohk.atala.prism.node.utils.IOUtils._
+import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
@@ -38,6 +41,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val blockConfirmationsToWait = 31
 
   private val noOpObjectHandler: AtalaObjectNotificationHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
+  private val noOpObjectBulkHandler: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
   private val noOpBlockHandler: CardanoBlockHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
   private lazy val keyValueService = KeyValueService.unsafe(
     KeyValuesRepository.unsafe(dbLiftedToTraceIdIO, logs),
@@ -311,16 +315,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       )
     }
 
-    "start syncing at specified block" in {
-      val totalBlockCount = 50
+    "start bulk sync in specified block" in {
       val blockNumberSyncStart = 10
-      // Append an Atala transaction to the start sync block and the previous one
-      val allNotifications = createNotificationsInDb(
-        totalBlockCount,
-        blockNumberSyncStart - 1,
-        blockNumberSyncStart
-      )
-      // Configure the service to capture received notifications
       val notificationHandler = new TestAtalaHandlers[IOWithTraceIdContext]()
       val cardanoLedgerService =
         createCardanoLedgerService(
@@ -335,9 +331,9 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
         .unsafeRunSync()
 
       pendingBlocks must be(false)
-      // Block #9 should be skipped over
+      // All Blocks synced
       notificationHandler.receivedNotifications must be(
-        List(allNotifications(1))
+        List()
       )
     }
 
@@ -412,7 +408,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private def createCardanoLedgerService(
       cardanoWalletApiClient: CardanoWalletApiClient[IOWithTraceIdContext],
       blockNumberSyncStart: Int = 0,
-      onAtalaObject: AtalaObjectNotificationHandler[IOWithTraceIdContext] = noOpObjectHandler
+      onAtalaObject: AtalaObjectNotificationHandler[IOWithTraceIdContext] = noOpObjectHandler,
+      onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext] = noOpObjectBulkHandler
   ): CardanoLedgerService[IOWithTraceIdContext] = {
     val cardanoClient = createCardanoClient(cardanoWalletApiClient)
     new CardanoLedgerService(
@@ -425,7 +422,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       cardanoClient,
       keyValueService,
       noOpBlockHandler,
-      onAtalaObject
+      onAtalaObject,
+      onAtalaObjectBulk
     )
   }
 

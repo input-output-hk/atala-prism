@@ -71,7 +71,8 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         cardanoClient,
         keyValueService,
         notificationHandler.asCardanoBlockHandler,
-        notificationHandler.asAtalaObjectHandler
+        notificationHandler.asAtalaObjectHandler,
+        notificationHandler.asAtalaObjectBulkHandler
       )
 
       // Avoid syncing pre-existing blocks
