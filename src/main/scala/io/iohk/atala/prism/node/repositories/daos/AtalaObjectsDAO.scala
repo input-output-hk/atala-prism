@@ -32,7 +32,6 @@ object AtalaObjectsDAO {
   )
 
   def insertMany(objects: List[AtalaObjectCreateData]): ConnectionIO[Int] = {
-    // Bulk insert objects
     Update[(AtalaObjectId, Array[Byte], AtalaObjectStatus, Instant)](
       """
       INSERT INTO atala_objects (atala_object_id, object_content, atala_object_status, received_at)
@@ -43,61 +42,15 @@ object AtalaObjectsDAO {
   }
 
   def setManyTransactionInfo(
-      data: List[AtalaObjectSetTransactionInfo]
+      data: List[(AtalaObjectId, Ledger, Int, Int, Instant, TransactionId)]
   ): ConnectionIO[Int] = {
-    // Extract valid transactions with blocks
-    val validTransactions = for {
-      item <- data
-      block <- item.transactionInfo.block.toList
-    } yield (
-      item.objectId,
-      item.transactionInfo.ledger,
-      block.number,
-      block.index,
-      block.timestamp,
-      item.transactionInfo.transactionId
-    )
-
-    // Log count before deduplication
-    println(s"INITIAL COUNT: Total of ${validTransactions.size} records before deduplication")
-
-    // Find duplicates by object ID
-    val groupedByObjectId = validTransactions.groupBy(_._1)
-    val duplicateGroups = groupedByObjectId.filter(_._2.size > 1)
-    val uniqueGroups = groupedByObjectId.filter(_._2.size == 1)
-
-    // Log detailed counts
-    println(s"DEDUPLICATION STATS:")
-    println(s"  Total input objects: ${data.size}")
-    println(s"  Valid transactions with blocks: ${validTransactions.size}")
-    println(s"  Unique object IDs: ${groupedByObjectId.size}")
-    println(s"  Objects with duplicates: ${duplicateGroups.size}")
-    println(s"  Objects without duplicates: ${uniqueGroups.size}")
-    println(s"  Total duplicate records: ${validTransactions.size - groupedByObjectId.size}")
-
-    // Log duplicates with full details
-    duplicateGroups.foreach { case (objectId, dupes) =>
-      println(s"DUPLICATE DETECTED for object ID: $objectId, found ${dupes.size} records:")
-      dupes.zipWithIndex.foreach { case (dupe, index) =>
-        println(s"  Duplicate #${index + 1}: $dupe")
-      }
-    }
-
-    // Keep only one record per object ID (the first one)
-    val dedupedTransactions = groupedByObjectId.map { case (_, txs) => txs.head }.toList
-
-    // Log final count after deduplication
-    println(s"FINAL COUNT: Total of ${dedupedTransactions.size} records after deduplication")
-    println(s"REMOVED: ${validTransactions.size - dedupedTransactions.size} duplicate records")
-
-    // Insert the unique transactions
     Update[(AtalaObjectId, Ledger, Int, Int, Instant, TransactionId)](
       """
       INSERT INTO atala_object_txs 
       (atala_object_id, ledger, block_number, block_index, block_timestamp, transaction_id)
       VALUES (?, ?, ?, ?, ?, ?)
       """
-    ).updateMany(dedupedTransactions)
+    ).updateMany(data)
   }
 
   def insert(data: AtalaObjectCreateData): ConnectionIO[Int] = {

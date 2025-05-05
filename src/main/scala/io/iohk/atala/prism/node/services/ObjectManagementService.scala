@@ -36,6 +36,7 @@ import io.iohk.atala.prism.node.repositories.KeyValuesRepository
 import io.iohk.atala.prism.node.repositories.ProtocolVersionRepository
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectTransactionSubmissionsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectSetTransactionInfo
 import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 import io.iohk.atala.prism.node.services.logs.ObjectManagementServiceLogs
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
@@ -102,6 +103,53 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
   def saveObjects(
       notifications: List[AtalaObjectNotification]
   ): F[Either[SaveObjectError, Boolean]] = {
+
+    def filterAndLogDuplicates(
+        data: List[AtalaObjectSetTransactionInfo]
+    ): List[(AtalaObjectId, Ledger, Int, Int, Instant, TransactionId)] = {
+      val validTransactions = for {
+        item <- data
+        block <- item.transactionInfo.block.toList
+      } yield (
+        item.objectId,
+        item.transactionInfo.ledger,
+        block.number,
+        block.index,
+        block.timestamp,
+        item.transactionInfo.transactionId
+      )
+      // Find duplicates by object ID
+      val groupedByObjectId = validTransactions.groupBy(_._1)
+      val duplicateGroups = groupedByObjectId.filter(_._2.size > 1)
+      val uniqueGroups = groupedByObjectId.filter(_._2.size == 1)
+
+      // Log detailed counts
+      logger.info(s"DEDUPLICATION STATS:")
+      logger.info(s"Total input objects: ${data.size}")
+      logger.info(s"Valid transactions with blocks: ${validTransactions.size}")
+      logger.info(s"Unique object IDs: ${groupedByObjectId.size}")
+      logger.info(s"Objects with duplicates: ${duplicateGroups.size}")
+      logger.info(s"Objects without duplicates: ${uniqueGroups.size}")
+      logger.info(s"Total duplicate records: ${validTransactions.size - groupedByObjectId.size}")
+
+      // Log duplicates with full details
+      duplicateGroups.foreach { case (objectId, dupes) =>
+        logger.info(s"DUPLICATE DETECTED for object ID: $objectId, found ${dupes.size} records:")
+        dupes.zipWithIndex.foreach { case (dupe, index) =>
+          logger.info(s"  Duplicate #${index + 1}: $dupe")
+        }
+      }
+      // Keep only one record per object ID (the first one)
+      val dedupedTransactions = groupedByObjectId.map { case (_, txs) =>
+        txs.head
+      }.toList
+
+      // Log final count after deduplication
+      logger.info(s"FINAL COUNT: Total of ${dedupedTransactions.size} records after deduplication")
+      logger.info(s"REMOVED: ${validTransactions.size - dedupedTransactions.size} duplicate records")
+      dedupedTransactions
+    }
+
     if (notifications.isEmpty) {
       true.asRight[SaveObjectError].pure[F]
     } else {
@@ -147,7 +195,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
         // Bulk database operations
         val bulkQuery = for {
           count1 <- AtalaObjectsDAO.insertMany(objectInserts)
-          count2 <- AtalaObjectsDAO.setManyTransactionInfo(transactionInserts)
+          count2 <- AtalaObjectsDAO.setManyTransactionInfo(filterAndLogDuplicates(transactionInserts))
           count3 <- AtalaObjectTransactionSubmissionsDAO
             .updateStatusBatch(
               transactionInserts.map(d =>
