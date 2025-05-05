@@ -42,13 +42,14 @@ import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
 import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import org.slf4j.LoggerFactory
 import tofu.higherKind.Mid
 import tofu.logging.Logs
 import tofu.logging.ServiceLogging
 import tofu.logging.derivation.loggable
 import tofu.syntax.feither._
 import tofu.syntax.monadic._
-import org.slf4j.LoggerFactory
+
 import java.time.Instant
 
 @derive(applyK)
@@ -97,98 +98,6 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     xa: Transactor[F]
 ) extends ObjectManagementService[F] {
   private val logger = LoggerFactory.getLogger(getClass)
-
-  def saveObjects2(
-      notifications: List[AtalaObjectNotification]
-  ): F[Either[SaveObjectError, Boolean]] = {
-    if (notifications.isEmpty) {
-      true.asRight[SaveObjectError].pure[F]
-    } else {
-
-      def applyTransactions(atalaObjectInfos: List[AtalaObjectInfo]): F[Either[SaveObjectError, Boolean]] = {
-        for {
-          // Process all objects and apply them to the state
-          transactions <- atalaObjectInfos.traverse { case (obj) =>
-            Monad[F].pure(processObject(obj))
-          }
-          result <- transactions.sequence.flatTraverse { txs =>
-            txs
-              .traverse(_.logSQLErrorsV2("Transaction saving objects").attemptSql)
-              .transact(xa)
-              .map(_.sequence)
-              .map(_.map(_ => true))
-              .leftMapIn(err => SaveObjectError(err.getMessage))
-          }
-
-        } yield result
-      }
-
-      def processObjectList(
-          notifications: List[AtalaObjectNotification]
-      ): F[Either[SaveObjectError, Boolean]] = {
-        val pairedInserts: List[
-          (AtalaObjectId, AtalaObjectsDAO.AtalaObjectCreateData, AtalaObjectsDAO.AtalaObjectSetTransactionInfo)
-        ] =
-          notifications.map { notification =>
-            val objectBytes = notification.atalaObject.toByteArray
-            val objId = AtalaObjectId.of(objectBytes)
-            (
-              objId,
-              AtalaObjectsDAO.AtalaObjectCreateData(
-                objId,
-                objectBytes,
-                AtalaObjectStatus.Processed
-              ),
-              AtalaObjectsDAO.AtalaObjectSetTransactionInfo(
-                objId,
-                notification.transaction
-              )
-            )
-          }
-
-        val (objectIds, objectInserts, transactionInserts) = pairedInserts.unzip3
-
-        // Bulk database operations
-        val bulkQuery = for {
-          count1 <- AtalaObjectsDAO.insertMany(objectInserts)
-          count2 <- AtalaObjectsDAO.setManyTransactionInfo(transactionInserts)
-          count3 <- AtalaObjectTransactionSubmissionsDAO
-            .updateStatusBatch(
-              transactionInserts.map(d =>
-                (
-                  d.transactionInfo.ledger,
-                  d.transactionInfo.transactionId,
-                  AtalaObjectTransactionSubmissionStatus.InLedger
-                )
-              )
-            )
-          atalaObjectsInfo <- AtalaObjectsDAO.getAtalaObjectsInfo(objectIds)
-        } yield (count1, count2, count3, atalaObjectsInfo)
-
-        bulkQuery
-          .logSQLErrorsV2("bulk processing atala objects")
-          .attemptSql
-          .transact(xa)
-          .flatMap {
-            case Left(err) => SaveObjectError(err.getMessage).asLeft[Boolean].pure[F]
-            case Right((count1, count2, count3, atalaObjectsInfo)) =>
-              if (
-                count1 != objectInserts.size || count2 != transactionInserts.size || count3 != transactionInserts.size
-              ) {
-                logger.info(
-                  s"Count mismatches: Create(exp=${objectInserts.size},got=$count1), " +
-                    s"TxInfo(exp=${transactionInserts.size},got=$count2), " +
-                    s"Status(exp=${transactionInserts.size},got=$count3)"
-                )
-              }
-              // Apply transactions to the state finally this sequencial operation similar to applyTransaction
-              applyTransactions(atalaObjectsInfo)
-          }
-      }
-
-      processObjectList(notifications)
-    }
-  }
 
   def saveObjects(
       notifications: List[AtalaObjectNotification]
@@ -262,7 +171,7 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
               if (
                 count1 != objectInserts.size || count2 != transactionInserts.size || count3 != transactionInserts.size
               ) {
-                println(
+                logger.info(
                   s"Count mismatches: Create(exp=${objectInserts.size},got=$count1), " +
                     s"TxInfo(exp=${transactionInserts.size},got=$count2), " +
                     s"Status(exp=${transactionInserts.size},got=$count3)"

@@ -257,14 +257,7 @@ class CardanoLedgerService[F[_]] private[services] (
     }
 
     val batchSize = 5000 // TODO: make it configurable
-
-    // notifications.grouped(batchSize).toList.traverse_(onAtalaObjectBulk)
-    notifications.grouped(batchSize).toList.traverse_ { batch =>
-      println(
-        s"Processing ${batch.size} notifications in batches of size: ${batch.size}"
-      )
-      onAtalaObjectBulk(batch)
-    }
+    notifications.grouped(batchSize).toList.traverse_(onAtalaObjectBulk)
   }
 
   // Sync blocks in the given range.

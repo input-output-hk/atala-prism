@@ -57,13 +57,11 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
       blocks: List[BlockProcessingInfo]
   ): ConnectionIO[Boolean] = {
     val methodName = "processBlockBatch"
-    println(s"processBlockBatch: Processing batch of ${blocks.size} blocks")
     val (allInvalid, allValid) = blocks
       .flatMap { blockInfo =>
         val operations = blockInfo.block.operations.toList
         val operationsWithSeqNumbers = operations.zipWithIndex
         operationsWithSeqNumbers.map { case (signedOperation, index) =>
-          println(s"processBlockBatch: Processing operation ${index} of ${blockInfo.transactionId}")
           parseOperation(
             signedOperation,
             LedgerData(
