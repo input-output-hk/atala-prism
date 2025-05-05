@@ -64,6 +64,7 @@ class CardanoLedgerService[F[_]] private[services] (
     walletPassphrase: String,
     paymentAddress: Address,
     blockNumberSyncStart: Int,
+    initialBulkSyncSize: Int,
     blockConfirmationsToWait: Int,
     cardanoClient: CardanoClient[F],
     keyValueService: KeyValueService[F],
@@ -256,7 +257,7 @@ class CardanoLedgerService[F[_]] private[services] (
       }
     }
 
-    val batchSize = 5000 // TODO: make it configurable
+    val batchSize = initialBulkSyncSize
     notifications.grouped(batchSize).toList.traverse_(onAtalaObjectBulk)
   }
 
@@ -360,6 +361,7 @@ object CardanoLedgerService {
       walletPassphrase: String,
       paymentAddress: String,
       blockNumberSyncStart: Int,
+      initialBulkSyncSize: Int,
       blockConfirmationsToWait: Int,
       cardanoClientConfig: CardanoClient.Config
   )
@@ -370,6 +372,7 @@ object CardanoLedgerService {
       walletPassphrase: String,
       paymentAddress: Address,
       blockNumberSyncStart: Int,
+      initialBulkSyncSize: Int,
       blockConfirmationsToWait: Int,
       cardanoClient: CardanoClient[F],
       keyValueService: KeyValueService[F],
@@ -391,6 +394,7 @@ object CardanoLedgerService {
         walletPassphrase,
         paymentAddress,
         blockNumberSyncStart,
+        initialBulkSyncSize,
         blockConfirmationsToWait,
         cardanoClient,
         keyValueService,
@@ -426,6 +430,7 @@ object CardanoLedgerService {
         walletPassphrase,
         paymentAddress,
         config.blockNumberSyncStart,
+        config.initialBulkSyncSize,
         config.blockConfirmationsToWait,
         cardanoClient,
         keyValueService,
@@ -462,6 +467,7 @@ object CardanoLedgerService {
       walletPassphrase,
       paymentAddress,
       config.blockNumberSyncStart,
+      config.initialBulkSyncSize,
       config.blockConfirmationsToWait,
       cardanoClient,
       keyValueService,

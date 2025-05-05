@@ -39,7 +39,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
     "2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb"
   )
   private val blockConfirmationsToWait = 31
-
+  private val initialBulkSyncSize = 5000
   private val noOpObjectHandler: AtalaObjectNotificationHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
   private val noOpObjectBulkHandler: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
   private val noOpBlockHandler: CardanoBlockHandler[IOWithTraceIdContext] = _ => ReaderT.pure(())
@@ -418,6 +418,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       walletPassphrase,
       paymentAddress,
       blockNumberSyncStart,
+      initialBulkSyncSize,
       blockConfirmationsToWait,
       cardanoClient,
       keyValueService,
