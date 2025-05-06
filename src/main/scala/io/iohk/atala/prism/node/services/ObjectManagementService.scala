@@ -1,42 +1,53 @@
 package io.iohk.atala.prism.node.services
 
+import cats.Applicative
+import cats.ApplicativeError
+import cats.Comonad
+import cats.Functor
+import cats.Monad
 import cats.data.EitherT
-import cats.effect.{MonadCancelThrow, Resource}
+import cats.effect.MonadCancelThrow
+import cats.effect.Resource
 import cats.syntax.comonad._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import cats.{Applicative, ApplicativeError, Comonad, Functor, Monad}
 import derevo.derive
 import derevo.tagless.applyK
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.atala.prism.node.models.{AtalaOperationId, TransactionId, TransactionInfo}
 import io.iohk.atala.prism.node.cardano.LAST_SYNCED_BLOCK_TIMESTAMP
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.errors.NodeError.{InvalidArgument, UnsupportedProtocolVersion}
+import io.iohk.atala.prism.node.errors.NodeError.InvalidArgument
+import io.iohk.atala.prism.node.errors.NodeError.UnsupportedProtocolVersion
 import io.iohk.atala.prism.node.metrics.OperationsCounters
 import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
+import io.iohk.atala.prism.node.models.AtalaOperationId
+import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.models.nodeState.getLastSyncedTimestampFromMaybe
+import io.iohk.atala.prism.node.operations.CreateDIDOperation
+import io.iohk.atala.prism.node.operations.parseOperationWithMockedLedger
 import io.iohk.atala.prism.node.operations.protocolVersion.SUPPORTED_VERSION
-import io.iohk.atala.prism.node.operations.{CreateDIDOperation, parseOperationWithMockedLedger}
+import io.iohk.atala.prism.node.repositories.AtalaObjectsTransactionsRepository
+import io.iohk.atala.prism.node.repositories.AtalaOperationsRepository
+import io.iohk.atala.prism.node.repositories.KeyValuesRepository
+import io.iohk.atala.prism.node.repositories.ProtocolVersionRepository
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectTransactionSubmissionsDAO
 import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.atala.prism.node.repositories.{
-  AtalaObjectsTransactionsRepository,
-  AtalaOperationsRepository,
-  KeyValuesRepository,
-  ProtocolVersionRepository
-}
+import io.iohk.atala.prism.node.repositories.daos.AtalaObjectsDAO.AtalaObjectSetTransactionInfo
 import io.iohk.atala.prism.node.services.ObjectManagementService.SaveObjectError
 import io.iohk.atala.prism.node.services.logs.ObjectManagementServiceLogs
 import io.iohk.atala.prism.node.services.models.AtalaObjectNotification
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
-import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import org.slf4j.LoggerFactory
 import tofu.higherKind.Mid
+import tofu.logging.Logs
+import tofu.logging.ServiceLogging
 import tofu.logging.derivation.loggable
-import tofu.logging.{Logs, ServiceLogging}
 import tofu.syntax.feither._
 import tofu.syntax.monadic._
 
@@ -46,6 +57,10 @@ import java.time.Instant
 trait ObjectManagementService[F[_]] {
   def saveObject(
       notification: AtalaObjectNotification
+  ): F[Either[SaveObjectError, Boolean]]
+
+  def saveObjects(
+      notifications: List[AtalaObjectNotification]
   ): F[Either[SaveObjectError, Boolean]]
 
   def scheduleAtalaOperations(
@@ -83,6 +98,141 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
     didServicesLimit: Int,
     xa: Transactor[F]
 ) extends ObjectManagementService[F] {
+  private val logger = LoggerFactory.getLogger(getClass)
+
+  def saveObjects(
+      notifications: List[AtalaObjectNotification]
+  ): F[Either[SaveObjectError, Boolean]] = {
+
+    def filterAndLogDuplicates(
+        data: List[AtalaObjectSetTransactionInfo]
+    ): List[(AtalaObjectId, Ledger, Int, Int, Instant, TransactionId)] = {
+      val validTransactions = for {
+        item <- data
+        block <- item.transactionInfo.block.toList
+      } yield (
+        item.objectId,
+        item.transactionInfo.ledger,
+        block.number,
+        block.index,
+        block.timestamp,
+        item.transactionInfo.transactionId
+      )
+      // Find duplicates by object ID
+      val groupedByObjectId = validTransactions.groupBy(_._1)
+      val duplicateGroups = groupedByObjectId.filter(_._2.size > 1)
+      val uniqueGroups = groupedByObjectId.filter(_._2.size == 1)
+
+      // Log detailed counts
+      logger.info(s"DEDUPLICATION STATS:")
+      logger.info(s"Total input objects: ${data.size}")
+      logger.info(s"Valid transactions with blocks: ${validTransactions.size}")
+      logger.info(s"Unique object IDs: ${groupedByObjectId.size}")
+      logger.info(s"Objects with duplicates: ${duplicateGroups.size}")
+      logger.info(s"Objects without duplicates: ${uniqueGroups.size}")
+      logger.info(s"Total duplicate records: ${validTransactions.size - groupedByObjectId.size}")
+
+      // Log duplicates with full details
+      duplicateGroups.foreach { case (objectId, dupes) =>
+        logger.info(s"DUPLICATE DETECTED for object ID: $objectId, found ${dupes.size} records:")
+        dupes.zipWithIndex.foreach { case (dupe, index) =>
+          logger.info(s"  Duplicate #${index + 1}: $dupe")
+        }
+      }
+      // Keep only one record per object ID (the first one)
+      val dedupedTransactions = groupedByObjectId.map { case (_, txs) =>
+        txs.head
+      }.toList
+
+      // Log final count after deduplication
+      logger.info(s"FINAL COUNT: Total of ${dedupedTransactions.size} records after deduplication")
+      logger.info(s"REMOVED: ${validTransactions.size - dedupedTransactions.size} duplicate records")
+      dedupedTransactions
+    }
+
+    if (notifications.isEmpty) {
+      true.asRight[SaveObjectError].pure[F]
+    } else {
+
+      def applyTransactions(atalaObjectInfos: List[AtalaObjectInfo]): F[Either[SaveObjectError, Boolean]] = {
+        processObjects(atalaObjectInfos) match {
+          case Left(err) => err.asLeft[Boolean].pure[F]
+          case Right(io) =>
+            io.attemptSql.transact(xa).map {
+              case Left(e) =>
+                SaveObjectError(e.getMessage).asLeft[Boolean]
+              case Right(result) =>
+                result.asRight[SaveObjectError]
+            }
+        }
+      }
+
+      def processObjectList(
+          notifications: List[AtalaObjectNotification]
+      ): F[Either[SaveObjectError, Boolean]] = {
+        val pairedInserts: List[
+          (AtalaObjectId, AtalaObjectsDAO.AtalaObjectCreateData, AtalaObjectsDAO.AtalaObjectSetTransactionInfo)
+        ] =
+          notifications.map { notification =>
+            val objectBytes = notification.atalaObject.toByteArray
+            val objId = AtalaObjectId.of(objectBytes)
+            (
+              objId,
+              AtalaObjectsDAO.AtalaObjectCreateData(
+                objId,
+                objectBytes,
+                AtalaObjectStatus.Processed
+              ),
+              AtalaObjectsDAO.AtalaObjectSetTransactionInfo(
+                objId,
+                notification.transaction
+              )
+            )
+          }
+
+        val (objectIds, objectInserts, transactionInserts) = pairedInserts.unzip3
+
+        // Bulk database operations
+        val bulkQuery = for {
+          count1 <- AtalaObjectsDAO.insertMany(objectInserts)
+          count2 <- AtalaObjectsDAO.setManyTransactionInfo(filterAndLogDuplicates(transactionInserts))
+          count3 <- AtalaObjectTransactionSubmissionsDAO
+            .updateStatusBatch(
+              transactionInserts.map(d =>
+                (
+                  d.transactionInfo.ledger,
+                  d.transactionInfo.transactionId,
+                  AtalaObjectTransactionSubmissionStatus.InLedger
+                )
+              )
+            )
+          atalaObjectsInfo <- AtalaObjectsDAO.getAtalaObjectsInfo(objectIds)
+        } yield (count1, count2, count3, atalaObjectsInfo)
+
+        bulkQuery
+          .logSQLErrorsV2("bulk processing atala objects")
+          .attemptSql
+          .transact(xa)
+          .flatMap {
+            case Left(err) => SaveObjectError(err.getMessage).asLeft[Boolean].pure[F]
+            case Right((count1, count2, count3, atalaObjectsInfo)) =>
+              if (
+                count1 != objectInserts.size || count2 != transactionInserts.size || count3 != transactionInserts.size
+              ) {
+                logger.info(
+                  s"Count mismatches: Create(exp=${objectInserts.size},got=$count1), " +
+                    s"TxInfo(exp=${transactionInserts.size},got=$count2), " +
+                    s"Status(exp=${transactionInserts.size},got=$count3)"
+                )
+              }
+              // Apply transactions to the state finally this sequencial operation similar to applyTransaction
+              applyTransactions(atalaObjectsInfo)
+          }
+      }
+
+      processObjectList(notifications)
+    }
+  }
 
   // Processes AtalaObjects retrieved from transaction metadata during the Node syncing with Cardano Ledger
   def saveObject(
@@ -255,6 +405,63 @@ private final class ObjectManagementServiceImpl[F[_]: MonadCancelThrow](
       .getOperationInfo(atalaOperationId)
       .map(_.toOption.flatten)
 
+  private def processObjects(
+      objs: List[AtalaObjectInfo]
+  ): Either[SaveObjectError, ConnectionIO[Boolean]] = {
+    // Parse all objects, collecting errors and valid BlockInfos
+    val parsed: List[Either[SaveObjectError, (BlockProcessingInfo, AtalaObjectInfo)]] = objs.map { obj =>
+      for {
+        protobufObject <-
+          Either
+            .fromTry(node_models.AtalaObject.validate(obj.byteContent))
+            .leftMap(err => SaveObjectError(err.getMessage))
+        result <- protobufObject.blockContent match {
+          case Some(block) =>
+            for {
+              transactionInfo <- Either.fromOption(
+                obj.transaction,
+                SaveObjectError("AtalaObject has no transaction info")
+              )
+              transactionBlock <- Either.fromOption(
+                transactionInfo.block,
+                SaveObjectError("AtalaObject has no transaction block")
+              )
+            } yield (
+              BlockProcessingInfo(
+                block,
+                transactionInfo.transactionId,
+                transactionInfo.ledger,
+                transactionBlock.timestamp,
+                transactionBlock.index
+              ),
+              obj
+            )
+          case None =>
+            val msg =
+              s"processObjects: blockContent is None for object: ${obj.objectId} transaction: ${obj.transaction}"
+            Left(SaveObjectError(msg))
+        }
+      } yield result
+    }
+
+    // Separate errors and valid parses
+    val (errors, valid) = parsed.partitionMap(identity)
+    val blockInfos = valid.map(_._1)
+    val validObjs = valid.map(_._2)
+
+    if (blockInfos.isEmpty)
+      Left(errors.headOption.getOrElse(SaveObjectError("No valid objects to process")))
+    else
+      Right(
+        for {
+          wasProcessed <- blockProcessing.processBlockBatch(blockInfos) // TODO: Batch processing below
+          _ <- AtalaObjectsDAO.updateObjectStatusBatch(
+            validObjs.map(_.objectId),
+            AtalaObjectStatus.Processed
+          )
+        } yield wasProcessed
+      )
+  }
   // Retrieves operations from the object, and applies them to the state
   private def processObject(
       obj: AtalaObjectInfo

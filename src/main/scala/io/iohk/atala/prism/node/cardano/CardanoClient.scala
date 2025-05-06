@@ -1,29 +1,34 @@
 package io.iohk.atala.prism.node.cardano
 
-import cats.{Comonad, Functor}
+import cats.Comonad
+import cats.Functor
+import cats.MonadThrow
 import cats.effect.Resource
+import cats.effect.kernel.Async
 import cats.syntax.comonad._
-import io.iohk.atala.prism.node.models.{TransactionDetails, TransactionId, WalletDetails}
-import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
-import io.iohk.atala.prism.node.cardano.models._
-import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
-import tofu.logging.{Logs, ServiceLogging}
-import tofu.syntax.monadic._
 import cats.syntax.either._
 import derevo.derive
 import derevo.tagless.applyK
+import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.logs.CardanoClientLogs
+import io.iohk.atala.prism.node.cardano.models._
+import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.atala.prism.node.metrics.TimeMeasureMetric
+import io.iohk.atala.prism.node.models.TransactionDetails
+import io.iohk.atala.prism.node.models.TransactionId
+import io.iohk.atala.prism.node.models.WalletDetails
 import tofu.higherKind.Mid
-import cats.MonadThrow
-import cats.effect.kernel.Async
+import tofu.logging.Logs
+import tofu.logging.ServiceLogging
+import tofu.syntax.monadic._
 
 @derive(applyK)
 trait CardanoClient[F[_]] {
   def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]]
 
   def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]]
-
+  def getAllPrismIndexBlocksWithTransactions(
+  ): F[Either[BlockError.NotFound, List[Block.Full]]]
   def postTransaction(
       walletId: WalletId,
       payments: List[Payment],
@@ -99,12 +104,11 @@ object CardanoClient {
       cardanoDbSyncClient: CardanoDbSyncClient[F],
       cardanoWalletApiClient: CardanoWalletApiClient[F]
   ) extends CardanoClient[F] {
+    def getAllPrismIndexBlocksWithTransactions(): F[Either[BlockError.NotFound, List[Block.Full]]] =
+      cardanoDbSyncClient.getAllPrismIndexBlocksWithTransactions()
 
-    def getFullBlock(
-        blockNo: Int
-    ): F[Either[BlockError.NotFound, Block.Full]] = {
+    def getFullBlock(blockNo: Int): F[Either[BlockError.NotFound, Block.Full]] =
       cardanoDbSyncClient.getFullBlock(blockNo)
-    }
 
     def getLatestBlock: F[Either[BlockError.NoneAvailable.type, Block.Canonical]] =
       cardanoDbSyncClient.getLatestBlock

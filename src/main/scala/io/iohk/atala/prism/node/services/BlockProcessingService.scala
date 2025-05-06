@@ -1,25 +1,36 @@
 package io.iohk.atala.prism.node.services
 
-import java.time.Instant
 import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
-import io.iohk.atala.prism.node.models.TimestampInfo
-import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPublicKey}
-import io.iohk.atala.prism.node.models.{AtalaOperationId, Ledger, TransactionId}
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpECDSA
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpPublicKey
 import io.iohk.atala.prism.node.metrics.OperationsCounters
+import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.models.AtalaOperationStatus
+import io.iohk.atala.prism.node.models.DidSuffix
+import io.iohk.atala.prism.node.models.Ledger
+import io.iohk.atala.prism.node.models.TimestampInfo
+import io.iohk.atala.prism.node.models.TransactionId
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.repositories.daos.AtalaOperationsDAO
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_models
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import org.slf4j.LoggerFactory
 
+import java.time.Instant
 import scala.util.chaining._
 import scala.util.control.NonFatal
 
+case class BlockProcessingInfo(
+    block: node_models.AtalaBlock,
+    transactionId: TransactionId,
+    ledger: Ledger,
+    blockTimestamp: Instant,
+    blockIndex: Int
+)
 // This service syncs Node state with the underlying ledger
 trait BlockProcessingService {
 
@@ -32,11 +43,184 @@ trait BlockProcessingService {
       blockTimestamp: Instant,
       blockIndex: Int
   ): ConnectionIO[Boolean]
+
+  // Process a batch of blocks in a single transaction
+  def processBlockBatch(
+      blocks: List[BlockProcessingInfo]
+  ): ConnectionIO[Boolean]
 }
 
 class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) extends BlockProcessingService {
   private val logger = LoggerFactory.getLogger(getClass)
 
+  override def processBlockBatch(
+      blocks: List[BlockProcessingInfo]
+  ): ConnectionIO[Boolean] = {
+    val methodName = "processBlockBatch"
+    val (allInvalid, allValid) = blocks
+      .flatMap { blockInfo =>
+        val operations = blockInfo.block.operations.toList
+        val operationsWithSeqNumbers = operations.zipWithIndex
+        operationsWithSeqNumbers.map { case (signedOperation, index) =>
+          parseOperation(
+            signedOperation,
+            LedgerData(
+              blockInfo.transactionId,
+              blockInfo.ledger,
+              TimestampInfo(blockInfo.blockTimestamp.toEpochMilli, blockInfo.blockIndex, index)
+            )
+          ) match {
+            case Left(err) => Left((blockInfo, signedOperation, err))
+            case Right(parsed) => Right((blockInfo, signedOperation, parsed))
+          }
+        }
+      }
+      .partitionMap(identity)
+
+    val seenDidKeys = scala.collection.mutable.HashSet[(DidSuffix, String)]()
+    val seenDidServices = scala.collection.mutable.HashSet[(DidSuffix, String)]()
+
+    val filteredAllValid: List[(BlockProcessingInfo, SignedAtalaOperation, Operation)] =
+      allValid.flatMap {
+        case (blockInfo, protoOp, op @ CreateDIDOperation(_, keys, services, _, _, _)) =>
+          val newKeys = keys.filter { key =>
+            val tuple = (key.didSuffix, key.keyId)
+            if (seenDidKeys.contains(tuple)) false
+            else {
+              seenDidKeys += tuple
+              true
+            }
+          }
+          val newServices = services.filter { service =>
+            val tuple = (service.didSuffix, service.id)
+            if (seenDidServices.contains(tuple)) false
+            else {
+              seenDidServices += tuple
+              true
+            }
+          }
+          if (newKeys.nonEmpty)
+            Some((blockInfo, protoOp, op.copy(keys = newKeys, services = newServices)))
+          else None
+
+        case (blockInfo, protoOp, op @ UpdateDIDOperation(didSuffix, actions, _, _, _)) =>
+          val newActions = actions.filter {
+            case AddKeyAction(key) =>
+              val tuple = (key.didSuffix, key.keyId)
+              if (seenDidKeys.contains(tuple)) false
+              else {
+                seenDidKeys += tuple
+                true
+              }
+            case AddServiceAction(service) =>
+              val tuple = (service.didSuffix, service.id)
+              if (seenDidServices.contains(tuple)) false
+              else {
+                seenDidServices += tuple
+                true
+              }
+            case _ => true
+          }
+          if (newActions.nonEmpty)
+            Some((blockInfo, protoOp, op.copy(actions = newActions)))
+          else None
+
+        case other => Some(other)
+      }
+    // // FOR DEBUGGING Only
+    // val allDidKeyTuples: List[(DidSuffix, String, String)] =
+    //   allValid.flatMap {
+    //     case (_, _, CreateDIDOperation(_, keys, services, _, _, _)) =>
+    //       keys.map(key => (key.didSuffix, key.keyId, "CreateDIDOperation")) ++
+    //         services.map(service => (service.didSuffix, service.id, "CreateDIDOperation.AddServiceAction"))
+    //     case (_, _, UpdateDIDOperation(_, actions, _, _, _)) =>
+    //       actions.collect {
+    //         case AddKeyAction(key) =>
+    //           (key.didSuffix, key.keyId, "UpdateDIDOperation.AddKeyAction")
+    //         case AddServiceAction(service) =>
+    //           (service.didSuffix, service.id, "UpdateDIDOperation.AddServiceAction")
+    //       }
+    //     case (_, _, DeactivateDIDOperation(didSuffix, _, _, _)) =>
+    //       List((didSuffix, "", "DeactivateDIDOperation"))
+    //     case _ => Nil
+    //   }
+    // println("****************************************************************************************************")
+    // println(s"allDidKeyTuples: ${allDidKeyTuples.mkString("\n")}")
+    // println("****************************************************************************************************")
+
+    for {
+      // Create a single savepoint for all blocks
+      savepoint <- connection.setSavepoint
+
+      // Process all Invalid operations in a batch
+      _ <- {
+        if (allInvalid.isEmpty) connection.unit
+        else {
+          val errMsg =
+            s"""
+                   | Found invalid operations in txId: ${allInvalid
+                .map(
+                  _._1.transactionId
+                )
+                .mkString(",")}, ledger: ${allInvalid.map(_._1.ledger).mkString(",")}
+                   | Operations:
+                   |    ${allInvalid
+                .map { case (_, op, err) => s"${err.render};\n\t${op.toProtoString.split("\n").mkString("\t\n")}" }
+                .mkString(";\n\n\t")}
+                   |""".stripMargin
+
+          logger.warn(errMsg)
+
+          AtalaOperationsDAO
+            .updateAtalaOperationStatusBatch(
+              allInvalid.map { case (_, op, _) => AtalaOperationId.of(op) },
+              AtalaOperationStatus.REJECTED
+            )
+        }
+      }
+
+      // Process all valid operations in a batch
+      opResults <- filteredAllValid.traverse { case (_, protoOperation, parsedOperation) =>
+        val atalaOperationId = AtalaOperationId.of(protoOperation)
+        for {
+          atalaOperationInfo <- AtalaOperationsDAO.getAtalaOperationInfo(atalaOperationId)
+          result <- processOperation(parsedOperation, protoOperation, atalaOperationId)
+          _ <- result match {
+            case Right(_) =>
+              logRequestWithContext(
+                methodName,
+                s"Operation applied:\n${parsedOperation.digest}",
+                atalaOperationId.toString,
+                protoOperation
+              )
+              OperationsCounters.countOperationApplied(protoOperation)
+              connection.unit
+            case Left(err) =>
+              logger.warn(
+                s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
+              )
+              OperationsCounters.countOperationRejected(protoOperation, err)
+              logRequestWithContext(
+                methodName,
+                s"Operation was not applied:\n${err.toString}",
+                atalaOperationId.toString,
+                protoOperation
+              )
+              if (atalaOperationInfo.exists(_.operationStatus != AtalaOperationStatus.APPLIED)) {
+                AtalaOperationsDAO.updateAtalaOperationStatus(
+                  atalaOperationId,
+                  AtalaOperationStatus.REJECTED,
+                  err.toString
+                )
+              } else connection.unit
+          }
+        } yield (atalaOperationId, result)
+      }
+
+      // If everything succeeded, release the savepoint
+      _ <- connection.releaseSavepoint(savepoint)
+    } yield opResults.exists(_._2.isRight)
+  }
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
   override def processBlock(
@@ -49,7 +233,6 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
     val methodName = "processBlock"
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
-
     final case class ParsedOperations(
         valid: List[(SignedAtalaOperation, Operation)] = List.empty,
         invalid: List[(SignedAtalaOperation, ValidationError)] = List.empty
@@ -181,6 +364,7 @@ class BlockProcessingServiceImpl(applyOperationConfig: ApplyOperationConfig) ext
       _ <- EitherT.fromEither[ConnectionIO](
         verifySignature(key, protoOperation)
       )
+
       // Update Node's state
       _ <- operation.applyState(applyOperationConfig)
       // Set operation status to APPLIED

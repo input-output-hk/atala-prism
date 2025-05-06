@@ -32,7 +32,7 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
   private val LONG_TIMEOUT = Timeout(1.minute)
   private val RETRY_TIMEOUT = 2.minutes
   private val RETRY_SLEEP = 10.seconds
-
+  private val initialBulkSyncSize = 5000
   "CardanoLedgerService" should {
     "notify on published PRISM transactions" in {
       assume(
@@ -66,12 +66,14 @@ class CardanoLedgerServiceIntegrationSpec extends AtalaWithPostgresSpec {
         clientConfig.walletPassphrase,
         paymentAddress,
         blockNumberSyncStart = 0,
+        initialBulkSyncSize,
         // Do not wait on blocks becoming confirmed
         blockConfirmationsToWait = 0,
         cardanoClient,
         keyValueService,
         notificationHandler.asCardanoBlockHandler,
-        notificationHandler.asAtalaObjectHandler
+        notificationHandler.asAtalaObjectHandler,
+        notificationHandler.asAtalaObjectBulkHandler
       )
 
       // Avoid syncing pre-existing blocks

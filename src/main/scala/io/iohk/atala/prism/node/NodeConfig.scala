@@ -5,9 +5,9 @@ import com.typesafe.config.Config
 import io.iohk.atala.prism.node.cardano.CardanoClient
 import io.iohk.atala.prism.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.atala.prism.node.cardano.wallet.CardanoWalletApiClient
+import io.iohk.atala.prism.node.repositories.TransactorFactory
 import io.iohk.atala.prism.node.services.CardanoLedgerService
 import io.iohk.atala.prism.node.services.CardanoLedgerService.CardanoNetwork
-import io.iohk.atala.prism.node.repositories.TransactorFactory
 import sttp.model.Header
 
 import scala.util.Try
@@ -21,6 +21,7 @@ object NodeConfig {
     val walletPassphrase = config.getString("walletPassphrase")
     val paymentAddress = config.getString("paymentAddress")
     val blockNumberSyncStart = config.getInt("blockNumberSyncStart")
+    val initialBulkSyncSize = config.getInt("initialBulkSyncSize")
     val blockConfirmationsToWait = config.getInt("blockConfirmationsToWait")
     val dbSyncConfig = cardanoDbSyncConfig(config.getConfig("dbSync"))
     val walletConfig = cardanoWalletConfig(config.getConfig("wallet"))
@@ -30,6 +31,7 @@ object NodeConfig {
       walletPassphrase,
       paymentAddress,
       blockNumberSyncStart,
+      initialBulkSyncSize,
       blockConfirmationsToWait,
       CardanoClient.Config(dbSyncConfig, walletConfig)
     )

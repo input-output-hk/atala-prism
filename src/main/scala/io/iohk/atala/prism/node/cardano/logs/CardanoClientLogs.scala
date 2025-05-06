@@ -28,6 +28,17 @@ private[cardano] final class CardanoClientLogs[
         )
         .onError(errorCause"Encountered an error while getting full block" (_))
 
+  override def getAllPrismIndexBlocksWithTransactions(): Mid[F, Either[BlockError.NotFound, List[Block.Full]]] =
+    in =>
+      info"getting all prism index blocks with transactions" *> in
+        .flatTap(
+          _.fold(
+            err => error"Encountered an error while getting all prism index blocks with transactions: $err",
+            blocks => info"getting all prism index blocks with headers ${blocks.map(_.header)}  - successfully done"
+          )
+        )
+        .onError(errorCause"Encountered an error while getting all prism index blocks with transactions" (_))
+
   override def getLatestBlock: Mid[F, Either[BlockError.NoneAvailable.type, Block.Canonical]] =
     in =>
       info"getting latest block" *> in

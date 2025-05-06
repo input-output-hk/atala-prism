@@ -3,11 +3,13 @@ package io.iohk.atala.prism.node.repositories.daos
 import cats.data.NonEmptyList
 import cats.syntax.functor._
 import doobie.Fragment
+import doobie.Fragments.in
 import doobie.free.connection
-import doobie.free.connection.{ConnectionIO, unit}
+import doobie.free.connection.ConnectionIO
+import doobie.free.connection.unit
 import doobie.implicits._
 import doobie.implicits.legacy.instant._
-import doobie.util.fragments.in
+import doobie.util.update.Update
 import io.iohk.atala.prism.node.models._
 
 import java.time.Instant
@@ -23,6 +25,33 @@ object AtalaObjectsDAO {
       objectId: AtalaObjectId,
       transactionInfo: TransactionInfo
   )
+  case class AtalaObjectCreateDataWithReceivedAt(
+      objectId: AtalaObjectId,
+      byteContent: Array[Byte],
+      status: AtalaObjectStatus
+  )
+
+  def insertMany(objects: List[AtalaObjectCreateData]): ConnectionIO[Int] = {
+    Update[(AtalaObjectId, Array[Byte], AtalaObjectStatus, Instant)](
+      """
+      INSERT INTO atala_objects (atala_object_id, object_content, atala_object_status, received_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (atala_object_id) DO NOTHING
+      """
+    ).updateMany(objects.map(d => (d.objectId, d.byteContent, d.status, Instant.now())))
+  }
+
+  def setManyTransactionInfo(
+      data: List[(AtalaObjectId, Ledger, Int, Int, Instant, TransactionId)]
+  ): ConnectionIO[Int] = {
+    Update[(AtalaObjectId, Ledger, Int, Int, Instant, TransactionId)](
+      """
+      INSERT INTO atala_object_txs 
+      (atala_object_id, ledger, block_number, block_index, block_timestamp, transaction_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+      """
+    ).updateMany(data)
+  }
 
   def insert(data: AtalaObjectCreateData): ConnectionIO[Int] = {
     sql"""
@@ -99,6 +128,23 @@ object AtalaObjectsDAO {
       .query[AtalaObjectInfo]
       .option
   }
+  // ??? Since we are syncing for first time this should be in processed status
+  def getProcessedObjectInfos: ConnectionIO[List[AtalaObjectInfo]] = {
+    sql"""
+         |SELECT obj.atala_object_id, obj.object_content, obj.atala_object_status,
+         |       tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+         |FROM
+         |(
+         |  SELECT *
+         |  FROM atala_objects AS obj
+         |  WHERE atala_object_status = 'PROCESSED'
+         |) as obj
+         |  LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
+         |ORDER BY tx.block_number ASC, tx.block_index ASC;
+       """.stripMargin
+      .query[AtalaObjectInfo]
+      .to[List]
+  }
 
   def getNotPublishedObjectInfos: ConnectionIO[List[AtalaObjectInfo]] = {
     sql"""
@@ -162,6 +208,23 @@ object AtalaObjectsDAO {
         fr"SET atala_object_status = $newStatus" ++
         fr"WHERE" ++ in(fr"atala_object_id", objectIdsNonEmpty)
       fragment.update.run.void
+    }
+  }
+
+  def getAtalaObjectsInfo(objectIds: List[AtalaObjectId]): ConnectionIO[List[AtalaObjectInfo]] = {
+    NonEmptyList.fromList(objectIds).fold(connection.pure(List.empty[AtalaObjectInfo])) { objectIdsNonEmpty =>
+      val q = fr"""
+        SELECT obj.atala_object_id, obj.object_content, obj.atala_object_status,
+               tx.transaction_id, tx.ledger, tx.block_number, tx.block_timestamp, tx.block_index
+        FROM atala_objects AS obj
+          LEFT OUTER JOIN atala_object_txs AS tx ON tx.atala_object_id = obj.atala_object_id
+        WHERE """ ++ in(
+        fr"obj.atala_object_id",
+        objectIdsNonEmpty
+      ) ++ fr" ORDER BY  tx.block_number ASC, tx.block_index ASC"
+
+      q.query[AtalaObjectInfo]
+        .to[List]
     }
   }
 }

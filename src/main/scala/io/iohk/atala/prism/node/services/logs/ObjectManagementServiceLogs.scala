@@ -32,6 +32,19 @@ private[services] class ObjectManagementServiceLogs[
         }
         .onError(errorCause"Encountered an error while saving object" (_))
 
+  def saveObjects(
+      notifications: List[AtalaObjectNotification]
+  ): Mid[F, Either[SaveObjectError, Boolean]] =
+    in =>
+      info"saving objects included in transactions ${notifications.map(_.transaction)}" *> in
+        .flatTap {
+          _.fold(
+            err => error"saving objects - failed cause: $err",
+            res => info"saving objects - successfully done, result: $res"
+          )
+        }
+        .onError(errorCause"Encountered an error while saving objects" (_))
+
   def scheduleAtalaOperations(
       ops: SignedAtalaOperation*
   ): Mid[F, List[Either[errors.NodeError, AtalaOperationId]]] =
