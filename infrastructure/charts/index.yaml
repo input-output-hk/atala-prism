@@ -2,8 +2,18 @@ apiVersion: v1
 entries:
   prism-node:
     - apiVersion: v2
+      appVersion: 2.6.0
+      created: "2025-05-06T12:52:41.872614903Z"
+      description: A Helm chart for deploying prism-node
+      digest: dbe377ad63c88a627c26a9a860829bd98e3c57426977dd2ac9f00ecfb389b76d
+      name: prism-node
+      type: application
+      urls:
+        - https://raw.githubusercontent.com/input-output-hk/atala-prism/main/infrastructure/charts/prism-node-2.6.0.tgz
+      version: 2.6.0
+    - apiVersion: v2
       appVersion: 2.5.0
-      created: "2024-07-04T03:29:48.6134497Z"
+      created: "2025-05-06T12:52:41.872167254Z"
       description: A Helm chart for deploying prism-node
       digest: 93c614cf58e58caa78c4621f539131c6840675e837a9d39b7d6d60b9097275c7
       name: prism-node
@@ -13,7 +23,7 @@ entries:
       version: 2.5.0
     - apiVersion: v2
       appVersion: 2.4.1
-      created: "2024-07-04T03:29:48.613032016Z"
+      created: "2025-05-06T12:52:41.871739463Z"
       description: A Helm chart for deploying prism-node
       digest: 974292ded56f0882b01839780974d2b742572b1b74e01ac897f1b2fa0339619a
       name: prism-node
@@ -23,7 +33,7 @@ entries:
       version: 2.4.1
     - apiVersion: v2
       appVersion: 2.4.0
-      created: "2024-07-04T03:29:48.611979367Z"
+      created: "2025-05-06T12:52:41.870896782Z"
       description: A Helm chart for deploying prism-node
       digest: 692bef9312fbdfcf8dd885c06d69bfa0ba5fc201086c5af26ddd2b932c1934c0
       name: prism-node
@@ -31,4 +41,4 @@ entries:
       urls:
         - https://raw.githubusercontent.com/input-output-hk/atala-prism/main/infrastructure/charts/prism-node-0.1.0.tgz
       version: 0.1.0
-generated: "2024-07-04T03:29:48.610555599Z"
+generated: "2025-05-06T12:52:41.870132382Z"

@@ -1,3 +1,17 @@
+# [2.6.0](https://github.com/input-output-hk/atala-prism/compare/v2.5.0...v2.6.0) (2025-05-06)
+
+
+### Bug Fixes
+
+* add validations to TimestampInfo ([#871](https://github.com/input-output-hk/atala-prism/issues/871)) ([e7850e6](https://github.com/input-output-hk/atala-prism/commit/e7850e6d17f8d61a445f6d9390a18c54837685a5))
+* remove CORS ([#869](https://github.com/input-output-hk/atala-prism/issues/869)) ([a2f55b5](https://github.com/input-output-hk/atala-prism/commit/a2f55b599c10433be4309a051ea41df3a83da61a))
+
+
+### Features
+
+* Node  syncing operation optimisation for the initial bootstrap with bulk sync atala operations ([#879](https://github.com/input-output-hk/atala-prism/issues/879)) ([21f52e7](https://github.com/input-output-hk/atala-prism/commit/21f52e7d377a0cbee17b99a098c4e130205005e3))
+* postgres metrics ([#868](https://github.com/input-output-hk/atala-prism/issues/868)) ([8a70e64](https://github.com/input-output-hk/atala-prism/commit/8a70e64d95177d8041c9aaa20b11774c8261cabb))
+
 # [2.5.0](https://github.com/input-output-hk/atala-prism/compare/v2.4.1...v2.5.0) (2024-07-04)
 
 
