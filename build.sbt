@@ -163,7 +163,6 @@ lazy val root =
       ),
       scalacOptions += "-Ymacro-annotations",
       javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-      githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
       addCompilerPlugin(
         "org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full
       ),
