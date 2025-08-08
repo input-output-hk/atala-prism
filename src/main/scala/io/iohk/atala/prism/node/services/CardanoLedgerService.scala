@@ -57,6 +57,8 @@ import scala.concurrent.duration._
   *   callback on every new confirmed Cardano block.
   * @param onAtalaObject
   *   callback on every AtalaObject found in confirmed transactions.
+  * @param scheduleSyncPeriod
+  *   delay which the ledger will be polled if no blocks are found.
   */
 class CardanoLedgerService[F[_]] private[services] (
     network: CardanoNetwork,
@@ -70,7 +72,8 @@ class CardanoLedgerService[F[_]] private[services] (
     keyValueService: KeyValueService[F],
     onCardanoBlock: CardanoBlockHandler[F],
     onAtalaObject: AtalaObjectNotificationHandler[F],
-    onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F]
+    onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
+    scheduleSyncPeriod: FiniteDuration
 )(implicit
     timer: Temporal[F],
     liftToFuture: Lift[F, Future]
@@ -148,7 +151,7 @@ class CardanoLedgerService[F[_]] private[services] (
               // There blocks to sync, don't wait to sync faster
               scheduleSync(0.seconds)
             } else {
-              scheduleSync(20.seconds)
+              scheduleSync(scheduleSyncPeriod)
             }
           }
     )
@@ -379,6 +382,7 @@ object CardanoLedgerService {
       onCardanoBlock: CardanoBlockHandler[F],
       onAtalaObject: AtalaObjectNotificationHandler[F],
       onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
+      scheduleSyncPeriod: FiniteDuration,
       logs: Logs[R, F]
   ): R[UnderlyingLedger[F]] =
     for {
@@ -400,7 +404,8 @@ object CardanoLedgerService {
         keyValueService,
         onCardanoBlock,
         onAtalaObject,
-        onAtalaObjectBulk
+        onAtalaObjectBulk,
+        scheduleSyncPeriod
       )
     }
 
@@ -411,6 +416,7 @@ object CardanoLedgerService {
       onCardanoBlock: CardanoBlockHandler[F],
       onAtalaObject: AtalaObjectNotificationHandler[F],
       onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
+      scheduleSyncPeriod: FiniteDuration,
       logs: Logs[R, F]
   ): Resource[R, UnderlyingLedger[F]] = {
     val walletId = WalletId
@@ -437,6 +443,7 @@ object CardanoLedgerService {
         onCardanoBlock,
         onAtalaObject,
         onAtalaObjectBulk,
+        scheduleSyncPeriod,
         logs
       )
     )
@@ -449,6 +456,7 @@ object CardanoLedgerService {
       onCardanoBlock: CardanoBlockHandler[F],
       onAtalaObject: AtalaObjectNotificationHandler[F],
       onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[F],
+      scheduleSyncPeriod: FiniteDuration,
       logs: Logs[R, F]
   ): UnderlyingLedger[F] = {
     val walletId = WalletId
@@ -474,6 +482,7 @@ object CardanoLedgerService {
       onCardanoBlock,
       onAtalaObject,
       onAtalaObjectBulk,
+      scheduleSyncPeriod,
       logs
     ).extract
   }

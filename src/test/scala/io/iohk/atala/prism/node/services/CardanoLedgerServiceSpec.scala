@@ -28,6 +28,7 @@ import io.iohk.atala.prism.node.utils.IOUtils._
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._
 import tofu.logging.Logs
+import scala.concurrent.duration._
 class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val network = CardanoNetwork.Testnet
@@ -49,6 +50,7 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
   )
   private lazy val cardanoBlockRepository =
     CardanoBlockRepository.unsafe(dbLiftedToTraceIdIO, logs)
+  private val scheduleSyncPeriod = 1.seconds
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -424,7 +426,8 @@ class CardanoLedgerServiceSpec extends AtalaWithPostgresSpec {
       keyValueService,
       noOpBlockHandler,
       onAtalaObject,
-      onAtalaObjectBulk
+      onAtalaObjectBulk,
+      scheduleSyncPeriod
     )
   }
 
