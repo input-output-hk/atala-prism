@@ -1,3 +1,10 @@
+## [2.6.1](https://github.com/input-output-hk/atala-prism/compare/v2.6.0...v2.6.1) (2025-08-11)
+
+
+### Bug Fixes
+
+* configurable cardano sync delay ([#881](https://github.com/input-output-hk/atala-prism/issues/881)) ([9e3a595](https://github.com/input-output-hk/atala-prism/commit/9e3a5954b0d627da9bd0cd695e35a9641e5e2f33))
+
 # [2.6.0](https://github.com/input-output-hk/atala-prism/compare/v2.5.0...v2.6.0) (2025-05-06)
 
 
