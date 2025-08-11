@@ -91,6 +91,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onCardanoBlock = onCardanoBlockOp(protocolVersionRepository)
       onAtalaObject = onAtalaObjectOp(objectManagementService)
       onAtalaObjectBulk = onAtalaObjectBulkOp(objectManagementService)
+      scheduleSyncPeriod = FiniteDuration(
+        globalConfig.getDuration("scheduleSyncPeriod").toNanos,
+        TimeUnit.NANOSECONDS
+      )
       keyValueService <- KeyValueService.resource(keyValuesRepository, logs)
       ledger <- createLedger(
         globalConfig,
@@ -98,6 +102,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         onCardanoBlock,
         onAtalaObject,
         onAtalaObjectBulk,
+        scheduleSyncPeriod,
         logs
       )
       didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
@@ -154,6 +159,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onCardanoBlock: CardanoBlockHandler[IOWithTraceIdContext],
       onAtalaObject: AtalaObjectNotification => IOWithTraceIdContext[Unit],
       onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext],
+      scheduleSyncPeriod: FiniteDuration,
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] = {
     val config = NodeConfig.cardanoConfig(globalConfig.getConfig("cardano"))
@@ -169,6 +175,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         onCardanoBlock,
         onAtalaObject,
         onAtalaObjectBulk,
+        scheduleSyncPeriod,
         logs
       )
     }
@@ -215,6 +222,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onCardanoBlock: CardanoBlockHandler[IOWithTraceIdContext],
       onAtalaObject: AtalaObjectNotification => IOWithTraceIdContext[Unit],
       onAtalaObjectBulk: AtalaObjectBulkNotificationHandler[IOWithTraceIdContext],
+      scheduleSyncPeriod: FiniteDuration,
       logs: Logs[IO, IOWithTraceIdContext]
   ): Resource[IO, UnderlyingLedger[IOWithTraceIdContext]] =
     config.getString("ledger") match {
@@ -225,6 +233,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
           onCardanoBlock,
           onAtalaObject,
           onAtalaObjectBulk,
+          scheduleSyncPeriod,
           logs
         )
       case "in-memory" =>
