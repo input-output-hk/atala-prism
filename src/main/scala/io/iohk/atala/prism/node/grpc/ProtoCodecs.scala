@@ -111,6 +111,7 @@ object ProtoCodecs {
       case AuthenticationKey => node_models.KeyUsage.AUTHENTICATION_KEY
       case CapabilityInvocationKey => node_models.KeyUsage.CAPABILITY_INVOCATION_KEY
       case CapabilityDelegationKey => node_models.KeyUsage.CAPABILITY_DELEGATION_KEY
+      case VDRSigningKey => node_models.KeyUsage.VDR_SIGNING_KEY
     }
   }
 

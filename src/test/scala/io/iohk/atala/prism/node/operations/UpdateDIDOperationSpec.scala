@@ -28,6 +28,7 @@ object UpdateDIDOperationSpec {
   val issuingKeys: SecpPair = CreateDIDOperationSpec.issuingKeys
 
   val newMasterKeys: SecpPair = CryptoTestUtils.generateKeyPair()
+  val vdrSigningKeys: SecpPair = CryptoTestUtils.generateKeyPair()
 
   lazy val createDidOperation =
     CreateDIDOperation
@@ -64,6 +65,26 @@ object UpdateDIDOperationSpec {
       )
     )
   )
+
+  val exampleAddVdrKeyAction = node_models.UpdateDIDAction(
+    node_models.UpdateDIDAction.Action.AddKey(
+      node_models.AddKeyAction(
+        key = Some(
+          node_models.PublicKey(
+            id = "vdr",
+            usage = node_models.KeyUsage.VDR_SIGNING_KEY,
+            keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
+              node_models.CompressedECKeyData(
+                curve = vdrSigningKeys.publicKey.curveName,
+                data = ByteString.copyFrom(vdrSigningKeys.publicKey.compressed)
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
 
   val exampleRemoveKeyAction = node_models.UpdateDIDAction(
     node_models.UpdateDIDAction.Action.RemoveKey(
@@ -138,6 +159,18 @@ object UpdateDIDOperationSpec {
         id = createDidOperation.id.getValue,
         actions = Seq(
           exampleAddKeyAction
+        )
+      )
+    )
+  )
+
+  val exampleAddVdrKeyOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(createDidOperation.digest.bytes.toArray),
+        id = createDidOperation.id.getValue,
+        actions = Seq(
+          exampleAddVdrKeyAction
         )
       )
     )
@@ -258,6 +291,16 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .toOption
         .value
       result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
+    }
+
+    "parse UpdateDID with VDR signing key addition" in {
+      val signed = BlockProcessingServiceSpec.signOperation(
+        exampleAddVdrKeyOperation,
+        signingKeyId,
+        signingKey
+      )
+
+      UpdateDIDOperation.parse(signed, dummyLedgerData) mustBe a[Right[_, _]]
     }
 
     "return error when id is not provided / empty" in {
@@ -570,6 +613,40 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
       didInfo.lastOperation mustBe Sha256Hash.compute(
         UpdateDIDOperationSpec.exampleAddAndRemoveOperation.toByteArray
       )
+    }
+
+    "persist VDR signing key addition" in {
+      createDidOperation.applyState(dummyApplyOperationConfig).transact(database).value.unsafeRunSync()
+
+      val parsedOperation = UpdateDIDOperation
+        .parse(
+          BlockProcessingServiceSpec.signOperation(
+            exampleAddVdrKeyOperation,
+            signingKeyId,
+            signingKey
+          ),
+          dummyLedgerData
+        )
+        .toOption
+        .value
+
+      parsedOperation
+        .applyState(dummyApplyOperationConfig)
+        .transact(database)
+        .value
+        .unsafeRunSync()
+        .toOption
+        .value
+
+      val vdrKey = PublicKeysDAO
+        .find(createDidOperation.id, "vdr")
+        .transact(database)
+        .unsafeRunSync()
+        .value
+
+      vdrKey.keyUsage mustBe KeyUsage.VDRSigningKey
+      vdrKey.key.curveName mustBe vdrSigningKeys.publicKey.curveName
+      vdrKey.revokedOn mustBe None
     }
 
     "return error when DID is missing in the DB" in {

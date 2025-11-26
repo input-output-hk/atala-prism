@@ -53,7 +53,10 @@ package object models {
     case object CapabilityDelegationKey extends KeyUsage {
       override def toProto: node_models.KeyUsage = node_models.KeyUsage.CAPABILITY_DELEGATION_KEY
       override def derivationIndex: Int = 6
-
+    }
+    case object VDRSigningKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.VDR_SIGNING_KEY
+      override def derivationIndex: Int = 7
     }
 
   }
