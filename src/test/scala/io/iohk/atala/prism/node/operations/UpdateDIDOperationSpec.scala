@@ -85,7 +85,6 @@ object UpdateDIDOperationSpec {
     )
   )
 
-
   val exampleRemoveKeyAction = node_models.UpdateDIDAction(
     node_models.UpdateDIDAction.Action.RemoveKey(
       node_models.RemoveKeyAction(

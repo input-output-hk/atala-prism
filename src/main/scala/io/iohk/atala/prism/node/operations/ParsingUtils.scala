@@ -417,9 +417,10 @@ object ParsingUtils {
         MissingValue(key.path / "keyData")
       )
       publicKey <- parseKeyData(key)
-      curvePath = if (key(_.keyData.isEcKeyData))
-        key.child(_.getEcKeyData, "ecKeyData").path / "curve"
-      else key.child(_.getCompressedEcKeyData, "compressedEcKeyData").path / "curve"
+      curvePath =
+        if (key(_.keyData.isEcKeyData))
+          key.child(_.getEcKeyData, "ecKeyData").path / "curve"
+        else key.child(_.getCompressedEcKeyData, "compressedEcKeyData").path / "curve"
       _ <- Either.cond(
         !(keyUsage == KeyUsage.VDRSigningKey) || publicKey.curveName == ProtocolConstants.secpCurveName,
         (),
