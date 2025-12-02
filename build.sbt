@@ -219,11 +219,12 @@ lazy val root =
       resolvers += Resolver.jcenterRepo,
       resolvers += Resolver.mavenCentral,
       Docker / maintainer := "atala-coredid@iohk.io",
-      Docker / dockerUsername := Some("input-output-hk"),
-      Docker / dockerRepository := Some("ghcr.io"),
+      Docker / dockerUsername := Some("inputoutput"),
+      Docker / dockerRepository := Some("docker.io"),
       Docker / packageName := "prism-node",
       dockerExposedPorts := Seq(5432),
-      dockerBaseImage := "openjdk:11",
+      // openjdk:11 no longer published; switch to maintained Eclipse Temurin Java 11 image
+      dockerBaseImage := "eclipse-temurin:11-jre",
       libraryDependencies
         ++= Dependencies.circeDependencies
           ++ Dependencies.tofuDependencies
