@@ -107,4 +107,11 @@ Atala Prism integrates with:
   the [*Cardano Wallet Backend
   API*](https://cardano-foundation.github.io/cardano-wallet/api/edge/) simplifies
   submitting transactions to Cardano.
+
+## PRISM VDR storage support
+
+- The node implements the Cardano PRISM VDR driver spec (https://github.com/hyperledger-identus/prism-vdr-driver/blob/main/prism-vdr-specification.md) with dedicated storage operations: create/update/deactivate VDR entry, plus get/verify endpoints.
+- VDR entries carry opaque `StorageData` (raw bytes or IPFS CID) and are chained by `previous_event_hash`; deactivation is expressed as a new event with status `DEACTIVATED`.
+- VDR operations must be signed with an active `VDR_SIGNING_KEY` (secp256k1 only) on the target DID; the key is optional and does not replace the master key.
+- Nodes without the storage feature can ignore these operations at the API layer; ledger batching reuses the standard AtalaOperation flow.
 .
