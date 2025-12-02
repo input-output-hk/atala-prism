@@ -70,6 +70,41 @@ service NodeService {
      * Schedules a list of operations for further publication.
      */
     rpc ScheduleOperations(ScheduleOperationsRequest) returns (ScheduleOperationsResponse) {}
+
+    /**
+     * PUBLIC
+     *
+     * Creates a new VDR storage entry (expects a signed CreateStorageEntry operation).
+     */
+    rpc CreateVdrEntry(CreateVdrEntryRequest) returns (CreateVdrEntryResponse) {}
+
+    /**
+     * PUBLIC
+     *
+     * Updates an existing VDR storage entry (expects a signed UpdateStorageEntry operation).
+     */
+    rpc UpdateVdrEntry(UpdateVdrEntryRequest) returns (UpdateVdrEntryResponse) {}
+
+    /**
+     * PUBLIC
+     *
+     * Deactivates an existing VDR storage entry (expects a signed DeactivateStorageEntry operation).
+     */
+    rpc DeactivateVdrEntry(DeactivateVdrEntryRequest) returns (DeactivateVdrEntryResponse) {}
+
+    /**
+     * PUBLIC
+     *
+     * Retrieves a VDR storage entry by its event hash.
+     */
+    rpc GetVdrEntry(GetVdrEntryRequest) returns (GetVdrEntryResponse) {}
+
+    /**
+     * PUBLIC
+     *
+     * Verifies integrity of a VDR storage entry and its chain.
+     */
+    rpc VerifyVdrEntry(VerifyVdrEntryRequest) returns (VerifyVdrEntryResponse) {}
 }
 
 
@@ -178,6 +213,53 @@ message ScheduleOperationsResponse {
     repeated OperationOutput outputs = 1;
 }
 
+// VDR entry management
+message CreateVdrEntryRequest {
+    SignedAtalaOperation signed_operation = 1; // should wrap CreateStorageEntryOperation
+}
+message UpdateVdrEntryRequest {
+    SignedAtalaOperation signed_operation = 1; // should wrap UpdateStorageEntryOperation
+}
+message DeactivateVdrEntryRequest {
+    SignedAtalaOperation signed_operation = 1; // should wrap DeactivateStorageEntryOperation
+}
+
+message CreateVdrEntryResponse {
+    OperationOutput output = 1;
+}
+message UpdateVdrEntryResponse {
+    OperationOutput output = 1;
+}
+message DeactivateVdrEntryResponse {
+    OperationOutput output = 1;
+}
+
+message GetVdrEntryRequest {
+    bytes event_hash = 1;
+}
+
+message VdrEntry {
+    bytes event_hash = 1;
+    string did_suffix = 2;
+    StorageData data = 3;
+    bytes previous_event_hash = 4;
+    bool deactivated = 5;
+    bytes nonce = 6;
+}
+
+message GetVdrEntryResponse {
+    VdrEntry entry = 1;
+}
+
+message VerifyVdrEntryRequest {
+    bytes event_hash = 1;
+}
+
+message VerifyVdrEntryResponse {
+    bool valid = 1;
+    string reason = 2;
+}
+
 
 
 // Used to encode the responses of the operations issued in an AtalaBlock.
@@ -190,6 +272,9 @@ message OperationOutput {
         // Represents the response provided by ProtocolVersionUpdateOperation.
         ProtocolVersionUpdateOutput protocol_version_update_output = 7;
         DeactivateDIDOutput deactivate_did_output = 8;
+        CreateVdrEntryOutput create_vdr_entry_output = 9;
+        UpdateVdrEntryOutput update_vdr_entry_output = 10;
+        DeactivateVdrEntryOutput deactivate_vdr_entry_output = 11;
     }
     oneof operation_maybe {
         bytes operation_id = 5; // Operation identifier.
@@ -203,3 +288,10 @@ message CreateDIDOutput {
 message UpdateDIDOutput {}
 message ProtocolVersionUpdateOutput {}
 message DeactivateDIDOutput {}
+message CreateVdrEntryOutput {
+    bytes event_hash = 1;
+}
+message UpdateVdrEntryOutput {
+    bytes event_hash = 1;
+}
+message DeactivateVdrEntryOutput {}

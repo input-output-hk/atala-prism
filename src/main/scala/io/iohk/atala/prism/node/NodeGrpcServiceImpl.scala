@@ -229,6 +229,23 @@ class NodeGrpcServiceImpl(
       }
     )
   }
+
+  override def createVdrEntry(request: node_api.CreateVdrEntryRequest): Future[node_api.CreateVdrEntryResponse] =
+    Future.failed(Status.UNIMPLEMENTED.asRuntimeException())
+
+  override def updateVdrEntry(request: node_api.UpdateVdrEntryRequest): Future[node_api.UpdateVdrEntryResponse] =
+    Future.failed(Status.UNIMPLEMENTED.asRuntimeException())
+
+  override def deactivateVdrEntry(
+      request: node_api.DeactivateVdrEntryRequest
+  ): Future[node_api.DeactivateVdrEntryResponse] =
+    Future.failed(Status.UNIMPLEMENTED.asRuntimeException())
+
+  override def getVdrEntry(request: node_api.GetVdrEntryRequest): Future[node_api.GetVdrEntryResponse] =
+    Future.failed(Status.UNIMPLEMENTED.asRuntimeException())
+
+  override def verifyVdrEntry(request: node_api.VerifyVdrEntryRequest): Future[node_api.VerifyVdrEntryResponse] =
+    Future.failed(Status.UNIMPLEMENTED.asRuntimeException())
 }
 
 object NodeGrpcServiceImpl {
