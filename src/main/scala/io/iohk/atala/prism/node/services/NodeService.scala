@@ -8,16 +8,19 @@ import derevo.derive
 import derevo.tagless.applyK
 import io.iohk.atala.prism.node.identity.{CanonicalPrismDid, PrismDid}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
+import io.iohk.atala.prism.node.models.StorageData
 import io.iohk.atala.prism.node.models.AtalaOperationId
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models.nodeState.DIDDataState
-import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion}
+import io.iohk.atala.prism.node.models.{AtalaOperationInfo, ProtocolVersion, VdrEntryStatus}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
+import io.iohk.atala.prism.node.repositories.{VdrEntriesRepository, VdrEntry}
 import io.iohk.atala.prism.node.services.logs.NodeServiceLogging
 import io.iohk.atala.prism.node.services.models.{getOperationOutput, validateScheduleOperationsRequest}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.{DIDData, SignedAtalaOperation}
+import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.OperationOutput
 import tofu.higherKind.Mid
 import tofu.logging.derivation.loggable
@@ -65,11 +68,16 @@ trait NodeService[F[_]] {
   def getLastSyncedTimestamp: F[Instant]
 
   def getCurrentProtocolVersion: F[ProtocolVersion]
+
+  def getVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VdrEntry]]
+
+  def verifyVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VerifyVdrEntryResponse]]
 }
 
 private final class NodeServiceImpl[F[_]: MonadThrow](
     didDataRepository: DIDDataRepository[F],
-    objectManagement: ObjectManagementService[F]
+    objectManagement: ObjectManagementService[F],
+    vdrEntriesRepository: VdrEntriesRepository[F]
 ) extends NodeService[F] {
   override def getDidDocumentByDid(didStr: String): F[Either[GettingDidError, DidDocument]] =
     Try(PrismDid.canonicalFromString(didStr)).fold(
@@ -132,6 +140,72 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
   override def getLastSyncedTimestamp: F[Instant] = objectManagement.getLastSyncedTimestamp
 
   override def getCurrentProtocolVersion: F[ProtocolVersion] = objectManagement.getCurrentProtocolVersion
+
+  override def getVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VdrEntry]] =
+    Either
+      .catchNonFatal(Sha256Hash.fromBytes(eventHash.toByteArray))
+      .leftMap(err => NodeError.InvalidArgument(err.getMessage): NodeError)
+      .pure[F]
+      .flatMap {
+        case Left(err) => Applicative[F].pure(Left(err))
+        case Right(hash) =>
+          vdrEntriesRepository
+            .find(hash)
+            .map {
+              case Some(entry) => Right(toProtoVdrEntry(entry))
+              case None => Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
+            }
+      }
+
+  override def verifyVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VerifyVdrEntryResponse]] =
+    Either
+      .catchNonFatal(Sha256Hash.fromBytes(eventHash.toByteArray))
+      .leftMap(err => NodeError.InvalidArgument(err.getMessage): NodeError)
+      .pure[F]
+      .flatMap {
+        case Left(err) => Applicative[F].pure(Left(err))
+        case Right(hash) =>
+          verifyChain(hash, Set.empty).map { res =>
+            Right(
+              node_api
+                .VerifyVdrEntryResponse()
+                .withValid(res.isRight)
+                .withReason(res.left.getOrElse(""))
+            )
+          }
+      }
+
+  private def verifyChain(current: Sha256Hash, seen: Set[Sha256Hash]): F[Either[String, Unit]] = {
+    if (seen.contains(current)) Applicative[F].pure(Left("cycle detected in VDR entry chain"))
+    else {
+      vdrEntriesRepository.find(current).flatMap {
+        case None => Applicative[F].pure(Left(s"missing VDR entry ${current.hexEncoded}"))
+        case Some(entry) =>
+          entry.previousEventHash match {
+            case None => Applicative[F].pure(Right(()))
+            case Some(prev) => verifyChain(prev, seen + current)
+          }
+      }
+    }
+  }
+
+  private def toProtoStorageData(data: Option[StorageData]): node_models.StorageData = data match {
+    case Some(StorageData.Bytes(bytes)) => node_models.StorageData().withBytes(ByteString.copyFrom(bytes.toArray))
+    case Some(StorageData.IpfsCid(cid)) => node_models.StorageData().withIpfsCid(cid)
+    case None => node_models.StorageData()
+  }
+
+  private def toProtoVdrEntry(entry: VdrEntry): node_api.VdrEntry =
+    node_api
+      .VdrEntry()
+      .withEventHash(ByteString.copyFrom(entry.eventHash.bytes.toArray))
+      .withDidSuffix(entry.didSuffix.getValue)
+      .withPreviousEventHash(
+        entry.previousEventHash.map(h => ByteString.copyFrom(h.bytes.toArray)).getOrElse(ByteString.EMPTY)
+      )
+      .withDeactivated(entry.status == VdrEntryStatus.DEACTIVATED)
+      .withNonce(entry.nonce.map(ByteString.copyFrom).getOrElse(ByteString.EMPTY))
+      .withData(toProtoStorageData(entry.data))
 }
 
 object NodeService {
@@ -139,6 +213,7 @@ object NodeService {
   def make[I[_]: Functor, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
+      vdrEntriesRepository: VdrEntriesRepository[F],
       logs: Logs[I, F]
   ): I[NodeService[F]] = {
     for {
@@ -149,7 +224,8 @@ object NodeService {
       val mid: NodeService[Mid[F, *]] = logs
       mid attach new NodeServiceImpl[F](
         didDataRepository,
-        objectManagement
+        objectManagement,
+        vdrEntriesRepository
       )
     }
   }
@@ -157,19 +233,22 @@ object NodeService {
   def resource[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
+      vdrEntriesRepository: VdrEntriesRepository[F],
       logs: Logs[I, F]
   ): Resource[I, NodeService[F]] = Resource.eval(
-    make(didDataRepository, objectManagement, logs)
+    make(didDataRepository, objectManagement, vdrEntriesRepository, logs)
   )
 
   def unsafe[I[_]: Comonad, F[_]: MonadThrow](
       didDataRepository: DIDDataRepository[F],
       objectManagement: ObjectManagementService[F],
+      vdrEntriesRepository: VdrEntriesRepository[F],
       logs: Logs[I, F]
   ): NodeService[F] =
     make(
       didDataRepository,
       objectManagement,
+      vdrEntriesRepository,
       logs
     ).extract
 

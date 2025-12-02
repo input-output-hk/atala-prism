@@ -294,4 +294,6 @@ message CreateVdrEntryOutput {
 message UpdateVdrEntryOutput {
     bytes event_hash = 1;
 }
-message DeactivateVdrEntryOutput {}
+message DeactivateVdrEntryOutput {
+    bytes event_hash = 1;
+}

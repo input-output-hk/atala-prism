@@ -30,6 +30,7 @@ import kamon.Kamon
 import kamon.module.Module
 import org.slf4j.LoggerFactory
 import tofu.logging.Logs
+import io.iohk.atala.prism.node.repositories.VdrEntriesRepository
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -106,6 +107,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
         logs
       )
       didDataRepository <- DIDDataRepository.resource(liftedTransactor, logs)
+      vdrEntriesRepository <- VdrEntriesRepository.resource(liftedTransactor, logs)
       refreshAndSubmitPeriod = FiniteDuration(
         globalConfig.getDuration("refreshAndSubmitPeriod").toNanos,
         TimeUnit.NANOSECONDS
@@ -134,6 +136,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       nodeService <- NodeService.resource(
         didDataRepository,
         objectManagementService,
+        vdrEntriesRepository,
         logs
       )
       nodeGrpcService = new NodeGrpcServiceImpl(nodeService)
