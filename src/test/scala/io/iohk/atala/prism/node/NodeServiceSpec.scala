@@ -589,6 +589,95 @@ class NodeServiceSpec
       )
       verifyNoMoreInteractions(objectManagementService)
     }
+
+    "properly return the result of a VDR Create operation" in {
+      val didHash = Sha256Hash.compute("vdr-grpc".getBytes)
+      val vdrKeys = CryptoTestUtils.generateKeyPair()
+      val createOp = node_models
+        .AtalaOperation()
+        .withCreateStorageEntry(
+          node_models
+            .CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+        )
+      val signedCreate = BlockProcessingServiceSpec.signOperation(createOp, "vdr", vdrKeys.privateKey)
+      val opId = AtalaOperationId.of(signedCreate)
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(opId)))
+      ).when(objectManagementService)
+        .scheduleAtalaOperations(*)
+
+      val response = service.scheduleOperations(
+        node_api
+          .ScheduleOperationsRequest()
+          .withSignedOperations(Seq(signedCreate))
+      )
+
+      val expectedEventHash = Sha256Hash.compute(createOp.toByteArray)
+      response.outputs.size mustBe 1
+      response.outputs.head.getCreateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        expectedEventHash.bytes.toArray
+      )
+      response.outputs.head.operationMaybe.operationId.value mustEqual opId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
+
+      verify(objectManagementService).scheduleAtalaOperations(signedCreate)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "properly return the result of VDR Update and Deactivate operations" in {
+      val prevHash = Sha256Hash.compute("prev-grpc".getBytes)
+      val vdrKeys = CryptoTestUtils.generateKeyPair()
+
+      val updateOp = node_models
+        .AtalaOperation()
+        .withUpdateStorageEntry(
+          node_models
+            .UpdateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
+            .withData(node_models.StorageData().withIpfsCid("cid-grpc"))
+        )
+      val signedUpdate = BlockProcessingServiceSpec.signOperation(updateOp, "vdr", vdrKeys.privateKey)
+      val updateId = AtalaOperationId.of(signedUpdate)
+
+      val deactivateOp = node_models
+        .AtalaOperation()
+        .withDeactivateStorageEntry(
+          node_models
+            .DeactivateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
+        )
+      val signedDeactivate = BlockProcessingServiceSpec.signOperation(deactivateOp, "vdr", vdrKeys.privateKey)
+      val deactivateId = AtalaOperationId.of(signedDeactivate)
+
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(updateId), Right(deactivateId)))
+      ).when(objectManagementService)
+        .scheduleAtalaOperations(*)
+
+      val response = service.scheduleOperations(
+        node_api
+          .ScheduleOperationsRequest()
+          .withSignedOperations(Seq(signedUpdate, signedDeactivate))
+      )
+
+      response.outputs.size mustBe 2
+      response.outputs.head.getUpdateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(updateOp.toByteArray).bytes.toArray
+      )
+      response.outputs.head.operationMaybe.operationId.value mustEqual updateId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
+
+      response.outputs(1).getDeactivateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray
+      )
+      response.outputs(1).operationMaybe.operationId.value mustEqual deactivateId.toProtoByteString
+      response.outputs(1).operationMaybe.error mustBe None
+
+      verify(objectManagementService).scheduleAtalaOperations(signedUpdate, signedDeactivate)
+      verifyNoMoreInteractions(objectManagementService)
+    }
   }
 
   "NodeService VDR operations" should {
