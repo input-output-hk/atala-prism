@@ -254,23 +254,21 @@ lazy val root =
     )
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
 
-lazy val E2E = config("e2e") extend IntegrationTest
-
 lazy val e2e =
   project
     .in(file("e2e"))
-    .configs(E2E)
+    .configs(IntegrationTest)
     .dependsOn(root)
     .settings(
       name := "node-e2e",
       publish / skip := true,
-      inConfig(E2E)(Defaults.itSettings),
-      E2E / scalaSource := baseDirectory.value / "src" / "it" / "scala",
-      E2E / resourceDirectory := baseDirectory.value / "src" / "it" / "resources",
-      E2E / parallelExecution := false,
-      E2E / fork := true,
+      Defaults.itSettings,
+      IntegrationTest / scalaSource := baseDirectory.value / "src" / "it" / "scala",
+      IntegrationTest / resourceDirectory := baseDirectory.value / "src" / "it" / "resources",
+      IntegrationTest / parallelExecution := false,
+      IntegrationTest / fork := true,
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % versions.scalatest % E2E
+        "org.scalatest" %% "scalatest" % versions.scalatest % IntegrationTest
       )
     )
 

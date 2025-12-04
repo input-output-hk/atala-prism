@@ -33,4 +33,4 @@ sleep 10
 
 cd "$REPO_ROOT"
 echo "Running E2E tests..."
-sbt "e2e/test"
+sbt "e2e/it:test"
