@@ -21,6 +21,12 @@ The following services will be available:
 | **Blockfrost API**     | http://localhost:18082 |                           |
 | **PRISM Node gRPC**    | localhost:50053        |                           |
 
+Override the PRISM node image tag if needed (default: `2.6.1-SNAPSHOT`):
+
+```sh
+PRISM_NODE_VERSION=2.6.1-SNAPSHOT docker compose up -d
+```
+
 Stop the environment:
 
 ```sh
