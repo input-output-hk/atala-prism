@@ -271,6 +271,7 @@ lazy val e2e =
         "org.scalatest" %% "scalatest" % versions.scalatest % IntegrationTest
       )
     )
+    .settings(addCommandAlias("e2eTest", "e2e/it:test"))
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 

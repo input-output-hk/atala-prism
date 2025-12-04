@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.e2e
 
 import com.google.protobuf.ByteString
-import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
+import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPrivateKey, SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.protos.{common_models, node_api}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -43,21 +42,11 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   }
 
   "VDR gRPC flow" should {
-    "create, update, and deactivate a VDR resource" taggedAs E2ETestTag in {
+    "create a VDR resource" taggedAs E2ETestTag in {
       val master = generateKeyPair()
       val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
 
-      // 1) Create DID with VDR signing key
-      val createDidOp = buildCreateDid(master, vdr)
-      val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
-      val didSuffixHash = Sha256Hash.compute(createDidOp.toByteArray)
-
-      val didScheduleResp =
-        client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
-      val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
-      awaitApplied(didOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
-
-      // 2) Create VDR entry
       val createStorageOp = node_models
         .AtalaOperation()
         .withCreateStorageEntry(
@@ -75,7 +64,22 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
       val createEventHash = require(createVdrOutput.result.createVdrEntryOutput, "create VDR event hash").eventHash
       awaitApplied(createVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
-      // 3) Update VDR entry
+      val createdEntry = require(
+        client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
+        "created entry"
+      )
+      createdEntry.deactivated shouldBe false
+      createdEntry.data.flatMap(_.content.bytes) shouldBe Some(ByteString.copyFromUtf8("payload-1"))
+      createdEntry.nonce shouldBe ByteString.EMPTY
+    }
+
+    "update a VDR resource" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val (createEventHash, _) = createVdrEntry(didSuffixHash, vdr, "payload-1")
+
       val updateStorageOp = node_models
         .AtalaOperation()
         .withUpdateStorageEntry(
@@ -93,7 +97,23 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
       val updateEventHash = require(updateOutput.result.updateVdrEntryOutput, "update VDR event hash").eventHash
       awaitApplied(updateVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
-      // 4) Deactivate VDR entry
+      val updatedEntry = require(
+        client.getVdrEntry(node_api.GetVdrEntryRequest(updateEventHash)).entry,
+        "updated entry"
+      )
+      updatedEntry.deactivated shouldBe false
+      updatedEntry.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-2")
+      updatedEntry.previousEventHash shouldBe createEventHash
+    }
+
+    "deactivate a VDR resource" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val (createEventHash, _) = createVdrEntry(didSuffixHash, vdr, "payload-1")
+      val updateEventHash = updateVdrEntry(createEventHash, vdr, "cid-2")
+
       val deactivateStorageOp = node_models
         .AtalaOperation()
         .withDeactivateStorageEntry(
@@ -111,29 +131,87 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
         require(deactivateOutput.result.deactivateVdrEntryOutput, "deactivate VDR event hash").eventHash
       awaitApplied(deactivateOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
-      // 5) Verify entries
-      val createdEntry = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
-        "created entry"
-      )
-      createdEntry.deactivated shouldBe false
-      createdEntry.data.flatMap(_.content.bytes) shouldBe Some(ByteString.copyFromUtf8("payload-1"))
-      createdEntry.nonce shouldBe ByteString.EMPTY
-
-      val updatedEntry = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(updateEventHash)).entry,
-        "updated entry"
-      )
-      updatedEntry.deactivated shouldBe false
-      updatedEntry.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-2")
-      updatedEntry.previousEventHash shouldBe createEventHash
-
       val deactivatedEntry = require(
         client.getVdrEntry(node_api.GetVdrEntryRequest(deactivateEventHash)).entry,
         "deactivated entry"
       )
       deactivatedEntry.deactivated shouldBe true
       deactivatedEntry.previousEventHash shouldBe updateEventHash
+    }
+
+    "reject VDR create when signed with non-VDR key" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val badSignedCreate = signOperation(
+        node_models.AtalaOperation().withCreateStorageEntry(
+          node_models.CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+        ),
+        keyId = "master", // wrong usage
+        key = master.privateKey
+      )
+
+      val tryResp: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+        try {
+          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(badSignedCreate))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      tryResp match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          // If it was scheduled, it must be rejected when applied.
+          val out = requireOutput(resp.output, "create VDR with bad key")
+          val opId = operationIdOrFail(out)
+          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "reject VDR update with unknown previous hash" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      createDidWithVdrKey(master, vdr)
+
+      val bogusPrev = ByteString.copyFromUtf8("deadbeef")
+      val signedUpdate = signOperation(
+        node_models.AtalaOperation().withUpdateStorageEntry(
+          node_models.UpdateStorageEntryOperation()
+            .withPreviousEventHash(bogusPrev)
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("x")))
+        ),
+        keyId = "vdr",
+        key = vdr.privateKey
+      )
+
+      val ex = intercept[io.grpc.StatusRuntimeException] {
+        client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdate)))
+      }
+      ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+    }
+
+    "reject VDR deactivate with unknown previous hash" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      createDidWithVdrKey(master, vdr)
+
+      val bogusPrev = ByteString.copyFromUtf8("cafebabe")
+      val signedDeactivate = signOperation(
+        node_models.AtalaOperation().withDeactivateStorageEntry(
+          node_models.DeactivateStorageEntryOperation().withPreviousEventHash(bogusPrev)
+        ),
+        keyId = "vdr",
+        key = vdr.privateKey
+      )
+
+      val ex = intercept[io.grpc.StatusRuntimeException] {
+        client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivate)))
+      }
+      ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
     }
   }
 
@@ -205,11 +283,87 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
     loop()
   }
 
+  private def awaitRejected(operationId: ByteString, max: FiniteDuration = 90.seconds): common_models.OperationStatus = {
+    val deadline = max.fromNow
+    @tailrec
+    def loop(): common_models.OperationStatus = {
+      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      statusResp.operationStatus match {
+        case common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
+          common_models.OperationStatus.CONFIRMED_AND_REJECTED
+        case common_models.OperationStatus.CONFIRMED_AND_APPLIED =>
+          fail(s"Operation unexpectedly applied: ${statusResp.details}")
+        case _ if deadline.hasTimeLeft() =>
+          Thread.sleep(2000)
+          loop()
+        case other =>
+          fail(s"Operation did not reach rejected status in time, last status: $other, details: ${statusResp.details}")
+      }
+    }
+    loop()
+  }
+
+  private def createDidWithVdrKey(master: SecpPair, vdr: SecpPair): Sha256Hash = {
+    val createDidOp = buildCreateDid(master, vdr)
+    val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
+    val didScheduleResp =
+      client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
+    val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
+    awaitApplied(didOpId)
+    Sha256Hash.compute(createDidOp.toByteArray)
+  }
+
   private def requireOutput(opt: Option[node_api.OperationOutput], ctx: String): node_api.OperationOutput =
     opt.getOrElse(fail(s"Missing operation output for $ctx"))
 
   private def require[A](opt: Option[A], ctx: String): A =
     opt.getOrElse(fail(s"Missing $ctx"))
+
+  private def createVdrEntry(
+      didSuffixHash: Sha256Hash,
+      vdr: SecpPair,
+      payload: String
+  ): (ByteString, ByteString) = {
+    val createStorageOp = node_models
+      .AtalaOperation()
+      .withCreateStorageEntry(
+        node_models
+          .CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8(payload)))
+      )
+    val signedCreateStorage = signOperation(createStorageOp, "vdr", vdr.privateKey)
+    val createVdrResp = client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signedCreateStorage)))
+
+    val createVdrOutput = requireOutput(createVdrResp.output, "create VDR")
+    val createVdrOpId = operationIdOrFail(createVdrOutput)
+    val createEventHash = require(createVdrOutput.result.createVdrEntryOutput, "create VDR event hash").eventHash
+    awaitApplied(createVdrOpId)
+    (createEventHash, createVdrOpId)
+  }
+
+  private def updateVdrEntry(
+      previousEventHash: ByteString,
+      vdr: SecpPair,
+      ipfsCid: String
+  ): ByteString = {
+    val updateStorageOp = node_models
+      .AtalaOperation()
+      .withUpdateStorageEntry(
+        node_models
+          .UpdateStorageEntryOperation()
+          .withPreviousEventHash(previousEventHash)
+          .withData(node_models.StorageData().withIpfsCid(ipfsCid))
+      )
+    val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
+    val updateResp = client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateStorage)))
+
+    val updateOutput = requireOutput(updateResp.output, "update VDR")
+    val updateVdrOpId = operationIdOrFail(updateOutput)
+    val updateEventHash = require(updateOutput.result.updateVdrEntryOutput, "update VDR event hash").eventHash
+    awaitApplied(updateVdrOpId)
+    updateEventHash
+  }
 
   private case class SecpPair(publicKey: SecpPublicKey, privateKey: SecpPrivateKey)
 

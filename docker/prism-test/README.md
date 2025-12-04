@@ -34,6 +34,15 @@ docker compose down      # Stop services
 docker compose down -v   # Stop and remove volumes (clean restart)
 ```
 
+Run the e2e (gRPC VDR) tests end-to-end:
+
+```sh
+export GITHUB_TOKEN=...            # required for sbt credentials
+PRISM_NODE_VERSION=2.6.1-SNAPSHOT \
+  docker/prism-test/run-e2e.sh
+# or via sbt alias once stack is up: sbt e2eTest
+```
+
 ## Compose Configurations
 
 ### compose.yml - Full Testing Environment
