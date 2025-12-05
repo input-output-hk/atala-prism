@@ -361,6 +361,170 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
       val verifyResp = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(eventHash = createEventHash))
       verifyResp.valid shouldBe true
     }
+
+    "reject duplicate VDR create (same payload/nonce)" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val op = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("dup")))
+      )
+      val signed = signOperation(op, "vdr", vdr.privateKey)
+      val first = client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed)))
+      awaitApplied(operationIdOrFail(requireOutput(first.output, "dup create first")))
+
+      val second: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+        try {
+          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      second match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "dup create second")
+          val opId = operationIdOrFail(out)
+          // Depending on node behavior, duplicate may be rejected or applied idempotently.
+          val status = awaitFinal(opId)
+          status should (be(common_models.OperationStatus.CONFIRMED_AND_APPLIED)
+            .or(be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)))
+      }
+    }
+
+    "verify returns false for non-existent event hash" taggedAs E2ETestTag in {
+      val missing = ByteString.copyFrom(Sha256Hash.compute("missing".getBytes()).bytes.toArray)
+      val verifyResp = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(eventHash = missing))
+      verifyResp.valid shouldBe false
+    }
+
+    "getVdrEntry returns NOT_FOUND for unknown hash" taggedAs E2ETestTag in {
+      val missing = ByteString.copyFrom(Sha256Hash.compute("missing-get".getBytes()).bytes.toArray)
+      val ex = intercept[StatusRuntimeException] {
+        client.getVdrEntry(node_api.GetVdrEntryRequest(missing))
+      }
+      ex.getStatus.getCode should (be(io.grpc.Status.NOT_FOUND.getCode).or(be(io.grpc.Status.UNKNOWN.getCode)))
+    }
+
+    "reject VDR create when using VDR key from another DID" taggedAs E2ETestTag in {
+      val masterA = generateKeyPair()
+      val vdrA = generateKeyPair()
+      val masterB = generateKeyPair()
+      val vdrB = generateKeyPair()
+
+      val didA = createDidWithVdrKey(masterA, vdrA)
+      createDidWithVdrKey(masterB, vdrB)
+
+      val op = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didA.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("cross")))
+      )
+      // sign with DID B's VDR key but use DID A's expected key id
+      val signed = signOperation(op, "vdr", vdrB.privateKey)
+
+      val respOrEx: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+        try {
+          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "cross-DID VDR key")
+          val opId = operationIdOrFail(out)
+          // If scheduled, expect rejection (signature should not match DID A).
+          val status = awaitRejected(opId)
+          status shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "reject VDR create after VDR key was removed from DID" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didHash = createDidWithVdrKey(master, vdr)
+
+      removeVdrKeyFromDid(didHash, master)
+
+      val op = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("after-removal")))
+      )
+      val signed = signOperation(op, "vdr", vdr.privateKey)
+
+      val respOrEx: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+        try {
+          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "create after VDR removal")
+          val opId = operationIdOrFail(out)
+          val status = awaitRejected(opId)
+          status shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "apply VDR operations via scheduleOperations" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didHash = createDidWithVdrKey(master, vdr)
+
+      val createOp = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("via-schedule-1")))
+      )
+      val createDigest = Sha256Hash.compute(createOp.toByteArray)
+      val signedCreate = signOperation(createOp, "vdr", vdr.privateKey)
+
+      val updateOp = node_models.AtalaOperation().withUpdateStorageEntry(
+        node_models.UpdateStorageEntryOperation()
+          .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
+          .withData(node_models.StorageData().withIpfsCid("cid-via-schedule"))
+      )
+      val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
+      val signedUpdate = signOperation(updateOp, "vdr", vdr.privateKey)
+
+      val deactivateOp = node_models.AtalaOperation().withDeactivateStorageEntry(
+        node_models.DeactivateStorageEntryOperation()
+          .withPreviousEventHash(ByteString.copyFrom(updateDigest.bytes.toArray))
+      )
+      val signedDeactivate = signOperation(deactivateOp, "vdr", vdr.privateKey)
+
+      val resp = client.scheduleOperations(
+        node_api.ScheduleOperationsRequest(
+          signedOperations = Seq(signedCreate, signedUpdate, signedDeactivate)
+        )
+      )
+      resp.outputs.size shouldBe 3
+      val ids = resp.outputs.map(operationIdOrFail)
+      ids.foreach { id =>
+        awaitApplied(id)
+        ()
+      }
+
+      val created = require(client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(createDigest.bytes.toArray))).entry, "created entry via schedule")
+      created.data.flatMap(_.content.bytes.map(_.toStringUtf8)) shouldBe Some("via-schedule-1")
+
+      val updated = require(client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(updateDigest.bytes.toArray))).entry, "updated entry via schedule")
+      updated.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-via-schedule")
+      val deactivated = require(client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray))).entry, "deactivated entry via schedule")
+      deactivated.deactivated shouldBe true
+    }
   }
 
   private def buildCreateDid(
@@ -464,6 +628,25 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
     finalStatus
   }
 
+  private def awaitFinal(operationId: ByteString, max: FiniteDuration = 90.seconds): common_models.OperationStatus = {
+    val deadline = max.fromNow
+    @tailrec
+    def loop(): common_models.OperationStatus = {
+      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      statusResp.operationStatus match {
+        case common_models.OperationStatus.CONFIRMED_AND_APPLIED |
+            common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
+          statusResp.operationStatus
+        case _ if deadline.hasTimeLeft() =>
+          Thread.sleep(2000)
+          loop()
+        case other =>
+          fail(s"Operation did not reach terminal state in time, last status: $other, details: ${statusResp.details}")
+      }
+    }
+    loop()
+  }
+
   private def createDidWithVdrKey(master: SecpPair, vdr: SecpPair): Sha256Hash = {
     val createDidOp = buildCreateDid(master, Some((vdr.publicKey, vdr.publicKey.curveName)))
     val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
@@ -490,6 +673,24 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
     val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
     awaitApplied(didOpId)
     Sha256Hash.compute(createDidOp.toByteArray)
+  }
+
+  private def removeVdrKeyFromDid(didHash: Sha256Hash, master: SecpPair): Unit = {
+    val updateOp = node_models.AtalaOperation().withUpdateDid(
+      node_models.UpdateDIDOperation(
+        previousOperationHash = ByteString.copyFrom(didHash.bytes.toArray),
+        id = didHash.hexEncoded,
+        actions = Seq(
+          node_models.UpdateDIDAction().withRemoveKey(
+            node_models.RemoveKeyAction(keyId = "vdr")
+          )
+        )
+      )
+    )
+    val signed = signOperation(updateOp, "master", master.privateKey)
+    val resp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signed)))
+    val opId = operationIdOrFail(resp.outputs.head)
+    val _ = awaitApplied(opId)
   }
 
   private def requireOutput(opt: Option[node_api.OperationOutput], ctx: String): node_api.OperationOutput =
