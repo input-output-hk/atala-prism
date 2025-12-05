@@ -3,7 +3,6 @@ import sbt.Keys.*
 import sbtassembly.AssemblyPlugin.autoImport.*
 import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport.*
-import sbtghpackages.GitHubPackagesPlugin.autoImport.*
 import sbtprotoc.ProtocPlugin.autoImport.PB
 
 inThisBuild(
@@ -12,9 +11,7 @@ inThisBuild(
     scalaVersion := "2.13.15",
     fork := true,
     run / connectInput := true,
-    versionScheme := Some("semver-spec"),
-    githubOwner := "input-output-hk",
-    githubRepository := "atala-prism"
+    versionScheme := Some("semver-spec")
   )
 )
 
@@ -163,7 +160,6 @@ lazy val root =
       ),
       scalacOptions += "-Ymacro-annotations",
       javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-      githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
       addCompilerPlugin(
         "org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full
       ),

@@ -3,11 +3,7 @@ addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.22")
 addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.13")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.11.0")
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.2.0")
-// GitHub Packages plugin: load only if GITHUB_TOKEN is present, to avoid hard dependency.
-if (sys.env.get("GITHUB_TOKEN").isDefined) {
-  println("Enabling sbt-github-packages plugin (GITHUB_TOKEN detected).")
-  addSbtPlugin("com.codecommit" % "sbt-github-packages" % "0.5.3")
-}
+// GitHub Packages plugin (token optional; build.sbt imports sbtghpackages autoImport)
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.6")
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.1.0")
 addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.16")
