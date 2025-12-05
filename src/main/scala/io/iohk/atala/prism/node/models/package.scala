@@ -54,8 +54,8 @@ package object models {
       override def toProto: node_models.KeyUsage = node_models.KeyUsage.CAPABILITY_DELEGATION_KEY
       override def derivationIndex: Int = 6
     }
-    case object VDRSigningKey extends KeyUsage {
-      override def toProto: node_models.KeyUsage = node_models.KeyUsage.VDR_SIGNING_KEY
+    case object VDRKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.VDR_KEY
       override def derivationIndex: Int = 7
     }
 

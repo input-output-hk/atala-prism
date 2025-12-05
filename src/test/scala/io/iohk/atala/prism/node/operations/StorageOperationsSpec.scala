@@ -30,7 +30,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
   private def insertVdrKey(keyId: String = "vdr"): Unit =
     PublicKeysDAO
       .insert(
-        DIDPublicKey(didSuffix, keyId, KeyUsage.VDRSigningKey, CryptoTestUtils.toPublicKeyData(vdrKeyPair.publicKey)),
+        DIDPublicKey(didSuffix, keyId, KeyUsage.VDRKey, CryptoTestUtils.toPublicKeyData(vdrKeyPair.publicKey)),
         dummyLedgerData
       )
       .transact(database)

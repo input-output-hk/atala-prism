@@ -114,7 +114,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
     "parse VDR signing key usage" in {
       val key = node_models.PublicKey(
         id = "vdr0",
-        usage = node_models.KeyUsage.VDR_SIGNING_KEY,
+        usage = node_models.KeyUsage.VDR_KEY,
         keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
           node_models.CompressedECKeyData(
             curve = ProtocolConstants.secpCurveName,
@@ -131,14 +131,14 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
 
       inside(parsed) {
         case Left(err) => fail(err.toString)
-        case Right(value) => value.keyUsage mustBe KeyUsage.VDRSigningKey
+        case Right(value) => value.keyUsage mustBe KeyUsage.VDRKey
       }
     }
 
     "reject VDR signing key if curve is not secp256k1" in {
       val key = node_models.PublicKey(
         id = "vdr1",
-        usage = node_models.KeyUsage.VDR_SIGNING_KEY,
+        usage = node_models.KeyUsage.VDR_KEY,
         keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
           node_models.CompressedECKeyData(
             curve = ProtocolConstants.ed25519CurveName,
@@ -163,7 +163,7 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
 
   "ProtoCodecs" should {
     "encode VDR signing key usage" in {
-      ProtoCodecs.toProtoKeyUsage(KeyUsage.VDRSigningKey) mustBe node_models.KeyUsage.VDR_SIGNING_KEY
+      ProtoCodecs.toProtoKeyUsage(KeyUsage.VDRKey) mustBe node_models.KeyUsage.VDR_KEY
     }
   }
 

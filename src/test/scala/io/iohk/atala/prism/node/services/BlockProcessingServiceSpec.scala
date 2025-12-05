@@ -129,7 +129,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
           io.iohk.atala.prism.node.models.DIDPublicKey(
             didSuffix,
             "vdr",
-            io.iohk.atala.prism.node.models.KeyUsage.VDRSigningKey,
+            io.iohk.atala.prism.node.models.KeyUsage.VDRKey,
             CryptoTestUtils.toPublicKeyData(vdrKeys.publicKey)
           )
         ),

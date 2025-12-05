@@ -50,7 +50,7 @@ enum KeyUsage {
     CAPABILITY_DELEGATION_KEY = 7;
 
     // This key-type is used to sign VDR operations (per the PRISM VDR driver spec).
-    VDR_SIGNING_KEY = 8;
+    VDR_KEY = 8;
 }
 
 /**

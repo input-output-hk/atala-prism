@@ -32,7 +32,7 @@ sealed trait StorageOperation extends Operation {
           .find(didSuffix, keyId)
           .map(_.toRight(EntityMissing("key", keyId): StateError))
       }.subflatMap { state =>
-        Either.cond(state.keyUsage == KeyUsage.VDRSigningKey, state, InvalidKeyUsed("VDR signing key"))
+        Either.cond(state.keyUsage == KeyUsage.VDRKey, state, InvalidKeyUsed("VDR signing key"))
       }.subflatMap { state =>
         Either.cond(state.revokedOn.isEmpty, state.key, StateError.KeyAlreadyRevoked())
       }

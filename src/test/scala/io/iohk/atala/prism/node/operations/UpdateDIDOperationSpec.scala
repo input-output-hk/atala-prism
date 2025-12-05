@@ -72,7 +72,7 @@ object UpdateDIDOperationSpec {
         key = Some(
           node_models.PublicKey(
             id = "vdr",
-            usage = node_models.KeyUsage.VDR_SIGNING_KEY,
+            usage = node_models.KeyUsage.VDR_KEY,
             keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
               node_models.CompressedECKeyData(
                 curve = vdrSigningKeys.publicKey.curveName,
@@ -643,7 +643,7 @@ class UpdateDIDOperationSpec extends AtalaWithPostgresSpec with ProtoParsingTest
         .unsafeRunSync()
         .value
 
-      vdrKey.keyUsage mustBe KeyUsage.VDRSigningKey
+      vdrKey.keyUsage mustBe KeyUsage.VDRKey
       vdrKey.key.curveName mustBe vdrSigningKeys.publicKey.curveName
       vdrKey.revokedOn mustBe None
     }

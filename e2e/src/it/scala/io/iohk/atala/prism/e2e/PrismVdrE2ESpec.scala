@@ -233,7 +233,7 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
                 ),
                 node_models.PublicKey(
                   id = "vdr",
-                  usage = node_models.KeyUsage.VDR_SIGNING_KEY,
+                  usage = node_models.KeyUsage.VDR_KEY,
                   keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(compressedKeyData(vdr.publicKey))
                 )
               ),
