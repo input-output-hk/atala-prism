@@ -213,11 +213,84 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
       }
       ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
     }
+
+    "reject VDR create when DID has no VDR key" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val didSuffixHash = createDidWithoutVdr(master)
+
+      val signedCreate = signOperation(
+        node_models.AtalaOperation().withCreateStorageEntry(
+          node_models.CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+        ),
+        keyId = "master",
+        key = master.privateKey
+      )
+
+      val respOrEx: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+        try {
+          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signedCreate))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "create VDR without VDR key")
+          val opId = operationIdOrFail(out)
+          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "reject VDR create when VDR key curve is not secp256k1" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val ex = intercept[StatusRuntimeException] {
+        createDidWithCustomVdr(master, vdr.publicKey, curveOverride = "ed25519")
+      }
+      ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+    }
+
+    "reject VDR create with invalid signature" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val createOp = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+      )
+      val badSigned = node_models.SignedAtalaOperation(
+        signedWith = "vdr",
+        signature = ByteString.EMPTY, // invalid signature
+        operation = Some(createOp)
+      )
+
+      val respOrEx: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+        try {
+          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(badSigned))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "create VDR with invalid signature")
+          val opId = operationIdOrFail(out)
+          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
   }
 
   private def buildCreateDid(
       master: SecpPair,
-      vdr: SecpPair
+      vdrOpt: Option[(SecpPublicKey, String)]
   ): node_models.AtalaOperation = {
     node_models
       .AtalaOperation()
@@ -225,18 +298,27 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
         node_models.CreateDIDOperation(
           didData = Some(
             node_models.CreateDIDOperation.DIDCreationData(
-              publicKeys = List(
-                node_models.PublicKey(
-                  id = "master",
-                  usage = node_models.KeyUsage.MASTER_KEY,
-                  keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(compressedKeyData(master.publicKey))
-                ),
-                node_models.PublicKey(
-                  id = "vdr",
-                  usage = node_models.KeyUsage.VDR_KEY,
-                  keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(compressedKeyData(vdr.publicKey))
-                )
-              ),
+              publicKeys =
+                List(
+                  node_models.PublicKey(
+                    id = "master",
+                    usage = node_models.KeyUsage.MASTER_KEY,
+                    keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(compressedKeyData(master.publicKey))
+                  )
+                ) ++ vdrOpt
+                  .map { case (pub, curveName) =>
+                    node_models.PublicKey(
+                      id = "vdr",
+                      usage = node_models.KeyUsage.VDR_KEY,
+                      keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
+                        node_models.CompressedECKeyData(
+                          curve = curveName,
+                          data = ByteString.copyFrom(pub.compressed.toArray)
+                        )
+                      )
+                    )
+                  }
+                  .toList,
               services = Nil,
               context = Nil
             )
@@ -304,10 +386,28 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
   }
 
   private def createDidWithVdrKey(master: SecpPair, vdr: SecpPair): Sha256Hash = {
-    val createDidOp = buildCreateDid(master, vdr)
+    val createDidOp = buildCreateDid(master, Some((vdr.publicKey, vdr.publicKey.curveName)))
     val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
     val didScheduleResp =
       client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
+    val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
+    awaitApplied(didOpId)
+    Sha256Hash.compute(createDidOp.toByteArray)
+  }
+
+  private def createDidWithCustomVdr(master: SecpPair, vdrPub: SecpPublicKey, curveOverride: String): Sha256Hash = {
+    val createDidOp = buildCreateDid(master, Some((vdrPub, curveOverride)))
+    val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
+    val didScheduleResp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
+    val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
+    awaitApplied(didOpId)
+    Sha256Hash.compute(createDidOp.toByteArray)
+  }
+
+  private def createDidWithoutVdr(master: SecpPair): Sha256Hash = {
+    val createDidOp = buildCreateDid(master, None)
+    val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
+    val didScheduleResp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
     val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
     awaitApplied(didOpId)
     Sha256Hash.compute(createDidOp.toByteArray)
