@@ -54,5 +54,36 @@ class VdrApiSpec extends VdrTestUtils {
       }
       ex.getStatus.getCode should (be(io.grpc.Status.NOT_FOUND.getCode).or(be(io.grpc.Status.UNKNOWN.getCode)))
     }
+
+    "verify and get work for deactivated entries and historical hashes" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didHash = createDidWithVdrKey(master, vdr)
+
+      val (createHash, _) = createVdrEntry(didHash, vdr, "hist-1")
+      val updateHash = updateVdrEntry(createHash, vdr, "hist-2")
+
+      val deactivateOp = node_models.AtalaOperation().withDeactivateStorageEntry(
+        node_models.DeactivateStorageEntryOperation().withPreviousEventHash(updateHash)
+      )
+      val signedDeactivate = signOperation(deactivateOp, "vdr", vdr.privateKey)
+      val deactivateResp = client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivate)))
+      val deactivateHash = requireOutput(deactivateResp.output, "deactivate hash").result.deactivateVdrEntryOutput
+        .map(_.eventHash).getOrElse(fail("missing deactivate hash"))
+      awaitApplied(operationIdOrFail(requireOutput(deactivateResp.output, "deactivate op")))
+
+      val verifyCreate = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(createHash))
+      val verifyUpdate = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(updateHash))
+      val verifyDeactivate = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(deactivateHash))
+
+      verifyCreate.valid shouldBe true
+      verifyUpdate.valid shouldBe true
+      verifyDeactivate.valid shouldBe true
+
+      val gotDeactivate = client.getVdrEntry(node_api.GetVdrEntryRequest(deactivateHash)).entry.getOrElse(
+        fail("missing deactivate entry")
+      )
+      gotDeactivate.deactivated shouldBe true
+    }
   }
 }

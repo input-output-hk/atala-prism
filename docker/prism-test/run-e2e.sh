@@ -3,8 +3,14 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 COMPOSE_FILE="${COMPOSE_FILE:-${REPO_ROOT}/docker/prism-test/compose.yml}"
-# Allow overriding the prism-node image tag used by the compose file.
-export PRISM_NODE_VERSION="${PRISM_NODE_VERSION:-2.6.1-SNAPSHOT}"
+# Allow overriding the prism-node image tag used by the compose file. If not provided, ask sbt for the current project version.
+detect_version() {
+  sbt -Dsbt.supershell=false -error "print version" 2>/dev/null | tail -1 | tr -d '\r'
+}
+export PRISM_NODE_VERSION="${PRISM_NODE_VERSION:-$(detect_version)}"
+if [[ -z "${PRISM_NODE_VERSION}" ]]; then
+  PRISM_NODE_VERSION="2.6.1-SNAPSHOT"
+fi
 
 cleanup() {
   docker compose -f "$COMPOSE_FILE" down -v --remove-orphans >/dev/null 2>&1 || true
@@ -12,6 +18,8 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Starting prism-test stack with PRISM_NODE_VERSION=${PRISM_NODE_VERSION}..."
+# Always start from a clean slate
+cleanup
 # Clean up any orphaned volumes from previous runs to avoid conflicts
 docker volume ls --format '{{.Name}}' | grep '^prism-test_node-testnet$' >/dev/null 2>&1 && docker volume rm prism-test_node-testnet >/dev/null 2>&1 || true
 

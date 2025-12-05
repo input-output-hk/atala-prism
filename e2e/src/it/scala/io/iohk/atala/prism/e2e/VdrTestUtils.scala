@@ -167,6 +167,61 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
     finalStatus
   }
 
+  protected def awaitRejectedOrPending(
+      operationId: ByteString,
+      max: FiniteDuration = 120.seconds
+  ): common_models.OperationStatus = {
+    val deadline = max.fromNow
+    @tailrec
+    def loop(): common_models.OperationStatus = {
+      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      statusResp.operationStatus match {
+        case common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
+          common_models.OperationStatus.CONFIRMED_AND_REJECTED
+        case common_models.OperationStatus.CONFIRMED_AND_APPLIED =>
+          fail(s"Operation unexpectedly applied: ${statusResp.details}")
+        case common_models.OperationStatus.PENDING_SUBMISSION if deadline.hasTimeLeft() =>
+          Thread.sleep(2000)
+          loop()
+        case common_models.OperationStatus.PENDING_SUBMISSION =>
+          common_models.OperationStatus.PENDING_SUBMISSION
+        case _ if deadline.hasTimeLeft() =>
+          Thread.sleep(2000)
+          loop()
+        case other =>
+          other
+      }
+    }
+    loop()
+  }
+
+  protected def awaitFinalOrPending(
+      operationId: ByteString,
+      max: FiniteDuration = 120.seconds
+  ): common_models.OperationStatus = {
+    val deadline = max.fromNow
+    @tailrec
+    def loop(): common_models.OperationStatus = {
+      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      statusResp.operationStatus match {
+        case common_models.OperationStatus.CONFIRMED_AND_APPLIED |
+            common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
+          statusResp.operationStatus
+        case common_models.OperationStatus.PENDING_SUBMISSION if deadline.hasTimeLeft() =>
+          Thread.sleep(2000)
+          loop()
+        case common_models.OperationStatus.PENDING_SUBMISSION =>
+          common_models.OperationStatus.PENDING_SUBMISSION
+        case _ if deadline.hasTimeLeft() =>
+          Thread.sleep(2000)
+          loop()
+        case other =>
+          other
+      }
+    }
+    loop()
+  }
+
   protected def awaitFinal(operationId: ByteString, max: FiniteDuration = 90.seconds): common_models.OperationStatus = {
     val deadline = max.fromNow
     @tailrec

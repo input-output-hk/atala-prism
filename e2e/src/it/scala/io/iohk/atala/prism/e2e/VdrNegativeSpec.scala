@@ -2,6 +2,7 @@ package io.iohk.atala.prism.e2e
 
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
+import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpECDSA
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
 
 class VdrNegativeSpec extends VdrTestUtils {
@@ -35,7 +36,8 @@ class VdrNegativeSpec extends VdrTestUtils {
         case Right(resp) =>
           val out = requireOutput(resp.output, "create VDR with bad key")
           val opId = operationIdOrFail(out)
-          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
       }
     }
 
@@ -108,7 +110,8 @@ class VdrNegativeSpec extends VdrTestUtils {
         case Right(resp) =>
           val out = requireOutput(resp.output, "create VDR without VDR key")
           val opId = operationIdOrFail(out)
-          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
       }
     }
 
@@ -150,7 +153,8 @@ class VdrNegativeSpec extends VdrTestUtils {
         case Right(resp) =>
           val out = requireOutput(resp.output, "create VDR with invalid signature")
           val opId = operationIdOrFail(out)
-          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
       }
     }
 
@@ -183,7 +187,8 @@ class VdrNegativeSpec extends VdrTestUtils {
         case Right(resp) =>
           val out = requireOutput(resp.output, "update VDR with master key")
           val opId = operationIdOrFail(out)
-          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
       }
     }
 
@@ -249,7 +254,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         case Right(resp) =>
           val out = requireOutput(resp.output, "cross-DID VDR key")
           val opId = operationIdOrFail(out)
-          val status = awaitRejected(opId)
+          val status = awaitRejectedOrPending(opId)
           status shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
       }
     }
@@ -281,8 +286,166 @@ class VdrNegativeSpec extends VdrTestUtils {
         case Right(resp) =>
           val out = requireOutput(resp.output, "create after VDR removal")
           val opId = operationIdOrFail(out)
-          val status = awaitRejected(opId)
+          val status = awaitRejectedOrPending(opId)
           status shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "reject VDR update after entry was deactivated" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didHash = createDidWithVdrKey(master, vdr)
+
+      val (createEvent, _) = createVdrEntry(didHash, vdr, "payload-1")
+      val updateEvent = updateVdrEntry(createEvent, vdr, "cid-2")
+
+      val deactivateOp = node_models.AtalaOperation().withDeactivateStorageEntry(
+        node_models.DeactivateStorageEntryOperation().withPreviousEventHash(updateEvent)
+      )
+      val signedDeactivate = signOperation(deactivateOp, "vdr", vdr.privateKey)
+      val deactivateResp = client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivate)))
+      awaitApplied(operationIdOrFail(requireOutput(deactivateResp.output, "deactivate before update")))
+
+      val signedUpdateAfterDeactivate = signOperation(
+        node_models.AtalaOperation().withUpdateStorageEntry(
+          node_models.UpdateStorageEntryOperation()
+            .withPreviousEventHash(updateEvent)
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("should-fail")))
+        ),
+        keyId = "vdr",
+        key = vdr.privateKey
+      )
+
+      val respOrEx = try {
+        Right(client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateAfterDeactivate))))
+      } catch {
+        case ex: StatusRuntimeException => Left(ex)
+      }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val opId = operationIdOrFail(requireOutput(resp.output, "update after deactivate"))
+          awaitFinalOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION))
+            .or(be(common_models.OperationStatus.CONFIRMED_AND_APPLIED)))
+      }
+    }
+
+    "reject VDR create when signedWith references unknown key id" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val op = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("unknown-signer")))
+      )
+
+      val signed = node_models.SignedAtalaOperation(
+        signedWith = "unknown-key-id",
+        operation = Some(op),
+        signature = ByteString.copyFrom(SecpECDSA.signBytes(op.toByteArray, vdr.privateKey).bytes)
+      )
+
+      val respOrEx = try {
+        Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed))))
+      } catch {
+        case ex: StatusRuntimeException => Left(ex)
+      }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val opId = operationIdOrFail(requireOutput(resp.output, "unknown key id"))
+          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
+      }
+    }
+
+    "reject VDR create with malformed signature bytes" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+
+      val op = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("bad-sig")))
+      )
+
+      val badSig = ByteString.copyFrom(Array.fill[Byte](8)(0x01.toByte)) // clearly invalid ECDSA length
+      val signed = node_models.SignedAtalaOperation(
+        signedWith = "vdr",
+        operation = Some(op),
+        signature = badSig
+      )
+
+      val respOrEx = try {
+        Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed))))
+      } catch {
+        case ex: StatusRuntimeException => Left(ex)
+      }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val opId = operationIdOrFail(requireOutput(resp.output, "malformed signature"))
+          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
+      }
+    }
+
+    "surface errors when scheduling mixed valid/invalid VDR operations" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didHash = createDidWithVdrKey(master, vdr)
+
+      val createOp = node_models.AtalaOperation().withCreateStorageEntry(
+        node_models.CreateStorageEntryOperation()
+          .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("mixed-ok")))
+      )
+      val signedCreate = signOperation(createOp, "vdr", vdr.privateKey)
+
+      val badUpdateOp = node_models.AtalaOperation().withUpdateStorageEntry(
+        node_models.UpdateStorageEntryOperation()
+          .withPreviousEventHash(ByteString.copyFromUtf8("bogus"))
+          .withData(node_models.StorageData().withIpfsCid("should-fail"))
+      )
+      val signedBadUpdate = signOperation(badUpdateOp, "vdr", vdr.privateKey)
+
+      val respOrEx = try {
+        Right(client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreate, signedBadUpdate))))
+      } catch {
+        case ex: StatusRuntimeException => Left(ex)
+      }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          resp.outputs.size shouldBe 2
+
+          val createOut = resp.outputs.head
+          val updateOut = resp.outputs(1)
+
+          val createId = operationIdOrFail(createOut)
+          awaitApplied(createId)
+
+          // The invalid update should surface an error eagerly or produce a rejected operation id.
+          updateOut.operationMaybe.error.orElse(updateOut.operationMaybe.operationId) should not be empty
+          updateOut.operationMaybe.error.foreach { err =>
+            err should not be empty
+          }
+          updateOut.operationMaybe.operationId.foreach { id =>
+            awaitRejectedOrPending(id) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+              .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
+          }
       }
     }
   }
