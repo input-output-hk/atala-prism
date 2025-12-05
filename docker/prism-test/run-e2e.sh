@@ -12,6 +12,9 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Starting prism-test stack with PRISM_NODE_VERSION=${PRISM_NODE_VERSION}..."
+# Clean up any orphaned volumes from previous runs to avoid conflicts
+docker volume ls --format '{{.Name}}' | grep '^prism-test_node-testnet$' >/dev/null 2>&1 && docker volume rm prism-test_node-testnet >/dev/null 2>&1 || true
+
 docker compose -f "$COMPOSE_FILE" up -d
 
 echo "Waiting for cardano-wallet to be ready..."
@@ -30,6 +33,19 @@ fi
 
 echo "Allowing extra time for db-sync and prism-node to settle..."
 sleep 10
+
+echo "Waiting for prism-node gRPC (50053)..."
+for _ in {1..60}; do
+  if nc -z localhost 50053 >/dev/null 2>&1; then
+    ready_prism=1
+    break
+  fi
+  sleep 2
+done
+if [[ -z "${ready_prism:-}" ]]; then
+  echo "prism-node gRPC (50053) did not become ready in time" >&2
+  exit 1
+fi
 
 cd "$REPO_ROOT"
 echo "Running E2E tests..."

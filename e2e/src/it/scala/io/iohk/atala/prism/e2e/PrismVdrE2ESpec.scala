@@ -286,6 +286,81 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
           awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
       }
     }
+
+    "reject VDR update when signed with non-VDR key" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+      val (createEventHash, _) = createVdrEntry(didSuffixHash, vdr, "payload-1")
+
+      val signedUpdateWithMaster = signOperation(
+        node_models.AtalaOperation().withUpdateStorageEntry(
+          node_models.UpdateStorageEntryOperation()
+            .withPreviousEventHash(createEventHash)
+            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+        ),
+        keyId = "master",
+        key = master.privateKey
+      )
+
+      val respOrEx: Either[StatusRuntimeException, node_api.UpdateVdrEntryResponse] =
+        try {
+          Right(client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateWithMaster))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "update VDR with master key")
+          val opId = operationIdOrFail(out)
+          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "reject VDR deactivate when signed with non-VDR key" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+      val (createEventHash, _) = createVdrEntry(didSuffixHash, vdr, "payload-1")
+      val updateEventHash = updateVdrEntry(createEventHash, vdr, "cid-2")
+
+      val signedDeactivateWithMaster = signOperation(
+        node_models.AtalaOperation().withDeactivateStorageEntry(
+          node_models.DeactivateStorageEntryOperation()
+            .withPreviousEventHash(updateEventHash)
+        ),
+        keyId = "master",
+        key = master.privateKey
+      )
+
+      val respOrEx: Either[StatusRuntimeException, node_api.DeactivateVdrEntryResponse] =
+        try {
+          Right(client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivateWithMaster))))
+        } catch {
+          case ex: StatusRuntimeException => Left(ex)
+        }
+
+      respOrEx match {
+        case Left(ex) =>
+          ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
+        case Right(resp) =>
+          val out = requireOutput(resp.output, "deactivate VDR with master key")
+          val opId = operationIdOrFail(out)
+          awaitRejected(opId) shouldBe common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      }
+    }
+
+    "verify VDR entry returns valid=true for applied entry" taggedAs E2ETestTag in {
+      val master = generateKeyPair()
+      val vdr = generateKeyPair()
+      val didSuffixHash = createDidWithVdrKey(master, vdr)
+      val (createEventHash, _) = createVdrEntry(didSuffixHash, vdr, "payload-verify")
+      val verifyResp = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(eventHash = createEventHash))
+      verifyResp.valid shouldBe true
+    }
   }
 
   private def buildCreateDid(
@@ -379,10 +454,14 @@ class PrismVdrE2ESpec extends AnyWordSpec with Matchers with BeforeAndAfterAll {
           Thread.sleep(2000)
           loop()
         case other =>
-          fail(s"Operation did not reach rejected status in time, last status: $other, details: ${statusResp.details}")
+          other
       }
     }
-    loop()
+    val finalStatus = loop()
+    withClue(s"Final status for $operationId: $finalStatus") {
+      finalStatus should not be common_models.OperationStatus.CONFIRMED_AND_APPLIED
+    }
+    finalStatus
   }
 
   private def createDidWithVdrKey(master: SecpPair, vdr: SecpPair): Sha256Hash = {
