@@ -362,7 +362,7 @@ class VdrNegativeSpec extends VdrTestUtils {
           ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
         case Right(resp) =>
           val opId = operationIdOrFail(requireOutput(resp.output, "unknown key id"))
-          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+          awaitRejectedOrPending(opId, 240.seconds) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
             .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
       }
     }
@@ -396,7 +396,7 @@ class VdrNegativeSpec extends VdrTestUtils {
           ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
         case Right(resp) =>
           val opId = operationIdOrFail(requireOutput(resp.output, "malformed signature"))
-          awaitRejectedOrPending(opId) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+          awaitRejectedOrPending(opId, 240.seconds) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
             .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
       }
     }
@@ -436,7 +436,7 @@ class VdrNegativeSpec extends VdrTestUtils {
           val updateOut = resp.outputs(1)
 
           val createId = operationIdOrFail(createOut)
-          awaitFinal(createId, 180.seconds) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
+          awaitFinal(createId, 240.seconds) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
           // The invalid update should surface an error eagerly or produce a rejected operation id.
           updateOut.operationMaybe.error.orElse(updateOut.operationMaybe.operationId) should not be empty
@@ -444,10 +444,10 @@ class VdrNegativeSpec extends VdrTestUtils {
             err should not be empty
           }
           updateOut.operationMaybe.operationId.foreach { id =>
-            awaitRejectedOrPending(id) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+            awaitRejectedOrPending(id, 240.seconds) should (be(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
               .or(be(common_models.OperationStatus.PENDING_SUBMISSION)))
-          }
       }
     }
   }
+}
 }

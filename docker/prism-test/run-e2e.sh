@@ -31,13 +31,21 @@ if docker volume ls --format '{{.Name}}' | grep '^prism-test_node-testnet$' >/de
 	docker volume rm prism-test_node-testnet >/dev/null 2>&1 || true
 fi
 
-# Ensure the prism-node image is available locally; build/publishLocal if missing.
+# Ensure the prism-node image is available locally; try pull first, then build only if the tag matches the local version.
 if ! docker image inspect "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/null 2>&1; then
-	echo "Local image inputoutput/prism-node:${PRISM_NODE_VERSION} not found. Building via sbt Docker / publishLocal..."
-	(
-		cd "$REPO_ROOT"
-		sbt -Dsbt.supershell=false "Docker / publishLocal"
-	)
+	echo "Image inputoutput/prism-node:${PRISM_NODE_VERSION} not found locally. Attempting pull..."
+	if docker pull "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/null 2>&1; then
+		echo "Pulled inputoutput/prism-node:${PRISM_NODE_VERSION}"
+	elif [[ "${PRISM_NODE_VERSION}" == "$(detect_version)" ]]; then
+		echo "Pull failed, building local image for version ${PRISM_NODE_VERSION} via sbt Docker / publishLocal..."
+		(
+			cd "$REPO_ROOT"
+			sbt -Dsbt.supershell=false "Docker / publishLocal"
+		)
+	else
+		echo "ERROR: image inputoutput/prism-node:${PRISM_NODE_VERSION} not available and local build version differs. Aborting." >&2
+		exit 1
+	fi
 fi
 
 docker compose -f "$COMPOSE_FILE" up -d
