@@ -31,6 +31,15 @@ if docker volume ls --format '{{.Name}}' | grep '^prism-test_node-testnet$' >/de
 	docker volume rm prism-test_node-testnet >/dev/null 2>&1 || true
 fi
 
+# Ensure the prism-node image is available locally; build/publishLocal if missing.
+if ! docker image inspect "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/null 2>&1; then
+	echo "Local image inputoutput/prism-node:${PRISM_NODE_VERSION} not found. Building via sbt Docker / publishLocal..."
+	(
+		cd "$REPO_ROOT"
+		sbt -Dsbt.supershell=false "Docker / publishLocal"
+	)
+fi
+
 docker compose -f "$COMPOSE_FILE" up -d
 
 echo "Waiting for cardano-wallet to be ready..."
