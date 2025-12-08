@@ -436,6 +436,7 @@ class VdrNegativeSpec extends VdrTestUtils {
           val updateOut = resp.outputs(1)
 
           val createId = operationIdOrFail(createOut)
+
           awaitFinal(createId, 240.seconds) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
           // The invalid update should surface an error eagerly or produce a rejected operation id.
