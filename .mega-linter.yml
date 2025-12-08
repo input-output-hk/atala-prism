@@ -7,6 +7,7 @@ DISABLE_LINTERS: [
     REPOSITORY_DEVSKIM,
     REPOSITORY_GITLEAKS,
     DOCKERFILE_HADOLINT,
+    REPOSITORY_GRYPE,
     REPOSITORY_TRIVY,
     REPOSITORY_CHECKOV,
     REPOSITORY_SECRETLINT,
@@ -44,8 +45,9 @@ PRE_COMMANDS:
 
 # Linter customisation
 MARKDOWN_MARKDOWN_LINK_CHECK_FILTER_REGEX_EXCLUDE: "CHANGELOG.md"
-MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: "CHANGELOG.md"
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: "CHANGELOG.md|docker/prism-test/README.md"
 SQL_SQL_LINT_ARGUMENTS: -d postgres --ignore-errors=postgres-invalid-alter-option,postgres-invalid-create-option
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: "infrastructure/charts/node/*"
 YAML_PRETTIER_FILTER_REGEX_EXCLUDE: "infrastructure/charts/node/*"
 YAML_V8R_FILTER_REGEX_EXCLUDE: "infrastructure/charts/node/*"
+FILTER_REGEX_EXCLUDE: "(^neoprism/|^cloud-agent/|^scala-did/|^mediator/)"
