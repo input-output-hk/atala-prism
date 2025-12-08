@@ -15,11 +15,11 @@ The following services will be available:
 
 > **Note:** Service availability varies by configuration. See [Compose Configurations](#compose-configurations) for details.
 
-| Service                | URL                    | Remark                    |
-|------------------------|------------------------|---------------------------|
-| **Cardano Wallet API** | http://localhost:18081 |                           |
-| **Blockfrost API**     | http://localhost:18082 |                           |
-| **PRISM Node gRPC**    | localhost:50053        |                           |
+| Service                | URL                      | Remark |
+|------------------------|--------------------------|--------|
+| **Cardano Wallet API** | `http://localhost:18081` |        |
+| **Blockfrost API**     | `http://localhost:18082` |        |
+| **PRISM Node gRPC**    | localhost:50053          |        |
 
 Override the PRISM node image tag if needed (default: `2.6.1-SNAPSHOT`):
 
@@ -49,19 +49,19 @@ PRISM_NODE_VERSION=2.6.1-SNAPSHOT \
 
 Complete PRISM testing stack with local Cardano testnet, Blockfrost API compatibility layer, and PRISM Node gRPC. Use this for comprehensive integration testing against the legacy PRISM node while exercising Cardano infrastructure.
 
-| Service | Port | Description |
-|---------|------|-------------|
-| **prism-node** | 50053 | PRISM Node gRPC API |
+| Service            | Port  | Description             |
+|--------------------|-------|-------------------------|
+| **prism-node**     | 50053 | PRISM Node gRPC API     |
 | **cardano-wallet** | 18081 | Cardano Wallet HTTP API |
-| **bf-proxy** | 18082 | Blockfrost API proxy |
+| **bf-proxy**       | 18082 | Blockfrost API proxy    |
 
 ### compose-ci.yml - CI Testing Environment
 
 CI-focused stack mirroring `compose.yml` but built for automation. Use when testing the PRISM node against the full Cardano stack without Blockfrost extras.
 
-| Service | Port | Description |
-|---------|------|-------------|
-| **prism-node** | 50053 | PRISM Node gRPC API |
+| Service            | Port  | Description             |
+|--------------------|-------|-------------------------|
+| **prism-node**     | 50053 | PRISM Node gRPC API     |
 | **cardano-wallet** | 18081 | Cardano Wallet HTTP API |
 
 ## Running Tests
@@ -79,32 +79,34 @@ sbt test
 
 The local Cardano testnet is configured with custom parameters for testing.
 
-| Property | Value |
-|----------|-------|
-| **Network Magic** | `42` |
-| **Network** | Custom testnet |
+| Property          | Value          |
+|-------------------|----------------|
+| **Network Magic** | `42`           |
+| **Network**       | Custom testnet |
 
 ### Wallet
 
 A pre-configured wallet is available on the **cardano-wallet** service for testing purposes.
 
-| Property | Value |
-|----------|-------|
-| **Wallet ID** | `9263a1248b046fe9e1aabc4134b03dc5c3a7ee3d` |
-| **Payment Address** | `addr_test1qp83v2wq3z9mkcjj5ejlupgwt6tcly5mtmz36rpm8w4atvqd5jzpz23y8l4dwfd9l46fl2p86nmkkx5keewdevqxhlyslv99j3` |
-| **Passphrase** | `super_secret` |
-| **Mnemonic** | `mimic candy diamond virus hospital dragon culture price emotion tell update give faint resist faculty soup demand window dignity capital bullet purity practice fossil` |
+| Property            | Value                                                                                                                                                                    |
+|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Wallet ID**       | `9263a1248b046fe9e1aabc4134b03dc5c3a7ee3d`                                                                                                                               |
+| **Payment Address** | `addr_test1qp83v2wq3z9mkcjj5ejlupgwt6tcly5mtmz36rpm8w4atvqd5jzpz23y8l4dwfd9l46fl2p86nmkkx5keewdevqxhlyslv99j3`                                                           |
+| **Passphrase**      | `super_secret`                                                                                                                                                           |
+| **Mnemonic**        | `mimic candy diamond virus hospital dragon culture price emotion tell update give faint resist faculty soup demand window dignity capital bullet purity practice fossil` |
 
 ### DID
 
 A pre-configured DID is published to the **local testnet** and available for testing.
 
-| Property | Value |
-|----------|-------|
-| **DID** | `did:prism:e3b675023ef13a2bd1b015a6b1c88d2bfbfbb09bed5b675598397aec361f0d6e` |
-| **VDR Key Name** | `vdr-0` |
-| **VDR Private Key (hex)** | `d3ed47189d10509305494d89e8f08d139beed1e8ed18c3cf6b38bc897078c052` |
-| **PrismObject (hex)** | `22d50112d2010a086d61737465722d3012473045022100c921083f391f179c947a4e95f8ed226870c32557565f8adba52daebcf47ce5b3022019f8632237331c5183d5ee6d192b617637848e32ce5d26c12dd2a86890b8bd041a7d0a7b0a79123c0a086d61737465722d3010014a2e0a09736563703235366b31122103b20404f350d87eec98982131c176acfea520f26f8901fe08b619a56a0dd9e41712390a057664722d3010084a2e0a09736563703235366b31122102647aff70cfd5d510ec369c512da85faef95803db30bb47499a28c08a590186ac` |
+| Property                  | Value                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **DID**                   | `did:prism:e3b675023ef13a2bd1b015a6b1c88d2bfbfbb09bed5b675598397aec361f0d6e`                                                                                                                                                                                                                                                                                                                                                                       |
+| **VDR Key Name**          | `vdr-0`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **VDR Private Key (hex)** | `d3ed47189d10509305494d89e8f08d139beed1e8ed18c3cf6b38bc897078c052`                                                                                                                                                                                                                                                                                                                                                                                 |
+| **PrismObject (hex)**     | `22d50112d2010a086d61737465722d3012473045022100c921083f391f179c947a4e95f8ed226870c32557565f8adba52daebcf47ce5b3022019f8632237331c5183d5ee6d192b617637848e32ce5d26c12dd2a86890b8bd041a7d0a7b0a79123c0a086d61737465722d3010014a2e0a09736563703235366b31122103b20404f350d87eec98982131c176acfea520f26f8901fe08b619a56a0dd9e41712390a057664722d3010084a2e0a09736563703235366b31122102647aff70cfd5d510ec369c512da85faef95803db30bb47499a28c08a590186ac` |
+
+<!-- markdownlint-disable MD013 -->
 
 ## Generating Test Fixtures
 

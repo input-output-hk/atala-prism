@@ -12,8 +12,8 @@ minSeverity: Info
 # global file rotation settings:
 rotation:
   rpLogLimitBytes: 5000000
-  rpKeepFilesNum:  10
-  rpMaxAgeHours:   24
+  rpKeepFilesNum: 10
+  rpMaxAgeHours: 24
 
 # these backends are initialized:
 setupBackends:
@@ -54,47 +54,47 @@ options:
         - GhcRtsStats
         - MonotonicClock
       subtrace: ObservableTrace
-    '#ekgview':
+    "#ekgview":
       contents:
-      - - tag: Contains
-          contents: 'cardano.epoch-validation.benchmark'
         - - tag: Contains
-            contents: .monoclock.basic.
-      - - tag: Contains
-          contents: 'cardano.epoch-validation.benchmark'
+            contents: "cardano.epoch-validation.benchmark"
+          - - tag: Contains
+              contents: .monoclock.basic.
         - - tag: Contains
-            contents: diff.RTS.cpuNs.timed.
-      - - tag: StartsWith
-          contents: '#ekgview.#aggregation.cardano.epoch-validation.benchmark'
-        - - tag: Contains
-            contents: diff.RTS.gcNum.timed.
+            contents: "cardano.epoch-validation.benchmark"
+          - - tag: Contains
+              contents: diff.RTS.cpuNs.timed.
+        - - tag: StartsWith
+            contents: "#ekgview.#aggregation.cardano.epoch-validation.benchmark"
+          - - tag: Contains
+              contents: diff.RTS.gcNum.timed.
       subtrace: FilterTrace
-    'cardano.epoch-validation.utxo-stats':
+    "cardano.epoch-validation.utxo-stats":
       # Change the `subtrace` value to `Neutral` in order to log
       # `UTxO`-related messages during epoch validation.
       subtrace: NoTrace
-    '#messagecounters.aggregation':
+    "#messagecounters.aggregation":
       subtrace: NoTrace
-    '#messagecounters.ekgview':
+    "#messagecounters.ekgview":
       subtrace: NoTrace
-    '#messagecounters.switchboard':
+    "#messagecounters.switchboard":
       subtrace: NoTrace
-    '#messagecounters.katip':
+    "#messagecounters.katip":
       subtrace: NoTrace
-    '#messagecounters.monitoring':
+    "#messagecounters.monitoring":
       subtrace: NoTrace
-    'cardano.#messagecounters.aggregation':
+    "cardano.#messagecounters.aggregation":
       subtrace: NoTrace
-    'cardano.#messagecounters.ekgview':
+    "cardano.#messagecounters.ekgview":
       subtrace: NoTrace
-    'cardano.#messagecounters.switchboard':
+    "cardano.#messagecounters.switchboard":
       subtrace: NoTrace
-    'cardano.#messagecounters.katip':
+    "cardano.#messagecounters.katip":
       subtrace: NoTrace
-    'cardano.#messagecounters.monitoring':
+    "cardano.#messagecounters.monitoring":
       subtrace: NoTrace
   mapBackends:
     cardano.epoch-validation.benchmark:
       - AggregationBK
-    '#aggregation.cardano.epoch-validation.benchmark':
+    "#aggregation.cardano.epoch-validation.benchmark":
       - EKGViewBK

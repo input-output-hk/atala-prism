@@ -2,43 +2,43 @@
 services:
   bootstrap-testnet:
     command:
-    - bash
-    - -c
-    - 'transactGenesis
+      - bash
+      - -c
+      - "transactGenesis
 
-      hurl ./init-wallet.hurl
+        hurl ./init-wallet.hurl
 
-      hurl ./init-did.hurl
+        hurl ./init-did.hurl
 
 
-      # blockfrost-ryo expects a different location
+        # blockfrost-ryo expects a different location
 
-      cp testnet/conway-genesis.json testnet/genesis.json
+        cp testnet/conway-genesis.json testnet/genesis.json
 
-      cp testnet/byron-genesis.json testnet/byron_genesis.json
+        cp testnet/byron-genesis.json testnet/byron_genesis.json
 
-      '
+        "
     depends_on:
       cardano-node:
         condition: service_healthy
     environment:
-      CARDANO_NODE_NETWORK_ID: '42'
+      CARDANO_NODE_NETWORK_ID: "42"
       CARDANO_NODE_SOCKET_PATH: /node/testnet/socket/node1/sock
       GENESIS_PAYMENT_ADDR: addr_test1qp83v2wq3z9mkcjj5ejlupgwt6tcly5mtmz36rpm8w4atvqd5jzpz23y8l4dwfd9l46fl2p86nmkkx5keewdevqxhlyslv99j3
       HURL_WALLET_BASE_URL: http://cardano-wallet:8090/v2
       HURL_WALLET_PASSPHRASE: super_secret
     image: patextreme/cardano-testnet:20251111-145358
     volumes:
-    - node-testnet:/node/testnet
-    - ./init-wallet.hurl:/node/init-wallet.hurl
-    - ./init-did.hurl:/node/init-did.hurl
+      - node-testnet:/node/testnet
+      - ./init-wallet.hurl:/node/init-wallet.hurl
+      - ./init-did.hurl:/node/init-did.hurl
   cardano-dbsync:
     command:
-    - --config
-    - /config/dbsync-config.yaml
-    - --socket-path
-    - /node/testnet/socket/node1/sock
-    - --force-indexes
+      - --config
+      - /config/dbsync-config.yaml
+      - --socket-path
+      - /node/testnet/socket/node1/sock
+      - --force-indexes
     depends_on:
       cardano-node:
         condition: service_healthy
@@ -48,35 +48,35 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_HOST: db-dbsync
       POSTGRES_PASSWORD: postgres
-      POSTGRES_PORT: '5432'
+      POSTGRES_PORT: "5432"
       POSTGRES_USER: postgres
     image: ghcr.io/intersectmbo/cardano-db-sync:13.6.0.5
     restart: always
     volumes:
-    - node-testnet:/node/testnet
-    - ./dbsync-config.yaml:/config/dbsync-config.yaml
+      - node-testnet:/node/testnet
+      - ./dbsync-config.yaml:/config/dbsync-config.yaml
   cardano-node:
     command:
-    - initTestnet
+      - initTestnet
     environment:
-      CARDANO_NODE_NETWORK_ID: '42'
+      CARDANO_NODE_NETWORK_ID: "42"
       CARDANO_NODE_SOCKET_PATH: /node/testnet/socket/node1/sock
     healthcheck:
       interval: 2s
       retries: 30
       test:
-      - CMD-SHELL
-      - cardano-cli query tip
+        - CMD-SHELL
+        - cardano-cli query tip
       timeout: 5s
     image: patextreme/cardano-testnet:20251111-145358
     volumes:
-    - node-testnet:/node/testnet
+      - node-testnet:/node/testnet
   cardano-wallet:
     command:
-    - bash
-    - -c
-    - "cardano-wallet serve \\\n  --database /wallet/db \\\n  --node-socket /node/testnet/socket/node1/sock\
-      \ \\\n  --testnet /node/testnet/byron-genesis.json \\\n  --listen-address 0.0.0.0\n"
+      - bash
+      - -c
+      - "cardano-wallet serve \\\n  --database /wallet/db \\\n  --node-socket /node/testnet/socket/node1/sock\
+        \ \\\n  --testnet /node/testnet/byron-genesis.json \\\n  --listen-address 0.0.0.0\n"
     depends_on:
       cardano-node:
         condition: service_healthy
@@ -85,15 +85,15 @@ services:
       interval: 2s
       retries: 30
       test:
-      - CMD-SHELL
-      - cardano-wallet network information
+        - CMD-SHELL
+        - cardano-wallet network information
       timeout: 5s
     image: cardanofoundation/cardano-wallet:2025.3.31
     ports:
-    - 18081:8090
+      - 18081:8090
     restart: always
     volumes:
-    - node-testnet:/node/testnet
+      - node-testnet:/node/testnet
   db-dbsync:
     environment:
       POSTGRES_DB: postgres
@@ -103,10 +103,10 @@ services:
       interval: 2s
       retries: 30
       test:
-      - CMD
-      - pg_isready
-      - -U
-      - postgres
+        - CMD
+        - pg_isready
+        - -U
+        - postgres
       timeout: 5s
     image: postgres:16
     restart: always

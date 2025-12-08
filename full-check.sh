@@ -12,8 +12,8 @@ sbt ";clean;scalafmtAll;compile;test;Docker / publishLocal"
 echo "4) E2E/Integration tests (bring up compose stack)..."
 # Derive default PRISM_NODE_VERSION from sbt unless already provided.
 if [[ -z "${PRISM_NODE_VERSION:-}" ]]; then
-  derived_version="$(sbt -Dsbt.supershell=false -error "print version" 2>/dev/null | tail -1 | tr -d '\r')"
-  PRISM_NODE_VERSION="${derived_version:-2.6.1-SNAPSHOT}"
+	derived_version="$(sbt -Dsbt.supershell=false -error "print version" 2>/dev/null | tail -1 | tr -d '\r')"
+	PRISM_NODE_VERSION="${derived_version:-2.6.1-SNAPSHOT}"
 fi
 export PRISM_NODE_VERSION
 docker/prism-test/run-e2e.sh
