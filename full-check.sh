@@ -6,10 +6,13 @@ cd "$REPO_ROOT"
 
 echo "Running full project checks..."
 
-echo "1-3) Clean, format, compile, unit tests, and docker publishLocal..."
+echo "1) MegaLinter (local)..."
+mega-linter-runner --fix
+
+echo "2-4) Clean, format, compile, unit tests, and docker publishLocal..."
 sbt ";clean;scalafmtAll;compile;test;Docker / publishLocal"
 
-echo "4) E2E/Integration tests (bring up compose stack)..."
+echo "5) E2E/Integration tests (bring up compose stack)..."
 # Derive default PRISM_NODE_VERSION from sbt unless already provided.
 if [[ -z "${PRISM_NODE_VERSION:-}" ]]; then
 	derived_version="$(sbt -Dsbt.supershell=false -error "print version" 2>/dev/null | tail -1 | tr -d '\r')"

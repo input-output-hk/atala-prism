@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpECDSA
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import scala.concurrent.duration._
 
 class VdrNegativeSpec extends VdrTestUtils {
 
@@ -435,7 +436,7 @@ class VdrNegativeSpec extends VdrTestUtils {
           val updateOut = resp.outputs(1)
 
           val createId = operationIdOrFail(createOut)
-          awaitApplied(createId)
+          awaitFinal(createId, 180.seconds) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
           // The invalid update should surface an error eagerly or produce a rejected operation id.
           updateOut.operationMaybe.error.orElse(updateOut.operationMaybe.operationId) should not be empty

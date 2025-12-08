@@ -1,5 +1,5 @@
 ---
-name: Linter
+name: MegaLinter
 
 # Default shell is `sh`
 # which is old, use bourne-again version instead
@@ -23,9 +23,11 @@ jobs:
         with:
           token: ${{ secrets.ATALA_GITHUB_TOKEN }}
           fetch-depth: 0
+
       - name: Mega-Linter
         id: ml
         uses: megalinter/megalinter@v7.13.0
+
       - name: Archive production artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v4
