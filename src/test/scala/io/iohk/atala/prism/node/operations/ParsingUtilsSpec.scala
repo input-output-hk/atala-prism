@@ -1,16 +1,17 @@
 package io.iohk.atala.prism.node.operations
 
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.Inside._
 import com.google.protobuf.ByteString
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
-import io.iohk.atala.prism.node.models.ProtocolConstants
-
-import javax.xml.bind.DatatypeConverter
+import io.iohk.atala.prism.node.grpc.ProtoCodecs
+import io.iohk.atala.prism.node.models.{DidSuffix, KeyUsage, ProtocolConstants}
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.CompressedECKeyData
+import org.scalatest.Inside._
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+
+import javax.xml.bind.DatatypeConverter
 
 class ParsingUtilsSpec extends AnyWordSpec with Matchers {
   "ParsingUtils" should {
@@ -108,6 +109,61 @@ class ParsingUtilsSpec extends AnyWordSpec with Matchers {
             pk.data.toByteArray.sameElements(dataByteString.toByteArray) mustBe true
         }
       }
+    }
+
+    "parse VDR signing key usage" in {
+      val key = node_models.PublicKey(
+        id = "vdr0",
+        usage = node_models.KeyUsage.VDR_KEY,
+        keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
+          node_models.CompressedECKeyData(
+            curve = ProtocolConstants.secpCurveName,
+            data = ByteString.copyFrom(Array[Byte](1))
+          )
+        )
+      )
+
+      val parsed = ParsingUtils.parseKey(
+        ValueAtPath(key, Path(Vector.empty)),
+        DidSuffix("didSuffix"),
+        ProtocolConstants.idCharLenLimit
+      )
+
+      inside(parsed) {
+        case Left(err) => fail(err.toString)
+        case Right(value) => value.keyUsage mustBe KeyUsage.VDRKey
+      }
+    }
+
+    "reject VDR signing key if curve is not secp256k1" in {
+      val key = node_models.PublicKey(
+        id = "vdr1",
+        usage = node_models.KeyUsage.VDR_KEY,
+        keyData = node_models.PublicKey.KeyData.CompressedEcKeyData(
+          node_models.CompressedECKeyData(
+            curve = ProtocolConstants.ed25519CurveName,
+            data = ByteString.copyFrom(Array[Byte](1))
+          )
+        )
+      )
+
+      val parsed = ParsingUtils.parseKey(
+        ValueAtPath(key, Path(Vector.empty)),
+        DidSuffix("didSuffix"),
+        ProtocolConstants.idCharLenLimit
+      )
+
+      inside(parsed) {
+        case Left(err: ValidationError.InvalidValue) =>
+          err.explanation must include(ProtocolConstants.secpCurveName)
+        case _ => fail("Expected parsing to fail for non-secp256k1 VDR key")
+      }
+    }
+  }
+
+  "ProtoCodecs" should {
+    "encode VDR signing key usage" in {
+      ProtoCodecs.toProtoKeyUsage(KeyUsage.VDRKey) mustBe node_models.KeyUsage.VDR_KEY
     }
   }
 

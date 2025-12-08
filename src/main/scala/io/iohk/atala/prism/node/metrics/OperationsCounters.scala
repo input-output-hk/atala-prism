@@ -32,6 +32,9 @@ object OperationsCounters {
   private val PROTOCOL_VERSION_UPDATE_OPERATION_VALUE = "protocol-version-update"
   private val UPDATE_DID_OPERATION_TAG_VALUE = "did-update"
   private val DEACTIVATE_DID_TAG_VALUE = "deactivate-did"
+  private val CREATE_STORAGE_TAG_VALUE = "create-storage"
+  private val UPDATE_STORAGE_TAG_VALUE = "update-storage"
+  private val DEACTIVATE_STORAGE_TAG_VALUE = "deactivate-storage"
 
   // Values for atala update did operations
   private val EMPTY_ACTION_TAG_VALUE = "empty-did-update"
@@ -173,6 +176,9 @@ object OperationsCounters {
     case AtalaOperation.Operation.CreateDid(_) => CREATE_DID_TAG_VALUE
     case AtalaOperation.Operation.DeactivateDid(_) => DEACTIVATE_DID_TAG_VALUE
     case AtalaOperation.Operation.ProtocolVersionUpdate(_) => PROTOCOL_VERSION_UPDATE_OPERATION_VALUE
+    case AtalaOperation.Operation.CreateStorageEntry(_) => CREATE_STORAGE_TAG_VALUE
+    case AtalaOperation.Operation.UpdateStorageEntry(_) => UPDATE_STORAGE_TAG_VALUE
+    case AtalaOperation.Operation.DeactivateStorageEntry(_) => DEACTIVATE_STORAGE_TAG_VALUE
     // Just in case, must be impossible
     case AtalaOperation.Operation.UpdateDid(_) => UPDATE_DID_OPERATION_TAG_VALUE
   }

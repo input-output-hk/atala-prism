@@ -323,6 +323,12 @@ package object operations {
         ProtocolVersionUpdateOperation.parse(signedOperation, ledgerData)
       case _: node_models.AtalaOperation.Operation.DeactivateDid =>
         DeactivateDIDOperation.parse(signedOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.CreateStorageEntry =>
+        StorageOperations.parseCreate(signedOperation.getOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.UpdateStorageEntry =>
+        StorageOperations.parseUpdate(signedOperation.getOperation, ledgerData)
+      case _: node_models.AtalaOperation.Operation.DeactivateStorageEntry =>
+        StorageOperations.parseDeactivate(signedOperation.getOperation, ledgerData)
       case empty @ node_models.AtalaOperation.Operation.Empty =>
         Left(
           InvalidValue(

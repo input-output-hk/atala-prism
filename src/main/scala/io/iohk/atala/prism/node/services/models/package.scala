@@ -7,6 +7,11 @@ import io.iohk.atala.prism.node.models.TransactionInfo
 import io.iohk.atala.prism.node.operations.CreateDIDOperation
 import io.iohk.atala.prism.node.operations.DeactivateDIDOperation
 import io.iohk.atala.prism.node.operations.ProtocolVersionUpdateOperation
+import io.iohk.atala.prism.node.operations.{
+  CreateStorageEntryOperation,
+  DeactivateStorageEntryOperation,
+  UpdateStorageEntryOperation
+}
 import io.iohk.atala.prism.node.operations.UpdateDIDOperation
 import io.iohk.atala.prism.node.operations.ValidationError
 import io.iohk.atala.prism.node.operations.parseOperationWithMockedLedger
@@ -14,6 +19,7 @@ import io.iohk.atala.prism.protos.node_api
 import io.iohk.atala.prism.protos.node_api.OperationOutput
 import io.iohk.atala.prism.protos.node_models
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
+import com.google.protobuf.ByteString
 import tofu.logging.derivation.loggable
 
 package object models {
@@ -58,6 +64,24 @@ package object models {
         OperationOutput(
           OperationOutput.Result.DeactivateDidOutput(
             node_api.DeactivateDIDOutput()
+          )
+        )
+      case CreateStorageEntryOperation(_, _, _, digest, _) =>
+        OperationOutput(
+          OperationOutput.Result.CreateVdrEntryOutput(
+            node_api.CreateVdrEntryOutput(ByteString.copyFrom(digest.bytes.toArray))
+          )
+        )
+      case UpdateStorageEntryOperation(_, _, digest, _) =>
+        OperationOutput(
+          OperationOutput.Result.UpdateVdrEntryOutput(
+            node_api.UpdateVdrEntryOutput(ByteString.copyFrom(digest.bytes.toArray))
+          )
+        )
+      case DeactivateStorageEntryOperation(_, digest, _) =>
+        OperationOutput(
+          OperationOutput.Result.DeactivateVdrEntryOutput(
+            node_api.DeactivateVdrEntryOutput().withEventHash(ByteString.copyFrom(digest.bytes.toArray))
           )
         )
       case other =>

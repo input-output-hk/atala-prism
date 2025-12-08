@@ -59,12 +59,12 @@ their goals and how they are, or are not, important to Atala Prism.
 
 * [*explorer-api*](https://input-output-hk.github.io/cardano-rest/explorer-api/)
   
-  explorer-api allows to query blockchain data 
+  explorer-api allows to query blockchain data
   
 * [*submit-api*](https://input-output-hk.github.io/cardano-rest/submit-api/)
 
   submit-api allows to submit a new transaction into the blockchain
-  #### (explorer/submit)
+#### (explorer/submit)
   
   They won't get any new features, meaning *explorer-api* won't return metadata but, given
   *submit-api* only takes a serialized signed transaction as argument, one can
@@ -107,4 +107,11 @@ Atala Prism integrates with:
   the [*Cardano Wallet Backend
   API*](https://cardano-foundation.github.io/cardano-wallet/api/edge/) simplifies
   submitting transactions to Cardano.
+
+## PRISM VDR storage support
+
+- The node implements the Cardano PRISM VDR driver spec (<https://github.com/hyperledger-identus/prism-vdr-driver/blob/main/prism-vdr-specification.md>) with dedicated storage operations: create/update/deactivate VDR entry, plus get/verify endpoints.
+- VDR entries carry opaque `StorageData` (raw bytes or IPFS CID) and are chained by `previous_event_hash`; deactivation is expressed as a new event with status `DEACTIVATED`.
+- VDR operations must be signed with an active `VDR_KEY` (secp256k1 only) on the target DID; the key is optional and does not replace the master key.
+- Nodes without the storage feature can ignore these operations at the API layer; ledger batching reuses the standard AtalaOperation flow.
 .

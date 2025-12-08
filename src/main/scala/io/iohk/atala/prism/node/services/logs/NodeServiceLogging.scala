@@ -13,6 +13,7 @@ import io.iohk.atala.prism.node.models.ProtocolVersion
 import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_api.OperationOutput
+import io.iohk.atala.prism.protos.node_api
 import tofu.higherKind.Mid
 import tofu.logging.ServiceLogging
 import tofu.syntax.logging._
@@ -75,5 +76,30 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
     info"getting current protocol version" *> in
       .flatTap(res => info"current protocol version - done: $res")
       .onError(errorCause"encountered an error while getting current protocol version" (_))
+
+  override def getVdrEntry(eventHash: ByteString): Mid[F, Either[NodeError, node_api.VdrEntry]] = { in =>
+    val description = s"getting VDR entry ${eventHash.toByteArray.map("%02X" format _).mkString}"
+    info"$description" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while $description: $err",
+          _ => info"$description - done"
+        )
+      )
+      .onError(errorCause"encountered an error while $description" (_))
+  }
+
+  override def verifyVdrEntry(eventHash: ByteString): Mid[F, Either[NodeError, node_api.VerifyVdrEntryResponse]] = {
+    val description = s"verifying VDR entry ${eventHash.toByteArray.map("%02X" format _).mkString}"
+    in =>
+      info"$description" *> in
+        .flatTap(
+          _.fold(
+            err => error"encountered an error while $description: $err",
+            res => info"$description - done: ${res.valid}"
+          )
+        )
+        .onError(errorCause"encountered an error while $description" (_))
+  }
 
 }

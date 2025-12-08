@@ -13,7 +13,7 @@ import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId, VdrEntryStatus}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models._
@@ -22,11 +22,13 @@ import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.atala.prism.node.repositories.DIDDataRepository
+import io.iohk.atala.prism.node.repositories.{VdrEntriesRepository, VdrEntry}
 import io.iohk.atala.prism.node.services.{BlockProcessingServiceSpec, NodeService, ObjectManagementService}
 import io.iohk.atala.prism.node.models.TimestampInfo
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.node_api.OperationOutput
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import cats.syntax.applicative._
 import io.iohk.atala.prism.node.utils.IOUtils._
 import io.iohk.atala.prism.node.utils.syntax._
 import org.mockito.scalatest.{MockitoSugar, ResetMocksAfterEachTest}
@@ -36,6 +38,7 @@ import tofu.logging.Logs
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
+import scala.collection.concurrent.TrieMap
 
 class NodeServiceSpec
     extends AtalaWithPostgresSpec
@@ -46,6 +49,7 @@ class NodeServiceSpec
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
   protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
+  private var vdrEntriesStore: TrieMap[Sha256Hash, VdrEntry] = _
 
   private val logs = Logs.withContext[IO, IOWithTraceIdContext]
   private val objectManagementService =
@@ -57,7 +61,54 @@ class NodeServiceSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
+    vdrEntriesStore = TrieMap.empty[Sha256Hash, VdrEntry]
+
     val didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, logs)
+    val vdrEntriesRepository = new VdrEntriesRepository[IOWithTraceIdContext] {
+      override def insertCreate(
+          eventHash: Sha256Hash,
+          didSuffix: DidSuffix,
+          nonce: Option[Array[Byte]],
+          data: StorageData,
+          ledgerData: LedgerData
+      ): IOWithTraceIdContext[Unit] = {
+        vdrEntriesStore.put(
+          eventHash,
+          VdrEntry(eventHash, didSuffix, Some(data), None, VdrEntryStatus.ACTIVE, nonce)
+        )
+        ().pure[IOWithTraceIdContext]
+      }
+
+      override def insertUpdate(
+          eventHash: Sha256Hash,
+          didSuffix: DidSuffix,
+          previousEventHash: Sha256Hash,
+          data: StorageData,
+          ledgerData: LedgerData
+      ): IOWithTraceIdContext[Unit] = {
+        vdrEntriesStore.put(
+          eventHash,
+          VdrEntry(eventHash, didSuffix, Some(data), Some(previousEventHash), VdrEntryStatus.ACTIVE, None)
+        )
+        ().pure[IOWithTraceIdContext]
+      }
+
+      override def insertDeactivate(
+          eventHash: Sha256Hash,
+          didSuffix: DidSuffix,
+          previousEventHash: Sha256Hash,
+          ledgerData: LedgerData
+      ): IOWithTraceIdContext[Unit] = {
+        vdrEntriesStore.put(
+          eventHash,
+          VdrEntry(eventHash, didSuffix, None, Some(previousEventHash), VdrEntryStatus.DEACTIVATED, None)
+        )
+        ().pure[IOWithTraceIdContext]
+      }
+
+      override def find(eventHash: Sha256Hash): IOWithTraceIdContext[Option[VdrEntry]] =
+        vdrEntriesStore.get(eventHash).pure[IOWithTraceIdContext]
+    }
 
     serverName = InProcessServerBuilder.generateName()
 
@@ -71,6 +122,7 @@ class NodeServiceSpec
               NodeService.unsafe(
                 didDataRepository,
                 objectManagementService,
+                vdrEntriesRepository,
                 logs
               )
             ),
@@ -536,6 +588,221 @@ class NodeServiceSpec
         updateOperation
       )
       verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "properly return the result of a VDR Create operation" in {
+      val didHash = Sha256Hash.compute("vdr-grpc".getBytes)
+      val vdrKeys = CryptoTestUtils.generateKeyPair()
+      val createOp = node_models
+        .AtalaOperation()
+        .withCreateStorageEntry(
+          node_models
+            .CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+        )
+      val signedCreate = BlockProcessingServiceSpec.signOperation(createOp, "vdr", vdrKeys.privateKey)
+      val opId = AtalaOperationId.of(signedCreate)
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(opId)))
+      ).when(objectManagementService)
+        .scheduleAtalaOperations(*)
+
+      val response = service.scheduleOperations(
+        node_api
+          .ScheduleOperationsRequest()
+          .withSignedOperations(Seq(signedCreate))
+      )
+
+      val expectedEventHash = Sha256Hash.compute(createOp.toByteArray)
+      response.outputs.size mustBe 1
+      response.outputs.head.getCreateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        expectedEventHash.bytes.toArray
+      )
+      response.outputs.head.operationMaybe.operationId.value mustEqual opId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
+
+      verify(objectManagementService).scheduleAtalaOperations(signedCreate)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "properly return the result of VDR Update and Deactivate operations" in {
+      val prevHash = Sha256Hash.compute("prev-grpc".getBytes)
+      val vdrKeys = CryptoTestUtils.generateKeyPair()
+
+      val updateOp = node_models
+        .AtalaOperation()
+        .withUpdateStorageEntry(
+          node_models
+            .UpdateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
+            .withData(node_models.StorageData().withIpfsCid("cid-grpc"))
+        )
+      val signedUpdate = BlockProcessingServiceSpec.signOperation(updateOp, "vdr", vdrKeys.privateKey)
+      val updateId = AtalaOperationId.of(signedUpdate)
+
+      val deactivateOp = node_models
+        .AtalaOperation()
+        .withDeactivateStorageEntry(
+          node_models
+            .DeactivateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
+        )
+      val signedDeactivate = BlockProcessingServiceSpec.signOperation(deactivateOp, "vdr", vdrKeys.privateKey)
+      val deactivateId = AtalaOperationId.of(signedDeactivate)
+
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(updateId), Right(deactivateId)))
+      ).when(objectManagementService)
+        .scheduleAtalaOperations(*)
+
+      val response = service.scheduleOperations(
+        node_api
+          .ScheduleOperationsRequest()
+          .withSignedOperations(Seq(signedUpdate, signedDeactivate))
+      )
+
+      response.outputs.size mustBe 2
+      response.outputs.head.getUpdateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(updateOp.toByteArray).bytes.toArray
+      )
+      response.outputs.head.operationMaybe.operationId.value mustEqual updateId.toProtoByteString
+      response.outputs.head.operationMaybe.error mustBe None
+
+      response.outputs(1).getDeactivateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray
+      )
+      response.outputs(1).operationMaybe.operationId.value mustEqual deactivateId.toProtoByteString
+      response.outputs(1).operationMaybe.error mustBe None
+
+      verify(objectManagementService).scheduleAtalaOperations(signedUpdate, signedDeactivate)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+  }
+
+  "NodeService VDR operations" should {
+    "schedule a create storage entry via the dedicated endpoint" in {
+      val didHash = Sha256Hash.compute("vdr-create".getBytes)
+      val op = node_models
+        .AtalaOperation()
+        .withCreateStorageEntry(
+          node_models
+            .CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+        )
+      val signed = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(op))
+      val operationId = AtalaOperationId.of(signed)
+      mockOperationId(operationId)
+
+      val response = service
+        .createVdrEntry(node_api.CreateVdrEntryRequest().withSignedOperation(signed))
+        .output
+        .value
+
+      response.getCreateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(op.toByteArray).bytes.toArray
+      )
+      response.getOperationId mustEqual operationId.toProtoByteString
+      verify(objectManagementService).scheduleAtalaOperations(signed)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "schedule update and deactivate storage entries" in {
+      val prevHash = Sha256Hash.compute("prev".getBytes)
+      val updateOp = node_models
+        .AtalaOperation()
+        .withUpdateStorageEntry(
+          node_models
+            .UpdateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
+            .withData(node_models.StorageData().withIpfsCid("cid"))
+        )
+      val signedUpdate = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(updateOp))
+      val updateOperationId = AtalaOperationId.of(signedUpdate)
+      val deactivateOp = node_models
+        .AtalaOperation()
+        .withDeactivateStorageEntry(
+          node_models
+            .DeactivateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
+        )
+      val signedDeactivate = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(deactivateOp))
+      val deactivateOperationId = AtalaOperationId.of(signedDeactivate)
+      doReturn(
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(updateOperationId))),
+        fake[List[Either[NodeError, AtalaOperationId]]](List(Right(deactivateOperationId)))
+      ).when(objectManagementService).scheduleAtalaOperations(*)
+
+      val updateResponse =
+        service.updateVdrEntry(node_api.UpdateVdrEntryRequest().withSignedOperation(signedUpdate)).output.value
+      updateResponse.getUpdateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(updateOp.toByteArray).bytes.toArray
+      )
+      updateResponse.getOperationId mustEqual updateOperationId.toProtoByteString
+
+      val deactivateResponse =
+        service
+          .deactivateVdrEntry(node_api.DeactivateVdrEntryRequest().withSignedOperation(signedDeactivate))
+          .output
+          .value
+      deactivateResponse.getDeactivateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
+        Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray
+      )
+      deactivateResponse.getOperationId mustEqual deactivateOperationId.toProtoByteString
+
+      verify(objectManagementService).scheduleAtalaOperations(signedUpdate)
+      verify(objectManagementService).scheduleAtalaOperations(signedDeactivate)
+      verifyNoMoreInteractions(objectManagementService)
+    }
+
+    "return stored VDR entries" in {
+      val eventHash = Sha256Hash.compute("entry".getBytes)
+      val payload = "entry-payload".getBytes
+      vdrEntriesStore.put(
+        eventHash,
+        VdrEntry(
+          eventHash,
+          DidSuffix("didSuffix"),
+          Some(StorageData.Bytes(payload.toVector)),
+          None,
+          VdrEntryStatus.ACTIVE,
+          Some("nonce".getBytes)
+        )
+      )
+
+      val response = service.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(eventHash.bytes.toArray)))
+
+      val entry = response.entry.value
+      entry.eventHash mustBe ByteString.copyFrom(eventHash.bytes.toArray)
+      entry.didSuffix mustBe "didSuffix"
+      entry.deactivated mustBe false
+      entry.nonce.toByteArray.toVector mustBe "nonce".getBytes.toVector
+      entry.data.value.content mustBe node_models.StorageData.Content.Bytes(ByteString.copyFrom(payload))
+    }
+
+    "verify VDR entry chains and report missing links" in {
+      val rootHash = Sha256Hash.compute("root".getBytes)
+      val childHash = Sha256Hash.compute("child".getBytes)
+      vdrEntriesStore.put(
+        rootHash,
+        VdrEntry(rootHash, DidSuffix("didSuffix"), None, None, VdrEntryStatus.ACTIVE, None)
+      )
+      vdrEntriesStore.put(
+        childHash,
+        VdrEntry(childHash, DidSuffix("didSuffix"), None, Some(rootHash), VdrEntryStatus.ACTIVE, None)
+      )
+
+      val ok =
+        service.verifyVdrEntry(node_api.VerifyVdrEntryRequest(ByteString.copyFrom(childHash.bytes.toArray)))
+      ok.valid mustBe true
+      ok.reason mustBe ""
+
+      val missingHash = Sha256Hash.compute("missing".getBytes)
+      val missing =
+        service.verifyVdrEntry(node_api.VerifyVdrEntryRequest(ByteString.copyFrom(missingHash.bytes.toArray)))
+      missing.valid mustBe false
+      missing.reason must include("missing VDR entry")
     }
   }
 }

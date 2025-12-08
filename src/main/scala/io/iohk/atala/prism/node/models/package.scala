@@ -53,7 +53,10 @@ package object models {
     case object CapabilityDelegationKey extends KeyUsage {
       override def toProto: node_models.KeyUsage = node_models.KeyUsage.CAPABILITY_DELEGATION_KEY
       override def derivationIndex: Int = 6
-
+    }
+    case object VDRKey extends KeyUsage {
+      override def toProto: node_models.KeyUsage = node_models.KeyUsage.VDR_KEY
+      override def derivationIndex: Int = 7
     }
 
   }
@@ -116,6 +119,14 @@ package object models {
     case object REJECTED extends AtalaOperationStatus // Confirmed, but rejected by PRISM
   }
 
+  sealed trait VdrEntryStatus extends EnumEntry with UpperSnakecase
+  object VdrEntryStatus extends Enum[VdrEntryStatus] {
+    val values = findValues
+
+    case object ACTIVE extends VdrEntryStatus
+    case object DEACTIVATED extends VdrEntryStatus
+  }
+
   @derive(loggable)
   case class ProtocolVersion(major: Int, minor: Int) {
     override def toString: String = s"$major.$minor"
@@ -149,6 +160,12 @@ package object models {
       curveName: String,
       compressedKey: Vector[Byte]
   )
+
+  sealed trait StorageData
+  object StorageData {
+    case class Bytes(value: Vector[Byte]) extends StorageData
+    case class IpfsCid(value: String) extends StorageData
+  }
 
   object nodeState {
 

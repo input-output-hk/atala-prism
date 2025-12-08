@@ -41,6 +41,16 @@ package object daos extends BaseDAO {
       _.entryName
     )
 
+  implicit val pgVdrEntryStatus: Meta[VdrEntryStatus] =
+    pgEnumString[VdrEntryStatus](
+      "VDR_ENTRY_STATUS",
+      a =>
+        VdrEntryStatus
+          .withNameOption(a)
+          .getOrElse(throw InvalidEnum[VdrEntryStatus](a)),
+      _.entryName
+    )
+
   implicit val pgOperationStatusMeta: Meta[AtalaOperationStatus] =
     pgEnumString[AtalaOperationStatus](
       "ATALA_OPERATION_STATUS",

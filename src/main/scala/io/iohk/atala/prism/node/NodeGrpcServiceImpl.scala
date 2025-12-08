@@ -20,6 +20,7 @@ import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api}
+import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.node.tracing.Tracing._
 import io.iohk.atala.prism.node.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
@@ -229,6 +230,90 @@ class NodeGrpcServiceImpl(
       }
     )
   }
+
+  override def createVdrEntry(request: node_api.CreateVdrEntryRequest): Future[node_api.CreateVdrEntryResponse] =
+    handleSingleOperation(requireSignedOperation(request.signedOperation, "createVdrEntry"), "createVdrEntry").map {
+      out =>
+        node_api.CreateVdrEntryResponse().withOutput(out)
+    }
+
+  override def updateVdrEntry(request: node_api.UpdateVdrEntryRequest): Future[node_api.UpdateVdrEntryResponse] =
+    handleSingleOperation(requireSignedOperation(request.signedOperation, "updateVdrEntry"), "updateVdrEntry").map {
+      out =>
+        node_api.UpdateVdrEntryResponse().withOutput(out)
+    }
+
+  override def deactivateVdrEntry(
+      request: node_api.DeactivateVdrEntryRequest
+  ): Future[node_api.DeactivateVdrEntryResponse] =
+    handleSingleOperation(
+      requireSignedOperation(request.signedOperation, "deactivateVdrEntry"),
+      "deactivateVdrEntry"
+    ).map { out =>
+      node_api.DeactivateVdrEntryResponse().withOutput(out)
+    }
+
+  override def getVdrEntry(request: node_api.GetVdrEntryRequest): Future[node_api.GetVdrEntryResponse] = {
+    val methodName = "getVdrEntry"
+    measureRequestFuture(serviceName, methodName) {
+      trace { traceId =>
+        nodeService
+          .getVdrEntry(request.eventHash)
+          .map(
+            _.fold(
+              err => countAndThrowNodeError(methodName, err),
+              entry => node_api.GetVdrEntryResponse().withEntry(entry)
+            )
+          )
+          .run(traceId)
+          .unsafeToFuture()
+      }
+    }
+  }
+
+  override def verifyVdrEntry(request: node_api.VerifyVdrEntryRequest): Future[node_api.VerifyVdrEntryResponse] = {
+    val methodName = "verifyVdrEntry"
+    measureRequestFuture(serviceName, methodName) {
+      trace { traceId =>
+        nodeService
+          .verifyVdrEntry(request.eventHash)
+          .map(_.fold(err => countAndThrowNodeError(methodName, err), resp => resp))
+          .run(traceId)
+          .unsafeToFuture()
+      }
+    }
+  }
+
+  private def handleSingleOperation(
+      op: SignedAtalaOperation,
+      methodName: String
+  ): Future[node_api.OperationOutput] =
+    measureRequestFuture(serviceName, methodName) {
+      trace { traceId =>
+        val query = for {
+          outputsE <- nodeService.parseOperations(Seq(op))
+          outputs = outputsE.fold(err => countAndThrowNodeError(methodName, err), outs => outs)
+          ids <- nodeService.scheduleAtalaOperations(op)
+          output = outputs.headOption.zip(ids.headOption).headOption match {
+            case Some((out, Right(opId))) => out.withOperationId(opId.toProtoByteString)
+            case Some((out, Left(err))) => out.withError(err.toString)
+            case None => node_api.OperationOutput().withError("Empty operation output")
+          }
+        } yield output
+        query.run(traceId).unsafeToFuture()
+      }
+    }
+
+  private def requireSignedOperation(
+      opOpt: Option[SignedAtalaOperation],
+      methodName: String
+  ): SignedAtalaOperation =
+    opOpt.getOrElse(
+      countAndThrowNodeError(
+        methodName,
+        NodeError.InvalidArgument("signed_operation is required")
+      )
+    )
 }
 
 object NodeGrpcServiceImpl {

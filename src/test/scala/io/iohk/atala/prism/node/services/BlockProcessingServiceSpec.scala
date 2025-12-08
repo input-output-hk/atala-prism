@@ -17,6 +17,7 @@ import io.iohk.atala.prism.node.operations.{
 }
 import io.iohk.atala.prism.node.operations.UpdateDIDOperationSpec.{exampleAddKeyAction, exampleRemoveKeyAction}
 import io.iohk.atala.prism.node.repositories.daos.DIDDataDAO
+import io.iohk.atala.prism.node.repositories.daos.VdrEntriesDAO
 import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.OptionValues._
@@ -108,6 +109,107 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
         None
       )
       atalaOperationInfo must be(expectedAtalaOperationInfo)
+    }
+
+    "apply VDR storage operations and persist entries" in {
+      val didDigest = Sha256Hash.compute("vdr-did".getBytes)
+      val didSuffix = DidSuffix(didDigest.hexEncoded)
+      val masterKeys = CryptoTestUtils.generateKeyPair()
+      val vdrKeys = CryptoTestUtils.generateKeyPair()
+
+      val didData = io.iohk.atala.prism.node.models.DIDData(
+        didSuffix,
+        keys = List(
+          io.iohk.atala.prism.node.models.DIDPublicKey(
+            didSuffix,
+            "master",
+            io.iohk.atala.prism.node.models.KeyUsage.MasterKey,
+            CryptoTestUtils.toPublicKeyData(masterKeys.publicKey)
+          ),
+          io.iohk.atala.prism.node.models.DIDPublicKey(
+            didSuffix,
+            "vdr",
+            io.iohk.atala.prism.node.models.KeyUsage.VDRKey,
+            CryptoTestUtils.toPublicKeyData(vdrKeys.publicKey)
+          )
+        ),
+        services = Nil,
+        context = Nil,
+        lastOperation = didDigest
+      )
+      DataPreparation.createDID(didData, DataPreparation.dummyLedgerData)
+
+      val createOp = node_models
+        .AtalaOperation()
+        .withCreateStorageEntry(
+          node_models
+            .CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didDigest.bytes.toArray))
+            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload-1")))
+        )
+      val createDigest = Sha256Hash.compute(createOp.toByteArray)
+      val signedCreate = signOperation(createOp, "vdr", vdrKeys.privateKey)
+
+      val updateOp = node_models
+        .AtalaOperation()
+        .withUpdateStorageEntry(
+          node_models
+            .UpdateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
+            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+        )
+      val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
+      val signedUpdate = signOperation(updateOp, "vdr", vdrKeys.privateKey)
+
+      val deactivateOp = node_models
+        .AtalaOperation()
+        .withDeactivateStorageEntry(
+          node_models
+            .DeactivateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(updateDigest.bytes.toArray))
+        )
+      val deactivateDigest = Sha256Hash.compute(deactivateOp.toByteArray)
+      val signedDeactivate = signOperation(deactivateOp, "vdr", vdrKeys.privateKey)
+
+      val (objId, opIds) = DataPreparation.insertOperationStatuses(
+        List(signedCreate, signedUpdate, signedDeactivate),
+        AtalaOperationStatus.RECEIVED
+      )
+
+      val result = service
+        .processBlock(
+          node_models.AtalaBlock(Seq(signedCreate, signedUpdate, signedDeactivate)),
+          dummyTransactionId,
+          dummyLedger,
+          dummyTimestamp,
+          dummyABSequenceNumber
+        )
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      result mustBe true
+
+      opIds.foreach { opId =>
+        val info = DataPreparation.getOperationInfo(opId).value
+        info.objectId mustBe objId
+        info.operationStatus mustBe AtalaOperationStatus.APPLIED
+      }
+
+      val created = VdrEntriesDAO.find(createDigest).transact(database).unsafeRunSync().value
+      created.dataType mustBe "BYTES"
+      created.dataBytes.value mustBe "payload-1".getBytes
+      created.status mustBe io.iohk.atala.prism.node.models.VdrEntryStatus.ACTIVE
+
+      val updated = VdrEntriesDAO.find(updateDigest).transact(database).unsafeRunSync().value
+      updated.previousEventHash.value mustBe createDigest
+      updated.dataType mustBe "IPFS"
+      updated.dataIpfs.value mustBe "cid-2"
+      updated.status mustBe io.iohk.atala.prism.node.models.VdrEntryStatus.ACTIVE
+
+      val deactivated = VdrEntriesDAO.find(deactivateDigest).transact(database).unsafeRunSync().value
+      deactivated.previousEventHash.value mustBe updateDigest
+      deactivated.status mustBe io.iohk.atala.prism.node.models.VdrEntryStatus.DEACTIVATED
     }
 
     "apply block received by other node instance" in {

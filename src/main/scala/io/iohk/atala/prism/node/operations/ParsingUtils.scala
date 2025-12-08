@@ -406,6 +406,8 @@ object ParsingUtils {
           Right(KeyUsage.CapabilityInvocationKey)
         case node_models.KeyUsage.CAPABILITY_DELEGATION_KEY =>
           Right(KeyUsage.CapabilityDelegationKey)
+        case node_models.KeyUsage.VDR_KEY =>
+          Right(KeyUsage.VDRKey)
         case _ => Left("Unknown value")
       }
       keyId <- parseKeyId(key.child(_.id, "id"), idCharLenLimit)
@@ -415,6 +417,19 @@ object ParsingUtils {
         MissingValue(key.path / "keyData")
       )
       publicKey <- parseKeyData(key)
+      curvePath =
+        if (key(_.keyData.isEcKeyData))
+          key.child(_.getEcKeyData, "ecKeyData").path / "curve"
+        else key.child(_.getCompressedEcKeyData, "compressedEcKeyData").path / "curve"
+      _ <- Either.cond(
+        !(keyUsage == KeyUsage.VDRKey) || publicKey.curveName == ProtocolConstants.secpCurveName,
+        (),
+        InvalidValue(
+          curvePath,
+          publicKey.curveName,
+          s"VDR signing keys must use ${ProtocolConstants.secpCurveName}"
+        )
+      )
     } yield DIDPublicKey(didSuffix, keyId, keyUsage, publicKey)
   }
 

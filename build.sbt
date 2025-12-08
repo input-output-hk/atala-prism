@@ -3,7 +3,6 @@ import sbt.Keys.*
 import sbtassembly.AssemblyPlugin.autoImport.*
 import sbtbuildinfo.BuildInfoPlugin
 import sbtbuildinfo.BuildInfoPlugin.autoImport.*
-import sbtghpackages.GitHubPackagesPlugin.autoImport.*
 import sbtprotoc.ProtocPlugin.autoImport.PB
 
 inThisBuild(
@@ -12,9 +11,7 @@ inThisBuild(
     scalaVersion := "2.13.15",
     fork := true,
     run / connectInput := true,
-    versionScheme := Some("semver-spec"),
-    githubOwner := "input-output-hk",
-    githubRepository := "atala-prism"
+    versionScheme := Some("semver-spec")
   )
 )
 
@@ -163,7 +160,6 @@ lazy val root =
       ),
       scalacOptions += "-Ymacro-annotations",
       javacOptions ++= Seq("-source", "1.11", "-target", "1.11"),
-      githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
       addCompilerPlugin(
         "org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full
       ),
@@ -219,11 +215,12 @@ lazy val root =
       resolvers += Resolver.jcenterRepo,
       resolvers += Resolver.mavenCentral,
       Docker / maintainer := "atala-coredid@iohk.io",
-      Docker / dockerUsername := Some("input-output-hk"),
-      Docker / dockerRepository := Some("ghcr.io"),
+      Docker / dockerUsername := Some("inputoutput"),
+      Docker / dockerRepository := Some("docker.io"),
       Docker / packageName := "prism-node",
       dockerExposedPorts := Seq(5432),
-      dockerBaseImage := "openjdk:11",
+      // openjdk:11 no longer published; switch to maintained Eclipse Temurin Java 11 image
+      dockerBaseImage := "eclipse-temurin:11-jre",
       libraryDependencies
         ++= Dependencies.circeDependencies
           ++ Dependencies.tofuDependencies
@@ -252,6 +249,25 @@ lazy val root =
           )
     )
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
+
+lazy val e2e =
+  project
+    .in(file("e2e"))
+    .configs(IntegrationTest)
+    .dependsOn(root)
+    .settings(
+      name := "node-e2e",
+      publish / skip := true,
+      Defaults.itSettings,
+      IntegrationTest / scalaSource := baseDirectory.value / "src" / "it" / "scala",
+      IntegrationTest / resourceDirectory := baseDirectory.value / "src" / "it" / "resources",
+      IntegrationTest / parallelExecution := false,
+      IntegrationTest / fork := true,
+      libraryDependencies ++= Seq(
+        "org.scalatest" %% "scalatest" % versions.scalatest % IntegrationTest
+      )
+    )
+    .settings(addCommandAlias("e2eTest", "e2e/it:test"))
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 

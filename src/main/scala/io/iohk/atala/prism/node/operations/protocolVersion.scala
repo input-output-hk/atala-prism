@@ -28,7 +28,8 @@ package object protocolVersion {
         case (
               ProtocolVersion1_0,
               _: CreateDIDOperation | _: UpdateDIDOperation | _: ProtocolVersionUpdateOperation |
-              _: DeactivateDIDOperation
+              _: DeactivateDIDOperation | _: CreateStorageEntryOperation | _: UpdateStorageEntryOperation |
+              _: DeactivateStorageEntryOperation
             ) =>
           true
         case _ => false
