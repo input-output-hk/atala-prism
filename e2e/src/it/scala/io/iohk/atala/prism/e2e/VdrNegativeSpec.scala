@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import io.iohk.atala.prism.node.crypto.CryptoUtils.SecpECDSA
 import io.iohk.atala.prism.protos.{common_models, node_api, node_models}
+import scala.concurrent.duration._
 
 class VdrNegativeSpec extends VdrTestUtils {
 

@@ -23,7 +23,7 @@ jobs:
         with:
           token: ${{ secrets.ATALA_GITHUB_TOKEN }}
           fetch-depth: 0
-          
+
       - name: Mega-Linter
         id: ml
         uses: megalinter/megalinter@v7.13.0
