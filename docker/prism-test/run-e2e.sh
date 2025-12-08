@@ -3,12 +3,18 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 COMPOSE_FILE="${COMPOSE_FILE:-${REPO_ROOT}/docker/prism-test/compose.yml}"
-# Allow overriding the prism-node image tag used by the compose file. If not provided, ask sbt for the current project version.
+# Allow overriding the prism-node image tag used by the compose file. If not provided, try sbt, then version.sbt, then fallback.
 detect_version() {
-	sbt -Dsbt.supershell=false -error "print version" 2>/dev/null | tail -1 | tr -d '\r'
+	sbt -Dsbt.supershell=false -error "print version" 2>/dev/null | tail -1 | tr -d '\r' || true
+}
+fallback_version() {
+	grep -Eo 'version := \"([^\"]+)\"' "$REPO_ROOT/version.sbt" | head -1 | cut -d'"' -f2 || true
 }
 export PRISM_NODE_VERSION="${PRISM_NODE_VERSION:-$(detect_version)}"
-if [[ -z "${PRISM_NODE_VERSION}" ]]; then
+if [[ -z "${PRISM_NODE_VERSION// }" ]]; then
+	PRISM_NODE_VERSION="$(fallback_version)"
+fi
+if [[ -z "${PRISM_NODE_VERSION// }" ]]; then
 	PRISM_NODE_VERSION="2.6.1-SNAPSHOT"
 fi
 
