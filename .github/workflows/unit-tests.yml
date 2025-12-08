@@ -12,6 +12,7 @@ env:
   SCALA_VERSION: "2.13"
   GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+  COURSIER_JAVA_ARGS: "-Djdk.tls.client.protocols=TLSv1.2"
 
 jobs:
   build-and-test:
