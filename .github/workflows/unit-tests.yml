@@ -13,6 +13,8 @@ env:
   GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
   COURSIER_JAVA_ARGS: "-Djdk.tls.client.protocols=TLSv1.2"
+  JAVA_TOOL_OPTIONS: "-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2"
+  SBT_OPTS: "-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2"
 
 jobs:
   build-and-test:
