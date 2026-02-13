@@ -236,6 +236,8 @@ message DeactivateVdrEntryResponse {
 
 message GetVdrEntryRequest {
     bytes event_hash = 1;
+    bytes entry_id = 2;
+    bool latest = 3;
 }
 
 message VdrEntry {
@@ -290,10 +292,13 @@ message ProtocolVersionUpdateOutput {}
 message DeactivateDIDOutput {}
 message CreateVdrEntryOutput {
     bytes event_hash = 1;
+    bytes entry_id = 2;
 }
 message UpdateVdrEntryOutput {
     bytes event_hash = 1;
+    bytes entry_id = 2;
 }
 message DeactivateVdrEntryOutput {
     bytes event_hash = 1;
+    bytes entry_id = 2;
 }

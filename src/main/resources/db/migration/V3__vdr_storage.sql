@@ -22,3 +22,14 @@ CREATE TABLE public.vdr_entries
 
 CREATE INDEX vdr_entries_did_suffix_idx ON public.vdr_entries USING btree (did_suffix);
 CREATE INDEX vdr_entries_prev_event_idx ON public.vdr_entries USING btree (previous_event_hash);
+
+-- Head pointers for VDR storage entry chains
+CREATE TABLE public.vdr_entry_heads
+(
+    entry_id     public.operation_hash PRIMARY KEY, -- hash of the create event (root of the chain)
+    latest_hash  public.operation_hash NOT NULL,    -- hash of the latest event in the chain
+    status       public.vdr_entry_status NOT NULL DEFAULT 'ACTIVE',
+    updated_at   timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX vdr_entry_heads_latest_idx ON public.vdr_entry_heads USING btree (latest_hash);

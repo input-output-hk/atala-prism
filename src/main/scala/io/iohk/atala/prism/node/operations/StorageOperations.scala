@@ -25,23 +25,42 @@ import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
 import scala.util.Try
 
 sealed trait StorageOperation extends Operation {
-  protected def vdrKeyForDid(didSuffix: DidSuffix, keyId: String): EitherT[ConnectionIO, StateError, SecpPublicKey] =
-    for {
-      keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
-        PublicKeysDAO
-          .find(didSuffix, keyId)
-          .map(_.toRight(EntityMissing("key", keyId): StateError))
-      }.subflatMap { state =>
-        Either.cond(state.keyUsage == KeyUsage.VDRKey, state, InvalidKeyUsed("VDR signing key"))
-      }.subflatMap { state =>
-        Either.cond(state.revokedOn.isEmpty, state.key, StateError.KeyAlreadyRevoked())
+  protected def vdrKeyForDid(didSuffix: DidSuffix, keyId: String): EitherT[ConnectionIO, StateError, SecpPublicKey] = {
+    val normalize: Either[StateError, String] = {
+      val (maybeDidSuffix, kid) =
+        if (keyId.contains("#")) {
+          val Array(didPart, kidPart) = keyId.split("#", 2)
+          (DidSuffix.fromString(didPart.split(":").lastOption.getOrElse("")).toOption, kidPart)
+        } else (None, keyId)
+
+      maybeDidSuffix match {
+        case Some(ds) if ds != didSuffix =>
+          Left(EntityMissing("key", keyId): StateError)
+        case _ =>
+          Right(kid)
       }
-      secpKey <- EitherT.fromEither[ConnectionIO] {
-        Try {
-          SecpPublicKey.unsafeFromCompressed(keyState.compressedKey)
-        }.toEither.leftMap(_ => IllegalSecp256k1Key(keyId): StateError)
+    }
+
+    def toSecp(state: DIDPublicKeyState): Either[StateError, SecpPublicKey] =
+      Try(SecpPublicKey.unsafeFromCompressed(state.key.compressedKey)).toEither
+        .leftMap(_ => IllegalSecp256k1Key(state.keyId): StateError)
+
+    for {
+      normalizedKeyId <- EitherT.fromEither[ConnectionIO](normalize)
+      secpKey <- EitherT[ConnectionIO, StateError, SecpPublicKey] {
+        PublicKeysDAO
+          .find(didSuffix, normalizedKeyId)
+          .map(_.toRight(EntityMissing("key", keyId): StateError))
+          .map(_.flatMap { state =>
+            for {
+              _ <- Either.cond(state.keyUsage == KeyUsage.VDRKey, (), InvalidKeyUsed("VDR signing key"))
+              _ <- Either.cond(state.revokedOn.isEmpty, (), StateError.KeyAlreadyRevoked(): StateError)
+              secp <- toSecp(state)
+            } yield secp
+          })
       }
     } yield secpKey
+  }
 
   protected def ensureDidExists(didSuffix: DidSuffix): EitherT[ConnectionIO, StateError, Unit] =
     EitherT {

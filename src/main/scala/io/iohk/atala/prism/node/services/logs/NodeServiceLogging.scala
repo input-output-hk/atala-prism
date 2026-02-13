@@ -89,6 +89,18 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
       .onError(errorCause"encountered an error while $description" (_))
   }
 
+  override def getVdrEntryLatest(entryId: ByteString): Mid[F, Either[NodeError, node_api.VdrEntry]] = { in =>
+    val description = s"getting latest VDR entry for id ${entryId.toByteArray.map("%02X" format _).mkString}"
+    info"$description" *> in
+      .flatTap(
+        _.fold(
+          err => error"encountered an error while $description: $err",
+          _ => info"$description - done"
+        )
+      )
+      .onError(errorCause"encountered an error while $description" (_))
+  }
+
   override def verifyVdrEntry(eventHash: ByteString): Mid[F, Either[NodeError, node_api.VerifyVdrEntryResponse]] = {
     val description = s"verifying VDR entry ${eventHash.toByteArray.map("%02X" format _).mkString}"
     in =>

@@ -70,6 +70,7 @@ trait NodeService[F[_]] {
   def getCurrentProtocolVersion: F[ProtocolVersion]
 
   def getVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VdrEntry]]
+  def getVdrEntryLatest(entryId: ByteString): F[Either[NodeError, node_api.VdrEntry]]
 
   def verifyVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VerifyVdrEntryResponse]]
 }
@@ -151,6 +152,29 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
         case Right(hash) =>
           vdrEntriesRepository
             .find(hash)
+            .map {
+              case Some(entry) => Right(toProtoVdrEntry(entry))
+              case None => Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
+            }
+      }
+
+  override def getVdrEntryLatest(entryId: ByteString): F[Either[NodeError, node_api.VdrEntry]] =
+    Either
+      .catchNonFatal(Sha256Hash.fromBytes(entryId.toByteArray))
+      .leftMap(err => NodeError.InvalidArgument(err.getMessage): NodeError)
+      .pure[F]
+      .flatMap {
+        case Left(err) => Applicative[F].pure(Left(err))
+        case Right(hash) =>
+          vdrEntriesRepository
+            .findLatest(hash)
+            .flatTap(entry =>
+              MonadThrow[F].catchNonFatal(
+                println(
+                  s"[vdr] latest lookup entryId=${hash.hexEncoded} resolved=${entry.map(e => (e.eventHash.hexEncoded, e.status))}"
+                )
+              )
+            )
             .map {
               case Some(entry) => Right(toProtoVdrEntry(entry))
               case None => Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)

@@ -257,8 +257,13 @@ class NodeGrpcServiceImpl(
     val methodName = "getVdrEntry"
     measureRequestFuture(serviceName, methodName) {
       trace { traceId =>
-        nodeService
-          .getVdrEntry(request.eventHash)
+        val latestRequested = request.latest || !request.entryId.isEmpty
+        val effect =
+          if (latestRequested)
+            nodeService.getVdrEntryLatest(if (!request.entryId.isEmpty) request.entryId else request.eventHash)
+          else nodeService.getVdrEntry(request.eventHash)
+
+        effect
           .map(
             _.fold(
               err => countAndThrowNodeError(methodName, err),
