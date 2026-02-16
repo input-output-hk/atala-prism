@@ -45,7 +45,7 @@ lazy val versions = new {
   val typesafeConfig = "1.4.2"
   val fs2 = "3.8.0"
   val scalaUri = "4.0.0"
-  val testContainers = "0.41.4"
+  val testContainers = "0.44.1"
 }
 
 lazy val Dependencies = new {
