@@ -102,7 +102,11 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
       val op = StorageOperations.parseCreate(createStorageProto(data), dummyLedgerData).value
 
-      val res = op.getCorrectnessData("vdr").value.transact(database).unsafeRunSync()
+      val res = op
+        .getCorrectnessData(s"did:prism:${didSuffix.getValue}#vdr")
+        .value
+        .transact(database)
+        .unsafeRunSync()
 
       res.left.value mustBe EntityMissing("did suffix", didSuffix.getValue)
     }
@@ -113,7 +117,11 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
       val op = StorageOperations.parseCreate(createStorageProto(data), dummyLedgerData).value
 
-      val res = op.getCorrectnessData("master").value.transact(database).unsafeRunSync()
+      val res = op
+        .getCorrectnessData(s"did:prism:${didSuffix.getValue}#master")
+        .value
+        .transact(database)
+        .unsafeRunSync()
 
       res.left.value mustBe InvalidKeyUsed("VDR signing key")
     }
@@ -124,7 +132,11 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
       val op = StorageOperations.parseCreate(createStorageProto(data), dummyLedgerData).value
 
-      val res = op.getCorrectnessData("vdr").value.transact(database).unsafeRunSync()
+      val res = op
+        .getCorrectnessData(s"did:prism:${didSuffix.getValue}#vdr")
+        .value
+        .transact(database)
+        .unsafeRunSync()
 
       res.value.key.compressed.toVector mustBe vdrKeyPair.publicKey.compressed.toVector
     }
@@ -201,6 +213,35 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val res = updateAfterDeactivate.getCorrectnessData("vdr").value.transact(database).unsafeRunSync()
 
       res.left.value mustBe InvalidPreviousOperation()
+    }
+
+    "update head status to DEACTIVATED when a deactivate operation is applied" in {
+      insertDid()
+      insertVdrKey()
+
+      val createOp = StorageOperations
+        .parseCreate(
+          createStorageProto(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))),
+          dummyLedgerData
+        )
+        .value
+      createOp.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
+
+      val updateOp = StorageOperations
+        .parseUpdate(
+          updateStorageProto(createOp.digest, node_models.StorageData().withBytes(ByteString.copyFromUtf8("v2"))),
+          dummyLedgerData
+        )
+        .value
+      updateOp.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
+
+      val deactivateOp =
+        StorageOperations.parseDeactivate(deactivateStorageProto(updateOp.digest), dummyLedgerData).value
+      deactivateOp.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
+
+      val head = VdrEntriesDAO.findHead(createOp.digest).transact(database).unsafeRunSync().value
+      head._1 mustBe deactivateOp.digest
+      head._2 mustBe VdrEntryStatus.DEACTIVATED
     }
   }
 }

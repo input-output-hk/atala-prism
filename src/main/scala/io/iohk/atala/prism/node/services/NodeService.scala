@@ -168,16 +168,11 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
         case Right(hash) =>
           vdrEntriesRepository
             .findLatest(hash)
-            .flatTap(entry =>
-              MonadThrow[F].catchNonFatal(
-                println(
-                  s"[vdr] latest lookup entryId=${hash.hexEncoded} resolved=${entry.map(e => (e.eventHash.hexEncoded, e.status))}"
-                )
-              )
-            )
             .map {
-              case Some(entry) => Right(toProtoVdrEntry(entry))
-              case None => Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
+              case Some(entry) =>
+                Right(toProtoVdrEntry(entry))
+              case None =>
+                Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
             }
       }
 
@@ -228,6 +223,12 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
         entry.previousEventHash.map(h => ByteString.copyFrom(h.bytes.toArray)).getOrElse(ByteString.EMPTY)
       )
       .withDeactivated(entry.status == VdrEntryStatus.DEACTIVATED)
+      .withStatus(
+        entry.status match {
+          case VdrEntryStatus.ACTIVE => node_api.VdrEntryStatus.ACTIVE
+          case VdrEntryStatus.DEACTIVATED => node_api.VdrEntryStatus.DEACTIVATED
+        }
+      )
       .withNonce(entry.nonce.map(ByteString.copyFrom).getOrElse(ByteString.EMPTY))
       .withData(toProtoStorageData(entry.data))
 }

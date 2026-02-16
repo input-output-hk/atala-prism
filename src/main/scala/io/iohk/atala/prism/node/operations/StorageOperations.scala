@@ -20,33 +20,28 @@ import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, VdrEntriesDAO}
 import io.iohk.atala.prism.protos.node_models
-import io.iohk.atala.prism.node.models.nodeState.DIDPublicKeyState
-
 import scala.util.Try
 
 sealed trait StorageOperation extends Operation {
-  protected def vdrKeyForDid(didSuffix: DidSuffix, keyId: String): EitherT[ConnectionIO, StateError, SecpPublicKey] = {
-    val normalize: Either[StateError, String] = {
-      val (maybeDidSuffix, kid) =
-        if (keyId.contains("#")) {
-          val Array(didPart, kidPart) = keyId.split("#", 2)
-          (DidSuffix.fromString(didPart.split(":").lastOption.getOrElse("")).toOption, kidPart)
-        } else (None, keyId)
-
-      maybeDidSuffix match {
-        case Some(ds) if ds != didSuffix =>
-          Left(EntityMissing("key", keyId): StateError)
-        case _ =>
-          Right(kid)
-      }
-    }
-
-    def toSecp(state: DIDPublicKeyState): Either[StateError, SecpPublicKey] =
-      Try(SecpPublicKey.unsafeFromCompressed(state.key.compressedKey)).toEither
-        .leftMap(_ => IllegalSecp256k1Key(state.keyId): StateError)
-
+  protected def vdrKeyForDid(didSuffix: DidSuffix, keyId: String): EitherT[ConnectionIO, StateError, SecpPublicKey] =
     for {
-      normalizedKeyId <- EitherT.fromEither[ConnectionIO](normalize)
+      normalizedKeyId <- EitherT.fromEither[ConnectionIO] {
+        if (!keyId.contains("#")) {
+          // backward compatibility: treat bare key ids as belonging to the DID of the current operation
+          Right(keyId)
+        } else {
+          val Array(didPart, kidPart) = keyId.split("#", 2)
+          val maybeSuffix =
+            // prefer the suffix part of a fully qualified DID (did:prism:<suffix>)
+            if (didPart.startsWith("did:")) DidSuffix.fromString(didPart.split(":").last).toOption
+            else DidSuffix.fromString(didPart).toOption
+
+          maybeSuffix match {
+            case Some(ds) if ds == didSuffix => Right(kidPart)
+            case _ => Left(EntityMissing("key", keyId): StateError)
+          }
+        }
+      }
       secpKey <- EitherT[ConnectionIO, StateError, SecpPublicKey] {
         PublicKeysDAO
           .find(didSuffix, normalizedKeyId)
@@ -55,12 +50,12 @@ sealed trait StorageOperation extends Operation {
             for {
               _ <- Either.cond(state.keyUsage == KeyUsage.VDRKey, (), InvalidKeyUsed("VDR signing key"))
               _ <- Either.cond(state.revokedOn.isEmpty, (), StateError.KeyAlreadyRevoked(): StateError)
-              secp <- toSecp(state)
+              secp <- Try(SecpPublicKey.unsafeFromCompressed(state.key.compressedKey)).toEither
+                .leftMap(_ => IllegalSecp256k1Key(state.keyId): StateError)
             } yield secp
           })
       }
     } yield secpKey
-  }
 
   protected def ensureDidExists(didSuffix: DidSuffix): EitherT[ConnectionIO, StateError, Unit] =
     EitherT {
@@ -71,6 +66,34 @@ sealed trait StorageOperation extends Operation {
           case None => Left(EntityMissing("did suffix", didSuffix.getValue): StateError)
         }
     }
+
+  /** Fetch the current head for the chain identified by `previousEventHash`, ensuring it is ACTIVE and matches the
+    * provided hash.
+    */
+  protected def resolveActiveHead(
+      previousEventHash: Sha256Hash
+  ): EitherT[ConnectionIO, StateError, (Sha256Hash, VdrEntriesDAO.VdrEntryRow)] =
+    for {
+      entryId <- EitherT.fromOptionF(
+        VdrEntriesDAO.findRootOf(previousEventHash).map(_.orElse(Some(previousEventHash))),
+        EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
+      )
+      head <- EitherT.fromOptionF(
+        VdrEntriesDAO
+          .findHead(entryId)
+          .flatMap {
+            case Some((h, _)) => VdrEntriesDAO.find(h)
+            case None => VdrEntriesDAO.findLatestFrom(entryId)
+          },
+        EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
+      )
+      _ <- EitherT.fromEither[ConnectionIO](
+        Either.cond(head.status == VdrEntryStatus.ACTIVE, (), InvalidPreviousOperation(): StateError)
+      )
+      _ <- EitherT.fromEither[ConnectionIO](
+        Either.cond(head.eventHash == previousEventHash, (), InvalidPreviousOperation(): StateError)
+      )
+    } yield (entryId, head)
 }
 
 final case class CreateStorageEntryOperation(
@@ -93,23 +116,28 @@ final case class CreateStorageEntryOperation(
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
     }
-    EitherT {
-      VdrEntriesDAO
-        .insert(
-          digest,
-          didSuffix,
-          nonce.map(_.toArray),
-          dataType,
-          dataBytes,
-          dataIpfs,
-          None,
-          VdrEntryStatus.ACTIVE,
-          ledgerData
-        )
-        .attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
-          EntityExists("vdr entry", digest.hexEncoded): StateError
-        }
-    }
+    for {
+      _ <- EitherT {
+        VdrEntriesDAO
+          .insert(
+            digest,
+            didSuffix,
+            nonce.map(_.toArray),
+            dataType,
+            dataBytes,
+            dataIpfs,
+            None,
+            VdrEntryStatus.ACTIVE,
+            ledgerData
+          )
+          .attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
+            EntityExists("vdr entry", digest.hexEncoded): StateError
+          }
+      }
+      _ <- EitherT.right(
+        VdrEntriesDAO.insertHead(digest, digest, VdrEntryStatus.ACTIVE).attemptSql
+      )
+    } yield ()
   }
 }
 
@@ -125,15 +153,9 @@ final case class UpdateStorageEntryOperation(
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] =
     for {
-      prev <- EitherT[ConnectionIO, StateError, VdrEntriesDAO.VdrEntryRow] {
-        VdrEntriesDAO
-          .find(previousEventHash)
-          .map(_.toRight(EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError))
-      }.subflatMap { row =>
-        Either.cond(row.status == VdrEntryStatus.ACTIVE, row, InvalidPreviousOperation(): StateError)
-      }
-      _ <- ensureDidExists(prev.didSuffix)
-      key <- vdrKeyForDid(prev.didSuffix, keyId)
+      head <- resolveActiveHead(previousEventHash).map(_._2)
+      _ <- ensureDidExists(head.didSuffix)
+      key <- vdrKeyForDid(head.didSuffix, keyId)
     } yield CorrectnessData(key, Some(previousEventHash))
 
   override protected def applyStateImpl(c: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit] = {
@@ -142,18 +164,13 @@ final case class UpdateStorageEntryOperation(
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
     }
     for {
-      prev <- EitherT.fromOptionF(
-        VdrEntriesDAO.find(previousEventHash),
-        EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
-      )
-      _ <- EitherT.fromEither[ConnectionIO](
-        Either.cond(prev.status == VdrEntryStatus.ACTIVE, (), InvalidPreviousOperation(): StateError)
-      )
+      resolved <- resolveActiveHead(previousEventHash)
+      (entryId, head) = resolved
       _ <- EitherT(
         VdrEntriesDAO
           .insert(
             digest,
-            prev.didSuffix,
+            head.didSuffix,
             None,
             dataType,
             dataBytes,
@@ -165,6 +182,12 @@ final case class UpdateStorageEntryOperation(
           .attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
             EntityExists("vdr entry", digest.hexEncoded): StateError
           }
+      )
+      entryId <- EitherT.right[StateError](
+        VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
+      )
+      _ <- EitherT.right(
+        VdrEntriesDAO.updateHead(entryId, digest, VdrEntryStatus.ACTIVE).attemptSql
       )
     } yield ()
   }
@@ -181,31 +204,21 @@ final case class DeactivateStorageEntryOperation(
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] =
     for {
-      prev <- EitherT[ConnectionIO, StateError, VdrEntriesDAO.VdrEntryRow] {
-        VdrEntriesDAO
-          .find(previousEventHash)
-          .map(_.toRight(EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError))
-      }.subflatMap { row =>
-        Either.cond(row.status == VdrEntryStatus.ACTIVE, row, InvalidPreviousOperation(): StateError)
-      }
-      _ <- ensureDidExists(prev.didSuffix)
-      key <- vdrKeyForDid(prev.didSuffix, keyId)
+      resolved <- resolveActiveHead(previousEventHash)
+      (_, head) = resolved
+      _ <- ensureDidExists(head.didSuffix)
+      key <- vdrKeyForDid(head.didSuffix, keyId)
     } yield CorrectnessData(key, Some(previousEventHash))
 
   override protected def applyStateImpl(c: ApplyOperationConfig): EitherT[ConnectionIO, StateError, Unit] =
     for {
-      prev <- EitherT.fromOptionF(
-        VdrEntriesDAO.find(previousEventHash),
-        EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
-      )
-      _ <- EitherT.fromEither[ConnectionIO](
-        Either.cond(prev.status == VdrEntryStatus.ACTIVE, (), InvalidPreviousOperation(): StateError)
-      )
+      resolved <- resolveActiveHead(previousEventHash)
+      (entryId, head) = resolved
       _ <- EitherT(
         VdrEntriesDAO
           .insert(
             digest,
-            prev.didSuffix,
+            head.didSuffix,
             None,
             dataType = "NONE",
             dataBytes = None,
@@ -217,6 +230,12 @@ final case class DeactivateStorageEntryOperation(
           .attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
             EntityExists("vdr entry", digest.hexEncoded): StateError
           }
+      )
+      entryId <- EitherT.right[StateError](
+        VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
+      )
+      _ <- EitherT.right(
+        VdrEntriesDAO.updateHead(entryId, digest, VdrEntryStatus.DEACTIVATED).attemptSql
       )
     } yield ()
 }

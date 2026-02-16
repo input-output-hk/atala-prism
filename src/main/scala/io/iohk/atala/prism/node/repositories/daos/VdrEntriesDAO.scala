@@ -99,24 +99,28 @@ object VdrEntriesDAO {
       .query[(Sha256Hash, VdrEntryStatus)]
       .option
 
-  /** Walk the chain from a given event hash forward and return the latest event (by created_at). */
+  /** Walk the chain from a given event hash forward and return the latest descendant. Depth ordering avoids ties on
+    * timestamps when multiple events are created in the same block.
+    */
   def findLatestFrom(root: Sha256Hash): ConnectionIO[Option[VdrEntryRow]] =
     sql"""
       WITH RECURSIVE chain AS (
         SELECT event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
-               created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
+               created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger,
+               0 AS depth
         FROM vdr_entries
         WHERE event_hash = ${root}
         UNION ALL
         SELECT e.event_hash, e.did_suffix, e.nonce, e.data_type, e.data_bytes, e.data_ipfs, e.previous_event_hash, e.status,
-               e.created_at, e.created_at_absn, e.created_at_osn, e.created_at_tx_id, e.created_at_ledger
+               e.created_at, e.created_at_absn, e.created_at_osn, e.created_at_tx_id, e.created_at_ledger,
+               c.depth + 1 AS depth
         FROM vdr_entries e
         JOIN chain c ON e.previous_event_hash = c.event_hash
       )
       SELECT event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
              created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
       FROM chain
-      ORDER BY created_at DESC, created_at_absn DESC, created_at_osn DESC
+      ORDER BY depth DESC, created_at DESC, created_at_absn DESC, created_at_osn DESC
       LIMIT 1
       """.stripMargin.query[VdrEntryRow].option
 

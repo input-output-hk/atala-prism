@@ -111,11 +111,12 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       ledgerData: LedgerData
   ): F[Unit] = {
     val (dataType, dataBytes, dataIpfs) = toDbData(data)
-    VdrEntriesDAO
-      .insert(eventHash, didSuffix, nonce, dataType, dataBytes, dataIpfs, None, VdrEntryStatus.ACTIVE, ledgerData)
-      .logSQLErrorsV2("insert vdr create")
-      .transact(xa)
-      .flatTap(_ => VdrEntriesDAO.insertHead(eventHash, eventHash, VdrEntryStatus.ACTIVE).transact(xa))
+    (for {
+      _ <- VdrEntriesDAO
+        .insert(eventHash, didSuffix, nonce, dataType, dataBytes, dataIpfs, None, VdrEntryStatus.ACTIVE, ledgerData)
+        .logSQLErrorsV2("insert vdr create")
+      _ <- VdrEntriesDAO.insertHead(eventHash, eventHash, VdrEntryStatus.ACTIVE)
+    } yield ()).transact(xa)
   }
 
   override def insertUpdate(
@@ -178,13 +179,21 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       .transact(xa)
 
   override def findLatest(eventHash: Sha256Hash): F[Option[VdrEntry]] =
-    VdrEntriesDAO
-      .findLatestFrom(eventHash)
-      .flatTap {
+    (for {
+      headOpt <- VdrEntriesDAO.findHead(eventHash)
+      recompute = VdrEntriesDAO.findLatestFrom(eventHash).flatTap {
         case Some(row) => VdrEntriesDAO.insertHead(eventHash, row.eventHash, row.status)
         case None => Applicative[doobie.free.connection.ConnectionIO].pure(())
       }
-      .map(_.flatMap(fromDb))
+      latestRowOpt <- headOpt match {
+        case Some((latestHash, _)) =>
+          VdrEntriesDAO.find(latestHash).flatMap {
+            case Some(row) => Applicative[doobie.free.connection.ConnectionIO].pure(Option(row))
+            case None => recompute // stale head, recompute and refresh
+          }
+        case None => recompute
+      }
+    } yield latestRowOpt.flatMap(fromDb))
       .logSQLErrorsV2(s"find latest vdr entry root=${eventHash.hexEncoded}")
       .transact(xa)
 }

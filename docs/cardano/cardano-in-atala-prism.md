@@ -113,5 +113,6 @@ Atala Prism integrates with:
 - The node implements the Cardano PRISM VDR driver spec (<https://github.com/hyperledger-identus/prism-vdr-driver/blob/main/prism-vdr-specification.md>) with dedicated storage operations: create/update/deactivate VDR entry, plus get/verify endpoints.
 - VDR entries carry opaque `StorageData` (raw bytes or IPFS CID) and are chained by `previous_event_hash`; deactivation is expressed as a new event with status `DEACTIVATED`.
 - VDR operations must be signed with an active `VDR_KEY` (secp256k1 only) on the target DID; the key is optional and does not replace the master key.
+- `getVdrEntryLatest` follows the head of the chain and returns `FAILED_PRECONDITION (vdr-entry-deactivated)` when the newest event is `DEACTIVATED`; callers should treat this as a hard error rather than falling back to older events. Missing entries still surface as `UNKNOWN (unknown-value)`.
 - Nodes without the storage feature can ignore these operations at the API layer; ledger batching reuses the standard AtalaOperation flow.
 .
