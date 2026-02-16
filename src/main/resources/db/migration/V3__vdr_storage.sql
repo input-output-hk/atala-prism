@@ -1,4 +1,3 @@
--- VDR storage entries
 CREATE TYPE public.vdr_entry_status AS ENUM ('ACTIVE', 'DEACTIVATED');
 
 CREATE TABLE public.vdr_entries
@@ -24,7 +23,6 @@ CREATE TABLE public.vdr_entries
 CREATE INDEX vdr_entries_did_suffix_idx ON public.vdr_entries USING btree (did_suffix);
 CREATE INDEX vdr_entries_entry_id_idx ON public.vdr_entries USING btree (entry_id);
 CREATE INDEX vdr_entries_prev_event_idx ON public.vdr_entries USING btree (previous_event_hash);
-CREATE INDEX vdr_entry_heads_status_idx ON public.vdr_entry_heads USING btree (status, entry_id);
 
 -- Head pointers for VDR storage entry chains
 CREATE TABLE public.vdr_entry_heads
@@ -36,3 +34,4 @@ CREATE TABLE public.vdr_entry_heads
 );
 
 CREATE INDEX vdr_entry_heads_latest_idx ON public.vdr_entry_heads USING btree (latest_hash);
+CREATE INDEX vdr_entry_heads_status_idx ON public.vdr_entry_heads USING btree (status, entry_id);
