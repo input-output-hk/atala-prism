@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.node.repositories
 
 import cats.Applicative
-import cats.syntax.flatMap._
 import cats.effect.MonadCancelThrow
 import cats.effect.Resource
 import doobie.implicits._
@@ -113,7 +112,18 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
     val (dataType, dataBytes, dataIpfs) = toDbData(data)
     (for {
       _ <- VdrEntriesDAO
-        .insert(eventHash, didSuffix, nonce, dataType, dataBytes, dataIpfs, None, VdrEntryStatus.ACTIVE, ledgerData)
+        .insert(
+          eventHash,
+          eventHash,
+          didSuffix,
+          nonce,
+          dataType,
+          dataBytes,
+          dataIpfs,
+          None,
+          VdrEntryStatus.ACTIVE,
+          ledgerData
+        )
         .logSQLErrorsV2("insert vdr create")
       _ <- VdrEntriesDAO.insertHead(eventHash, eventHash, VdrEntryStatus.ACTIVE)
     } yield ()).transact(xa)
@@ -132,6 +142,7 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       entryId <- entryIdF
       _ <- VdrEntriesDAO
         .insert(
+          entryId,
           eventHash,
           didSuffix,
           None,
@@ -157,6 +168,7 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       entryId <- VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
       _ <- VdrEntriesDAO
         .insert(
+          entryId,
           eventHash,
           didSuffix,
           None,
@@ -179,21 +191,13 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       .transact(xa)
 
   override def findLatest(eventHash: Sha256Hash): F[Option[VdrEntry]] =
-    (for {
-      headOpt <- VdrEntriesDAO.findHead(eventHash)
-      recompute = VdrEntriesDAO.findLatestFrom(eventHash).flatTap {
-        case Some(row) => VdrEntriesDAO.insertHead(eventHash, row.eventHash, row.status)
-        case None => Applicative[doobie.free.connection.ConnectionIO].pure(())
+    VdrEntriesDAO
+      .findHead(eventHash)
+      .flatMap {
+        case Some((latestHash, _)) => VdrEntriesDAO.find(latestHash)
+        case None => Applicative[doobie.free.connection.ConnectionIO].pure(Option.empty[VdrEntryRow])
       }
-      latestRowOpt <- headOpt match {
-        case Some((latestHash, _)) =>
-          VdrEntriesDAO.find(latestHash).flatMap {
-            case Some(row) => Applicative[doobie.free.connection.ConnectionIO].pure(Option(row))
-            case None => recompute // stale head, recompute and refresh
-          }
-        case None => recompute
-      }
-    } yield latestRowOpt.flatMap(fromDb))
+      .map(_.flatMap(fromDb))
       .logSQLErrorsV2(s"find latest vdr entry root=${eventHash.hexEncoded}")
       .transact(xa)
 }

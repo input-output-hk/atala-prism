@@ -78,13 +78,12 @@ sealed trait StorageOperation extends Operation {
         VdrEntriesDAO.findRootOf(previousEventHash).map(_.orElse(Some(previousEventHash))),
         EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
       )
+      headHash <- EitherT.fromOptionF(
+        VdrEntriesDAO.findHead(entryId),
+        EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
+      )
       head <- EitherT.fromOptionF(
-        VdrEntriesDAO
-          .findHead(entryId)
-          .flatMap {
-            case Some((h, _)) => VdrEntriesDAO.find(h)
-            case None => VdrEntriesDAO.findLatestFrom(entryId)
-          },
+        VdrEntriesDAO.find(headHash._1),
         EntityMissing("vdr entry", previousEventHash.hexEncoded): StateError
       )
       _ <- EitherT.fromEither[ConnectionIO](
@@ -120,6 +119,7 @@ final case class CreateStorageEntryOperation(
       _ <- EitherT {
         VdrEntriesDAO
           .insert(
+            digest,
             digest,
             didSuffix,
             nonce.map(_.toArray),
@@ -169,6 +169,7 @@ final case class UpdateStorageEntryOperation(
       _ <- EitherT(
         VdrEntriesDAO
           .insert(
+            entryId,
             digest,
             head.didSuffix,
             None,
@@ -182,9 +183,6 @@ final case class UpdateStorageEntryOperation(
           .attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
             EntityExists("vdr entry", digest.hexEncoded): StateError
           }
-      )
-      entryId <- EitherT.right[StateError](
-        VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
       )
       _ <- EitherT.right(
         VdrEntriesDAO.updateHead(entryId, digest, VdrEntryStatus.ACTIVE).attemptSql
@@ -217,6 +215,7 @@ final case class DeactivateStorageEntryOperation(
       _ <- EitherT(
         VdrEntriesDAO
           .insert(
+            entryId,
             digest,
             head.didSuffix,
             None,
@@ -230,9 +229,6 @@ final case class DeactivateStorageEntryOperation(
           .attemptSomeSqlState { case sqlstate.class23.UNIQUE_VIOLATION =>
             EntityExists("vdr entry", digest.hexEncoded): StateError
           }
-      )
-      entryId <- EitherT.right[StateError](
-        VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
       )
       _ <- EitherT.right(
         VdrEntriesDAO.updateHead(entryId, digest, VdrEntryStatus.DEACTIVATED).attemptSql

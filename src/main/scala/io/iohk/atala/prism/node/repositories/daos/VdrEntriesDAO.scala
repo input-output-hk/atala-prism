@@ -15,6 +15,7 @@ import java.time.Instant
 object VdrEntriesDAO {
 
   case class VdrEntryRow(
+      entryId: Sha256Hash,
       eventHash: Sha256Hash,
       didSuffix: DidSuffix,
       nonce: Option[Array[Byte]],
@@ -31,6 +32,7 @@ object VdrEntriesDAO {
   )
 
   def insert(
+      entryId: Sha256Hash,
       eventHash: Sha256Hash,
       didSuffix: DidSuffix,
       nonce: Option[Array[Byte]],
@@ -43,10 +45,10 @@ object VdrEntriesDAO {
   ): ConnectionIO[Unit] = {
     val ts = ledgerData.timestampInfo
     sql"""INSERT INTO vdr_entries(
-         | event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
+         | entry_id, event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
          | created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
          |) VALUES (
-         | ${eventHash.bytes}, $didSuffix, $nonce, $dataType, $dataBytes, $dataIpfs, $previousEventHash, $status,
+         | ${entryId.bytes}, ${eventHash.bytes}, $didSuffix, $nonce, $dataType, $dataBytes, $dataIpfs, $previousEventHash, $status,
          | ${ts.atalaBlockTimestamp.toInstant}, ${ts.atalaBlockSequenceNumber}, ${ts.operationSequenceNumber},
          | ${ledgerData.transactionId}, ${ledgerData.ledger}
          |)
@@ -56,6 +58,7 @@ object VdrEntriesDAO {
   private implicit val vdrEntryRead: Read[VdrEntryRow] = {
     Read[
       (
+          Sha256Hash,
           Sha256Hash,
           DidSuffix,
           Option[Array[Byte]],
@@ -70,13 +73,29 @@ object VdrEntriesDAO {
           TransactionId,
           Ledger
       )
-    ].map { case (hash, did, nonce, dataType, dataBytes, dataIpfs, prevHash, status, ts, absn, osn, txId, ledger) =>
-      VdrEntryRow(hash, did, nonce, dataType, dataBytes, dataIpfs, prevHash, status, ts, absn, osn, txId, ledger)
+    ].map {
+      case (entryId, hash, did, nonce, dataType, dataBytes, dataIpfs, prevHash, status, ts, absn, osn, txId, ledger) =>
+        VdrEntryRow(
+          entryId,
+          hash,
+          did,
+          nonce,
+          dataType,
+          dataBytes,
+          dataIpfs,
+          prevHash,
+          status,
+          ts,
+          absn,
+          osn,
+          txId,
+          ledger
+        )
     }
   }
 
   def find(eventHash: Sha256Hash): ConnectionIO[Option[VdrEntryRow]] =
-    sql"""SELECT event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
+    sql"""SELECT entry_id, event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
           |       created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
           |FROM vdr_entries
           |WHERE event_hash = ${eventHash}
@@ -99,46 +118,9 @@ object VdrEntriesDAO {
       .query[(Sha256Hash, VdrEntryStatus)]
       .option
 
-  /** Walk the chain from a given event hash forward and return the latest descendant. Depth ordering avoids ties on
-    * timestamps when multiple events are created in the same block.
-    */
-  def findLatestFrom(root: Sha256Hash): ConnectionIO[Option[VdrEntryRow]] =
-    sql"""
-      WITH RECURSIVE chain AS (
-        SELECT event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
-               created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger,
-               0 AS depth
-        FROM vdr_entries
-        WHERE event_hash = ${root}
-        UNION ALL
-        SELECT e.event_hash, e.did_suffix, e.nonce, e.data_type, e.data_bytes, e.data_ipfs, e.previous_event_hash, e.status,
-               e.created_at, e.created_at_absn, e.created_at_osn, e.created_at_tx_id, e.created_at_ledger,
-               c.depth + 1 AS depth
-        FROM vdr_entries e
-        JOIN chain c ON e.previous_event_hash = c.event_hash
-      )
-      SELECT event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
-             created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
-      FROM chain
-      ORDER BY depth DESC, created_at DESC, created_at_absn DESC, created_at_osn DESC
-      LIMIT 1
-      """.stripMargin.query[VdrEntryRow].option
-
-  /** Walk backwards to the root (the first entry for an entry_id). */
+  /** Resolve the chain identifier (root hash) for any event hash. */
   def findRootOf(hash: Sha256Hash): ConnectionIO[Option[Sha256Hash]] =
-    sql"""
-      WITH RECURSIVE parents AS (
-        SELECT event_hash, previous_event_hash
-        FROM vdr_entries
-        WHERE event_hash = ${hash}
-        UNION ALL
-        SELECT e.event_hash, e.previous_event_hash
-        FROM vdr_entries e
-        JOIN parents p ON e.event_hash = p.previous_event_hash
-      )
-      SELECT event_hash
-      FROM parents
-      WHERE previous_event_hash IS NULL
-      LIMIT 1
-      """.stripMargin.query[Sha256Hash].option
+    sql"""SELECT entry_id FROM vdr_entries WHERE event_hash = ${hash}""".stripMargin
+      .query[Sha256Hash]
+      .option
 }

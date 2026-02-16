@@ -26,7 +26,6 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
   private val eventHash = Sha256Hash.compute("event-1".getBytes)
   private val prevHash = Sha256Hash.compute("event-0".getBytes)
   private val deactivateHash = Sha256Hash.compute("event-2".getBytes)
-  private val updateHash = Sha256Hash.compute("event-1u".getBytes)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -39,6 +38,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
 
       VdrEntriesDAO
         .insert(
+          eventHash,
           eventHash,
           didSuffix,
           nonce = Some("n1".getBytes),
@@ -67,6 +67,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       VdrEntriesDAO
         .insert(
           prevHash,
+          prevHash,
           didSuffix,
           nonce = None,
           dataType = "BYTES",
@@ -81,6 +82,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
 
       VdrEntriesDAO
         .insert(
+          prevHash,
           eventHash,
           didSuffix,
           nonce = None,
@@ -106,6 +108,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       VdrEntriesDAO
         .insert(
           prevHash,
+          prevHash,
           didSuffix,
           nonce = None,
           dataType = "BYTES",
@@ -120,6 +123,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
 
       VdrEntriesDAO
         .insert(
+          prevHash,
           deactivateHash,
           didSuffix,
           nonce = None,
@@ -148,6 +152,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       val insert = (hash: Sha256Hash, prev: Option[Sha256Hash], status: VdrEntryStatus, data: String) =>
         VdrEntriesDAO
           .insert(
+            prev.getOrElse(hash),
             hash,
             didSuffix,
             nonce = None,
@@ -175,56 +180,5 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       head._2 mustBe VdrEntryStatus.DEACTIVATED
     }
 
-    "findLatestFrom returns DEACTIVATED when the chain ends with a deactivate" in {
-      VdrEntriesDAO
-        .insert(
-          eventHash,
-          didSuffix,
-          nonce = None,
-          dataType = "BYTES",
-          dataBytes = Some("v1".getBytes),
-          dataIpfs = None,
-          previousEventHash = None,
-          status = VdrEntryStatus.ACTIVE,
-          ledgerData = ledgerData
-        )
-        .transact(database)
-        .unsafeRunSync()
-
-      VdrEntriesDAO
-        .insert(
-          updateHash,
-          didSuffix,
-          nonce = None,
-          dataType = "BYTES",
-          dataBytes = Some("v2".getBytes),
-          dataIpfs = None,
-          previousEventHash = Some(eventHash),
-          status = VdrEntryStatus.ACTIVE,
-          ledgerData = ledgerData
-        )
-        .transact(database)
-        .unsafeRunSync()
-
-      VdrEntriesDAO
-        .insert(
-          deactivateHash,
-          didSuffix,
-          nonce = None,
-          dataType = "NONE",
-          dataBytes = None,
-          dataIpfs = None,
-          previousEventHash = Some(updateHash),
-          status = VdrEntryStatus.DEACTIVATED,
-          ledgerData = ledgerData
-        )
-        .transact(database)
-        .unsafeRunSync()
-
-      // simulate head recomputation path
-      val latest = VdrEntriesDAO.findLatestFrom(eventHash).transact(database).unsafeRunSync().value
-      latest.eventHash mustBe deactivateHash
-      latest.status mustBe VdrEntryStatus.DEACTIVATED
-    }
   }
 }
