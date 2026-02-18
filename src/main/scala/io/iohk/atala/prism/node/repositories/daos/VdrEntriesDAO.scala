@@ -15,6 +15,7 @@ import java.time.Instant
 object VdrEntriesDAO {
 
   case class VdrEntryRow(
+      entryId: Sha256Hash,
       eventHash: Sha256Hash,
       didSuffix: DidSuffix,
       nonce: Option[Array[Byte]],
@@ -31,6 +32,7 @@ object VdrEntriesDAO {
   )
 
   def insert(
+      entryId: Sha256Hash,
       eventHash: Sha256Hash,
       didSuffix: DidSuffix,
       nonce: Option[Array[Byte]],
@@ -43,10 +45,10 @@ object VdrEntriesDAO {
   ): ConnectionIO[Unit] = {
     val ts = ledgerData.timestampInfo
     sql"""INSERT INTO vdr_entries(
-         | event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
+         | entry_id, event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
          | created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
          |) VALUES (
-         | ${eventHash.bytes}, $didSuffix, $nonce, $dataType, $dataBytes, $dataIpfs, $previousEventHash, $status,
+         | ${entryId.bytes}, ${eventHash.bytes}, $didSuffix, $nonce, $dataType, $dataBytes, $dataIpfs, $previousEventHash, $status,
          | ${ts.atalaBlockTimestamp.toInstant}, ${ts.atalaBlockSequenceNumber}, ${ts.operationSequenceNumber},
          | ${ledgerData.transactionId}, ${ledgerData.ledger}
          |)
@@ -56,6 +58,7 @@ object VdrEntriesDAO {
   private implicit val vdrEntryRead: Read[VdrEntryRow] = {
     Read[
       (
+          Sha256Hash,
           Sha256Hash,
           DidSuffix,
           Option[Array[Byte]],
@@ -70,15 +73,54 @@ object VdrEntriesDAO {
           TransactionId,
           Ledger
       )
-    ].map { case (hash, did, nonce, dataType, dataBytes, dataIpfs, prevHash, status, ts, absn, osn, txId, ledger) =>
-      VdrEntryRow(hash, did, nonce, dataType, dataBytes, dataIpfs, prevHash, status, ts, absn, osn, txId, ledger)
+    ].map {
+      case (entryId, hash, did, nonce, dataType, dataBytes, dataIpfs, prevHash, status, ts, absn, osn, txId, ledger) =>
+        VdrEntryRow(
+          entryId,
+          hash,
+          did,
+          nonce,
+          dataType,
+          dataBytes,
+          dataIpfs,
+          prevHash,
+          status,
+          ts,
+          absn,
+          osn,
+          txId,
+          ledger
+        )
     }
   }
 
   def find(eventHash: Sha256Hash): ConnectionIO[Option[VdrEntryRow]] =
-    sql"""SELECT event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
+    sql"""SELECT entry_id, event_hash, did_suffix, nonce, data_type, data_bytes, data_ipfs, previous_event_hash, status,
           |       created_at, created_at_absn, created_at_osn, created_at_tx_id, created_at_ledger
           |FROM vdr_entries
           |WHERE event_hash = ${eventHash}
           |""".stripMargin.query[VdrEntryRow].option
+
+  def insertHead(entryId: Sha256Hash, latestHash: Sha256Hash, status: VdrEntryStatus): ConnectionIO[Unit] =
+    sql"""INSERT INTO vdr_entry_heads(entry_id, latest_hash, status)
+          |VALUES (${entryId}, ${latestHash}, ${status})
+          |ON CONFLICT (entry_id) DO UPDATE SET latest_hash = EXCLUDED.latest_hash, status = EXCLUDED.status, updated_at = NOW()
+          |""".stripMargin.update.run.void
+
+  def updateHead(entryId: Sha256Hash, latestHash: Sha256Hash, status: VdrEntryStatus): ConnectionIO[Unit] =
+    sql"""UPDATE vdr_entry_heads
+          |SET latest_hash = ${latestHash}, status = ${status}, updated_at = NOW()
+          |WHERE entry_id = ${entryId}
+          |""".stripMargin.update.run.void
+
+  def findHead(entryId: Sha256Hash): ConnectionIO[Option[(Sha256Hash, VdrEntryStatus)]] =
+    sql"""SELECT latest_hash, status FROM vdr_entry_heads WHERE entry_id = ${entryId}""".stripMargin
+      .query[(Sha256Hash, VdrEntryStatus)]
+      .option
+
+  /** Resolve the chain identifier (root hash) for any event hash. */
+  def findRootOf(hash: Sha256Hash): ConnectionIO[Option[Sha256Hash]] =
+    sql"""SELECT entry_id FROM vdr_entries WHERE event_hash = ${hash}""".stripMargin
+      .query[Sha256Hash]
+      .option
 }

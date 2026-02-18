@@ -39,6 +39,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       VdrEntriesDAO
         .insert(
           eventHash,
+          eventHash,
           didSuffix,
           nonce = Some("n1".getBytes),
           dataType = "BYTES",
@@ -66,6 +67,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       VdrEntriesDAO
         .insert(
           prevHash,
+          prevHash,
           didSuffix,
           nonce = None,
           dataType = "BYTES",
@@ -80,6 +82,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
 
       VdrEntriesDAO
         .insert(
+          prevHash,
           eventHash,
           didSuffix,
           nonce = None,
@@ -105,6 +108,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       VdrEntriesDAO
         .insert(
           prevHash,
+          prevHash,
           didSuffix,
           nonce = None,
           dataType = "BYTES",
@@ -119,6 +123,7 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
 
       VdrEntriesDAO
         .insert(
+          prevHash,
           deactivateHash,
           didSuffix,
           nonce = None,
@@ -138,5 +143,42 @@ class VdrEntriesDAOSpec extends AtalaWithPostgresSpec {
       stored.dataIpfs mustBe empty
       stored.previousEventHash.value mustBe prevHash
     }
+
+    "maintain head pointers for create/update/deactivate chain" in {
+      val root = Sha256Hash.compute("head-root".getBytes)
+      val update = Sha256Hash.compute("head-update".getBytes)
+      val deactivate = Sha256Hash.compute("head-deactivate".getBytes)
+
+      val insert = (hash: Sha256Hash, prev: Option[Sha256Hash], status: VdrEntryStatus, data: String) =>
+        VdrEntriesDAO
+          .insert(
+            prev.getOrElse(hash),
+            hash,
+            didSuffix,
+            nonce = None,
+            dataType = "BYTES",
+            dataBytes = Some(data.getBytes),
+            dataIpfs = None,
+            previousEventHash = prev,
+            status = status,
+            ledgerData = ledgerData
+          )
+          .transact(database)
+          .unsafeRunSync()
+
+      insert(root, None, VdrEntryStatus.ACTIVE, "v1")
+      VdrEntriesDAO.insertHead(root, root, VdrEntryStatus.ACTIVE).transact(database).unsafeRunSync()
+
+      insert(update, Some(root), VdrEntryStatus.ACTIVE, "v2")
+      VdrEntriesDAO.updateHead(root, update, VdrEntryStatus.ACTIVE).transact(database).unsafeRunSync()
+
+      insert(deactivate, Some(update), VdrEntryStatus.DEACTIVATED, "")
+      VdrEntriesDAO.updateHead(root, deactivate, VdrEntryStatus.DEACTIVATED).transact(database).unsafeRunSync()
+
+      val head = VdrEntriesDAO.findHead(root).transact(database).unsafeRunSync().value
+      head._1 mustBe deactivate
+      head._2 mustBe VdrEntryStatus.DEACTIVATED
+    }
+
   }
 }

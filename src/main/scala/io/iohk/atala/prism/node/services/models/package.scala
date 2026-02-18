@@ -69,19 +69,28 @@ package object models {
       case CreateStorageEntryOperation(_, _, _, digest, _) =>
         OperationOutput(
           OperationOutput.Result.CreateVdrEntryOutput(
-            node_api.CreateVdrEntryOutput(ByteString.copyFrom(digest.bytes.toArray))
+            node_api.CreateVdrEntryOutput(
+              eventHash = ByteString.copyFrom(digest.bytes.toArray),
+              entryId = ByteString.copyFrom(digest.bytes.toArray)
+            )
           )
         )
       case UpdateStorageEntryOperation(_, _, digest, _) =>
         OperationOutput(
           OperationOutput.Result.UpdateVdrEntryOutput(
-            node_api.UpdateVdrEntryOutput(ByteString.copyFrom(digest.bytes.toArray))
+            node_api.UpdateVdrEntryOutput(
+              eventHash = ByteString.copyFrom(digest.bytes.toArray),
+              entryId = ByteString.copyFrom(digest.bytes.toArray)
+            )
           )
         )
       case DeactivateStorageEntryOperation(_, digest, _) =>
         OperationOutput(
           OperationOutput.Result.DeactivateVdrEntryOutput(
-            node_api.DeactivateVdrEntryOutput().withEventHash(ByteString.copyFrom(digest.bytes.toArray))
+            node_api.DeactivateVdrEntryOutput(
+              eventHash = ByteString.copyFrom(digest.bytes.toArray),
+              entryId = ByteString.copyFrom(digest.bytes.toArray)
+            )
           )
         )
       case other =>

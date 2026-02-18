@@ -13,7 +13,8 @@ import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
 import io.iohk.atala.prism.node.logging.TraceId
 import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
-import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId, VdrEntryStatus}
+import io.iohk.atala.prism.node.models.{AtalaOperationId, DidSuffix, Ledger, TransactionId}
+import io.iohk.atala.prism.node.models.{VdrEntryStatus => ModelVdrStatus}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models._
@@ -74,7 +75,7 @@ class NodeServiceSpec
       ): IOWithTraceIdContext[Unit] = {
         vdrEntriesStore.put(
           eventHash,
-          VdrEntry(eventHash, didSuffix, Some(data), None, VdrEntryStatus.ACTIVE, nonce)
+          VdrEntry(eventHash, didSuffix, Some(data), None, ModelVdrStatus.ACTIVE, nonce)
         )
         ().pure[IOWithTraceIdContext]
       }
@@ -88,7 +89,7 @@ class NodeServiceSpec
       ): IOWithTraceIdContext[Unit] = {
         vdrEntriesStore.put(
           eventHash,
-          VdrEntry(eventHash, didSuffix, Some(data), Some(previousEventHash), VdrEntryStatus.ACTIVE, None)
+          VdrEntry(eventHash, didSuffix, Some(data), Some(previousEventHash), ModelVdrStatus.ACTIVE, None)
         )
         ().pure[IOWithTraceIdContext]
       }
@@ -101,13 +102,37 @@ class NodeServiceSpec
       ): IOWithTraceIdContext[Unit] = {
         vdrEntriesStore.put(
           eventHash,
-          VdrEntry(eventHash, didSuffix, None, Some(previousEventHash), VdrEntryStatus.DEACTIVATED, None)
+          VdrEntry(eventHash, didSuffix, None, Some(previousEventHash), ModelVdrStatus.DEACTIVATED, None)
         )
         ().pure[IOWithTraceIdContext]
       }
 
       override def find(eventHash: Sha256Hash): IOWithTraceIdContext[Option[VdrEntry]] =
         vdrEntriesStore.get(eventHash).pure[IOWithTraceIdContext]
+
+      override def findLatest(eventHash: Sha256Hash): IOWithTraceIdContext[Option[VdrEntry]] = {
+        // traverse the chain forward to the latest descendant
+        def next(current: Sha256Hash): Option[VdrEntry] =
+          vdrEntriesStore.values.find(_.previousEventHash.contains(current))
+
+        vdrEntriesStore.get(eventHash) match {
+          case None => Option.empty[VdrEntry].pure[IOWithTraceIdContext]
+          case Some(root) =>
+            var latest = root
+            var cursor = root
+            var cont = true
+            while (cont) {
+              next(cursor.eventHash) match {
+                case Some(n) =>
+                  latest = n
+                  cursor = n
+                case None =>
+                  cont = false
+              }
+            }
+            Option(latest).pure[IOWithTraceIdContext]
+        }
+      }
     }
 
     serverName = InProcessServerBuilder.generateName()
@@ -766,7 +791,7 @@ class NodeServiceSpec
           DidSuffix("didSuffix"),
           Some(StorageData.Bytes(payload.toVector)),
           None,
-          VdrEntryStatus.ACTIVE,
+          ModelVdrStatus.ACTIVE,
           Some("nonce".getBytes)
         )
       )
@@ -781,16 +806,60 @@ class NodeServiceSpec
       entry.data.value.content mustBe node_models.StorageData.Content.Bytes(ByteString.copyFrom(payload))
     }
 
+    "return latest VDR entry as deactivated when the chain ends with a deactivate event" in {
+      val didSuffix = DidSuffix("didSuffix")
+      val rootHash = Sha256Hash.compute("root-latest".getBytes)
+      val updateHash = Sha256Hash.compute("update-latest".getBytes)
+      val deactivateHash = Sha256Hash.compute("deactivate-latest".getBytes)
+
+      vdrEntriesStore.put(
+        rootHash,
+        VdrEntry(
+          rootHash,
+          didSuffix,
+          Some(StorageData.Bytes("v1".getBytes.toVector)),
+          None,
+          ModelVdrStatus.ACTIVE,
+          None
+        )
+      )
+      vdrEntriesStore.put(
+        updateHash,
+        VdrEntry(
+          updateHash,
+          didSuffix,
+          Some(StorageData.Bytes("v2".getBytes.toVector)),
+          Some(rootHash),
+          ModelVdrStatus.ACTIVE,
+          None
+        )
+      )
+      vdrEntriesStore.put(
+        deactivateHash,
+        VdrEntry(deactivateHash, didSuffix, None, Some(updateHash), ModelVdrStatus.DEACTIVATED, None)
+      )
+
+      val resp =
+        service
+          .getVdrEntry(
+            GetVdrEntryRequest()
+              .withEntryId(ByteString.copyFrom(rootHash.bytes.toArray))
+              .withLatest(true)
+          )
+      resp.entry.value.status mustBe node_api.VdrEntryStatus.DEACTIVATED
+      resp.entry.value.deactivated mustBe true
+    }
+
     "verify VDR entry chains and report missing links" in {
       val rootHash = Sha256Hash.compute("root".getBytes)
       val childHash = Sha256Hash.compute("child".getBytes)
       vdrEntriesStore.put(
         rootHash,
-        VdrEntry(rootHash, DidSuffix("didSuffix"), None, None, VdrEntryStatus.ACTIVE, None)
+        VdrEntry(rootHash, DidSuffix("didSuffix"), None, None, ModelVdrStatus.ACTIVE, None)
       )
       vdrEntriesStore.put(
         childHash,
-        VdrEntry(childHash, DidSuffix("didSuffix"), None, Some(rootHash), VdrEntryStatus.ACTIVE, None)
+        VdrEntry(childHash, DidSuffix("didSuffix"), None, Some(rootHash), ModelVdrStatus.ACTIVE, None)
       )
 
       val ok =

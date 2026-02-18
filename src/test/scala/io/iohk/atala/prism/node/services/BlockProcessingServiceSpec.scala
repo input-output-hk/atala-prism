@@ -148,7 +148,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
             .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload-1")))
         )
       val createDigest = Sha256Hash.compute(createOp.toByteArray)
-      val signedCreate = signOperation(createOp, "vdr", vdrKeys.privateKey)
+      val signedCreate = signOperation(createOp, s"did:prism:${didSuffix.getValue}#vdr", vdrKeys.privateKey)
 
       val updateOp = node_models
         .AtalaOperation()
@@ -159,7 +159,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
             .withData(node_models.StorageData().withIpfsCid("cid-2"))
         )
       val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
-      val signedUpdate = signOperation(updateOp, "vdr", vdrKeys.privateKey)
+      val signedUpdate = signOperation(updateOp, s"did:prism:${didSuffix.getValue}#vdr", vdrKeys.privateKey)
 
       val deactivateOp = node_models
         .AtalaOperation()
@@ -169,7 +169,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
             .withPreviousEventHash(ByteString.copyFrom(updateDigest.bytes.toArray))
         )
       val deactivateDigest = Sha256Hash.compute(deactivateOp.toByteArray)
-      val signedDeactivate = signOperation(deactivateOp, "vdr", vdrKeys.privateKey)
+      val signedDeactivate = signOperation(deactivateOp, s"did:prism:${didSuffix.getValue}#vdr", vdrKeys.privateKey)
 
       val (objId, opIds) = DataPreparation.insertOperationStatuses(
         List(signedCreate, signedUpdate, signedDeactivate),

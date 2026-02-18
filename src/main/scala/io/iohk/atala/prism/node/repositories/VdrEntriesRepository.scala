@@ -23,6 +23,12 @@ case class VdrEntry(
     nonce: Option[Array[Byte]]
 )
 
+final case class VdrEntryHead(
+    entryId: Sha256Hash,
+    latestHash: Sha256Hash,
+    status: VdrEntryStatus
+)
+
 trait VdrEntriesRepository[F[_]] {
   def insertCreate(
       eventHash: Sha256Hash,
@@ -48,6 +54,8 @@ trait VdrEntriesRepository[F[_]] {
   ): F[Unit]
 
   def find(eventHash: Sha256Hash): F[Option[VdrEntry]]
+
+  def findLatest(entryId: Sha256Hash): F[Option[VdrEntry]]
 }
 
 object VdrEntriesRepository {
@@ -102,10 +110,23 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       ledgerData: LedgerData
   ): F[Unit] = {
     val (dataType, dataBytes, dataIpfs) = toDbData(data)
-    VdrEntriesDAO
-      .insert(eventHash, didSuffix, nonce, dataType, dataBytes, dataIpfs, None, VdrEntryStatus.ACTIVE, ledgerData)
-      .logSQLErrorsV2("insert vdr create")
-      .transact(xa)
+    (for {
+      _ <- VdrEntriesDAO
+        .insert(
+          eventHash,
+          eventHash,
+          didSuffix,
+          nonce,
+          dataType,
+          dataBytes,
+          dataIpfs,
+          None,
+          VdrEntryStatus.ACTIVE,
+          ledgerData
+        )
+        .logSQLErrorsV2("insert vdr create")
+      _ <- VdrEntriesDAO.insertHead(eventHash, eventHash, VdrEntryStatus.ACTIVE)
+    } yield ()).transact(xa)
   }
 
   override def insertUpdate(
@@ -115,21 +136,26 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       data: StorageData,
       ledgerData: LedgerData
   ): F[Unit] = {
+    val entryIdF = VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
     val (dataType, dataBytes, dataIpfs) = toDbData(data)
-    VdrEntriesDAO
-      .insert(
-        eventHash,
-        didSuffix,
-        None,
-        dataType,
-        dataBytes,
-        dataIpfs,
-        Some(previousEventHash),
-        VdrEntryStatus.ACTIVE,
-        ledgerData
-      )
-      .logSQLErrorsV2("insert vdr update")
-      .transact(xa)
+    (for {
+      entryId <- entryIdF
+      _ <- VdrEntriesDAO
+        .insert(
+          entryId,
+          eventHash,
+          didSuffix,
+          None,
+          dataType,
+          dataBytes,
+          dataIpfs,
+          Some(previousEventHash),
+          VdrEntryStatus.ACTIVE,
+          ledgerData
+        )
+        .logSQLErrorsV2("insert vdr update")
+      _ <- VdrEntriesDAO.updateHead(entryId, eventHash, VdrEntryStatus.ACTIVE)
+    } yield ()).transact(xa)
   }
 
   override def insertDeactivate(
@@ -138,25 +164,40 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       previousEventHash: Sha256Hash,
       ledgerData: LedgerData
   ): F[Unit] =
-    VdrEntriesDAO
-      .insert(
-        eventHash,
-        didSuffix,
-        None,
-        dataType = "NONE",
-        dataBytes = None,
-        dataIpfs = None,
-        previousEventHash = Some(previousEventHash),
-        status = VdrEntryStatus.DEACTIVATED,
-        ledgerData = ledgerData
-      )
-      .logSQLErrorsV2("insert vdr deactivate")
-      .transact(xa)
+    (for {
+      entryId <- VdrEntriesDAO.findRootOf(previousEventHash).map(_.getOrElse(previousEventHash))
+      _ <- VdrEntriesDAO
+        .insert(
+          entryId,
+          eventHash,
+          didSuffix,
+          None,
+          dataType = "NONE",
+          dataBytes = None,
+          dataIpfs = None,
+          previousEventHash = Some(previousEventHash),
+          status = VdrEntryStatus.DEACTIVATED,
+          ledgerData = ledgerData
+        )
+        .logSQLErrorsV2("insert vdr deactivate")
+      _ <- VdrEntriesDAO.updateHead(entryId, eventHash, VdrEntryStatus.DEACTIVATED)
+    } yield ()).transact(xa)
 
   override def find(eventHash: Sha256Hash): F[Option[VdrEntry]] =
     VdrEntriesDAO
       .find(eventHash)
       .map(_.flatMap(fromDb))
-      .logSQLErrorsV2("find vdr entry")
+      .logSQLErrorsV2(s"find vdr entry hash=${eventHash.hexEncoded}")
+      .transact(xa)
+
+  override def findLatest(eventHash: Sha256Hash): F[Option[VdrEntry]] =
+    VdrEntriesDAO
+      .findHead(eventHash)
+      .flatMap {
+        case Some((latestHash, _)) => VdrEntriesDAO.find(latestHash)
+        case None => Applicative[doobie.free.connection.ConnectionIO].pure(Option.empty[VdrEntryRow])
+      }
+      .map(_.flatMap(fromDb))
+      .logSQLErrorsV2(s"find latest vdr entry root=${eventHash.hexEncoded}")
       .transact(xa)
 }

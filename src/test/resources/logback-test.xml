@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+  <!-- Keep test output minimal during tests. -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level [%logger{36}] - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Silence noisy libs during tests -->
+  <logger name="com.zaxxer.hikari" level="ERROR"/>
+  <logger name="org.flywaydb" level="WARN"/>
+  <logger name="org.testcontainers" level="WARN"/>
+  <logger name="io.iohk.atala.prism" level="WARN"/>
+
+  <root level="ERROR">
+    <appender-ref ref="STDOUT"/>
+  </root>
+</configuration>

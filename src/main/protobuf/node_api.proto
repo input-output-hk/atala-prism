@@ -236,6 +236,8 @@ message DeactivateVdrEntryResponse {
 
 message GetVdrEntryRequest {
     bytes event_hash = 1;
+    bytes entry_id = 2;
+    bool latest = 3;
 }
 
 message VdrEntry {
@@ -245,10 +247,17 @@ message VdrEntry {
     bytes previous_event_hash = 4;
     bool deactivated = 5;
     bytes nonce = 6;
+    VdrEntryStatus status = 7;
 }
 
 message GetVdrEntryResponse {
     VdrEntry entry = 1;
+}
+
+enum VdrEntryStatus {
+    ACTIVE = 0;
+    DEACTIVATED = 1;
+    UNKNOWN_STATUS = 2;
 }
 
 message VerifyVdrEntryRequest {
@@ -290,10 +299,13 @@ message ProtocolVersionUpdateOutput {}
 message DeactivateDIDOutput {}
 message CreateVdrEntryOutput {
     bytes event_hash = 1;
+    bytes entry_id = 2;
 }
 message UpdateVdrEntryOutput {
     bytes event_hash = 1;
+    bytes entry_id = 2;
 }
 message DeactivateVdrEntryOutput {
     bytes event_hash = 1;
+    bytes entry_id = 2;
 }

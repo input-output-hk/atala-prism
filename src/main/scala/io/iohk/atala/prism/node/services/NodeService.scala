@@ -70,6 +70,7 @@ trait NodeService[F[_]] {
   def getCurrentProtocolVersion: F[ProtocolVersion]
 
   def getVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VdrEntry]]
+  def getVdrEntryLatest(entryId: ByteString): F[Either[NodeError, node_api.VdrEntry]]
 
   def verifyVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VerifyVdrEntryResponse]]
 }
@@ -157,6 +158,24 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
             }
       }
 
+  override def getVdrEntryLatest(entryId: ByteString): F[Either[NodeError, node_api.VdrEntry]] =
+    Either
+      .catchNonFatal(Sha256Hash.fromBytes(entryId.toByteArray))
+      .leftMap(err => NodeError.InvalidArgument(err.getMessage): NodeError)
+      .pure[F]
+      .flatMap {
+        case Left(err) => Applicative[F].pure(Left(err))
+        case Right(hash) =>
+          vdrEntriesRepository
+            .findLatest(hash)
+            .map {
+              case Some(entry) =>
+                Right(toProtoVdrEntry(entry))
+              case None =>
+                Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
+            }
+      }
+
   override def verifyVdrEntry(eventHash: ByteString): F[Either[NodeError, node_api.VerifyVdrEntryResponse]] =
     Either
       .catchNonFatal(Sha256Hash.fromBytes(eventHash.toByteArray))
@@ -204,6 +223,12 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
         entry.previousEventHash.map(h => ByteString.copyFrom(h.bytes.toArray)).getOrElse(ByteString.EMPTY)
       )
       .withDeactivated(entry.status == VdrEntryStatus.DEACTIVATED)
+      .withStatus(
+        entry.status match {
+          case VdrEntryStatus.ACTIVE => node_api.VdrEntryStatus.ACTIVE
+          case VdrEntryStatus.DEACTIVATED => node_api.VdrEntryStatus.DEACTIVATED
+        }
+      )
       .withNonce(entry.nonce.map(ByteString.copyFrom).getOrElse(ByteString.EMPTY))
       .withData(toProtoStorageData(entry.data))
 }

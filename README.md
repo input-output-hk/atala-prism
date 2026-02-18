@@ -92,6 +92,18 @@ export NODE_LEDGER="cardano"
 
 For more configuration options, please refer to `node/src/main/resources/application.conf`. Note that environment values override the configuration values. You can change locally the `application.conf` instead of exporting environment variables as we did above.
 
+### VDR entry retrieval: latest vs historical
+
+The VDR API now distinguishes between fetching a specific historical event and the latest state of a storage entry:
+
+- `GetVdrEntryRequest` fields:
+  - `event_hash` – when `latest` is false (default), returns that exact historical event.
+  - `entry_id` – logical identifier of the VDR entry (returned in create/update/deactivate outputs).
+  - `latest` – when true, returns the newest event for the given `entry_id` (or uses `event_hash` as the id if `entry_id` is omitted).
+- A head table (`vdr_entry_heads`) maintains the newest hash per `entry_id`; if absent, the chain is walked and the head is cached.
+
+Use `entry_id` with `latest=true` to read the current value of mutable data. Use `event_hash` with `latest=false` for audit/history.
+
 ## Working with the codebase
 
 In order to keep the code format consistent, we use scalafmt and git hooks, follow these steps to configure it accordingly (otherwise, your changes are going to be rejected by CircleCI):
@@ -194,4 +206,3 @@ If you encounter an error while importing the build, run "Metals: switch build s
 run "Metals: run doctor" to see if all sub-project builds have been imported
 
 run "Metals: restart build server" to restart the build server, if editor is acting weird.
-
