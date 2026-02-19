@@ -246,8 +246,7 @@ message VdrEntry {
     string did_suffix = 2;
     StorageData data = 3;
     bytes previous_event_hash = 4;
-    // Deprecated: use status instead (kept for backward compatibility).
-    bool deactivated = 5;
+    reserved 5; // deprecated deactivated flag (use status instead)
     bytes nonce = 6;
     VdrEntryStatus status = 7;
 }

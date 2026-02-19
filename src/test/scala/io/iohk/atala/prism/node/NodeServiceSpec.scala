@@ -801,7 +801,7 @@ class NodeServiceSpec
       val entry = response.entry.value
       entry.eventHash mustBe ByteString.copyFrom(eventHash.bytes.toArray)
       entry.didSuffix mustBe "didSuffix"
-      entry.deactivated mustBe false
+      entry.status mustBe node_api.VdrEntryStatus.ACTIVE
       entry.nonce.toByteArray.toVector mustBe "nonce".getBytes.toVector
       entry.data.value.content mustBe node_models.StorageData.Content.Bytes(ByteString.copyFrom(payload))
     }
@@ -846,7 +846,7 @@ class NodeServiceSpec
               .withEventHash(ByteString.copyFrom(rootHash.bytes.toArray))
           )
       resp.entry.value.status mustBe node_api.VdrEntryStatus.DEACTIVATED
-      resp.entry.value.deactivated mustBe true
+      resp.entry.value.status mustBe node_api.VdrEntryStatus.DEACTIVATED
     }
 
     "verify VDR entry chains and report missing links" in {

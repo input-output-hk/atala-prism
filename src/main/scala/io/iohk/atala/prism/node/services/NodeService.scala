@@ -232,7 +232,6 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
       .withPreviousEventHash(
         entry.previousEventHash.map(h => ByteString.copyFrom(h.bytes.toArray)).getOrElse(ByteString.EMPTY)
       )
-      .withDeactivated(entry.status == VdrEntryStatus.DEACTIVATED)
       .withStatus(
         entry.status match {
           case VdrEntryStatus.ACTIVE => node_api.VdrEntryStatus.ACTIVE

@@ -84,7 +84,7 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
         _.fold(
           err => error"encountered an error while $description: $err",
           entry =>
-            info"$description - done (status=${entry.status.name}, deactivated=${entry.deactivated}, hash=${entry.eventHash.toByteArray
+            info"$description - done (status=${entry.status.name}, hash=${entry.eventHash.toByteArray
                 .map("%02X" format _)
                 .mkString}, prev=${entry.previousEventHash.toByteArray.map("%02X" format _).mkString})"
         )
@@ -99,7 +99,7 @@ class NodeServiceLogging[F[_]: ServiceLogging[*[_], NodeService[F]]: MonadThrow]
         _.fold(
           err => error"encountered an error while $description: $err",
           entry =>
-            info"$description - done (status=${entry.status.name}, deactivated=${entry.deactivated}, eventHash=${entry.eventHash.toByteArray
+            info"$description - done (status=${entry.status.name}, eventHash=${entry.eventHash.toByteArray
                 .map("%02X" format _)
                 .mkString}, prev=${entry.previousEventHash.toByteArray.map("%02X" format _).mkString})"
         )
