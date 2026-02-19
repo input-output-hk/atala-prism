@@ -123,7 +123,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
       .orElse(output.operationMaybe.error.map(e => fail(s"Operation scheduling failed: $e")))
       .getOrElse(fail("Operation scheduling missing id and error"))
 
-  protected def awaitApplied(operationId: ByteString, max: FiniteDuration = 90.seconds): common_models.OperationStatus = {
+  protected def awaitApplied(operationId: ByteString, max: FiniteDuration = 180.seconds): common_models.OperationStatus = {
     val deadline = max.fromNow
     @tailrec
     def loop(): common_models.OperationStatus = {

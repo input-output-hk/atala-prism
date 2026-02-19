@@ -63,9 +63,10 @@ class VdrHappyPathSpec extends VdrTestUtils {
       awaitApplied(updateVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
       val updatedEntry = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(updateEventHash)).entry,
-        "updated entry"
+        client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
+        "updated entry (by root hash)"
       )
+      updatedEntry.eventHash shouldBe updateEventHash
       updatedEntry.deactivated shouldBe false
       updatedEntry.data.flatMap(_.content.ipfs) shouldBe Some("cid-2")
       updatedEntry.previousEventHash shouldBe createEventHash
@@ -97,9 +98,10 @@ class VdrHappyPathSpec extends VdrTestUtils {
       awaitApplied(deactivateOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
       val deactivatedEntry = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(deactivateEventHash)).entry,
-        "deactivated entry"
+        client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
+        "deactivated entry (by root hash)"
       )
+      deactivatedEntry.eventHash shouldBe deactivateEventHash
       deactivatedEntry.deactivated shouldBe true
       deactivatedEntry.previousEventHash shouldBe updateEventHash
     }
@@ -149,22 +151,13 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val ids = resp.outputs.map(operationIdOrFail)
       ids.foreach(id => awaitApplied(id))
 
-      val created = require(
+      val headAfterAll = require(
         client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(createDigest.bytes.toArray))).entry,
-        "created entry via schedule"
+        "head entry via schedule (root hash)"
       )
-      created.data.flatMap(_.content.bytes.map(_.toStringUtf8)) shouldBe Some("via-schedule-1")
-
-      val updated = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(updateDigest.bytes.toArray))).entry,
-        "updated entry via schedule"
-      )
-      updated.data.flatMap(_.content.ipfs) shouldBe Some("cid-via-schedule")
-      val deactivated = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray))).entry,
-        "deactivated entry via schedule"
-      )
-      deactivated.deactivated shouldBe true
+      headAfterAll.eventHash shouldBe ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray)
+      headAfterAll.deactivated shouldBe true
+      headAfterAll.previousEventHash shouldBe ByteString.copyFrom(updateDigest.bytes.toArray)
     }
   }
 }

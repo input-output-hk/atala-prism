@@ -80,9 +80,10 @@ class VdrApiSpec extends VdrTestUtils {
       verifyUpdate.valid shouldBe true
       verifyDeactivate.valid shouldBe true
 
-      val gotDeactivate = client.getVdrEntry(node_api.GetVdrEntryRequest(deactivateHash)).entry.getOrElse(
-        fail("missing deactivate entry")
+      val gotDeactivate = client.getVdrEntry(node_api.GetVdrEntryRequest(createHash)).entry.getOrElse(
+        fail("missing deactivate entry via root hash")
       )
+      gotDeactivate.eventHash shouldBe deactivateHash
       gotDeactivate.deactivated shouldBe true
     }
   }
