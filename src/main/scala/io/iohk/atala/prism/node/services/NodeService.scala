@@ -152,9 +152,9 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
         case Right(hash) =>
           vdrEntriesRepository
             .find(hash)
-            .map {
-              case Some(entry) => Right(toProtoVdrEntry(entry))
-              case None => Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
+            .flatMap {
+              case Some(entry) => enrichVdrEntry(entry).map(Right(_))
+              case None => Applicative[F].pure(Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError))
             }
       }
 
@@ -168,11 +168,11 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
         case Right(hash) =>
           vdrEntriesRepository
             .findLatest(hash)
-            .map {
+            .flatMap {
               case Some(entry) =>
-                Right(toProtoVdrEntry(entry))
+                enrichVdrEntry(entry).map(Right(_))
               case None =>
-                Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError)
+                Applicative[F].pure(Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError))
             }
       }
 
@@ -224,7 +224,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
     case None => node_models.StorageData()
   }
 
-  private def toProtoVdrEntry(entry: VdrEntry): node_api.VdrEntry =
+  private def toProtoVdrEntry(entry: VdrEntry, status: node_api.VdrEntryStatus): node_api.VdrEntry =
     node_api
       .VdrEntry()
       .withEventHash(ByteString.copyFrom(entry.eventHash.bytes.toArray))
@@ -232,14 +232,19 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
       .withPreviousEventHash(
         entry.previousEventHash.map(h => ByteString.copyFrom(h.bytes.toArray)).getOrElse(ByteString.EMPTY)
       )
-      .withStatus(
-        entry.status match {
-          case VdrEntryStatus.ACTIVE => node_api.VdrEntryStatus.ACTIVE
-          case VdrEntryStatus.DEACTIVATED => node_api.VdrEntryStatus.DEACTIVATED
-        }
-      )
+      .withStatus(status)
       .withNonce(entry.nonce.map(ByteString.copyFrom).getOrElse(ByteString.EMPTY))
       .withData(toProtoStorageData(entry.data))
+
+  private def enrichVdrEntry(entry: VdrEntry): F[node_api.VdrEntry] =
+    didDataRepository.hasActiveKeys(entry.didSuffix).map { hasActiveKeys =>
+      val computedStatus = entry.status match {
+        case VdrEntryStatus.DEACTIVATED => node_api.VdrEntryStatus.DEACTIVATED
+        case VdrEntryStatus.ACTIVE if !hasActiveKeys => node_api.VdrEntryStatus.DEACTIVATED
+        case _ => node_api.VdrEntryStatus.ACTIVE
+      }
+      toProtoVdrEntry(entry, computedStatus)
+    }
 }
 
 object NodeService {

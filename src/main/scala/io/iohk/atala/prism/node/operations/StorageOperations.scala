@@ -57,15 +57,21 @@ sealed trait StorageOperation extends Operation {
       }
     } yield secpKey
 
-  protected def ensureDidExists(didSuffix: DidSuffix): EitherT[ConnectionIO, StateError, Unit] =
-    EitherT {
-      DIDDataDAO
-        .getLastOperation(didSuffix)
-        .map {
-          case Some(_) => Right(())
-          case None => Left(EntityMissing("did suffix", didSuffix.getValue): StateError)
-        }
-    }
+  protected def ensureDidActive(didSuffix: DidSuffix): EitherT[ConnectionIO, StateError, Unit] =
+    for {
+      _ <- EitherT {
+        DIDDataDAO
+          .getLastOperation(didSuffix)
+          .map {
+            case Some(_) => Right(())
+            case None => Left(EntityMissing("did suffix", didSuffix.getValue): StateError)
+          }
+      }
+      activeKeys <- EitherT.liftF(PublicKeysDAO.listAllNonRevoked(didSuffix))
+      _ <- EitherT.fromEither[ConnectionIO](
+        Either.cond(activeKeys.nonEmpty, (), StateError.DidDeactivated(didSuffix): StateError)
+      )
+    } yield ()
 
   /** Fetch the current head for the chain identified by `previousEventHash`, ensuring it is ACTIVE and matches the
     * provided hash.
@@ -92,6 +98,7 @@ sealed trait StorageOperation extends Operation {
       _ <- EitherT.fromEither[ConnectionIO](
         Either.cond(head.eventHash == previousEventHash, (), InvalidPreviousOperation(): StateError)
       )
+      _ <- ensureDidActive(head.didSuffix)
     } yield (entryId, head)
 }
 
@@ -106,7 +113,7 @@ final case class CreateStorageEntryOperation(
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] =
     for {
-      _ <- ensureDidExists(didSuffix)
+      _ <- ensureDidActive(didSuffix)
       key <- vdrKeyForDid(didSuffix, keyId)
     } yield CorrectnessData(key, None)
 
@@ -156,7 +163,7 @@ final case class UpdateStorageEntryOperation(
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] =
     for {
       head <- resolveActiveHead(previousEventHash).map(_._2)
-      _ <- ensureDidExists(head.didSuffix)
+      _ <- ensureDidActive(head.didSuffix)
       key <- vdrKeyForDid(head.didSuffix, keyId)
     } yield CorrectnessData(key, Some(previousEventHash))
 
@@ -208,7 +215,7 @@ final case class DeactivateStorageEntryOperation(
     for {
       resolved <- resolveActiveHead(previousEventHash)
       (_, head) = resolved
-      _ <- ensureDidExists(head.didSuffix)
+      _ <- ensureDidActive(head.didSuffix)
       key <- vdrKeyForDid(head.didSuffix, keyId)
     } yield CorrectnessData(key, Some(previousEventHash))
 
