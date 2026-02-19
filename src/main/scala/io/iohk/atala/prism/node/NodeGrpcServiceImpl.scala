@@ -257,11 +257,9 @@ class NodeGrpcServiceImpl(
     val methodName = "getVdrEntry"
     measureRequestFuture(serviceName, methodName) {
       trace { traceId =>
-        val latestRequested = request.latest || !request.entryId.isEmpty
         val effect =
-          if (latestRequested)
-            nodeService.getVdrEntryLatest(if (!request.entryId.isEmpty) request.entryId else request.eventHash)
-          else nodeService.getVdrEntry(request.eventHash)
+          // Public API now always resolves the latest head for the immutable entry hash.
+          nodeService.getVdrEntryLatest(request.eventHash)
 
         effect
           .map(

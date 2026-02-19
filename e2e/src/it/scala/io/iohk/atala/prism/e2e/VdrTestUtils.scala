@@ -326,7 +326,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
         node_models
           .UpdateStorageEntryOperation()
           .withPreviousEventHash(previousEventHash)
-          .withData(node_models.StorageData().withIpfsCid(ipfsCid))
+          .withData(node_models.StorageData().withIpfs(ipfsCid))
       )
     val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
     val updateResp = client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateStorage)))

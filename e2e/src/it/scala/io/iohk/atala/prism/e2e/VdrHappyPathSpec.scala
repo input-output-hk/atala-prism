@@ -51,7 +51,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(createEventHash)
-            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+            .withData(node_models.StorageData().withIpfs("cid-2"))
         )
       val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
       val updateResp =
@@ -67,7 +67,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         "updated entry"
       )
       updatedEntry.deactivated shouldBe false
-      updatedEntry.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-2")
+      updatedEntry.data.flatMap(_.content.ipfs) shouldBe Some("cid-2")
       updatedEntry.previousEventHash shouldBe createEventHash
     }
 
@@ -129,7 +129,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val updateOp = node_models.AtalaOperation().withUpdateStorageEntry(
         node_models.UpdateStorageEntryOperation()
           .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
-          .withData(node_models.StorageData().withIpfsCid("cid-via-schedule"))
+          .withData(node_models.StorageData().withIpfs("cid-via-schedule"))
       )
       val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
       val signedUpdate = signOperation(updateOp, "vdr", vdr.privateKey)
@@ -159,7 +159,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(updateDigest.bytes.toArray))).entry,
         "updated entry via schedule"
       )
-      updated.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-via-schedule")
+      updated.data.flatMap(_.content.ipfs) shouldBe Some("cid-via-schedule")
       val deactivated = require(
         client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray))).entry,
         "deactivated entry via schedule"

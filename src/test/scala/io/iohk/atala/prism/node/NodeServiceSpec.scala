@@ -661,7 +661,7 @@ class NodeServiceSpec
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
-            .withData(node_models.StorageData().withIpfsCid("cid-grpc"))
+            .withData(node_models.StorageData().withIpfs("cid-grpc"))
         )
       val signedUpdate = BlockProcessingServiceSpec.signOperation(updateOp, "vdr", vdrKeys.privateKey)
       val updateId = AtalaOperationId.of(signedUpdate)
@@ -741,7 +741,7 @@ class NodeServiceSpec
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
-            .withData(node_models.StorageData().withIpfsCid("cid"))
+            .withData(node_models.StorageData().withIpfs("cid"))
         )
       val signedUpdate = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(updateOp))
       val updateOperationId = AtalaOperationId.of(signedUpdate)
@@ -843,8 +843,7 @@ class NodeServiceSpec
         service
           .getVdrEntry(
             GetVdrEntryRequest()
-              .withEntryId(ByteString.copyFrom(rootHash.bytes.toArray))
-              .withLatest(true)
+              .withEventHash(ByteString.copyFrom(rootHash.bytes.toArray))
           )
       resp.entry.value.status mustBe node_api.VdrEntryStatus.DEACTIVATED
       resp.entry.value.deactivated mustBe true
@@ -872,6 +871,13 @@ class NodeServiceSpec
         service.verifyVdrEntry(node_api.VerifyVdrEntryRequest(ByteString.copyFrom(missingHash.bytes.toArray)))
       missing.valid mustBe false
       missing.reason must include("missing VDR entry")
+    }
+
+    "reject getVdrEntry with empty event_hash" in {
+      val ex = intercept[StatusRuntimeException] {
+        service.getVdrEntry(node_api.GetVdrEntryRequest())
+      }
+      ex.getStatus.getCode mustBe io.grpc.Status.Code.INVALID_ARGUMENT
     }
   }
 }

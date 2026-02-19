@@ -210,7 +210,7 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
 
   private def toProtoStorageData(data: Option[StorageData]): node_models.StorageData = data match {
     case Some(StorageData.Bytes(bytes)) => node_models.StorageData().withBytes(ByteString.copyFrom(bytes.toArray))
-    case Some(StorageData.IpfsCid(cid)) => node_models.StorageData().withIpfsCid(cid)
+    case Some(StorageData.IpfsCid(cid)) => node_models.StorageData().withIpfs(cid)
     case None => node_models.StorageData()
   }
 

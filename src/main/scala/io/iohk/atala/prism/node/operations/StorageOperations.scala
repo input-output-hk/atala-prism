@@ -242,8 +242,10 @@ object StorageOperations {
     data.content match {
       case node_models.StorageData.Content.Bytes(value) =>
         Right(Bytes(value.toByteArray.toVector))
-      case node_models.StorageData.Content.IpfsCid(cid) =>
+      case node_models.StorageData.Content.Ipfs(cid) =>
         Right(IpfsCid(cid))
+      case node_models.StorageData.Content.StatusListEntry(_) =>
+        Left(InvalidValue(path / "data", "status_list_entry", "Status list entries are not yet supported"))
       case node_models.StorageData.Content.Empty =>
         Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
     }

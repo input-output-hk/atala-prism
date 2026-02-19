@@ -176,7 +176,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
         .value
       initial.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
 
-      val updateProto = updateStorageProto(initial.digest, node_models.StorageData().withIpfsCid("cid123"))
+      val updateProto = updateStorageProto(initial.digest, node_models.StorageData().withIpfs("cid123"))
       val updateOp = StorageOperations.parseUpdate(updateProto, dummyLedgerData).value
       updateOp.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
 

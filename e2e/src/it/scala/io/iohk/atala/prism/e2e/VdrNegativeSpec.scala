@@ -169,7 +169,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         node_models.AtalaOperation().withUpdateStorageEntry(
           node_models.UpdateStorageEntryOperation()
             .withPreviousEventHash(createEventHash)
-            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+            .withData(node_models.StorageData().withIpfs("cid-2"))
         ),
         keyId = "master",
         key = master.privateKey
@@ -416,7 +416,7 @@ class VdrNegativeSpec extends VdrTestUtils {
       val badUpdateOp = node_models.AtalaOperation().withUpdateStorageEntry(
         node_models.UpdateStorageEntryOperation()
           .withPreviousEventHash(ByteString.copyFromUtf8("bogus"))
-          .withData(node_models.StorageData().withIpfsCid("should-fail"))
+          .withData(node_models.StorageData().withIpfs("should-fail"))
       )
       val signedBadUpdate = signOperation(badUpdateOp, "vdr", vdr.privateKey)
 

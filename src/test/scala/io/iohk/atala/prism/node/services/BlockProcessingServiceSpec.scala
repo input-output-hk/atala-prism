@@ -156,7 +156,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
-            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+            .withData(node_models.StorageData().withIpfs("cid-2"))
         )
       val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
       val signedUpdate = signOperation(updateOp, s"did:prism:${didSuffix.getValue}#vdr", vdrKeys.privateKey)
