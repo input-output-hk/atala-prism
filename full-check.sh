@@ -6,8 +6,8 @@ cd "$REPO_ROOT"
 
 echo "Running full project checks..."
 
-#echo "1) MegaLinter (local)..."
-#mega-linter-runner --fix
+echo "1) MegaLinter (local)..."
+mega-linter-runner --fix
 
 echo "2-4) Clean, format, compile, unit tests, and docker publishLocal..."
 sbt ";clean;scalafmtAll;compile;test;Docker / publishLocal"
@@ -20,5 +20,6 @@ if [[ -z "${PRISM_NODE_VERSION:-}" ]]; then
 fi
 export PRISM_NODE_VERSION
 docker/prism-test/run-e2e.sh
+docker/prism-test/stop-e2e.sh
 
 echo "All checks completed."
