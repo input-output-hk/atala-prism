@@ -33,7 +33,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
         "created entry"
       )
-      createdEntry.deactivated shouldBe false
+      createdEntry.status shouldBe node_api.VdrEntryStatus.ACTIVE
       createdEntry.data.flatMap(_.content.bytes) shouldBe Some(ByteString.copyFromUtf8("payload-1"))
       createdEntry.nonce shouldBe ByteString.EMPTY
     }
@@ -67,7 +67,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         "updated entry (by root hash)"
       )
       updatedEntry.eventHash shouldBe updateEventHash
-      updatedEntry.deactivated shouldBe false
+      updatedEntry.status shouldBe node_api.VdrEntryStatus.ACTIVE
       updatedEntry.data.flatMap(_.content.ipfs) shouldBe Some("cid-2")
       updatedEntry.previousEventHash shouldBe createEventHash
     }
@@ -102,7 +102,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         "deactivated entry (by root hash)"
       )
       deactivatedEntry.eventHash shouldBe deactivateEventHash
-      deactivatedEntry.deactivated shouldBe true
+      deactivatedEntry.status shouldBe node_api.VdrEntryStatus.DEACTIVATED
       deactivatedEntry.previousEventHash shouldBe updateEventHash
     }
 
@@ -156,7 +156,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         "head entry via schedule (root hash)"
       )
       headAfterAll.eventHash shouldBe ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray)
-      headAfterAll.deactivated shouldBe true
+      headAfterAll.status shouldBe node_api.VdrEntryStatus.DEACTIVATED
       headAfterAll.previousEventHash shouldBe ByteString.copyFrom(updateDigest.bytes.toArray)
     }
   }

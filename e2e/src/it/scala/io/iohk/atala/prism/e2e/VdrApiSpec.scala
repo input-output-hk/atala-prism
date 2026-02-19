@@ -84,7 +84,7 @@ class VdrApiSpec extends VdrTestUtils {
         fail("missing deactivate entry via root hash")
       )
       gotDeactivate.eventHash shouldBe deactivateHash
-      gotDeactivate.deactivated shouldBe true
+      gotDeactivate.status shouldBe node_api.VdrEntryStatus.DEACTIVATED
     }
   }
 }
