@@ -81,12 +81,19 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
   private def toDbData(data: StorageData): (String, Option[Array[Byte]], Option[String]) = data match {
     case Bytes(value) => ("BYTES", Some(value.toArray), None)
     case IpfsCid(cid) => ("IPFS", None, Some(cid))
+    case sle @ StorageData.StatusListEntry(_, _, _) =>
+      ("STATUS_LIST", Some(sle.toString.getBytes), None)
   }
 
   private def fromDb(row: VdrEntryRow): Option[VdrEntry] = {
     val data = row.dataType match {
       case "BYTES" => row.dataBytes.map(bytes => Bytes(bytes.toVector))
       case "IPFS" => row.dataIpfs.map(IpfsCid.apply)
+      case "STATUS_LIST" =>
+        row.dataBytes.map { bytes =>
+          val str = new String(bytes)
+          StorageData.StatusListEntry(0, Some(str), None)
+        }
       case "NONE" => None
       case _ => None
     }

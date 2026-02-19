@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
-import io.iohk.atala.prism.node.models.StorageData.Bytes
+import io.iohk.atala.prism.node.models.StorageData.{Bytes, IpfsCid}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.StateError.{EntityMissing, InvalidKeyUsed, InvalidPreviousOperation}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, VdrEntriesDAO}
@@ -94,6 +94,22 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val parsed = StorageOperations.parseCreate(proto, dummyLedgerData)
 
       parsed.left.value mustBe a[ValidationError.InvalidValue]
+    }
+
+    "parse IPFS storage data" in {
+      val ipfsCid = "cid123"
+      val proto = createStorageProto(node_models.StorageData().withIpfs(ipfsCid))
+
+      val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
+      op.data mustBe IpfsCid(ipfsCid)
+    }
+
+    "parse StatusListEntry storage data" in {
+      val status = node_models.StatusListEntry(state = 5, name = "list", details = "details")
+      val proto = createStorageProto(node_models.StorageData().withStatusListEntry(status))
+
+      val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
+      op.data mustBe StorageData.StatusListEntry(5, Some("list"), Some("details"))
     }
   }
 

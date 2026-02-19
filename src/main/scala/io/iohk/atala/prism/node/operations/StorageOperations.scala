@@ -114,6 +114,8 @@ final case class CreateStorageEntryOperation(
     val (dataType, dataBytes, dataIpfs) = data match {
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
+      case sle @ StorageData.StatusListEntry(_, _, _) =>
+        ("STATUS_LIST", Some(sle.toString.getBytes), None)
     }
     for {
       _ <- EitherT {
@@ -162,6 +164,8 @@ final case class UpdateStorageEntryOperation(
     val (dataType, dataBytes, dataIpfs) = data match {
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
+      case sle @ StorageData.StatusListEntry(_, _, _) =>
+        ("STATUS_LIST", Some(sle.toString.getBytes), None)
     }
     for {
       resolved <- resolveActiveHead(previousEventHash)
@@ -244,8 +248,14 @@ object StorageOperations {
         Right(Bytes(value.toByteArray.toVector))
       case node_models.StorageData.Content.Ipfs(cid) =>
         Right(IpfsCid(cid))
-      case node_models.StorageData.Content.StatusListEntry(_) =>
-        Left(InvalidValue(path / "data", "status_list_entry", "Status list entries are not yet supported"))
+      case node_models.StorageData.Content.StatusListEntry(entry) =>
+        Right(
+          StorageData.StatusListEntry(
+            entry.state,
+            Option(entry.name).filter(_.nonEmpty),
+            Option(entry.details).filter(_.nonEmpty)
+          )
+        )
       case node_models.StorageData.Content.Empty =>
         Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
     }

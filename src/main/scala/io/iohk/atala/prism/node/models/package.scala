@@ -165,6 +165,7 @@ package object models {
   object StorageData {
     case class Bytes(value: Vector[Byte]) extends StorageData
     case class IpfsCid(value: String) extends StorageData
+    case class StatusListEntry(state: Long, name: Option[String], details: Option[String]) extends StorageData
   }
 
   object nodeState {
