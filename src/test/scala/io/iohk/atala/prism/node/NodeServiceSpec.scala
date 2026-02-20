@@ -18,6 +18,7 @@ import io.iohk.atala.prism.node.models.{VdrEntryStatus => ModelVdrStatus}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models._
+import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -64,7 +65,16 @@ class NodeServiceSpec
 
     vdrEntriesStore = TrieMap.empty[Sha256Hash, VdrEntry]
 
-    val didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, logs)
+    val didDataRepository = new DIDDataRepository[IOWithTraceIdContext] {
+      private val real = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, logs)
+      override def findByDid(
+          did: io.iohk.atala.prism.node.identity.CanonicalPrismDid
+      ): IOWithTraceIdContext[Either[NodeError, Option[DIDDataState]]] =
+        real.findByDid(did)
+      // For tests we treat DIDs as active unless explicitly modeled otherwise.
+      override def hasActiveKeys(didSuffix: DidSuffix): IOWithTraceIdContext[Boolean] =
+        fake(true)
+    }
     val vdrEntriesRepository = new VdrEntriesRepository[IOWithTraceIdContext] {
       override def insertCreate(
           eventHash: Sha256Hash,
