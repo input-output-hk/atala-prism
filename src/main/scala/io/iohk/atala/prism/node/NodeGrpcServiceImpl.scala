@@ -287,36 +287,6 @@ class NodeGrpcServiceImpl(
     }
   }
 
-  private def handleSingleOperation(
-      op: SignedAtalaOperation,
-      methodName: String
-  ): Future[node_api.OperationOutput] =
-    measureRequestFuture(serviceName, methodName) {
-      trace { traceId =>
-        val query = for {
-          outputsE <- nodeService.parseOperations(Seq(op))
-          outputs = outputsE.fold(err => countAndThrowNodeError(methodName, err), outs => outs)
-          ids <- nodeService.scheduleAtalaOperations(op)
-          output = outputs.headOption.zip(ids.headOption).headOption match {
-            case Some((out, Right(opId))) => out.withOperationId(opId.toProtoByteString)
-            case Some((out, Left(err))) => out.withError(err.toString)
-            case None => node_api.OperationOutput().withError("Empty operation output")
-          }
-        } yield output
-        query.run(traceId).unsafeToFuture()
-      }
-    }
-
-  private def requireSignedOperation(
-      opOpt: Option[SignedAtalaOperation],
-      methodName: String
-  ): SignedAtalaOperation =
-    opOpt.getOrElse(
-      countAndThrowNodeError(
-        methodName,
-        NodeError.InvalidArgument("signed_operation is required")
-      )
-    )
 }
 
 object NodeGrpcServiceImpl {
