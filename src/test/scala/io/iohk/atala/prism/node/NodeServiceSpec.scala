@@ -731,8 +731,11 @@ class NodeServiceSpec
       mockOperationId(operationId)
 
       val response = service
-        .createVdrEntry(node_api.CreateVdrEntryRequest().withSignedOperation(signed))
-        .output
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(signedOperations = Seq(signed))
+        )
+        .outputs
+        .headOption
         .value
 
       response.getCreateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
@@ -770,7 +773,13 @@ class NodeServiceSpec
       ).when(objectManagementService).scheduleAtalaOperations(*)
 
       val updateResponse =
-        service.updateVdrEntry(node_api.UpdateVdrEntryRequest().withSignedOperation(signedUpdate)).output.value
+        service
+          .scheduleOperations(
+            node_api.ScheduleOperationsRequest(signedOperations = Seq(signedUpdate))
+          )
+          .outputs
+          .headOption
+          .value
       updateResponse.getUpdateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
         Sha256Hash.compute(updateOp.toByteArray).bytes.toArray
       )
@@ -778,8 +787,11 @@ class NodeServiceSpec
 
       val deactivateResponse =
         service
-          .deactivateVdrEntry(node_api.DeactivateVdrEntryRequest().withSignedOperation(signedDeactivate))
-          .output
+          .scheduleOperations(
+            node_api.ScheduleOperationsRequest(signedOperations = Seq(signedDeactivate))
+          )
+          .outputs
+          .headOption
           .value
       deactivateResponse.getDeactivateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
         Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray
