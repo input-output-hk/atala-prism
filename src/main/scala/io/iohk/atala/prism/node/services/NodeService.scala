@@ -154,7 +154,8 @@ private final class NodeServiceImpl[F[_]: MonadThrow](
             .find(hash)
             .flatMap {
               case Some(entry) => enrichVdrEntry(entry).map(Right(_))
-              case None => Applicative[F].pure(Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError))
+              case None =>
+                Applicative[F].pure(Left(NodeError.UnknownValueError("vdr entry", hash.hexEncoded): NodeError))
             }
       }
 

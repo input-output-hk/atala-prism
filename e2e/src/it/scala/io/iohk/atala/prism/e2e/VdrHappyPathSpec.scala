@@ -22,9 +22,9 @@ class VdrHappyPathSpec extends VdrTestUtils {
         )
       val signedCreateStorage = signOperation(createStorageOp, "vdr", vdr.privateKey)
       val createVdrResp =
-        client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signedCreateStorage)))
+        client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signedCreateStorage)))
 
-      val createVdrOutput = requireOutput(createVdrResp.output, "create VDR")
+      val createVdrOutput = requireOutput(createVdrResp.outputs.headOption, "create VDR")
       val createVdrOpId = operationIdOrFail(createVdrOutput)
       val createEventHash = require(createVdrOutput.result.createVdrEntryOutput, "create VDR event hash").eventHash
       awaitApplied(createVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
@@ -55,9 +55,9 @@ class VdrHappyPathSpec extends VdrTestUtils {
         )
       val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
       val updateResp =
-        client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateStorage)))
+        client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signedUpdateStorage)))
 
-      val updateOutput = requireOutput(updateResp.output, "update VDR")
+      val updateOutput = requireOutput(updateResp.outputs.headOption, "update VDR")
       val updateVdrOpId = operationIdOrFail(updateOutput)
       val updateEventHash = require(updateOutput.result.updateVdrEntryOutput, "update VDR event hash").eventHash
       awaitApplied(updateVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
@@ -89,9 +89,9 @@ class VdrHappyPathSpec extends VdrTestUtils {
         )
       val signedDeactivate = signOperation(deactivateStorageOp, "vdr", vdr.privateKey)
       val deactivateResp =
-        client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivate)))
+        client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signedDeactivate)))
 
-      val deactivateOutput = requireOutput(deactivateResp.output, "deactivate VDR")
+      val deactivateOutput = requireOutput(deactivateResp.outputs.headOption, "deactivate VDR")
       val deactivateOpId = operationIdOrFail(deactivateOutput)
       val deactivateEventHash =
         require(deactivateOutput.result.deactivateVdrEntryOutput, "deactivate VDR event hash").eventHash

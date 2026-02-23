@@ -22,7 +22,7 @@ class VdrApiSpec extends VdrTestUtils {
       val first = client.scheduleOperations(
         node_api.ScheduleOperationsRequest(signedOperations = Seq(signed))
       )
-      awaitApplied(operationIdOrFail(requireOutput(first.outputs.headOption.getOrElse(fail("no output")), "dup create first")))
+      awaitApplied(operationIdOrFail(requireOutput(first.outputs.headOption, "dup create first")))
 
       val second: Either[StatusRuntimeException, node_api.ScheduleOperationsResponse] =
         try {
@@ -35,7 +35,7 @@ class VdrApiSpec extends VdrTestUtils {
         case Left(ex) =>
           ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
         case Right(resp) =>
-          val out = requireOutput(resp.outputs.headOption.getOrElse(fail("no output")), "dup create second")
+          val out = requireOutput(resp.outputs.headOption, "dup create second")
           val opId = operationIdOrFail(out)
           val status = awaitFinal(opId)
           status should (be(common_models.OperationStatus.CONFIRMED_AND_APPLIED)
@@ -72,7 +72,7 @@ class VdrApiSpec extends VdrTestUtils {
       val deactivateResp = client.scheduleOperations(
         node_api.ScheduleOperationsRequest(signedOperations = Seq(signedDeactivate))
       )
-      val deactivateOut = requireOutput(deactivateResp.outputs.headOption.getOrElse(fail("missing deactivate out")), "deactivate op")
+      val deactivateOut = requireOutput(deactivateResp.outputs.headOption, "deactivate op")
       val deactivateHash = deactivateOut.result.deactivateVdrEntryOutput
         .map(_.eventHash).getOrElse(fail("missing deactivate hash"))
       awaitApplied(operationIdOrFail(deactivateOut))

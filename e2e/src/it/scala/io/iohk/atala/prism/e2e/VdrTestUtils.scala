@@ -10,7 +10,7 @@ import io.iohk.atala.prism.protos.node_models
 import org.bouncycastle.crypto.generators.ECKeyPairGenerator
 import org.bouncycastle.crypto.params.{ECDomainParameters, ECKeyGenerationParameters, ECPrivateKeyParameters, ECPublicKeyParameters}
 import org.bouncycastle.jce.ECNamedCurveTable
-import org.scalatest.BeforeAndAfterAll
+import org.scalatest.{Assertion, BeforeAndAfterAll}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -117,6 +117,19 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
       operation = Some(operation),
       signature = ByteString.copyFrom(SecpECDSA.signBytes(operation.toByteArray, key).bytes)
     )
+
+  /**
+    * Expect the given operation output to be rejected, either via an inline error or by a rejected/pending op id.
+    */
+  protected def expectRejectedOutput(out: node_api.OperationOutput, ctx: String): Assertion = {
+    val errPresent = out.operationMaybe.error.exists(_.nonEmpty)
+    val rejectedViaId = out.operationMaybe.operationId.exists { id =>
+      val st = awaitRejectedOrPending(id, 240.seconds)
+      st == common_models.OperationStatus.CONFIRMED_AND_REJECTED ||
+        st == common_models.OperationStatus.PENDING_SUBMISSION
+    }
+    withClue(ctx) { (errPresent || rejectedViaId) shouldBe true }
+  }
 
   protected def operationIdOrFail(output: node_api.OperationOutput): ByteString =
     output.operationMaybe.operationId
@@ -306,9 +319,12 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
           .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8(payload)))
       )
     val signedCreateStorage = signOperation(createStorageOp, "vdr", vdr.privateKey)
-    val createVdrResp = client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signedCreateStorage)))
+    val createVdrResp = client.scheduleOperations(
+      node_api.ScheduleOperationsRequest(signedOperations = Seq(signedCreateStorage))
+    )
 
-    val createVdrOutput = requireOutput(createVdrResp.output, "create VDR")
+    val createVdrOutput =
+      requireOutput(createVdrResp.outputs.headOption, "create VDR")
     val createVdrOpId = operationIdOrFail(createVdrOutput)
     val createEventHash = require(createVdrOutput.result.createVdrEntryOutput, "create VDR event hash").eventHash
     awaitApplied(createVdrOpId)
@@ -329,9 +345,11 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
           .withData(node_models.StorageData().withIpfs(ipfsCid))
       )
     val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
-    val updateResp = client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateStorage)))
+    val updateResp = client.scheduleOperations(
+      node_api.ScheduleOperationsRequest(signedOperations = Seq(signedUpdateStorage))
+    )
 
-    val updateOutput = requireOutput(updateResp.output, "update VDR")
+    val updateOutput = requireOutput(updateResp.outputs.headOption, "update VDR")
     val updateVdrOpId = operationIdOrFail(updateOutput)
     val updateEventHash = require(updateOutput.result.updateVdrEntryOutput, "update VDR event hash").eventHash
     awaitApplied(updateVdrOpId)

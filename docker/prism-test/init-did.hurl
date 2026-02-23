@@ -19,15 +19,15 @@ address: jsonpath "$[0].id"
 POST {{ WALLET_BASE_URL }}/wallets/{{ wallet_id }}/transactions
 {
   "passphrase": "{{ WALLET_PASSPHRASE }}",
-  "payments": [
-    {
-      "address": "{{ address }}",
-      "amount": {
-        "quantity": 1000000,
-        "unit": "lovelace"
-      }
-    }
-  ],
+      "payments": [
+        {
+          "address": "{{ address }}",
+          "amount": {
+            "quantity": 100000000,
+            "unit": "lovelace"
+          }
+        }
+      ],
   "metadata": {
     "21325": {
       "map": [
