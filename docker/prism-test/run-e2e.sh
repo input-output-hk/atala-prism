@@ -22,6 +22,7 @@ PRISM_NODE_VERSION="$(echo "${PRISM_NODE_VERSION}" | tr -d '[:space:]')"
 if [[ -z "$PRISM_NODE_VERSION" ]]; then
 	PRISM_NODE_VERSION="2.6.1-SNAPSHOT"
 fi
+PRISM_NODE_FORCE_BUILD="${PRISM_NODE_FORCE_BUILD:-0}"
 
 cleanup() {
 	"${COMPOSE_CMD[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
@@ -39,8 +40,14 @@ if docker volume ls --format '{{.Name}}' | grep "^${NODE_TESTNET_VOLUME}$" >/dev
 	docker volume rm "${NODE_TESTNET_VOLUME}" >/dev/null 2>&1 || true
 fi
 
-# Ensure the prism-node image is available locally; try pull first, then build only if the tag matches the local version.
-if ! docker image inspect "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/null 2>&1; then
+# Ensure the prism-node image is available locally; try pull first, then build only if needed.
+if [[ "$PRISM_NODE_FORCE_BUILD" == "1" ]]; then
+	echo "PRISM_NODE_FORCE_BUILD=1: building local image via sbt Docker / publishLocal..."
+	(
+		cd "$REPO_ROOT"
+		sbt -Dsbt.supershell=false "Docker / publishLocal"
+	)
+elif ! docker image inspect "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/null 2>&1; then
 	echo "Image inputoutput/prism-node:${PRISM_NODE_VERSION} not found locally. Attempting pull..."
 	if docker pull "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/null 2>&1; then
 		echo "Pulled inputoutput/prism-node:${PRISM_NODE_VERSION}"
@@ -90,4 +97,17 @@ fi
 
 cd "$REPO_ROOT"
 echo "Running E2E tests..."
+POST_TEST_DELAY_SECONDS="${POST_TEST_DELAY_SECONDS:-0}"
+
+set +e
 sbt "e2e/it:test"
+test_exit_code=$?
+set -e
+
+if [[ "$POST_TEST_DELAY_SECONDS" =~ ^[0-9]+$ ]] && [[ "$POST_TEST_DELAY_SECONDS" -gt 0 ]]; then
+	echo "Keeping containers up for ${POST_TEST_DELAY_SECONDS}s for log inspection..."
+	echo "Tip: docker compose -f \"$COMPOSE_FILE\" logs --tail=300 prism-node"
+	sleep "$POST_TEST_DELAY_SECONDS"
+fi
+
+exit "$test_exit_code"

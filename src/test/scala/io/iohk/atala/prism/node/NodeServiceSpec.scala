@@ -531,6 +531,39 @@ class NodeServiceSpec
         dummySyncTimestamp.toProtoTimestamp
       )
     }
+
+    "return AWAIT_CONFIRMATION for REJECTED operation while transaction is still pending" in {
+      val validOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+      val operationId = AtalaOperationId.of(validOperation)
+      val operationIdProto = operationId.toProtoByteString
+      val operationInfo = AtalaOperationInfo(
+        operationId = operationId,
+        objectId = AtalaObjectId.of("random".getBytes),
+        operationStatus = AtalaOperationStatus.REJECTED,
+        "",
+        transactionSubmissionStatus = Some(AtalaObjectTransactionSubmissionStatus.Pending),
+        transactionId = None
+      )
+
+      doReturn(fake[Instant](dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+      doReturn(fake[Option[AtalaOperationInfo]](Some(operationInfo)))
+        .when(objectManagementService)
+        .getOperationInfo(operationId)
+
+      val response = service.getOperationInfo(
+        GetOperationInfoRequest()
+          .withOperationId(operationIdProto)
+      )
+
+      response.operationStatus must be(common_models.OperationStatus.AWAIT_CONFIRMATION)
+      response.lastSyncedBlockTimestamp.value must be(dummySyncTimestamp.toProtoTimestamp)
+    }
   }
 
   "NodeService.scheduleOperations" should {

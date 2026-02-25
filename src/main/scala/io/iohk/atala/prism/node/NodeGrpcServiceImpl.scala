@@ -9,7 +9,7 @@ import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.{Deleted, InLedger, Pending}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -161,6 +161,18 @@ class NodeGrpcServiceImpl(
         common_models.OperationStatus.CONFIRMED_AND_APPLIED
       case (AtalaOperationStatus.REJECTED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      case (AtalaOperationStatus.APPLIED, Some(Pending | Deleted)) => // See ATL-642
+        logger.warn(
+          s"The operation seems to be in a transition state into the APPLIED status. " +
+            s"(transactionStatus = $maybeTxStatus, Database is eventually consistent but should not take more than a few milliseconds)"
+        )
+        common_models.OperationStatus.AWAIT_CONFIRMATION // This is the previous (consistent) state
+      case (AtalaOperationStatus.REJECTED, Some(Pending | Deleted)) => // See ATL-1267
+        logger.warn(
+          s"The operation seems to be in a transition state into the REJECTED status. " +
+            s"(transactionStatus = $maybeTxStatus, Database is eventually consistent but should not take more than a few milliseconds)"
+        )
+        common_models.OperationStatus.AWAIT_CONFIRMATION // This is the previous (consistent) state
       case _ =>
         throw new RuntimeException(
           s"Unknown state of the operation: (operationStatus = $opStatus, transactionStatus = $maybeTxStatus)"
