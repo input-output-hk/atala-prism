@@ -634,7 +634,7 @@ class NodeServiceSpec
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
         )
       val signedCreate = BlockProcessingServiceSpec.signOperation(createOp, "vdr", vdrKeys.privateKey)
       val opId = AtalaOperationId.of(signedCreate)
@@ -671,7 +671,7 @@ class NodeServiceSpec
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
-            .withData(node_models.StorageData().withIpfs("cid-grpc"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-grpc"))
         )
       val signedUpdate = BlockProcessingServiceSpec.signOperation(updateOp, "vdr", vdrKeys.privateKey)
       val updateId = AtalaOperationId.of(signedUpdate)
@@ -724,7 +724,7 @@ class NodeServiceSpec
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
         )
       val signed = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(op))
       val operationId = AtalaOperationId.of(signed)
@@ -754,7 +754,7 @@ class NodeServiceSpec
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
-            .withData(node_models.StorageData().withIpfs("cid"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid"))
         )
       val signedUpdate = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(updateOp))
       val updateOperationId = AtalaOperationId.of(signedUpdate)

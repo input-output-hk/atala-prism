@@ -16,7 +16,7 @@ class VdrApiSpec extends VdrTestUtils {
       val op = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("dup")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("dup")))
       )
       val signed = signOperation(op, "vdr", vdr.privateKey)
       val first = client.scheduleOperations(

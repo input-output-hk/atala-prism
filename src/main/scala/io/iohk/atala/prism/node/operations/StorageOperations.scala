@@ -249,13 +249,16 @@ final case class DeactivateStorageEntryOperation(
 
 object StorageOperations {
 
-  private def parseStorageData(data: node_models.StorageData, path: Path): Either[ValidationError, StorageData] =
-    data.content match {
-      case node_models.StorageData.Content.Bytes(value) =>
+  private def parseCreateData(
+      op: node_models.CreateStorageEntryOperation,
+      path: Path
+  ): Either[ValidationError, StorageData] =
+    op.data match {
+      case node_models.CreateStorageEntryOperation.Data.Bytes(value) =>
         Right(Bytes(value.toByteArray.toVector))
-      case node_models.StorageData.Content.Ipfs(cid) =>
+      case node_models.CreateStorageEntryOperation.Data.Ipfs(cid) =>
         Right(IpfsCid(cid))
-      case node_models.StorageData.Content.StatusListEntry(entry) =>
+      case node_models.CreateStorageEntryOperation.Data.StatusListEntry(entry) =>
         Right(
           StorageData.StatusListEntry(
             entry.state,
@@ -263,7 +266,28 @@ object StorageOperations {
             Option(entry.details).filter(_.nonEmpty)
           )
         )
-      case node_models.StorageData.Content.Empty =>
+      case node_models.CreateStorageEntryOperation.Data.Empty =>
+        Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
+    }
+
+  private def parseUpdateData(
+      op: node_models.UpdateStorageEntryOperation,
+      path: Path
+  ): Either[ValidationError, StorageData] =
+    op.data match {
+      case node_models.UpdateStorageEntryOperation.Data.Bytes(value) =>
+        Right(Bytes(value.toByteArray.toVector))
+      case node_models.UpdateStorageEntryOperation.Data.Ipfs(cid) =>
+        Right(IpfsCid(cid))
+      case node_models.UpdateStorageEntryOperation.Data.StatusListEntry(entry) =>
+        Right(
+          StorageData.StatusListEntry(
+            entry.state,
+            Option(entry.name).filter(_.nonEmpty),
+            Option(entry.details).filter(_.nonEmpty)
+          )
+        )
+      case node_models.UpdateStorageEntryOperation.Data.Empty =>
         Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
     }
 
@@ -276,8 +300,7 @@ object StorageOperations {
       didHashBytes <- create.child(_.didPrismHash, "didPrismHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid did_prism_hash")
       }
-      dataProto <- create.childGet(_.data, "data")
-      data <- parseStorageData(dataProto.value, dataProto.path)
+      data <- parseCreateData(create.value, create.path)
       nonceBytes = create(_.nonce)
       nonce = if (nonceBytes.isEmpty) None else Some(nonceBytes.toByteArray.toVector)
       digest = Sha256Hash.compute(operation.toByteArray)
@@ -293,8 +316,7 @@ object StorageOperations {
       prevHash <- update.child(_.previousEventHash, "previousEventHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid previous_event_hash")
       }
-      dataProto <- update.childGet(_.data, "data")
-      data <- parseStorageData(dataProto.value, dataProto.path)
+      data <- parseUpdateData(update.value, update.path)
       digest = Sha256Hash.compute(operation.toByteArray)
     } yield UpdateStorageEntryOperation(prevHash, data, digest, ledgerData)
   }

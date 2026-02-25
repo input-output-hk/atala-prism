@@ -18,7 +18,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload-1")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload-1")))
         )
       val signedCreateStorage = signOperation(createStorageOp, "vdr", vdr.privateKey)
       val createVdrResp =
@@ -51,7 +51,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(createEventHash)
-            .withData(node_models.StorageData().withIpfs("cid-2"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-2"))
         )
       val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
       val updateResp =
@@ -123,7 +123,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val createOp = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("via-schedule-1")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("via-schedule-1")))
       )
       val createDigest = Sha256Hash.compute(createOp.toByteArray)
       val signedCreate = signOperation(createOp, "vdr", vdr.privateKey)
@@ -131,7 +131,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val updateOp = node_models.AtalaOperation().withUpdateStorageEntry(
         node_models.UpdateStorageEntryOperation()
           .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
-          .withData(node_models.StorageData().withIpfs("cid-via-schedule"))
+          .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-via-schedule"))
       )
       val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
       val signedUpdate = signOperation(updateOp, "vdr", vdr.privateKey)

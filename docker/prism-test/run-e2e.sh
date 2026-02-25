@@ -3,6 +3,11 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 COMPOSE_FILE="${COMPOSE_FILE:-${REPO_ROOT}/docker/prism-test/compose.yml}"
+COMPOSE_DIR="$(cd "$(dirname "$COMPOSE_FILE")" && pwd)"
+# Isolate compose resources by repository path to avoid collisions with similarly named folders (e.g. trashed clones).
+PROJECT_HASH="$(printf '%s' "$REPO_ROOT" | shasum | awk '{print $1}' | cut -c1-10)"
+PROJECT_NAME="${COMPOSE_PROJECT_NAME:-prism-test-${PROJECT_HASH}}"
+COMPOSE_CMD=(docker compose --project-name "$PROJECT_NAME" --project-directory "$COMPOSE_DIR" -f "$COMPOSE_FILE")
 # Allow overriding the prism-node image tag used by the compose file.
 # Prefer version.sbt to avoid noisy sbt output; fall back to sbt only if needed.
 detect_version() {
@@ -19,16 +24,19 @@ if [[ -z "$PRISM_NODE_VERSION" ]]; then
 fi
 
 cleanup() {
-	docker compose -f "$COMPOSE_FILE" down -v --remove-orphans >/dev/null 2>&1 || true
+	"${COMPOSE_CMD[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
 echo "Starting prism-test stack with PRISM_NODE_VERSION=${PRISM_NODE_VERSION}..."
+echo "Compose project: ${PROJECT_NAME}"
+echo "Compose file: ${COMPOSE_FILE}"
 # Always start from a clean slate
 cleanup
 # Clean up any orphaned volumes from previous runs to avoid conflicts
-if docker volume ls --format '{{.Name}}' | grep '^prism-test_node-testnet$' >/dev/null 2>&1; then
-	docker volume rm prism-test_node-testnet >/dev/null 2>&1 || true
+NODE_TESTNET_VOLUME="${PROJECT_NAME}_node-testnet"
+if docker volume ls --format '{{.Name}}' | grep "^${NODE_TESTNET_VOLUME}$" >/dev/null 2>&1; then
+	docker volume rm "${NODE_TESTNET_VOLUME}" >/dev/null 2>&1 || true
 fi
 
 # Ensure the prism-node image is available locally; try pull first, then build only if the tag matches the local version.
@@ -48,7 +56,7 @@ if ! docker image inspect "inputoutput/prism-node:${PRISM_NODE_VERSION}" >/dev/n
 	fi
 fi
 
-docker compose -f "$COMPOSE_FILE" up -d
+"${COMPOSE_CMD[@]}" up -d
 
 echo "Waiting for cardano-wallet to be ready..."
 for _ in {1..60}; do

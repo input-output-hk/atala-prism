@@ -15,6 +15,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import java.security.SecureRandom
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 import scala.annotation.tailrec
 import scala.concurrent.duration._
@@ -23,12 +24,21 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
   protected val host: String = sys.env.getOrElse("PRISM_NODE_HOST", "localhost")
   protected val port: Int = sys.env.getOrElse("PRISM_NODE_PORT", "50053").toInt
+  protected val awaitAppliedTimeout: FiniteDuration =
+    sys.env.getOrElse("PRISM_E2E_AWAIT_APPLIED_TIMEOUT_SECONDS", "600").toInt.seconds
+  protected val verboseStatusLogs: Boolean =
+    sys.env.getOrElse("PRISM_E2E_VERBOSE_STATUS_LOGS", "true").toBoolean
 
   protected var channel: ManagedChannel = _
   protected var client: NodeServiceBlockingStub = _
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
+    if (verboseStatusLogs) {
+      println(
+        s"[vdr-e2e][${Instant.now}] connecting grpc host=$host port=$port awaitAppliedTimeout=${awaitAppliedTimeout.toSeconds}s"
+      )
+    }
     channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
     client = NodeServiceGrpc.blockingStub(channel)
   }
@@ -133,14 +143,29 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
   protected def operationIdOrFail(output: node_api.OperationOutput): ByteString =
     output.operationMaybe.operationId
+      .map { id =>
+        log(s"scheduled operation_id=${toHex(id)}")
+        id
+      }
       .orElse(output.operationMaybe.error.map(e => fail(s"Operation scheduling failed: $e")))
       .getOrElse(fail("Operation scheduling missing id and error"))
 
-  protected def awaitApplied(operationId: ByteString, max: FiniteDuration = 180.seconds): common_models.OperationStatus = {
+  protected def awaitApplied(
+      operationId: ByteString,
+      max: FiniteDuration = awaitAppliedTimeout
+  ): common_models.OperationStatus = {
     val deadline = max.fromNow
+    def statusKey(resp: node_api.GetOperationInfoResponse): (common_models.OperationStatus, String) =
+      (resp.operationStatus, resp.details)
+
     @tailrec
-    def loop(): common_models.OperationStatus = {
+    def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
       val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val current = statusKey(statusResp)
+      if (last.forall(_ != current))
+        log(
+          s"awaitApplied operation_id=${toHex(operationId)} status=${statusResp.operationStatus} details=${statusResp.details}"
+        )
       statusResp.operationStatus match {
         case common_models.OperationStatus.CONFIRMED_AND_APPLIED =>
           common_models.OperationStatus.CONFIRMED_AND_APPLIED
@@ -148,19 +173,32 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
           fail(s"Operation rejected: ${statusResp.details}")
         case _ if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case other =>
-          fail(s"Operation did not complete in time, last status: $other, details: ${statusResp.details}")
+          fail(
+            s"Operation did not complete within ${max.toSeconds}s, last status: $other, details: ${statusResp.details}"
+          )
       }
     }
-    loop()
+    loop(None)
   }
+
+  private def toHex(bs: ByteString): String =
+    bs.toByteArray.map(b => f"${b & 0xff}%02x").mkString
 
   protected def awaitRejected(operationId: ByteString, max: FiniteDuration = 90.seconds): common_models.OperationStatus = {
     val deadline = max.fromNow
+    def statusKey(resp: node_api.GetOperationInfoResponse): (common_models.OperationStatus, String) =
+      (resp.operationStatus, resp.details)
+
     @tailrec
-    def loop(): common_models.OperationStatus = {
+    def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
       val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val current = statusKey(statusResp)
+      if (last.forall(_ != current))
+        log(
+          s"awaitRejected operation_id=${toHex(operationId)} status=${statusResp.operationStatus} details=${statusResp.details}"
+        )
       statusResp.operationStatus match {
         case common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
           common_models.OperationStatus.CONFIRMED_AND_REJECTED
@@ -168,12 +206,12 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
           fail(s"Operation unexpectedly applied: ${statusResp.details}")
         case _ if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case other =>
           other
       }
     }
-    val finalStatus = loop()
+    val finalStatus = loop(None)
     withClue(s"Final status for $operationId: $finalStatus") {
       finalStatus should not be common_models.OperationStatus.CONFIRMED_AND_APPLIED
     }
@@ -185,9 +223,17 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
       max: FiniteDuration = 120.seconds
   ): common_models.OperationStatus = {
     val deadline = max.fromNow
+    def statusKey(resp: node_api.GetOperationInfoResponse): (common_models.OperationStatus, String) =
+      (resp.operationStatus, resp.details)
+
     @tailrec
-    def loop(): common_models.OperationStatus = {
+    def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
       val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val current = statusKey(statusResp)
+      if (last.forall(_ != current))
+        log(
+          s"awaitRejectedOrPending operation_id=${toHex(operationId)} status=${statusResp.operationStatus} details=${statusResp.details}"
+        )
       statusResp.operationStatus match {
         case common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
           common_models.OperationStatus.CONFIRMED_AND_REJECTED
@@ -195,17 +241,17 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
           fail(s"Operation unexpectedly applied: ${statusResp.details}")
         case common_models.OperationStatus.PENDING_SUBMISSION if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case common_models.OperationStatus.PENDING_SUBMISSION =>
           common_models.OperationStatus.PENDING_SUBMISSION
         case _ if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case other =>
           other
       }
     }
-    loop()
+    loop(None)
   }
 
   protected def awaitFinalOrPending(
@@ -213,45 +259,61 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
       max: FiniteDuration = 120.seconds
   ): common_models.OperationStatus = {
     val deadline = max.fromNow
+    def statusKey(resp: node_api.GetOperationInfoResponse): (common_models.OperationStatus, String) =
+      (resp.operationStatus, resp.details)
+
     @tailrec
-    def loop(): common_models.OperationStatus = {
+    def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
       val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val current = statusKey(statusResp)
+      if (last.forall(_ != current))
+        log(
+          s"awaitFinalOrPending operation_id=${toHex(operationId)} status=${statusResp.operationStatus} details=${statusResp.details}"
+        )
       statusResp.operationStatus match {
         case common_models.OperationStatus.CONFIRMED_AND_APPLIED |
             common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
           statusResp.operationStatus
         case common_models.OperationStatus.PENDING_SUBMISSION if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case common_models.OperationStatus.PENDING_SUBMISSION =>
           common_models.OperationStatus.PENDING_SUBMISSION
         case _ if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case other =>
           other
       }
     }
-    loop()
+    loop(None)
   }
 
   protected def awaitFinal(operationId: ByteString, max: FiniteDuration = 90.seconds): common_models.OperationStatus = {
     val deadline = max.fromNow
+    def statusKey(resp: node_api.GetOperationInfoResponse): (common_models.OperationStatus, String) =
+      (resp.operationStatus, resp.details)
+
     @tailrec
-    def loop(): common_models.OperationStatus = {
+    def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
       val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val current = statusKey(statusResp)
+      if (last.forall(_ != current))
+        log(
+          s"awaitFinal operation_id=${toHex(operationId)} status=${statusResp.operationStatus} details=${statusResp.details}"
+        )
       statusResp.operationStatus match {
         case common_models.OperationStatus.CONFIRMED_AND_APPLIED |
             common_models.OperationStatus.CONFIRMED_AND_REJECTED =>
           statusResp.operationStatus
         case _ if deadline.hasTimeLeft() =>
           Thread.sleep(2000)
-          loop()
+          loop(Some(current))
         case other =>
           fail(s"Operation did not reach terminal state in time, last status: $other, details: ${statusResp.details}")
       }
     }
-    loop()
+    loop(None)
   }
 
   protected def requireOutput(opt: Option[node_api.OperationOutput], ctx: String): node_api.OperationOutput =
@@ -262,8 +324,10 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
   protected def createDidWithVdrKey(master: SecpPair, vdr: SecpPair): Sha256Hash = {
     val createDidOp = buildCreateDid(master, Some((vdr.publicKey, vdr.publicKey.curveName)))
+    log(s"createDidWithVdrKey digest=${Sha256Hash.compute(createDidOp.toByteArray).hexEncoded}")
     val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
     val didScheduleResp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
+    logScheduleResponse("createDidWithVdrKey", didScheduleResp)
     val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
     awaitApplied(didOpId)
     Sha256Hash.compute(createDidOp.toByteArray)
@@ -275,8 +339,12 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
       curveOverride: String
   ): Sha256Hash = {
     val createDidOp = buildCreateDid(master, Some((vdrPub, curveOverride)))
+    log(
+      s"createDidWithCustomVdr curveOverride=$curveOverride digest=${Sha256Hash.compute(createDidOp.toByteArray).hexEncoded}"
+    )
     val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
     val didScheduleResp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
+    logScheduleResponse("createDidWithCustomVdr", didScheduleResp)
     val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
     awaitApplied(didOpId)
     Sha256Hash.compute(createDidOp.toByteArray)
@@ -284,8 +352,10 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
   protected def createDidWithoutVdr(master: SecpPair): Sha256Hash = {
     val createDidOp = buildCreateDid(master, None)
+    log(s"createDidWithoutVdr digest=${Sha256Hash.compute(createDidOp.toByteArray).hexEncoded}")
     val signedCreateDid = signOperation(createDidOp, "master", master.privateKey)
     val didScheduleResp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signedCreateDid)))
+    logScheduleResponse("createDidWithoutVdr", didScheduleResp)
     val didOpId = operationIdOrFail(didScheduleResp.outputs.head)
     awaitApplied(didOpId)
     Sha256Hash.compute(createDidOp.toByteArray)
@@ -299,8 +369,10 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
         actions = Seq(node_models.UpdateDIDAction().withRemoveKey(node_models.RemoveKeyAction(keyId = "vdr")))
       )
     )
+    log(s"removeVdrKeyFromDid did=${didHash.hexEncoded} opDigest=${Sha256Hash.compute(updateOp.toByteArray).hexEncoded}")
     val signed = signOperation(updateOp, "master", master.privateKey)
     val resp = client.scheduleOperations(node_api.ScheduleOperationsRequest(Seq(signed)))
+    logScheduleResponse("removeVdrKeyFromDid", resp)
     val opId = operationIdOrFail(resp.outputs.head)
     val _ = awaitApplied(opId)
   }
@@ -316,17 +388,22 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
         node_models
           .CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8(payload)))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8(payload)))
       )
+    log(
+      s"createVdrEntry did=${didSuffixHash.hexEncoded} payloadBytes=${payload.getBytes.length} opDigest=${Sha256Hash.compute(createStorageOp.toByteArray).hexEncoded}"
+    )
     val signedCreateStorage = signOperation(createStorageOp, "vdr", vdr.privateKey)
     val createVdrResp = client.scheduleOperations(
       node_api.ScheduleOperationsRequest(signedOperations = Seq(signedCreateStorage))
     )
+    logScheduleResponse("createVdrEntry", createVdrResp)
 
     val createVdrOutput =
       requireOutput(createVdrResp.outputs.headOption, "create VDR")
     val createVdrOpId = operationIdOrFail(createVdrOutput)
     val createEventHash = require(createVdrOutput.result.createVdrEntryOutput, "create VDR event hash").eventHash
+    log(s"createVdrEntry scheduled operation_id=${toHex(createVdrOpId)} eventHash=${toHex(createEventHash)}")
     awaitApplied(createVdrOpId)
     (createEventHash, createVdrOpId)
   }
@@ -342,17 +419,36 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
         node_models
           .UpdateStorageEntryOperation()
           .withPreviousEventHash(previousEventHash)
-          .withData(node_models.StorageData().withIpfs(ipfsCid))
+          .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs(ipfsCid))
       )
+    log(
+      s"updateVdrEntry prevEventHash=${toHex(previousEventHash)} ipfs=$ipfsCid opDigest=${Sha256Hash.compute(updateStorageOp.toByteArray).hexEncoded}"
+    )
     val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
     val updateResp = client.scheduleOperations(
       node_api.ScheduleOperationsRequest(signedOperations = Seq(signedUpdateStorage))
     )
+    logScheduleResponse("updateVdrEntry", updateResp)
 
     val updateOutput = requireOutput(updateResp.outputs.headOption, "update VDR")
     val updateVdrOpId = operationIdOrFail(updateOutput)
     val updateEventHash = require(updateOutput.result.updateVdrEntryOutput, "update VDR event hash").eventHash
+    log(s"updateVdrEntry scheduled operation_id=${toHex(updateVdrOpId)} eventHash=${toHex(updateEventHash)}")
     awaitApplied(updateVdrOpId)
     updateEventHash
+  }
+
+  private def log(msg: String): Unit =
+    if (verboseStatusLogs) println(s"[vdr-e2e][${Instant.now}] $msg")
+
+  private def logScheduleResponse(ctx: String, resp: node_api.ScheduleOperationsResponse): Unit = {
+    if (!verboseStatusLogs) return
+    val outputs = resp.outputs.zipWithIndex.map { case (out, idx) =>
+      val opId = out.operationMaybe.operationId.map(toHex).getOrElse("<none>")
+      val err = out.operationMaybe.error.getOrElse("")
+      val resultType = out.result.getClass.getSimpleName
+      s"#$idx opId=$opId error='$err' result=$resultType"
+    }
+    log(s"$ctx scheduleOutputs=${outputs.mkString("[", ", ", "]")}")
   }
 }

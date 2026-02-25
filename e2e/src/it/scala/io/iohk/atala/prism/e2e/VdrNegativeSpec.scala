@@ -24,7 +24,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         node_models.AtalaOperation().withCreateStorageEntry(
           node_models.CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
         ),
         keyId = "master", // wrong usage
         key = master.privateKey
@@ -49,7 +49,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         node_models.AtalaOperation().withUpdateStorageEntry(
           node_models.UpdateStorageEntryOperation()
             .withPreviousEventHash(bogusPrev)
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("x")))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("x")))
         ),
         keyId = "vdr",
         key = vdr.privateKey
@@ -95,7 +95,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         node_models.AtalaOperation().withCreateStorageEntry(
           node_models.CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
         ),
         keyId = "master",
         key = master.privateKey
@@ -127,7 +127,7 @@ class VdrNegativeSpec extends VdrTestUtils {
       val createOp = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
       )
       val badSigned = node_models.SignedAtalaOperation(
         signedWith = "vdr",
@@ -154,7 +154,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         node_models.AtalaOperation().withUpdateStorageEntry(
           node_models.UpdateStorageEntryOperation()
             .withPreviousEventHash(createEventHash)
-            .withData(node_models.StorageData().withIpfs("cid-2"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-2"))
         ),
         keyId = "master",
         key = master.privateKey
@@ -206,7 +206,7 @@ class VdrNegativeSpec extends VdrTestUtils {
       val op = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didA.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("cross")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("cross")))
       )
       val signed = signOperation(op, "vdr", vdrB.privateKey)
 
@@ -227,7 +227,7 @@ class VdrNegativeSpec extends VdrTestUtils {
       val op = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("after-removal")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("after-removal")))
       )
       val signed = signOperation(op, "vdr", vdr.privateKey)
 
@@ -260,7 +260,7 @@ class VdrNegativeSpec extends VdrTestUtils {
         node_models.AtalaOperation().withUpdateStorageEntry(
           node_models.UpdateStorageEntryOperation()
             .withPreviousEventHash(updateEvent)
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("should-fail")))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("should-fail")))
         ),
         keyId = "vdr",
         key = vdr.privateKey
@@ -280,7 +280,7 @@ class VdrNegativeSpec extends VdrTestUtils {
       val op = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("unknown-signer")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("unknown-signer")))
       )
 
       val signed = node_models.SignedAtalaOperation(
@@ -303,7 +303,7 @@ class VdrNegativeSpec extends VdrTestUtils {
       val op = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("bad-sig")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("bad-sig")))
       )
 
       val badSig = ByteString.copyFrom(Array.fill[Byte](8)(0x01.toByte)) // clearly invalid ECDSA length
@@ -327,14 +327,14 @@ class VdrNegativeSpec extends VdrTestUtils {
       val createOp = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("mixed-ok")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("mixed-ok")))
       )
       val signedCreate = signOperation(createOp, "vdr", vdr.privateKey)
 
       val badUpdateOp = node_models.AtalaOperation().withUpdateStorageEntry(
         node_models.UpdateStorageEntryOperation()
           .withPreviousEventHash(ByteString.copyFromUtf8("bogus"))
-          .withData(node_models.StorageData().withIpfs("should-fail"))
+          .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("should-fail"))
       )
       val signedBadUpdate = signOperation(badUpdateOp, "vdr", vdr.privateKey)
 
