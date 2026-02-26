@@ -12,7 +12,10 @@ import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.repositories.daos.VdrEntriesDAO
 import io.iohk.atala.prism.node.repositories.daos.VdrEntriesDAO.VdrEntryRow
 import io.iohk.atala.prism.node.utils.syntax.DBConnectionOps
+import io.iohk.atala.prism.protos.node_models
+import java.nio.charset.StandardCharsets
 import tofu.logging.Logs
+import scala.util.Try
 
 case class VdrEntry(
     eventHash: Sha256Hash,
@@ -81,9 +84,27 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
   private def toDbData(data: StorageData): (String, Option[Array[Byte]], Option[String]) = data match {
     case Bytes(value) => ("BYTES", Some(value.toArray), None)
     case IpfsCid(cid) => ("IPFS", None, Some(cid))
-    case sle @ StorageData.StatusListEntry(_, _, _) =>
-      ("STATUS_LIST", Some(sle.toString.getBytes), None)
+    case sle: StorageData.StatusListEntry =>
+      ("STATUS_LIST", Some(toProtoStatusListBytes(sle)), None)
   }
+
+  private def toProtoStatusListBytes(entry: StorageData.StatusListEntry): Array[Byte] =
+    node_models
+      .StatusListEntry(
+        state = entry.state,
+        name = entry.name.getOrElse(""),
+        details = entry.details.getOrElse("")
+      )
+      .toByteArray
+
+  private def fromProtoStatusListBytes(bytes: Array[Byte]): Option[StorageData.StatusListEntry] =
+    Try(node_models.StatusListEntry.parseFrom(bytes)).toOption.map { entry =>
+      StorageData.StatusListEntry(
+        state = entry.state,
+        name = Option(entry.name).filter(_.nonEmpty),
+        details = Option(entry.details).filter(_.nonEmpty)
+      )
+    }
 
   private def fromDb(row: VdrEntryRow): Option[VdrEntry] = {
     val data = row.dataType match {
@@ -91,8 +112,11 @@ private final class VdrEntriesRepositoryImpl[F[_]: MonadCancelThrow](
       case "IPFS" => row.dataIpfs.map(IpfsCid.apply)
       case "STATUS_LIST" =>
         row.dataBytes.map { bytes =>
-          val str = new String(bytes)
-          StorageData.StatusListEntry(0, Some(str), None)
+          fromProtoStatusListBytes(bytes).getOrElse {
+            // Backward compatibility for legacy rows previously serialized via `toString`.
+            val legacyString = new String(bytes, StandardCharsets.UTF_8)
+            StorageData.StatusListEntry(0, Some(legacyString), None)
+          }
         }
       case "NONE" => None
       case _ => None

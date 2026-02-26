@@ -16,7 +16,6 @@ import io.iohk.atala.prism.node.operations.StateError.{
   InvalidKeyUsed,
   InvalidPreviousOperation
 }
-import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, VdrEntriesDAO}
 import io.iohk.atala.prism.protos.node_models
@@ -121,8 +120,8 @@ final case class CreateStorageEntryOperation(
     val (dataType, dataBytes, dataIpfs) = data match {
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
-      case sle @ StorageData.StatusListEntry(_, _, _) =>
-        ("STATUS_LIST", Some(sle.toString.getBytes), None)
+      case sle: StorageData.StatusListEntry =>
+        ("STATUS_LIST", Some(StorageOperations.statusListToBytes(sle)), None)
     }
     for {
       _ <- EitherT {
@@ -171,8 +170,8 @@ final case class UpdateStorageEntryOperation(
     val (dataType, dataBytes, dataIpfs) = data match {
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
-      case sle @ StorageData.StatusListEntry(_, _, _) =>
-        ("STATUS_LIST", Some(sle.toString.getBytes), None)
+      case sle: StorageData.StatusListEntry =>
+        ("STATUS_LIST", Some(StorageOperations.statusListToBytes(sle)), None)
     }
     for {
       resolved <- resolveActiveHead(previousEventHash)
@@ -249,46 +248,37 @@ final case class DeactivateStorageEntryOperation(
 
 object StorageOperations {
 
+  private[operations] def statusListToBytes(entry: StorageData.StatusListEntry): Array[Byte] =
+    node_models
+      .StatusListEntry(
+        state = entry.state,
+        name = entry.name.getOrElse(""),
+        details = entry.details.getOrElse("")
+      )
+      .toByteArray
+
   private def parseCreateData(
-      op: node_models.CreateStorageEntryOperation,
-      path: Path
+      op: node_models.CreateStorageEntryOperation
   ): Either[ValidationError, StorageData] =
     op.data match {
       case node_models.CreateStorageEntryOperation.Data.Bytes(value) =>
         Right(Bytes(value.toByteArray.toVector))
       case node_models.CreateStorageEntryOperation.Data.Ipfs(cid) =>
         Right(IpfsCid(cid))
-      case node_models.CreateStorageEntryOperation.Data.StatusListEntry(entry) =>
-        Right(
-          StorageData.StatusListEntry(
-            entry.state,
-            Option(entry.name).filter(_.nonEmpty),
-            Option(entry.details).filter(_.nonEmpty)
-          )
-        )
       case node_models.CreateStorageEntryOperation.Data.Empty =>
-        Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
+        Right(Bytes(Vector.empty))
     }
 
   private def parseUpdateData(
-      op: node_models.UpdateStorageEntryOperation,
-      path: Path
+      op: node_models.UpdateStorageEntryOperation
   ): Either[ValidationError, StorageData] =
     op.data match {
       case node_models.UpdateStorageEntryOperation.Data.Bytes(value) =>
         Right(Bytes(value.toByteArray.toVector))
       case node_models.UpdateStorageEntryOperation.Data.Ipfs(cid) =>
         Right(IpfsCid(cid))
-      case node_models.UpdateStorageEntryOperation.Data.StatusListEntry(entry) =>
-        Right(
-          StorageData.StatusListEntry(
-            entry.state,
-            Option(entry.name).filter(_.nonEmpty),
-            Option(entry.details).filter(_.nonEmpty)
-          )
-        )
       case node_models.UpdateStorageEntryOperation.Data.Empty =>
-        Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
+        Right(Bytes(Vector.empty))
     }
 
   def parseCreate(
@@ -300,7 +290,7 @@ object StorageOperations {
       didHashBytes <- create.child(_.didPrismHash, "didPrismHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid did_prism_hash")
       }
-      data <- parseCreateData(create.value, create.path)
+      data <- parseCreateData(create.value)
       nonceBytes = create(_.nonce)
       nonce = if (nonceBytes.isEmpty) None else Some(nonceBytes.toByteArray.toVector)
       digest = Sha256Hash.compute(operation.toByteArray)
@@ -316,7 +306,7 @@ object StorageOperations {
       prevHash <- update.child(_.previousEventHash, "previousEventHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid previous_event_hash")
       }
-      data <- parseUpdateData(update.value, update.path)
+      data <- parseUpdateData(update.value)
       digest = Sha256Hash.compute(operation.toByteArray)
     } yield UpdateStorageEntryOperation(prevHash, data, digest, ledgerData)
   }

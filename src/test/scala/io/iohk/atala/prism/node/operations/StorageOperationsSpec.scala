@@ -91,12 +91,12 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       op.digest mustBe Sha256Hash.compute(proto.toByteArray)
     }
 
-    "fail when storage data is missing" in {
+    "accept empty data when storage data is omitted" in {
       val proto = createStorageProto(node_models.CreateStorageEntryOperation.Data.Empty)
 
-      val parsed = StorageOperations.parseCreate(proto, dummyLedgerData)
+      val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
 
-      parsed.left.value mustBe a[ValidationError.InvalidValue]
+      op.data mustBe Bytes(Vector.empty)
     }
 
     "parse IPFS storage data" in {
@@ -107,12 +107,12 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       op.data mustBe IpfsCid(ipfsCid)
     }
 
-    "parse StatusListEntry storage data" in {
-      val status = node_models.StatusListEntry(state = 5, name = "list", details = "details")
-      val proto = createStorageProto(node_models.CreateStorageEntryOperation.Data.StatusListEntry(status))
+    "accept empty data when update storage data is omitted" in {
+      val previous = Sha256Hash.compute("previous".getBytes)
+      val proto = updateStorageProto(previous, node_models.UpdateStorageEntryOperation.Data.Empty)
 
-      val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
-      op.data mustBe StorageData.StatusListEntry(5, Some("list"), Some("details"))
+      val op = StorageOperations.parseUpdate(proto, dummyLedgerData).value
+      op.data mustBe Bytes(Vector.empty)
     }
   }
 
@@ -182,6 +182,28 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       stored.dataBytes.value mustBe payload
       stored.previousEventHash mustBe None
       stored.nonce.value mustBe "nonce".getBytes
+    }
+
+    "persist a create entry with STATUS_LIST payload losslessly" in {
+      insertDid()
+      insertVdrKey()
+      val digest = Sha256Hash.compute("status-list-op".getBytes)
+      val op = CreateStorageEntryOperation(
+        didSuffix = didSuffix,
+        nonce = Some("nonce".getBytes.toVector),
+        data = StorageData.StatusListEntry(5, Some("list"), Some("details")),
+        digest = digest,
+        ledgerData = dummyLedgerData
+      )
+
+      op.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
+
+      val stored = VdrEntriesDAO.find(op.digest).transact(database).unsafeRunSync().value
+      stored.dataType mustBe "STATUS_LIST"
+      val status = node_models.StatusListEntry.parseFrom(stored.dataBytes.value)
+      status.state mustBe 5L
+      status.name mustBe "list"
+      status.details mustBe "details"
     }
 
     "persist an update entry linking the previous event" in {
