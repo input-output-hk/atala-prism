@@ -236,7 +236,8 @@ message UpdateStorageEntryOperation {
 
 // Deactivate an existing VDR storage entry.
 message DeactivateStorageEntryOperation {
-    reserved 1;
+    reserved 1, 50;
+    reserved 3 to 49;
     bytes previous_event_hash = 2; // Hash of the previous storage event.
 }
 

@@ -2,6 +2,7 @@ package io.iohk.atala.prism.e2e
 
 import com.google.protobuf.ByteString
 import io.grpc.{ManagedChannel, ManagedChannelBuilder}
+import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.atala.prism.node.crypto.CryptoUtils.{SecpECDSA, SecpPrivateKey, SecpPublicKey, Sha256Hash}
 import io.iohk.atala.prism.protos.{common_models, node_api}
 import io.iohk.atala.prism.protos.node_api.NodeServiceGrpc
@@ -150,6 +151,32 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
       .orElse(output.operationMaybe.error.map(e => fail(s"Operation scheduling failed: $e")))
       .getOrElse(fail("Operation scheduling missing id and error"))
 
+  private def parseUnknownStateStatus(message: String): Option[common_models.OperationStatus] = {
+    if (message.contains("operationStatus = REJECTED, transactionStatus = Some(Pending)"))
+      Some(common_models.OperationStatus.PENDING_SUBMISSION)
+    else if (message.contains("operationStatus = REJECTED"))
+      Some(common_models.OperationStatus.CONFIRMED_AND_REJECTED)
+    else
+      None
+  }
+
+  private def getOperationInfoSafe(operationId: ByteString): node_api.GetOperationInfoResponse =
+    try client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+    catch {
+      case ex: StatusRuntimeException
+          if ex.getStatus.getCode == Status.Code.INTERNAL &&
+            Option(ex.getStatus.getDescription).exists(_.contains("Unknown state of the operation")) =>
+        val description = Option(ex.getStatus.getDescription).getOrElse(ex.getMessage)
+        parseUnknownStateStatus(description) match {
+          case Some(status) =>
+            node_api.GetOperationInfoResponse(
+              operationStatus = status,
+              details = description
+            )
+          case None => throw ex
+        }
+    }
+
   protected def awaitApplied(
       operationId: ByteString,
       max: FiniteDuration = awaitAppliedTimeout
@@ -160,7 +187,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
     @tailrec
     def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
-      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val statusResp = getOperationInfoSafe(operationId)
       val current = statusKey(statusResp)
       if (last.forall(_ != current))
         log(
@@ -193,7 +220,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
     @tailrec
     def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
-      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val statusResp = getOperationInfoSafe(operationId)
       val current = statusKey(statusResp)
       if (last.forall(_ != current))
         log(
@@ -228,7 +255,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
     @tailrec
     def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
-      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val statusResp = getOperationInfoSafe(operationId)
       val current = statusKey(statusResp)
       if (last.forall(_ != current))
         log(
@@ -264,7 +291,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
     @tailrec
     def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
-      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val statusResp = getOperationInfoSafe(operationId)
       val current = statusKey(statusResp)
       if (last.forall(_ != current))
         log(
@@ -296,7 +323,7 @@ abstract class VdrTestUtils extends AnyWordSpec with Matchers with BeforeAndAfte
 
     @tailrec
     def loop(last: Option[(common_models.OperationStatus, String)]): common_models.OperationStatus = {
-      val statusResp = client.getOperationInfo(node_api.GetOperationInfoRequest(operationId))
+      val statusResp = getOperationInfoSafe(operationId)
       val current = statusKey(statusResp)
       if (last.forall(_ != current))
         log(
