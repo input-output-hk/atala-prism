@@ -9,7 +9,7 @@ import io.iohk.atala.prism.node.logging.TraceId.IOWithTraceIdContext
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil
 import io.iohk.atala.prism.node.metrics.RequestMeasureUtil.measureRequestFuture
 import io.iohk.atala.prism.node.errors.NodeError
-import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.InLedger
+import io.iohk.atala.prism.node.models.AtalaObjectTransactionSubmissionStatus.{Deleted, InLedger, Pending}
 import io.iohk.atala.prism.node.models.{
   AtalaObjectTransactionSubmissionStatus,
   AtalaOperationInfo,
@@ -20,7 +20,6 @@ import io.iohk.atala.prism.node.services._
 import io.iohk.atala.prism.protos.common_models.{HealthCheckRequest, HealthCheckResponse}
 import io.iohk.atala.prism.protos.node_api._
 import io.iohk.atala.prism.protos.{common_models, node_api}
-import io.iohk.atala.prism.protos.node_models.SignedAtalaOperation
 import io.iohk.atala.prism.node.tracing.Tracing._
 import io.iohk.atala.prism.node.utils.syntax._
 import org.slf4j.{Logger, LoggerFactory}
@@ -162,6 +161,18 @@ class NodeGrpcServiceImpl(
         common_models.OperationStatus.CONFIRMED_AND_APPLIED
       case (AtalaOperationStatus.REJECTED, Some(InLedger)) =>
         common_models.OperationStatus.CONFIRMED_AND_REJECTED
+      case (AtalaOperationStatus.APPLIED, Some(Pending | Deleted)) => // See ATL-642
+        logger.warn(
+          s"The operation seems to be in a transition state into the APPLIED status. " +
+            s"(transactionStatus = $maybeTxStatus, Database is eventually consistent but should not take more than a few milliseconds)"
+        )
+        common_models.OperationStatus.AWAIT_CONFIRMATION // This is the previous (consistent) state
+      case (AtalaOperationStatus.REJECTED, Some(Pending | Deleted)) => // See ATL-1267
+        logger.warn(
+          s"The operation seems to be in a transition state into the REJECTED status. " +
+            s"(transactionStatus = $maybeTxStatus, Database is eventually consistent but should not take more than a few milliseconds)"
+        )
+        common_models.OperationStatus.AWAIT_CONFIRMATION // This is the previous (consistent) state
       case _ =>
         throw new RuntimeException(
           s"Unknown state of the operation: (operationStatus = $opStatus, transactionStatus = $maybeTxStatus)"
@@ -231,37 +242,13 @@ class NodeGrpcServiceImpl(
     )
   }
 
-  override def createVdrEntry(request: node_api.CreateVdrEntryRequest): Future[node_api.CreateVdrEntryResponse] =
-    handleSingleOperation(requireSignedOperation(request.signedOperation, "createVdrEntry"), "createVdrEntry").map {
-      out =>
-        node_api.CreateVdrEntryResponse().withOutput(out)
-    }
-
-  override def updateVdrEntry(request: node_api.UpdateVdrEntryRequest): Future[node_api.UpdateVdrEntryResponse] =
-    handleSingleOperation(requireSignedOperation(request.signedOperation, "updateVdrEntry"), "updateVdrEntry").map {
-      out =>
-        node_api.UpdateVdrEntryResponse().withOutput(out)
-    }
-
-  override def deactivateVdrEntry(
-      request: node_api.DeactivateVdrEntryRequest
-  ): Future[node_api.DeactivateVdrEntryResponse] =
-    handleSingleOperation(
-      requireSignedOperation(request.signedOperation, "deactivateVdrEntry"),
-      "deactivateVdrEntry"
-    ).map { out =>
-      node_api.DeactivateVdrEntryResponse().withOutput(out)
-    }
-
   override def getVdrEntry(request: node_api.GetVdrEntryRequest): Future[node_api.GetVdrEntryResponse] = {
     val methodName = "getVdrEntry"
     measureRequestFuture(serviceName, methodName) {
       trace { traceId =>
-        val latestRequested = request.latest || !request.entryId.isEmpty
         val effect =
-          if (latestRequested)
-            nodeService.getVdrEntryLatest(if (!request.entryId.isEmpty) request.entryId else request.eventHash)
-          else nodeService.getVdrEntry(request.eventHash)
+          // Public API now always resolves the latest head for the immutable entry hash.
+          nodeService.getVdrEntryLatest(request.eventHash)
 
         effect
           .map(
@@ -289,36 +276,6 @@ class NodeGrpcServiceImpl(
     }
   }
 
-  private def handleSingleOperation(
-      op: SignedAtalaOperation,
-      methodName: String
-  ): Future[node_api.OperationOutput] =
-    measureRequestFuture(serviceName, methodName) {
-      trace { traceId =>
-        val query = for {
-          outputsE <- nodeService.parseOperations(Seq(op))
-          outputs = outputsE.fold(err => countAndThrowNodeError(methodName, err), outs => outs)
-          ids <- nodeService.scheduleAtalaOperations(op)
-          output = outputs.headOption.zip(ids.headOption).headOption match {
-            case Some((out, Right(opId))) => out.withOperationId(opId.toProtoByteString)
-            case Some((out, Left(err))) => out.withError(err.toString)
-            case None => node_api.OperationOutput().withError("Empty operation output")
-          }
-        } yield output
-        query.run(traceId).unsafeToFuture()
-      }
-    }
-
-  private def requireSignedOperation(
-      opOpt: Option[SignedAtalaOperation],
-      methodName: String
-  ): SignedAtalaOperation =
-    opOpt.getOrElse(
-      countAndThrowNodeError(
-        methodName,
-        NodeError.InvalidArgument("signed_operation is required")
-      )
-    )
 }
 
 object NodeGrpcServiceImpl {

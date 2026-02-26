@@ -7,7 +7,7 @@ import io.iohk.atala.prism.node.AtalaWithPostgresSpec
 import io.iohk.atala.prism.node.DataPreparation.{dummyApplyOperationConfig, dummyLedgerData}
 import io.iohk.atala.prism.node.crypto.CryptoTestUtils
 import io.iohk.atala.prism.node.crypto.CryptoUtils.Sha256Hash
-import io.iohk.atala.prism.node.models.StorageData.Bytes
+import io.iohk.atala.prism.node.models.StorageData.{Bytes, IpfsCid}
 import io.iohk.atala.prism.node.models._
 import io.iohk.atala.prism.node.operations.StateError.{EntityMissing, InvalidKeyUsed, InvalidPreviousOperation}
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, VdrEntriesDAO}
@@ -45,7 +45,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       .transact(database)
       .unsafeRunSync()
 
-  private def createStorageProto(data: node_models.StorageData): node_models.AtalaOperation =
+  private def createStorageProto(data: node_models.CreateStorageEntryOperation.Data): node_models.AtalaOperation =
     node_models
       .AtalaOperation()
       .withCreateStorageEntry(
@@ -56,7 +56,10 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
           .withData(data)
       )
 
-  private def updateStorageProto(previous: Sha256Hash, data: node_models.StorageData): node_models.AtalaOperation =
+  private def updateStorageProto(
+      previous: Sha256Hash,
+      data: node_models.UpdateStorageEntryOperation.Data
+  ): node_models.AtalaOperation =
     node_models
       .AtalaOperation()
       .withUpdateStorageEntry(
@@ -77,7 +80,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
 
   "StorageOperations.parseCreate" should {
     "extract bytes payload, nonce and digest" in {
-      val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
+      val data = node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))
       val proto = createStorageProto(data)
 
       val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
@@ -88,18 +91,34 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       op.digest mustBe Sha256Hash.compute(proto.toByteArray)
     }
 
-    "fail when storage data is missing" in {
-      val proto = createStorageProto(node_models.StorageData())
+    "accept empty data when storage data is omitted" in {
+      val proto = createStorageProto(node_models.CreateStorageEntryOperation.Data.Empty)
 
-      val parsed = StorageOperations.parseCreate(proto, dummyLedgerData)
+      val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
 
-      parsed.left.value mustBe a[ValidationError.InvalidValue]
+      op.data mustBe Bytes(Vector.empty)
+    }
+
+    "parse IPFS storage data" in {
+      val ipfsCid = "cid123"
+      val proto = createStorageProto(node_models.CreateStorageEntryOperation.Data.Ipfs(ipfsCid))
+
+      val op = StorageOperations.parseCreate(proto, dummyLedgerData).value
+      op.data mustBe IpfsCid(ipfsCid)
+    }
+
+    "accept empty data when update storage data is omitted" in {
+      val previous = Sha256Hash.compute("previous".getBytes)
+      val proto = updateStorageProto(previous, node_models.UpdateStorageEntryOperation.Data.Empty)
+
+      val op = StorageOperations.parseUpdate(proto, dummyLedgerData).value
+      op.data mustBe Bytes(Vector.empty)
     }
   }
 
   "StorageOperations.getCorrectnessData" should {
     "fail when DID is missing" in {
-      val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
+      val data = node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))
       val op = StorageOperations.parseCreate(createStorageProto(data), dummyLedgerData).value
 
       val res = op
@@ -114,7 +133,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
     "fail when key usage is not VDR signing" in {
       insertDid()
       insertMasterKey()
-      val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
+      val data = node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))
       val op = StorageOperations.parseCreate(createStorageProto(data), dummyLedgerData).value
 
       val res = op
@@ -129,7 +148,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
     "succeed with an active VDR signing key" in {
       insertDid()
       insertVdrKey()
-      val data = node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))
+      val data = node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))
       val op = StorageOperations.parseCreate(createStorageProto(data), dummyLedgerData).value
 
       val res = op
@@ -149,7 +168,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val payload = "payload".getBytes
       val op = StorageOperations
         .parseCreate(
-          createStorageProto(node_models.StorageData().withBytes(ByteString.copyFrom(payload))),
+          createStorageProto(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFrom(payload))),
           dummyLedgerData
         )
         .value
@@ -165,18 +184,40 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       stored.nonce.value mustBe "nonce".getBytes
     }
 
+    "persist a create entry with STATUS_LIST payload losslessly" in {
+      insertDid()
+      insertVdrKey()
+      val digest = Sha256Hash.compute("status-list-op".getBytes)
+      val op = CreateStorageEntryOperation(
+        didSuffix = didSuffix,
+        nonce = Some("nonce".getBytes.toVector),
+        data = StorageData.StatusListEntry(5, Some("list"), Some("details")),
+        digest = digest,
+        ledgerData = dummyLedgerData
+      )
+
+      op.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
+
+      val stored = VdrEntriesDAO.find(op.digest).transact(database).unsafeRunSync().value
+      stored.dataType mustBe "STATUS_LIST"
+      val status = node_models.StatusListEntry.parseFrom(stored.dataBytes.value)
+      status.state mustBe 5L
+      status.name mustBe "list"
+      status.details mustBe "details"
+    }
+
     "persist an update entry linking the previous event" in {
       insertDid()
       insertVdrKey()
       val initial = StorageOperations
         .parseCreate(
-          createStorageProto(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))),
+          createStorageProto(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))),
           dummyLedgerData
         )
         .value
       initial.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
 
-      val updateProto = updateStorageProto(initial.digest, node_models.StorageData().withIpfsCid("cid123"))
+      val updateProto = updateStorageProto(initial.digest, node_models.UpdateStorageEntryOperation.Data.Ipfs("cid123"))
       val updateOp = StorageOperations.parseUpdate(updateProto, dummyLedgerData).value
       updateOp.applyState(dummyApplyOperationConfig).value.transact(database).unsafeRunSync().value
 
@@ -192,7 +233,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       insertVdrKey()
       val createOp = StorageOperations
         .parseCreate(
-          createStorageProto(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))),
+          createStorageProto(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))),
           dummyLedgerData
         )
         .value
@@ -205,7 +246,10 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val updateAfterDeactivate =
         StorageOperations
           .parseUpdate(
-            updateStorageProto(deactivateOp.digest, node_models.StorageData().withBytes(ByteString.EMPTY)),
+            updateStorageProto(
+              deactivateOp.digest,
+              node_models.UpdateStorageEntryOperation.Data.Bytes(ByteString.EMPTY)
+            ),
             dummyLedgerData
           )
           .value
@@ -221,7 +265,7 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
 
       val createOp = StorageOperations
         .parseCreate(
-          createStorageProto(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload"))),
+          createStorageProto(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))),
           dummyLedgerData
         )
         .value
@@ -229,7 +273,10 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
 
       val updateOp = StorageOperations
         .parseUpdate(
-          updateStorageProto(createOp.digest, node_models.StorageData().withBytes(ByteString.copyFromUtf8("v2"))),
+          updateStorageProto(
+            createOp.digest,
+            node_models.UpdateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("v2"))
+          ),
           dummyLedgerData
         )
         .value

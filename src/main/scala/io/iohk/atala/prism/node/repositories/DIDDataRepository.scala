@@ -27,6 +27,7 @@ import tofu.syntax.monoid.TofuSemigroupOps
 @derive(applyK)
 trait DIDDataRepository[F[_]] {
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]]
+  def hasActiveKeys(didSuffix: DidSuffix): F[Boolean]
 }
 
 object DIDDataRepository {
@@ -63,6 +64,9 @@ object DIDDataRepository {
 private final class DIDDataRepositoryImpl[F[_]: MonadCancelThrow](xa: Transactor[F]) extends DIDDataRepository[F] {
   def findByDid(did: DID): F[Either[NodeError, Option[DIDDataState]]] =
     getByCanonicalSuffix(DidSuffix(did.suffix))
+
+  override def hasActiveKeys(didSuffix: DidSuffix): F[Boolean] =
+    PublicKeysDAO.listAllNonRevoked(didSuffix).map(_.nonEmpty).transact(xa)
 
   private def getByCanonicalSuffix(
       canonicalSuffix: DidSuffix

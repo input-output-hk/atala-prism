@@ -120,6 +120,11 @@ package object operations {
       override def name: String = "key-already-revoked"
     }
 
+    // The owner DID has been deactivated (all keys revoked), so related operations are not allowed.
+    final case class DidDeactivated(didSuffix: DidSuffix) extends StateError {
+      override def name: String = "did-deactivated"
+    }
+
     // Error signifying that the associated key could not be instanced as a Secp256K1 key
     final case class IllegalSecp256k1Key(keyId: String) extends StateError {
       override def name: String = "unable-to-parse-key"

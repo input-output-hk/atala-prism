@@ -18,6 +18,7 @@ import io.iohk.atala.prism.node.models.{VdrEntryStatus => ModelVdrStatus}
 import io.iohk.atala.prism.node.errors.NodeError
 import io.iohk.atala.prism.node.grpc.ProtoCodecs
 import io.iohk.atala.prism.node.models._
+import io.iohk.atala.prism.node.models.nodeState.DIDDataState
 import io.iohk.atala.prism.node.models.nodeState.LedgerData
 import io.iohk.atala.prism.node.operations._
 import io.iohk.atala.prism.node.operations.path.{Path, ValueAtPath}
@@ -64,7 +65,16 @@ class NodeServiceSpec
 
     vdrEntriesStore = TrieMap.empty[Sha256Hash, VdrEntry]
 
-    val didDataRepository = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, logs)
+    val didDataRepository = new DIDDataRepository[IOWithTraceIdContext] {
+      private val real = DIDDataRepository.unsafe(dbLiftedToTraceIdIO, logs)
+      override def findByDid(
+          did: io.iohk.atala.prism.node.identity.CanonicalPrismDid
+      ): IOWithTraceIdContext[Either[NodeError, Option[DIDDataState]]] =
+        real.findByDid(did)
+      // For tests we treat DIDs as active unless explicitly modeled otherwise.
+      override def hasActiveKeys(didSuffix: DidSuffix): IOWithTraceIdContext[Boolean] =
+        fake(true)
+    }
     val vdrEntriesRepository = new VdrEntriesRepository[IOWithTraceIdContext] {
       override def insertCreate(
           eventHash: Sha256Hash,
@@ -521,6 +531,39 @@ class NodeServiceSpec
         dummySyncTimestamp.toProtoTimestamp
       )
     }
+
+    "return AWAIT_CONFIRMATION for REJECTED operation while transaction is still pending" in {
+      val validOperation = BlockProcessingServiceSpec.signOperation(
+        CreateDIDOperationSpec.exampleOperation,
+        "master",
+        CreateDIDOperationSpec.masterKeys.privateKey
+      )
+      val operationId = AtalaOperationId.of(validOperation)
+      val operationIdProto = operationId.toProtoByteString
+      val operationInfo = AtalaOperationInfo(
+        operationId = operationId,
+        objectId = AtalaObjectId.of("random".getBytes),
+        operationStatus = AtalaOperationStatus.REJECTED,
+        "",
+        transactionSubmissionStatus = Some(AtalaObjectTransactionSubmissionStatus.Pending),
+        transactionId = None
+      )
+
+      doReturn(fake[Instant](dummySyncTimestamp))
+        .when(objectManagementService)
+        .getLastSyncedTimestamp
+      doReturn(fake[Option[AtalaOperationInfo]](Some(operationInfo)))
+        .when(objectManagementService)
+        .getOperationInfo(operationId)
+
+      val response = service.getOperationInfo(
+        GetOperationInfoRequest()
+          .withOperationId(operationIdProto)
+      )
+
+      response.operationStatus must be(common_models.OperationStatus.AWAIT_CONFIRMATION)
+      response.lastSyncedBlockTimestamp.value must be(dummySyncTimestamp.toProtoTimestamp)
+    }
   }
 
   "NodeService.scheduleOperations" should {
@@ -624,7 +667,7 @@ class NodeServiceSpec
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
         )
       val signedCreate = BlockProcessingServiceSpec.signOperation(createOp, "vdr", vdrKeys.privateKey)
       val opId = AtalaOperationId.of(signedCreate)
@@ -661,7 +704,7 @@ class NodeServiceSpec
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
-            .withData(node_models.StorageData().withIpfsCid("cid-grpc"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-grpc"))
         )
       val signedUpdate = BlockProcessingServiceSpec.signOperation(updateOp, "vdr", vdrKeys.privateKey)
       val updateId = AtalaOperationId.of(signedUpdate)
@@ -714,15 +757,18 @@ class NodeServiceSpec
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload")))
         )
       val signed = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(op))
       val operationId = AtalaOperationId.of(signed)
       mockOperationId(operationId)
 
       val response = service
-        .createVdrEntry(node_api.CreateVdrEntryRequest().withSignedOperation(signed))
-        .output
+        .scheduleOperations(
+          node_api.ScheduleOperationsRequest(signedOperations = Seq(signed))
+        )
+        .outputs
+        .headOption
         .value
 
       response.getCreateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
@@ -741,7 +787,7 @@ class NodeServiceSpec
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(prevHash.bytes.toArray))
-            .withData(node_models.StorageData().withIpfsCid("cid"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid"))
         )
       val signedUpdate = node_models.SignedAtalaOperation("vdr-key", ByteString.EMPTY, Some(updateOp))
       val updateOperationId = AtalaOperationId.of(signedUpdate)
@@ -760,7 +806,13 @@ class NodeServiceSpec
       ).when(objectManagementService).scheduleAtalaOperations(*)
 
       val updateResponse =
-        service.updateVdrEntry(node_api.UpdateVdrEntryRequest().withSignedOperation(signedUpdate)).output.value
+        service
+          .scheduleOperations(
+            node_api.ScheduleOperationsRequest(signedOperations = Seq(signedUpdate))
+          )
+          .outputs
+          .headOption
+          .value
       updateResponse.getUpdateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
         Sha256Hash.compute(updateOp.toByteArray).bytes.toArray
       )
@@ -768,8 +820,11 @@ class NodeServiceSpec
 
       val deactivateResponse =
         service
-          .deactivateVdrEntry(node_api.DeactivateVdrEntryRequest().withSignedOperation(signedDeactivate))
-          .output
+          .scheduleOperations(
+            node_api.ScheduleOperationsRequest(signedOperations = Seq(signedDeactivate))
+          )
+          .outputs
+          .headOption
           .value
       deactivateResponse.getDeactivateVdrEntryOutput.eventHash mustBe ByteString.copyFrom(
         Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray
@@ -801,7 +856,7 @@ class NodeServiceSpec
       val entry = response.entry.value
       entry.eventHash mustBe ByteString.copyFrom(eventHash.bytes.toArray)
       entry.didSuffix mustBe "didSuffix"
-      entry.deactivated mustBe false
+      entry.status mustBe node_api.VdrEntryStatus.ACTIVE
       entry.nonce.toByteArray.toVector mustBe "nonce".getBytes.toVector
       entry.data.value.content mustBe node_models.StorageData.Content.Bytes(ByteString.copyFrom(payload))
     }
@@ -843,11 +898,10 @@ class NodeServiceSpec
         service
           .getVdrEntry(
             GetVdrEntryRequest()
-              .withEntryId(ByteString.copyFrom(rootHash.bytes.toArray))
-              .withLatest(true)
+              .withEventHash(ByteString.copyFrom(rootHash.bytes.toArray))
           )
       resp.entry.value.status mustBe node_api.VdrEntryStatus.DEACTIVATED
-      resp.entry.value.deactivated mustBe true
+      resp.entry.value.status mustBe node_api.VdrEntryStatus.DEACTIVATED
     }
 
     "verify VDR entry chains and report missing links" in {
@@ -872,6 +926,13 @@ class NodeServiceSpec
         service.verifyVdrEntry(node_api.VerifyVdrEntryRequest(ByteString.copyFrom(missingHash.bytes.toArray)))
       missing.valid mustBe false
       missing.reason must include("missing VDR entry")
+    }
+
+    "reject getVdrEntry with empty event_hash" in {
+      val ex = intercept[StatusRuntimeException] {
+        service.getVdrEntry(node_api.GetVdrEntryRequest())
+      }
+      ex.getStatus.getCode mustBe io.grpc.Status.Code.INVALID_ARGUMENT
     }
   }
 }

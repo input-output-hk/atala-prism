@@ -20,5 +20,6 @@ if [[ -z "${PRISM_NODE_VERSION:-}" ]]; then
 fi
 export PRISM_NODE_VERSION
 docker/prism-test/run-e2e.sh
+docker/prism-test/stop-e2e.sh
 
 echo "All checks completed."

@@ -18,13 +18,13 @@ class VdrHappyPathSpec extends VdrTestUtils {
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload-1")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload-1")))
         )
       val signedCreateStorage = signOperation(createStorageOp, "vdr", vdr.privateKey)
       val createVdrResp =
-        client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signedCreateStorage)))
+        client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signedCreateStorage)))
 
-      val createVdrOutput = requireOutput(createVdrResp.output, "create VDR")
+      val createVdrOutput = requireOutput(createVdrResp.outputs.headOption, "create VDR")
       val createVdrOpId = operationIdOrFail(createVdrOutput)
       val createEventHash = require(createVdrOutput.result.createVdrEntryOutput, "create VDR event hash").eventHash
       awaitApplied(createVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
@@ -33,7 +33,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
         client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
         "created entry"
       )
-      createdEntry.deactivated shouldBe false
+      createdEntry.status shouldBe node_api.VdrEntryStatus.ACTIVE
       createdEntry.data.flatMap(_.content.bytes) shouldBe Some(ByteString.copyFromUtf8("payload-1"))
       createdEntry.nonce shouldBe ByteString.EMPTY
     }
@@ -51,23 +51,24 @@ class VdrHappyPathSpec extends VdrTestUtils {
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(createEventHash)
-            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-2"))
         )
       val signedUpdateStorage = signOperation(updateStorageOp, "vdr", vdr.privateKey)
       val updateResp =
-        client.updateVdrEntry(node_api.UpdateVdrEntryRequest(Some(signedUpdateStorage)))
+        client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signedUpdateStorage)))
 
-      val updateOutput = requireOutput(updateResp.output, "update VDR")
+      val updateOutput = requireOutput(updateResp.outputs.headOption, "update VDR")
       val updateVdrOpId = operationIdOrFail(updateOutput)
       val updateEventHash = require(updateOutput.result.updateVdrEntryOutput, "update VDR event hash").eventHash
       awaitApplied(updateVdrOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
       val updatedEntry = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(updateEventHash)).entry,
-        "updated entry"
+        client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
+        "updated entry (by root hash)"
       )
-      updatedEntry.deactivated shouldBe false
-      updatedEntry.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-2")
+      updatedEntry.eventHash shouldBe updateEventHash
+      updatedEntry.status shouldBe node_api.VdrEntryStatus.ACTIVE
+      updatedEntry.data.flatMap(_.content.ipfs) shouldBe Some("cid-2")
       updatedEntry.previousEventHash shouldBe createEventHash
     }
 
@@ -88,19 +89,20 @@ class VdrHappyPathSpec extends VdrTestUtils {
         )
       val signedDeactivate = signOperation(deactivateStorageOp, "vdr", vdr.privateKey)
       val deactivateResp =
-        client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivate)))
+        client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signedDeactivate)))
 
-      val deactivateOutput = requireOutput(deactivateResp.output, "deactivate VDR")
+      val deactivateOutput = requireOutput(deactivateResp.outputs.headOption, "deactivate VDR")
       val deactivateOpId = operationIdOrFail(deactivateOutput)
       val deactivateEventHash =
         require(deactivateOutput.result.deactivateVdrEntryOutput, "deactivate VDR event hash").eventHash
       awaitApplied(deactivateOpId) shouldBe common_models.OperationStatus.CONFIRMED_AND_APPLIED
 
       val deactivatedEntry = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(deactivateEventHash)).entry,
-        "deactivated entry"
+        client.getVdrEntry(node_api.GetVdrEntryRequest(createEventHash)).entry,
+        "deactivated entry (by root hash)"
       )
-      deactivatedEntry.deactivated shouldBe true
+      deactivatedEntry.eventHash shouldBe deactivateEventHash
+      deactivatedEntry.status shouldBe node_api.VdrEntryStatus.DEACTIVATED
       deactivatedEntry.previousEventHash shouldBe updateEventHash
     }
 
@@ -121,7 +123,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val createOp = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("via-schedule-1")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("via-schedule-1")))
       )
       val createDigest = Sha256Hash.compute(createOp.toByteArray)
       val signedCreate = signOperation(createOp, "vdr", vdr.privateKey)
@@ -129,7 +131,7 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val updateOp = node_models.AtalaOperation().withUpdateStorageEntry(
         node_models.UpdateStorageEntryOperation()
           .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
-          .withData(node_models.StorageData().withIpfsCid("cid-via-schedule"))
+          .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-via-schedule"))
       )
       val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
       val signedUpdate = signOperation(updateOp, "vdr", vdr.privateKey)
@@ -149,22 +151,13 @@ class VdrHappyPathSpec extends VdrTestUtils {
       val ids = resp.outputs.map(operationIdOrFail)
       ids.foreach(id => awaitApplied(id))
 
-      val created = require(
+      val headAfterAll = require(
         client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(createDigest.bytes.toArray))).entry,
-        "created entry via schedule"
+        "head entry via schedule (root hash)"
       )
-      created.data.flatMap(_.content.bytes.map(_.toStringUtf8)) shouldBe Some("via-schedule-1")
-
-      val updated = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(updateDigest.bytes.toArray))).entry,
-        "updated entry via schedule"
-      )
-      updated.data.flatMap(_.content.ipfsCid) shouldBe Some("cid-via-schedule")
-      val deactivated = require(
-        client.getVdrEntry(node_api.GetVdrEntryRequest(ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray))).entry,
-        "deactivated entry via schedule"
-      )
-      deactivated.deactivated shouldBe true
+      headAfterAll.eventHash shouldBe ByteString.copyFrom(Sha256Hash.compute(deactivateOp.toByteArray).bytes.toArray)
+      headAfterAll.status shouldBe node_api.VdrEntryStatus.DEACTIVATED
+      headAfterAll.previousEventHash shouldBe ByteString.copyFrom(updateDigest.bytes.toArray)
     }
   }
 }

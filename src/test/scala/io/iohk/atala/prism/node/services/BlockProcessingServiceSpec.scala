@@ -145,7 +145,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
           node_models
             .CreateStorageEntryOperation()
             .withDidPrismHash(ByteString.copyFrom(didDigest.bytes.toArray))
-            .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("payload-1")))
+            .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload-1")))
         )
       val createDigest = Sha256Hash.compute(createOp.toByteArray)
       val signedCreate = signOperation(createOp, s"did:prism:${didSuffix.getValue}#vdr", vdrKeys.privateKey)
@@ -156,7 +156,7 @@ class BlockProcessingServiceSpec extends AtalaWithPostgresSpec {
           node_models
             .UpdateStorageEntryOperation()
             .withPreviousEventHash(ByteString.copyFrom(createDigest.bytes.toArray))
-            .withData(node_models.StorageData().withIpfsCid("cid-2"))
+            .withData(node_models.UpdateStorageEntryOperation.Data.Ipfs("cid-2"))
         )
       val updateDigest = Sha256Hash.compute(updateOp.toByteArray)
       val signedUpdate = signOperation(updateOp, s"did:prism:${didSuffix.getValue}#vdr", vdrKeys.privateKey)

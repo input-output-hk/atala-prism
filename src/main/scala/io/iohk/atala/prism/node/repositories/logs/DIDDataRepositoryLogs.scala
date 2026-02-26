@@ -31,4 +31,7 @@ private[repositories] final class DIDDataRepositoryLogs[
             _
           )
         )
+
+  override def hasActiveKeys(didSuffix: io.iohk.atala.prism.node.models.DidSuffix): Mid[F, Boolean] =
+    in => info"checking active keys for DID ${didSuffix.getValue}" *> in
 }

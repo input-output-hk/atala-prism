@@ -16,15 +16,17 @@ class VdrApiSpec extends VdrTestUtils {
       val op = node_models.AtalaOperation().withCreateStorageEntry(
         node_models.CreateStorageEntryOperation()
           .withDidPrismHash(ByteString.copyFrom(didSuffixHash.bytes.toArray))
-          .withData(node_models.StorageData().withBytes(ByteString.copyFromUtf8("dup")))
+          .withData(node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("dup")))
       )
       val signed = signOperation(op, "vdr", vdr.privateKey)
-      val first = client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed)))
-      awaitApplied(operationIdOrFail(requireOutput(first.output, "dup create first")))
+      val first = client.scheduleOperations(
+        node_api.ScheduleOperationsRequest(signedOperations = Seq(signed))
+      )
+      awaitApplied(operationIdOrFail(requireOutput(first.outputs.headOption, "dup create first")))
 
-      val second: Either[StatusRuntimeException, node_api.CreateVdrEntryResponse] =
+      val second: Either[StatusRuntimeException, node_api.ScheduleOperationsResponse] =
         try {
-          Right(client.createVdrEntry(node_api.CreateVdrEntryRequest(Some(signed))))
+          Right(client.scheduleOperations(node_api.ScheduleOperationsRequest(signedOperations = Seq(signed))))
         } catch {
           case ex: StatusRuntimeException => Left(ex)
         }
@@ -33,7 +35,7 @@ class VdrApiSpec extends VdrTestUtils {
         case Left(ex) =>
           ex.getStatus.getCode shouldBe io.grpc.Status.INVALID_ARGUMENT.getCode
         case Right(resp) =>
-          val out = requireOutput(resp.output, "dup create second")
+          val out = requireOutput(resp.outputs.headOption, "dup create second")
           val opId = operationIdOrFail(out)
           val status = awaitFinal(opId)
           status should (be(common_models.OperationStatus.CONFIRMED_AND_APPLIED)
@@ -67,10 +69,13 @@ class VdrApiSpec extends VdrTestUtils {
         node_models.DeactivateStorageEntryOperation().withPreviousEventHash(updateHash)
       )
       val signedDeactivate = signOperation(deactivateOp, "vdr", vdr.privateKey)
-      val deactivateResp = client.deactivateVdrEntry(node_api.DeactivateVdrEntryRequest(Some(signedDeactivate)))
-      val deactivateHash = requireOutput(deactivateResp.output, "deactivate hash").result.deactivateVdrEntryOutput
+      val deactivateResp = client.scheduleOperations(
+        node_api.ScheduleOperationsRequest(signedOperations = Seq(signedDeactivate))
+      )
+      val deactivateOut = requireOutput(deactivateResp.outputs.headOption, "deactivate op")
+      val deactivateHash = deactivateOut.result.deactivateVdrEntryOutput
         .map(_.eventHash).getOrElse(fail("missing deactivate hash"))
-      awaitApplied(operationIdOrFail(requireOutput(deactivateResp.output, "deactivate op")))
+      awaitApplied(operationIdOrFail(deactivateOut))
 
       val verifyCreate = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(createHash))
       val verifyUpdate = client.verifyVdrEntry(node_api.VerifyVdrEntryRequest(updateHash))
@@ -80,10 +85,11 @@ class VdrApiSpec extends VdrTestUtils {
       verifyUpdate.valid shouldBe true
       verifyDeactivate.valid shouldBe true
 
-      val gotDeactivate = client.getVdrEntry(node_api.GetVdrEntryRequest(deactivateHash)).entry.getOrElse(
-        fail("missing deactivate entry")
+      val gotDeactivate = client.getVdrEntry(node_api.GetVdrEntryRequest(createHash)).entry.getOrElse(
+        fail("missing deactivate entry via root hash")
       )
-      gotDeactivate.deactivated shouldBe true
+      gotDeactivate.eventHash shouldBe deactivateHash
+      gotDeactivate.status shouldBe node_api.VdrEntryStatus.DEACTIVATED
     }
   }
 }

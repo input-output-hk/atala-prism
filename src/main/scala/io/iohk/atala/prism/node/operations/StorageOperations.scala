@@ -16,7 +16,6 @@ import io.iohk.atala.prism.node.operations.StateError.{
   InvalidKeyUsed,
   InvalidPreviousOperation
 }
-import io.iohk.atala.prism.node.operations.ValidationError.InvalidValue
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, VdrEntriesDAO}
 import io.iohk.atala.prism.protos.node_models
@@ -57,15 +56,21 @@ sealed trait StorageOperation extends Operation {
       }
     } yield secpKey
 
-  protected def ensureDidExists(didSuffix: DidSuffix): EitherT[ConnectionIO, StateError, Unit] =
-    EitherT {
-      DIDDataDAO
-        .getLastOperation(didSuffix)
-        .map {
-          case Some(_) => Right(())
-          case None => Left(EntityMissing("did suffix", didSuffix.getValue): StateError)
-        }
-    }
+  protected def ensureDidActive(didSuffix: DidSuffix): EitherT[ConnectionIO, StateError, Unit] =
+    for {
+      _ <- EitherT {
+        DIDDataDAO
+          .getLastOperation(didSuffix)
+          .map {
+            case Some(_) => Right(())
+            case None => Left(EntityMissing("did suffix", didSuffix.getValue): StateError)
+          }
+      }
+      activeKeys <- EitherT.liftF(PublicKeysDAO.listAllNonRevoked(didSuffix))
+      _ <- EitherT.fromEither[ConnectionIO](
+        Either.cond(activeKeys.nonEmpty, (), StateError.DidDeactivated(didSuffix): StateError)
+      )
+    } yield ()
 
   /** Fetch the current head for the chain identified by `previousEventHash`, ensuring it is ACTIVE and matches the
     * provided hash.
@@ -92,6 +97,7 @@ sealed trait StorageOperation extends Operation {
       _ <- EitherT.fromEither[ConnectionIO](
         Either.cond(head.eventHash == previousEventHash, (), InvalidPreviousOperation(): StateError)
       )
+      _ <- ensureDidActive(head.didSuffix)
     } yield (entryId, head)
 }
 
@@ -106,7 +112,7 @@ final case class CreateStorageEntryOperation(
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] =
     for {
-      _ <- ensureDidExists(didSuffix)
+      _ <- ensureDidActive(didSuffix)
       key <- vdrKeyForDid(didSuffix, keyId)
     } yield CorrectnessData(key, None)
 
@@ -114,6 +120,8 @@ final case class CreateStorageEntryOperation(
     val (dataType, dataBytes, dataIpfs) = data match {
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
+      case sle: StorageData.StatusListEntry =>
+        ("STATUS_LIST", Some(StorageOperations.statusListToBytes(sle)), None)
     }
     for {
       _ <- EitherT {
@@ -154,7 +162,7 @@ final case class UpdateStorageEntryOperation(
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] =
     for {
       head <- resolveActiveHead(previousEventHash).map(_._2)
-      _ <- ensureDidExists(head.didSuffix)
+      _ <- ensureDidActive(head.didSuffix)
       key <- vdrKeyForDid(head.didSuffix, keyId)
     } yield CorrectnessData(key, Some(previousEventHash))
 
@@ -162,6 +170,8 @@ final case class UpdateStorageEntryOperation(
     val (dataType, dataBytes, dataIpfs) = data match {
       case Bytes(value) => ("BYTES", Some(value.toArray), None)
       case IpfsCid(cid) => ("IPFS", None, Some(cid))
+      case sle: StorageData.StatusListEntry =>
+        ("STATUS_LIST", Some(StorageOperations.statusListToBytes(sle)), None)
     }
     for {
       resolved <- resolveActiveHead(previousEventHash)
@@ -204,7 +214,7 @@ final case class DeactivateStorageEntryOperation(
     for {
       resolved <- resolveActiveHead(previousEventHash)
       (_, head) = resolved
-      _ <- ensureDidExists(head.didSuffix)
+      _ <- ensureDidActive(head.didSuffix)
       key <- vdrKeyForDid(head.didSuffix, keyId)
     } yield CorrectnessData(key, Some(previousEventHash))
 
@@ -238,14 +248,37 @@ final case class DeactivateStorageEntryOperation(
 
 object StorageOperations {
 
-  private def parseStorageData(data: node_models.StorageData, path: Path): Either[ValidationError, StorageData] =
-    data.content match {
-      case node_models.StorageData.Content.Bytes(value) =>
+  private[operations] def statusListToBytes(entry: StorageData.StatusListEntry): Array[Byte] =
+    node_models
+      .StatusListEntry(
+        state = entry.state,
+        name = entry.name.getOrElse(""),
+        details = entry.details.getOrElse("")
+      )
+      .toByteArray
+
+  private def parseCreateData(
+      op: node_models.CreateStorageEntryOperation
+  ): Either[ValidationError, StorageData] =
+    op.data match {
+      case node_models.CreateStorageEntryOperation.Data.Bytes(value) =>
         Right(Bytes(value.toByteArray.toVector))
-      case node_models.StorageData.Content.IpfsCid(cid) =>
+      case node_models.CreateStorageEntryOperation.Data.Ipfs(cid) =>
         Right(IpfsCid(cid))
-      case node_models.StorageData.Content.Empty =>
-        Left(InvalidValue(path / "data", "empty", "StorageData must be provided"))
+      case node_models.CreateStorageEntryOperation.Data.Empty =>
+        Right(Bytes(Vector.empty))
+    }
+
+  private def parseUpdateData(
+      op: node_models.UpdateStorageEntryOperation
+  ): Either[ValidationError, StorageData] =
+    op.data match {
+      case node_models.UpdateStorageEntryOperation.Data.Bytes(value) =>
+        Right(Bytes(value.toByteArray.toVector))
+      case node_models.UpdateStorageEntryOperation.Data.Ipfs(cid) =>
+        Right(IpfsCid(cid))
+      case node_models.UpdateStorageEntryOperation.Data.Empty =>
+        Right(Bytes(Vector.empty))
     }
 
   def parseCreate(
@@ -257,8 +290,7 @@ object StorageOperations {
       didHashBytes <- create.child(_.didPrismHash, "didPrismHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid did_prism_hash")
       }
-      dataProto <- create.childGet(_.data, "data")
-      data <- parseStorageData(dataProto.value, dataProto.path)
+      data <- parseCreateData(create.value)
       nonceBytes = create(_.nonce)
       nonce = if (nonceBytes.isEmpty) None else Some(nonceBytes.toByteArray.toVector)
       digest = Sha256Hash.compute(operation.toByteArray)
@@ -274,8 +306,7 @@ object StorageOperations {
       prevHash <- update.child(_.previousEventHash, "previousEventHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid previous_event_hash")
       }
-      dataProto <- update.childGet(_.data, "data")
-      data <- parseStorageData(dataProto.value, dataProto.path)
+      data <- parseUpdateData(update.value)
       digest = Sha256Hash.compute(operation.toByteArray)
     } yield UpdateStorageEntryOperation(prevHash, data, digest, ledgerData)
   }

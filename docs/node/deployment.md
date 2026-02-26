@@ -2,6 +2,10 @@
 
 The Node is a level 2 proxy on top of the Cardano blockchain responsible for publishing, resolving, updating, and deactivating DIDs. It exposes a gRPC API to perform all the operations above.
 
+:::tip API surface change
+The VDR gRPC surface now accepts write operations **only** via `ScheduleOperations`. Legacy wrapper RPCs (`CreateVdrEntry`, `UpdateVdrEntry`, `DeactivateVdrEntry`) have been removed; clients must submit signed operations through `ScheduleOperations`.
+:::
+
 :::note
 This documentation will not describe the gRPC API itself.
 :::

@@ -15,8 +15,13 @@ private[repositories] final class DIDDataRepositoryMetrics[F[
     extends DIDDataRepository[Mid[F, *]] {
   private lazy val findByDidTimer =
     TimeMeasureUtil.createDBQueryTimer("DIDDataRepository", "findByDid")
+  private lazy val hasActiveKeysTimer =
+    TimeMeasureUtil.createDBQueryTimer("DIDDataRepository", "hasActiveKeys")
   override def findByDid(
       did: CanonicalPrismDid
   ): Mid[F, Either[NodeError, Option[DIDDataState]]] =
     _.measureOperationTime(findByDidTimer)
+
+  override def hasActiveKeys(didSuffix: io.iohk.atala.prism.node.models.DidSuffix): Mid[F, Boolean] =
+    _.measureOperationTime(hasActiveKeysTimer)
 }
