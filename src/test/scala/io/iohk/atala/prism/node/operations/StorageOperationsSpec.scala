@@ -14,6 +14,7 @@ import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, Vd
 import io.iohk.atala.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
+import scalapb.UnknownFieldSet
 
 class StorageOperationsSpec extends AtalaWithPostgresSpec {
 
@@ -77,6 +78,12 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
           .DeactivateStorageEntryOperation()
           .withPreviousEventHash(ByteString.copyFrom(previous.bytes.toArray))
       )
+
+  // Field number 100 is used as the injected unknown field in all unknown-fields tests below.
+  // 100 is well above the highest field number used in any current proto schema,
+  // so it is guaranteed to be unknown to the current implementation.
+  private val unknownFieldSet =
+    UnknownFieldSet.empty.withField(100, UnknownFieldSet.Field(varint = Seq(0L)))
 
   "StorageOperations.parseCreate" should {
     "extract bytes payload, nonce and digest" in {
@@ -289,6 +296,58 @@ class StorageOperationsSpec extends AtalaWithPostgresSpec {
       val head = VdrEntriesDAO.findHead(createOp.digest).transact(database).unsafeRunSync().value
       head._1 mustBe deactivateOp.digest
       head._2 mustBe VdrEntryStatus.DEACTIVATED
+    }
+  }
+
+  "StorageOperations unknown field validation" should {
+    "reject parseCreate when inner message has unknown protobuf fields" in {
+      val data = node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))
+      val proto = node_models
+        .AtalaOperation()
+        .withCreateStorageEntry(
+          node_models
+            .CreateStorageEntryOperation()
+            .withDidPrismHash(ByteString.copyFrom(didHash.bytes.toArray))
+            .withData(data)
+            .withUnknownFields(unknownFieldSet)
+        )
+
+      StorageOperations.parseCreate(proto, dummyLedgerData).left.value mustBe a[ValidationError.InvalidValue]
+    }
+
+    "reject parseCreate when outer AtalaOperation wrapper has unknown protobuf fields" in {
+      val data = node_models.CreateStorageEntryOperation.Data.Bytes(ByteString.copyFromUtf8("payload"))
+      val proto = createStorageProto(data).withUnknownFields(unknownFieldSet)
+
+      StorageOperations.parseCreate(proto, dummyLedgerData).left.value mustBe a[ValidationError.InvalidValue]
+    }
+
+    "reject parseUpdate when inner message has unknown protobuf fields" in {
+      val previous = Sha256Hash.compute("previous".getBytes)
+      val proto = node_models
+        .AtalaOperation()
+        .withUpdateStorageEntry(
+          node_models
+            .UpdateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(previous.bytes.toArray))
+            .withUnknownFields(unknownFieldSet)
+        )
+
+      StorageOperations.parseUpdate(proto, dummyLedgerData).left.value mustBe a[ValidationError.InvalidValue]
+    }
+
+    "reject parseDeactivate when inner message has unknown protobuf fields" in {
+      val previous = Sha256Hash.compute("previous".getBytes)
+      val proto = node_models
+        .AtalaOperation()
+        .withDeactivateStorageEntry(
+          node_models
+            .DeactivateStorageEntryOperation()
+            .withPreviousEventHash(ByteString.copyFrom(previous.bytes.toArray))
+            .withUnknownFields(unknownFieldSet)
+        )
+
+      StorageOperations.parseDeactivate(proto, dummyLedgerData).left.value mustBe a[ValidationError.InvalidValue]
     }
   }
 }
