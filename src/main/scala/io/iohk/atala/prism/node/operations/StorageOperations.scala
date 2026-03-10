@@ -19,6 +19,7 @@ import io.iohk.atala.prism.node.operations.StateError.{
 import io.iohk.atala.prism.node.operations.path._
 import io.iohk.atala.prism.node.repositories.daos.{DIDDataDAO, PublicKeysDAO, VdrEntriesDAO}
 import io.iohk.atala.prism.protos.node_models
+import scalapb.UnknownFieldSet
 import scala.util.Try
 
 sealed trait StorageOperation extends Operation {
@@ -257,6 +258,23 @@ object StorageOperations {
       )
       .toByteArray
 
+  /** Rejects a VDR operation if either the outer [[node_models.AtalaOperation]] wrapper or the inner storage operation
+    * message carries unknown protobuf fields.
+    *
+    * Unknown fields indicate a schema mismatch or a malformed/tampered message. For VDR operations strict validation is
+    * required to prevent two nodes running different protocol versions from diverging on stored state. SSI operations
+    * (CreateDID, UpdateDID, DeactivateDID) are intentionally left lenient for forward-compatibility.
+    */
+  private def ensureNoVdrUnknownFields(
+      outer: UnknownFieldSet,
+      inner: UnknownFieldSet
+  ): Either[ValidationError, Unit] =
+    Either.cond(
+      outer == UnknownFieldSet.empty && inner == UnknownFieldSet.empty,
+      (),
+      ValidationError.InvalidValue(Path.root, "unknown fields", "VDR operation contains unknown protobuf fields")
+    )
+
   private def parseCreateData(
       op: node_models.CreateStorageEntryOperation
   ): Either[ValidationError, StorageData] =
@@ -287,6 +305,7 @@ object StorageOperations {
   ): Either[ValidationError, CreateStorageEntryOperation] = {
     val create = ValueAtPath(operation, Path.root).child(_.getCreateStorageEntry, "createStorageEntry")
     for {
+      _ <- ensureNoVdrUnknownFields(operation.unknownFields, create.value.unknownFields)
       didHashBytes <- create.child(_.didPrismHash, "didPrismHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid did_prism_hash")
       }
@@ -303,6 +322,7 @@ object StorageOperations {
   ): Either[ValidationError, UpdateStorageEntryOperation] = {
     val update = ValueAtPath(operation, Path.root).child(_.getUpdateStorageEntry, "updateStorageEntry")
     for {
+      _ <- ensureNoVdrUnknownFields(operation.unknownFields, update.value.unknownFields)
       prevHash <- update.child(_.previousEventHash, "previousEventHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid previous_event_hash")
       }
@@ -317,6 +337,7 @@ object StorageOperations {
   ): Either[ValidationError, DeactivateStorageEntryOperation] = {
     val deactivate = ValueAtPath(operation, Path.root).child(_.getDeactivateStorageEntry, "deactivateStorageEntry")
     for {
+      _ <- ensureNoVdrUnknownFields(operation.unknownFields, deactivate.value.unknownFields)
       prevHash <- deactivate.child(_.previousEventHash, "previousEventHash").parse { bytes =>
         Try(Sha256Hash.fromBytes(bytes.toByteArray)).toEither.leftMap(_ => "Invalid previous_event_hash")
       }
